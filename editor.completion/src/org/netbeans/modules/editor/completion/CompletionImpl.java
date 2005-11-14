@@ -154,9 +154,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         Registry.addChangeListener(this);
         completionAutoPopupTimer = new Timer(0, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                pleaseWaitTimer.restart();
-                queryResultSets(completionResult.getResultSets());
-                completionResult.queryInvoked();
+                if (completionResult != null && !completionResult.isQueryInvoked()) {
+                    pleaseWaitTimer.restart();
+                    queryResultSets(completionResult.getResultSets());
+                    completionResult.queryInvoked();
+                }
             }
         });
         completionAutoPopupTimer.setRepeats(false);
@@ -1321,6 +1323,10 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             if (fin) { // already invoked
                 cancelResultSets(resultSets);
             }
+        }
+        
+        synchronized boolean isQueryInvoked() {
+            return invoked;
         }
         
         /**
