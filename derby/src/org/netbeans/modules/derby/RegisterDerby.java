@@ -80,7 +80,6 @@ public class RegisterDerby implements DatabaseRuntime {
         return reg;
     }
     
- 
     /**
      * Whether this runtime accepts this connection string.
      */
@@ -135,7 +134,7 @@ public class RegisterDerby implements DatabaseRuntime {
     }
     
     private File getInstallLocation() {
-        return new File(DerbyOptions.getDefault().getDerbyLocation());
+        return new File(DerbyOptions.getDefault().getLocation());
     }
     
     boolean hasInstallLocation() {
@@ -219,7 +218,8 @@ public class RegisterDerby implements DatabaseRuntime {
     }
     
     private String getDerbySystemHome() {
-        return System.getProperty("netbeans.user") + File.separator + "derby";
+        // return System.getProperty("netbeans.user") + File.separator + "derby";
+        return DerbyOptions.getDefault().getSystemHome();
     }
     
     private void createDerbyPropertiesFile() {

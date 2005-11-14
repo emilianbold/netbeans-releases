@@ -16,19 +16,17 @@ package org.netbeans.modules.derby.ui;
 import java.awt.Color;
 import java.io.File;
 import java.text.MessageFormat;
-import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
 import org.openide.DialogDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-
 /**
  *
  * @author Andrei Badea
  */
 public class CreateDatabasePanel extends javax.swing.JPanel {
     
+    private File derbySystemHome;
     private DialogDescriptor descriptor;
     private Color nbErrorForeground;
     
@@ -47,7 +45,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
     };
     
-    public CreateDatabasePanel() {
+    public CreateDatabasePanel(String derbySystemHome) {
         // copied from WizardDescriptor
         nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbErrorForeground == null) {
@@ -55,9 +53,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             nbErrorForeground = new Color(255, 0, 0); // RGB suggested by jdinga in #65358
         }
         
+        this.derbySystemHome = new File(derbySystemHome);
+        
         initComponents();
         databaseNameTextField.getDocument().addDocumentListener(docListener);
-        databaseLocationTextField.getDocument().addDocumentListener(docListener);
     }
     
     public void setDialogDescriptor(DialogDescriptor descriptor) {
@@ -69,14 +68,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         return databaseNameTextField.getText().trim();
     }
     
-    public String getDatabaseLocation() {
-        return databaseLocationTextField.getText().trim();
-    }
-    
-    public void setDatabaseLocation(String directory) {
-        databaseLocationTextField.setText(directory);
-    }
-    
     private void validateDatabaseName() {
         if (descriptor == null) {
             return;
@@ -84,15 +75,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
         String error = null;
         String databaseName = getDatabaseName();
-        File databaseLocation = new File(getDatabaseLocation());
         
         if (databaseName.length() <= 0) { // NOI18N
             error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameEmpty");
-        } else if (!databaseLocation.exists()) {
-            error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseLocationDoesNotExist");
-        } else if (!databaseLocation.isDirectory()) {
-            error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseLocationNotDirectory");
-        } else if (databaseName.length() > 0 && new File(databaseLocation, databaseName).exists()) { // NOI18N
+        } else if (databaseName.length() > 0 && new File(derbySystemHome, databaseName).exists()) { // NOI18N
             error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseDirectoryExists");
             error = MessageFormat.format(error, new Object[] { databaseName });
         }
@@ -115,21 +101,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private void initComponents() {
         databaseNameLabel = new javax.swing.JLabel();
         databaseNameTextField = new javax.swing.JTextField();
-        databaseLocationLabel = new javax.swing.JLabel();
-        databaseLocationTextField = new javax.swing.JTextField();
-        browseButton = new javax.swing.JButton();
         messageLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(databaseNameLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_DatabaseName"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(databaseLocationLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_DatabaseLocation"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_Browse"));
-        browseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseButtonActionPerformed(evt);
-            }
-        });
 
         messageLabel.setForeground(nbErrorForeground);
         org.openide.awt.Mnemonics.setLocalizedText(messageLabel, " ");
@@ -142,16 +116,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(databaseLocationLabel)
-                            .add(databaseNameLabel))
+                        .add(databaseNameLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(databaseLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseButton))
-                            .add(databaseNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 126, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(databaseNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE))
                     .add(messageLabel))
                 .addContainerGap())
         );
@@ -159,40 +126,18 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(databaseNameLabel)
                     .add(databaseNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(databaseLocationLabel)
-                    .add(browseButton)
-                    .add(databaseLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 32, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 38, Short.MAX_VALUE)
                 .add(messageLabel)
                 .addContainerGap())
         );
     }
     // </editor-fold>//GEN-END:initComponents
-
-    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
-        String databaseLocation = getDatabaseLocation();
-        if (databaseLocation.length()> 0) {
-            chooser.setSelectedFile(new File(databaseLocation));
-        }
-        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
-            return;
-        }
-        setDatabaseLocation(chooser.getSelectedFile().getAbsolutePath());
-    }//GEN-LAST:event_browseButtonActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    public javax.swing.JButton browseButton;
-    public javax.swing.JLabel databaseLocationLabel;
-    public javax.swing.JTextField databaseLocationTextField;
     public javax.swing.JLabel databaseNameLabel;
     public javax.swing.JTextField databaseNameTextField;
     public javax.swing.JLabel messageLabel;

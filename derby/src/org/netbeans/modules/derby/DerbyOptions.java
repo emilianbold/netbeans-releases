@@ -14,6 +14,7 @@
 package org.netbeans.modules.derby;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -24,6 +25,7 @@ import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.options.SystemOption;
@@ -38,8 +40,8 @@ public class DerbyOptions extends SystemOption {
     
     private static final long serialVersionUID = 1101894610105398924L;
     
-    static final String PROP_DERBY_LOCATION = "derbyLocation"; // NOI18N
-    private static final String PROP_LAST_DATABASE_LOCATION = "defaultDbLocation"; // NOI18N
+    static final String PROP_DERBY_LOCATION = "location"; // NOI18N
+    static final String PROP_DERBY_SYSTEM_HOME = "systemHome"; // NOI18N
     
     private static final String INST_DIR = "db-derby-10.1.1.0"; // NOI18N
     
@@ -63,50 +65,64 @@ public class DerbyOptions extends SystemOption {
     }
     
     /**
-     * Returns the Derby location. Never returns null.
+     * Returns the Derby location or an empty string if the Derby location
+     * is not set. Never returns null.
      */
-    public String getDerbyLocation() {
-        String derbyLocation = (String)getProperty(PROP_DERBY_LOCATION);
-        if (derbyLocation == null) {
-            derbyLocation = ""; // NOI18N
+    public String getLocation() {
+        String location = (String)getProperty(PROP_DERBY_LOCATION);
+        if (location == null) {
+            location = ""; // NOI18N
         }
-//        if (derbyLocation == null || derbyLocation.length() <= 0) { // NOI18N
-//            derbyLocation = getDefaultInstallLocation();
-//            if (derbyLocation == null) {
-//                derbyLocation = ""; // NOI18N
+//        // try to set the location to the bundled Derby if available
+//        if (location == null || location.length() <= 0) { // NOI18N
+//            location = getDefaultInstallLocation();
+//            if (location == null) {
+//                location = ""; // NOI18N
 //            }
 //        }
-        return derbyLocation;
+        return location;
     }
     
     /**
      * Sets the Derby location.
-     *
-     * @param derbyLocation the Derby location. Pass null to set it to the
-     *        default location.
+     * 
+     * @param location the Derby location. A null value is valid
+     *        be transformed into an empty string (meaning "not set"). An empty
+     *        string is valid and has the meaning "set to the default location".
      */
-    public void setDerbyLocation(String derbyLocation) {
+    public void setLocation(String location) {
         synchronized (getLock()) {
             stopDerbyServer();
-            registerDrivers(derbyLocation);
-            putProperty(PROP_DERBY_LOCATION, derbyLocation, true);
+            if (location != null && location.length() <= 0) {
+                location = getDefaultInstallLocation();
+                if (location == null) {
+                    location = ""; // NOI18N
+                }
+            }
+            if (location != null && location.length() > 0) {
+                registerDrivers(location);
+            }
+            putProperty(PROP_DERBY_LOCATION, location, true);
         }
     }
     
-    public String getLastDatabaseLocation() {
-        String lastDatabaseLocation = (String)getProperty(PROP_LAST_DATABASE_LOCATION);
-        if (lastDatabaseLocation == null) {
-            // upon HIE & docs request the initial value for the 
-            // default database directory is ${user.home}/derby
-            // XXX maybe we should localize "derby"?
-            // lastDatabaseLocation = new File(System.getProperty("user.home"), "derby").getAbsolutePath(); // NOI18N
-            lastDatabaseLocation = System.getProperty("user.home"); // NOI18N
+    /**
+     * Returns the Derby system home or an emtpy string if the system home
+     * is not set. Never returns null.
+     */
+    public String getSystemHome() {
+        String systemHome = (String)getProperty(PROP_DERBY_SYSTEM_HOME);
+        if (systemHome == null) {
+            systemHome = ""; // NOI18N
         }
-        return lastDatabaseLocation;
+        return systemHome;
     }
     
-    public void setLastDatabaseLocation(String lastDatabaseLocation) {
-        putProperty(PROP_LAST_DATABASE_LOCATION, lastDatabaseLocation, true);
+    public void setSystemHome(String derbySystemHome) {
+        synchronized (getLock()) {
+            stopDerbyServer();
+            putProperty(PROP_DERBY_SYSTEM_HOME, derbySystemHome, true);
+        }
     }
     
     private static String getDefaultInstallLocation() {
@@ -128,14 +144,18 @@ public class DerbyOptions extends SystemOption {
         registerDriver(DRIVER_NAME_NET, DRIVER_CLASS_NET, DRIVER_PATH_NET, newLocation);
         registerDriver(DRIVER_NAME_EMBEDDED, DRIVER_CLASS_EMBEDDED, DRIVER_PATH_EMBEDDED, newLocation);
     }
-    
+
     private static void registerDriver(String driverName, String driverClass, String driverRelativeFile, String newLocation) {
         // try to remove the driver first if it exists was registered from the current location
         JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
         for (int i = 0; i < drivers.length; i++) {
             JDBCDriver driver = drivers[i];
             URL[] urls = driver.getURLs();
-            String currentLocation = DerbyOptions.getDefault().getDerbyLocation();
+            String currentLocation = DerbyOptions.getDefault().getLocation();
+            if (currentLocation == null) {
+                continue;
+            }
+            
             boolean fromCurrentLocation = true;
             
             for (int j = 0; j < urls.length; j++) {
@@ -166,7 +186,7 @@ public class DerbyOptions extends SystemOption {
         File newDriverFile = new File(newLocation, driverRelativeFile);
         if (newDriverFile.exists()) {
             try {
-                JDBCDriver newDriver = JDBCDriver.create(driverName, driverClass, new URL[] { newDriverFile.toURL() });
+                JDBCDriver newDriver = JDBCDriver.create(driverName, driverClass, new URL[] { newDriverFile.toURI().toURL() });
                 JDBCDriverManager.getDefault().addDriver(newDriver);
             } catch (MalformedURLException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);

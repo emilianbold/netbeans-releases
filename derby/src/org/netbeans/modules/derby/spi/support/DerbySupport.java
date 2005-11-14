@@ -26,15 +26,27 @@ public final class DerbySupport {
     }
     
     /**
-     * Sets the location of the Derby jars.
+     * Sets the location of the Derby jars and registers the Derby drivers.
      *
      * @param location the jars locations. This must be an existing directory.
      */
-    public static void setDerbyLocation(String location) {
-        DerbyOptions.getDefault().setDerbyLocation(location);
+    public static void setLocation(String location) {
+        DerbyOptions.getDefault().setLocation(location);
     }
     
-    public static String getDerbyLocation() {
-        return DerbyOptions.getDefault().getDerbyLocation();
+    /**
+     * Returns the location of the Derby jars. Never returns null,
+     * instead returns an empty string if the location is unknown.
+     */
+    public static String getLocation() {
+        return DerbyOptions.getDefault().getLocation();
+    }
+    
+    public static void setSystemHome(String systemHome) {
+        DerbyOptions.getDefault().setSystemHome(systemHome);
+    }
+    
+    public static String getSystemHome() {
+        return DerbyOptions.getDefault().getSystemHome();
     }
 }

@@ -2,10 +2,6 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Databases">
-        <!--<folder name="JDBCDrivers">
-            <file name="DerbyDriver.xml" url="DerbyDriver.xml"/>
-            <file name="DerbyEmbeddedDriver.xml" url="DerbyEmbeddedDriver.xml"/>
-        </folder>-->
         <folder name="Runtimes">
             <file name="DerbyRuntime.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.derby.RegisterDerby.getDefault"/>

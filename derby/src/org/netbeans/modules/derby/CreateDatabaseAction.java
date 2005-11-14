@@ -17,6 +17,7 @@ package org.netbeans.modules.derby;
 import java.awt.Dialog;
 import java.io.File;
 import org.netbeans.modules.derby.ui.CreateDatabasePanel;
+import org.netbeans.modules.derby.ui.DerbySystemHomePanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -43,10 +44,20 @@ public class CreateDatabaseAction extends CallableSystemAction {
             return;
         }
         
-        CreateDatabasePanel panel = new CreateDatabasePanel();
+        String derbySystemHome = DerbyOptions.getDefault().getSystemHome();
+        if (derbySystemHome.length() <= 0) {
+            derbySystemHome = DerbySystemHomePanel.findDerbySystemHome();
+            if (derbySystemHome.length() > 0) {
+                DerbyOptions.getDefault().setSystemHome(derbySystemHome);
+            }
+        }
+        if (derbySystemHome.length() <= 0) {
+            return;
+        }
+        
+        CreateDatabasePanel panel = new CreateDatabasePanel(derbySystemHome);
         DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(CreateDatabaseAction.class, "LBL_CreateDatabaseTitle"), true, null);
         panel.setDialogDescriptor(desc);
-        panel.setDatabaseLocation(DerbyOptions.getDefault().getLastDatabaseLocation());
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
         dialog.setVisible(true);
         dialog.dispose();
@@ -55,13 +66,7 @@ public class CreateDatabaseAction extends CallableSystemAction {
             return;
         }
         
-        String databaseLocation = panel.getDatabaseLocation();
-        File databaseLocationFile = new File(databaseLocation);
-        databaseLocationFile.mkdirs();
-        String databaseName = new File(databaseLocationFile, panel.getDatabaseName()).getAbsolutePath();
-        
-        DerbyOptions.getDefault().setLastDatabaseLocation(databaseLocation);
-        
+        String databaseName = panel.getDatabaseName();
         try {
             if (!RegisterDerby.getDefault().isRunning()) {
                 RegisterDerby.getDefault().start(5000);

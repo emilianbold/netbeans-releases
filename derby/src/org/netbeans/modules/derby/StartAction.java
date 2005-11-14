@@ -13,13 +13,10 @@
 
 package org.netbeans.modules.derby;
 
-
-
+import org.netbeans.modules.derby.ui.DerbySystemHomePanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
-
-
 
 /** Action that can always be invoked and work procedurally.
  * This action will display the URL for the given admin server node in the runtime explorer
@@ -49,12 +46,21 @@ public class StartAction extends CallableSystemAction {
             RegisterDerby.showInformation(NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyLocationIncorrect"));
             return;
         }
-        RegisterDerby.getDefault().start();
         
+        String derbySystemHome = DerbyOptions.getDefault().getSystemHome();
+        if (derbySystemHome.length() <= 0) {
+            derbySystemHome = DerbySystemHomePanel.findDerbySystemHome();
+            if (derbySystemHome.length() > 0) {
+                DerbyOptions.getDefault().setSystemHome(derbySystemHome);
+            }
+        }
+        
+        if (derbySystemHome.length() > 0) {
+            RegisterDerby.getDefault().start();
+        }
     }
+    
     protected boolean asynchronous() {
         return true;
     }
-    
-    
 }
