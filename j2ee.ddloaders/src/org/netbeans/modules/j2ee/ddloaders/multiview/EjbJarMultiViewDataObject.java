@@ -43,6 +43,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.xml.sax.InputSource;
@@ -83,8 +84,8 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     private static final int REMOTE = 20;
     private static final int LOCAL_HOME = 30;
     private static final int LOCAL = 40;
-    private static final String OVERVIEW = Utils.getBundleMessage("LBL_Overview");
-    private static final String CMP_RELATIONSHIPS = Utils.getBundleMessage("LBL_CmpRelationships");
+    private static final String OVERVIEW = "Overview"; //NOI18N
+    private static final String CMP_RELATIONSHIPS = "CmpRelationships"; //NOI18N
 
     public EjbJarMultiViewDataObject(FileObject pf, EjbJarDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
@@ -439,15 +440,16 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     }
 
     private static class DDView extends DesignMultiViewDesc implements java.io.Serializable {
-
+        
+        private String name;
         static final long serialVersionUID = -8759598009819101630L;
 
         DDView(EjbJarMultiViewDataObject dataObject, String name) {
             super(dataObject, name);
+            this.name=name;
         }
 
         public MultiViewElement createElement() {
-            String name = getDisplayName();
             EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) getDataObject();
             if (name.equals(OVERVIEW)) {
                 return new EjbMultiViewElement(dataObject);
@@ -469,7 +471,11 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
 
         public String preferredID() {
-            return "dd_multiview_" + getDisplayName(); //NOI18N
+            return "dd_multiview_" + name; //NOI18N
+        }
+        
+        public String getDisplayName() {
+            return NbBundle.getMessage(EjbJarMultiViewDataObject.class,"LBL_"+name); //NOI18N
         }
 
     }
