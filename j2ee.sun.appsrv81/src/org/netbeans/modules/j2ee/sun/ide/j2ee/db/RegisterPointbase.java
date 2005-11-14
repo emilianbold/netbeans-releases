@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.db;
 
+import java.io.FileNotFoundException;
 import java.net.URL;
 
 import java.io.File;
@@ -25,13 +26,17 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager ;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
@@ -43,29 +48,29 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
  */
 public class RegisterPointbase implements DatabaseRuntime {
     /** The name of the Pointbase driver to create the connection to sample database */
-    public static final String DRIVER_NAME = NbBundle.getMessage(RegisterPointbase.class, "LBL_DriverName");
+    public static final String DRIVER_NAME = 
+            NbBundle.getMessage(RegisterPointbase.class, "LBL_DriverName");     //NOI18N
     
     /** The driver to create the connection to sample database */
-    public static final String DRIVER = "com.pointbase.jdbc.jdbcUniversalDriver";
-    
-    /** The database URL to create the connection to sample database */
-    public static final String DATABASE_URL  = "jdbc:pointbase://localhost:9092/sample";
-    public static final String DATABASE_URL2 = "jdbc:pointbase://localhost:9092/sun-appserv-samples";
+    public static final String DRIVER = 
+            "com.pointbase.jdbc.jdbcUniversalDriver";                           //NOI18N
     
     /** The user name to create the connection to sample database */
-    public static final String USER_NAME = "pbpublic";
+    public static final String USER_NAME = "pbpublic";                          //NOI18N
     
     /** The schema name to create the connection to sample database */
-    public static final String SCHEMA_NAME = "PBPUBLIC";
+    public static final String SCHEMA_NAME = "PBPUBLIC";                        //NOI18N
     
     /** The password to create the connection to sample database */
-    public static final String PASSWORD = "pbpublic";
+    public static final String PASSWORD = "pbpublic";                           //NOI18N
     
-    private static final String RELATIVE_DRIVER_PATH = "/pointbase/lib/pbembedded.jar";  //NOI18N
-    private static RegisterPointbase reg=null;
+    private static final String RELATIVE_DRIVER_PATH = 
+            "/pointbase/lib/pbembedded.jar";                                    //NOI18N
+
+    private static RegisterPointbase reg = null;
     
     /** pointbase server process */
-    protected static Process process  =null;
+    protected static Process process = null;
     
     private File AppServerinstallationDirectory = null;
     
@@ -173,7 +178,7 @@ public class RegisterPointbase implements DatabaseRuntime {
         if (installRoot==null){
             return;
         }
-        File localInstall = new File(installRoot+"/pointbase");
+        File localInstall = new File(irf,"pointbase");                          //NOI18N
         if (!localInstall.exists()){
             return ;  
 	}      
@@ -186,7 +191,7 @@ public class RegisterPointbase implements DatabaseRuntime {
 	
         
         // Go to the conf dir
-        File dbFile = new File(installRoot+"/pointbase/databases/sample.dbn");//NOI18N
+        File dbFile = new File(installRoot+"/pointbase/databases/sample.dbn");  //NOI18N
         // if it is writable
         if (dbFile.exists()  && (dbFile.canWrite()==false)) {
             //no write access to the dbs. so we copy them in a location where the ide can RW them
@@ -201,6 +206,8 @@ public class RegisterPointbase implements DatabaseRuntime {
             if(!f.exists()){
                 return;
             }
+            File dbDir = new File(localInstall,"databases");                    //NOI18N
+            int portVal = getPort(dbDir);
             
             URL[] urls = new URL[1];
             urls[0]= f.toURI().toURL(); //NOI18N
@@ -208,13 +215,22 @@ public class RegisterPointbase implements DatabaseRuntime {
             JDBCDriver newDriver = JDBCDriver.create(DRIVER_NAME, DRIVER,urls);
             JDBCDriverManager.getDefault().addDriver(newDriver);
             
-            DatabaseConnection dbconn = DatabaseConnection.create(newDriver, 
-                    DATABASE_URL, USER_NAME, SCHEMA_NAME, PASSWORD, true);
-            ConnectionManager.getDefault().addConnection(dbconn);
+            
+            File testFile = new File(dbDir,SAMPLE_NAME+DOT_DBN);
+            if (testFile.exists()) {
+                DatabaseConnection dbconn = DatabaseConnection.create(newDriver, 
+                        LOCALHOST_URL_PREFIX+portVal+SLASH+SAMPLE_NAME,
+                        USER_NAME, SCHEMA_NAME, PASSWORD, true);
+                ConnectionManager.getDefault().addConnection(dbconn);
+            }
 
-            DatabaseConnection dbconn2 = DatabaseConnection.create(newDriver, 
-                    DATABASE_URL2, USER_NAME, SCHEMA_NAME, PASSWORD, true);
-            ConnectionManager.getDefault().addConnection(dbconn2);
+            testFile = new File(dbDir,SUN_APPSERV_SAMPLES_NAME+DOT_DBN);
+            if (testFile.exists()) {
+                DatabaseConnection dbconn2 = DatabaseConnection.create(newDriver, 
+                        LOCALHOST_URL_PREFIX+portVal+SLASH+SUN_APPSERV_SAMPLES_NAME,
+                        USER_NAME, SCHEMA_NAME, PASSWORD, true);
+                ConnectionManager.getDefault().addConnection(dbconn2);
+            }
         } catch (Exception e){
             System.out.println(e);
         }
@@ -228,14 +244,35 @@ public class RegisterPointbase implements DatabaseRuntime {
      * Whether this runtime accepts this connection string.
      */
     public boolean acceptsDatabaseURL(String url){
-        if (url.startsWith("jdbc:pointbase"))
+        if (url.startsWith(LOCALHOST_URL_PREFIX))
             return true;
         else
             return false;
     }
     
     public boolean isRegisterable() {
-        if (null == AppServerinstallationDirectory || !AppServerinstallationDirectory.exists()) {
+        if (null == AppServerinstallationDirectory) {
+            //System.out.println("PDB is null;");
+            String instances[] = InstanceProperties.getInstanceList();
+            if (null == instances) {
+                // No hope here.
+                return false;
+            } else {
+                for (int i = 0; i < instances.length; i++) {
+                    if (instances[i].indexOf(SunURIManager.SUNSERVERSURI) > 0) {
+                        int end = instances[i].indexOf (']');
+                        if (end > 1) {
+                            File irf = new File(instances[i].substring(1,end));
+                            register(irf);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (null == AppServerinstallationDirectory)
+                return false;
+        }
+        if (!AppServerinstallationDirectory.exists()) {
             return false;
         }
         return true;
@@ -361,4 +398,25 @@ public class RegisterPointbase implements DatabaseRuntime {
             
         }
     }
+    
+    private static final String POINTBASE_URL_PREFIX = "jdbc:pointbase:";       //NOI18N
+    private static final String LOCALHOST_URL_PREFIX = 
+            POINTBASE_URL_PREFIX + "//localhost:";                              //NOI18N
+    private static final String SAMPLE_NAME = "sample";                         //NOI18N
+    private static final String SUN_APPSERV_SAMPLES_NAME = 
+            "sun-appserv-samples";                                              //NOI18N
+    private static final String DOT_DBN = ".dbn";                               //NOI18N 
+    private static final String SLASH = "/";                                    //NOI18N
+    
+    private int getPort(File databaseDir) throws IOException {
+        File iniFile = new File(databaseDir,"pointbase.ini");                   //NOI18N
+        
+        // get the port info
+        int port = 9092;
+        Properties iniProps = new Properties();
+        iniProps.load(new FileInputStream(iniFile));
+        port = Integer.parseInt(iniProps.getProperty("server.port", "9092"));   //NOI18N
+        return port;
+    }
 }
+

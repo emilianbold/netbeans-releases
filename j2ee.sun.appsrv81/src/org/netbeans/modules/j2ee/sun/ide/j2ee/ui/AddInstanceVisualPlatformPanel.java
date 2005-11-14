@@ -10,13 +10,16 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.ComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataListener;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -45,6 +48,23 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         type = AddDomainWizardIterator.DEFAULT;
         platformField.setText(defaultLoc.getAbsolutePath());
         registerDefault.setSelected(true);
+        instanceSelector.setModel(new ComboBoxModel() {
+            public void addListDataListener(ListDataListener listDataListener) {
+            }
+            public Object getElementAt(int i) {
+                return null;
+            }
+            public Object getSelectedItem() {
+                return null;
+            }
+            public int getSize() {
+                return 0;
+            }
+            public void removeListDataListener(ListDataListener listDataListener) {
+            }
+            public void setSelectedItem(Object object) {
+            }
+        });
     }
     
     Object getSelectedType() {
@@ -55,8 +75,43 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         return platformField.getText();
     }
     
+    void setDomainsList(Object[] domainsList) {
+        if (domainsList != null) { 
+            instanceSelector.setModel(new javax.swing.DefaultComboBoxModel(domainsList));
+        } else {
+            instanceSelector.setModel(new javax.swing.DefaultComboBoxModel());
+        }
+    }
+        
+    String getDomainDir() {
+        String tmp = (String) instanceSelector.getSelectedItem();
+        if (null == tmp)
+            return null;
+        int firstParen = tmp.lastIndexOf('(');
+        int lastParen = tmp.lastIndexOf(')');
+        if (firstParen < 0) {
+            ErrorManager.getDefault().log(ErrorManager.ERROR,
+                    NbBundle.getMessage(AddInstanceVisualPlatformPanel.class,
+                    "ERRMSG_PARSE_DOMAIN_DIR", tmp));
+            return null;
+        }
+        if (lastParen < 0) {
+            ErrorManager.getDefault().log(ErrorManager.ERROR,
+                    NbBundle.getMessage(AddInstanceVisualPlatformPanel.class,
+                    "ERRMSG_PARSE_DOMAIN_DIR", tmp));
+            return null;
+        }
+        if (lastParen < firstParen) {
+            ErrorManager.getDefault().log(ErrorManager.ERROR,
+                    NbBundle.getMessage(AddInstanceVisualPlatformPanel.class,
+                    "ERRMSG_PARSE_DOMAIN_DIR", tmp));
+            return null;
+        }
+        return tmp.substring(firstParen+1,lastParen);
+    }
+
     public String getName() {
-        return NbBundle.getMessage(AddInstanceVisualInstancePanel.class,
+        return NbBundle.getMessage(AddInstanceVisualPlatformPanel.class,
                 "StepName_EnterPlatformDirectory");                                // NOI18N
     }
 
@@ -160,17 +215,19 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         platformField = new javax.swing.JTextField();
         openDirectoryCooser = new javax.swing.JButton();
         registerDefault = new javax.swing.JRadioButton();
+        instanceSelector = new javax.swing.JComboBox();
         registerLocal = new javax.swing.JRadioButton();
         registerRemote = new javax.swing.JRadioButton();
         createPersonal = new javax.swing.JRadioButton();
         spacingHack = new javax.swing.JLabel();
+        instanceSelectorLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
         description.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_platformPanelDescription"));
         description.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
@@ -182,13 +239,16 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 6);
         add(platformFieldLabel, gridBagConstraints);
 
+        platformField.setColumns(21);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 6);
@@ -204,7 +264,7 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.insets = new java.awt.Insets(6, 7, 5, 0);
         add(openDirectoryCooser, gridBagConstraints);
@@ -224,11 +284,20 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 1, 5, 1);
         add(registerDefault, gridBagConstraints);
         registerDefault.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_registerDefault"));
+
+        instanceSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 11, 5, 0);
+        add(instanceSelector, gridBagConstraints);
 
         instanceTypeButtonGroup.add(registerLocal);
         registerLocal.setMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "MNM_registerLocal").charAt(0));
@@ -243,8 +312,8 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 0);
         add(registerLocal, gridBagConstraints);
@@ -263,8 +332,8 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 0);
         add(registerRemote, gridBagConstraints);
@@ -283,8 +352,8 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(createPersonal, gridBagConstraints);
@@ -294,11 +363,22 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         spacingHack.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.weighty = 1.0;
         add(spacingHack, gridBagConstraints);
 
-    }// </editor-fold>//GEN-END:initComponents
+        instanceSelectorLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("MNM_instanceSelector").charAt(0));
+        instanceSelectorLabel.setLabelFor(instanceSelector);
+        instanceSelectorLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_instanceSelectorLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(6, 23, 5, 6);
+        add(instanceSelectorLabel, gridBagConstraints);
+
+    }
+    // </editor-fold>//GEN-END:initComponents
 
     private void createPersonalItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_createPersonalItemStateChanged
         setSelectedType(AddDomainWizardIterator.PERSONAL,evt);
@@ -326,6 +406,8 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton createPersonal;
     private javax.swing.JLabel description;
+    private javax.swing.JComboBox instanceSelector;
+    private javax.swing.JLabel instanceSelectorLabel;
     private javax.swing.ButtonGroup instanceTypeButtonGroup;
     private javax.swing.JButton openDirectoryCooser;
     private javax.swing.JTextField platformField;

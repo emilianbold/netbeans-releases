@@ -83,7 +83,7 @@ public final class AddDomainWizardIterator implements
             new AddDomainPortsDefPanel();
     
     private WizardDescriptor.Panel[] defaultFlow = {
-        platformPanel, defaultPanel, unamePanel 
+        platformPanel, /*defaultPanel,*/ unamePanel 
     };
     
     private WizardDescriptor.Panel[] remoteFlow = {

@@ -27,7 +27,7 @@ import org.openide.util.NbBundle;
 /** Queries the user for the platform directory associated with the
  * instance they are registering.
  */
-class AddDomainPlatformPanel implements WizardDescriptor.Panel, 
+class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel, 
         ChangeListener {
     
     /**
@@ -73,6 +73,33 @@ class AddDomainPlatformPanel implements WizardDescriptor.Panel,
         boolean retVal = true;
         File location = new File(component.getInstallLocation());
         wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE, null);
+        if (!ServerLocationManager.isGoodAppServerLocation(location)) {
+            // not valid install directory
+            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE, 
+                    NbBundle.getMessage(AddDomainPlatformPanel.class, 
+                    "Msg_InValidInstall"));                                     // NOI18N
+            component.setDomainsList(new Object[0]);
+            return false;
+        } else {
+          
+            Object[] domainsList = getDomainList(Util.getRegisterableDefaultDomains(location));
+            component.setDomainsList(domainsList);
+        
+            //component.setDomainsList();
+            if (ServerLocationManager.isGlassFish(location)) {
+                String javaClassVersion = 
+                        System.getProperty("java.class.version");               // NOI18N
+                double jcv = Double.parseDouble(javaClassVersion);
+                if (jcv < 49.0) {
+                    // prevent ClassVersionUnsupportedError....
+                    wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE, 
+                            NbBundle.getMessage(AddDomainPlatformPanel.class, 
+                            "Msg_RequireJ2SE5"));                               // NOI18N
+                    return false;
+                }
+            } 
+            wiz.putProperty(AddDomainWizardIterator.PLATFORM_LOCATION,location);
+        }
         Object selectedType = component.getSelectedType();
         if (selectedType == AddDomainWizardIterator.DEFAULT) {
             File[] usableDomains = Util.getRegisterableDefaultDomains(location);
@@ -83,6 +110,21 @@ class AddDomainPlatformPanel implements WizardDescriptor.Panel,
                 retVal = false;
             }
             wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
+            String dirCandidate = component.getDomainDir();
+            if (null != dirCandidate) {
+            File domainDir = new File(dirCandidate);
+            // this should not happen. The previous page of the wizard should
+            // prevent this panel from appearing.
+            if (!Util.rootOfUsableDomain(domainDir)) {
+                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(AddDomainDefaultDomainPanel.class,
+                        "Msg_InValidDomainDir",                                     //NOI18N
+                        component.getDomainDir()));
+                retVal = false;
+            }
+            //File platformDir = (File) wiz.getProperty(AddDomainWizardIterator.PLATFORM_LOCATION);
+            Util.fillDescriptorFromDomainXml(wiz, domainDir);
+            }
         } else if (selectedType == AddDomainWizardIterator.REMOTE) {
             wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
             wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION,"");
@@ -97,30 +139,29 @@ class AddDomainPlatformPanel implements WizardDescriptor.Panel,
                     "Msg_UnsupportedType"));                                    //NOI18N
             retVal = false;
         }
-        if (!ServerLocationManager.isGoodAppServerLocation(location)) {
-            // not valid install directory
-            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE, 
-                    NbBundle.getMessage(AddDomainPlatformPanel.class, 
-                    "Msg_InValidInstall"));                                     // NOI18N
-            retVal = false;
-        } else {
-            if (ServerLocationManager.isGlassFish(location)) {
-                String javaClassVersion = 
-                        System.getProperty("java.class.version");               // NOI18N
-                double jcv = Double.parseDouble(javaClassVersion);
-                if (jcv < 49.0) {
-                    // prevent ClassVersionUnsupportedError....
-                    wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE, 
-                            NbBundle.getMessage(AddDomainPlatformPanel.class, 
-                            "Msg_RequireJ2SE5"));                               // NOI18N
-                    retVal = false;
-                }
-            } 
-            wiz.putProperty(AddDomainWizardIterator.PLATFORM_LOCATION,location);
-        }
         return retVal;
     }
     
+    private Object[] getDomainList(File[] dirs){
+        return getServerList(dirs);
+    }
+    
+    private Object[] getServerList(File[] dirs){
+        java.util.List xmlList = new java.util.ArrayList();
+        File platformDir = (File) wiz.getProperty(AddDomainWizardIterator.PLATFORM_LOCATION);
+        for(int i=0; platformDir != null && i<dirs.length; i++){
+            String hostPort = Util.getHostPort(dirs[i],platformDir);
+            if(hostPort != null)
+                xmlList.add(
+                        NbBundle.getMessage(AddDomainDefaultDomainPanel.class,
+                        "LBL_domainListEntry", new Object[] {hostPort,dirs[i].toString()}));
+        }//for
+        if(xmlList != null)
+            return xmlList.toArray();
+        else
+            return null;
+    }
+
     // Event Handling
     private final Set/*<ChangeListener>*/ listeners = new HashSet/*<ChangeListener>*/(1);
     public final void addChangeListener(ChangeListener l) {
@@ -164,5 +205,10 @@ class AddDomainPlatformPanel implements WizardDescriptor.Panel,
         wiz.putProperty(AddDomainWizardIterator.TYPE, component.getSelectedType());
         fireChangeEvent(); //e);
     }    
+
+    public boolean isFinishPanel() {
+        Object selectedType = component.getSelectedType();
+        return selectedType == AddDomainWizardIterator.DEFAULT;
+    }
 }
 
