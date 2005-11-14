@@ -39,16 +39,16 @@ final class Manager {
     /** */
     //private List/*<Report>*/ displayedReports;
     /**
-     * dummy object for use in the weak set of JUnit sessions
-     *
-     * @see  #junitSessions
+     * registry of Ant sessions.
+     * Each entry has a value of <code>Integer</code> whose value is
+     * holds information about type of the session
+     * (see {@link AntSessionInfo#sessionType}).
+     * If the value is negative (opposite to the <code>AntSessionInfo</code>
+     * constant), it means that method {@link #reportStarted} method
+     * has not yet been called for the session.
      */
-    private final Object dummy = new Object();
-    /**
-     * this map serves as a weak set of running JUnit sessions.
-     * All its keys have assigned the same value - the {@link #dummy} object.
-     */
-    private final Map junitSessions = new WeakHashMap(5);
+    private final Map/*<AntSession, Integer>*/ junitSessions
+            = new WeakHashMap(5);
 
     /**
      */
@@ -61,7 +61,8 @@ final class Manager {
     
     /**
      */
-    synchronized void taskStarted(final AntSession session) {
+    synchronized void taskStarted(final AntSession session,
+                                  final int sessionType) {
         /*
         if ((pendingSessions != null) && pendingSessions.contains(session)) {
             return;
@@ -72,19 +73,22 @@ final class Manager {
         }
          */
         
-        if (junitSessions.put(session, Boolean.FALSE) == null) {
-            sessionStarted(session);
+        if (junitSessions.put(session, new Integer(-sessionType)) == null) {
+            sessionStarted(session, sessionType);
         }
     }
     
     /**
      */
-    private void sessionStarted(final AntSession session) {
-        Mutex.EVENT.writeAccess(new Runnable() {
-            public void run() {
-                ResultWindow.getInstance().displayTestRunning(true);
-            }
-        });
+    private void sessionStarted(final AntSession session,
+                                final int sessionType) {
+        if (sessionType == AntSessionInfo.SESSION_TYPE_TEST) {
+            Mutex.EVENT.writeAccess(new Runnable() {
+                public void run() {
+                    ResultWindow.getInstance().displayTestRunning(true);
+                }
+            });
+        }
         
         /*
          * This method is called only from method taskStarted(AntSession)
@@ -144,9 +148,20 @@ final class Manager {
     
     /**
      */
-    void reportStarted(final AntSession session) {
+    void reportStarted(final AntSession session,
+                       final int sessionType) {
         
-        if (junitSessions.put(session, Boolean.TRUE) == Boolean.TRUE) {
+        Object oldValue = junitSessions.put(session, new Integer(sessionType));
+        if ((oldValue != null) && (((Integer) oldValue).intValue() > 0)) {
+            /* This is not the first report in the given session. */
+            return;
+        }
+        
+        if (sessionType != AntSessionInfo.SESSION_TYPE_TEST) {
+            /*
+             * For non-test sessions, the result window is displayed
+             * only after the session finishes.
+             */
             return;
         }
         
@@ -183,10 +198,14 @@ final class Manager {
      */
     synchronized void sessionFinished(final AntSession session,
                                       final Report report) {
-        if (junitSessions.remove(session) == null) {
+        Object o = junitSessions.remove(session);
+        assert (o == null) || (o instanceof Integer);
+        if (o == null) {
             /* This session did not run the "junit" task. */
             return;
         }
+        
+        final int sessionType = Math.abs(((Integer) o).intValue());
         
         if (listener != null) {
             Mutex.EVENT.writeAccess(new Runnable() {
@@ -234,7 +253,10 @@ final class Manager {
                 }
                  */
                 //win.displayReport(index, report);
-                win.displayReport(0, report, false);
+                win.displayReport(
+                        0,
+                        report,
+                        sessionType != AntSessionInfo.SESSION_TYPE_TEST);
             }
         });
         /* ... and update information about displayed and pending sessions: */

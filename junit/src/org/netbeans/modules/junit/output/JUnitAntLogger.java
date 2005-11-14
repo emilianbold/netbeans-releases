@@ -35,10 +35,10 @@ public final class JUnitAntLogger extends AntLogger {
         AntEvent.LOG_INFO
     };
     
-    /** Ant task names we will pay attention to */
-    private static final String[] TASKS_OF_INTEREST = {
-        "junit"                                                         //NOI18N
-    };
+    /** */
+    private static final String[] JUNIT_STRARR = {"junit"};             //NOI18N
+    /** */
+    private static final String[] JAVA_STRARR = {"java"};               //NOI18N
     
     /** default constructor for lookup */
     public JUnitAntLogger() { }
@@ -52,7 +52,60 @@ public final class JUnitAntLogger extends AntLogger {
     }
     
     public String[] interestedInTasks(AntSession session) {
-        return TASKS_OF_INTEREST;
+        final int sessionType = getSessionType(session);
+        return (sessionType == AntSessionInfo.SESSION_TYPE_TEST)
+               ? JUNIT_STRARR  //{"junit"}
+               : (sessionType == AntSessionInfo.SESSION_TYPE_DEBUG_TEST)
+                 ? JAVA_STRARR //{"java"}
+                 : AntLogger.NO_TASKS;
+    }
+    
+    /**
+     * Detects type of the given Ant session.
+     * Recognized types are:
+     * <ul>
+     *     <li>test session</li>
+     *     <li>test debugging session</li>
+     * </ul>
+     * Session types are recognized by the sessions' originating targets.
+     *
+     * @param  session  session whose type is to be recognized
+     * @return  <code>SESSION_TYPE_UNKNOWN</code> if the session type
+     *                                                            is unknown,
+     *          <code>SESSION_TYPE_OTHER</code> if the session is a test
+     *                                                            session,<br />
+     *          <code>SESSION_TYPE_DEBUG_TEST</code> if the session is a test
+     *                                                  debugging session,<br />
+     *          <code>SESSION_TYPE_OTHER</code> otherwise
+     * @see  AntSession#getOriginatingTargets()
+     */
+    private static int detectSessionType(final AntSession session) {
+        final String[] originatingTargets = session.getOriginatingTargets();
+        if (originatingTargets.length == 0) {
+            return AntSessionInfo.SESSION_TYPE_UNKNOWN;
+        }
+        if (originatingTargets.length == 1) {
+            final String origTarget = originatingTargets[0];
+            if (origTarget.startsWith("test")                           //NOI18N
+                && ((origTarget.length() == 4)
+                    || !Character.isLetter(origTarget.charAt(4)))) {
+                /*
+                 * Target names:
+                 *    "test", "test-single"  (J2SE projects, NB module projects)
+                 */
+                return AntSessionInfo.SESSION_TYPE_TEST;
+            } else if (origTarget.startsWith("debug-test")              //NOI18N
+                       && ((origTarget.length() == 10)
+                           || !Character.isLetter(origTarget.charAt(10)))) {
+                /*
+                 * Target names:
+                 *    "debug-test"           (J2SE projects)
+                 *    "debug-test-single-nb" (NB module projects)
+                 */
+                return AntSessionInfo.SESSION_TYPE_DEBUG_TEST;
+            }
+        }
+        return AntSessionInfo.SESSION_TYPE_OTHER;
     }
     
     public boolean interestedInScript(File script, AntSession session) {
@@ -66,16 +119,19 @@ public final class JUnitAntLogger extends AntLogger {
     /**
      */
     public void messageLogged(final AntEvent event) {
-        if (getOutputReader(event.getSession())
-                .messageLogged(event.getMessage())) {
-            Manager.getInstance().reportStarted(event.getSession());
+        final AntSession session = event.getSession();
+        if (getOutputReader(session).messageLogged(event.getMessage())) {
+            Manager.getInstance().reportStarted(session,
+                                                getSessionType(session));
         }
     }
     
     /**
      */
     public void taskStarted(final AntEvent event) {
-        Manager.getInstance().taskStarted(event.getSession());
+        final AntSession session = event.getSession();
+        Manager.getInstance().taskStarted(session,
+                                          getSessionType(session));
     }
     
     /**
@@ -83,11 +139,20 @@ public final class JUnitAntLogger extends AntLogger {
     public void buildFinished(final AntEvent event) {
         final AntSession session = event.getSession();
         final JUnitOutputReader reader = getOutputReader(session);
-        session.putCustomData(this, null);
         
         reader.finishReport(event.getException());
         //PENDING: status - may be shown in the output window
         Manager.getInstance().sessionFinished(session, reader.getReport());
+        
+        session.putCustomData(this, null);
+    }
+    
+    /**
+     */
+    private int getSessionType(AntSession session) {
+        AntSessionInfo sessionInfo = getSessionInfo(session);
+        return (sessionInfo != null) ? sessionInfo.sessionType
+                                     : AntSessionInfo.SESSION_TYPE_UNKNOWN;
     }
     
     /**
@@ -97,17 +162,29 @@ public final class JUnitAntLogger extends AntLogger {
      * @return  output reader for the session
      */
     private JUnitOutputReader getOutputReader(AntSession session) {
+        return getSessionInfo(session).outputReader;
+    }
+    
+    /**
+     */
+    private AntSessionInfo getSessionInfo(AntSession session) {
         Object o = session.getCustomData(this);
-        assert (o == null) || (o instanceof JUnitOutputReader);
+        assert (o == null) || (o instanceof AntSessionInfo);
         
-        JUnitOutputReader outputReader;
-        if (o == null) {
-            outputReader = new JUnitOutputReader(session);
-            session.putCustomData(this, outputReader);
+        AntSessionInfo sessionInfo;
+        if (o != null) {
+            sessionInfo = (AntSessionInfo) o;
         } else {
-            outputReader = (JUnitOutputReader) o;
+            int sessionType = detectSessionType(session);
+            if (sessionType == AntSessionInfo.SESSION_TYPE_UNKNOWN) {
+                sessionInfo = null;
+            } else {
+                sessionInfo = new AntSessionInfo(new JUnitOutputReader(session),
+                                                 detectSessionType(session));
+                session.putCustomData(this, sessionInfo);
+            }
         }
-        return outputReader;
+        return sessionInfo;
     }
     
 }
