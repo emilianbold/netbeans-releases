@@ -122,6 +122,16 @@ public class MozillaBrowser extends ExtWebBrowser {
                 if (f.exists()) {
                     prg = f.getAbsolutePath();
                 }
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+                java.io.File f = new java.io.File ("/usr/sfw/lib/mozilla/mozilla"); // NOI18N
+                if (f.exists()) {
+                    prg = f.getAbsolutePath();
+                } else {
+                    f = new java.io.File ("/opt/csw/bin/mozilla"); // NOI18N
+                    if (f.exists()) {
+                        prg = f.getAbsolutePath();
+                    }
+                }
             }
             retValue = new NbProcessDescriptor(
                 prg,

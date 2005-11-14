@@ -122,7 +122,18 @@ public class FirefoxBrowser extends ExtWebBrowser {
                 if (f.exists()) {
                     prg = f.getAbsolutePath();
                 }
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+                java.io.File f = new java.io.File ("/usr/sfw/lib/firefox/firefox"); // NOI18N
+                if (f.exists()) {
+                    prg = f.getAbsolutePath();
+                } else {
+                    f = new java.io.File ("/opt/csw/bin/firefox"); // NOI18N
+                    if (f.exists()) {
+                        prg = f.getAbsolutePath();
+                    }
+                }
             }
+            
             retValue = new NbProcessDescriptor(
                 prg,
                 "-remote \"openURL({" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "})\"", // NOI18N
