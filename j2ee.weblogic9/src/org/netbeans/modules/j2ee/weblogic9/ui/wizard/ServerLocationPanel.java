@@ -180,6 +180,7 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         add(locationLabel, gridBagConstraints);
         
         // add server installation directory field
+        locationField.setColumns(15);
         locationField.addKeyListener(new LocationKeyListener());
         String loc = WLPluginProperties.getInstance().getInstallLocation();
         if (loc != null) { // NOI18N

@@ -197,6 +197,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         domainLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain")); //NOI18N
         domainPathLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_DomainPath"));//NOI18N
         domainPathField = new JTextField();
+        domainPathField.setColumns(20);
         domainPathField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_DomainPath"));
         domainPathField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_DomainPath"));
         
@@ -218,6 +219,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         
         hostLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Host"));//NOI18N
         hostField = new JTextField();
+        hostField.setColumns(20);
         hostField.setEditable(false);
         hostField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Host"));
         hostField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Host"));
@@ -227,6 +229,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         
         portLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Port"));//NOI18N
         portField = new JTextField();
+        portField.setColumns(20);
         portField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Port"));
         portField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Port"));
         //portField.setEditable(false);

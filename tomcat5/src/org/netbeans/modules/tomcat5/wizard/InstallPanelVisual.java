@@ -163,7 +163,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
         jLabelBaseDir.getAccessibleContext().setAccessibleName(NbBundle.getMessage(InstallPanelVisual.class, "A11Y_NAME_labelBaseDir"));
         jLabelBaseDir.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InstallPanelVisual.class, "A11Y_DESC_labelBaseDir"));
 
-        jTextFieldHomeDir.setColumns(20);
+        jTextFieldHomeDir.setColumns(15);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -175,6 +175,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
         jTextFieldHomeDir.getAccessibleContext().setAccessibleName(NbBundle.getMessage(InstallPanelVisual.class, "A11Y_NAME_homeDir"));
         jTextFieldHomeDir.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InstallPanelVisual.class, "A11Y_DESC_homeDir"));
 
+        jTextFieldBaseDir.setColumns(15);
         jTextFieldBaseDir.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -270,7 +271,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jTextFieldUsername.setColumns(20);
+        jTextFieldUsername.setColumns(15);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -301,7 +302,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jTextFieldPassword.setColumns(20);
+        jTextFieldPassword.setColumns(15);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;

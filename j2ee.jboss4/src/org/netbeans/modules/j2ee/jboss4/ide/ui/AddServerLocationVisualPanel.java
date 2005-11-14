@@ -151,6 +151,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         add(jLabel1, gridBagConstraints);
+        locationTextField.setColumns(15);
         locationTextField.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocation"));
         locationTextField.getAccessibleContext().setAccessibleName(
