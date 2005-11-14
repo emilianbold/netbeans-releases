@@ -251,9 +251,11 @@ public final class MultiViewPeer  {
                 model.markAsShown(el);
             }
         }
-        
         if (!calledFromComponentOpened) {
-            if (peer.isOpened()) {
+            //#68199
+            // replace isOpened() with isVisible() because some multiview don't have to be directly referenced form the
+            // winsys codebase
+            if (peer.isVisible()) {
                 el.componentShowing();
             }
         // should we really set the stuff only when not called from componentOpened()? maybe it's better to call it twice sometimes.
@@ -262,7 +264,7 @@ public final class MultiViewPeer  {
             delegatingMap.setDelegateMap(el.getVisualRepresentation().getActionMap());
             ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
             
-            if (peer.isOpened()) {
+            if (peer.isVisible()) {
                 tabs.setInnerToolBar(el.getToolbarRepresentation());
                 tabs.setToolbarBarVisible(isToolbarVisible());
             }
