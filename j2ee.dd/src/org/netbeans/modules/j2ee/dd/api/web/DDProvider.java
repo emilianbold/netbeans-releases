@@ -17,6 +17,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.j2ee.dd.impl.web.WebAppProxy;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
 import org.openide.filesystems.*;
@@ -275,7 +279,8 @@ public final class DDProvider {
             throws org.xml.sax.SAXException, java.io.IOException {
         DDProvider.ErrorHandler errorHandler = new DDProvider.ErrorHandler();
         try {
-            XMLReader reader = new org.apache.xerces.parsers.SAXParser();
+            SAXParser parser = createSAXParserFactory().newSAXParser();
+            XMLReader reader = parser.getXMLReader();
             reader.setErrorHandler(errorHandler);
             reader.setEntityResolver(DDProvider.DDResolver.getInstance());
             reader.setFeature("http://apache.org/xml/features/validation/schema", true); // NOI18N
@@ -284,10 +289,29 @@ public final class DDProvider {
             reader.parse(new InputSource(fo.getInputStream()));
             SAXParseException error = errorHandler.getError();
             if (error!=null) return error;
+        } catch (ParserConfigurationException ex) {
+            throw new org.xml.sax.SAXException(ex.getMessage());
         } catch (SAXException ex) {
             throw ex;
         }
         return null;
+    }
+    
+    /** Method that retrieves SAXParserFactory to get the parser prepared to validate against XML schema
+     */
+    private static SAXParserFactory createSAXParserFactory() throws ParserConfigurationException {
+        try {
+            SAXParserFactory fact = SAXParserFactory.newInstance();
+            if (fact!=null) {
+                try {
+                    fact.getClass().getMethod("getSchema", new Class[]{}); //NOI18N
+                    return fact;
+                } catch (NoSuchMethodException ex) {}
+            }
+            return (SAXParserFactory) Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance(); // NOI18N
+        } catch (Exception ex) {
+            throw new ParserConfigurationException(ex.getMessage());
+        }
     }
 
     private class FCA extends FileChangeAdapter {

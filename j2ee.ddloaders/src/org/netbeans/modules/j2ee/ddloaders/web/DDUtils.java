@@ -13,6 +13,9 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.schema2beans.BaseBean;
@@ -191,7 +194,8 @@ public class DDUtils {
             throws org.xml.sax.SAXException, java.io.IOException {
         ErrorHandler errorHandler = new ErrorHandler();
         try {
-            XMLReader reader = new org.apache.xerces.parsers.SAXParser();
+            SAXParser parser = createSAXParserFactory().newSAXParser();
+            XMLReader reader = parser.getXMLReader();
             reader.setErrorHandler(errorHandler);
             reader.setEntityResolver(DDResolver.getInstance());
             reader.setFeature("http://apache.org/xml/features/validation/schema", true); // NOI18N
@@ -200,9 +204,28 @@ public class DDUtils {
             reader.parse(is);
             SAXParseException error = errorHandler.getError();
             if (error!=null) return error;
+        } catch (ParserConfigurationException ex) {
+            throw new SAXException(ex.getMessage());
         } catch (SAXException ex) {
             throw ex;
         }
         return null;
+    }
+    
+    /** Method that retrieves SAXParserFactory to get the parser prepared to validate against XML schema
+     */
+    private static SAXParserFactory createSAXParserFactory() throws ParserConfigurationException {
+        try {
+            SAXParserFactory fact = SAXParserFactory.newInstance();
+            if (fact!=null) {
+                try {
+                    fact.getClass().getMethod("getSchema", new Class[]{}); //NOI18N
+                    return fact;
+                } catch (NoSuchMethodException ex) {}
+            }
+            return (SAXParserFactory) Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance(); // NOI18N
+        } catch (Exception ex) {
+            throw new ParserConfigurationException(ex.getMessage());
+        }
     }
 }
