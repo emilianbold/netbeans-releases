@@ -35,7 +35,7 @@ public final class TapPanel extends javax.swing.JPanel {
     public static final String PROP_ORIENTATION = "orientation"; //NOI18N
     private int orientation = UP;
     private boolean armed = false;
-    private boolean expanded = true;
+    private static boolean expanded = true;
     private int minimumHeight = 8;
 
     /**
