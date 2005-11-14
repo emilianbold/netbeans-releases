@@ -66,8 +66,6 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
         initComponents ();
         prevButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif", true)));
         nextButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif", true)));
-        prevButton.setMnemonic (org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffComponent.prevButton.mnemonic").charAt (0));
-        nextButton.setMnemonic (org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffComponent.nextButton.mnemonic").charAt (0));
         //setTitle(org.openide.util.NbBundle.getBundle(DiffComponent.class).getString("DiffComponent.title"));
         setName(org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffComponent.title"));
         //HelpCtx.setHelpIDString (getRootPane (), DiffComponent.class.getName ());
@@ -88,6 +86,27 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
         ui1.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
         EditorUI ui2 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane2);
         ui2.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+
+        JComponent parent = (JComponent) getParent();
+
+        Action nextAction = new ButtonAction(nextButton);
+        Action prevAction = new ButtonAction(prevButton);
+        parent.getActionMap().put("jumpNext", nextAction);  // NOI18N
+        parent.getActionMap().put("jumpPrev", prevAction); // NOI18N
+    }
+
+    /** Reverse mapping button => action */
+    private static class ButtonAction extends AbstractAction {
+
+        final JButton button;
+
+        public ButtonAction(JButton button) {
+            this.button = button;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            button.doClick();
+        }
     }
 
     /** This method is called from within the constructor to
