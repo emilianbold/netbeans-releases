@@ -255,13 +255,18 @@ public final class MultiViewPeer  {
         if (!calledFromComponentOpened) {
             if (peer.isOpened()) {
                 el.componentShowing();
-                tabs.setInnerToolBar(el.getToolbarRepresentation());                
             }
         // should we really set the stuff only when not called from componentOpened()? maybe it's better to call it twice sometimes.
             // if we don't call it here for opened but not showing component, then the map, lookup and nodes will not be initialized properly.
             // is it a problem?
             delegatingMap.setDelegateMap(el.getVisualRepresentation().getActionMap());
             ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
+            
+            if (peer.isOpened()) {
+                tabs.setInnerToolBar(el.getToolbarRepresentation());
+                tabs.setToolbarBarVisible(isToolbarVisible());
+            }
+            
         }
     }
     
@@ -422,10 +427,12 @@ public final class MultiViewPeer  {
 
     
     JEditorPane getEditorPane() {
-        MultiViewElement el = model.getActiveElement();
-        if (el.getVisualRepresentation() instanceof Pane) {
-            Pane pane = (Pane)el.getVisualRepresentation();
-            return pane.getEditorPane();
+        if (model != null) {
+            MultiViewElement el = model.getActiveElement();
+            if (el != null && el.getVisualRepresentation() instanceof Pane) {
+                Pane pane = (Pane)el.getVisualRepresentation();
+                return pane.getEditorPane();
+            }
         }
         return null;
     }
@@ -547,11 +554,15 @@ public final class MultiViewPeer  {
     }
     
     boolean isToolbarVisible() {
-        
-        Mode md = /* #68122 */ model != null ? WindowManager.getDefault().findMode(peer) : null;
-        if (md != null && !"editor".equals(md.getName())) {
-            // now this condition is not really sufficient, but anyway..
-            // how to check if the mode is a document area mode or not?
+        //TODO need some way to restrict the validity of this swicth only to multiviews that contain
+        // sources in some form..
+        JEditorPane pane = getEditorPane();
+        if (pane != null) {
+              Object obj = pane.getActionMap().get("toggle-toolbar");
+              if (obj == null) {
+                  return true;
+              }
+        } else {
             return true;
         }
         SharedClassObject option = null;
