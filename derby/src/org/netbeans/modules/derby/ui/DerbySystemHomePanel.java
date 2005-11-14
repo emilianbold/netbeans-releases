@@ -141,6 +141,7 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
         infoTextArea.setRows(5);
         infoTextArea.setText(org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_DerbySystemHomeInfo"));
         infoTextArea.setWrapStyleWord(true);
+        infoTextArea.setFocusable(false);
         infoTextArea.setOpaque(false);
         infoScrollPane.setViewportView(infoTextArea);
 

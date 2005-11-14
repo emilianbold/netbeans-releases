@@ -114,6 +114,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.derby.bundled</friend>
+                <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
                 <package>org.netbeans.modules.derby.spi.support</package>
             </friend-packages>
         </data>
