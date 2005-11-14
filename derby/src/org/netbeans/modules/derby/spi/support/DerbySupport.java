@@ -26,7 +26,9 @@ public final class DerbySupport {
     }
     
     /**
-     * Sets the location of the Derby jars and registers the Derby drivers.
+     * Sets the location of the Derby installation and registers the Derby drivers.
+     * The Derby installation must have a lib subdirectory in which the Derby JAR
+     * files are located.
      *
      * @param location the jars locations. This must be an existing directory.
      */
@@ -36,16 +38,23 @@ public final class DerbySupport {
     
     /**
      * Returns the location of the Derby jars. Never returns null,
-     * instead returns an empty string if the location is unknown.
+     * instead it returns an empty string if the location is unknown.
      */
     public static String getLocation() {
         return DerbyOptions.getDefault().getLocation();
     }
     
+    /** 
+     * Sets the Derby system home, that is, the directory 
+     * where the Derby databases are located.
+     */
     public static void setSystemHome(String systemHome) {
         DerbyOptions.getDefault().setSystemHome(systemHome);
     }
     
+    /** 
+     * Returns the Derby system home.
+     */
     public static String getSystemHome() {
         return DerbyOptions.getDefault().getSystemHome();
     }
