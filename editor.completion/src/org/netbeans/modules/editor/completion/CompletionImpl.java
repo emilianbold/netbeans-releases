@@ -154,10 +154,14 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         Registry.addChangeListener(this);
         completionAutoPopupTimer = new Timer(0, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (completionResult != null && !completionResult.isQueryInvoked()) {
+                Result localCompletionResult;
+                synchronized (this) {
+                    localCompletionResult = completionResult;
+                }
+                if (localCompletionResult != null && !localCompletionResult.isQueryInvoked()) {
                     pleaseWaitTimer.restart();
-                    queryResultSets(completionResult.getResultSets());
-                    completionResult.queryInvoked();
+                    queryResultSets(localCompletionResult.getResultSets());
+                    localCompletionResult.queryInvoked();
                 }
             }
         });
@@ -346,6 +350,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 getActiveComponent().removeFocusListener(this);
                 getActiveComponent().removeMouseListener(this);
             }
+            if (component != null) {
 // DIRTY HACK: Uncomment this after rewriting all modules to use the new Completion API.
 //            if (activeProviders != null) {
                 component.addCaretListener(this);
@@ -354,7 +359,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 component.addMouseListener(this);
 // DIRTY HACK: Uncomment this after rewriting all modules to use the new Completion API.
 //            }
-            activeComponent = new WeakReference(component);
+            }
+            activeComponent = component != null ? new WeakReference(component) : null;
             CompletionSettings.INSTANCE.notifyEditorComponentChange(getActiveComponent());
             layout.setEditorComponent(getActiveComponent());
             installKeybindings();
