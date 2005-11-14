@@ -190,7 +190,7 @@ public class NbEditorUI extends ExtEditorUI {
         if (fcs == null || es == null || mimeType == null){
             return super.createColoringMap();
         }
-        synchronized (mime2Coloring){
+        synchronized (Settings.class){
             Map cm = (Map)mime2Coloring.get(mimeType);
             if (cm != null){
                 return cm;
@@ -737,7 +737,7 @@ public class NbEditorUI extends ExtEditorUI {
         }
 
         public void resultChanged(LookupEvent ev) {
-            synchronized (mime2Coloring){
+            synchronized (Settings.class){
                 mime2Coloring.remove(mimeType);
             }
             settingsChangeImpl(null);
