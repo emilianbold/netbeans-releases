@@ -25,7 +25,7 @@ Typically, there is at least one JDBC resource for each database accessed by an 
 domain. It is possible to have more than one JDBC resource for a database. You can create a JDBC resource 
 manually in a file tailored to your database server, provided in the JBoss installation directory.
 
-<p><b>To set up a data source on the JBoss application server:</b>
+<p><b>To set up a data source on the JBoss Application Server:</b>
 <ol>
 
 <li>Open the Favorites window (Ctrl-3).
@@ -75,7 +75,7 @@ JBoss installation directory's <tt>docs/examples/jca</tt> folder.
   &lt;res-sharing-scope&gt;<b>Shareable</b>&lt;/res-sharing-scope&gt;
 &lt;/resource-ref&gt;</pre>
    </ol>
-<p><b>To prepare to use a data source on the JBoss application server:</b>
+<p><b>To prepare to use a data source on the JBoss Application Server:</b>
 <ol>
 	<li><a href="registering_app_server_jboss.html">Register</a> the JBoss Application Server 4.0.3.
 	
@@ -83,7 +83,7 @@ JBoss installation directory's <tt>docs/examples/jca</tt> folder.
    <li>Set the JBoss port number in its <tt>server.xml</tt> file. By default, the port number is 8080.
     If you are using the <tt>default</tt> domain,
    the <tt>server.xml</tt> file is found here:
-   <pre>\server\default\deploy\jbossweb-tomcat50.sar\server.xml</pre>
+   <pre>\server\default\deploy\jbossweb-tomcat55.sar\server.xml</pre>
    <li>Create a web application and select JBoss Application Server 4.0.3 as the
 <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/deploy/deploy_changeserver.html">target server</a>.
 <li>Access the data source in, for example, a <a href="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html">JSP page.</li></ol>

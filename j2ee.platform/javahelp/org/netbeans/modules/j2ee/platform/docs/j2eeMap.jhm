@@ -301,7 +301,11 @@
 		<mapID target="management_console_app_server_jboss" url="server/jboss/management_console_app_server_jboss.html" />
 		<mapID target="webservice_app_server_jboss" url="server/jboss/webservice_app_server_jboss.html" />
 		<mapID target="webserviceclient_app_server_jboss" url="server/jboss/webserviceclient_app_server_jboss.html" />
-    	<mapID target="registering_app_server_weblogic" url="server/registering_app_server_weblogic.html" />
+		<mapID target="j2eeplugins_registering_app_server_jboss_location" url="server/jboss/jboss_location_csh.html" />
+		<mapID target="j2eeplugins_registering_app_server_jboss_properties" url="server/jboss/jboss_properties_csh.html" />
+	<mapID target="registering_app_server_weblogic" url="server/weblogic/registering_app_server_weblogic.html" />
+		<mapID target="j2eeplugins_registering_app_server_weblogic_location" url="server/weblogic/weblogic_location_csh.html" />
+		<mapID target="j2eeplugins_registering_app_server_weblogic_properties" url="server/weblogic/weblogic_properties_csh.html" />
 
 <mapID target="nodes_server_registry_node_html" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
 	

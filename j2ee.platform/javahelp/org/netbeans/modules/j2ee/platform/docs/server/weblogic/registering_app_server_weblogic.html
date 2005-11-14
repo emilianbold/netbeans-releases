@@ -5,14 +5,14 @@
 -->
 <html>
 <head>
-<title>Registering a JBoss Application Server</title>
-<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+<title>Registering a BEA WebLogic Server</title>
+<link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>Registering a JBoss Application Server</h2>
+<h2>Registering a BEA WebLogic Server</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>Before you can start developing and deploying applications to an application server, you must register your application server with the IDE. </p>
-<p><b>To register an instance of a JBoss Application Server:</b></p>
+<p><b>To register an instance of a BEA WebLogic server:</b></p>
 <ol>
 <li>Choose Tools &gt; Server Manager, and in the Server Manager, click Add Server.
 <ul class="note">
@@ -34,19 +34,34 @@ This name is used to identify the server in the IDE.</li>
 </ul>
 </li>
 <li>Click Next.</li>
-<li>In the Instance Properties pane, from the Domain drop-down list, select the JBoss Application Server domain you want to use for this server instance.<br>
-The IDE automatically updates the Domain path field.</li>
+<li>To define a local server instance, do the following:
+<ol type="a">
+<li>In the Instance Properties pane, from the Local/Remote drop-down list, select Local.</li>
+<li>From the Local instances drop-down list, select a server instance.<br>
+When you select a server instance, the IDE updates the Domain path, Host, and Port fields.</li>
+<li>Fill in the Username and Password fields.</li>
+</ol></li>
+<li>To define a remote server instance, do the following:
+<ol type="a">
+<li>In the Instance Properties pane, from the Local/Remote drop-down list, select Remote.</li>
+<li>Define the location of the server in the Host and Port fields.</li>
+<li>Fill in the Username and Password fields.</li>
+</ol></li>
 <li>Click Finish.</li>
 <li>If you started the Add Server Instance wizard from the Server Manager, click Close in the Server Manager dialog box.<br>
 The IDE displays a server node for your application server in the Runtime window under the Servers node.</li>
 </ol>
-<dl> 
-  <dt><a name="seealso">See Also</a></dt>
-  <dd><a href="jboss_process.html">Working with the JBoss Application Server</a></dd>
-  <dd><a href="jboss_quickref.html">JBoss Application Server Tasks: Quick Reference</a></dd>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">Registering 
+    the Sun Java System Application Server</a></dd>
+  <dd><a href="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_addinstall.html">Registering 
+    an External Tomcat Web Server</a></dd>
+  <dd><a href="registering_app_server_jboss.html">Registering a JBoss Application 
+    Server</a></dd>
 </dl>
 <hr>
-<small><a href="../../credits.html">Legal Notices</a></small>
+<small><a href="../credits.html">Legal Notices</a></small>
 <table border="0" cellpadding="50">
 <tr><td>&nbsp;</td></tr>
 </table>
