@@ -58,6 +58,9 @@ import org.openide.NotifyDescriptor;
  */
 public class RegisterDerby implements DatabaseRuntime {
     
+    // XXX this class does too much. Should maybe be split into 
+    // DatabaseRuntimeImpl and the rest.
+    
     private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(RegisterDerby.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
     
@@ -199,7 +202,8 @@ public class RegisterDerby implements DatabaseRuntime {
         try {
             Driver driver = getDerbyNetDriver();
             Properties props = new Properties();
-            String url = "jdbc:derby://localhost:" + getPort() + "/" + location; // NOI18N
+            
+            String url = "jdbc:derby://localhost:" + getPort() + "/" + escapeDatabaseLocation(location); // NOI18N
             String urlForCreation = url + ";create=true"; // NOI18N
             Connection connection = driver.connect(urlForCreation, props);
             connection.close();
@@ -217,6 +221,18 @@ public class RegisterDerby implements DatabaseRuntime {
         }
     }
     
+    
+    private static String escapeDatabaseLocation(File location) {
+        assert location.getPath().indexOf(File.separatorChar) < 0;
+        String absoluteName = location.toURI().getRawPath();
+        int slash = absoluteName.lastIndexOf('/');
+        if (slash >= 0 && slash < absoluteName.length() - 1) {
+            return absoluteName.substring(slash + 1);
+        } else {
+            return location.toString();
+        }
+    }
+            
     private String getDerbySystemHome() {
         // return System.getProperty("netbeans.user") + File.separator + "derby";
         return DerbyOptions.getDefault().getSystemHome();

@@ -78,9 +78,15 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
         if (databaseName.length() <= 0) { // NOI18N
             error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameEmpty");
+        } else if (databaseName.indexOf(File.separatorChar) >= 0) {
+            String format = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameContainsSeparators");
+            error = MessageFormat.format(format, new Object[] { File.separator });
+        } else if (databaseName.indexOf('/') >= 0) {
+            String format = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameContainsSeparators");
+            error = MessageFormat.format(format, new Object[] { "/" }); // NOI18N
         } else if (databaseName.length() > 0 && new File(derbySystemHome, databaseName).exists()) { // NOI18N
-            error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseDirectoryExists");
-            error = MessageFormat.format(error, new Object[] { databaseName });
+            String format = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseDirectoryExists");
+            error = MessageFormat.format(format, new Object[] { databaseName });
         }
         
         if (error != null) {
