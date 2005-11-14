@@ -22,6 +22,7 @@ import junit.framework.AssertionFailedError;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.cookies.*;
+import org.openide.loaders.InstanceSupport.Instance;
 import org.openide.util.*;
 
 import org.netbeans.junit.*;
@@ -499,7 +500,7 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
             FileObject folder = lfs.findResource("folder");
             DataLoader l = DataLoader.getLoader(DataLoaderOrigTest.SimpleUniFileLoader.class);
             DataFolder f = DataFolder.findFolder(folder);
-            InvCheckFolderInstance icfi = new InvCheckFolderInstance(f);
+            InvCheckFolderInstance icfi = new InvCheckFolderInstance(f, false);
             assertTrue(icfi.ok);
             assertEquals(new Integer(0), icfi.instanceCreate());
             err.log ("sample1: " + DataObject.find(lfs.findResource(names[0])));
@@ -568,17 +569,72 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
             Repository.getDefault().removeFileSystem(lfs);
         }
     }
+
+    
+    public void testFolderInstanceNeverPassesInvFolders() throws Exception {
+        String[] names = {
+            "folder/sub/"
+        };
+        FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), names);
+        Repository.getDefault().addFileSystem(lfs);
+        try {
+            FileObject folder = lfs.findResource("folder");
+            DataFolder f = DataFolder.findFolder(folder);
+        
+            DataObject[] arr = f.getChildren();
+            assertEquals("One child", 1, arr.length);
+            assertEquals("It is folder", DataFolder.class, arr[0].getClass());
+            
+            err.log("Creating InvCheckFolderInstance");
+            InvCheckFolderInstance icfi = new InvCheckFolderInstance(f, true);
+            err.log("Computing result");
+            List computed = (List)icfi.instanceCreate();
+            err.log("Result is here: " + computed);
+            assertEquals("One from folder instance", 1, computed.size());
+            assertEquals("The same data object", arr[0], computed.get(0));
+            
+            arr[0].setValid(false);
+            
+            List newComputed = (List)icfi.instanceCreate();
+            assertEquals("Still one", 1, newComputed.size());
+
+            DataObject[] arr2 = f.getChildren();
+            assertEquals("Still one", 1, arr2.length);
+            if (arr[0] == arr2[0]) {
+                fail("They should not be the same: " + arr2[0]);
+            }
+            
+            assertEquals("The same new object", arr2[0], newComputed.get(0));
+            
+            
+        } finally {
+            Repository.getDefault().removeFileSystem(lfs);
+        }
+    }
     
     private final class InvCheckFolderInstance extends FolderInstance {
         public boolean ok = true;
-        public InvCheckFolderInstance(DataFolder f) {
+        private boolean acceptF;
+        public InvCheckFolderInstance(DataFolder f, boolean folders) {
             super(f);
+            this.acceptF = folders;
         }
+        
         protected Object createInstance(InstanceCookie[] cookies) throws IOException, ClassNotFoundException {
             // Whatever, irrelevant.
             err.log ("new createInstance: " + cookies.length);
+            
+            if (acceptF) {
+                ArrayList list = new ArrayList();
+                for (int i = 0; i < cookies.length; i++) {
+                    list.add(cookies[i].instanceCreate());
+                }
+                return list;
+            }
+            
             return new Integer(cookies.length);
         }
+        
         protected InstanceCookie acceptDataObject(DataObject o) {
             if (! o.isValid()) {
                 ok = false;
@@ -593,6 +649,10 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
                 } catch (InterruptedException ie) {}
                 return new InstanceSupport.Instance("ignore");
             } else {
+                if (acceptF && o instanceof DataFolder) {
+                    err.log("Recognized folder: " + o);
+                    return new InstanceSupport.Instance(o);
+                }
                 err.log ("got a " + o);
                 return null;
             }
