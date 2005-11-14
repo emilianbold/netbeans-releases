@@ -346,12 +346,14 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 getActiveComponent().removeFocusListener(this);
                 getActiveComponent().removeMouseListener(this);
             }
-            if (activeProviders != null) {
+// DIRTY HACK: Uncomment this after rewriting all modules to use the new Completion API.
+//            if (activeProviders != null) {
                 component.addCaretListener(this);
                 component.addKeyListener(this);
                 component.addFocusListener(this);
                 component.addMouseListener(this);
-            }
+// DIRTY HACK: Uncomment this after rewriting all modules to use the new Completion API.
+//            }
             activeComponent = new WeakReference(component);
             CompletionSettings.INSTANCE.notifyEditorComponentChange(getActiveComponent());
             layout.setEditorComponent(getActiveComponent());
@@ -629,6 +631,14 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             completionAutoPopupTimer.stop();
             completionCancel(); // cancel possibly pending query
             completionQuery(delayQuery);
+        } else {
+            // DIRTY HACK - remove this after rewriting all modules to use the new Completion API.
+            org.netbeans.editor.ext.Completion completion = org.netbeans.editor.ext.ExtUtilities.getCompletion(getActiveComponent());
+            if (completion != null) {
+                completion.setPaneVisible(true);
+            }
+            return;
+            // HACK end
         }
     }
 
@@ -755,6 +765,14 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 layout.clearDocumentationHistory();
             }
             documentationQuery();
+        } else {
+            // DIRTY HACK - remove this after rewriting all modules to use the new Completion API.
+            org.netbeans.editor.ext.CompletionJavaDoc completionDoc = org.netbeans.editor.ext.ExtUtilities.getCompletionJavaDoc(getActiveComponent());
+            if (completionDoc != null) {
+                completionDoc.setJavaDocVisible(true);
+            }
+            return;
+            // HACK end
         }
     }
 
