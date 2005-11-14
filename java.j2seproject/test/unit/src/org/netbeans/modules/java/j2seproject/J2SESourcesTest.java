@@ -95,8 +95,19 @@ public class J2SESourcesTest extends NbTestCase {
 
     public void testSourceRoots () throws Exception {        
         FileObject[] roots = SourceForBinaryQuery.findSourceRoots(classes.getURL()).getRoots();
+        assertNotNull (roots);        
         assertEquals("There should be 1 src root",1,roots.length);
+        assertTrue ("The source root is not valid", sources.isValid());
         assertEquals("Invalid src root", sources, roots[0]);               
+        FileObject src2 = projdir.createFolder("src2");        
+        addSourceRoot (helper, src2, "src2");        
+        roots = SourceForBinaryQuery.findSourceRoots(classes.getURL()).getRoots();
+        assertNotNull (roots);
+        assertEquals("There should be 2 src roots", 2, roots.length);
+        assertTrue ("The source root is not valid", sources.isValid());
+        assertEquals("Invalid src root", sources, roots[0]);
+        assertTrue ("The source root 2 is not valid", src2.isValid());
+        assertEquals("Invalid src2 root", src2, roots[1]);
     }
     
     private static FileObject getFileObject (FileObject parent, String name) throws IOException {
