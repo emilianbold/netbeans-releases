@@ -62,6 +62,7 @@ public class JSPVariablesFilter implements TreeModelFilter {
             //retrieve all children
             int parentChildrenCount = original.getChildrenCount(parent);
             Object[] children = original.getChildren(parent, 0, parentChildrenCount);
+            parentChildrenCount = children.length;
             if (parentChildrenCount == 1 && children[0] instanceof java.lang.String) 
                 return children;
 
