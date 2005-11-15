@@ -268,7 +268,7 @@ public final class ProjectXMLManager {
     /**
      * Adds given dependency.
      */
-    public void addDependency(ModuleDependency md) {
+    public void addDependency(ModuleDependency md) throws IOException {
         Set s = new HashSet(1);
         s.add(md);
         addDependencies(s);
@@ -277,14 +277,10 @@ public final class ProjectXMLManager {
     /**
      * Adds given modules as module-dependencies for the project.
      */
-    public void addDependencies(Set/*<ModuleDependency>*/ toAdd) {
-        Element confData = getConfData();
-        Element moduleDependencies = findModuleDependencies(confData);
-        for (Iterator it = toAdd.iterator(); it.hasNext(); ) {
-            ModuleDependency md = (ModuleDependency) it.next();
-            createModuleDependencyElement(moduleDependencies, md, null);
-        }
-        helper.putPrimaryConfigurationData(confData, true);
+    public void addDependencies(Set/*<ModuleDependency>*/ toAdd) throws IOException {
+        Set deps = getDirectDependencies(this.plaf);
+        deps.addAll(toAdd);
+        replaceDependencies(deps);
     }
     
     /**
@@ -303,7 +299,9 @@ public final class ProjectXMLManager {
         assert before != null : "There must be " + PUBLIC_PACKAGES + " or " // NOI18N
                 + FRIEND_PACKAGES + " element according to XSD"; // NOI18N
         confData.insertBefore(moduleDependencies, before);
-        for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
+        SortedSet sortedDeps = new TreeSet(ModuleDependency.CODE_NAME_BASE_COMPARATOR);
+        sortedDeps.addAll(newDeps);
+        for (Iterator it = sortedDeps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             createModuleDependencyElement(moduleDependencies, md, null);
         }
@@ -458,7 +456,8 @@ public final class ProjectXMLManager {
         return cnb;
     }
     
-    private void createModuleDependencyElement(
+    /** Package-private for unit tests only. */
+    static void createModuleDependencyElement(
             Element moduleDependencies, ModuleDependency md, Element nextSibling) {
         
         Document doc = moduleDependencies.getOwnerDocument();
@@ -508,7 +507,8 @@ public final class ProjectXMLManager {
         return Util.findElement(confData, elementName, NbModuleProjectType.NAMESPACE_SHARED);
     }
     
-    private static Element findModuleDependencies(Element confData) {
+    /** Package-private for unit tests only. */
+    static Element findModuleDependencies(Element confData) {
         return findElement(confData, ProjectXMLManager.MODULE_DEPENDENCIES);
     }
     

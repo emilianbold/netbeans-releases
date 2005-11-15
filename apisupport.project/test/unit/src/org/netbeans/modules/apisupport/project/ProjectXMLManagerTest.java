@@ -13,8 +13,10 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -75,7 +77,7 @@ public class ProjectXMLManagerTest extends TestBase {
     
     // sanity check
     public void testGeneratedProject() throws Exception {
-        validate(generateTestingProject());
+        validate(generateTestingProject(), false); // false - original project.xml is unordered
     }
     
     public void testGetCodeNameBase() throws Exception {
@@ -131,7 +133,7 @@ public class ProjectXMLManagerTest extends TestBase {
             assertTrue("unknown dependency: " + cnbToRemove, newCNBs.remove(cnbToRemove));
         }
         assertTrue("following dependencies were found: " + newCNBs, newCNBs.isEmpty());
-        validate(testingProject);
+        validate(testingProject, true);
     }
     
     public void testEditDependency() throws Exception {
@@ -177,7 +179,7 @@ public class ProjectXMLManagerTest extends TestBase {
             }
         }
         assertTrue("org.openide.dialogs dependency tested", tested);
-        validate(testingProject);
+        validate(testingProject, false); // false - order is not touched after editing
     }
     
     public void testAddDependencies() throws Exception {
@@ -226,7 +228,7 @@ public class ProjectXMLManagerTest extends TestBase {
             }
         }
         assertTrue("following dependencies were found: " + assumedCNBs, assumedCNBs.isEmpty());
-        validate(testingProject);
+        validate(testingProject, true);
     }
     
     public void testExceptionWhenAddingTheSameModuleDependencyTwice() throws Exception {
@@ -237,8 +239,11 @@ public class ProjectXMLManagerTest extends TestBase {
         final ModuleDependency md = new ModuleDependency(me, "1", null, false, true);
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
             public Object run() throws IOException {
-                testingPXM.addDependency(md);
-                testingPXM.addDependency(md);
+                Element confData = testingProject.getHelper().getPrimaryConfigurationData(true);
+                Element moduleDependencies = ProjectXMLManager.findModuleDependencies(confData);
+                ProjectXMLManager.createModuleDependencyElement(moduleDependencies, md, null);
+                ProjectXMLManager.createModuleDependencyElement(moduleDependencies, md, null);
+                testingProject.getHelper().putPrimaryConfigurationData(confData, true);
                 return Boolean.TRUE;
             }
         });
@@ -250,7 +255,7 @@ public class ProjectXMLManagerTest extends TestBase {
         } catch (IllegalStateException ise) {
             // OK, expected exception was thrown
         }
-        validate(testingProject);
+        validate(testingProject, false); // false - we are not using regular way for adding
     }
     
     public void testFindPublicPackages() throws Exception {
@@ -279,7 +284,7 @@ public class ProjectXMLManagerTest extends TestBase {
         ManifestManager.PackageExport[] pp = ProjectXMLManager.findPublicPackages(confData);
         assertEquals("number of public packages", 1, pp.length);
         assertEquals("public package", "org.netbeans.examples.modules.misc", pp[0].getPackage());
-        validate(testingProject);
+        validate(testingProject, false); // false - just looking around
     }
     
     public void testReplaceDependencies() throws Exception {
@@ -314,7 +319,7 @@ public class ProjectXMLManagerTest extends TestBase {
         });
         assertTrue("project successfully saved", result.booleanValue());
         ProjectManager.getDefault().saveProject(testingProject);
-        validate(testingProject);
+        validate(testingProject, true);
         
         final ProjectXMLManager newTestingPXM = new ProjectXMLManager(testingProject.getHelper());
         final Set newDeps = newTestingPXM.getDirectDependencies(null);
@@ -366,7 +371,7 @@ public class ProjectXMLManagerTest extends TestBase {
         assertTrue(newPPs.contains(newPublicPackages[0].getPackage()));
         assertTrue(newPPs.contains(newPublicPackages[1].getPackage()));
         assertNull("there must not be friend", testingPXM.getFriends());
-        validate(testingProject);
+        validate(testingProject, false); // false - just replacing public packages
     }
     
     public void testReplaceFriends() throws Exception {
@@ -397,7 +402,7 @@ public class ProjectXMLManagerTest extends TestBase {
         assertTrue(newFriendsCNBs.contains(newFriends[0]));
         assertTrue(newFriendsCNBs.contains(newFriends[1]));
         assertEquals("public packages", 1, newTestingPXM.getPublicPackages().length);
-        validate(testingProject);
+        validate(testingProject, false); // false - just replacing friends
     }
     
     public void testGetBinaryOrigins() throws Exception {
@@ -428,7 +433,24 @@ public class ProjectXMLManagerTest extends TestBase {
                 "</project>\n";
         TestBase.dump(projectXMLFO, xml);
         NbModuleProject project = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
-        validate(project);
+        validate(project, true);
+    }
+    
+    public void testDependenciesOrder() throws Exception { // #62003
+        final NbModuleProject testingProject = generateTestingProject();
+        final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject.getHelper());
+        ModuleEntry me = testingProject.getModuleList().getEntry(
+                "org.netbeans.modules.java.project");
+        final ModuleDependency md = new ModuleDependency(me, "1", null, false, true);
+        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws IOException {
+                testingPXM.addDependency(md);
+                return Boolean.TRUE;
+            }
+        });
+        assertTrue("adding dependencies", result.booleanValue());
+        ProjectManager.getDefault().saveProject(testingProject);
+        validate(testingProject, true);
     }
     
     private NbModuleProject generateTestingProject() throws Exception {
@@ -483,7 +505,7 @@ public class ProjectXMLManagerTest extends TestBase {
         return URIs;
     }
     
-    public static void validate(Project proj) throws Exception {
+    public static void validate(final Project proj, final boolean checkOrder) throws Exception {
         File projF = FileUtil.toFile(proj.getProjectDirectory());
         File xml = new File(new File(projF, "nbproject"), "project.xml");
         SAXParserFactory f = (SAXParserFactory)Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance();
@@ -503,6 +525,29 @@ public class ProjectXMLManagerTest extends TestBase {
         } catch (SAXParseException e) {
             assertTrue("Validation of XML document " + xml + " against schema failed. Details: " +
                     e.getSystemId() + ":" + e.getLineNumber() + ": " + e.getLocalizedMessage(), false);
+        }
+        if (checkOrder) {
+            checkDependenciesOrder(proj);
+        }
+    }
+    
+    private static void checkDependenciesOrder(final Project proj) throws Exception {
+        FileObject projectXML = proj.getProjectDirectory().getFileObject("nbproject/project.xml");
+        BufferedReader r = new BufferedReader(new InputStreamReader(projectXML.getInputStream()));
+        try {
+            String previousCNB = null;
+            String line;
+            while ((line = r.readLine()) != null) {
+                line = line.trim();
+                if (line.matches("<code-name-base>.+</code-name-base>")) {
+                    String currentCNB = line.substring(16, line.length() - 17);
+                    assertTrue("dependencies order, previous = \"" + previousCNB + "\", current = \"" + currentCNB + "\"",
+                            previousCNB == null || previousCNB.compareTo(currentCNB) < 0);
+                    previousCNB = currentCNB;
+                }
+            }
+        } finally {
+            r.close();
         }
     }
     
