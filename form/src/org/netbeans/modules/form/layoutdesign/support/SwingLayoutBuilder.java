@@ -185,8 +185,11 @@ public class SwingLayoutBuilder {
                 ((GroupLayout.ParallelGroup)group).add(alignment, composeGroup(layout, interval, first, last));
             }
         } else {
-            int min = convertSize(interval.getMinimumSize(designMode), interval);
-            int pref = convertSize(interval.getPreferredSize(designMode), interval);
+            int min = interval.getMinimumSize(designMode);
+            int pref = interval.getPreferredSize(designMode);
+            if ((min == LayoutConstants.NOT_EXPLICITLY_DEFINED) && (pref >= 0)) min = 0;
+            min = convertSize(min, interval);
+            pref = convertSize(pref, interval);
             int max = convertSize(interval.getMaximumSize(designMode), interval);
             if (interval.isComponent()) {
                 int alignment = interval.getAlignment();

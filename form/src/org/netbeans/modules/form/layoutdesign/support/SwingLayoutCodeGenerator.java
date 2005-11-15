@@ -187,6 +187,7 @@ public class SwingLayoutCodeGenerator {
         } else {
             int min = interval.getMinimumSize(false);
             int pref = interval.getPreferredSize(false);
+            if ((min == LayoutConstants.NOT_EXPLICITLY_DEFINED) && (pref >= 0)) min = 0;
             int max = interval.getMaximumSize(false);
             if (interval.isComponent()) {
                 layout.append(".add("); // NOI18N
