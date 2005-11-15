@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,9 +29,13 @@ import org.openide.awt.HtmlRenderer;
  * @author Dafe Simonek
  */
 public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
-    private static final boolean isGenericUI = 
+    
+    private static final boolean isGenericUI =
         !"Windows".equals(UIManager.getLookAndFeel().getID()); //NOI18N
-
+    
+    private static final Color GTK_TABBED_PANE_BACKGROUND_1 = new Color(100, 100, 100);
+    private static final Color GTK_TABBED_PANE_BACKGROUND_2 = new Color(255, 255, 255);
+    
     /**
      * ******** constants ************
      */
@@ -47,8 +51,6 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
     /**
      * ******** static fields *********
      */
-
-    private static Color borderC, bgFillC;
 
     private static IconLoader closeIcon;
 
@@ -196,7 +198,6 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         // subtract lower border
         height--;
         boolean isSelected = isSelected(index);
-        boolean isLast = index == getDataModel().size() - 1;
 
         g.translate(x, y);
 
@@ -235,12 +236,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         
         Paint result = null;
         if (focused && !attention) {
-            result =
-                    ColorUtil.getGradientPaint(x, y, getSelGradientColor(),
-                                               //NOI18N
-                                               x + width, y,
-                                               UIManager.getColor(
-                                                       "TabbedPane.background"));
+            result = ColorUtil.getGradientPaint(x, y, getSelGradientColor(), x + width, y, getSelGradientColor2());
         } else if (selected && !attention) {
             result = UIManager.getColor("TabbedPane.background"); //NOI18N
         } else if (attention) {
@@ -315,9 +311,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
     private Rectangle getCloseIconRect(Rectangle rect, int index) {
         TabLayoutModel tlm = getLayoutModel();
         int x = tlm.getX(index);
-        int y = tlm.getY(index);
         int w = tlm.getW(index);
-        int h = tlm.getH(index);
         String iconPath = findIconPath(index);
         if (closeIcon == null) {
             //Tab control can be asked to process mouse motion events that
@@ -355,9 +349,21 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
     }
     
     private static final Color getSelGradientColor() {
-        return UIManager.getColor("winclassic_tab_sel_gradient");
+        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+            return GTK_TABBED_PANE_BACKGROUND_1; // #68200
+        } else {
+            return UIManager.getColor("winclassic_tab_sel_gradient"); // NOI18N
+        }
     }
-
+    
+    private static final Color getSelGradientColor2() {
+        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+            return GTK_TABBED_PANE_BACKGROUND_2; // #68200
+        } else {
+            return UIManager.getColor("TabbedPane.background"); // NOI18N
+        }
+    }
+    
     /**
      * Own close icon button controller
      */

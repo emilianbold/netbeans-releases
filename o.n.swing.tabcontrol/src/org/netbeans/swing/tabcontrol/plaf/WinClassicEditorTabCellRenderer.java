@@ -7,20 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * WinClassicEditorTabCellRenderer.java
- *
- * Created on 09 December 2003, 16:54
  */
 
 package org.netbeans.swing.tabcontrol.plaf;
 
 import javax.swing.*;
 import java.awt.*;
-import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 /**
  * Windows classic implementation of tab renderer
@@ -28,11 +22,15 @@ import org.netbeans.swing.tabcontrol.TabDisplayer;
  * @author Tim Boudreau
  */
 final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
+    
     private static final TabPainter leftClip = new WinClassicLeftClipPainter();
     private static final TabPainter rightClip = new WinClassicRightClipPainter();
     private static final TabPainter normal = new WinClassicPainter();
     
-    static final Color ATTENTION_COLOR = new Color(255, 238, 120);    
+    private static final Color GTK_TABBED_PANE_BACKGROUND_1 = new Color(100, 100, 100);
+    private static final Color GTK_TABBED_PANE_BACKGROUND_2 = new Color(255, 255, 255);
+    
+    static final Color ATTENTION_COLOR = new Color(255, 238, 120);
     
     private static boolean isGenericUI = !"Windows".equals(
         UIManager.getLookAndFeel().getID());
@@ -150,8 +148,7 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
                     && ren.isPressed());
 
             if (wantGradient) {
-                ((Graphics2D) g).setPaint(ColorUtil.getGradientPaint(0, 0, getSelGradientColor(), ren.getWidth(), 0, UIManager.getColor(
-                        "TabbedPane.background")));//NOI18N
+                ((Graphics2D) g).setPaint(ColorUtil.getGradientPaint(0, 0, getSelGradientColor(), ren.getWidth(), 0, getSelGradientColor2()));
             } else {
                 if (!ren.isAttention()) {
                     g.setColor(ren.isSelected() ?
@@ -284,8 +281,7 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
                     && ren.isPressed());
 
             if (wantGradient) {
-                ((Graphics2D) g).setPaint(ColorUtil.getGradientPaint(0, 0, getSelGradientColor(), ren.getWidth(), 0, UIManager.getColor(
-                        "TabbedPane.background")));//NOI18N
+                ((Graphics2D) g).setPaint(ColorUtil.getGradientPaint(0, 0, getSelGradientColor(), ren.getWidth(), 0, getSelGradientColor2()));
             } else {
                 if (!ren.isAttention()) {
                     g.setColor(ren.isSelected() ?
@@ -381,8 +377,7 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
                     && ren.isPressed());
 
             if (wantGradient) {
-                ((Graphics2D) g).setPaint(ColorUtil.getGradientPaint(0, 0, getSelGradientColor(), ren.getWidth(), 0, UIManager.getColor(
-                        "TabbedPane.background")));//NOI18N
+                ((Graphics2D) g).setPaint(ColorUtil.getGradientPaint(0, 0, getSelGradientColor(), ren.getWidth(), 0, getSelGradientColor2()));
             } else {
                 if (!ren.isAttention()) {
                     g.setColor(ren.isSelected() ?
@@ -407,9 +402,21 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
             rect.setBounds(-20, -20, 0, 0);
         }
     }
-
+    
     private static final Color getSelGradientColor() {
-        //XXX delete this method
-        return UIManager.getColor("winclassic_tab_sel_gradient");
+        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+            return GTK_TABBED_PANE_BACKGROUND_1; // #68200
+        } else {
+            return UIManager.getColor("winclassic_tab_sel_gradient"); // NOI18N
+        }
     }
+    
+    private static final Color getSelGradientColor2() {
+        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+            return GTK_TABBED_PANE_BACKGROUND_2; // #68200
+        } else {
+            return UIManager.getColor("TabbedPane.background"); // NOI18N
+        }
+    }
+    
 }
