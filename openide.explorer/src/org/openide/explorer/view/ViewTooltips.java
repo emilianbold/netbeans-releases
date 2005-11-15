@@ -243,31 +243,25 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
      * is actually showing the view
      */
     private Rectangle getShowingRect (JScrollPane pane) {
-        Insets ins1 = pane.getInsets();
-        Insets ins2 = pane.getViewport().getInsets();
-        int w3;
-        if (pane.getVerticalScrollBar().isShowing()) {
-            w3 = pane.getVerticalScrollBar().getWidth();
-        } else {
-            w3 = 0;
+        Insets ins1 = pane.getViewport().getInsets();
+        Insets ins2 = pane.getViewportBorder().getBorderInsets(pane);
+        Insets ins3 = new Insets(0,0,0,0);
+        if (pane.getBorder() != null) {
+            ins3 = pane.getBorder().getBorderInsets(pane);
+            System.err.println("ins3 = " + ins3);
         }
-        int h3;
-        if (pane.getHorizontalScrollBar().isShowing()) {
-            h3 = pane.getVerticalScrollBar().getHeight();
-        } else {
-            h3 = 0;
-        }
-        Rectangle r = pane.getBounds();
+        
+        Rectangle r = pane.getViewportBorderBounds();
         r.translate(-r.x, -r.y);
         r.width -= ins1.left + ins1.right;
         r.width -= ins2.left + ins2.right;
         r.height -= ins1.top + ins1.bottom;
         r.height -= ins2.top + ins2.bottom;
+        r.x -= ins2.left;
+        r.x -= ins3.left;
         Point p = pane.getViewport().getViewPosition();
         r.translate (p.x, p.y);
         r = SwingUtilities.convertRectangle(pane.getViewport(), r, pane);
-        r.width -= w3;
-        r.height -= h3;
         return r;
     }
     
@@ -307,7 +301,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         for (int i=0; i < rects.length; i++) {
             Rectangle sect = rects[i];
             sect.translate (-bds.x, -bds.y);
-            ImgComp part = painter.getPartial(sect, rects[i].x < visible.x);
+            ImgComp part = painter.getPartial(sect, bds.x + rects[i].x < visible.x);
             Point pos = new Point (bds.x + rects[i].x, bds.y + rects[i].y);
             SwingUtilities.convertPointToScreen(pos, comp);
             if (comp instanceof JList) {
