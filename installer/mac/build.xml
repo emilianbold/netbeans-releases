@@ -15,13 +15,13 @@ Microsystems, Inc. All Rights Reserved.
 <project name="NetBeans.app" basedir="." default="tarball">
 
   <property name="nb.dir" value="../../nbbuild/netbeans"/>
-  <property name="appname" value="NetBeansIDE5.0Dev"/>
-  <property name="appversion" value="5.0dev"/>
-  <property name="version" value="5.0dev"/>
+  <property name="appname" value="NetBeans"/>
+  <property name="appversion" value="5.0 Development Version"/>
+  <property name="version" value="5.0 Development Version"/>
   <property name="nbClusterDir" value="nb5.0"/>
   
   <property name="appdir" value="${appname}.app"/>
-  <property name="tarball-name" value="${appname}-macosx.tar.gz"/>
+  <property name="tarball-name" value="netbeans5.0dev-macosx.tar.gz"/>
   
   <target name="create-app" description="Organize NetBeans into a standard mac-os NetBeans.app application layout">
     <echo>
