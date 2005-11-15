@@ -141,8 +141,7 @@ implements LookupListener, ChangeListener {
         DataObject now = DataObject.find(fo);
         
         err.log("Object is here: " + now);
-        assertTrue(fo.getMIMEType(), Collections.list(loader.getExtensions().mimeTypes()).contains(fo.getMIMEType()));        
-        assertEquals("Loader updated to lenka", loader, now.getLoader());
+        assertEquals("Loader updated to lenka (mimetype: " + fo.getMIMEType() + ")", loader, now.getLoader());
     }
 
     public void resultChanged(LookupEvent ev) {
