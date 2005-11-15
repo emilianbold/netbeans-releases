@@ -171,7 +171,8 @@
 <!--CSH for HTML Editor-->
 <mapID target="org.netbeans.modules.editor.html.HTMLKit" url="web/create/jsp/about_jsp_edit.html" />
 
-
+<!--CSH for JSP Editor-->
+<mapID target="org.netbeans.modules.web.core.syntax.JSPKit" url="web/create/jsp/about_jsp_edit.html" />
 
 	<!-- GRAPHIC EDITOR FOR WEB.XML FILES:-->
 	<mapID target="dd_multiview_overview_overviewNode" url="web/csh/graphic_editor/dd_multiview_overview_overviewNode.html" />
