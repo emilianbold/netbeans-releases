@@ -52,17 +52,27 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
                     DataObject dobj = DataObject.find (platfomDefinitions[i]);
                     InstanceCookie ic = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
                     if (ic == null) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,"DefaultPlatformStorage: The file: "+    //NOI18N
+                            platfomDefinitions[i].getNameExt()+" hasn't InstanceCookie");                           //NOI18N
                         continue;
                     }
                     else  if (ic instanceof InstanceCookie.Of) {
                         if (((InstanceCookie.Of)ic).instanceOf(JavaPlatform.class)) {
                             platforms.add (ic.instanceCreate());
                         }
+                        else {
+                            ErrorManager.getDefault().log(ErrorManager.WARNING,"DefaultPlatformStorage: The file: "+    //NOI18N
+                                platfomDefinitions[i].getNameExt()+" isn't instance of JavaPlatform");                  //NOI18N
+                        }
                     }
                     else {
                         Object instance = ic.instanceCreate();
                         if (instance instanceof JavaPlatform) {
                             platforms.add (instance);
+                        }
+                        else {
+                            ErrorManager.getDefault().log(ErrorManager.WARNING,"DefaultPlatformStorage: The file: "+    //NOI18N
+                                platfomDefinitions[i].getNameExt()+" isn't instance of JavaPlatform");                  //NOI18N
                         }
                     }
                 }
