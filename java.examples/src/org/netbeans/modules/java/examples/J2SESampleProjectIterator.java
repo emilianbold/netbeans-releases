@@ -81,10 +81,20 @@ public class J2SESampleProjectIterator implements TemplateWizard.Iterator {
     public java.util.Set instantiate (org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
         File projectLocation = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
-                        
-        FileObject prjLoc = null;
-        prjLoc = J2SESampleProjectGenerator.createProjectFromTemplate(templateWizard.getTemplate().getPrimaryFile(), projectLocation, name);
-        return Collections.singleton(DataObject.find(prjLoc));
+        FileObject templateFO = templateWizard.getTemplate().getPrimaryFile();
+        FileObject prjLoc = J2SESampleProjectGenerator.createProjectFromTemplate(
+                              templateFO, projectLocation, name);
+
+        java.util.Set set = new java.util.HashSet();
+        set.add(DataObject.find(prjLoc));
+
+        Object openFileName = (String) templateFO.getAttribute("defaultFileToOpen"); // NOI18N
+        if (openFileName instanceof String) {
+            FileObject openFO = prjLoc.getFileObject((String)openFileName);
+            set.add(DataObject.find(openFO));
+        }
+
+        return set;
     }
     
     public String name() {

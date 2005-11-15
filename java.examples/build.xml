@@ -25,6 +25,11 @@ Microsystems, Inc. All Rights Reserved.
             <exclude name="dist/"/>
             <exclude name="nbproject/private/"/>
         </zip>
+        <zip basedir="GUIFormExamples" destfile="${examples}/GUIFormExamples.zip">
+            <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
     </target>    
     
 </project>

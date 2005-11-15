@@ -16,6 +16,15 @@
                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.examples.J2SESampleProjectIterator"/>
                       <attr name="prjType" stringvalue="j2se"/>
                     </file>
+                    <file name="GUIFormExamples.zip" url="GUIFormExamples.zip">
+                      <attr name="template" boolvalue="true"/>
+                      <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/examples/resources/descriptions/GUIFormExamples.html"/>
+                      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.examples.Bundle"/>
+                      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/examples/resources/j2seProject.gif"/>
+                      <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.examples.J2SESampleProjectIterator"/>
+                      <attr name="prjType" stringvalue="j2se"/>
+                      <attr name="defaultFileToOpen" stringvalue="readme.txt" />
+                    </file>
                 </folder>
             </folder>
         </folder>
