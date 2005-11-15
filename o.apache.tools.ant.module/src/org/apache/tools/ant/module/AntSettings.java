@@ -175,7 +175,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     }
     
     public void setAntHome(File f) {
-        if (f.equals(getDefaultAntHome())) {
+        if (f != null && f.equals(getDefaultAntHome())) {
             f = null;
         }
         if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
