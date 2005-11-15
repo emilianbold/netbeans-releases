@@ -320,7 +320,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                 valid();
                 storeValidValues();
             } else {
-                invalid(invalidMsg[0]);
+                valid(invalidMsg[0]);
             }
         } catch (InterruptedException e) {
             invalid(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2023"));

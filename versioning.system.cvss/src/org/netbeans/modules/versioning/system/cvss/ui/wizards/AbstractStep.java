@@ -98,6 +98,14 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
         setValid(true, null);
     }
 
+    /**
+     * Valid with error message that can be corrected
+     * by external change.
+     */
+    protected final void valid(String extErrorMessage) {
+        setValid(true, extErrorMessage);
+    }
+
     protected final void invalid(String message) {
         setValid(false, message);
     }
@@ -113,7 +121,7 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
     // comes on next or finish
     public final void validate () throws WizardValidationException {
         validateBeforeNext();
-        if (isValid() == false) {
+        if (isValid() == false || errorMessage != null) {
             throw new WizardValidationException (
                 panel,
                 errorMessage,
