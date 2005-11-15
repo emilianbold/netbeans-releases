@@ -17,16 +17,16 @@
 <a href="#seealso">See Also</a> 
 </small></p>
 	<p>The system filesystem is the general registry for publicly accessible data and objects.
-	It is a virtual filesystem that contains NetBeans configuration information.
+	It is a virtual filesystem that contains configuration information.
 	NetBeans stores a wide variety of configuration information in the system filesystem. For example, the system filesystem 
-	contains a folder called <tt>/Menu</tt>, which contains subfolders with names such as "File" and "Edit". 
+	contains a folder called <tt>Menu</tt>, which contains subfolders with names such as "File" and "Edit". 
 	These subfolders contain files that represent Java classes which implement the actions that appear in 
 	the "File" and "Edit" menus.
 	
 	
 <p>When you create a module, you are free to create your own folders in the system 
   filesystem to store data that relate to your module. You can also add objects 
-  to existing folders that have defined meanings within NetBeans. One of the reasons 
+  to existing folders. One of the reasons 
   to use the system filesystem is that it allows objects to be declared, but their 
   classes not actually loaded by the JVM until something needs to use them, thus 
   saving memory. 
