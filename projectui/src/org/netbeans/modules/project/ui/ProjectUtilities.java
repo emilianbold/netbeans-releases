@@ -45,6 +45,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -103,7 +104,7 @@ public class ProjectUtilities {
                 }
                 // #68677: closing only documents in the editor, not eg. navigator window:
                 Mode m = WindowManager.getDefault().findMode(tc);
-                if (m == null || !"editor".equals(m.getName())) { // NOI18N
+                if (m == null || !CloneableEditorSupport.EDITOR_MODE.equals(m.getName())) { // NOI18N
                     continue;
                 }
                 DataObject dobj = (DataObject) tc.getLookup ().lookup (DataObject.class);

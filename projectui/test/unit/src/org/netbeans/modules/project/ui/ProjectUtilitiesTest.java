@@ -33,6 +33,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
@@ -45,6 +46,9 @@ import org.w3c.dom.NodeList;
  * @author Jiri Rechtacek
  */
 public class ProjectUtilitiesTest extends NbTestCase {
+    
+    private static final String NAVIGATOR_MODE = "navigator";
+    
     DataObject do1_1_open, do1_2_open, do1_3_close, do1_4_close;
     DataObject do2_1_open;
     Project project1, project2;
@@ -95,12 +99,12 @@ public class ProjectUtilitiesTest extends NbTestCase {
         ((TestSupport.TestProject) project2).setLookup (Lookups.singleton (TestSupport.createAuxiliaryConfiguration ()));
         
         //it will be necessary to dock the top components into the "editor" and "navigator" modes, so they need to be created:
-        WindowManager.getDefault().getWorkspaces()[0].createMode("editor", "Editor Mode", null);
-        WindowManager.getDefault().getWorkspaces()[0].createMode("navigator", "Navigator Mode", null);
-        (tc1_1 = new SimpleTopComponent (do1_1_open, "editor")).open ();
-        (tc1_2 = new SimpleTopComponent (do1_2_open, "editor")).open ();
-        (tc2_1 = new SimpleTopComponent (do2_1_open, "editor")).open ();
-        (tc1_1_navigator = new SimpleTopComponent (do1_1_open, "navigator")).open ();
+        WindowManager.getDefault().getWorkspaces()[0].createMode(CloneableEditorSupport.EDITOR_MODE, "Editor Mode", null);
+        WindowManager.getDefault().getWorkspaces()[0].createMode(NAVIGATOR_MODE, "Navigator Mode", null);
+        (tc1_1 = new SimpleTopComponent (do1_1_open, CloneableEditorSupport.EDITOR_MODE)).open ();
+        (tc1_2 = new SimpleTopComponent (do1_2_open, CloneableEditorSupport.EDITOR_MODE)).open ();
+        (tc2_1 = new SimpleTopComponent (do2_1_open, CloneableEditorSupport.EDITOR_MODE)).open ();
+        (tc1_1_navigator = new SimpleTopComponent (do1_1_open, NAVIGATOR_MODE)).open ();
         
         ExitDialog.SAVE_ALL_UNCONDITIONALLY = true;
     }
