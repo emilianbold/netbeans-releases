@@ -28,11 +28,9 @@ import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EjbGenerationUtil;
-import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityAndSessionGenerator;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Bean;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Method;
-import org.netbeans.modules.javacore.ClassIndex;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -132,7 +130,7 @@ public class EntityGenerator extends EntityAndSessionGenerator {
 
         FileObject bFile = pkg.getFileObject(EjbGenerationUtil.getBaseName(beanClass),"java"); //NOI18N
 
-
+        String remoteBusinessIntfName = null;
         if (hasRemote) {
             String remoteName = generateRemote(pkgName, pkg, EjbGenerationUtil.getRemoteName(pkgName, ejbName),
                     ejbName);
@@ -140,20 +138,40 @@ public class EntityGenerator extends EntityAndSessionGenerator {
             String remoteHomeName = generateHome(pkgName, pkg, EjbGenerationUtil.getHomeName(pkgName, ejbName),
                     remoteName, ejbName);
             e.setHome(remoteHomeName);
-            String businessIntfName = EjbGenerationUtil.getBusinessInterfaceName(pkgName, ejbName);
-            genUtil.generateBusinessInterfaces(pkgName, pkg, businessIntfName, ejbName, beanClass, remoteName);
-            genUtil.addPKGetter(e, cp.findResource(businessIntfName.replace('.', '/') + ".java"), true);
+            remoteBusinessIntfName = EjbGenerationUtil.getBusinessInterfaceName(pkgName, ejbName);
+            genUtil.generateBusinessInterfaces(pkgName, pkg, remoteBusinessIntfName, ejbName, beanClass, remoteName);
+            genUtil.addPKGetter(e, cp.findResource(remoteBusinessIntfName.replace('.', '/') + ".java"), true);
         }
 
+        String localBusinessIntfName = null;
         if (hasLocal) {
             String localName = generateLocal(pkgName, pkg, EjbGenerationUtil.getLocalName(pkgName, ejbName), ejbName);
             e.setLocal(localName);
             String localHomeName = generateLocalHome(pkgName, pkg, EjbGenerationUtil.getLocalHomeName(pkgName, ejbName),
                     localName, ejbName);
             e.setLocalHome(localHomeName);
-            String businessIntfName = EjbGenerationUtil.getLocalBusinessInterfaceName(pkgName, ejbName);
-            genUtil.generateBusinessInterfaces(pkgName, pkg, businessIntfName, ejbName, beanClass, localName);
-            genUtil.addPKGetter(e, cp.findResource(businessIntfName.replace('.', '/') + ".java"), false);
+            localBusinessIntfName = EjbGenerationUtil.getLocalBusinessInterfaceName(pkgName, ejbName);
+            genUtil.generateBusinessInterfaces(pkgName, pkg, localBusinessIntfName, ejbName, beanClass, localName);
+            genUtil.addPKGetter(e, cp.findResource(localBusinessIntfName.replace('.', '/') + ".java"), false);
+            
+            // use simple names in all generated classes, use imports
+            boolean rollback = true;
+            JMIUtils.beginJmiTransaction(true);
+            try {
+                FileObject beanFO = pkg.getFileObject(EjbGenerationUtil.getBaseName(e.getEjbClass()), "java"); // NOI18N
+                JavaMetamodel.getManager().setClassPath(beanFO);
+                JMIUtils.fixImports(e.getEjbClass());
+                JMIUtils.fixImports(e.getLocal());
+                JMIUtils.fixImports(e.getLocalHome());
+                JMIUtils.fixImports(e.getRemote());
+                JMIUtils.fixImports(e.getHome());
+                JMIUtils.fixImports(remoteBusinessIntfName);
+                JMIUtils.fixImports(localBusinessIntfName);
+                rollback = false;
+            } finally {
+                JMIUtils.endJmiTransaction(rollback);
+            }
+            
         }
 
         DataObject dobj = DataObject.find(bFile);
