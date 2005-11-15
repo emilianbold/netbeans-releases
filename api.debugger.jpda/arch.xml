@@ -60,8 +60,8 @@ The debuggerjpda/api (Debugger JPDA API) defines API for NetBeans Java Debugger.
 <answer id="arch-overall">
 List of APIs:
 <ul>
-<li><api name="JPDADebuggerAPI" type="export" category="official" url="@TOP@/@org-netbeans-api-debugger-jpda@" group="java"/>JPDA Debugger API</li>
-<li><api name="JPDADebuggerSPI" type="import" category="official" url="@TOP@/@org-netbeans-api-debugger-jpda@" group="java"/>JPDA Debugger SPI</li>
+<li><api name="JPDADebuggerAPI" type="export" category="official" url="@org-netbeans-api-debugger-jpda@" group="java"/>JPDA Debugger API</li>
+<li><api name="JPDADebuggerSPI" type="import" category="official" url="@org-netbeans-api-debugger-jpda@" group="java"/>JPDA Debugger SPI</li>
 
 <li><api name="Meta-inf-debugger-netbeans-JPDASession-Java-org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
 <li><api name="Meta-inf-debugger-netbeans-JPDASession-org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>

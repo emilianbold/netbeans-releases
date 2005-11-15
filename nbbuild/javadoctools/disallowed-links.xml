@@ -19,6 +19,9 @@ Microsystems, Inc. All Rights Reserved.
     <filter pattern="http://openide\.netbeans\.org/versioning-policy\.html.*" accept="true"/>
     <filter pattern="http://www\.netbeans\.org/issues/show_bug\.cgi.*" accept="true"/>
     <filter pattern="http://openide\.netbeans\.org.*tutorial.*api-design.*" accept="true"/>
+    <filter pattern="http://openide\.netbeans\.org.*tutorial.*api.html.*" accept="true"/>
+    <filter pattern="http://platform\.netbeans\.org/" accept="true"/>
+    <filter pattern="http://www\.netbeans\.org.products.ide.index.html" accept="true"/>
     <filter pattern="http://mdr\.netbeans\.org/example\.html" accept="true"/>
     <filter pattern="http://mdr\.netbeans\.org/uml2mof.*" accept="true"/>
     <filter pattern="http://java\.netbeans\.org/models/java/java\.xml" accept="true"/>

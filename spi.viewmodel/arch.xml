@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
 <answer id="arch-what">
-The debuggercore/<api name="ViewModel" type="export" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@" group="java"/>
+The debuggercore/<api name="ViewModel" type="export" category="official" url="@org-netbeans-spi-viewmodel@/overview-summary.html" group="java"/>
  module (View Model) allows to share one TreeTableView among different modules.
 </answer>
 

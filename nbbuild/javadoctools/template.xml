@@ -341,7 +341,27 @@ cause it to fail.
             &replaces;
             <replacefilter token="@FOOTER@" value="${javadoc.footer}"/>
         </replace>
-        <replace dir="${javadoc.out.dir}">
+        
+        <replace dir="${export.apichanges}" >        
+            <include name="${javadoc.name}"/>
+            <replacefilter token="@JDK@" value="${javadoc.docs.jdk}"/>
+            <replacefilter token="@FOOTER@" value="${javadoc.footer}"/>
+            <replacefilter token="@TOP@/" value="@TOP@" />
+            <replacefilter token="@TOP@" value="${javadoc.name}/" />
+            &replaces;
+        </replace>
+        
+        <replace dir="${export.interfaces}" >
+            <include name="${javadoc.name}"/>
+            <replacefilter token="@JDK@" value="${javadoc.docs.jdk}"/>
+            <replacefilter token="@FOOTER@" value="${javadoc.footer}"/>
+            <replacefilter token="@TOP@/" value="@TOP@" />
+            <replacefilter token="@TOP@" value="${javadoc.name}/" />
+            &replaces;
+        </replace>
+        
+        
+				<replace dir="${javadoc.out.dir}">
             <include name="**/*.html"/>
             <replacefilter token="http://root/" value="@TOP@.." />
         </replace>

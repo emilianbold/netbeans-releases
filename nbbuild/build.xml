@@ -12,6 +12,9 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE someant  [
+  <!ENTITY links SYSTEM "javadoctools/links.xml">
+  <!ENTITY properties SYSTEM "javadoctools/properties.xml">
+  <!ENTITY replaces SYSTEM "javadoctools/replaces.xml">
   <!ENTITY disallowed-links SYSTEM "javadoctools/disallowed-links.xml">
 ]>
 
@@ -385,6 +388,15 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
 </FRAMESET>
 </HTML>
 ]]></echo>
+        &properties;
+
+        <replace dir="${netbeans.javadoc.dir}">
+            <include name="*.html"/>
+            <replacefilter token="@JDK@" value="http://java.sun.com/j2se/1.4.2/docs/api"/>
+            &replaces;   
+            <replacefilter token="http://root/" value="." />
+            <replacefilter token="$${javadoc.web.root}" value="." />
+        </replace>
     
     <echo message="Javadoc index has been generated to ${netbeans.javadoc.dir}/index.html" />
   </target>
@@ -402,6 +414,9 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
             <include name="*/architecture-summary.html"/>
             <include name="*/**/package-summary.html"/>
             <include name="*/**/doc-files/**/*.html"/>
+            <include name="*.html" />
+            <!-- this one is pretty broken right now -->
+            <exclude name="usecases.html" />
                 
             &disallowed-links;
         </checklinks>

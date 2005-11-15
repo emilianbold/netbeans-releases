@@ -61,39 +61,39 @@ for sharing of them.
 <answer id="arch-overall">
 List of APIs:
 <ul>
-<li><api name="DebuggerCoreUI-SPI" type="export" category="official" url="@TOP@/@org-netbeans-spi-debugger-ui@" group="java"/>Debugger core SPI.</li>
+<li><api name="DebuggerCoreUI-SPI" type="export" category="official" url="@org-netbeans-spi-debugger-ui@" group="java"/>Debugger core SPI.</li>
 
-<li><api name="Meta-inf-debuggerorg.netbeans.spi.debugger.ui.BreakpointType" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-api-debugger@"/>New Breakpoint Dialog loads all breakpoint type definitions.</li>
-<li><api name="Meta-inf-debuggerorg.netbeans.spi.debugger.ui.AttachType" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-api-debugger@"/>Attach to ... Dialog loads all attach type definitions.</li>
+<li><api name="Meta-inf-debuggerorg.netbeans.spi.debugger.ui.BreakpointType" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/>New Breakpoint Dialog loads all breakpoint type definitions.</li>
+<li><api name="Meta-inf-debuggerorg.netbeans.spi.debugger.ui.AttachType" group="lookup" type="import" category="official" url="@org-netbeans-api-debugger@"/>Attach to ... Dialog loads all attach type definitions.</li>
 
-<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.ColumnModel" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.ColumnModel" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
 
-<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TreeModel" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TreeModelFilter" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeModel" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeModelFilter" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TableModel" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TableModelFilter" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProvider" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProviderFilter" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TreeModel" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TreeModelFilter" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeModel" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeModelFilter" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TableModel" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TableModelFilter" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProvider" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debuggerDebuggerEngine-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProviderFilter" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
 
-<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TreeModel" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TreeModelFilter" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeModel" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeModelFilter" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TableModel" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TableModelFilter" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProvider" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProviderFilter" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TreeModel" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TreeModelFilter" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeModel" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeModelFilter" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TableModel" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.TableModelFilter" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProvider" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-Session-ID-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProviderFilter" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
 
-<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.TreeModel" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.TreeModelFilter" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeModel" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeModelFilter" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.TableModel" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.TableModelFilter" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProvider" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProviderFilter" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.TreeModel" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.TreeModelFilter" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeModel" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeModelFilter" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.TableModel" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.TableModelFilter" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProvider" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProviderFilter" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
 
 <li><api name="netbeans.debugger.models" group="property" type="import" category="private"/>Writes information about loading of models to console.</li>
 </ul>

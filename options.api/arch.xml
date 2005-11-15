@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
    	Options Dialog module contains implementation of Options Dialog and simple SPI. This SPI allows 
    	installation on custom options panels / categories to Options Dialog.
 
-	<api name="OptionsDialogSPI" group="java" type="export" category="devel" url="@TOP@/@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
+	<api name="OptionsDialogSPI" group="java" type="export" category="devel" url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
    	
   </p>
  </answer>
@@ -1063,7 +1063,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-read">
   <p>
-   <api name="OptionsDialogSPILayers" group="layer" type="export" category="devel" url="@TOP@/@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
+   <api name="OptionsDialogSPILayers" group="layer" type="export" category="devel" url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
    For registration of custom options panels.
   </p>
  </answer>
