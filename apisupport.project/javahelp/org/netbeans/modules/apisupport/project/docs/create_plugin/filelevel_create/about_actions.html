@@ -17,7 +17,31 @@
 <a href="#seealso">See Also</a> 
 </small></p>
 
-<p>The <a href="../../about/about-open-apis.html">NetBeans APIs</a> provide two types of action:
+Actions are defined in the <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-actions/overview-summary.html">
+    <param name="text" value="<html><u>Actions API</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object>. This API is a standard representation of the actions a user can 
+invoke. It provides
+an interface to such IDE elements as toolbars, menus, and keyboard shortcuts&#8212;allowing
+third parties to create actions that are sensitive to context and invocable in
+more than one way. Special superclasses are sensitive to selected nodes and cookie
+sets&#8212;you decide if these apply. The Actions API offers the ability to
+write the action once, and have it automatically apply as appropriate. For example, a
+user action might show up in both a toolbar and be selected by a keyboard shortcut,
+all from the same implementation.
+
+<p>All actions in the IDE are subclasses of <tt>SystemAction</tt>, which extends the Swing
+action API to interact smoothly with the IDE. The Actions API provides abilities
+such as context sensitivity, callback support, automatic presentation devices in
+menus and toolbars, and a few other features used by the IDE.
+
+<p>Actions are typically presented in popup menus, or attached to a component such as
+a window, node, data object, or file system.
+
+
+<p>The Actions API provides two types of action:
  <ul>
 	 <li><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
     <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-util/org/openide/util/actions/CallableSystemAction.html">
@@ -32,7 +56,7 @@
     <param name="textFontSize" value="medium">
     <param name="textColor" value="blue">
 </object><p>An action called programmatically from a node. Nodes typically represent DataObjects. A DataObject is basically
-a parsed file -- a Java object that knows the meaning of what is in a file or what the file represents and can do 
+a parsed file&#8212;a Java object that knows the meaning of what is in a file or what the file represents and can do 
 something with it. Nodes add features to DataObjects that the user interacts with, such as actions, 
 localized display names, and icons.</p>
  </ul>

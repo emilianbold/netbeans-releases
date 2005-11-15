@@ -44,6 +44,9 @@
 	<mapID target="building_zip" url="build_plugin/building_zip.html"/>
 	<mapID target="installing_plugins" url="distribute_plugin/installing_plugins.html"/>
 	<mapID target="branding_plugins" url="distribute_plugin/branding_plugins.html"/>
+	<mapID target="install_targetplatform" url="distribute_plugin/install_targetplatform.html"/>
+	<mapID target="install_devide" url="distribute_plugin/install_devide.html"/>
+		<mapID target="run_rich_client" url="distribute_plugin/run_rich_client.html"/>
 	<mapID target="distributing_plugins" url="distribute_plugin/distributing_plugins.html"/>	
 	<mapID target="deploying_plugins" url="distribute_plugin/deploying_plugins.html"/>
 

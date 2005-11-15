@@ -18,53 +18,14 @@
 </small></p>
 <p>An NBM file is a NetBeans module packaged for delivery via the web. 
 The principal differences between NBM files and module JAR files are:
-<ul><li>An NBM file is compressed.
-<li>An NBM file can contain more than one JAR file -- modules can package any libraries they use into their NBM file.
+<ul><li>An NBM file can contain more than one JAR file&#8212;modules can package any libraries they use into their NBM file.
 <li>An NBM file contains metadata that NetBeans will use to display information about it in the Update Center,
 such as the manifest contents, the license, etc.
 <li>An NBM file is typically <i>signed</i> for security purposes.</ul>
 
 <p>NBM files are just ZIP files with a special extension. They use the JDK's mechanism 
 for signing JAR files. Unless you are doing something unusual, you will not need to worry about the 
-contents of an NBM file -- just let the standard Ant build script for NBM creation take care of it for you. 
-The IDE generates the build script based on the options you enter 
-in the project's Project Properties dialog box. You can set the module's dependencies, versioning,
- and packaging information in the Project 
-  Properties dialog box. You can further customize program execution by editing 
-  the Ant script and Ant properties for the project. </p>
-
-<p>You can customize the build process by doing any 
-  of the following:</p>
-<ul>
-	<li>Enter basic options, like module dependencies</a>,
-        packaging settings and versioning information in the Project 
-	Properties dialog box.</li>
-	<li>Customize
-    the IDE-generated Ant targets or create new targets in <tt>build.xml</tt>. 
-  </li>
-  <li>Edit properties in <tt>project.properties</tt> to change the name and location 
-    of build output folders and files.</li>
-</ul>
-
-<p>The IDE uses this Ant target to create the NBM file:
-
-<pre>&lt;target name="nbm" depends="init,netbeans" description="Build NBM archive."&gt;
-    &lt;mkdir dir="build"/&gt;
-    &lt;makenbm file="build/${nbm}"
-             productdir="${cluster}"
-             module="${module.jar}"
-             homepage="${nbm.homepage}"
-             distribution="${nbm.distribution}"
-             needsrestart="${nbm.needs.restart}"
-             global="${nbm.is.global}"
-             releasedate="${nbm.release.date}"
-             moduleauthor="${nbm.module.author}"&gt;
-        &lt;license file="${license.file}"/&gt;
-        &lt;signature keystore="${keystore}" 
-                  storepass="${storepass}" 
-                      alias="${nbm_alias}"/&gt;
-    &lt;/makenbm&gt;
-&lt;/target&gt;</pre>
+contents of an NBM file&#8212;just let the standard Ant build script for NBM creation take care of it for you. 
 
 
 <p><b>To build an NBM file:</b>
@@ -74,10 +35,13 @@ in the project's Project Properties dialog box. You can set the module's depende
 
 
 
+
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd>  <a href="../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
-    <dd><a href="../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
+  <dd>  <a href="building_plugins.html">Building a Module</a></dd>
+    
 </dl> 
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small> 
