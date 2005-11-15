@@ -78,7 +78,6 @@
    <mapID target="AS_Wiz_Mail_general" 		url="resourcewizards/Mail_general.html"  />
    <mapID target="AS_Wiz_Mail_props" 		url="resourcewizards/Mail_props.html"  />
 
-    <mapID target="AS_RegServ_SelectDomain"      				url="runtimetab/RegServ_DefDomain.html" />
     <mapID target="AS_RegServ_EnterPIDir"                                       url="runtimetab/RegServ_UserDef.html" />
     <mapID target="AS_RegServ_EnterDomainDir"      				url="runtimetab/RegServ_UserDef.html" />
     <mapID target="AS_RegServ_EnterRemoteInfo"      				url="runtimetab/RegServ_Remote.html" />
