@@ -845,6 +845,12 @@ is divided into following sections:
                         <patternset includes="${{javac.includes}}"/>
                     </customize>
                 </xsl:element>
+                <copy todir="${{build.test.classes.dir}}">
+                    <xsl:call-template name="createFilesets">
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
+                        <xsl:with-param name="excludes">**/*.java</xsl:with-param>
+                    </xsl:call-template>
+                </copy>
             </target>
 
             <target name="-post-compile-test-single">
