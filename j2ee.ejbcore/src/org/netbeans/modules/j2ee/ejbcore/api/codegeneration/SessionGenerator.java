@@ -20,10 +20,12 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Bean;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Method;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -63,25 +65,23 @@ public class SessionGenerator extends EntityAndSessionGenerator {
         // generate bean class
         String beanClass = genUtil.generateBeanClass(SESSION_TEMPLATE, b, pkgName, pkg, false);
         
+        String remoteBusinessIntfName = null;
         if (hasRemote) {
             remoteName = generateRemote(pkgName, pkg, EjbGenerationUtil.getRemoteName(pkgName, ejbName), ejbName);
             homeName = generateHome(pkgName, pkg, EjbGenerationUtil.getHomeName(pkgName, ejbName), remoteName, ejbName);
-            String businessIntfName = EjbGenerationUtil.getBusinessInterfaceName(pkgName, ejbName);
-            genUtil.generateBusinessInterfaces(pkgName, pkg, businessIntfName, ejbName, beanClass, remoteName);
+            remoteBusinessIntfName = EjbGenerationUtil.getBusinessInterfaceName(pkgName, ejbName);
+            genUtil.generateBusinessInterfaces(pkgName, pkg, remoteBusinessIntfName, ejbName, beanClass, remoteName);
         }
         
+        String localBusinessIntfName = null;
         if (hasLocal) {
             localName = generateLocal(pkgName, pkg, EjbGenerationUtil.getLocalName(pkgName, ejbName), ejbName);
             localHomeName = generateLocalHome(pkgName, pkg, EjbGenerationUtil.getLocalHomeName(pkgName, ejbName),
                     localName, ejbName);
-            String businessIntfName = EjbGenerationUtil.getLocalBusinessInterfaceName(pkgName, ejbName);
-            genUtil.generateBusinessInterfaces(pkgName, pkg, businessIntfName, ejbName, beanClass, localName);
+            localBusinessIntfName = EjbGenerationUtil.getLocalBusinessInterfaceName(pkgName, ejbName);
+            genUtil.generateBusinessInterfaces(pkgName, pkg, localBusinessIntfName, ejbName, beanClass, localName);
         }
-        FileObject bFile = pkg.getFileObject(EjbGenerationUtil.getBaseName(beanClass),"java"); //NOI18N
-        DataObject dobj = DataObject.find(bFile);
-        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
-        ec.open();
-        
+
         //put these lines in a common function at the appropriate place after EA1
         //something like public EjbJar getEjbJar()
         //This method will be used whereever we construct/get DD object graph to ensure
@@ -128,6 +128,30 @@ public class SessionGenerator extends EntityAndSessionGenerator {
         ct.addMethod(m);
         ad.addContainerTransaction(ct);
         ejbJar.write(ejbModule.getDeploymentDescriptor());
+        
+        FileObject beanFO = pkg.getFileObject(EjbGenerationUtil.getBaseName(s.getEjbClass()), "java"); // NOI18N
+        
+        // use simple names in all generated classes, use imports
+        boolean rollback = true;
+        JMIUtils.beginJmiTransaction(true);
+        try {
+            JavaMetamodel.getManager().setClassPath(beanFO);
+            JMIUtils.fixImports(s.getEjbClass());
+            JMIUtils.fixImports(s.getLocal());
+            JMIUtils.fixImports(s.getLocalHome());
+            JMIUtils.fixImports(s.getRemote());
+            JMIUtils.fixImports(s.getHome());
+            JMIUtils.fixImports(remoteBusinessIntfName);
+            JMIUtils.fixImports(localBusinessIntfName);
+            rollback = false;
+        } finally {
+            JMIUtils.endJmiTransaction(rollback);
+        }
+        
+        DataObject dobj = DataObject.find(beanFO);
+        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+        ec.open();
+        
     }
 
     /**

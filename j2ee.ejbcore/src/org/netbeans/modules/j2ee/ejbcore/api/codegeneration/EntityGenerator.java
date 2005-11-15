@@ -153,30 +153,7 @@ public class EntityGenerator extends EntityAndSessionGenerator {
             localBusinessIntfName = EjbGenerationUtil.getLocalBusinessInterfaceName(pkgName, ejbName);
             genUtil.generateBusinessInterfaces(pkgName, pkg, localBusinessIntfName, ejbName, beanClass, localName);
             genUtil.addPKGetter(e, cp.findResource(localBusinessIntfName.replace('.', '/') + ".java"), false);
-            
-            // use simple names in all generated classes, use imports
-            boolean rollback = true;
-            JMIUtils.beginJmiTransaction(true);
-            try {
-                FileObject beanFO = pkg.getFileObject(EjbGenerationUtil.getBaseName(e.getEjbClass()), "java"); // NOI18N
-                JavaMetamodel.getManager().setClassPath(beanFO);
-                JMIUtils.fixImports(e.getEjbClass());
-                JMIUtils.fixImports(e.getLocal());
-                JMIUtils.fixImports(e.getLocalHome());
-                JMIUtils.fixImports(e.getRemote());
-                JMIUtils.fixImports(e.getHome());
-                JMIUtils.fixImports(remoteBusinessIntfName);
-                JMIUtils.fixImports(localBusinessIntfName);
-                rollback = false;
-            } finally {
-                JMIUtils.endJmiTransaction(rollback);
-            }
-            
         }
-
-        DataObject dobj = DataObject.find(bFile);
-        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
-        ec.open();
 
         beans.addEntity(e);
         // add transaction requirements
@@ -193,6 +170,28 @@ public class EntityGenerator extends EntityAndSessionGenerator {
         ct.addMethod(m);
         ad.addContainerTransaction(ct);
         ejbJar.write(ejbModule.getDeploymentDescriptor());
+
+        // use simple names in all generated classes, use imports
+        boolean rollback = true;
+        JMIUtils.beginJmiTransaction(true);
+        try {
+            JavaMetamodel.getManager().setClassPath(bFile);
+            JMIUtils.fixImports(e.getEjbClass());
+            JMIUtils.fixImports(e.getLocal());
+            JMIUtils.fixImports(e.getLocalHome());
+            JMIUtils.fixImports(e.getRemote());
+            JMIUtils.fixImports(e.getHome());
+            JMIUtils.fixImports(remoteBusinessIntfName);
+            JMIUtils.fixImports(localBusinessIntfName);
+            rollback = false;
+        } finally {
+            JMIUtils.endJmiTransaction(rollback);
+        }
+        
+        DataObject dobj = DataObject.find(bFile);
+        EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+        ec.open();
+
     }
     
     private void populateCMP(Bean genData, Entity e) {

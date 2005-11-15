@@ -18,6 +18,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
@@ -27,6 +28,7 @@ import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Bean;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.filesystems.FileObject;
 
 
@@ -134,6 +136,18 @@ public class MessageGenerator {
         ad.addContainerTransaction(ct);
         ejbJar.write(ejbModule.getDeploymentDescriptor());
         pwm.getConfigSupport().ensureResourceDefinedForEjb(ejbName + "Bean", "message-driven"); //NOI18N
+        
+        // use simple names in all generated classes, use imports
+        boolean rollback = true;
+        JMIUtils.beginJmiTransaction(true);
+        try {
+            FileObject beanFO = pkg.getFileObject(EjbGenerationUtil.getBaseName(mb.getEjbClass()), "java"); // NOI18N
+            JavaMetamodel.getManager().setClassPath(beanFO);
+            JMIUtils.fixImports(mb.getEjbClass());
+            rollback = false;
+        } finally {
+            JMIUtils.endJmiTransaction(rollback);
+        }
     }
     
 }
