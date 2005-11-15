@@ -199,6 +199,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../core/windows</project>
                 <project>../db</project>
                 <project>../db/core</project>
+                <project>../db/derby</project>
                 <project>../db/model</project>
                 <project>../db/sqleditor</project>
                 <project>../debuggercore</project>
