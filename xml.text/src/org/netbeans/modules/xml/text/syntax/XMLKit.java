@@ -47,7 +47,7 @@ import org.netbeans.modules.xml.text.completion.NodeSelector;
  * @author Petr Kuzel
  * @author Sandeep
  */
-public class XMLKit extends UniKit {
+public class XMLKit extends UniKit implements org.openide.util.HelpCtx.Provider {
 
     /** Serial Version UID */
     private static final long serialVersionUID =5326735092324267367L;
@@ -63,6 +63,10 @@ public class XMLKit extends UniKit {
     
     // hack to be settings browseable //??? more info needed
     public static Map settings;
+    
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx(XMLKit.class);
+    }
     
     /** Create new instance of syntax coloring parser */
     public Syntax createSyntax(Document doc) {
