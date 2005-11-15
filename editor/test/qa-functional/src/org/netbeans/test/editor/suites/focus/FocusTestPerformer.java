@@ -67,13 +67,12 @@ public class FocusTestPerformer extends JellyTestCase {
             DataObject   od = DataObject.find(fo);
             EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
             ec.open();
-            EditorWindowOperator editorWindow = new EditorWindowOperator();
             
             if (editor == null) {
-                editor = new EditorOperator(editorWindow, fileName);
+                editor = new EditorOperator(fileName);
                 editor.pushKey(KeyEvent.VK_HOME, KeyEvent.CTRL_MASK);
             } else if (editor2 == null) {
-                editor2 = new EditorOperator(editorWindow, fileName);
+                editor2 = new EditorOperator(fileName);
                 editor2.pushKey(KeyEvent.VK_HOME, KeyEvent.CTRL_MASK);
             }
         } catch (DataObjectNotFoundException e) {
@@ -83,7 +82,7 @@ public class FocusTestPerformer extends JellyTestCase {
     
     public void prepareLongFileEditor() {
         try {
-            new EditorWindowOperator().closeDiscard();
+            EditorOperator.closeDiscardAll();
             log("Closed Welcome screen.");
         } catch (Exception ex) {
         }
@@ -92,7 +91,7 @@ public class FocusTestPerformer extends JellyTestCase {
     
     public void prepareShortFileEditor() {
         try {
-            new EditorWindowOperator().closeDiscard();
+            EditorOperator.closeDiscardAll();
             log("Closed Welcome screen.");
         } catch (Exception ex) {
         }
@@ -101,7 +100,7 @@ public class FocusTestPerformer extends JellyTestCase {
     
     public void prepare2FilesEditors() {
         try {
-            new EditorWindowOperator().closeDiscard();
+            EditorOperator.closeDiscardAll();
             log("Closed Welcome screen.");
         } catch (Exception ex) {
         }

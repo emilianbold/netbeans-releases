@@ -21,14 +21,13 @@ package org.netbeans.jellytools.modules.editor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jemmy.operators.*;
 import java.util.*;
 
 import javax.swing.ListModel;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jellytools.properties.PropertySheetTabOperator;
-import org.netbeans.jellytools.properties.TextFieldProperty;
 import org.netbeans.jemmy.EventTool;
 
 /** Class implementing all necessary methods for handling "Key Bindings" NbDialog.
@@ -295,10 +294,9 @@ public class KeyBindings extends JDialogOperator {
             Thread.sleep(1000);
         } catch (Exception ex) {
         }
-        PropertySheetOperator property = new PropertySheetOperator(options);
-        PropertySheetTabOperator psto = new PropertySheetTabOperator(property);
-        TextFieldProperty tfp=new TextFieldProperty(psto, ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_KeyBindings"));
-        tfp.openEditor();
+        PropertySheetOperator pso = new PropertySheetOperator(options);
+        Property p=new Property(pso, ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_KeyBindings"));
+        p.openEditor();
         KeyBindings ret=new KeyBindings();
         options.close();
         return ret;

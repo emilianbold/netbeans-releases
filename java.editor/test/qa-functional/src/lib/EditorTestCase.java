@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,7 +25,6 @@ import java.util.StringTokenizer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -249,10 +248,7 @@ public class EditorTestCase extends JellyTestCase {
      */
     public void closeFile() {
         try {
-           EditorWindowOperator editorWindow = new EditorWindowOperator(fileName);
-           //find editor
-           EditorOperator editor = editorWindow.selectPage(fileName);
-           editor.close();
+           new EditorOperator(fileName).close();
         } catch ( TimeoutExpiredException ex) {
             log(ex.getMessage());
             log("Can't close the file");
@@ -263,11 +259,7 @@ public class EditorTestCase extends JellyTestCase {
      */
     public void closeFileWithSave() {
         try {
-           EditorWindowOperator editorWindow = new EditorWindowOperator(fileName);
-           //find editor
-           EditorOperator editor = editorWindow.selectPage(fileName);
-           editor.save();
-           editor.close();
+           new EditorOperator(fileName).close(true);
         } catch ( TimeoutExpiredException ex) {
             log(ex.getMessage());
             log("Can't close the file");
@@ -279,10 +271,7 @@ public class EditorTestCase extends JellyTestCase {
      */
     public void closeFileWithDiscard() {
         try {
-           EditorWindowOperator editorWindow = new EditorWindowOperator(fileName);
-           //find editor
-           EditorOperator editor = editorWindow.selectPage(fileName);
-           editor.closeDiscard();
+            new EditorOperator(fileName).closeDiscard();
         } catch ( TimeoutExpiredException ex) {
             log(ex.getMessage());
             log("Can't close the file");
@@ -337,8 +326,7 @@ public class EditorTestCase extends JellyTestCase {
     }
 
     protected EditorOperator getDefaultSampleEditorOperator() {
-        EditorWindowOperator editorWindow = new EditorWindowOperator(defaultSampleName);
-        return editorWindow.selectPage(defaultSampleName);
+        return new EditorOperator(defaultSampleName);
     }
 
     /** Method will wait max. <code> maxMiliSeconds </code> miliseconds for the <code> requiredValue </code>

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,6 @@ package org.netbeans.test.editor.suites.abbrevs;
 
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -158,8 +157,7 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
                 
                 ec.open();
                 
-                EditorWindowOperator editorWindow = new EditorWindowOperator();
-                editor = new EditorOperator(editorWindow, "Test");
+                editor = new EditorOperator("Test");
             } catch (DataObjectNotFoundException e) {
                 assertTrue(false);
             }

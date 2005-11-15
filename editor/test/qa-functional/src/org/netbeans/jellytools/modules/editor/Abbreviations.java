@@ -21,9 +21,8 @@ package org.netbeans.jellytools.modules.editor;
 import java.util.*;
 import javax.swing.table.TableModel;
 import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jellytools.properties.PropertySheetTabOperator;
-import org.netbeans.jellytools.properties.TextFieldProperty;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.*;
 
@@ -285,9 +284,8 @@ public class Abbreviations extends JDialogOperator {
         "|"+ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_all")+
         "|" + editorName);
         new EventTool().waitNoEvent(500);
-        PropertySheetOperator property = new PropertySheetOperator(options);
-        PropertySheetTabOperator psto = new PropertySheetTabOperator(property);
-        new TextFieldProperty(psto,ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_Abbreviations")).openEditor();
+        PropertySheetOperator pso = new PropertySheetOperator(options);
+        new Property(pso,ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_Abbreviations")).openEditor();
         
         Abbreviations abbs = new Abbreviations();
         

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,7 +51,7 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
             
             ec.open();
             
-            return new EditorOperator(new EditorWindowOperator(), "Test");
+            return new EditorOperator("Test");
         } catch (DataObjectNotFoundException e) {
             assertTrue(false);
             return null;
@@ -137,7 +137,7 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
         log("Starting abbreviations add/remove test.");
         log("Test name=" + getName());
         try {
-            new EditorWindowOperator().closeDiscard();
+            EditorOperator.closeDiscardAll();
             log("Closed Welcome screen.");
         } catch (Exception ex) {
         }

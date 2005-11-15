@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,7 +24,6 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.JTextComponent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import lib.EditorTestCase;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
@@ -90,8 +89,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
 
             openSourceFile(getDefaultSamplePackage(), xmlFile);
             
-            EditorWindowOperator editorWindow = new EditorWindowOperator(xmlFile);
-            EditorOperator editorXML = editorWindow.selectPage(xmlFile);
+            EditorOperator editorXML = new EditorOperator(xmlFile);
             JTextComponentOperator textXML = new JTextComponentOperator(editorXML);
             final JTextComponent targetXML = (JTextComponent)textXML.getSource();
 
@@ -124,9 +122,8 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         } finally {
             // now close XML file
             try {
-               EditorWindowOperator editorWindow = new EditorWindowOperator(xmlFile);
                //find editor
-               EditorOperator editor = editorWindow.selectPage(xmlFile);
+               EditorOperator editor = new EditorOperator(xmlFile);
                editor.closeDiscard();
             } catch ( TimeoutExpiredException ex) {
                 log(ex.getMessage());
