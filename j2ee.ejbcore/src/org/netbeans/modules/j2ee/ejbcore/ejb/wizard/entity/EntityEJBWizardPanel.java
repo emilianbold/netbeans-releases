@@ -99,8 +99,9 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
         add(persistenceTypeLabel, gridBagConstraints);
 
         persistenceGroup.add(cmpButton);
+        cmpButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("MN_Container").charAt(0));
         cmpButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(cmpButton, org.openide.util.NbBundle.getMessage(EntityEJBWizardPanel.class, "LBL_Container"));
+        cmpButton.setText(org.openide.util.NbBundle.getMessage(EntityEJBWizardPanel.class, "LBL_Container"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -109,9 +110,12 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         add(cmpButton, gridBagConstraints);
+        cmpButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("LBL_Container"));
+        cmpButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("LBL_Container"));
 
         persistenceGroup.add(bmpButton);
-        org.openide.awt.Mnemonics.setLocalizedText(bmpButton, org.openide.util.NbBundle.getMessage(EntityEJBWizardPanel.class, "LBL_Bean"));
+        bmpButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("MN_Bean").charAt(0));
+        bmpButton.setText(org.openide.util.NbBundle.getMessage(EntityEJBWizardPanel.class, "LBL_Bean"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -119,6 +123,8 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         add(bmpButton, gridBagConstraints);
+        bmpButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("LBL_Bean"));
+        bmpButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("LBL_Bean"));
 
         org.openide.awt.Mnemonics.setLocalizedText(createInterfaceLabel, org.openide.util.NbBundle.getMessage(EntityEJBWizardPanel.class, "LBL_Interface"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -128,7 +134,8 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(15, 0, 0, 0);
         add(createInterfaceLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(remoteCheckBox, org.openide.util.NbBundle.getMessage(EntityEJBWizardPanel.class, "LBL_Remote"));
+        remoteCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("MN_Remote").charAt(0));
+        remoteCheckBox.setText(org.openide.util.NbBundle.getMessage(EntityEJBWizardPanel.class, "LBL_Remote"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -136,9 +143,12 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         add(remoteCheckBox, gridBagConstraints);
+        remoteCheckBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("LBL_Remote"));
+        remoteCheckBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("LBL_Remote"));
 
+        localCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("MN_Local").charAt(0));
         localCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(localCheckBox, org.openide.util.NbBundle.getMessage(EntityEJBWizardPanel.class, "LBL_Local"));
+        localCheckBox.setText(org.openide.util.NbBundle.getMessage(EntityEJBWizardPanel.class, "LBL_Local"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -148,8 +158,12 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         add(localCheckBox, gridBagConstraints);
+        localCheckBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("LBL_Local"));
+        localCheckBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("LBL_Local"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(EntityEJBWizardPanel.class).getString("LBL_PrimaryKeyClass"));
+        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("MN_PrimaryKey").charAt(0));
+        jLabel1.setLabelFor(primaryKeyTextField);
+        jLabel1.setText(org.openide.util.NbBundle.getBundle(EntityEJBWizardPanel.class).getString("LBL_PrimaryKeyClass"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -164,8 +178,11 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 8);
         add(primaryKeyTextField, gridBagConstraints);
+        primaryKeyTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("ACS_PrimaryKeyField"));
+        primaryKeyTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("ACS_PrimaryKeyField"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, "...");
+        jButton1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("MN_Browse").charAt(0));
+        jButton1.setText("...");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -177,9 +194,10 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         add(jButton1, gridBagConstraints);
+        jButton1.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("ACS_BrowsePK"));
+        jButton1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/entity/Bundle").getString("ACS_BrowsePK"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         SwingUtilities.invokeLater (new Runnable() {
