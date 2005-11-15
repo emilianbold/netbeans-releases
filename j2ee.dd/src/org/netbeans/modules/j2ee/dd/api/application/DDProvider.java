@@ -294,7 +294,7 @@ public final class DDProvider {
             throw new SAXException(ex.getMessage());
         }
         parser.setErrorHandler(errorHandler);
-        parser.setEntityResolver(new DDResolver());
+        parser.setEntityResolver(DDResolver.getInstance());
         Document d = parser.parse(is);
         SAXParseException error = errorHandler.getError();
         return new DDParse(d, error);

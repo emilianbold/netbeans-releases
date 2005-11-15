@@ -153,7 +153,7 @@ public final class DDProvider {
     public EjbJar getDDRoot(InputSource inputSource) throws IOException, SAXException {
         ErrorHandler errorHandler = new ErrorHandler();
         DocumentBuilder parser = createParser(errorHandler);
-        parser.setEntityResolver(new DDResolver());
+        parser.setEntityResolver(DDResolver.getInstance());
         Document document = parser.parse(inputSource);
         SAXParseException error = errorHandler.getError();
         String version = extractVersion(document);
