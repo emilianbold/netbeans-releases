@@ -43,15 +43,24 @@ final class AntSessionInfo {
      */
     static final int SESSION_TYPE_OTHER = 1;
     
-    final JUnitOutputReader outputReader;
+    JUnitOutputReader outputReader = null;
+    /** */
+    private final long timeOfSessionStart;
     /**
      * type of the session - one of the <code>SESSION_TYPE_xxx</code> constants
      */
-    final int sessionType;
+    int sessionType = SESSION_TYPE_UNKNOWN;
     
-    AntSessionInfo(JUnitOutputReader outputReader, int sessionType) {
-        this.outputReader = outputReader;
-        this.sessionType = sessionType;
+    /**
+     */
+    AntSessionInfo() {
+        timeOfSessionStart = System.currentTimeMillis();
+    }
+    
+    /**
+     */
+    long getTimeOfSessionStart() {
+        return timeOfSessionStart;
     }
     
 }

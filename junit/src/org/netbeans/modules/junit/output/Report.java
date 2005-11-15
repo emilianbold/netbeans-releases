@@ -40,6 +40,7 @@ final class Report {
     static final int ALL_PASSED_DISPLAYED = 2;
 
     File antScript;
+    File resultsDir;
     String suiteClassName;
     String[] outputStd;
     String[] outputErr;

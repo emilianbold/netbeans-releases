@@ -14,7 +14,7 @@
 package org.netbeans.modules.junit.output;
 
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.Reader;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -74,10 +74,11 @@ final class XmlOutputParser extends DefaultHandler {
      * @exception  org.xml.sax.SAXException
      *             if initialization of the parser failed
      */
-    static Report parseXmlOutput(String xmlOutput) throws SAXException {
+    static Report parseXmlOutput(Reader reader) throws SAXException,
+                                                       IOException {
         XmlOutputParser parser = new XmlOutputParser();
         try {
-           parser.xmlReader.parse(new InputSource(new StringReader(xmlOutput)));
+           parser.xmlReader.parse(new InputSource(reader));
         } catch (SAXException ex) {
             String message = ex.getMessage();
             int severity = ErrorManager.INFORMATIONAL;
@@ -88,8 +89,11 @@ final class XmlOutputParser extends DefaultHandler {
                        "Exception while parsing XML output from JUnit: "//NOI18N
                            + message);
             }
+            throw ex;
         } catch (IOException ex) {
             assert false;            /* should never happen */
+        } finally {
+            reader.close();          //throws IOException
         }
         return parser.report;
     }

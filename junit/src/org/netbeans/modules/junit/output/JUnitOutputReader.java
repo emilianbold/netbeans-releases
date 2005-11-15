@@ -14,10 +14,18 @@
 package org.netbeans.modules.junit.output;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
+import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntSession;
+import org.openide.ErrorManager;
 import org.xml.sax.SAXException;
 
 /**
@@ -31,10 +39,18 @@ import org.xml.sax.SAXException;
  */
 final class JUnitOutputReader {
     
+    /** name of Ant property holding path to the test results directory */
+    private static final String[] PROP_RESULTS_DIRS
+                                    = {"build.test.unit.results.dir",   //NOI18N
+                                       "build.test.results.dir"};       //NOI18N
+    private static final int MAX_REPORT_FILE_SIZE = 1 << 19;    //512 kBytes
+    
     /** */
     private final AntSession session;
     /** */
     private final File antScript;
+    /** */
+    private final long timeOfSessionStart;
     
     /** */
     private RegexpUtils regexp = RegexpUtils.getInstance();
@@ -71,15 +87,19 @@ final class JUnitOutputReader {
     private boolean waitingForIssueStatus;
 
     /** Creates a new instance of JUnitOutputReader */
-    JUnitOutputReader(final AntSession session) {
+    JUnitOutputReader(final AntSession session,
+                      final long timeOfSessionStart) {
         this.session = session;
         antScript = session.getOriginatingScript();
+        this.timeOfSessionStart = timeOfSessionStart;
     }
     
     /**
      */
-    boolean messageLogged(final String msg) {
+    boolean messageLogged(final AntEvent event) {
         boolean testsuiteStarted = false;
+        
+        final String msg = event.getMessage();
         
         if (msg == null) {
             return testsuiteStarted;
@@ -224,6 +244,22 @@ final class JUnitOutputReader {
                 closePreviousReport();
                 report = new Report(suiteName);
                 report.antScript = antScript;
+                
+                final File projectMainDir
+                        = session.getOriginatingScript().getParentFile();
+                for (int i = 0; i < PROP_RESULTS_DIRS.length; i++) {
+                    String path = event.getProperty(PROP_RESULTS_DIRS[i]);
+                    if (path != null) {
+                        File resultsDir = new File(path);
+                        if (!resultsDir.isAbsolute()) {
+                            resultsDir = new File(projectMainDir, path);
+                        }
+                        if (resultsDir.exists() && resultsDir.isDirectory()) {
+                            report.resultsDir = resultsDir;
+                            break;
+                        }
+                    }
+                }
             }
             
             testsuiteStarted = true;
@@ -377,10 +413,53 @@ final class JUnitOutputReader {
             try {
                 String xmlOutput = xmlOutputBuffer.toString();
                 xmlOutputBuffer = null;     //allow GC before parsing XML
-                report = XmlOutputParser.parseXmlOutput(xmlOutput);
+                report = XmlOutputParser.parseXmlOutput(
+                                                new StringReader(xmlOutput));
                 report.antScript = antScript;
             } catch (SAXException ex) {
                 /* initialization of the parser failed, ignore the output */
+            } catch (IOException ex) {
+                assert false;           //should not happen (StringReader)
+            }
+        } else if ((report != null) && (report.resultsDir != null)) {
+            /*
+             * We have parsed the output but it seems that we also have
+             * an XML report file available - let's use it:
+             */
+            
+            File reportFile = new File(
+                              report.resultsDir,
+                              "TEST-" + report.suiteClassName + ".xml");//NOI18N
+            if (reportFile.exists()
+                    && reportFile.isFile() && reportFile.canRead()
+                    && (reportFile.lastModified() >= timeOfSessionStart)) {
+                final long fileSize = reportFile.length();
+                if ((fileSize > 0l) && (fileSize <= MAX_REPORT_FILE_SIZE)) {
+                    try {
+                        report = XmlOutputParser.parseXmlOutput(
+                                new InputStreamReader(
+                                        new FileInputStream(reportFile),
+                                        "UTF-8"));                      //NOI18N
+                    } catch (UnsupportedCharsetException ex) {
+                        assert false;
+                    } catch (SAXException ex) {
+                        /* This exception has already been handled. */
+                    } catch (IOException ex) {
+                        /*
+                         * Failed to read the report file - but we still have
+                         * the report built from the Ant output.
+                         */
+                        int severity = ErrorManager.INFORMATIONAL;
+                        ErrorManager errMgr = ErrorManager.getDefault();
+                        if (errMgr.isLoggable(severity)) {
+                            errMgr.notify(
+                                    severity,
+                                    errMgr.annotate(
+     ex,
+     "I/O exception while reading JUnit XML report file from JUnit: "));//NOI18N
+                        }
+                    }
+                }
             }
         }
         
