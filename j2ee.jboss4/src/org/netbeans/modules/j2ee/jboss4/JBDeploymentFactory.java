@@ -87,7 +87,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 jbossFactories.put(jbossRoot, jbossFactory);
             }
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
 
         return jbossFactory;
