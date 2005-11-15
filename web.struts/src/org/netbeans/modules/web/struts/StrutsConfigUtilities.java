@@ -76,7 +76,7 @@ public class StrutsConfigUtilities {
                 if (moduleName == null){
                     // the conf file is not in any module (is not declared in the web.xml)
                     try{
-                        StrutsConfig sConfig = data.getStrutsConfig();
+                        StrutsConfig sConfig = data.getStrutsConfig(true);
                         switch (elementType) {
                             case TYPE_ACTION : addActions(list, sConfig);break;
                             case TYPE_FORM_BEAN : addFormBeans(list, sConfig);break;
@@ -100,7 +100,7 @@ public class StrutsConfigUtilities {
                             StrutsConfigDataObject con = (StrutsConfigDataObject)dOb;
                             // the conf file is not in any module (is not declared in the web.xml)
                             try{
-                                StrutsConfig sConfig = con.getStrutsConfig();
+                                StrutsConfig sConfig = con.getStrutsConfig(true);
                                 switch (elementType) {
                                     case TYPE_ACTION : addActions(list, sConfig);break;
                                     case TYPE_FORM_BEAN : addFormBeans(list, sConfig);break;

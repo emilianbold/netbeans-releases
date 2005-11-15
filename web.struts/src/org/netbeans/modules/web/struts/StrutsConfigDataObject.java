@@ -117,6 +117,16 @@ public class StrutsConfigDataObject extends MultiDataObject
         return lastGoodConfig;
     }
     
+    public StrutsConfig getStrutsConfig (boolean parsenow) throws java.io.IOException{
+        if (parsenow){
+            StrutsConfig previous = lastGoodConfig;
+            parsingDocument();
+            if (lastGoodConfig == null)
+                lastGoodConfig = previous;
+        }
+        return getStrutsConfig();
+    }
+    
     /** This method is used for obtaining the current source of xml document.
     * First try if document is in the memory. If not, provide the input from
     * underlayed file object.
