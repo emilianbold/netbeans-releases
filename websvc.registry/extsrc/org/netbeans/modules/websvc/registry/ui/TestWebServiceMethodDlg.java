@@ -61,10 +61,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
  *
  * @author  David Botterill
  */
-public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
+public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener*/ {
     private Dialog dialog;
     private DialogDescriptor dlg = null;
-    private String okString = NbBundle.getMessage(this.getClass(), "CLOSE");
     private JavaMethod method;
     /**
      * The runtimeClassLoader should be used when running the web service client.  This classloader
@@ -265,9 +264,8 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
     public void displayDialog(){
 
         dlg = new DialogDescriptor(this, NbBundle.getMessage(this.getClass(), "TEST_WEB_SERVICE_METHOD"),
-        false, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
-        DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), this);
-        dlg.setOptions(new Object[] { okButton });
+            false, new Object[]{NotifyDescriptor.CANCEL_OPTION}, DialogDescriptor.CANCEL_OPTION,
+            DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), null);
         dialog = DialogDisplayer.getDefault().createDialog(dlg);
         /**
          * After the window is opened, set the focus to the Get information button.
@@ -325,7 +323,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
         jSplitPane1.setResizeWeight(1.0);
         pnlParameter.setLayout(new java.awt.BorderLayout());
 
-        btnSubmit.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/registry/ui/Bundle").getString("BUTTON_SUBMIT"));
+        org.openide.awt.Mnemonics.setLocalizedText(btnSubmit, NbBundle.getMessage(TestWebServiceMethodDlg.class, "BUTTON_SUBMIT"));
         btnSubmit.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ACSD_BUTTON_SUBMIT"));
         btnSubmit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -362,7 +360,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
         jPanel4.setLayout(new java.awt.BorderLayout());
 
         jPanel4.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2,java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/registry/ui/Bundle").getString("RESULTS"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2,NbBundle.getMessage(TestWebServiceMethodDlg.class,"RESULTS"));
         jLabel2.setToolTipText(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ACSD_RESULT_TABLE"));
         jPanel4.add(jLabel2, java.awt.BorderLayout.NORTH);
 
@@ -462,11 +460,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
 
 
     private void myInitComponents() {
-        org.openide.awt.Mnemonics.setLocalizedText(okButton, okString);
-        okButton.getAccessibleContext().
-                setAccessibleDescription(NbBundle.getMessage(TestWebServiceMethodDlg.class,"ACSD_CLOSE"));
-
-        
 
         /**
          * Now set up the Nodes for the TreeTableView
@@ -485,9 +478,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
 
         scrollPaneParameter.setViewportView(outline);
         jLabel1.setLabelFor(outline);
-
-
-
 
     }
     private DefaultMutableTreeNode getParamterRootNode() {
@@ -903,18 +893,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
         }
     }
 
-    public void actionPerformed(ActionEvent evt) {
-        String actionCommand = evt.getActionCommand();
-        if(actionCommand.equalsIgnoreCase(okString)) {
-            okButtonAction(evt);
-        }
-    }
-
-    private void okButtonAction(ActionEvent evt) {
-        dialog.hide();
-        dialog.dispose();
-    }
-
     // Variables declaration - do not modify
     private javax.swing.JPanel btnPanel;
     private javax.swing.JButton btnSubmit;
@@ -929,8 +907,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
     private javax.swing.JScrollPane scrollPaneParameter;
     private javax.swing.JScrollPane scrollPaneResults;
     // End of variables declaration
-
-    private JButton okButton = new JButton();
     //    private TreeTableView treeTableView;
     private Outline outline;
 }
