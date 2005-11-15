@@ -7,27 +7,17 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.properties;
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.properties.editors.DimensionCustomEditorOperator;
-import org.netbeans.jemmy.operators.ContainerOperator;
 
 /** Operator serving property of type Dimension
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class DimensionProperty extends Property {
-    
-    /** Creates a new instance of DimensionProperty
-     * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name 
-     * @deprecated Use {@link #DimensionProperty(PropertySheetOperator, String)} instead
-     */
-    public DimensionProperty(ContainerOperator contOper, String name) {
-        super(contOper, name);
-    }
     
     /** Creates a new instance of DimensionProperty
      * @param propertySheetOper PropertySheetOperator where to find property.

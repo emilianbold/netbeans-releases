@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.properties;
@@ -23,13 +23,10 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 import org.openide.nodes.Node;
@@ -57,17 +54,6 @@ import org.openide.nodes.Node;
  * @see PropertySheetOperator
  */
 public class Property {
-
-    // DEPRECATED>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    /** Container to find property in */
-    protected ContainerOperator contOper;
-    /** Display name of the property */
-    private String name;
-    /** Operator of name button */
-    private SheetButtonOperator nameButtonOperator;
-    /** Operator of value button */
-    private SheetButtonOperator valueButtonOperator;
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<DEPRECATED
 
     /** Class name of string renderer. */
     public static final String STRING_RENDERER = "org.openide.explorer.propertysheet.RendererFactory$StringRenderer";  // NOI18N
@@ -108,37 +94,6 @@ public class Property {
     public Property(PropertySheetOperator propertySheetOper, int index) {
         this.propertySheetOper = propertySheetOper;
         this.property = waitProperty(propertySheetOper, index);
-    }
-    
-    /** Waits for property with given name in specified container.
-     * @param contOper ContainerOperator where to find property. It is
-     * recommended to use {@link PropertySheetOperator}.
-     * @param name property name
-     * @deprecated Use {@link #Property(PropertySheetOperator, String)} instead
-     */
-    public Property(ContainerOperator contOper, String name) {
-        this(new PropertySheetOperator(contOper), name);
-        /*
-        this.contOper = contOper;
-        this.name = name;
-        this.name = nameButtonOperator().getLabel();
-         */
-    }
-    
-    /** Waits for index-th property in specified container.
-     * @param contOper ContainerOperator whete to find property. It is
-     *                 recommended to use {@link PropertySheetOperator}.
-     * @param index index (row number) of property inside property sheet
-     *              (starts at 0)
-     * @deprecated Use {@link #Property(PropertySheetOperator, int)} instead
-     */
-    public Property(ContainerOperator contOper, int index) {
-        this(new PropertySheetOperator(contOper), index);
-        /*
-        this.contOper = contOper;
-        nameButtonOperator = SheetButtonOperator.nameButton(contOper, index);
-        this.name = nameButtonOperator.getLabel();
-         */
     }
     
     /** Waits for property with given name in specified property sheet.
@@ -205,51 +160,6 @@ public class Property {
         }
     }
     
-    /** Gets SheetButtonOperator instance of property's name button. It returns
-     * valid button even if properties were reordered.
-     * @return SheetButtonOperator instance of name button
-     * @deprecated JTable used for property sheet instead of SheetButtons
-     */
-    public SheetButtonOperator nameButtonOperator() {
-        throw new JemmyException("Don't use this! Property sheet uses JTable instead of SheetButton.");
-        //return null;
-        /*
-        if(nameButtonOperator != null) {
-            if(!nameButtonOperator.isValid()) {
-                nameButtonOperator = null;
-            }
-        }
-        if(nameButtonOperator == null) {
-            nameButtonOperator = SheetButtonOperator.nameButton(contOper, name);
-        }
-        return nameButtonOperator;
-         */
-    }
-    
-    /** Gets SheetButtonOperator instance of property's value button. It returns
-     * valid button even if properties were reordered.
-     * @return SheetButtonOperator instance of value button
-     * @deprecated JTable used for property sheet instead of SheetButtons
-     */
-    public SheetButtonOperator valueButtonOperator() {
-        throw new JemmyException("Don't use this! Property sheet uses JTable instead of SheetButton.");
-        /*
-        if(valueButtonOperator != null) {
-            if(!valueButtonOperator.isValid()) {
-                valueButtonOperator = null;
-            }
-        }
-        if(valueButtonOperator == null) {
-            // Button can be changed (reordered, changed value, etc.).
-            // We need to call nameButtonOperator().getNameButtonIndex()
-            // to find valid name button for this property.
-            valueButtonOperator = SheetButtonOperator.valueButton(contOper,
-            nameButtonOperator().getNameButtonIndex());
-        }
-        return valueButtonOperator;
-         */
-    }
-    
     /** Gets display name of this property.
      * It can differ from name given in constructor when only
      * substring of property name is used there.
@@ -313,59 +223,6 @@ public class Property {
         }
     }
     
-    /** Returns true if this property is in editable state (it is being edited).
-     * It is detected by presence of PropertySheetButton which stands
-     * for property value in non editable state.
-     * @return true - this property is being edited; false otherwise
-     * @deprecated Use {@link #setValue} to change property value
-     */
-    public boolean isEditable() {
-        throw new JemmyException("Don't use this! Use setValue() to change property value.");
-        /*
-        // wait for name button index-th PropertyPanel
-        Component propertyPanel = SheetButtonOperator.waitPropertyPanel(contOper,
-        nameButtonOperator().getNameButtonIndex());
-        ComponentChooser chooser = new ComponentChooser() {
-            public boolean checkComponent(Component comp) {
-                return comp.getClass().getName().indexOf("PropertySheetButton") != -1;
-            }
-         
-            public String getDescription() {
-                return "PropertySheetButton";
-            }
-        };
-        // if PropertySheetButton not found, property is editable
-        return contOper.findComponent((Container)propertyPanel, chooser) == null;
-         */
-    }
-    
-    /** If this property is not editable, it scrolls to property and clicks
-     * on name button. Otherwise does nothing.
-     * @deprecated Use {@link #setValue} to change property value
-     */
-    public void startEditing() {
-        throw new JemmyException("Don't use this! Property sheet uses JTable instead of SheetButton.");
-        /*
-        if(!isEditable()) {
-            nameButtonOperator().push();
-        }
-         */
-    }
-    
-    /** If this property is editable, it scrolls to property if needed and
-     * clicks on name button. It cancels editing and sets original value back.
-     * @deprecated Use {@link #setValue} to change property value
-     */
-    public void stopEditing() {
-        throw new JemmyException("Don't use this! Property sheet uses JTable instead of SheetButton.");
-        /*
-        if(isEditable()) {
-            nameButtonOperator().push();
-        }
-         */
-    }
-    
-    
     /** Opens custom property editor for the property by click on "..." button.
      * It checks whether this property supports custom editor by method
      * {@link #supportsCustomEditor}.
@@ -385,7 +242,11 @@ public class Property {
             // run action in a separate thread (no block)
             new Thread(new Runnable() {
                 public void run() {
-                    customEditorAction.actionPerformed(new ActionEvent(table.getSource(), 0, null));
+                    new QueueTool().invokeSmoothly(new Runnable() {
+                        public void run() {
+                            customEditorAction.actionPerformed(new ActionEvent(table.getSource(), 0, null));
+                        }
+                    });
                 }
             }, "Thread to open custom editor no block").start(); // NOI18N
             return;

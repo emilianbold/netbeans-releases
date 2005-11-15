@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,7 +20,6 @@ import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 
 /**
@@ -33,7 +32,7 @@ import org.netbeans.jemmy.operators.JTabbedPaneOperator;
  * <pre>
  *      OutputOperator oo = new OutputOperator();
  *      System.out.println("TEXT from active output tab="+oo.getText().substring(0, 10));
- *      // get TermOperator instance
+ *      // get OutputTabOperator instance
  *      OutputTabOperator oto = oo.getOutputTab("myoutput");
  *      // or
  *      // OutputTabOperator oto = new OutputTabOperator("myoutput");
@@ -68,29 +67,6 @@ public class OutputOperator extends TopComponentOperator {
         return new OutputOperator();
     }
     
-    /**
-     * Waits a tabbed pane inside the Output.
-     * @return instance of JTabbedPaneOperator
-     * @deprecated Use {@link OutputTabOperator} or {@link #getOutputTab} to locate
-     * appropriate output tab.
-     */
-    public JTabbedPaneOperator tbpOutputTabbedPane() {
-        // everytime return a new instance because a new JTabbedPane is created
-        // when all tabs are closed and then one or more newly opened
-        return new JTabbedPaneOperator(this);
-    }
-    
-    /**
-     * Returns active TermOperator instance regardless it is the only one in
-     * output or it is in tabbed pane.
-     * @return active TermOperator instance
-     * @deprecated Use {@link OutputTabOperator} or {@link #getOutputTab} to locate
-     * appropriate output tab.
-     */
-    public TermOperator getActiveTerm() {
-        return new TermOperator((JComponent)getActiveOutputTab().getSource());
-    }
-    
     /** Returns active OutputTabOperator instance regardless it is the only one in
      * output or it is in tabbed pane.
      * @return active OutputTabOperator instance
@@ -98,50 +74,12 @@ public class OutputOperator extends TopComponentOperator {
     private OutputTabOperator getActiveOutputTab() {
         OutputTabOperator outputTabOper;
         if(null != JTabbedPaneOperator.findJTabbedPane((Container)getSource(), ComponentSearcher.getTrueChooser(""))) {
-            outputTabOper = new OutputTabOperator(((JComponent)tbpOutputTabbedPane().getSelectedComponent()));
+            outputTabOper = new OutputTabOperator(((JComponent)new JTabbedPaneOperator(this).getSelectedComponent()));
             outputTabOper.copyEnvironment(this);
         } else {
             outputTabOper = new OutputTabOperator("");
         }
         return outputTabOper;
-    }
-
-    /**
-     * Returns selected page title, <code>null</code> if window does not contain
-     * a tabbed pane.
-     * @return selected page title, <code>null</code> if window does not contain
-     * a tabbed pane.
-     */
-    public String getActivePageName() {
-        try {
-            JTabbedPaneOperator _tabbed = tbpOutputTabbedPane();
-            return _tabbed.getTitleAt(_tabbed.getSelectedIndex());
-        } catch(TimeoutExpiredException e) {
-            return null;
-        }
-    }
-    
-    /**
-     * Selects page by title.
-     * @param pageTitle name of page
-     * @return selected component
-     * @deprecated Use {@link #getOutputTab(String)} if you need {@link OutputTabOperator}
-     * instance of specified name. If there is the only output tab there is no
-     * tabbed pane and method selectPage can fail.
-     */
-    public Component selectPage(String pageTitle) {
-        return tbpOutputTabbedPane().selectPage(pageTitle);
-    }
-    
-    /**
-     * Returns instance of TermOperator of given name.
-     * It is activated by default.
-     * @param termName name of term to be selected
-     * @return instance of TermOperator
-     * @deprecated Use {@link #getOutputTab(String)} instead
-     */
-    public TermOperator getTerm(String termName) {
-        return new TermOperator(termName);
     }
 
     /**

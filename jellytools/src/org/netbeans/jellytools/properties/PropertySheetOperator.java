@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.properties;
@@ -35,7 +35,6 @@ import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextAreaOperator;
 import org.netbeans.jemmy.operators.WindowOperator;
@@ -214,39 +213,6 @@ public class PropertySheetOperator extends TopComponentOperator {
         return _btHelp;
     }
     
-    /** Gets JTabbedPaneOperator of this property sheet.
-     * @return instance of JTabbedPaneOperator
-     * @deprecated JTabbedPane is no more used in property sheet.
-     */
-    public JTabbedPaneOperator tbpPropertySheetTabbedPane() {
-        throw new JemmyException("Don't use this! JTabbedPane no more used in property sheet.");
-        /*
-        if(_tbpPropertySheetTabPane == null) {
-            _tbpPropertySheetTabPane = new JTabbedPaneOperator(this);
-        }
-        return _tbpPropertySheetTabPane;
-         */
-    }
-    
-    /** Gets PropertySheetTabOperator with given name. It selects requested tab
-     * if exist and it is not active.
-     * @param tabName name of tab to find.
-     * @return instance of PropertySheetTabOperator
-     * @deprecated will be removed because of property sheet rewrite
-     */
-    public PropertySheetTabOperator getPropertySheetTabOperator(String tabName) {
-        return new PropertySheetTabOperator(this, tabName);
-    }
-    
-    /** Gets PropertySheetToolbarOperator for this property sheet.
-     * @return instance of PropertySheetToolbarOperator
-     * @deprecated Tool bar no more used in property sheet.
-     */
-    public PropertySheetToolbarOperator getToolbar() {
-        throw new JemmyException("Don't use this! Tool bar no more used in property sheet.");
-        //return new PropertySheetToolbarOperator(this);
-    }
-
     /** Gets text of header from description area.
      * @return text of header from description area
      */

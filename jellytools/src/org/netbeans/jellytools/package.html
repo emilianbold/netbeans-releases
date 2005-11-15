@@ -10,27 +10,25 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
  
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
   <title></title>
 </head>
   <body bgcolor="white">
- Contains operators for main IDE components ant other general classes.
+ Contains operators for main IDE components and other general classes.
  <p>
 Generic jellytools operators which can be used when a specialized operator
 is not available are:<br>
 <ul>
   <li>NbDialogOperator</li>
-  <li> NbFrameOperator (handles both JFrame and JInternalFrame)</li>
-  <li> TopComponentOperator</li>
-  <li> WizardOperator</li>
+  <li>TopComponentOperator</li>
+  <li>WizardOperator</li>
 </ul>
- NbFrameOperator is recommended ancestor for all frames within IDE. It hides 
-differences between SDI and MDI mode and test can work in both modes. NbDialogOperator 
+NbDialogOperator 
 is generic ancestor for majority of IDE dialogs. NbDialogOperator is extended 
 by WizardOperator which helps to implement operators for wizards. TopComponentOperator 
-represents any dockable view which can reside inside a host frame. 
+represents any dockable view which can reside inside a host frame.
 <p></p>
 </body>
 </html>

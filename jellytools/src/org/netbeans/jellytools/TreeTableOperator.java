@@ -39,7 +39,7 @@ import org.openide.explorer.view.Visualizer;
 
 /**
  * Handle IDE's org.openide.explorer.view.TreeTable component
- * which is used instead of JTree in Options dialog, SetupWizard, ...
+ * which is used instead of JTree in Options dialog, ...
  */
 public class TreeTableOperator extends JTableOperator {
     

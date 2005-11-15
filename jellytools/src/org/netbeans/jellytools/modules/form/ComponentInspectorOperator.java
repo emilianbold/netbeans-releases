@@ -7,22 +7,18 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.jellytools.modules.form;
 
 import java.awt.Component;
-
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
-
 import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.openide.windows.TopComponent;
 
 /**
  * Provides access to org.netbeans.modules.form.ComponentInspector component.
@@ -37,19 +33,6 @@ public class ComponentInspectorOperator extends TopComponentOperator {
         super(waitTopComponent(null, null, 0, new ComponentInspectorChooser()));
     }
 
-    /** Finds first ComponentInspector instance inside ContainerOperator. 
-     * Usualy it is FormEditorOperator but Component Inspector can be docked 
-     * to any window.
-     * @param contOper container where to find Component Inspector
-     * @deprecated Use {@link #ComponentInspectorOperator()} instead because
-     * there is no need to specify container. In fact the Component Inspector
-     * is singleton window in IDE.
-     */
-    public ComponentInspectorOperator(ContainerOperator contOper) {
-        super(waitTopComponent(contOper, null, 0, new ComponentInspectorChooser()));
-        copyEnvironment(contOper);
-    }
-    
     /** Getter for component tree.
      * @return JTreeOperator instance
      */

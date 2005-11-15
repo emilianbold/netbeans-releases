@@ -7,33 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.properties;
 
 import org.netbeans.jellytools.NbDialogOperator;
-/*
- * ServiceTypeProperty.java
- *
- * Created on June 18, 2002, 11:53 AM
- */
-
 import org.netbeans.jellytools.properties.editors.ServiceTypeCustomEditorOperator;
-import org.netbeans.jemmy.operators.ContainerOperator;
 
 /** Operator serving property of type ServiceType
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
-public class ServiceTypeProperty extends TextFieldProperty {
-    
-    /** Creates a new instance of ServiceTypeProperty
-     * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name 
-     * @deprecated Use {@link #ServiceTypeProperty(PropertySheetOperator, String)} instead
-     */
-    public ServiceTypeProperty(ContainerOperator contOper, String name) {
-        super(contOper, name);
-    }
+public class ServiceTypeProperty extends Property {
     
     /** Creates a new instance of ServiceTypeProperty
      * @param propertySheetOper PropertySheetOperator where to find property.

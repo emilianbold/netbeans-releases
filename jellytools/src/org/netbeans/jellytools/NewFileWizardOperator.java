@@ -69,7 +69,7 @@ public class NewFileWizardOperator extends WizardOperator {
      * page of the wizard.
      * @param node node which should be selected before new file wizard is invoked
      * @param category category to be selected
-     * @param filetype file type to be selected
+     * @param filetype file type to be selected (exact name - not substring)
      * @return instance of NewFileWizardOperator
      */
     public static NewFileWizardOperator invoke(Node node, String category, String filetype) {
@@ -135,7 +135,7 @@ public class NewFileWizardOperator extends WizardOperator {
     }
     
     /** Selects given file type
-     * @param filetype name of file type to select
+     * @param filetype name of file type to select (exact name - not substring)
      */
     public void selectFileType(String filetype) {
         lstFileTypes().selectItem(filetype);
@@ -212,6 +212,9 @@ public class NewFileWizardOperator extends WizardOperator {
     public JListOperator lstFileTypes() {
         if (_lstFileTypes==null) {
             _lstFileTypes = new JListOperator(this, 1);
+            // set exact comparator because Java Classes has types 'Java Package Info'
+            // and 'Java Package'.
+            _lstFileTypes.setComparator(new Operator.DefaultStringComparator(true, true));
         }
         return _lstFileTypes;
     }

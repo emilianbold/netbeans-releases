@@ -7,34 +7,18 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.properties;
 
-/*
- * FileProperty.java
- *
- * Created on June 18, 2002, 11:53 AM
- */
-
 import java.io.File;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.properties.editors.FileCustomEditorOperator;
-import org.netbeans.jemmy.operators.ContainerOperator;
 
 /** Operator serving property of type File
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class FileProperty extends Property {
-    
-    /** Creates a new instance of FileProperty
-     * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name 
-     * @deprecated Use {@link #FileProperty(PropertySheetOperator, String)} instead
-     */
-    public FileProperty(ContainerOperator contOper, String name) {
-        super(contOper, name);
-    }
     
     /** Creates a new instance of FileProperty
      * @param propertySheetOper PropertySheetOperator where to find property.

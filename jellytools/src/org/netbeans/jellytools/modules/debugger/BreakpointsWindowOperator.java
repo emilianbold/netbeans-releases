@@ -12,11 +12,14 @@
  */
 
 package org.netbeans.jellytools.modules.debugger;
+
+import java.awt.Component;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.modules.debugger.actions.BreakpointsWindowAction;
 import org.netbeans.jellytools.modules.debugger.actions.DeleteAllBreakpointsAction;
+import org.netbeans.jemmy.ComponentChooser;
 
 /**
  * Provides access to the Breakpoints window.
@@ -38,9 +41,10 @@ public class BreakpointsWindowOperator extends TopComponentOperator {
     /** Waits for Breakpoints window top component and creates a new operator
      * for it. */
     public BreakpointsWindowOperator() {
-        super(waitTopComponent(Bundle.getStringTrimmed (
-                "org.netbeans.modules.debugger.ui.views.Bundle",
-                "CTL_Breakpoints_view"),  0));
+        super(waitTopComponent(null, 
+                Bundle.getStringTrimmed ("org.netbeans.modules.debugger.ui.views.Bundle",
+                                         "CTL_Breakpoints_view"),
+                0, viewSubchooser));
     }
     
     /**
@@ -67,4 +71,19 @@ public class BreakpointsWindowOperator extends TopComponentOperator {
     public void verify() {    
         // TBD
     }
+    
+    /** SubChooser to determine OutputWindow TopComponent
+     * Used in constructor.
+     */
+    private static final ComponentChooser viewSubchooser = new ComponentChooser() {
+        private static final String CLASS_NAME="org.netbeans.modules.debugger.ui.views.View";
+        
+        public boolean checkComponent(Component comp) {
+            return comp.getClass().getName().endsWith(CLASS_NAME);
+        }
+        
+        public String getDescription() {
+            return "component instanceof "+CLASS_NAME;// NOI18N
+        }
+    };
 }

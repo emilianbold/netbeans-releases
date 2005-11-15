@@ -7,27 +7,17 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.properties;
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.properties.editors.RectangleCustomEditorOperator;
-import org.netbeans.jemmy.operators.ContainerOperator;
 
 /** Operator serving property of type Rectangle
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
-public class RectangleProperty extends TextFieldProperty {
-    
-    /** Creates a new instance of RectangleProperty
-     * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name 
-     * @deprecated Use {@link #RectangleProperty(PropertySheetOperator, String)} instead
-     */
-    public RectangleProperty(ContainerOperator contOper, String name) {
-        super(contOper, name);
-    }
+public class RectangleProperty extends Property {
     
     /** Creates a new instance of RectangleProperty
      * @param propertySheetOper PropertySheetOperator where to find property.

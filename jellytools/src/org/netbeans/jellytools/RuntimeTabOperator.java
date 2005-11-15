@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,7 +17,6 @@ import java.awt.Component;
 import org.netbeans.jellytools.actions.RuntimeViewAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 /** Operator handling Runtime TopComponent.<p>
@@ -47,20 +46,9 @@ public class RuntimeTabOperator extends TopComponentOperator {
     
     /** Search for Runtime TopComponent through all IDE. */    
     public RuntimeTabOperator() {
-        this(null);
+        super(waitTopComponent(null, RUNTIME_CAPTION, 0, new RuntimeTabSubchooser()));
     }
     
-    /** Search for Runtime TopComponent inside given Container
-     * @param contOper parent Container 
-     * @deprecated Use {@link #RuntimeTabOperator()} instead.
-     */
-    public RuntimeTabOperator(ContainerOperator contOper) {
-        super(waitTopComponent(contOper, RUNTIME_CAPTION, 0, new RuntimeTabSubchooser()));
-        if(contOper != null) {
-            copyEnvironment(contOper);
-        }
-    }
-
     /** invokes Runtime and returns new instance of RuntimeTabOperator
      * @return new instance of RuntimeTabOperator */    
     public static RuntimeTabOperator invoke() {

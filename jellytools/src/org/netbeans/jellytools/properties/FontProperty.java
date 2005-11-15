@@ -7,21 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.properties;
 
-/*
- * FontArrayProperty.java
- *
- * Created on June 18, 2002, 11:53 AM
- */
-
-import java.io.File;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.properties.editors.FontCustomEditorOperator;
-import org.netbeans.jemmy.operators.ContainerOperator;
 
 /** Operator serving property of type Font
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
@@ -36,15 +28,6 @@ public class FontProperty extends Property {
     /** String constant for bold italic font style */    
     public static final String STYLE_BOLDITALIC = FontCustomEditorOperator.STYLE_BOLDITALIC;
    
-    /** Creates a new instance of FontProperty
-     * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name 
-     * @deprecated Use {@link #FontProperty(PropertySheetOperator, String)} instead
-     */
-    public FontProperty(ContainerOperator contOper, String name) {
-        super(contOper, name);
-    }
-    
     /** Creates a new instance of FontProperty
      * @param propertySheetOper PropertySheetOperator where to find property.
      * @param name String property name 

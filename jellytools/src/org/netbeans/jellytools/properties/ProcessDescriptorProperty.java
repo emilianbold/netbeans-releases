@@ -7,33 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.properties;
 
 import org.netbeans.jellytools.NbDialogOperator;
-/*
- * ProcessDescriptorProperty.java
- *
- * Created on June 18, 2002, 11:53 AM
- */
-
 import org.netbeans.jellytools.properties.editors.ProcessDescriptorCustomEditorOperator;
-import org.netbeans.jemmy.operators.ContainerOperator;
 
 /** Operator serving property of type ProcessDescriptor
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class ProcessDescriptorProperty extends Property {
-    
-    /** Creates a new instance of ProcessDescriptorProperty
-     * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name 
-     * @deprecated Use {@link #ProcessDescriptorProperty(PropertySheetOperator, String)} instead
-     */
-    public ProcessDescriptorProperty(ContainerOperator contOper, String name) {
-        super(contOper, name);
-    }
     
     /** Creates a new instance of ProcessDescriptorProperty
      * @param propertySheetOper PropertySheetOperator where to find property.
