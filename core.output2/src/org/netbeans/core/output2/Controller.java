@@ -1397,7 +1397,6 @@ public class Controller { //XXX public only for debug access to logging code
         if (in != null) {
             in.eof();
         }
-        io.setInputVisible(false);
     }
 }
 

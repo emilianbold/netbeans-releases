@@ -197,6 +197,7 @@ class NbIO implements InputOutput {
         if (in != null) {
             in.eof();
             in.reuse();
+            setInputVisible(true);
         }
         post (this, IOEvent.CMD_RESET, true);
     }
@@ -300,6 +301,7 @@ class NbIO implements InputOutput {
                     }
                 }
                 if (inputClosed) {
+                    reuse();
                     return -1;
                 }
                 int realLen = Math.min (buffer().length(), len);
@@ -323,6 +325,7 @@ class NbIO implements InputOutput {
                     }
                 }
                 if (inputClosed) {
+                    reuse();
                     return -1;
                 }
                 int i = (int) buffer().charAt(0);
@@ -351,6 +354,7 @@ class NbIO implements InputOutput {
                     }
                 }
                 if (inputClosed) {
+                    reuse();
                     return 0;
                 }
                 int realLen = Math.min (buffer().length(), (int) n);
