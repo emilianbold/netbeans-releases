@@ -168,6 +168,11 @@
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$ThePanel" url="web/csh/projwiz_standard/ThePanel.html" />
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSourceFolders" url="web/csh/projwiz_standard/SecondPanel.html" />
 
+<!--CSH for HTML Editor-->
+<mapID target="org.netbeans.modules.editor.html.HTMLKit" url="web/create/jsp/about_jsp_edit.html" />
+
+
+
 	<!-- GRAPHIC EDITOR FOR WEB.XML FILES:-->
 	<mapID target="dd_multiview_overview_overviewNode" url="web/csh/graphic_editor/dd_multiview_overview_overviewNode.html" />
 	<mapID target="dd_multiview_overview_contextParamsNode" url="web/csh/graphic_editor/dd_multiview_overview_contextParamsNode.html" />
