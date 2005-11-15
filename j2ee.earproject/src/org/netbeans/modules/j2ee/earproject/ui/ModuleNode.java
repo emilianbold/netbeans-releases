@@ -72,6 +72,12 @@ public class ModuleNode extends AbstractNode implements Node.Cookie {
         }
         return actions;
     }
+    
+    public Action getPreferredAction() {
+        return SystemAction.get(OpenModuleProjectAction.class);
+    }
+    
+    
     public Image getIcon(int type){
         if (key.toString().endsWith("war")) //FIXME
             return Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/WebModuleNode.gif");//NOI18N
