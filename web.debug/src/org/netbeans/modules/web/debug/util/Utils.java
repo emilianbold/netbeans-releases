@@ -125,7 +125,8 @@ public class Utils {
         String jspRelativePath = url;
         if (fo != null) {
             WebModule wm = WebModule.getWebModule (fo);
-            jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
+            if (wm != null)
+                jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
         }
         
         return jspRelativePath;
