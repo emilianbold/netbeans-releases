@@ -89,6 +89,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -113,10 +114,10 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
     public static final int RET_OK = 1;
     
     private DialogDescriptor dlg = null;
-    private String addString =  NbBundle.getMessage(AddWebServiceDlg.class, "Add");
-    private String cancelString =  NbBundle.getMessage(AddWebServiceDlg.class, "CANCEL");
-    private String copyString =  NbBundle.getMessage(AddWebServiceDlg.class, "CONTEXTMENU_COPY");
-    private String clearString =  NbBundle.getMessage(AddWebServiceDlg.class, "CONTEXTMENU_CLEAR");
+    private String addString =  "ADD"; //NOI18N
+    private String cancelString =  "CANCEL"; //NOI18N
+    private String copyString =  "COPY"; //NOI18N
+    private String clearString =  "CLEAR"; //NOI18N
     
     /**
      * currentMessages is a running string of what's displayed in the "results" JEditorPane.
@@ -212,6 +213,17 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
     
     private HTMLDocument document = new HTMLDocument();
     
+        
+    private void initAccessibility() {
+        infoTextlabel.setLabelFor(infoTextArea);
+        messageTextlabel.setLabelFor(messageTextArea);
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "ADD_WEB_SERVICE"));
+        localFileButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "BROWSE"));
+        urlRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "RADIO_URL"));
+        localFileRadioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "RADIO_LOCAL_FILE"));
+        httpProxyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "SET_HTTP_PROXY"));
+        getInfoButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "GET"));
+    }
     
     /** Default Constructor, create a modal dialog */
     public AddWebServiceDlg() {
@@ -223,7 +235,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         invokingNode = node;
         //websvcGroup = wsGroup;
         initComponents();
-        
+        initAccessibility();
         
         uddiRegistryComboBox.setRenderer(new WSListCellRenderer());
         wsdlFileChooser = new JFileChooser();
@@ -306,8 +318,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         selectionPanel.setLayout(new GridBagLayout());
         
         selectionPanel.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
-        
-        urlRadioButton.setText(NbBundle.getMessage(this.getClass(), "RADIO_URL"));
+        Mnemonics.setLocalizedText(urlRadioButton,NbBundle.getMessage(AddWebServiceDlg.class, "RADIO_URL") );
         urlRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 enableControls();
@@ -335,8 +346,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         gridBagConstraints.insets = new Insets(2, 2, 2, 2);
         selectionPanel.add(urlComboBox, gridBagConstraints);
         
-        
-        localFileRadioButton.setText(NbBundle.getMessage(this.getClass(), "RADIO_LOCAL_FILE"));
+        Mnemonics.setLocalizedText(localFileRadioButton,NbBundle.getMessage(AddWebServiceDlg.class, "RADIO_LOCAL_FILE") );
         localFileRadioButton.setSelected(false);
         localFileRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -363,7 +373,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         gridBagConstraints.insets = new Insets(2, 2, 2, 2);
         selectionPanel.add(localFileComboBox, gridBagConstraints);
         
-        localFileButton.setText(NbBundle.getMessage(AddWebServiceDlg.class, "BROWSE"));
+        Mnemonics.setLocalizedText(localFileButton,NbBundle.getMessage(AddWebServiceDlg.class, "BROWSE"));
         localFileButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 localFileButtonAction(evt);
@@ -379,8 +389,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         selectionPanel.add(localFileButton, gridBagConstraints);
         
         
-        
-        getInfoButton.setText(NbBundle.getMessage(AddWebServiceDlg.class, "GET"));
+        Mnemonics.setLocalizedText(getInfoButton,NbBundle.getMessage(AddWebServiceDlg.class, "GET"));
         getInfoButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 getInfoButtonAction(evt);
@@ -394,7 +403,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         gridBagConstraints.insets = new Insets(5, 2, 5, 2);
         selectionPanel.add(getInfoButton, gridBagConstraints);
         
-        httpProxyButton.setText(NbBundle.getMessage(AddWebServiceDlg.class, "SET_HTTP_PROXY"));
+        Mnemonics.setLocalizedText(httpProxyButton,NbBundle.getMessage(AddWebServiceDlg.class, "SET_HTTP_PROXY"));
         httpProxyButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 new ProxySelectionDialog().show();
@@ -430,7 +439,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         
         infoTextPanel.add(infoTextScrollPane, BorderLayout.CENTER);
         
-        infoTextlabel.setText(NbBundle.getMessage(AddWebServiceDlg.class, "WEBSERVICE_INFORMATION"));
+        Mnemonics.setLocalizedText(infoTextlabel,NbBundle.getMessage(AddWebServiceDlg.class, "WEBSERVICE_INFORMATION"));
         infoTextPanel.add(infoTextlabel, BorderLayout.NORTH);
         
         messagePanel.setLayout(new BorderLayout(5,5));
@@ -455,8 +464,10 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         
         add(centerPanel, BorderLayout.CENTER);
         
-        addButton.setText(NbBundle.getMessage(this.getClass(), "Add"));
-        cancelButton.setText(NbBundle.getMessage(this.getClass(), "CANCEL"));
+        Mnemonics.setLocalizedText(addButton,NbBundle.getMessage(AddWebServiceDlg.class, "Add"));
+        addButton.setActionCommand(addString);
+        Mnemonics.setLocalizedText(cancelButton,NbBundle.getMessage(AddWebServiceDlg.class, "CANCEL"));
+        cancelButton.setActionCommand(cancelString);
         buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(addButton);
         buttonPanel.add(cancelButton);
@@ -468,10 +479,13 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         /**
          * set up the context menu for the results area.
          */
-        copyMenuItem.setText(copyString);
+        copyMenuItem.setText(NbBundle.getMessage(AddWebServiceDlg.class, "CONTEXTMENU_COPY"));
+        copyMenuItem.setActionCommand(copyString);
         copyMenuItem.addActionListener(this);
         resultsPopup.add(copyMenuItem);
-        clearMenuItem.setText(clearString);
+        
+        clearMenuItem.setText(NbBundle.getMessage(AddWebServiceDlg.class, "CONTEXTMENU_CLEAR"));
+        clearMenuItem.setActionCommand(clearString);
         clearMenuItem.addActionListener(this);
         resultsPopup.add(clearMenuItem);
         MouseListener popupListener = new PopupListener();
