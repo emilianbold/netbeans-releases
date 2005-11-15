@@ -121,6 +121,7 @@
     <tocitem text="Code Navigation: Quick Reference" target="editor.navigation"/>
     <tocitem text="Keystroke Savers: Quick Reference" target="editor.keystroke-savers"/>
     <tocitem text="Identifying Errors in Source Code" target="editing_error-marks"/>
+    <tocitem text="Using Editor Hints to Fix Code" target="editing.hints"/>
     <tocitem text="Formatting Code" target="editing.formatting"/>
     <tocitem text="Finding and Replacing Text" target="editing.find"/>
     <tocitem text="Regular Expressions For Finding and Replacing Text" target="editing.find_regexp"/>
@@ -149,6 +150,7 @@
       <tocitem text="Using the Jump List" target="editing.jumplist"/>
       <tocitem text="Managing Java Import Statements" target="editing.fastimport-task"/>
     <tocitem text="Overriding and Implementing Methods" target="java.override.tasktopic" />
+    <tocitem text="Generating a Try-Catch Block" target="editing.surround_try-catch" />
     <tocitem text="Synchronizing Source With an Interface" target="java.sync.new-interface" />
     <tocitem text="Working With Beans">
       <tocitem text="About" target="beans.intro"/>
