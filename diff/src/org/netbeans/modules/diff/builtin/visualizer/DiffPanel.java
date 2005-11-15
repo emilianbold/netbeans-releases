@@ -16,7 +16,7 @@ package org.netbeans.modules.diff.builtin.visualizer;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.Dimension;
+import java.awt.*;
 //import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -456,25 +456,24 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
         p2 = jViewport2.getViewPosition();
         ypos = (totalHeight*(line - padding - 1))/(totalLines + 1);
         int viewSize = jViewport1.getViewRect().y;
+
+        try {
+            off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getDocument(), line - 1);
+            off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getDocument(), line - 1);
+
+            jEditorPane1.setCaretPosition(off1);
+            jEditorPane2.setCaretPosition(off2);
+        } catch (IndexOutOfBoundsException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+
         if (ypos < p1.y || ypos + ((diffLength + padding)*totalHeight)/totalLines > p1.y + viewHeight) {
             //System.out.println("resetting posision=" + ypos);
             p1.y = ypos;
-            p2.y = ypos;
-            setViewPosition(p1, p2);
+            jViewport1.setViewPosition(p1);  // joinScrollBar will move paired view
         }
-        off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getDocument(), line - 1);
-        off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getDocument(), line - 1);
-        jEditorPane1.setCaretPosition(off1);
-        jEditorPane2.setCaretPosition(off2);
         //D.deb("off1 = "+off1+", off2 = "+off2+", totalHeight = "+totalHeight+", totalLines = "+totalLines+", ypos = "+ypos);
         //System.out.println("off1 = "+off1+", off2 = "+off2+", totalHeight = "+totalHeight+", totalLines = "+totalLines+", ypos = "+ypos);
-    }
-    
-    private void setViewPosition(java.awt.Point p1, java.awt.Point p2) {
-        jViewport1.setViewPosition(p1);
-        jViewport1.repaint(jViewport1.getViewRect());
-        jViewport2.setViewPosition(p2);
-        jViewport2.repaint(jViewport2.getViewRect());
     }
     
     private void joinScrollBars() {
