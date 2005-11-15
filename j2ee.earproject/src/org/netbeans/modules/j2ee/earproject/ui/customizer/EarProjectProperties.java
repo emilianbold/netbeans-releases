@@ -257,7 +257,24 @@ public class EarProjectProperties {
         } catch (java.io.IOException ioe) {
             org.openide.ErrorManager.getDefault().log(ioe.getLocalizedMessage());
         }
-        if (null != app) {
+        
+        //do not update the file if there is no change
+        boolean same = true;
+        if(deleted.size() == added.size()) {
+            Iterator deletedIterator = deleted.iterator();
+            Iterator addedIterator = added.iterator();
+            while (deletedIterator.hasNext() && addedIterator.hasNext()) {
+                VisualClassPathItem del = (VisualClassPathItem) deletedIterator.next();
+                VisualClassPathItem add = (VisualClassPathItem) deletedIterator.next();
+                //I suppose the vcpi-s should not be null?!?
+                if(del != null && add != null && !del.equals(add)) {
+                    same = false;
+                    break;
+                }
+            }
+        } else same = false;
+        
+        if (null != app && !same) {
             // delete the old entries out of the application
             Iterator iter = deleted.iterator();
             while (iter.hasNext()) {

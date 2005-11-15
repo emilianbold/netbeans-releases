@@ -42,15 +42,15 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  */
 public class LogicalViewNode extends AbstractNode {
 
-	private static Image J2EE_MODULES_BADGE = Utilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/application_16.gif", true ); // NOI18N
+    private static Image J2EE_MODULES_BADGE = Utilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/application_16.gif", true ); // NOI18N
+    private static Image FOLDER = Utilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/folder.gif", true ); // NOI18N
+    private static Image FOLDER_OPEN = Utilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/folderOpen.gif", true ); // NOI18N
     
     private final AntProjectHelper model;
-    private final DataFolder aFolder;
 	
-    public LogicalViewNode(AntProjectHelper model, DataFolder folder) {
+    public LogicalViewNode(AntProjectHelper model) {
         super(new LogicalViewChildren(model), Lookups.fixed( new Object[] { model }));
         this.model = model;
-        this.aFolder = folder;
         // Set FeatureDescriptor stuff:
         setName("preferablyUniqueNameForThisNodeAmongSiblings"); // or, super.setName if needed
         setDisplayName(NbBundle.getMessage(LogicalViewNode.class, "LBL_LogicalViewNode"));
@@ -77,14 +77,8 @@ public class LogicalViewNode extends AbstractNode {
 	}
 
 	private Image computeIcon( boolean opened, int type ) {
-		if(aFolder != null) {
-			Node folderNode = aFolder.getNodeDelegate();
-			Image image = opened ? folderNode.getOpenedIcon( type ) : folderNode.getIcon( type );
-			return Utilities.mergeImages( image, J2EE_MODULES_BADGE, 7, 7 );
-		} else {
-			// !PW FIXME We need a guarranteed folder node resource to avoid this edge case.
-			return J2EE_MODULES_BADGE;
-		}
+            Image image = opened ? FOLDER_OPEN : FOLDER;
+            return Utilities.mergeImages( image, J2EE_MODULES_BADGE, 7, 7 );
 	}
     
     // Create the popup menu:
