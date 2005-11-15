@@ -510,6 +510,10 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         return param.length()==0?null:param;
     }
     
+    public boolean isActionFormUsed(){
+        return CHBUseFormBean.isSelected();
+    }
+    
     private boolean containsActionPath(String path) {
         DefaultComboBoxModel model = (DefaultComboBoxModel)CBInputAction.getModel();
         for (int i=0; i<model.getSize(); i++) {

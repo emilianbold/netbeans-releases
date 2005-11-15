@@ -167,11 +167,13 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                     Action action = new Action();
                     action.setAttributeValue("type",dialogPanel.getActionClass()); //NOI18N
                     action.setAttributeValue("path",dialogPanel.getActionPath()); //NOI18N
-                    action.setAttributeValue("name",dialogPanel.getFormName()); //NOI18N
-                    action.setAttributeValue("input",dialogPanel.getInput()); //NOI18N
-                    action.setAttributeValue("validate",dialogPanel.getValidate()); //NOI18N
-                    action.setAttributeValue("scope",dialogPanel.getScope()); //NOI18N
-                    action.setAttributeValue("attribute",dialogPanel.getAttribute()); //NOI18N
+                    if (dialogPanel.isActionFormUsed()){
+                        action.setAttributeValue("name",dialogPanel.getFormName()); //NOI18N
+                        action.setAttributeValue("input",dialogPanel.getInput()); //NOI18N
+                        action.setAttributeValue("validate",dialogPanel.getValidate()); //NOI18N
+                        action.setAttributeValue("scope",dialogPanel.getScope()); //NOI18N
+                        action.setAttributeValue("attribute",dialogPanel.getAttribute()); //NOI18N
+                    }
                     action.setAttributeValue("parameter",dialogPanel.getParameter()); //NOI18N
                     mappings.addAction(action);
                     target.setCaretPosition(StrutsEditorUtilities.writeBean((BaseDocument)doc, action, "action", "action-mappings"));      //NOI18N
