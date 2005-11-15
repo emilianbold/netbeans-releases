@@ -23,6 +23,7 @@ import org.openide.util.HelpCtx;
 import org.openide.windows.*;
 
 import org.netbeans.api.diff.Difference;
+import org.netbeans.modules.diff.builtin.DiffPresenter;
 
 //import org.netbeans.modules.vcscore.util.Debug;
 //import org.netbeans.modules.vcscore.util.TopComponentCloseListener;
@@ -84,6 +85,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
         diffShifts = new int[diffs.length][2];
         setLayout(new BorderLayout());
         diffPanel = new DiffPanel();
+        putClientProperty(DiffPresenter.PROP_TOOLBAR, diffPanel.getClientProperty(DiffPresenter.PROP_TOOLBAR));
         diffPanel.addPrevLineButtonListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 if (diffs.length == 0) return ;
@@ -123,7 +125,9 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(DiffComponent.class);
     }
-    
+
+
+
     private void showCurrentLine() {
         Difference diff = diffs[currentDiffLine];
         int line = diff.getFirstStart() + diffShifts[currentDiffLine][0];

@@ -28,6 +28,7 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
+import org.netbeans.modules.diff.builtin.DiffPresenter;
 
 import org.openide.actions.CopyAction;
 import org.openide.util.actions.ActionPerformer;
@@ -64,8 +65,18 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
     public DiffPanel() {
 //        this.diff = diff;
         initComponents ();
-        prevButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif", true)));
-        nextButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif", true)));
+
+        // my init components that radically modifies initComponents()
+        // so all (including this toolbar) is clickable in form editor
+        commandPanel.remove(prevButton);
+        commandPanel.remove(nextButton);
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.TRAILING, 5, 0));
+        toolbar.setBorder(BorderFactory.createEmptyBorder());
+        toolbar.add(prevButton);
+        toolbar.add(nextButton);
+        remove(commandPanel);
+        putClientProperty(DiffPresenter.PROP_TOOLBAR, toolbar);
+        
         //setTitle(org.openide.util.NbBundle.getBundle(DiffComponent.class).getString("DiffComponent.title"));
         setName(org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffComponent.title"));
         //HelpCtx.setHelpIDString (getRootPane (), DiffComponent.class.getName ());
@@ -122,21 +133,17 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
 
         commandPanel.setLayout(new java.awt.GridBagLayout());
 
+        prevButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif", true)));
         prevButton.setToolTipText(org.openide.util.NbBundle.getBundle(DiffPanel.class).getString("DiffComponent.prevButton.toolTipText"));
-        prevButton.setPreferredSize(new java.awt.Dimension(24, 24));
-        prevButton.setMaximumSize(new java.awt.Dimension(24, 24));
-        prevButton.setMargin(new java.awt.Insets(1, 1, 0, 1));
-        prevButton.setMinimumSize(new java.awt.Dimension(24, 24));
+        prevButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         commandPanel.add(prevButton, gridBagConstraints);
 
+        nextButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif", true)));
         nextButton.setToolTipText(org.openide.util.NbBundle.getBundle(DiffPanel.class).getString("DiffComponent.nextButton.toolTipText"));
-        nextButton.setPreferredSize(new java.awt.Dimension(24, 24));
-        nextButton.setMaximumSize(new java.awt.Dimension(24, 24));
-        nextButton.setMargin(new java.awt.Insets(1, 1, 0, 1));
-        nextButton.setMinimumSize(new java.awt.Dimension(24, 24));
+        nextButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
