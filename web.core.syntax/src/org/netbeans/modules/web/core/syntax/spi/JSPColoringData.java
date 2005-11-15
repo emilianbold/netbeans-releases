@@ -115,11 +115,6 @@ public final class JSPColoringData extends PropertyChangeSupport {
             elIgnored = newELIgnored;
         }
         
-        if (newXMLSyntax != xmlSyntax){
-            xmlSyntax = newXMLSyntax;
-            coloringSame = false;
-        }
-        
         //An additional check for the coloring change -> 
         //if the elIgnored and xmlSyntax have default values and the taglibs and prefixes are empty,
         //there is no need to repaint the editor (fire the property change).        
@@ -130,6 +125,11 @@ public final class JSPColoringData extends PropertyChangeSupport {
                            newTaglibs.isEmpty() &&
                            newPrefixMapper.isEmpty());
         }
+
+        if (newXMLSyntax != xmlSyntax){
+            xmlSyntax = newXMLSyntax;
+            coloringSame = false;
+        }        
         
         // appy taglib data
         if (parseSuccessful || (taglibs == null) || (prefixMapper == null)) {
