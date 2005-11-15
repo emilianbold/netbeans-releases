@@ -48,6 +48,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
@@ -98,6 +99,11 @@ public class ProjectUtilities {
                 TopComponent tc = (TopComponent) openTCs.next ();
                 // #57621: check if the closed top component isn't instance of ExplorerManager.Provider e.g. Projects/Files tab, if yes then do skip this loop
                 if (tc instanceof ExplorerManager.Provider) {
+                    continue;
+                }
+                // #68677: closing only documents in the editor, not eg. navigator window:
+                Mode m = WindowManager.getDefault().findMode(tc);
+                if (m == null || !"editor".equals(m.getName())) { // NOI18N
                     continue;
                 }
                 DataObject dobj = (DataObject) tc.getLookup ().lookup (DataObject.class);

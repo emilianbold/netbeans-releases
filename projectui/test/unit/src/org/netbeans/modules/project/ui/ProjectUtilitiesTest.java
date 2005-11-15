@@ -49,6 +49,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
     DataObject do2_1_open;
     Project project1, project2;
     Set openFilesSet = new HashSet ();
+    TopComponent tc1_1, tc1_2, tc2_1, tc1_1_navigator;
     
     public ProjectUtilitiesTest (String testName) {
         super (testName);
@@ -93,9 +94,13 @@ public class ProjectUtilitiesTest extends NbTestCase {
         project2 = ProjectManager.getDefault ().findProject (p2);
         ((TestSupport.TestProject) project2).setLookup (Lookups.singleton (TestSupport.createAuxiliaryConfiguration ()));
         
-        new SimpleTopComponent (do1_1_open).open ();
-        new SimpleTopComponent (do1_2_open).open ();
-        new SimpleTopComponent (do2_1_open).open ();
+        //it will be necessary to dock the top components into the "editor" and "navigator" modes, so they need to be created:
+        WindowManager.getDefault().getWorkspaces()[0].createMode("editor", "Editor Mode", null);
+        WindowManager.getDefault().getWorkspaces()[0].createMode("navigator", "Navigator Mode", null);
+        (tc1_1 = new SimpleTopComponent (do1_1_open, "editor")).open ();
+        (tc1_2 = new SimpleTopComponent (do1_2_open, "editor")).open ();
+        (tc2_1 = new SimpleTopComponent (do2_1_open, "editor")).open ();
+        (tc1_1_navigator = new SimpleTopComponent (do1_1_open, "navigator")).open ();
         
         ExitDialog.SAVE_ALL_UNCONDITIONALLY = true;
     }
@@ -250,16 +255,31 @@ public class ProjectUtilitiesTest extends NbTestCase {
         assertNotNull("cannot create file with slashes", ProjectUtilities.canUseFileName(d, null, "a/b/c", "txt", false));
         assertNotNull("cannot create file with backslashes", ProjectUtilities.canUseFileName(d, null, "a\\b\\c", "txt", false));
     }
+    
+    public void testNavigatorIsNotClosed() throws Exception {
+        closeProjectWithOpenedFiles ();
+        
+        assertFalse(tc1_1.isOpened());
+        assertFalse(tc1_2.isOpened());
+        assertTrue(tc1_1_navigator.isOpened());
+    }
 
     private static class SimpleTopComponent extends TopComponent {
         private Object content;
-        public SimpleTopComponent (Object obj) {
+        private String modeToDockInto;
+        public SimpleTopComponent (Object obj, String modeToDockInto) {
             this.content = obj;
+            this.modeToDockInto = modeToDockInto;
             setName (obj.toString ());
         }
         
         public Lookup getLookup () {
             return Lookups.singleton (content);
+        }
+        
+        public void open() {
+            super.open();
+            WindowManager.getDefault().findMode(modeToDockInto).dockInto(this);
         }
     }
     
