@@ -315,8 +315,6 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
         protected MultiDataObject createMultiObject(FileObject pf) throws IOException {
             ERR.log("in createMultiObject for: " + pf);
             SlowDataObject o = new SlowDataObject(pf, this);
-            
-            createCount++;
             ERR.log("created object : " + o);
             //new Exception("creating for: " + pf + " count=" + createCount).printStackTrace();
             return o;
@@ -328,6 +326,9 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
         public SlowDataObject(FileObject pf, MultiFileLoader loader) throws IOException {
             super(pf, loader);
             synchronized (loader) {
+                SlowDataLoader.ERR.log("Incrementing SlowDataObject count to " + ++createCount);
+                SlowDataLoader.ERR.log("Incrementing SlowDataLoader count to " + ++SlowDataLoader.createCount);
+                
                 // in case somebody is listening on the loader for our creation
                 // let him wake up
                 SlowDataLoader.ERR.log("Wake up sleepers");
@@ -346,7 +347,6 @@ public class DataObjectInvalidationTest extends LoggingTestCaseHid {
             
             
             ok = Thread.currentThread();
-            createCount++;
             SlowDataLoader.ERR.log("End of constructor");
         }
         protected Node createNodeDelegate() {
