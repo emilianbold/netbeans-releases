@@ -53,6 +53,8 @@ import org.netbeans.api.project.FileOwnerQuery;
  */
 public class AddModuleAction extends CookieAction {
     
+    private static final String FOLDER_ICON = "org/netbeans/modules/j2ee/earproject/ui/resources/folder.gif";
+    
     private static final Class[] COOKIE_ARRAY =
         new Class[] { AntProjectHelper.class };
     
@@ -107,7 +109,7 @@ public class AddModuleAction extends CookieAction {
         }
         Children.Array children = new Children.Array();
         children.add((Node[])moduleProjectNodes.toArray(new Node[moduleProjectNodes.size()]));
-        final Node root = new AbstractNode(children);
+        final AbstractNode root = new AbstractNode(children);
         String moduleSelector = NbBundle.getMessage(AddModuleAction.class, "LBL_ModuleSelectorTitle");
         
         Project parent = FileOwnerQuery.getOwner(epp.getProjectDirectory());
@@ -130,6 +132,7 @@ public class AddModuleAction extends CookieAction {
                 }
             };
             root.setDisplayName(NbBundle.getMessage(AddModuleAction.class, "LBL_J2EEModules"));
+            root.setIconBaseWithExtension(FOLDER_ICON);
             Node[] selected = NodeOperation.getDefault().select(moduleSelector, root.getDisplayName(), root, na);
             Project[] modules = new Project[selected.length];
             for (int i = 0; i < modules.length; i++) {
