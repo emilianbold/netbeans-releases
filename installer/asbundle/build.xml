@@ -21,9 +21,9 @@ Microsystems, Inc. All Rights Reserved.
   <property name="nb.dir" location="../../nbbuild/netbeans"/>
 
   <!-- Specific to Mac OS X installer -->
-  <property name="appname" value="NetBeansIDE5.0Dev"/>
-  <property name="appversion" value="5.0dev"/>
-  <property name="version" value="5.0dev"/>
+  <property name="appname" value="NetBeans"/>
+  <property name="appversion" value="5.0 Development Version"/>
+  <property name="version" value="5.0 Development Version"/>
                                                                                                                                  
   <property name="app.dir" value="${appname}.app"/>
   <property name="build.dir" value="build"/>
