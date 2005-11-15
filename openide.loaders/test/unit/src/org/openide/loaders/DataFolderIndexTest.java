@@ -18,6 +18,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -36,6 +37,7 @@ import org.openide.util.Mutex;
 public class DataFolderIndexTest extends LoggingTestCaseHid {
     DataFolder df;
     FileObject fo;
+    ErrorManager ERR;
     
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
@@ -47,6 +49,9 @@ public class DataFolderIndexTest extends LoggingTestCaseHid {
     protected void setUp () throws Exception {
         registerIntoLookup(new ErrManager());
         registerIntoLookup(new Pool ());    
+        
+        
+        ERR = org.openide.ErrorManager.getDefault().getInstance("TEST-" + getName());
 
 		FileObject old = Repository.getDefault ().getDefaultFileSystem ().findResource ("TestTemplates");
 		if (old != null) {
@@ -130,19 +135,30 @@ public class DataFolderIndexTest extends LoggingTestCaseHid {
     }
     
     private void testMatchingIndexes (DataFolder f, Node n) {
+        ERR.log("Starting the test");
         Node [] arr = n.getChildren ().getNodes (true);
+        ERR.log("Children created");
         
         Index fromNode = (Index) n.getLookup ().lookup (Index.class);
         assertNotNull ("DataFolderNode has Index.", fromNode);
+        ERR.log("Index from node: " + fromNode);
         
         Index fromFolder = new DataFolder.Index (f, n);
         assertNotNull ("DataFolderNode has Index.", fromFolder);
+        ERR.log("Index from folder: " + fromFolder);
         
-        assertTrue ("Index contains some items", fromNode.getNodesCount () > 0);
-        assertTrue ("Index contains some items", fromFolder.getNodesCount () > 0);
+        int fromNodeCount = fromNode.getNodesCount ();
+        assertTrue ("Index contains some items", fromNodeCount > 0);
+        ERR.log("count computed: " + fromNodeCount);
         
-        log ("Node's index: " + Arrays.asList (fromNode.getNodes ()));
-        log ("Folder's index: " + Arrays.asList (fromFolder.getNodes ()));
+        int fromFolderCount = fromFolder.getNodesCount ();
+        assertTrue ("Index contains some items", fromFolderCount > 0);
+        
+        Node[] arrNode = fromNode.getNodes ();
+        Node[] arrFolder = fromFolder.getNodes ();
+        
+        ERR.log ("Node's index: " + Arrays.asList (arrNode));
+        ERR.log ("Folder's index: " + Arrays.asList (arrFolder));
         
         for (int i = 0; i < arr.length; i++) {
             log("Computing index for [" + i + "] which is node " + arr[i]);
