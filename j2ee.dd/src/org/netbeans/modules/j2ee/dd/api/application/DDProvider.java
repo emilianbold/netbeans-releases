@@ -209,7 +209,7 @@ public final class DDProvider {
           
           return jar;
     }
-    /*
+    
     private static class DDResolver implements EntityResolver {
         static DDResolver resolver;
         static synchronized DDResolver getInstance() {
@@ -234,7 +234,7 @@ public final class DDProvider {
             }
         }
     }
-    */
+    
     private static class ErrorHandler implements org.xml.sax.ErrorHandler {
         private int errorType=-1;
         SAXParseException error;
@@ -294,6 +294,7 @@ public final class DDProvider {
             throw new SAXException(ex.getMessage());
         }
         parser.setErrorHandler(errorHandler);
+        parser.setEntityResolver(new DDResolver());
         Document d = parser.parse(is);
         SAXParseException error = errorHandler.getError();
         return new DDParse(d, error);

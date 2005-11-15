@@ -153,6 +153,7 @@ public final class DDProvider {
     public EjbJar getDDRoot(InputSource inputSource) throws IOException, SAXException {
         ErrorHandler errorHandler = new ErrorHandler();
         DocumentBuilder parser = createParser(errorHandler);
+        parser.setEntityResolver(new DDResolver());
         Document document = parser.parse(inputSource);
         SAXParseException error = errorHandler.getError();
         String version = extractVersion(document);
@@ -221,7 +222,7 @@ public final class DDProvider {
         parser.setErrorHandler(errorHandler);
         return parser;
     }
-    /*
+    
     private static class DDResolver implements EntityResolver {
         static DDResolver resolver;
         static synchronized DDResolver getInstance() {
@@ -247,7 +248,7 @@ public final class DDProvider {
             return new InputSource(url.toString());
         }
     }
-    */
+    
     private static class ErrorHandler implements org.xml.sax.ErrorHandler {
         private int errorType=-1;
         SAXParseException error;
