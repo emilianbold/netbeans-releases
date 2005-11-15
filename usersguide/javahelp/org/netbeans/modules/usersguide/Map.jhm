@@ -296,6 +296,8 @@ under Print Settings in the Options window)
 <mapID target="propfiles.modifying" url="propfiles/modifyprops.html" />
 <!--<mapID target="propfiles.removing" url="propfiles/removingprops.html" />-->
 <mapID target="propfiles.addlocale" url="propfiles/addinglocale.html" />
+
+<!--this topic also a CSH ID for .properties files in Source Editor-->
 <mapID target="propfiles.editlocale" url="propfiles/editinglocale.html" />
 
 <mapID target="internation.internation" url="internationalize/international.html" />
@@ -452,6 +454,10 @@ under Print Settings in the Options window)
 
 <!--CSH for Java Editor-->
 <mapID target="org.netbeans.modules.editor.java.JavaKit" url="editing/csh/about_source_editor.html" />
+
+<!--CSH for XML Editor-->
+<mapID target="org.netbeans.modules.xml.text.syntax.XMLKit" url="editing/csh/about_source_editor.html" />
+
 
 <!--topic for Java Editor toolbar - linked to from Java Editor topic-->
 <mapID target="java_editor_toolbar" url="editing/csh/java_editor_toolbar.html" />
