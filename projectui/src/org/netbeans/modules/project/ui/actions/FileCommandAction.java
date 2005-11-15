@@ -28,11 +28,9 @@ import org.openide.util.actions.Presenter;
 
 /** An action sensitive to selected node. Used for 1-off actions
  */
-public class FileCommandAction extends ProjectAction implements Presenter.Menu {
+public final class FileCommandAction extends ProjectAction {
 
-    private String command;
     private String presenterName;
-    private JMenuItem menuPresenter;
         
     public FileCommandAction( String command, String namePattern, String iconResource, Lookup lookup ) {
         this( command, namePattern, new ImageIcon( Utilities.loadImage( iconResource ) ), lookup );
@@ -40,7 +38,6 @@ public class FileCommandAction extends ProjectAction implements Presenter.Menu {
     
     public FileCommandAction( String command, String namePattern, Icon icon, Lookup lookup ) {
         super( command, namePattern, icon, lookup );
-        this.command = command;
         assert namePattern != null : "Name patern must not be null";
         presenterName = ActionsUtil.formatName( getNamePattern(), 0, "" );
         setDisplayName( presenterName );
@@ -48,8 +45,7 @@ public class FileCommandAction extends ProjectAction implements Presenter.Menu {
     }
     
     protected void refresh( Lookup context ) {
-                
-        Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
+        Project[] projects = ActionsUtil.getProjectsFromLookup( context, getCommand() );
 
         if ( projects.length != 1 ) {
             setEnabled( false ); // Zero or more than one projects found or command not supported            
@@ -61,46 +57,26 @@ public class FileCommandAction extends ProjectAction implements Presenter.Menu {
             presenterName = ActionsUtil.formatName( getNamePattern(), files.length, files.length > 0 ? files[0].getNameExt() : "" ); // NOI18N
         }
         
-        if ( menuPresenter != null ) {
-            Mnemonics.setLocalizedText( menuPresenter, presenterName );
-        }
+        setLocalizedTextToMenuPresented(presenterName);
         
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
     
     protected void actionPerformed( Lookup context ) {
                 
-        Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
+        Project[] projects = ActionsUtil.getProjectsFromLookup( context, getCommand() );
 
         if ( projects.length == 1 ) {            
             ActionProvider ap = (ActionProvider)projects[0].getLookup().lookup( ActionProvider.class );
-            ap.invokeAction( command, context );
+            ap.invokeAction( getCommand(), context );
         }
         
-    }
-    
-    // Implementation of Presenter.Menu ----------------------------------------
-    
-    public JMenuItem getMenuPresenter () {
-        
-        if ( menuPresenter == null ) {
-            menuPresenter = new JMenuItem( this );
-
-            Icon icon = null;
-            // ignore icon if noIconInMenu flag is set
-            if (!Boolean.TRUE.equals( getValue( "noIconInMenu" ) ) ) { 
-                icon = (Icon)getValue( Action.SMALL_ICON );
-            }
-            menuPresenter.setIcon( icon );
-            Mnemonics.setLocalizedText( menuPresenter, presenterName );
-        }
-        return menuPresenter;        
     }
     
 
     public Action createContextAwareInstance( Lookup actionContext ) {
         
-        return new FileCommandAction( command, getNamePattern(), (Icon)getValue( SMALL_ICON ), actionContext );
+        return new FileCommandAction( getCommand(), getNamePattern(), (Icon)getValue( SMALL_ICON ), actionContext );
     }
 
     

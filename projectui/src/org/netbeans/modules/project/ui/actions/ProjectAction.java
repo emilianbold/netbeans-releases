@@ -17,6 +17,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
@@ -38,7 +39,7 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
     private ProjectActionPerformer performer;
     private String namePattern;
     private String presenterName;
-    private JMenuItem menuPresenter;    
+    private JMenuItem menuPresenter;
     
     /** 
      * Constructor for global actions. E.g. actions in main menu which 
@@ -71,6 +72,11 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
         
         if ( key == Action.ACCELERATOR_KEY ) {
             ActionsUtil.SHORCUTS_MANAGER.registerShortcut( command, value );
+            
+            //#68616: make sure the accelarator is propagated into the menu:
+            if (menuPresenter != null) {
+                menuPresenter.setAccelerator((KeyStroke) value);
+            }
         }
         
     }
@@ -106,9 +112,7 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
             presenterName = ActionsUtil.formatProjectSensitiveName( namePattern, projects );
         }
         
-        if ( menuPresenter != null ) {
-            Mnemonics.setLocalizedText( menuPresenter, presenterName );
-        }
+        setLocalizedTextToMenuPresented(presenterName);
                         
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
@@ -121,11 +125,16 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
         return namePattern;
     }
     
+    protected final void setLocalizedTextToMenuPresented(String presenterName) {
+        if ( menuPresenter != null ) {
+            Mnemonics.setLocalizedText( menuPresenter, presenterName );
+        }
+    }
+    
     
     // Implementation of Presenter.Menu ----------------------------------------
     
     public JMenuItem getMenuPresenter () {
-        
         if ( menuPresenter == null ) {
             menuPresenter = new JMenuItem( this );
 
@@ -137,6 +146,7 @@ public class ProjectAction extends LookupSensitiveAction implements Presenter.Me
             menuPresenter.setIcon( icon );
             Mnemonics.setLocalizedText( menuPresenter, presenterName );
         }
+        
         return menuPresenter;        
     }
     

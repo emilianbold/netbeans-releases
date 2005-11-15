@@ -49,7 +49,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
     }
     
     public SetMainProject( Lookup context ) {
-        super( (String)null, namePattern, null, context );
+        super( SetMainProject.class.getName() /*this is a fake command to make ActionUtils.SHORCUTS_MANAGER work*/, namePattern, null, context );
         // wpcl = WeakListeners.propertyChange( this, OpenProjectList.getDefault() );
         // OpenProjectList.getDefault().addPropertyChangeListener( wpcl );
         if ( context == null ) { 

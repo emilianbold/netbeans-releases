@@ -17,11 +17,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.KeyStroke;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.modules.project.ui.actions.ProjectActionTest.ActionCreator;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.filesystems.FileObject;
@@ -102,7 +105,15 @@ public class FileCommandActionTest extends NbTestCase {
         assertFalse( "Action should NOT be enabled", action.isEnabled() );        
         
     }
-        
+    
+    public void testAcceleratorsPropagated() {
+        ProjectActionTest.doTestAcceleratorsPropagated(new ActionCreator() {
+            public ProjectAction create(Lookup l) {
+                return new FileCommandAction("command", "TestProjectAction", (Icon) null, l);
+            }
+        }, true);
+    }
+    
     private static class TestActionProvider implements ActionProvider {
         
         public String COMMAND = "COMMAND";

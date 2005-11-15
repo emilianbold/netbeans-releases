@@ -13,10 +13,14 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.Action;
+import javax.swing.KeyStroke;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
@@ -26,7 +30,9 @@ import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.actions.Presenter.Menu;
 import org.openide.util.lookup.Lookups;
 
 public class ProjectActionTest extends NbTestCase {
@@ -134,6 +140,52 @@ public class ProjectActionTest extends NbTestCase {
         assertFalse( "Action should NOT be enabled", action.isEnabled() );
         assertEquals( "enable() should NOT be called: ", 0, tap.enableCount );
         
+    }
+    
+    public void testAcceleratorsPropagated() {
+        doTestAcceleratorsPropagated(new ActionCreator() {
+            public ProjectAction create(Lookup l) {
+                return new ProjectAction("command", "TestProjectAction", null, l);
+            }
+        }, true);
+    }
+    
+    public static void doTestAcceleratorsPropagated(ActionCreator creator, boolean testMenus) {
+        Lookup l1 = Lookups.fixed(new Object[] {"1"});
+        Lookup l2 = Lookups.fixed(new Object[] {"2"});
+        
+        ProjectAction a1 = creator.create(l1);
+        
+        KeyStroke k1 = KeyStroke.getKeyStroke("shift pressed A");
+        KeyStroke k2 = KeyStroke.getKeyStroke("shift pressed A");
+        
+        assertNotNull(k1);
+        assertNotNull(k2);
+        
+        a1.putValue(Action.ACCELERATOR_KEY, k1);
+        
+        ProjectAction a2 = creator.create(l2);
+        
+        assertEquals(k1, a2.getValue(Action.ACCELERATOR_KEY));
+        
+        a2.putValue(Action.ACCELERATOR_KEY, k2);
+        
+        assertEquals(k2, a1.getValue(Action.ACCELERATOR_KEY));
+        
+        if (testMenus) {
+            assertEquals(k2, a2.getMenuPresenter().getAccelerator());
+        }
+
+        a1.putValue(Action.ACCELERATOR_KEY, k1);
+        assertEquals(k1, a2.getValue(Action.ACCELERATOR_KEY));
+        
+        if (testMenus) {
+            assertEquals(k1, a2.getMenuPresenter().getAccelerator());
+        }
+    }
+    
+    public static interface ActionCreator {
+        public ProjectAction create(Lookup l);
     }
     
     private static class TestActionProvider implements ActionProvider {
