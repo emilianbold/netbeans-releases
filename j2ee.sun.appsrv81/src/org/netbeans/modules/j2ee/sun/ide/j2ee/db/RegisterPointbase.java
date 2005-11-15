@@ -41,7 +41,7 @@ import org.openide.util.NbBundle;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
-
+import org.netbeans.modules.derby.spi.support.DerbySupport;
 /**
  *
  * @author  ludo
@@ -178,18 +178,28 @@ public class RegisterPointbase implements DatabaseRuntime {
         if (installRoot==null){
             return;
         }
-        File localInstall = new File(irf,"pointbase");                          //NOI18N
+
+        
+        File localInstall = new File(irf,"derby");//NOI18N
+        if (localInstall.exists()){
+            DerbySupport.setLocation(localInstall.getAbsolutePath()); 
+            DerbySupport.setSystemHome(localInstall.getAbsolutePath());
+	}         
+        
+
+        localInstall = new File(irf,"pointbase");  //NOI18N
+
         if (!localInstall.exists()){
             return ;  
 	}      
         JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(DRIVER);
 	//now it is a good one.
         AppServerinstallationDirectory =irf;
-        
+        AddPointBaseMenus.execute();           
         if (drvs.length>0)
             return; //already there
 	
-        
+     
         // Go to the conf dir
         File dbFile = new File(installRoot+"/pointbase/databases/sample.dbn");  //NOI18N
         // if it is writable

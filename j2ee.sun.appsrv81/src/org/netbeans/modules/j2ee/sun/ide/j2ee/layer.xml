@@ -116,7 +116,7 @@
     </folder>
 
 
-  <folder name="Menu">
+  <!--folder name="Menu">
         <folder name="Tools">
             <folder name="PointbaseMenu">
                  <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.db.Bundle" />
@@ -130,7 +130,7 @@
             </folder>
         </folder>
 
-  </folder>
+  </folder-->
 
     <folder name="Plugins">
       <!-- Register XML module catalog plugin -->
