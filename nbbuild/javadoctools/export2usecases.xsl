@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
             <center><h1>How to use certain NetBeans APIs</h1></center>
 
             This page contains extracted usecases for some of the NetBeans modules
-            that <a href="index.html">offer an API</a>. 
+            that <a href="overview-summary.html">offer an API</a>. 
 
 
             <xsl:for-each select="//module/arch-usecases[not(../@name='_no module_')]" >
@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
                     </a>
                     <a>
                         <xsl:attribute name="href" >
-                            <xsl:text>index.html#def-api-</xsl:text>
+                            <xsl:text>overview-summary.html#def-api-</xsl:text>
                             <xsl:value-of select="../@name"/>
                         </xsl:attribute>
                         <xsl:value-of select="../@name"/>
@@ -72,6 +72,7 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:apply-templates select="./node()" />
     </xsl:template>
 
+<!--
     <xsl:template match="a[@href]">
         <xsl:variable name="target" select="ancestor::module/@target"/>
         <xsl:variable name="top" select="substring-before($target,'/')" />
@@ -82,7 +83,7 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:with-param name="top" select="$top" />
           </xsl:call-template>
     </xsl:template>
-    
+-->    
     <xsl:template name="print-url" >
         <xsl:param name="url" />
         <xsl:param name="base" />

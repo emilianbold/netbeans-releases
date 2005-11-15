@@ -415,8 +415,6 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
             <include name="*/**/package-summary.html"/>
             <include name="*/**/doc-files/**/*.html"/>
             <include name="*.html" />
-            <!-- this one is pretty broken right now -->
-            <exclude name="usecases.html" />
                 
             &disallowed-links;
         </checklinks>

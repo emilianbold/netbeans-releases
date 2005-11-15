@@ -94,7 +94,7 @@ List of APIs:
 -->
 <answer id="arch-usecases">
 
-<h2><a name="UseCase_I._-_Install_and_use_CPP"></a>UseCase I. - Install
+<h2>UseCase I. - Install
 and use CPP debugger plug-in to NetBeans + Java Debugger.</h2>
 <span style="font-style: italic;">CPP debugger plug-in installs support
 for debugging of some new language to the NetBeans IDE, and some new
@@ -141,7 +141,7 @@ Finish</li>
 </ul>
 <br/>
 
-<h2><a name="UseCase_II._-_Install_and_use_JSP"></a>UseCase II. -
+<h2>UseCase II. -
 Install and use JSP debugger plug-in to NetBeans + Java Debugger.</h2>
 <span style="font-style: italic;">JSP debugger plug-in installs support
 for debugging of some new language to the NetBeans Java Debugger. It
@@ -191,7 +191,7 @@ actions - it redefines Java stepping functionality.</li>
 </ul>
 <br/>
 
-<h2><a name="UseCase_III._-_Install_and_use_J2ME"></a>UseCase III. -
+<h2>UseCase III. -
 Install and use J2EE debugger plug-in to NetBeans + Java Debugger.</h2>
 <span style="font-style: italic;">J2EE debugger plug-in installs some
 enhancements to the standard Java Debugger. It
@@ -214,7 +214,7 @@ Debugger.</li>
   <li>Some new View to Debugger Window</li>
 </ul>
 <br/>
-<h2><a name="UseCase_IV._-_Install_and_use_DBX"></a>UseCase IV. -
+<h2>UseCase IV. -
 Install and use DBX debugger plug-in to NetBeans.</h2>
 <span style="font-style: italic;">DBX debugger plug-in installs support
 for debugging of some new language (CPP) to the NetBeans IDE, and some
@@ -225,7 +225,7 @@ in the next versions). One debugger engine can manage more than one
 sessions. One engine supports debugging in more than one language.<br/>
 <br/>
 </span>
-<h2><a name="UseCase_V._-_Implement_Debugger_Core_UI"></a>UseCase V. -
+<h2>UseCase V. -
 Implement Debugger Core UI module on top of Debugger Core API / SPI.</h2>
 <span style="font-style: italic;">Debugger Core UI needs:<br/>
 </span>
