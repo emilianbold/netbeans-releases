@@ -46,16 +46,18 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
         if (d == null) return null;
 
         Line.Part lp = (Line.Part) getAttachedAnnotatable();
-        Line line = lp.getLine ();
-        DataObject dob = DataEditorSupport.findDataObject(line);
-        EditorCookie ec = (EditorCookie) dob.getCookie(EditorCookie.class);
+        if (lp != null) {
+            Line line = lp.getLine ();
+            DataObject dob = DataEditorSupport.findDataObject(line);
+            EditorCookie ec = (EditorCookie) dob.getCookie(EditorCookie.class);
 
-        if (ec != null) { // Only for editable dataobjects
-            try {
-                doc = ec.openDocument ();                    
-                //RequestProcessor.getDefault().post(this);                    
-                doc.render (this);
-            } catch (IOException e) {
+            if (ec != null) { // Only for editable dataobjects
+                try {
+                    doc = ec.openDocument ();                    
+                    //RequestProcessor.getDefault().post(this);                    
+                    doc.render (this);
+                } catch (IOException e) {
+                }
             }
         }
         return toolTipText;
