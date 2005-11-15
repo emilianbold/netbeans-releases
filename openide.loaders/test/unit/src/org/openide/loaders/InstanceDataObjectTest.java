@@ -51,6 +51,7 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.ModuleInfo;
 import org.openide.options.SystemOption;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
@@ -154,7 +155,7 @@ public class InstanceDataObjectTest extends NbTestCase {
                     try {
                         final FileObject primary = ido.getPrimaryFile();
                         System.err.println("Deleting file=" + primary);
-                        primary.delete(primary.lock());
+                        primary.delete();
 
                         // XXX Testing the case event is fired.
 //                        l.propertyChange(new PropertyChangeEvent(
@@ -1015,6 +1016,14 @@ public class InstanceDataObjectTest extends NbTestCase {
             if (os != null) os.close();
             if (fLock != null) fLock.releaseLock();            
         }
+    }
+    
+    public void testHelp() throws Exception {
+        FileObject fo = FileUtil.createData(lfs.getRoot(), "bla/bla/hle/X.settings");
+        InstanceDataObject ico = (InstanceDataObject)DataObject.find(fo);
+        HelpCtx x = ico.getHelpCtx();
+        assertNotNull("This used to throw stack overflow, issue 68715", x);
+        
     }
 
     public void testCookieChangeEvent2 () throws Exception {        

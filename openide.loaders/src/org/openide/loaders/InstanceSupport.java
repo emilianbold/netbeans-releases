@@ -379,7 +379,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
                 }
             }
             Object o = instance.instanceCreate();
-            if (o != null) {
+            if (o != null && o != instance) {
                 HelpCtx h = HelpCtx.findHelp(o);
                 if (h != HelpCtx.DEFAULT_HELP) {
                     return h;
