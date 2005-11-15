@@ -82,12 +82,20 @@ public class DerbyOptions extends SystemOption {
 //        }
         return location;
     }
+
+    /**
+     * Returns true if the Derby location is null. This method is needed
+     * since getLocation() will never return a null value.
+     */
+    public boolean isLocationNull() {
+        return getProperty(PROP_DERBY_LOCATION) == null;
+    }
     
     /**
      * Sets the Derby location.
      * 
-     * @param location the Derby location. A null value is valid
-     *        be transformed into an empty string (meaning "not set"). An empty
+     * @param location the Derby location. A null value is valid and
+     *        will be transformed into an empty string (meaning "not set"). An empty
      *        string is valid and has the meaning "set to the default location".
      */
     public void setLocation(String location) {
@@ -127,7 +135,18 @@ public class DerbyOptions extends SystemOption {
     
     private static String getDefaultInstallLocation() {
         File location = InstalledFileLocator.getDefault().locate(INST_DIR, null, false);
-        return (location != null) ? location.getAbsolutePath() :  null; // NOI18N
+        if (location == null) {
+            return null;
+        }
+        File libDir = new File(location, "lib"); // NOI18N
+        if (!libDir.exists()) {
+            return null;
+        }
+        File[] libs = libDir.listFiles();
+        if (libs == null || libs.length <= 0) {
+            return null;
+        }
+        return location.getAbsolutePath();
     }
     
     private static void stopDerbyServer() {
