@@ -156,6 +156,8 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
 
         private void addFiles (File folder, List l) {
             File files [] = folder.listFiles(new FF ());
+            if (files == null)
+                return;
             for (int i = 0; i < files.length; i++) {
                 if (files [i].isDirectory()) {
                     addFiles (files [i], l);
