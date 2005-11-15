@@ -18,7 +18,7 @@
 
 	<!-- Start of "Creating" section -->
 	<mapID target="about_create" url="create_plugin/about_create.html"/>
-	<mapID target="netbeans_api_javadoc" url="create_plugin/javadoc.html"/>	
+	<mapID target="netbeans_api_javadoc" url="create_plugin/netbeans_api_javadoc.html"/>	
 	<mapID target="about_project_wizards" url="create_plugin/projectlevel_create/about_project_wizards.html"/>	
 	<mapID target="create_module" url="create_plugin/projectlevel_create/create_module.html"/>
 		<!-- Start of "File-level Creating" section -->
