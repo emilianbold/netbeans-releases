@@ -299,8 +299,6 @@
 		<mapID target="jboss_quickref" url="server/jboss/jboss_quickref.html" />
 		<mapID target="datasource_app_server_jboss" url="server/jboss/datasource_app_server_jboss.html" />
 		<mapID target="management_console_app_server_jboss" url="server/jboss/management_console_app_server_jboss.html" />
-		<mapID target="webservice_app_server_jboss" url="server/jboss/webservice_app_server_jboss.html" />
-		<mapID target="webserviceclient_app_server_jboss" url="server/jboss/webserviceclient_app_server_jboss.html" />
 		<mapID target="j2eeplugins_registering_app_server_jboss_location" url="server/jboss/jboss_location_csh.html" />
 		<mapID target="j2eeplugins_registering_app_server_jboss_properties" url="server/jboss/jboss_properties_csh.html" />
 	<mapID target="registering_app_server_weblogic" url="server/weblogic/registering_app_server_weblogic.html" />
