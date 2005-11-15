@@ -17,13 +17,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.jar.Attributes;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.LoaderPoolNode;
-import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.ManifestSection;
-import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -36,8 +35,6 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
-import org.openide.util.Lookup.Template;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 
@@ -144,6 +141,7 @@ implements LookupListener, ChangeListener {
         DataObject now = DataObject.find(fo);
         
         err.log("Object is here: " + now);
+        assertTrue(fo.getMIMEType(), Collections.list(loader.getExtensions().mimeTypes()).contains(fo.getMIMEType()));        
         assertEquals("Loader updated to lenka", loader, now.getLoader());
     }
 

@@ -144,6 +144,9 @@ final class MIMESupport extends Object {
                                         previousResolvers = (MIMEResolver[]) prev;
                                     }
                                     resolvers = null;
+                                    lastFo = EMPTY;
+                                    lastCfo = EMPTY;
+                                    result = null;
                                 }
                             }
                         }
