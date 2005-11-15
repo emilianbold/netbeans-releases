@@ -473,17 +473,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 }
                 return;
             }
-            layout.completionProcessKeyEvent(e);
-            if (e.isConsumed()) {
-                return;
-            }
         }
-	if (!e.isConsumed()) {
-	    layout.documentationProcessKeyEvent(e);
-	}
-	if (!e.isConsumed()) {
-	    layout.toolTipProcessKeyEvent(e);
-	}
+	layout.processKeyEvent(e);
     }
     
     void completionQuery(boolean delayQuery) {
@@ -812,18 +803,15 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
         List documentationResultSets = docResult.getResultSets();
 
+        CompletionTask docTask;
         CompletionItem selectedItem = layout.getSelectedCompletionItem();
-        if (selectedItem != null) { // attempt the documentation for selected item
-            CompletionTask docTask = selectedItem.createDocumentationTask();
-            if (docTask != null) {
-                CompletionResultSetImpl resultSet = new CompletionResultSetImpl(
-                        this, newDocumentationResult, docTask, CompletionProvider.DOCUMENTATION_QUERY_TYPE);
-                documentationResultSets.add(resultSet);
-            }
-
+        if (selectedItem != null && (docTask = selectedItem.createDocumentationTask()) != null) { // attempt the documentation for selected item
+            CompletionResultSetImpl resultSet = new CompletionResultSetImpl(
+                    this, newDocumentationResult, docTask, CompletionProvider.DOCUMENTATION_QUERY_TYPE);
+            documentationResultSets.add(resultSet);
         } else { // No item selected => Query all providers
             for (int i = 0; i < activeProviders.length; i++) {
-                CompletionTask docTask = activeProviders[i].createTask(
+                docTask = activeProviders[i].createTask(
                         CompletionProvider.DOCUMENTATION_QUERY_TYPE, getActiveComponent());
                 if (docTask != null) {
                     CompletionResultSetImpl resultSet = new CompletionResultSetImpl(
@@ -937,17 +925,15 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
         List toolTipResultSets = newToolTipResult.getResultSets();
 
+        CompletionTask toolTipTask;
         CompletionItem selectedItem = layout.getSelectedCompletionItem();
-        if (selectedItem != null) {
-            CompletionTask toolTipTask = selectedItem.createToolTipTask();
-            if (toolTipTask != null) {
-                CompletionResultSetImpl resultSet = new CompletionResultSetImpl(
-                            this, newToolTipResult, toolTipTask, CompletionProvider.TOOLTIP_QUERY_TYPE);
-                toolTipResultSets.add(resultSet);
-            }
+        if (selectedItem != null && (toolTipTask = selectedItem.createToolTipTask()) != null) {
+            CompletionResultSetImpl resultSet = new CompletionResultSetImpl(
+                    this, newToolTipResult, toolTipTask, CompletionProvider.TOOLTIP_QUERY_TYPE);
+            toolTipResultSets.add(resultSet);
         } else {
             for (int i = 0; i < activeProviders.length; i++) {
-                CompletionTask toolTipTask = activeProviders[i].createTask(
+                toolTipTask = activeProviders[i].createTask(
                         CompletionProvider.TOOLTIP_QUERY_TYPE, getActiveComponent());
                 if (toolTipTask != null) {
                     CompletionResultSetImpl resultSet = new CompletionResultSetImpl(

@@ -21,6 +21,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.Stack;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JToolTip;
@@ -71,6 +72,8 @@ public final class CompletionLayout {
     private final DocPopup docPopup;
     private final TipPopup tipPopup;
     
+    private Stack/*<CompletionLayoutPopup>*/ visiblePopups;
+    
     CompletionLayout() {
         completionPopup = new CompletionPopup();
         completionPopup.setLayout(this);
@@ -81,6 +84,7 @@ public final class CompletionLayout {
         tipPopup = new TipPopup();
         tipPopup.setLayout(this);
         tipPopup.setPreferDisplayAboveCaret(true);
+        visiblePopups = new Stack();
     }
     
     public JTextComponent getEditorComponent() {
@@ -96,16 +100,20 @@ public final class CompletionLayout {
         completionPopup.hide();
         docPopup.hide();
         tipPopup.hide();
+        visiblePopups.clear();
     }
 
     public void showCompletion(List data, String title, int anchorOffset,
     ListSelectionListener listSelectionListener) {
         completionPopup.show(data, title, anchorOffset, listSelectionListener);
+        if (!visiblePopups.contains(completionPopup))
+            visiblePopups.push(completionPopup);
     }
     
     public boolean hideCompletion() {
         if (completionPopup.isVisible()) {
             completionPopup.hide();
+            visiblePopups.remove(completionPopup);
             return true;
         } else { // not visible
             return false;
@@ -120,17 +128,25 @@ public final class CompletionLayout {
         return completionPopup.getSelectedCompletionItem();
     }
     
-    public void completionProcessKeyEvent(KeyEvent evt) {
-        completionPopup.completionProcessKeyEvent(evt);
+    public void processKeyEvent(KeyEvent evt) {
+        for (int i = visiblePopups.size() - 1; i >= 0; i--) {
+            CompletionLayoutPopup popup = (CompletionLayoutPopup)visiblePopups.get(i);
+            popup.processKeyEvent(evt);
+            if (evt.isConsumed())
+                return;
+        }
     }
 
     public void showDocumentation(CompletionDocumentation doc, int anchorOffset) {
         docPopup.show(doc, anchorOffset);
+        if (!visiblePopups.contains(docPopup))
+            visiblePopups.push(docPopup);
     }
     
     public boolean hideDocumentation() {
         if (docPopup.isVisible()) {
             docPopup.hide();
+            visiblePopups.remove(docPopup);
             return true;
         } else { // not visible
             return false;
@@ -145,18 +161,16 @@ public final class CompletionLayout {
         docPopup.clearHistory();
     }
     
-    public void documentationProcessKeyEvent(KeyEvent evt) {
-        docPopup.documentationProcessKeyEvent(evt);
-    }
-
-    
     public void showToolTip(JToolTip toolTip, int anchorOffset) {
         tipPopup.show(toolTip, anchorOffset);
+        if (!visiblePopups.contains(tipPopup))
+            visiblePopups.push(tipPopup);
     }
     
     public boolean hideToolTip() {
         if (tipPopup.isVisible()) {
             tipPopup.hide();
+            visiblePopups.remove(tipPopup);
             return true;
         } else { // not visible
             return false;
@@ -165,10 +179,6 @@ public final class CompletionLayout {
     
     public boolean isToolTipVisible() {
         return tipPopup.isVisible();
-    }
-
-    public void toolTipProcessKeyEvent(KeyEvent evt) {
-        tipPopup.toolTipProcessKeyEvent(evt);
     }
 
     /**
@@ -306,7 +316,7 @@ public final class CompletionLayout {
             return isVisible() ? getCompletionScrollPane().getSelectedCompletionItem() : null;
         }
 
-        public void completionProcessKeyEvent(KeyEvent evt) {
+        public void processKeyEvent(KeyEvent evt) {
             if (isVisible()) {
                 Object actionMapKey = getCompletionScrollPane().getInputMap().get(
                         KeyStroke.getKeyStrokeForEvent(evt));
@@ -348,9 +358,18 @@ public final class CompletionLayout {
             } // otherwise leave present doc displayed
         }
 
-        public void documentationProcessKeyEvent(KeyEvent evt) {
+        public void processKeyEvent(KeyEvent evt) {
             if (isVisible()) {
-                getDocumentationScrollPane().processKeyEvt(evt);
+                Object actionMapKey = getDocumentationScrollPane().getInputMap().get(
+                        KeyStroke.getKeyStrokeForEvent(evt));
+                
+                if (actionMapKey != null) {
+                    Action action = getDocumentationScrollPane().getActionMap().get(actionMapKey);
+                    if (action != null) {
+                        action.actionPerformed(new ActionEvent(getDocumentationScrollPane(), 0, null));
+                        evt.consume();
+                    }
+                }
             }
         }
         
@@ -387,7 +406,7 @@ public final class CompletionLayout {
             }
 	}
 
-        public void toolTipProcessKeyEvent(KeyEvent evt) {
+        public void processKeyEvent(KeyEvent evt) {
             if (isVisible()) {
 		if (KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0).equals(
 			KeyStroke.getKeyStrokeForEvent(evt))

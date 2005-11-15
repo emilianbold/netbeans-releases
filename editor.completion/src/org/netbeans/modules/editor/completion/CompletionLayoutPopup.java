@@ -16,6 +16,7 @@ package org.netbeans.modules.editor.completion;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 import javax.swing.JComponent;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
@@ -30,7 +31,7 @@ import javax.swing.text.JTextComponent;
  *
  *  @author Dusan Balek, Miloslav Metelka
  */
-class CompletionLayoutPopup {
+abstract class CompletionLayoutPopup {
     
     private CompletionLayout layout;
     
@@ -322,4 +323,5 @@ class CompletionLayoutPopup {
         return isVisible() ? bounds.union(getPopupBounds()) : bounds;
     }
 
+    public abstract void processKeyEvent(KeyEvent evt);
 }

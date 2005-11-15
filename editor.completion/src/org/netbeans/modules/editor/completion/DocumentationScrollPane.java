@@ -288,7 +288,6 @@ public class DocumentationScrollPane extends JScrollPane {
     
     private void installKeybindings() {
 	// Register Escape key
-	// Register Escape key
         registerKeybinding(ACTION_JAVADOC_ESCAPE, JAVADOC_ESCAPE,
         KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
         ExtKit.escapeAction
@@ -334,24 +333,8 @@ public class DocumentationScrollPane extends JScrollPane {
         Object actionKey = inputMap.get(key);
         if (actionKey != null) {
             key = KeyStroke.getKeyStroke(key.getKeyCode(), key.getModifiers() | InputEvent.SHIFT_MASK);
-            inputMap.put(key, actionKey);
+            getInputMap().put(key, actionKey);
         }
-    }
-    
-    void processKeyEvt(KeyEvent evt) { // name to avoid clash with JComponent's one
-        KeyStroke key = KeyStroke.getKeyStrokeForEvent(evt);
-        if (!isPassThroughKeyStroke(key)) {
-            ActionListener action = getActionForKeyStroke(key);
-            if (action != null) {
-                action.actionPerformed(new ActionEvent(this, 0, null));
-                evt.consume();
-            }
-        }
-    }
-    
-    private boolean isPassThroughKeyStroke(KeyStroke key) {
-        return (key == KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0))
-            || (key == KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0));
     }
     
     private class BrowserButton extends JButton {
