@@ -46,7 +46,7 @@ public class ProjectsViewSubMenus extends org.netbeans.performance.test.utilitie
     public ProjectsViewSubMenus(String testName) {
         super(testName);
         expectedTime = 250;
-        WAIT_AFTER_OPEN = 500;
+        WAIT_AFTER_OPEN = 1000;
         track_mouse_event = ActionTracker.TRACK_MOUSE_MOVED;
     }
     
@@ -54,7 +54,7 @@ public class ProjectsViewSubMenus extends org.netbeans.performance.test.utilitie
     public ProjectsViewSubMenus(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 250;
-        WAIT_AFTER_OPEN = 500;
+        WAIT_AFTER_OPEN = 1000;
         track_mouse_event = ActionTracker.TRACK_MOUSE_MOVED;
     }
     

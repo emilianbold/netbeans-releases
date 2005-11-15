@@ -27,13 +27,13 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class ServerManager extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    /** Creates a new instance of SetupWizard */
+    /** Creates a new instance of ServerManager */
     public ServerManager(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
     
-    /** Creates a new instance of SetupWizard */
+    /** Creates a new instance of ServerManager */
     public ServerManager(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
