@@ -205,6 +205,17 @@ public class EntityMethodController extends AbstractMethodController {
         return prependAndUpper(fieldName, prefix);
     }
 
+    private static String getFieldName(String methodName) {
+        if (methodName.length() < 3) {
+            return null;
+        }
+        String prefix = methodName.substring(0, 3);
+        if (prefix.equals("set") || prefix.equals("get")) {
+            return lower(methodName.substring(3, methodName.length()));
+        }
+        return null;
+    }
+    
     public boolean hasJavaImplementation(Method intfView) {
         return hasJavaImplementation(getMethodTypeFromInterface(intfView));
     }
@@ -273,11 +284,12 @@ public class EntityMethodController extends AbstractMethodController {
             boolean remoteGetter, boolean remoteSetter, String description) throws IOException {
         beginWriteJmiTransaction();
         boolean rollback = true;
+        Method getterMethod = null;
         try {
             JavaClass beanClass = getBeanClass();
             registerClassForSave(beanClass);
-            addGetterMethod(beanClass, field, MODIFIERS_PUBLIC_ABSTRACT, false);
-            addSetterMethod(beanClass, field, MODIFIERS_PUBLIC_ABSTRACT, false);
+            addSetterMethod(beanClass, field, MODIFIERS_PUBLIC_ABSTRACT, false, model);
+            getterMethod = addGetterMethod(beanClass, field, MODIFIERS_PUBLIC_ABSTRACT, false, model);
             final String fieldName = field.getName();
             updateFieldAccessors(fieldName, localGetter, localSetter, remoteGetter, remoteSetter);
             rollback = false;
@@ -289,6 +301,9 @@ public class EntityMethodController extends AbstractMethodController {
         f.setDescription(description);
         model.addCmpField(f);
         parent.write(ddFile);
+        if (getterMethod != null) {
+            JMIUtils.openInEditor(getterMethod);
+        }
     }
 
     public void validateNewCmpFieldName(String name) {
@@ -302,16 +317,40 @@ public class EntityMethodController extends AbstractMethodController {
         }
     }
 
-    private static void addSetterMethod(JavaClass javaClass, Field field, int modifiers, boolean remote) {
-        addMethod(javaClass, createSetterMethod(javaClass, field, modifiers, remote));
+    private static Method addSetterMethod(JavaClass javaClass, Field field, int modifiers, boolean remote, Entity e) {
+        Method method = createSetterMethod(javaClass, field, modifiers, remote);
+        addMethod(javaClass, method, e);
+        return method;
     }
 
-    private static void addGetterMethod(JavaClass javaClass, Field fe, int modifiers, boolean remote) {
-        addMethod(javaClass, createGetterMethod(javaClass, fe, modifiers, remote));
+    private static Method addGetterMethod(JavaClass javaClass, Field fe, int modifiers, boolean remote, Entity e) {
+        Method method = createGetterMethod(javaClass, fe, modifiers, remote);
+        addMethod(javaClass, method, e);
+        return method;
     }
 
-    private static void addMethod(JavaClass javaClass, Method method) {
-        javaClass.getContents().add(method);
+    private static void addMethod(JavaClass javaClass, Method method, Entity e) {
+        // try to add method as the last CMP field getter/setter in class
+        List cmpFields = new ArrayList();
+        CmpField[] cmpFieldArray = e.getCmpField();
+        for (int i = 0; i < cmpFieldArray.length; i++) {
+            cmpFields.add(cmpFieldArray[i].getFieldName());
+        }
+        int index = -1;
+        for (Iterator it = javaClass.getContents().iterator(); it.hasNext();) {
+            Object elem = (Object) it.next();
+            if (elem instanceof Method) {
+                String fieldName = getFieldName(((Method) elem).getName());
+                if (cmpFields.contains(fieldName)) {
+                    index = javaClass.getContents().indexOf(elem);
+                }
+            }
+        }
+        if (index != -1) {
+            javaClass.getContents().add(index + 1, method);
+        } else {
+            javaClass.getContents().add(method);
+        }
     }
 
     private static void removeMethod(JavaClass javaClass, Method method) {
@@ -402,6 +441,12 @@ public class EntityMethodController extends AbstractMethodController {
         StringBuffer sb = new StringBuffer(fullName);
         sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
         return prefix+sb.toString();
+    }
+
+    private static String lower(String fullName) {
+        StringBuffer sb = new StringBuffer(fullName);
+        sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
+        return sb.toString();
     }
 
     private boolean isEjbUsed(EjbRelationshipRole role, String ejbName, String fieldName) {
@@ -574,9 +619,9 @@ public class EntityMethodController extends AbstractMethodController {
                 if (shouldExist) {
                     if (method == null) {
                         if (getter) {
-                            addGetterMethod(businessInterface, field, 0, !local);
+                            addGetterMethod(businessInterface, field, 0, !local, model);
                         } else {
-                            addSetterMethod(businessInterface, field, 0, !local);
+                            addSetterMethod(businessInterface, field, 0, !local, model);
                         }
                     }
                 } else if (method != null) {

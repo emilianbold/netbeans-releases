@@ -75,7 +75,6 @@ public class AddCmpFieldAction extends NodeAction {
 
     public static boolean addCmpField(JavaClass beanClass, FileObject ddFile) {
         assert beanClass != null;
-        JMIUtils.createField(beanClass, "cmpField", "String"); //NOI18N
         Field fe = createField(beanClass);
         EntityMethodController emc = (EntityMethodController) EntityMethodController.createFromClass(beanClass);
         return addCmpField(emc, ddFile, fe);
