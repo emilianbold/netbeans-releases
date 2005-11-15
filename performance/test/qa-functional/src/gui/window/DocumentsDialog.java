@@ -7,14 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.window;
 
 import org.netbeans.jellytools.DocumentsDialogOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.DocumentsAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -26,7 +26,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class DocumentsDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    private static EditorWindowOperator editor;
+    private static EditorOperator editor;
     
     /** Creates a new instance of DocumentsDialog */
     public DocumentsDialog(String testName) {
@@ -42,7 +42,7 @@ public class DocumentsDialog extends org.netbeans.performance.test.utilities.Per
     
     public void initialize(){
         gui.Utilities.open10FilesFromJEdit();
-        editor = new EditorWindowOperator();
+        editor = new EditorOperator("");
     }
     
     public void prepare() {

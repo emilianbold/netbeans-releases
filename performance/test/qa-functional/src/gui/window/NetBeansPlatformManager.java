@@ -16,7 +16,6 @@ package gui.window;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.SetupWizardOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 

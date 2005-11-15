@@ -13,7 +13,7 @@
 
 package gui.window;
 
-import org.netbeans.jellytools.OutputWindowOperator;
+import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.actions.OutputWindowViewAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -44,12 +44,12 @@ public class OutputWindow extends org.netbeans.performance.test.utilities.Perfor
     public ComponentOperator open() {
         // invoke Output from the main menu
         new OutputWindowViewAction().performMenu();
-        return new OutputWindowOperator();
+        return new OutputOperator();
     }
     
     public void close() {
         if(testedComponentOperator!=null && testedComponentOperator.isShowing())
-            ((OutputWindowOperator)testedComponentOperator).close();
+            ((OutputOperator)testedComponentOperator).close();
     }
     
 }
