@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -175,20 +175,6 @@ public class PropertiesEditorTestCase extends JellyTestCase {
         prn.select();
         Node node = new Node(prn,"Source Packages"+treeSeparator+packageName);
         return node;
-    }
-    
-    /** Close file in open project.
-     */
-    public void closeFileWithDiscard(String fileName) {
-        try {
-            EditorWindowOperator editorWindow = new EditorWindowOperator(fileName);
-            //find editor
-            EditorOperator editor = editorWindow.selectPage(fileName);
-            editor.closeDiscard();
-        } catch ( TimeoutExpiredException ex) {
-            log(ex.getMessage());
-            log("Can't close the file");
-        }
     }
     
     /** This method opens file in editor. There is used popup menu in explorer.<br>
