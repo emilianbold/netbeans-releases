@@ -17,35 +17,11 @@
 <a href="#seealso">See Also</a> 
 </small></p>
 
-<p>Java Web Start software provides a flexible and robust deployment 
-solution for Java technology-based applications based on the Java Community 
-Process program (JCP). The technology is being developed through the JCP 
-program as JSR-56: The Java Network Launching Protocol & API (JNLP), which 
-provides a browser-independent architecture for deploying Java 2 technology-based
-applications to the client desktop. You can download the Java Web Start specification.
-
-<p>Java Web Start technology works with any browser and any Web server. Each 
-application developed for use with the Java Web Start software specifies 
-which version of the Java 2 platform it requires, e.g., version 1.4 or 1.5, 
-and each application runs on a dedicated Java Virtual Machine (JVM).
-
-<p>The IDE uses an Ant build script to build your JNLP application. The
- meat of the Ant script is as follows:
-
-<pre>&lt;makejnlp 
-    dir="${jnlp.dest.dir}" 
-    alias="${jnlp.signjar.alias}"
-    storepass="${jnlp.signjar.password}"
-    keystore="${jnlp.signjar.keystore}"
-    codebase="${jnlp.codebase}"
-    verify="true"
-    verifyexcludes="${jnlp.verify.excludes}"&gt;
-    &lt;modules dir="${cluster}" &gt;
-        &lt;include name="${module.jar}" /&gt;
-    &lt;/modules&gt;
-&lt;/makejnlp&gt;</pre>
-
-
+<p>Java Web Start is a helper application that gets associated with a Web browser.
+When a user clicks on a link that points to a special launch file (JNLP file),
+it causes the browser to launch Java Web Start, which then automatically downloads,
+caches, and runs the given Java Technology-based application. The entire 
+process is typically completed without requiring any user interaction, except for the initial single click.
 <p><b>To build a JNLP application:</b>
 
 <ol><li>In the Projects window, right-click the node of the module project you want to build.
