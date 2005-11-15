@@ -161,6 +161,8 @@ public class JSPVariablesFilter implements TreeModelFilter {
         if (node.equals (original.getRoot())) {
             countVisible = original.getChildrenCount(node);
             Object[] children = original.getChildren (node, 0, countVisible);
+            //original.getChildrenCount(...) needn't be equal to original.getChildren (...).length()
+            countVisible = children.length;
             if (countVisible == 1 && children[0] instanceof java.lang.String) 
                 return countVisible;
             for (int i = 0; i < children.length; i++) {
