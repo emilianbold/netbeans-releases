@@ -171,7 +171,7 @@ public class JavaSettingsDefaults extends ExtSettingsDefaults {
         );
 
         javaAbbrevMap.put("fore", // NOI18N
-                "for (${Object} ${elem} : ${iterable}) {\n" // NOI18N
+                "for (${Object} ${elem} : ${iterable instanceof=\"java.lang.Iterable\"}) {\n" // NOI18N
                 + "    ${cursor}\n" // NOI18N
                 + "}"
         );
