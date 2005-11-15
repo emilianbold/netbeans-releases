@@ -56,7 +56,11 @@ import org.openide.util.NbBundle;
  * @version 1.00
  */
 
-public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
+public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements org.openide.util.HelpCtx.Provider {
+
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx(HTMLKit.class);
+    }
     
     static final long serialVersionUID =-1381945567613910297L;
     
@@ -923,3 +927,4 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit {
     
     
 }
+ 
