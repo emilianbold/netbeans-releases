@@ -84,7 +84,8 @@ public abstract class NodeTransfer extends Object {
     */
     private static DataFlavor createDndFlavor(int actions) {
         try {
-            return new DataFlavor(dndMimeType.format(new Object[] { new Integer(actions) }));
+            return new DataFlavor(dndMimeType.format(new Object[] { new Integer(actions) }),
+                    null, Node.class.getClassLoader());
         } catch (ClassNotFoundException cnfE) {
             throw (IllegalStateException) new IllegalStateException().initCause(cnfE);
         }
