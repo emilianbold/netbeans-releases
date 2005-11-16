@@ -163,11 +163,15 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         
     }
     
+    private boolean isUnexpectedLibrary(URL url){
+        return url.getFile().matches(".*commons-logging.*\\.jar.*");  // NOI18N
+    }
+    
     private void createClassLoaders() {
         clRootsTimeStamps.clear();
         
         //web.xml
-        FileObject webxml = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF/web.xml");
+        FileObject webxml = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF/web.xml"); //NOI18N
         if (webxml !=null ){
             registerTimeStamp(webxml, false);
         }
@@ -178,33 +182,43 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // Looking for jars in WEB-INF/lib is mainly for tests. Can a user create a lib dir in the document base
         // and put here a jar?
         
-        ArrayList al = new ArrayList();
-        FileObject libDir = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF/lib");
+        Hashtable tomcatTable = new Hashtable();
+        Hashtable loadingTable = new Hashtable();
+        ArrayList alURL = new ArrayList();
+        FileObject libDir = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF/lib");  //NOI18N
+        URL helpurl;
         
         if (libDir != null) {
-            //registerTimeStamp(libDir, false);
             Enumeration libDirKids = libDir.getChildren(false);
             while (libDirKids.hasMoreElements()) {
                 FileObject elem = (FileObject)libDirKids.nextElement();
-                registerTimeStamp(elem, false);
                 if (elem.getExt().equals("jar")) {      //NOI18N
-                    URL url = findInternalURL(elem);
-                    al.add(url);
+                    helpurl = findInternalURL(elem);
+                    if (!isUnexpectedLibrary(helpurl)){
+                        tomcatTable.put(helpurl, helpurl);
+                        loadingTable.put(helpurl, helpurl);
+                        registerTimeStamp(elem, false);
+                    }
                 }
             }
         }
         
-        URL loadingURLs[];
-        URL tomcatURLs[];
-        int rootsCount = 0;
+        
+        
         
         // issue 54845. On the class loader we must put the java sources as well. It's in the case, when there are a
         // tag hendler, which is added in a tld, which is used in the jsp file.
         ClassPath cp = ClassPath.getClassPath(wmRoot, ClassPath.COMPILE);
-        //System.out.println("compile classpath for webroot: " + cp );
-        FileObject[] sourceRoots = null;
         if (cp != null){
-            sourceRoots = cp.getRoots();
+            FileObject[] roots = cp.getRoots();
+            for (int i = 0; i < roots.length; i++){
+                helpurl = findInternalURL(roots[i]);
+                if (loadingTable.get(helpurl) == null && !isUnexpectedLibrary(helpurl)){
+                    loadingTable.put(helpurl, helpurl);
+                    tomcatTable.put(helpurl, findExternalURL(roots[i]));
+                    registerTimeStamp(roots[i], false);
+                }
+            }
         }
         // libraries and built classes are on the execution classpath
         cp = ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE);
@@ -213,46 +227,33 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         
         if (cp != null){
             FileObject [] roots = cp.getRoots();
-            rootsCount = roots.length;
-            if (sourceRoots != null)
-                rootsCount += sourceRoots.length;
-            loadingURLs = new URL[al.size() + rootsCount];
-            tomcatURLs= new URL[al.size() + rootsCount];
             for (int i = 0; i < roots.length; i++){
-                loadingURLs[i] = findInternalURL(roots[i]);
-                tomcatURLs[i]  = findExternalURL(roots[i]);
-                registerTimeStamp(roots[i], false);
-            }
-            if (sourceRoots != null){
-                for (int i = 0; i < sourceRoots.length; i++){
-                    loadingURLs[i+roots.length] = findInternalURL(sourceRoots[i]);
-                    tomcatURLs[i+roots.length]  = findExternalURL(sourceRoots[i]);
+                helpurl = findInternalURL(roots[i]);
+                if (loadingTable.get(helpurl) == null && !isUnexpectedLibrary(helpurl)){
+                    loadingTable.put(helpurl, helpurl);
+                    tomcatTable.put(helpurl, findExternalURL(roots[i]));
+                    registerTimeStamp(roots[i], false);
                 }
             }
         }
-        else{
-            // XXX this is a temporary hack for the tests. It will be deled, when the tests are
-            // rewrited for the project's infrastructure.
-            FileObject classesDir = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF/classes");
-            rootsCount = (classesDir == null) ? 0 : 1;
-            int overallSize = rootsCount + al.size();
-            loadingURLs = new URL[overallSize];
-            tomcatURLs  = new URL[overallSize];
-            URL url;
-            if (classesDir != null){
-                url = findInternalURL(classesDir);
-                loadingURLs[0] = url; 
-                tomcatURLs[0] = url;
-                registerTimeStamp(classesDir, false);
-            }
+        FileObject classesDir = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF/classes");  //NOI18N
+        if (classesDir != null && loadingTable.get(helpurl = findInternalURL(classesDir)) == null){
+            loadingTable.put(helpurl, helpurl);
+            tomcatTable.put(helpurl, helpurl);
+            registerTimeStamp(classesDir, false);
         }
         
-        for (int i = rootsCount; i < (al.size()+rootsCount); i++) {
-            URL url = (URL)al.get(i-rootsCount);
-            loadingURLs[i] = url;
-            tomcatURLs[i]  = url;
-        }        
+        Iterator iter = loadingTable.values().iterator();
+        URL loadingURLs[] = new URL[loadingTable.size()];
+        int index = 0;
+        while (iter.hasNext())
+            loadingURLs[index++] = (URL)iter.next();
         
+        URL tomcatURLs[] = new URL[tomcatTable.size()];
+        iter = tomcatTable.values().iterator();
+        index = 0;
+        while (iter.hasNext())
+            tomcatURLs[index++] = (URL)iter.next();        
         
         waClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, getClass().getClassLoader());
         waContextClassLoader = new ParserClassLoader(loadingURLs, tomcatURLs, Thread.currentThread().getContextClassLoader());
@@ -453,12 +454,12 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
         
         // Obtain all tld files under WEB-INF folder
-        FileObject webInf = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF");
+        FileObject webInf = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF"); //NOI18N
         if (webInf != null && webInf.isFolder()){
             Enumeration en = webInf.getChildren(true);
             while (en.hasMoreElements()){
                 fo = (FileObject)en.nextElement();
-                if (fo.getExt().equals("tld")){
+                if (fo.getExt().equals("tld")){                                    //NOI18N 
                     file = FileUtil.toFile(fo);
                     checkedFiles.put (file, new Long(file.lastModified()));
                 }
@@ -466,7 +467,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
         
         // all file under WEB-INF
-        fo = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF");
+        fo = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF");                //NOI18N 
         if (fo != null){
             file = FileUtil.toFile(fo);
             registerTimeStamp(checkedFiles, file, true);
