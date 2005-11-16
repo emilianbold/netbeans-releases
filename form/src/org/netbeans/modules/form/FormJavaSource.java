@@ -322,17 +322,25 @@ public class FormJavaSource {
 	}
 	protected boolean acceptReturnType(Type type) {
 	    if(returnType.isPrimitive() || type instanceof PrimitiveType) {
-		return type instanceof PrimitiveType &&
-		       returnType.isPrimitive()	&&
+		return type instanceof PrimitiveType &&		       
 		       acceptPrimitiveType((PrimitiveType)type);
 	    }
 	    String typeName = getVMName(type);
 	    return typeName!= null && !typeName.equals("") && // NOI18N		   		   
 		   isAssignableFrom(typeName, returnType); 		
 	}
-	private boolean acceptPrimitiveType(PrimitiveType type) {
-	    return !type.getKind().equals(PrimitiveTypeKindEnum.VOID) &&
-		   type.getKind().equals(PrimitiveTypeKindEnum.forName(returnType.getSimpleName())); 	 
+	private boolean acceptPrimitiveType(PrimitiveType type) {            
+	    return returnType.isPrimitive() && 
+                   !type.getKind().equals(PrimitiveTypeKindEnum.VOID) &&
+		   type.getKind().equals(PrimitiveTypeKindEnum.forName(getSimpleName(returnType))); 	 
 	}	
+        private String getSimpleName(Class clazz) {
+            String className = clazz.getName();
+            int idx = className.lastIndexOf('.');
+            if(idx>-1) {
+                return className.substring(idx);
+            }
+            return className;
+        }
     }    
 }
