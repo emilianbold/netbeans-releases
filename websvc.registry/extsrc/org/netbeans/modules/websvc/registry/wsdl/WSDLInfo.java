@@ -62,6 +62,7 @@ public class WSDLInfo {
     private URL wsdlUrl;
     private String packageName="";
     private String errorMessage;
+    private boolean hasOperations;
     
     /**
      * The following is taken from com.sun.xml.rpc.processor.modeler.wsdl.WSDLModelerBase where it's used to set
@@ -86,6 +87,10 @@ public class WSDLInfo {
         }catch(IOException exc){
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, exc);
         }
+    }
+    
+    public boolean hasOperations() {
+        return hasOperations;
     }
     
     public void setWsdlUrl(URL url){
@@ -310,6 +315,7 @@ public class WSDLInfo {
                         strWriter.write("</TR>");
                         int methodCount=0;
                         while (operations.hasNext()) {
+                            hasOperations=true;
                             Operation operation = (Operation) operations.next();
                             JavaMethod method = operation.getJavaMethod();
                             strWriter.write("<TR>");
@@ -386,7 +392,6 @@ public class WSDLInfo {
 // !HIE                            strWriter.write("</LI></UL>");
                             strWriter.write("</TD>");
                             strWriter.write("</TR>");
-                            
                         }
                     }
                     strWriter.write("</TABLE>");
