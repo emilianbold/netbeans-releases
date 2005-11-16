@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -65,18 +65,20 @@ public class SimpleDiff extends Object implements Diff {
     }
     
     protected boolean isBinaryFile(File file) throws java.io.IOException {
-        FileInputStream is = null;
         byte[] buffer = new byte[BUFSIZE];
-        is = new FileInputStream(file);
-        int bytesRead = is.read(buffer, 0, BUFSIZE);
-        if (bytesRead == -1)
+        FileInputStream is = new FileInputStream(file);
+        try {
+            int bytesRead = is.read(buffer, 0, BUFSIZE);
+            if (bytesRead == -1)
+                return false;
+            for (int i = 0; i != bytesRead; i++) {
+                if (buffer[i] < 0)
+                    return true;
+            }
             return false;
-        for (int i = 0; i != bytesRead; i++) {
-            if (buffer[i] < 0)
-                return true;
+        } finally {
+            is.close();
         }
-        is.close();
-        return false;
     }
     
     protected boolean binaryCompare(final File first, final File second, File diff) throws java.io.IOException {
@@ -87,20 +89,23 @@ public class SimpleDiff extends Object implements Diff {
         InputStream fs2 = new BufferedInputStream(new FileInputStream(second));
         byte[] b1 = new byte[BUFSIZE];
         byte[] b2 = new byte[BUFSIZE];
-        
-        while (true) {
-            int l1 = fs1.read(b1);
-            int l2 = fs2.read(b2);
-            if (l1 == -1) {
-                if (l2 == -1)
-                    return false;    // files equal
-                else
-                    return true;   // files differ in length
+
+        try {
+            while (true) {
+                int l1 = fs1.read(b1);
+                int l2 = fs2.read(b2);
+                if (l1 == -1) {
+                    // files differ in length if l2 != -1; otherwise are equal
+                    return l2 != -1;
+                }
+                if (l1 != l2)
+                    return true;    // files differ in length
+                if (!java.util.Arrays.equals(b1,b2))
+                    return true;  // files differ in content
             }
-            if (l1 != l2)
-                return true;    // files differ in length
-            if (!java.util.Arrays.equals(b1,b2))
-                return true;  // files differ in content
+        } finally {
+            fs1.close();
+            fs2.close();
         }
     }
     
