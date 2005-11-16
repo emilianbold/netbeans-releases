@@ -138,8 +138,6 @@ final class CreatedModifiedFilesProvider  {
     
     private static String getTokenSubstitution(Iterator it, CreatedModifiedFiles fileSupport,
             NewLibraryDescriptor.DataModel data, String pathPrefix) {
-        NbModuleProject project = data.getProject();
-        
         StringBuffer sb = new StringBuffer();
         while (it.hasNext()) {
             URL originalURL = (URL)it.next();

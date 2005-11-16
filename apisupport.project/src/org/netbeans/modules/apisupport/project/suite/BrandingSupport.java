@@ -299,7 +299,6 @@ public final class BrandingSupport {
         for (Iterator it = bundleKeys.iterator();it.hasNext();) {
             BundleKey bKey = (BundleKey)it.next();
             if (bKey.isModified()) {
-                ModuleEntry mEntry = bKey.getModuleEntry();
                 EditableProperties ep = (EditableProperties)mentryToEditProp.get(bKey.getBrandingBundle());
                 if (ep == null) {
                     File bundle = bKey.getBrandingBundle();

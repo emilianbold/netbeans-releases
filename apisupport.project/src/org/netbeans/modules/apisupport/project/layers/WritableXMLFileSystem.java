@@ -1193,7 +1193,6 @@ final class WritableXMLFileSystem extends AbstractFileSystem
     private static void resort(TreeElement parent) throws ReadOnlyException {
         class Item {
             public TreeElement child;
-            public int originalIndex;
             boolean isAttr() {
                 return child.getQName().equals("attr"); // NOI18N
             }
@@ -1219,7 +1218,6 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             if (child instanceof TreeElement) {
                 Item item = new Item();
                 item.child = (TreeElement) child;
-                item.originalIndex = i;
                 items.add(item);
                 indices.add(new Integer(i));
             }

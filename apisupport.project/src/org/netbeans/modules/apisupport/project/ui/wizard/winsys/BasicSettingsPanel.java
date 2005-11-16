@@ -33,7 +33,6 @@ import org.openide.util.NbBundle;
 final class BasicSettingsPanel extends BasicWizardIterator.Panel {
     
     private NewTCIterator.DataModel data;
-    private boolean listenersAttached = false;
     /**
      * Creates new form BasicSettingsPanel
      */

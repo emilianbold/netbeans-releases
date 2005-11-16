@@ -69,7 +69,6 @@ import org.openide.util.actions.SystemAction;
 public final class ModuleActions implements ActionProvider {
     
     static Action[] getProjectActions(NbModuleProject project) {
-        AntProjectHelper h = project.getHelper();
         List/*<Action>*/ actions = new ArrayList();
         actions.add(CommonProjectActions.newFileAction());
         actions.add(null);
@@ -179,7 +178,6 @@ public final class ModuleActions implements ActionProvider {
     
     public ModuleActions(NbModuleProject project, NbModuleTypeProvider.NbModuleType moduleType) {
         this.project = project;
-        boolean isNetBeansOrg = moduleType == NbModuleTypeProvider.NETBEANS_ORG;
         Set/*<String>*/ supportedActionsSet = new HashSet();
         globalCommands.put(ActionProvider.COMMAND_BUILD, new String[] {"netbeans"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_CLEAN, new String[] {"clean"}); // NOI18N

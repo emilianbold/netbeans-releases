@@ -58,9 +58,11 @@ final class DragManager implements DragGestureListener, DragSourceListener,
         DropTargetListener, MouseMotionListener {
     
     private JComponent component;
-    
+
+    // XXX assigned to but never read from; delete?
     private DragGestureRecognizer  dRecognizer;
     private DragSource dSource;
+    // XXX assigned to but never read from; delete?
     private DropTarget dTarget;
     
     private int translateX;

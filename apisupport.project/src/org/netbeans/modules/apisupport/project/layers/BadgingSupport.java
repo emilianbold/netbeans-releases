@@ -275,7 +275,6 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         someFileChange(fe);
     }
     private void someFileChange(FileEvent fe) {
-        final boolean expected = fe.isExpected();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 // If used as nbres: annotation, fire status change.
