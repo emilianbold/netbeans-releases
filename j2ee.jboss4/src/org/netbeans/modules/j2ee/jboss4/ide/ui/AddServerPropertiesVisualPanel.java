@@ -137,14 +137,19 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         DomainComboModel model = (DomainComboModel)domainField.getModel();
         
         String path = model.getCurrentPath();
-        if (!path.equals("")){
-            domainPathField.setText(path);
-            portField.setText(JBPluginUtils.getHTTPConnectorPort(domainPathField.getText()));
-        } 
+        domainPathField.setText(path);
+        portField.setText(JBPluginUtils.getHTTPConnectorPort(path));
+       
     //    serverChanged();
         fireChangeEvent(); 
     }
     
+    void installLocationChanged() {
+        DomainComboModel domainModel = (DomainComboModel) domainField.getModel();
+        domainModel.setDomains(JBPluginUtils.getRegisteredDomains());
+        domainChanged();
+    }
+            
     private void serverTypeChanged(){
         
         if (serverType.getSelectedItem().equals("Local")){  //NOI18N 
@@ -469,7 +474,6 @@ public class AddServerPropertiesVisualPanel extends JPanel {
 
 class DomainComboModel extends AbstractListModel implements ComboBoxModel{
     private int current = -1;
-    private String currentVal = "";
     private String[][] domains = null;
     
     
@@ -487,6 +491,14 @@ class DomainComboModel extends AbstractListModel implements ComboBoxModel{
     }
     
     public DomainComboModel(Hashtable domains){
+        setDomains(domains);
+    }
+    
+    public void setDomains(Hashtable domains) {
+        
+        current = -1;
+        this.domains = null;
+        
         int len = domains.size();
         this.domains = new String[len][2];
         Enumeration en = domains.keys();
@@ -505,7 +517,7 @@ class DomainComboModel extends AbstractListModel implements ComboBoxModel{
     
     public Object  getSelectedItem() {
         if (current ==-1 )
-            return currentVal;
+            return "";
         return domains[current][0];
     }
     

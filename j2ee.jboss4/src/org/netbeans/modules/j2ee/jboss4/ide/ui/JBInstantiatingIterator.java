@@ -259,6 +259,7 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
     
     public void setInstallLocation(String installLocation){
         this.installLocation = installLocation;
+        propertiesPanel.installLocationChanged();
     }
     
 }
