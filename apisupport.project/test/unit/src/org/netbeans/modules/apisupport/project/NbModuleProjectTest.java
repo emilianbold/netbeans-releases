@@ -190,7 +190,7 @@ public class NbModuleProjectTest extends TestBase {
         ProjectManager.getDefault().findProject(prjFO);
     }
     
-    public void testTest() throws Exception {
+    public void testGenericSourceGroupForExternalUnitTests() throws Exception {
         FileObject prjFO = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "module1");
         FileUtil.createData(prjFO, "../myunitsrc/a/b/c/Dummy.java");
         FileObject propsFO = FileUtil.createData(prjFO, AntProjectHelper.PROJECT_PROPERTIES_PATH);
