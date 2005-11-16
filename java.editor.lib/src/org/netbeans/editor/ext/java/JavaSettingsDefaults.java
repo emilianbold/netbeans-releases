@@ -104,8 +104,8 @@ public class JavaSettingsDefaults extends ExtSettingsDefaults {
 
     public static Map getJavaAbbrevMap() {
         Map javaAbbrevMap = new TreeMap();
-        javaAbbrevMap.put("sout", "System.out.println(\"|\");"); // NOI18N
-        javaAbbrevMap.put("serr", "System.err.println(\"|\");"); // NOI18N
+        javaAbbrevMap.put("sout", "System.out.println(\"${cursor}\");"); // NOI18N
+        javaAbbrevMap.put("serr", "System.err.println(\"${cursor}\");"); // NOI18N
 
         javaAbbrevMap.put("psf", "private static final "); // NOI18N
         javaAbbrevMap.put("psfi", "private static final int "); // NOI18N
