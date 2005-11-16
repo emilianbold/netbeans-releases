@@ -17,6 +17,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.Icon;
@@ -36,6 +37,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Template;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
@@ -181,6 +183,9 @@ public final class FreeformProject implements Project {
         private Lookup.Result/*<LookupMerger>*/ mergers;
         private WeakReference listenerRef;
         
+        //#68623: the proxy lookup fires changes only if someone listens on a particular template:
+        private List/*<Lookup.Result>*/ results;
+        
         public FreeformLookup(Lookup baseLookup, FreeformProject project, AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
             super(new Lookup[0]);
             this.baseLookup = baseLookup;
@@ -188,6 +193,7 @@ public final class FreeformProject implements Project {
             this.helper = helper;
             this.evaluator = evaluator;
             this.aux = aux;
+            this.results = Collections.EMPTY_LIST;
             updateLookup();
             PROJECT_NATURES.addLookupListener((LookupListener) WeakListeners.create(LookupListener.class, this, PROJECT_NATURES));
         }
@@ -197,6 +203,13 @@ public final class FreeformProject implements Project {
         }
         
         private void updateLookup() {
+            //unregister listeners from the old results:
+            for (Iterator i = results.iterator(); i.hasNext(); ) {
+                ((Lookup.Result) i.next()).removeLookupListener(this);
+            }
+            
+            results = new ArrayList();
+            
             List/*<Lookup>*/ lookups = new ArrayList();
             lookups.add(baseLookup);
             Iterator/*<ProjectNature>*/ it = PROJECT_NATURES.allInstances().iterator();
@@ -230,6 +243,11 @@ public final class FreeformProject implements Project {
                     }
                     filtredClasses.add(classes[i]);
                     mergedInstances.add(lm.merge(lkp, classes[i]));
+                    
+                    Lookup.Result result = lkp.lookup(new Lookup.Template(classes[i]));
+                    
+                    result.addLookupListener(this);
+                    results.add(result);
                 }
             }
             lkp = Lookups.exclude(lkp, (Class[])filtredClasses.toArray(new Class[filtredClasses.size()]));
