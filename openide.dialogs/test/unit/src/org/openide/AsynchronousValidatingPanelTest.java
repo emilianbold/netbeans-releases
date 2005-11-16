@@ -27,7 +27,6 @@ import org.openide.util.HelpCtx;
  */
 public class AsynchronousValidatingPanelTest extends NbTestCase {
 
-    
     public AsynchronousValidatingPanelTest (String name) {
         super(name);
     }
@@ -101,7 +100,7 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
             // let's wait till wizard is valid
             while (mp.running) {
                 assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
-                mp.wait (100);
+                mp.wait ();
             }
         }
         assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
@@ -115,7 +114,7 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
             assertTrue ("Validation runs.", mp.running);
             while (mp.running) {
                 assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
-                mp.wait (100);
+                mp.wait ();
             }
         }
         RequestProcessor.getDefault ().post (new Runnable () {
@@ -130,11 +129,11 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
         Object state = wd.getValue();
         mfp.validateMsg = "xtest-fail-without-msg";
         mfp.failedMsg = null;
-        synchronized (mp) {
+        synchronized (mfp) {
             wd.doFinishClick();
             while (mfp.running) {
                 assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
-                mp.wait (100);
+                mfp.wait ();
             }
         }
         RequestProcessor.getDefault ().post (new Runnable () {
@@ -147,11 +146,11 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
         
         mfp.validateMsg = null;
         mfp.failedMsg = null;
-        synchronized (mp) {
+        synchronized (mfp) {
             wd.doFinishClick ();
             while (mfp.running) {
                 assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
-                mp.wait (100);
+                mfp.wait ();
             }
         }
         RequestProcessor.getDefault ().post (new Runnable () {
