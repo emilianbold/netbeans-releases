@@ -14,16 +14,18 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
-import java.io.IOException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Mutex;
 
 /**
  * Test functionality of NbModuleProject.
@@ -186,6 +188,19 @@ public class NbModuleProjectTest extends TestBase {
         FileObject srcFO = prjFO.getFileObject("src");
         FileUtil.moveFile(srcFO, prjFO, "src2");
         ProjectManager.getDefault().findProject(prjFO);
+    }
+    
+    public void testTest() throws Exception {
+        FileObject prjFO = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "module1");
+        FileUtil.createData(prjFO, "../myunitsrc/a/b/c/Dummy.java");
+        FileObject propsFO = FileUtil.createData(prjFO, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties ep = Util.loadProperties(propsFO);
+        ep.setProperty("test.unit.src.dir", "../myunitsrc");
+        Util.storeProperties(propsFO, ep);
+        Project module = ProjectManager.getDefault().findProject(prjFO);
+        Sources sources = ProjectUtils.getSources(module);
+        SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        assertEquals("two generic source group", 2, sourceGroups.length); // prjFolder and unitFolder
     }
     
     /*
