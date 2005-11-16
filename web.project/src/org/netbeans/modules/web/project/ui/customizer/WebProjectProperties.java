@@ -475,7 +475,16 @@ public class WebProjectProperties {
         
         // Set new context path
         try {
-            setNewContextPathValue(CONTEXT_PATH_MODEL.getText(0, CONTEXT_PATH_MODEL.getLength()), project, projectProperties, privateProperties);
+	    String cp = CONTEXT_PATH_MODEL.getText(0, CONTEXT_PATH_MODEL.getLength());
+	    if (cp == null || cp.length() == 0)
+		cp = "/" + PropertyUtils.getUsablePropertyName(project.getName()); //NOI18N
+	    else if (!isCorrectCP(cp)) {
+		if (cp.startsWith("/")) //NOI18N
+		    cp = cp.substring(1);
+		cp = "/" + PropertyUtils.getUsablePropertyName(cp); //NOI18N
+	    }
+	    
+            setNewContextPathValue(cp, project, projectProperties, privateProperties);
         } catch (BadLocationException exc) {
             //ignore
         }
@@ -494,6 +503,20 @@ public class WebProjectProperties {
         
     }
 
+    private boolean isCorrectCP(String contextPath) {
+	boolean correct=true;
+	if (contextPath.endsWith("/")) //NOI18N
+	    correct=false;
+	else if (contextPath.indexOf("//") >= 0) //NOI18N
+	    correct=false;
+	else if (contextPath.indexOf(" ") >= 0) //NOI18N
+	    correct=false;
+	else if (contextPath.length() > 0 && !contextPath.startsWith("/")) //NOI18N
+	    correct=false;
+
+	return correct;
+    }
+    
     private void storeAdditionalProperties(EditableProperties projectProperties) {
         for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
             Object key = i.next();
