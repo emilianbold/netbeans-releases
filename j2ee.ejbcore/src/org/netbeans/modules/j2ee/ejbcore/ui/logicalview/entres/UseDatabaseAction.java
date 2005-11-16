@@ -182,7 +182,7 @@ public class UseDatabaseAction extends NodeAction {
     }
     
     protected boolean enable(Node[] nodes) {
-        if (nodes.length != 1) {
+        if (nodes == null || nodes.length != 1) {
             return false;
         }
 	JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[0]);
