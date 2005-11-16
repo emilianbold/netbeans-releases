@@ -113,11 +113,11 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-search-ResultViewOpenAction.instance"/>
             </file>
             <file name="FIND.instance">
-        	    <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
-        	</file>
+                <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
+            </file>
             <file name="COPY.instance">
-        	    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
-        	</file>
+                <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+            </file>
             <file name="DS-N.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
             </file>
@@ -295,6 +295,12 @@ Microsystems, Inc. All Rights Reserved.
             <file name="S-DELETE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
             </file>
+            <file name="C-W.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
+            <file name="CUT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
             <file name="C-X 1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
             </file>
@@ -310,10 +316,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="CS-Z.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-RedoAction.instance"/>
             </file>
-            <file name="C-W.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
-            </file>
             <file name="C-Y.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+            </file>
+            <file name="PASTE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
             </file>
             <file name="C-X F.shadow">
@@ -323,6 +329,9 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-SystemExit.instance"/>
             </file>
             <file name="CS-MINUS.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
+            </file>
+            <file name="UNDO.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
             </file>
             <file name="C-S.shadow">
@@ -351,7 +360,16 @@ Microsystems, Inc. All Rights Reserved.
             <file name="D-V.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
             </file>
+            <file name="PASTE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+            </file>
+            <file name="S-INSERT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+            </file>
             <file name="D-Z.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
+            </file>
+            <file name="UNDO.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
             </file>
             <file name="F9.shadow">
@@ -446,11 +464,14 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="FIND.instance">
                 <!-- #32733 - Find shortcut should be CTRL-F unless kbd has a Find key -->
-        	    <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
-        	</file>
+                <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
+            </file>
             <file name="COPY.instance">
         	    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
-        	</file>
+            </file>
+            <file name="D-INSERT.instance">
+        	    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+            </file>
             <file name="DS-N.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
             </file>
@@ -566,12 +587,18 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
             </file>
             <file name="S-F10.shadow">
-        	    <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
-        	</file>
-	        <file name="C-Q.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
+            </file>
+            <file name="C-Q.shadow">
                 <attr name="originalFile" stringvalue="Actions/Build/Set Request Parameters.instance"/>
             </file>
             <file name="D-X.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
+            <file name="CUT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
+            <file name="S-DELETE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
             </file>
             <file name="D-I.shadow">
@@ -615,6 +642,15 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
         <folder name="Eclipse">
+            <file name="CS-F.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-ReplaceAction.instance"/>
+            </file>
+            <file name="FIND.instance">
+                <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
+            </file>
+            <file name="C-L.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-GotoAction.instance"/>
+            </file>
             <file name="DELETE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
             </file>
@@ -654,6 +690,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="C-V.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
             </file>
+            <file name="PASTE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+            </file>
             <file name="AS-J.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/Correct Javadoc Action.instance"/>
             </file>
@@ -668,6 +707,9 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="C-F6.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
+            </file>
+            <file name="COPY.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
             </file>
             <file name="C-C.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
@@ -684,6 +726,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="CS-B.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
             </file>
+            <file name="CUT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
             <file name="C-X.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
             </file>
@@ -697,6 +742,9 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
             </file>
             <file name="C-Z.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
+            </file>
+            <file name="UNDO.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
             </file>
             <file name="C-COMMA.shadow">
