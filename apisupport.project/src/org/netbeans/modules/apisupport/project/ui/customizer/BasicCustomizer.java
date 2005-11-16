@@ -57,7 +57,7 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
     private ProjectCustomizer.Category categories[];
     private Component lastSelectedPanel;
     
-    private final Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
+    private final Map/*<ProjectCustomizer.Category, NbPropertyPanel>*/ panels = new HashMap();
     
     protected BasicCustomizer(final Project project) {
         this.project = project;
@@ -124,10 +124,15 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
                 }
             }
         }
+        // check panels validity - gives them a chance to set an error message or a warning
+        for (Iterator it = panels.values().iterator(); it.hasNext();) {
+            NbPropertyPanel panel = (NbPropertyPanel) it.next();
+            panel.checkForm();
+        }
     }
     
     protected void createCategoryPanel(final String progName,
-            final String displayNameKey, final JPanel panel) {
+            final String displayNameKey, final NbPropertyPanel panel) {
         ProjectCustomizer.Category category = ProjectCustomizer.Category.create(
                 progName, NbBundle.getMessage(getClass(), displayNameKey), null, null);
         createPanel(category, panel);
@@ -140,7 +145,7 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
                 progName, NbBundle.getMessage(getClass(), displayNameKey), null, null);
     }
     
-    protected void createPanel(final Category category, final JPanel panel) {
+    protected void createPanel(final Category category, final NbPropertyPanel panel) {
         panels.put(category, panel);
     }
     

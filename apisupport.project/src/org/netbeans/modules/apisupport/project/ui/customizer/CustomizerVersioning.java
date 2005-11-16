@@ -116,7 +116,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         return valid;
     }
     
-    private void checkForm() {
+    protected void checkForm() {
         exportOnlyToFriend.setSelected(getFriendModel().getSize() > 0);
         // check major release version
         if (!checkMajorReleaseVersion()) {

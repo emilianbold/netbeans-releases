@@ -29,7 +29,7 @@ import org.openide.util.NbBundle;
  */
 final class CustomizerDisplay extends NbPropertyPanel.Single {
     
-    private boolean disabled;
+    private boolean noBundle;
     
     /** Creates new form CustomizerDisplay */
     CustomizerDisplay(final SingleModuleProperties props) {
@@ -40,8 +40,8 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     }
     
     void refresh() {
-        this.disabled = getBundle() == null;
-        if (disabled) {
+        this.noBundle = getBundle() == null;
+        if (noBundle) {
             nameValue.setEnabled(false);
             categoryValue.setEnabled(false);
             shortDescValue.setEnabled(false);
@@ -51,8 +51,16 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         }
     }
     
+    protected void checkForm() {
+        if (this.noBundle) {
+            setWarning(getMessage("MSG_NoBundleForModule"));
+        } else {
+            setWarning(null);
+        }
+    }
+    
     public void store() {
-        if (!disabled) {
+        if (!noBundle) {
             getBundle().setDisplayName(nameValue.getText());
             getBundle().setCategory(getSelectedCategory());
             getBundle().setShortDescription(shortDescValue.getText());

@@ -46,7 +46,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
         refresh();        
         DocumentListener textFieldChangeListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                checkValidity();
+                checkForm();
             }
         };
         nameValue.getDocument().addDocumentListener(textFieldChangeListener);
@@ -54,7 +54,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
     }
     
     
-    private void checkValidity() {
+    protected void checkForm() {
         boolean panelValid = true;
         
         if (panelValid && nameValue.getText().trim().length() == 0) {
@@ -298,7 +298,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
         private ImageIcon image = null;
         private int width;
         private int height;
-        private javax.swing.border.Border border;
+//        private javax.swing.border.Border border;
         ImagePreview(int width, int height){
             //this.image = im;
             this.width = width;
@@ -306,7 +306,6 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
             //border = new TitledBorder(NbBundle.getMessage(getClass(),"LBL_IconPreview"));//NOI18N
             //setBorder(border);
         }
-        
         
         public void paint(Graphics g) {
             super.paint(g);
@@ -343,7 +342,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
 
     public void addNotify() {
         super.addNotify();
-        checkValidity();
+        checkForm();
     }
 
     public void showSubCategory(String name) {

@@ -36,18 +36,23 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         if (!getProperties().isNetBeansOrg()) {
             licenseValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
                 public void insertUpdate(DocumentEvent e) {
-                    File currentLicenceF = getCurrentLicenceFile();
-                    if (currentLicenceF != null && !currentLicenceF.isFile()) {
-                        setErrorMessage(NbBundle.getMessage(CustomizerPackaging.class, "MSG_LicenceFileDoesNotExist"));
-                    } else {
-                        setErrorMessage(null);
-                    }
+                    checkForm();
                 }
             });
         } else {
             license.setEnabled(false);
             licenseValue.setEnabled(false);
             browseLicense.setEnabled(false);
+        }
+    }
+    
+    
+    protected void checkForm() {
+        File currentLicenceF = getCurrentLicenceFile();
+        if (currentLicenceF != null && !currentLicenceF.isFile()) {
+            setErrorMessage(NbBundle.getMessage(CustomizerPackaging.class, "MSG_LicenceFileDoesNotExist"));
+        } else {
+            setErrorMessage(null);
         }
     }
     
@@ -275,11 +280,11 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
     private javax.swing.JCheckBox needsRestart;
     private javax.swing.JSeparator sep1;
     // End of variables declaration//GEN-END:variables
-
+    
     private static String getMessage(String key) {
         return NbBundle.getMessage(CustomizerPackaging.class, key);
     }
-
+    
     private void initAccesibility() {
         browseLicense.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_BrowseLicense"));
         isGlobal.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_IsGlobal"));
@@ -289,5 +294,5 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         jarFileValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JarFileValue"));
         licenseValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_LicenseValue"));
     }
-   
+    
 }
