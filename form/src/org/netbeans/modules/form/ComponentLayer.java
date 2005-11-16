@@ -14,9 +14,12 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import javax.swing.*;
 
 import org.netbeans.modules.form.fakepeer.*;
+import org.openide.util.NbBundle;
 
 /**
  * A JPanel subclass holding components presented in FormDesigner (contains
@@ -143,6 +146,35 @@ class ComponentLayer extends JPanel
             size.width += insets.left + insets.right;
             size.height += insets.top + insets.bottom;
             return size;
+        }
+
+        public void paint(Graphics g) {
+            try {
+                super.paint(g);
+            } catch (Exception ex) {
+                // Issue 68776
+                String msg = NbBundle.getMessage(ComponentLayer.class, "MSG_Paiting_Exception"); // NOI18N
+                msg = "<html><b>" + msg + "</b><br><br>"; // NOI18N
+                StringWriter sw = new StringWriter();
+                ex.printStackTrace(new PrintWriter(sw));
+                msg += sw.toString().replaceAll("\n", "<br>"); // NOI18N
+                Insets insets = getInsets();
+                JLabel label = new JLabel(msg);
+                label.setBorder(BorderFactory.createEmptyBorder(insets.top, insets.left, insets.bottom, insets.right));
+                label.setOpaque(true);
+                label.setVerticalAlignment(SwingConstants.TOP);
+                label.setSize(getWidth() - (insets.left + insets.top),
+                    getHeight() - (insets.top + insets.bottom));
+                Shape oldClip = g.getClip();
+                Rectangle newClip = new Rectangle(insets.left, insets.top, label.getWidth(), label.getHeight());
+                Rectangle clipBounds = g.getClipBounds();
+                if (clipBounds != null) newClip = newClip.intersection(clipBounds);
+                g.setClip(newClip);
+                g.translate(insets.left, insets.top);
+                label.paint(g);
+                g.translate(-insets.left, -insets.top);
+                g.setClip(oldClip);
+            }
         }
     }
 }
