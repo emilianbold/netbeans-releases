@@ -332,15 +332,7 @@ public class FormJavaSource {
 	private boolean acceptPrimitiveType(PrimitiveType type) {            
 	    return returnType.isPrimitive() && 
                    !type.getKind().equals(PrimitiveTypeKindEnum.VOID) &&
-		   type.getKind().equals(PrimitiveTypeKindEnum.forName(getSimpleName(returnType))); 	 
-	}	
-        private String getSimpleName(Class clazz) {
-            String className = clazz.getName();
-            int idx = className.lastIndexOf('.');
-            if(idx>-1) {
-                return className.substring(idx);
-            }
-            return className;
-        }
+		   type.getKind().equals(PrimitiveTypeKindEnum.forName(returnType.getName())); 	 
+	}	        
     }    
 }
