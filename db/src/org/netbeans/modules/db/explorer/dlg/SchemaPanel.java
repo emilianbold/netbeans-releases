@@ -74,6 +74,8 @@ public class SchemaPanel extends javax.swing.JPanel {
         connectProgressPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc")); //NOI18N
         schemaButton.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_GetSchemasButtonA11yName")); //NOI18N
         schemaButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_GetSchemasButtonA11yDesc")); //NOI18N
+        this.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_GetSchemasPanelA11yName")); //NOI18N
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_GetSchemasPanelA11yDesc")); //NOI18N
     }
 
     /** This method is called from within the constructor to

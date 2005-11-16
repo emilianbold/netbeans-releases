@@ -106,7 +106,7 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         driverLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionDriverClassA11yDesc")); //NOI18N
         driverTextField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionDriverClassComboBoxA11yName")); //NOI18N
         urlLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionDatabaseURLA11yDesc")); //NOI18N
-//        urlTextField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionDatabaseURLTextFieldA11yName")); //NOI18N
+        urlComboBox.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionDatabaseURLTextFieldA11yName")); //NOI18N
         userLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionUserNameA11yDesc")); //NOI18N
         userTextField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionUserNameTextFieldA11yName")); //NOI18N
         passwordLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionPasswordA11yDesc")); //NOI18N
@@ -185,6 +185,7 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         add(driverTextField, gridBagConstraints);
 
         urlLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDatabaseURL_Mnemonic").charAt(0));
+        urlLabel.setLabelFor(urlComboBox);
         urlLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDatabaseURL"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
