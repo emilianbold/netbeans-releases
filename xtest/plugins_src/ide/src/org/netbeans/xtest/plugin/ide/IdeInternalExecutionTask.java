@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.xtest.plugin.ide;
 
 import java.io.File;
@@ -81,10 +82,11 @@ public class IdeInternalExecutionTask extends Task {
      * @throws BuildException when something's wrong
      */
     public void execute() throws BuildException {
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
             // find NetBeans SystemClassLoader in threads hierarchy
             ThreadGroup tg = Thread.currentThread().getThreadGroup();
-            ClassLoader systemClassloader = Thread.currentThread().getContextClassLoader();
+            ClassLoader systemClassloader = orig;
             while(!systemClassloader.getClass().getName().endsWith("SystemClassLoader")) { // NOI18N        
                 tg = tg.getParent();
                 if(tg == null) {
@@ -96,6 +98,7 @@ public class IdeInternalExecutionTask extends Task {
             }
             URL[] urls = classpathToURL(classpath);
             URLClassLoader testClassLoader = new TestClassLoader(urls, systemClassloader);
+            Thread.currentThread().setContextClassLoader(testClassLoader);
             Class classToRun = testClassLoader.loadClass(this.classname);
             Method method = classToRun.getDeclaredMethod("main", new Class[] {String[].class}); // NOI18N
             String[] args = cmdl.getJavaCommand().getArguments();
@@ -111,6 +114,8 @@ public class IdeInternalExecutionTask extends Task {
                 e.printStackTrace();
                 throw new BuildException(e.getClass().getName()+": "+e.getMessage(), e);
             }
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
     }
     
