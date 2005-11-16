@@ -369,7 +369,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
             }
             try {
                 StyledDocument doc = editor.openDocument();
-                InputSource in = AntProjectSupport.createInputSource(script, editor, doc);
+                InputSource in = AntProjectSupport.createInputSource(script, doc);
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 SAXParser parser = factory.newSAXParser();
                 final int[] line = new int[1];

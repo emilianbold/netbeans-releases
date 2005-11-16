@@ -20,20 +20,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -49,8 +45,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Document;
@@ -190,25 +184,10 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         }
     }
     
-    private static EditorKit findKit(JEditorPane[] panes) {
-        EditorKit kit;
-        if (panes != null) {
-            kit = panes[0].getEditorKit();
-        } else {
-            kit = JEditorPane.createEditorKitForContentType("text/xml"); // NOI18N
-            if (kit == null) {
-                // #39301: fallback; can happen if xml/text-edit is disabled
-                kit = new DefaultEditorKit();
-            }
-        }
-        assert kit != null;
-        return kit;
-    }
-    
     /**
      * Utility method to get a properly configured XML input source for a script.
      */
-    public static InputSource createInputSource(final FileObject fo, final EditorCookie editor, final StyledDocument document) throws IOException {
+    public static InputSource createInputSource(final FileObject fo, final StyledDocument document) throws IOException {
         if (fo != null) {
             DataObject d = DataObject.find(fo);
             if (!d.isModified()) {
@@ -220,28 +199,17 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
                 }
             }
         }
-        try {
-            // #67482: have to run EditorCookie.getOpenedPanes in EQ.
-            return (InputSource) Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
-        final StringWriter w = new StringWriter(document.getLength());
-        final EditorKit kit = findKit(editor.getOpenedPanes());
-        final IOException[] ioe = new IOException[1];
+        final String[] contents = new String[1];
         document.render(new Runnable() {
             public void run() {
                 try {
-                    kit.write(w, document, 0, document.getLength());
-                } catch (IOException e) {
-                    ioe[0] = e;
+                    contents[0] = document.getText(0, document.getLength());
                 } catch (BadLocationException e) {
-                    ioe[0] = (IOException) new IOException(e.toString()).initCause(e);
+                    throw new AssertionError(e);
                 }
             }
         });
-        if (ioe[0] != null) {
-            throw ioe[0];
-        }
-        InputSource in = new InputSource(new StringReader(w.toString()));
+        InputSource in = new InputSource(new StringReader(contents[0]));
         if (fo != null) { // #10348
             try {
                 in.setSystemId(fo.getURL().toExternalForm());
@@ -255,11 +223,6 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
             // here to make the behavior match perfectly, but it ought not be necessary.
         }
         return in;
-                }
-            });
-        } catch (MutexException e) {
-            throw (IOException) e.getException();
-        }
     }
     
     private void parseDocument () {
@@ -279,7 +242,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
                     document.addDocumentListener(this);
                     styledDocRef = new WeakReference(document);
                 }
-                InputSource in = createInputSource(fo, editor, document);
+                InputSource in = createInputSource(fo, document);
                 doc = documentBuilder.parse(in);
             } else if (fo != null) {
                 InputStream is = fo.getInputStream();
