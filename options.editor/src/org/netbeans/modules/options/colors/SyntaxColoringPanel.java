@@ -210,11 +210,11 @@ PropertyChangeListener {
         builder.add (tfFont,	                        cc.xy  (5, 5));
         builder.add (bFont,                             cc.xy  (7, 5));
         builder.addLabel (loc ("CTL_Foreground_label"), lc.xy  (3, 7),
-                          foregroundColorChooser,	cc.xy  (5, 7));
-        builder.add (bForeground,                       cc.xy  (7, 7));
+                          foregroundColorChooser,	cc.xyw (5, 7, 3));
+//        builder.add (bForeground,                       cc.xy  (7, 7));
         builder.addLabel (loc ("CTL_Background_label"), lc.xy  (3, 9),
-                          backgroundColorChooser,	cc.xy  (5, 9));
-        builder.add (bBackground,                       cc.xy  (7, 9));
+                          backgroundColorChooser,	cc.xyw (5, 9, 3));
+//        builder.add (bBackground,                       cc.xy  (7, 9));
         builder.addLabel (loc ("CTL_Effects_label"),	lc.xy  (3, 11),
                           cbEffects,			cc.xyw (5, 11, 3));
         builder.addLabel (loc ("CTL_Effects_color"),	lc.xy  (3, 13),
