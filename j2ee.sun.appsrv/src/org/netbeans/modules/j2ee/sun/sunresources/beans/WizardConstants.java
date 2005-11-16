@@ -26,16 +26,12 @@ import org.openide.util.NbBundle;
  * @author  shirleyc
  */
 public interface WizardConstants {
-    public static final ResourceBundle openideBundle = NbBundle.getBundle ("org.openide.Bundle"); // NOI18N
-        
-    public static final String __CreateNewCP = "createNewCP";
-    public static final String __CreateNewDS = "createNewDS";
     
     //common 
     public static final String __General = "general";    
     public static final String __Properties = "properties";
     public static final String __PropertiesURL = "propertiesUrl";
-    public static final String __RegisterResource = "register-resource";
+//////    public static final String __RegisterResource = "register-resource";
     
     //jdbc-connection-pool
     public static final String __Name = "name";
@@ -65,22 +61,7 @@ public interface WizardConstants {
     public static final String __IsXA = "isXA";  
     public static final String __IsCPExisting = "is-cp-existing";
     
-    //jdbc-connection-pool Bean
-    //Also contains __Name & __Description
-    public static final String __CPdsClass = "dsClass";
-    public static final String __CPresType = "resType";
-    public static final String __CPsteadyPoolSize = "steadyPoolSize";
-    public static final String __CPmaxPoolSize = "maxPoolSize";
-    public static final String __CPmaxWaitTimeMilli = "maxWaitTimeMilli";
-    public static final String __CPpoolResizeQty = "poolResizeQty";
-    public static final String __CPidleIimeoutSecond = "idleIimeoutSecond";
-    public static final String __CPtranxIsoLevel = "tranxIsoLevel";
-    public static final String __CPisIsoLevGuaranteed = "isIsoLevGuaranteed";
-    public static final String __CPisConnValidReq = "isConnValidReq";
-    public static final String __CPconnValidMethod = "connValidMethod";
-    public static final String __CPvalidationTableName = "validationTableName";
-    public static final String __CPfailAllConns = "failAllConns";
-    public static final String __ExtraParams = "extraParams";
+
     
     //CommonAttributesPanel
     static final String[] COMMON_ATTR_INTEGER = {"Steady Pool Size:", "Max Pool Size:", "Max Wait time:", "Pool Resize Quantity:", "Idle Timeout (secs):" }; //NOI18N
@@ -93,25 +74,15 @@ public interface WizardConstants {
     public static final String __Enabled = "enabled";
     public static final String __JdbcResource = "jdbc-resource";
     
-    //For Beans 
-    public static final String __BeanjndiName = "jndiName";
-    public static final String __BeanisEnabled = "isEnabled";
     
-    //jdbc-resource Bean
-    //Also contains __BeanjndiName & __BeanisEnabled and __Description 
-    public static final String __DSconnPoolName = "connPoolName";
-    public static final String __DSresType = "resType";
-        
+
     //persistence-manager-factory
     //Contains __BeanjndiName and __BeanisEnabled and __Description
     public static final String __FactoryClass = "factory-class";
     public static final String __JdbcResourceJndiName = "jdbc-resource-jndi-name";
     public static final String __PersistenceManagerFactoryResource = "persistence-manager-factory-resource";
     
-    //persistence-manager-factory Bean
-    //Also contains  __BeanjndiName and __BeanisEnabled and __Description 
-    public static final String __PMFfactoryClass = "factoryClass";
-    public static final String __PMFdatasourceJndiName = "datasourceJndiName";
+
     
     
     //mail-resource
@@ -126,17 +97,6 @@ public interface WizardConstants {
     public static final String __Debug = "debug";
     public static final String __MailResource = "mail-resource";
     
-    //mail-resource Bean
-    //Contains __BeanjndiName and __BeanisEnabled and __Description   
-    public static final String __MAILstoreProt = "storeProt";
-    public static final String __MAILstoreProtClass = "storeProtClass";
-    public static final String __MAILtransProt = "transProt";
-    public static final String __MAILtransProtClass = "transProtClass";
-    public static final String __MAILhostName = "hostName";
-    public static final String __MAILuserName = "userName";
-    public static final String __MAILfromAddr = "fromAddr";
-    public static final String __MAILisDebug = "isDebug";
-    
     
     //jms-resource
     //Contains __JndiName, __ResType, __Enabled, __Properties, __Description
@@ -145,7 +105,7 @@ public interface WizardConstants {
     
     //jms-resource Bean
     //Contains __BeanjndiName and __BeanisEnabled and __Description   
-    public static final String __JMSResType = "resType";
+////    public static final String __JMSResType = "resType";
     
     public static final String __JavaMessageJndiName = "jndi_name";
     public static final String __JavaMessageResType = "res_type";

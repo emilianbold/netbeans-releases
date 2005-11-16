@@ -31,20 +31,7 @@ public interface Constants {
     static final String[] JSR_SERVER_INFO = {"debugPort", "nodes", "serverVersion", "restartRequired", "serverVendor" }; //NOI18N
     static final String[] ADDITIONAL_SERVER_INFO = {"port", "domain" }; //NOI18N
     
-    static final String MAP_RESOURCES = "com.sun.appserv:type=resources,category=config";//NOI18N
-    static final String OPER_OBJ_JDBCResource = "getJdbcResource"; //NOI18N
-    static final String OPER_OBJ_ConnPoolResource = "getJdbcConnectionPool"; //NOI18N
-    static final String OPER_OBJ_PMFResource = "getPersistenceManagerFactoryResource"; //NOI18N
-    static final String OPER_OBJ_JavaMailResource = "getMailResource";//NOI18N
-    static final String OPER_OBJ_ConnectorResource = "getConnectorResource";//NOI18N
-    static final String OPER_OBJ_ConnectorConnPoolResource = "getConnectorConnectionPool";//NOI18N
-    static final String OPER_OBJ_AdminObjectResource = "getAdminObjectResource";//NOI18N
-    //The following 4 require a String param representing target which is null for PE
-    static final String OPER_OBJ_JmsResource = "getJmsResource";//NOI18N
-    static final String OPER_OBJ_JmsConnectionFactory = "getJmsConnectionFactory";//NOI18N
-    static final String OPER_OBJ_JmsDestinationResource = "getJmsDestinationResource";//NOI18N
-    static final String OPER_OBJ_JndiCustomResource = "getCustomResource";//NOI18N
-    static final String OPER_OBJ_JndiExternalResource = "getExternalJndiResource";//NOI18N                     
+    static final String MAP_RESOURCES = "com.sun.appserv:type=resources,category=config";//NOI18N               
     
     static final String MAP_JVMOptions = "ias:type=java-config,config=server-config,category=config"; //NOI18N
     static final String DEBUG_OPTIONS = "debug-options"; //NOI18N

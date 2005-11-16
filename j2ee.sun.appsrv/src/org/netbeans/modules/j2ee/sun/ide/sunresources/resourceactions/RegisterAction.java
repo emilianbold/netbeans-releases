@@ -44,7 +44,7 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourc
  * @author Nitya Doraisamy
  */
 public class RegisterAction extends NodeAction implements WizardConstants{
-    String resourceType = null;
+
     protected void performAction(Node[] nodes) {
         try{
             SunResourceDataObject dobj = (SunResourceDataObject)nodes[0].getCookie(SunResourceDataObject.class);

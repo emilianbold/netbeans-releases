@@ -54,7 +54,6 @@ public class ListServerInstances extends JPanel implements WizardConstants{
     Component initialFocusOwner = null;
     String title;
     Hashtable servers = new Hashtable();
-    Resources resourceGraph = null;
             
     public ListServerInstances(String _title, SunResourceDataObject dObj, String type, InstanceProperties targetName) {
         title = _title;

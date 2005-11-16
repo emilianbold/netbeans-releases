@@ -475,11 +475,9 @@ public class PluginProperties  {
         if (f3!=null){
             return f3.getAbsolutePath();
         } 
-                
+                        
         
-        String retVal = "";
-        
-        return retVal;
+        return "";
     }
     
     

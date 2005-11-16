@@ -38,7 +38,6 @@ import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldHelper;
 public class MailPropertyVisualPanel extends javax.swing.JPanel implements WizardConstants, TableModelListener {
     
     private final MailPropertyPanel panel;
-    private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"); //NOI18N
     private FieldGroup generalGroup;
     private FieldGroup propertiesGroup;
     private boolean inProcessingTableChange = false;

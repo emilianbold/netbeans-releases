@@ -47,7 +47,6 @@ public class ManagerNode extends AbstractNode implements Node.Cookie{
     static java.util.Collection bogusNodes = java.util.Arrays.asList(new Node[] { Node.EMPTY, Node.EMPTY });
     private SunDeploymentManagerInterface sdm;
     private DeploymentManager manager;
-    private DeploymentManagerProperties dmp;
     public static final String DIR_ACTION_EXTENSION = "/J2EE/SunAppServer/Actions"; //NOI18N
     
     public ManagerNode(DeploymentManager manager) {

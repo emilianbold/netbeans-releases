@@ -36,9 +36,7 @@ public class MasterPasswordInputDialog extends NotifyDescriptor {
     /**
      * The text field used to enter the input.
      */
-    protected JPasswordField textField;
     protected MasterPasswordInputPanel panel=new MasterPasswordInputPanel();
-    static protected String text =NbBundle.getMessage(MasterPasswordInputDialog.class, "MasterPasswordInputDialog_text");
     static protected String title =NbBundle.getMessage(MasterPasswordInputDialog.class, "MasterPasswordInputDialog_title");
     /** Construct dialog with the specified title and label text.
      * @param text label text

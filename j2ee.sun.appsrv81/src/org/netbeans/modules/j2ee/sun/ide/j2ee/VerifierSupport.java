@@ -53,19 +53,19 @@ public class VerifierSupport extends TopComponent{
     final static int WARN = 1;
     final static int ALL  = 2;
     
-    static final int PASSED = 0;
-    static final int FAILED = 1;
-    static final int WARNING = 2;
-    static final int NOT_APPLICABLE = 3;
-    static final int NOT_RUN = 4;
-    static final int NOT_IMPLEMENTED = 5;
+////    static final int PASSED = 0;
+////    static final int FAILED = 1;
+////    static final int WARNING = 2;
+////    static final int NOT_APPLICABLE = 3;
+////    static final int NOT_RUN = 4;
+////    static final int NOT_IMPLEMENTED = 5;
     static String allString = NbBundle.getMessage (VerifierSupport.class,"All_Results");
     static String failString = NbBundle.getMessage (VerifierSupport.class,"Failures_Only");
     static String warnString = NbBundle.getMessage (VerifierSupport.class,"Failures_and_Warnings_only");
          
     // Strings used for 508 compliance
-    static String buttonName = NbBundle.getMessage (VerifierSupport.class,"Button");
-    static String buttonDesc =NbBundle.getMessage (VerifierSupport.class,"ButtonToSelect");
+////    static String buttonName = NbBundle.getMessage (VerifierSupport.class,"Button");
+////    static String buttonDesc =NbBundle.getMessage (VerifierSupport.class,"ButtonToSelect");
     static String radioButtonName =NbBundle.getMessage (VerifierSupport.class,"Radio_Button");
     static String radioButtonDesc = NbBundle.getMessage (VerifierSupport.class,"RadioButtonToSelect");
     static String panelName =NbBundle.getMessage (VerifierSupport.class,"Panel");
@@ -92,7 +92,7 @@ public class VerifierSupport extends TopComponent{
                 NbBundle.getMessage (VerifierSupport.class,"Status"), 
                 NbBundle.getMessage (VerifierSupport.class,"Test_Description"), 
                 NbBundle.getMessage (VerifierSupport.class,"Result")};
-    Vector details = new Vector();
+////    Vector details = new Vector();
     private  Vector passResults = new Vector();
     private  Vector failResults = new Vector();
     private  Vector errorResults = new Vector();
@@ -516,7 +516,7 @@ public class VerifierSupport extends TopComponent{
 	//clear the detail text
 	setDetailText("");
 	//clear the details Vector
-	details = new Vector();
+////	details = new Vector();
     }    
     
     

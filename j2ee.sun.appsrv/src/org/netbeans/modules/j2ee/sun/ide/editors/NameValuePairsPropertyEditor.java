@@ -65,7 +65,7 @@ public class NameValuePairsPropertyEditor extends java.beans.PropertyEditorSuppo
         return getPaintableString();
     }
     
-    protected DDTablePanel panel = null;
+////    protected DDTablePanel panel = null;
 
     static protected String[] requiredToolTips = {        
         bundle.getString("tipParamName"),          //NOI18N

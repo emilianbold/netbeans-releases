@@ -33,12 +33,10 @@ import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
  */
 public abstract class BaseResourceNode extends DataNode implements java.beans.PropertyChangeListener {
     
-    protected SunResourceDataObject sunResourceObj = null;
                 
     /** Creates a new instance of BaseResourceNode */
     public BaseResourceNode(SunResourceDataObject obj) {
         super(obj, Children.LEAF);
-        this.sunResourceObj = obj;
     }
     
     public javax.swing.Action getPreferredAction(){

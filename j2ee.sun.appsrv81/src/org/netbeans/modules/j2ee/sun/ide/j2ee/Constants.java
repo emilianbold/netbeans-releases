@@ -31,8 +31,5 @@ public class Constants {
     public static final Logger pluginLogger =
         Logger.getLogger("org.netbeans.modules.j2ee.sun.ide.j2ee.spi"); // NOI18N
 
-    public static final String DEPLOYMENT_PLUGIN_DIR_RESOURCE = 
-        "J2EE/DeploymentPlugins/J2EE"; // NOI18N
-    
-    public static final String DEFAULT_DOMAIN_NAME = "domain1";
+
 }

@@ -58,7 +58,6 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
     JMSBean jmsBean = null;
     
     String resType;
-    private org.openide.filesystems.FileChangeListener fl;
     
     public SunResourceDataObject(FileObject pf, SunResourceDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);

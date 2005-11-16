@@ -48,8 +48,6 @@ import java.rmi.RemoteException;
 public class ServerInfo extends ModuleMBean implements Constants{
     
     String PORT = "Port"; //NOI18N
-    String USERNAME = "UserName"; //NOI18N
-    String PASSWORD = "Password"; //NOI18N
     String DOMAIN = "Domain"; //NOI18N
     
     String port = null;

@@ -52,7 +52,7 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
     private transient WizardDescriptor.Panel[] pmPanels = null;
     private transient int index;
     
-    private transient WizardDescriptor wiz;
+//    private transient WizardDescriptor wiz;
     
     private static final String DATAFILE = "org/netbeans/modules/j2ee/sun/sunresources/beans/PMFWizard.xml";  //NOI18N
     private static final String DS_DATAFILE = "org/netbeans/modules/j2ee/sun/sunresources/beans/DSWizard.xml";  //NOI18N
@@ -165,7 +165,7 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
         this.holder = new ResourceConfigHelperHolder();
         this.helper = holder.getPMFHelper();
         
-        this.wiz = wiz;
+ //       this.wiz = wiz;
         wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(PMFWizard.class, "Templates/SunResources/Persistence_Resource")); //NOI18N
         index = 0;
         panels = createPanels();
@@ -197,7 +197,7 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
     }
     
     public void uninitialize(WizardDescriptor wiz){
-        this.wiz = null;
+ //       this.wiz = null;
         panels = null;
     }
     
