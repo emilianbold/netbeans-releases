@@ -184,8 +184,7 @@ public abstract class BaseFileObj extends FileObject {
     }
 
 
-    public final Object getAttribute(final String attrName) {
-        //TODO: convert absolute path into '/'
+    public Object getAttribute(final String attrName) {
         return BaseFileObj.attribs.readAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName);//NOI18N
     }
 

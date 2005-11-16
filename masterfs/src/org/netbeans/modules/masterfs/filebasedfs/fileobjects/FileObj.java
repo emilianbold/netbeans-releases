@@ -206,7 +206,12 @@ final class FileObj extends BaseFileObj {
     public final FileLock lock() throws IOException {
         final File me = getFileName().getFile();
         try {            
-            return WriteLockFactory.tryLock(me);
+            boolean lightWeightLock = false;
+            BaseFileObj bfo = getExistingParent();            
+            if (bfo instanceof FolderObj) {
+                lightWeightLock = ((FolderObj)bfo).isLightWeightLockRequired();
+            }
+            return WriteLockFactory.tryLock(me, lightWeightLock);
         } catch (FileNotFoundException ex) {
             FileNotFoundException fex = ex;                        
             if (!me.exists()) {

@@ -594,7 +594,9 @@ implements Serializable, DataObject.Container {
     */
     protected void handleDelete () throws IOException {
         Enumeration en = children ();
+        FileLock lightWeightLock = null;//#43278
         try {
+            lightWeightLock = createLightWeightLock(this);
             while (en.hasMoreElements ()) {
                 DataObject obj = (DataObject)en.nextElement ();
                 if (obj.isValid ()) {
@@ -607,9 +609,21 @@ implements Serializable, DataObject.Container {
             String message = NbBundle.getMessage(DataFolder.class, "EXC_CannotDelete2", FileUtil.getFileDisplayName(fo));
             ErrorManager.getDefault().annotate(iex, message);
             throw iex;
+        } finally {
+            if (lightWeightLock != null) {
+                lightWeightLock.releaseLock();
+            }
         }
         
         super.handleDelete ();        
+    }
+    
+    private static FileLock createLightWeightLock(DataFolder df) {//#43278
+        FileObject fo = df.getPrimaryFile();
+        assert fo != null;
+        Object o = fo.getAttribute("LIGHTWEIGHT_LOCK_SET");//NOI18N
+        assert o == null || (o instanceof FileLock) : fo.toString();    
+        return (FileLock)o;
     }
 
     /* Handles renaming of the object.

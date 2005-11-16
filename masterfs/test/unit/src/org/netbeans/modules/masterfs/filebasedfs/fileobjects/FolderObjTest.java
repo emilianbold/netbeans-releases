@@ -1033,6 +1033,57 @@ public class FolderObjTest extends NbTestCase {
         assertEquals(new String (b),new String (b), content);                        
     }
 
+    public void testIsLightWeightLockRequiredRequired() throws Exception {
+        File f = getWorkDir();
+        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        assertNotNull(fs);
+        FolderObj fo = (FolderObj)fs.findResource(f.getAbsolutePath());        
+        assertNotNull(fo);
+        
+        assertFalse(fo.isLightWeightLockRequired());
+        FileLock fakeLock = (FileLock)fo.getAttribute(FolderObj.LIGHTWEIGHT_LOCK_SET);
+        assertNotNull(fakeLock);
+        assertTrue(fo.isLightWeightLockRequired());
+        fakeLock.releaseLock();
+        assertFalse(fo.isLightWeightLockRequired());        
+        fakeLock = (FileLock)fo.getAttribute(FolderObj.LIGHTWEIGHT_LOCK_SET);
+        assertNotNull(fakeLock);        assertTrue(fo.isLightWeightLockRequired());
+        fakeLock.releaseLock();
+        assertFalse(fo.isLightWeightLockRequired());                
+    }
+    
+    public void testLightWeigtLock() throws Exception {
+        File f = new File(getWorkDir(), "testFile.txt");
+        if (!f.exists()) {
+            assertTrue(f.createNewFile());
+        }
+        File lckFile = WriteLockUtils.getAssociatedLockFile(f);
+        
+        FileSystem fs = FileBasedFileSystem.getInstance(f);
+        assertNotNull(fs);
+        FileObject foChild = fs.findResource(f.getAbsolutePath());
+        assertNotNull(foChild);
+        
+        FileObject folder = foChild.getParent();
+        assertNotNull(folder);
+        
+        FileLock lock = foChild.lock();
+        assertTrue(lckFile.exists());        
+        lock.releaseLock();
+
+        FileLock fakeLock = (FileLock)folder.getAttribute(FolderObj.LIGHTWEIGHT_LOCK_SET);
+        assertNotNull(fakeLock);
+        lock = foChild.lock();
+        assertFalse(lckFile.exists());        
+        lock.releaseLock();        
+
+        fakeLock.releaseLock();
+        lock = foChild.lock();
+        assertTrue(lckFile.exists());
+        lock.releaseLock();                
+    }
+    
+    
     public File getWorkDir() throws IOException {
         return super.getWorkDir();
     }
