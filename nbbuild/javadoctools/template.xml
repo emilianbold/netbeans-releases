@@ -334,14 +334,7 @@ cause it to fail.
         <replace file="${export.interfaces}/${javadoc.name}" token="@SPECIFICATION-VERSION@" value="${OpenIDE-Module-Specification-Version}"/>
     </target>
     
-    <target name="javadoc-stage-replace" depends="javadoc-stage-main,javadoc-generate-references,javadoc-stage-alternative,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-stage-arch-replace,javadoc-stage-export-interfaces,javadoc-stage-export-interfaces-replace" unless="javadoc.up.to.date">
-        <replace dir="${javadoc.out.dir}">
-            <include name="**/*.html"/>
-            <replacefilter token="@JDK@" value="${javadoc.docs.jdk}"/>
-            &replaces;
-            <replacefilter token="@FOOTER@" value="${javadoc.footer}"/>
-        </replace>
-        
+    <target name="javadoc-stage-replace-apichanges" depends="javadoc-stage-main,javadoc-generate-references,javadoc-stage-alternative,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-stage-arch-replace,javadoc-stage-export-interfaces,javadoc-stage-export-interfaces-replace" unless="javadoc.up.to.date" if="export.apichanges" >
         <replace dir="${export.apichanges}" >        
             <include name="${javadoc.name}"/>
             <replacefilter token="@JDK@" value="${javadoc.docs.jdk}"/>
@@ -350,7 +343,8 @@ cause it to fail.
             <replacefilter token="@TOP@" value="${javadoc.name}/" />
             &replaces;
         </replace>
-        
+    </target>
+    <target name="javadoc-stage-replace-interfaces" depends="javadoc-stage-main,javadoc-generate-references,javadoc-stage-alternative,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-stage-arch-replace,javadoc-stage-export-interfaces,javadoc-stage-export-interfaces-replace" unless="javadoc.up.to.date" if="export.interfaces" >
         <replace dir="${export.interfaces}" >
             <include name="${javadoc.name}"/>
             <replacefilter token="@JDK@" value="${javadoc.docs.jdk}"/>
@@ -359,9 +353,17 @@ cause it to fail.
             <replacefilter token="@TOP@" value="${javadoc.name}/" />
             &replaces;
         </replace>
+    </target>
+    
+    <target name="javadoc-stage-replace" depends="javadoc-stage-main,javadoc-generate-references,javadoc-stage-alternative,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-stage-arch-replace,javadoc-stage-export-interfaces,javadoc-stage-export-interfaces-replace,javadoc-stage-replace-interfaces,javadoc-stage-replace-apichanges" unless="javadoc.up.to.date">
+        <replace dir="${javadoc.out.dir}">
+            <include name="**/*.html"/>
+            <replacefilter token="@JDK@" value="${javadoc.docs.jdk}"/>
+            &replaces;
+            <replacefilter token="@FOOTER@" value="${javadoc.footer}"/>
+        </replace>
         
-        
-				<replace dir="${javadoc.out.dir}">
+        <replace dir="${javadoc.out.dir}">
             <include name="**/*.html"/>
             <replacefilter token="http://root/" value="@TOP@.." />
         </replace>
