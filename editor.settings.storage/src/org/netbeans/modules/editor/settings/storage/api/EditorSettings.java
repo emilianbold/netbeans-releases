@@ -16,6 +16,7 @@ package org.netbeans.modules.editor.settings.storage.api;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.editor.settings.storage.EditorSettingsImpl;
 
@@ -140,7 +141,7 @@ public abstract class EditorSettings {
      * @param profile a profile name
      * @return highlighting properties for given profile or null
      */
-    public abstract Collection /*<AttributeSet>*/ getHighlightings (
+    public abstract Map getHighlightings (
 	String profile
     );
     
@@ -151,7 +152,7 @@ public abstract class EditorSettings {
      * @param profile a profile name
      * @return highlighting properties for given profile or null
      */
-    public abstract Collection /*<AttributeSet>*/ getHighlightingDefaults (
+    public abstract Map getHighlightingDefaults (
 	String profile
     );
     
@@ -163,7 +164,7 @@ public abstract class EditorSettings {
      */
     public abstract void setHighlightings (
 	String profile,
-	Collection /*<AttributeSet>*/ highlightings
+	Map highlightings
     );
     
     

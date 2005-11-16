@@ -859,7 +859,7 @@ public class BaseOptions extends OptionSupport {
         m.put(null, getKitClass().getName() ); // add kit class                               
         setColoringMap (m);
         
-        Collection other = getEditorSettings().getHighlightings(getEditorSettings().getCurrentFontColorProfile());
+        Collection other = getEditorSettings().getHighlightings(getEditorSettings().getCurrentFontColorProfile()).values ();
         if (other != null){
             Iterator i = other.iterator();
             while (i.hasNext()){

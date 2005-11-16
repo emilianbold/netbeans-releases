@@ -262,6 +262,7 @@ public class EditorSettingsImpl extends EditorSettings {
 	pcs.firePropertyChange (PROP_DEFAULT_FONT_COLORS, null, null);
     }
     
+    // Map (String (profile) > Map (String (category) > AttributeSet)).
     private Map highlightings = new HashMap ();
     
     /**
@@ -271,7 +272,7 @@ public class EditorSettingsImpl extends EditorSettings {
      * @param profile a profile name
      * @return highlighting properties for given profile or null
      */
-    public Collection /*<AttributeSet>*/ getHighlightings (
+    public Map getHighlightings (
 	String profile
     ) {
         // 1) translate profile name
@@ -290,20 +291,17 @@ public class EditorSettingsImpl extends EditorSettings {
                 // 3) read data form disk or cache
                 Map m = ColoringStorage.loadColorings 
                     (new String [0], profile, HIGHLIGHTING_FILE_NAME, false);
-                if (m != null) {
-                    Collection c = m.values ();
-                    highlightings.put (profile, c);
-                } else
-                    highlightings.put (profile, null);
+                highlightings.put (profile, m);
             }
         }
         
         if (highlightings.get (profile) == null) return null;
-	return Collections.unmodifiableCollection (
-            (Collection) highlightings.get (profile)
+	return Collections.unmodifiableMap (
+            (Map) highlightings.get (profile)
         );
     }
     
+    // Map (String (profile) > Map (String (category) > AttributeSet)).
     private Map highlightingDefaults = new HashMap ();
     
     /**
@@ -313,7 +311,7 @@ public class EditorSettingsImpl extends EditorSettings {
      * @param profile a profile name
      * @return highlighting properties for given profile or null
      */
-    public Collection /*<AttributeSet>*/ getHighlightingDefaults (
+    public Map getHighlightingDefaults (
 	String profile
     ) {
         // 1) translate profile name
@@ -323,15 +321,11 @@ public class EditorSettingsImpl extends EditorSettings {
         if (!highlightingDefaults.containsKey (profile)) {
             Map m = ColoringStorage.loadColorings 
                 (new String [0], profile, HIGHLIGHTING_FILE_NAME, true);
-            if (m != null) {
-                Collection c = m.values ();
-                highlightingDefaults.put (profile, c);
-            } else
-                highlightingDefaults.put (profile, null);
+            highlightingDefaults.put (profile, m);
         }
         if (highlightingDefaults.get (profile) == null) return null;
-	return Collections.unmodifiableCollection (
-            (Collection) highlightingDefaults.get (profile)
+	return Collections.unmodifiableMap (
+            (Map) highlightingDefaults.get (profile)
         );
     }
     
@@ -342,8 +336,8 @@ public class EditorSettingsImpl extends EditorSettings {
      * @param highlighting a highlighting properties to be used
      */
     public void setHighlightings (
-	String profile,
-	Collection /*<AttributeSet>*/ fontColors
+	String  profile,
+	Map     fontColors
     ) {
         // 1) translate profile name
 	profile = getInternalFontColorProfile (profile);	
@@ -363,8 +357,12 @@ public class EditorSettingsImpl extends EditorSettings {
         
         // 3) save new values to disk
         if (!profile.startsWith ("test"))
-            ColoringStorage.saveColorings 
-                (new String [0], profile, HIGHLIGHTING_FILE_NAME, fontColors);
+            ColoringStorage.saveColorings (
+                new String [0], 
+                profile, 
+                HIGHLIGHTING_FILE_NAME, 
+                fontColors.values ()
+            );
         
 	pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
     }  

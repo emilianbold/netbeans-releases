@@ -211,13 +211,13 @@ public class ColorModel {
      * @return Collection of AttributeSets or null
      */
     public Collection /*<Category>*/ getHighlightings (String profile) {
-        Collection r = editorSettings.getHighlightings (profile);
+        Collection r = editorSettings.getHighlightings (profile).values ();
         if (r == null) return null;
         return hideDummyCategories (r);
     }
     
     public Collection /*<Category>*/ getHighlightingDefaults (String profile) {
-        Collection r = editorSettings.getHighlightingDefaults (profile);
+        Collection r = editorSettings.getHighlightingDefaults (profile).values ();
         if (r == null) return null;
         return hideDummyCategories (r);
     }
@@ -228,7 +228,7 @@ public class ColorModel {
     ) {
 	editorSettings.setHighlightings (
 	    profile, 
-	    highlihgtings
+	    toMap (highlihgtings)
 	);
     }
 
@@ -368,7 +368,7 @@ public class ColorModel {
                     if (highlightings != null)
                         editorSettings.setHighlightings (
                             "test" + ColorModel.this.hashCode (),
-                            highlightings
+                            toMap (highlightings)
                         );
                     if (syntaxColorings != null)
                         fontColorSettings.setAllFontColors (
@@ -514,6 +514,19 @@ public class ColorModel {
                 as.getAttribute (StyleConstants.NameAttribute)
             )) continue;
             result.add (as);
+        }
+        return result;
+    }
+    
+    private static Map toMap (Collection categories) {
+        Map result = new HashMap ();
+        Iterator it = categories.iterator ();
+        while (it.hasNext ()) {
+            AttributeSet as = (AttributeSet) it.next ();
+            result.put (
+                as.getAttribute (StyleConstants.NameAttribute),
+                as
+            );
         }
         return result;
     }
