@@ -175,7 +175,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
     // - return default platform if ${netbeans.dest.dir} undefined in any way or not pointing to valid platform [partly tested]
     // - OpenProjectHook fixes, or creates, platform-private.properties to point to current build.properties [in progress; need to test non-default platforms valid in new b.props]
     // - test that NbPrj.getModuleList uses a valid dest dir even if some refs are broken [should be implemented, just need test]
-    // - in OPH, platform.properties is fixed to use default if no value for nbplatform.active or points to invalid platform
+    // - in OPH, platform.properties is fixed to use default if no value for nbplatform.active (and netbeans.dest.dir not independently set!) or points to invalid platform
     // - all problems are notified to user (maybe move ModuleProperties.reportLostPlatform, and change MP.runFromTests)
 
     private static void open(NbModuleProject p) {
