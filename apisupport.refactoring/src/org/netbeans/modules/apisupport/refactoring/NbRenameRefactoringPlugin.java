@@ -85,7 +85,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                 if (project != null && project instanceof NbModuleProject) {
                     checkMetaInfServices(project, clzz, refactoringElements);
                     checkManifest((NbModuleProject)project, clzz, refactoringElements);
-//                    checkLayer((NbModuleProject)project, clzz, refactoringElements);
+                    checkLayer((NbModuleProject)project, clzz, refactoringElements);
                 }
             }
             if (refObject instanceof JavaPackage) {
@@ -102,7 +102,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             }
             if (refObject instanceof Method) {
                 Method method = (Method)refObject;
-//                problem = checkLayer(method, refactoringElements);
+                problem = checkLayer(method, refactoringElements);
             }
             
             err.log("Gonna return problem: " + problem);
@@ -146,27 +146,27 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         }
     }
     
-//    protected RefactoringElementImplementation createLayerRefactoring(Constructor constructor,
-//            LayerUtils.LayerHandle handle,
-//            FileObject layerFileObject,
-//            String layerAttribute) {
-//        // cannot rename a constructor.. is always a class rename
-//        return null;
-//    }
-//    
-//    protected RefactoringElementImplementation createLayerRefactoring(JavaClass clazz,
-//            LayerUtils.LayerHandle handle,
-//            FileObject layerFileObject,
-//            String layerAttribute) {
-//        return new LayerClassRefactoringElement(clazz, handle, layerFileObject,layerAttribute);
-//    }
-//    
-//    protected RefactoringElementImplementation createLayerRefactoring(Method method,
-//            LayerUtils.LayerHandle handle,
-//            FileObject layerFileObject,
-//            String layerAttribute) {
-//        return new LayerMethodRefactoringElement(method, handle, layerFileObject, layerAttribute);
-//    }
+    protected RefactoringElementImplementation createLayerRefactoring(Constructor constructor,
+            LayerUtils.LayerHandle handle,
+            FileObject layerFileObject,
+            String layerAttribute) {
+        // cannot rename a constructor.. is always a class rename
+        return null;
+    }
+    
+    protected RefactoringElementImplementation createLayerRefactoring(JavaClass clazz,
+            LayerUtils.LayerHandle handle,
+            FileObject layerFileObject,
+            String layerAttribute) {
+        return new LayerClassRefactoringElement(clazz, handle, layerFileObject,layerAttribute);
+    }
+    
+    protected RefactoringElementImplementation createLayerRefactoring(Method method,
+            LayerUtils.LayerHandle handle,
+            FileObject layerFileObject,
+            String layerAttribute) {
+        return new LayerMethodRefactoringElement(method, handle, layerFileObject, layerAttribute);
+    }
     
     public abstract class LayerAbstractRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
         
@@ -253,7 +253,6 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             FileLock lock = null;
             try {
                 lock = layerFile.lock();
-//TODO rename doesn'twork in the layered fs
                 layerFile.rename(lock, newName, layerFile.getExt());
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
@@ -318,7 +317,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             // for classes the change can be anywhere;
             if (oldAttrName == null) {
                 // no attribute -> it's a filename change. eg. org-milos-kleint-MyInstance.instance
-                newFileName = oldFileName.replaceAll("-" + clazz.getSimpleName() + "\\.", "-" + rename.getNewName() + ".");
+                newFileName = oldFileName.replaceAll("\\-" + clazz.getSimpleName() + "$", "-" + rename.getNewName());
             } else {
                 if (oldAttrName.indexOf(clazz.getName().replace('.','-') + ".instance") > 0) {
                     //replacing the ordering attribute..
@@ -338,6 +337,9 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
          * @return Formatted text.
          */
         public String getDisplayText() {
+            if (newFileName != null) {
+                return NbBundle.getMessage(getClass(), "TXT_LayerFileRename", oldFileName, rename.getNewName());
+            }
             return NbBundle.getMessage(getClass(), "TXT_LayerMethodRename", oldAttrValue, rename.getNewName());
         }
         
