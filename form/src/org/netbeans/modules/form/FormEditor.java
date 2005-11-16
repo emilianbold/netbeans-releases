@@ -18,6 +18,7 @@ import java.beans.*;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
+import org.netbeans.modules.form.FormJavaSource;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.spi.palette.PaletteController;
 
@@ -55,6 +56,9 @@ public class FormEditor {
     /** The code generator for the form */
     private CodeGenerator codeGenerator;
 
+    /** The FormJavaSource for the form */
+    private FormJavaSource formJavaSource;
+    
     /** List of exceptions occurred during the last persistence operation */
     private List persistenceErrors;
     
@@ -95,6 +99,10 @@ public class FormEditor {
     
     public final FormDataObject getFormDataObject() {
         return formDataObject;
+    }
+
+    private final FormJavaSource getFormJavaSource() {
+        return formJavaSource;
     }
     
     CodeGenerator getCodeGenerator() {
@@ -191,8 +199,9 @@ public class FormEditor {
         // create and register new FormModel instance
         formModel = new FormModel();
         formModel.setName(formDataObject.getName());        
-        formModel.setReadOnly(formDataObject.isReadOnly());         		
-        formModel.getCodeStructure().setFormDataObject(formDataObject);
+        formModel.setReadOnly(formDataObject.isReadOnly());		
+        formJavaSource = new FormJavaSource(formDataObject);
+	formModel.getCodeStructure().setFormJavaSource(formJavaSource);
 	
         openForms.put(formModel, this);
 
@@ -225,7 +234,7 @@ public class FormEditor {
                                 
         // form is successfully loaded...
         formLoaded = true;
-        
+	
         getCodeGenerator().initialize(formModel);
         formModel.fireFormLoaded();
 
@@ -555,6 +564,7 @@ public class FormEditor {
             persistenceErrors = null;
             formModel = null;
             codeGenerator = null;
+	    formJavaSource = null;
         }
     }
     
@@ -820,6 +830,12 @@ public class FormEditor {
     public static FormDataObject getFormDataObject(FormModel formModel) {
         FormEditor formEditor = (FormEditor) openForms.get(formModel);
         return formEditor != null ? formEditor.getFormDataObject() : null;
+    }
+
+    /** @return FormJavaSource of given form */
+    public static FormJavaSource getFormJavaSource(FormModel formModel) {
+        FormEditor formEditor = (FormEditor) openForms.get(formModel);
+        return formEditor != null ? formEditor.getFormJavaSource() : null;
     }
     
     /** @return FormEditor instance for given form */

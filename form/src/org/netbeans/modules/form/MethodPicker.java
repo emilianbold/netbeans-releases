@@ -17,6 +17,7 @@ package org.netbeans.modules.form;
 import java.beans.*;
 import java.util.*;
 import java.awt.*;
+import org.openide.util.Utilities;
 
 /** The MethodPicker is a form which allows user to pick one of methods
  * with specified required return type.
@@ -89,10 +90,10 @@ public class MethodPicker extends javax.swing.JPanel {
             componentsCombo.setSelectedItem(selectedComponent.getName());
     }
 
-    MethodDescriptor getSelectedMethod() {
+    MethodPickerItem getSelectedMethod() {
         if ((selectedComponent == null) ||(methodList.getSelectedIndex() == -1))
             return null;
-        return descriptors [methodList.getSelectedIndex()];
+        return items [methodList.getSelectedIndex()];
     }
 
     void setSelectedMethod(MethodDescriptor selectedMethod) {
@@ -122,40 +123,92 @@ public class MethodPicker extends javax.swing.JPanel {
             methodList.revalidate();
             methodList.repaint();
         } else {
-            MethodDescriptor[] descs = sel.getBeanInfo().getMethodDescriptors();
-            ArrayList filtered = new ArrayList();
-            for (int i = 0; i < descs.length; i ++) {
-                if (requiredType.isAssignableFrom(descs[i].getMethod().getReturnType()) &&
-                    (descs[i].getMethod().getParameterTypes().length == 0)) // [FUTURE: - currently we allow only methods without params]
-                {
-                    filtered.add(descs[i]);
-                }
-            }
+	    MethodDescriptor[] descs;	    
+	
+	    descs = sel.getBeanInfo().getMethodDescriptors();	
+
+	    Map filtered = new HashMap();
+	    for (int i = 0; i < descs.length; i ++) {
+		if (requiredType.isAssignableFrom(descs[i].getMethod().getReturnType()) &&
+		    (descs[i].getMethod().getParameterTypes().length == 0)) // [FUTURE: - currently we allow only methods without params]
+		{
+		    MethodPickerItem item = createItem(descs[i]);
+		    filtered.put(item.getMethodName(), item);
+		}
+	    }
+	    
+	    if(sel == sel.getFormModel().getTopRADComponent() ) {
+		String[] names = FormEditor.getFormJavaSource(sel.getFormModel()).getMethodNames(requiredType);
+		for (int i = 0; i < names.length; i++) {		    
+		    MethodPickerItem item = createItem(names[i]);
+		    if(!filtered.containsKey(item.getMethodName())){
+			filtered.put(item.getMethodName(), item);		    
+		    }		    
+		}		
+	    } 
+	    	    
+	    items = new MethodPickerItem[filtered.size()];
+	    filtered.values().toArray(items);
+	    
             // sort the methods by name
-            Collections.sort(filtered, new Comparator() {
+            Arrays.sort(items, new Comparator() {
                 public int compare(Object o1, Object o2) {
-                    return((MethodDescriptor)o1).getName().compareTo(((MethodDescriptor)o2).getName());
+                    return ((MethodPickerItem)o1).getMethodName()
+			    .compareTo(((MethodPickerItem)o2).getMethodName());
                 }
-            }
-                             );
+            });
 
-            descriptors = new MethodDescriptor[filtered.size()];
-            filtered.toArray(descriptors);
-
-            String[] items = new String [descriptors.length];
-            for (int i = 0; i < descriptors.length; i++)
-                items[i] = FormUtils.getMethodName(descriptors[i]);
-            methodList.setListData(items);
+	    String[] listItems = new String [items.length];
+	    for (int i = 0; i < listItems.length; i++)
+		listItems[i] = items[i].getMethodName();
+	    
+            methodList.setListData(listItems);
             methodList.revalidate();
             methodList.repaint();
         }
+    }
+
+    private MethodPickerItem createItem(final MethodDescriptor desc) {
+	return new MethodPickerItem() {		
+	    private String name = FormUtils.getMethodName(desc);
+	    public String getMethodName() {
+		return name;
+	    }
+	    public Class[] getParameterTypes() {
+		return desc.getMethod().getParameterTypes();
+	    }
+	    public boolean providesMethodDescriptor() {
+		return true;
+	    }
+	    public MethodDescriptor getMethodDescriptor() {
+		return desc;
+	    }
+	};
+    }
+
+    private MethodPickerItem createItem(final String methodName) {
+	return new MethodPickerItem() {			
+	    private String name = FormUtils.getMethodName(methodName, NO_PARAMETERS);
+	    public String getMethodName() {
+		return name;
+	    }
+	    public Class[] getParameterTypes() {
+		return NO_PARAMETERS;
+	    }
+	    public boolean providesMethodDescriptor() {
+		return false;
+	    }
+	    public MethodDescriptor getMethodDescriptor() {
+		return null;
+	    }	
+	};
     }
 
     private void updateState() {
         if ((getSelectedComponent() == null) || (getSelectedMethod() == null)) {
             setPickerValid(false);
         } else {
-            setPickerValid(getSelectedMethod().getMethod().getParameterTypes().length == 0);
+            setPickerValid(getSelectedMethod().getParameterTypes().length == 0);
         }
     }
 
@@ -234,7 +287,7 @@ public class MethodPicker extends javax.swing.JPanel {
             selectedComponent = components[componentsCombo.getSelectedIndex()];
         updateMethodList();
     }//GEN-LAST:event_componentsComboItemStateChanged
-
+    
     /** Closes the dialog */
     private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:closeDialog
     }//GEN-LAST:closeDialog
@@ -247,12 +300,18 @@ public class MethodPicker extends javax.swing.JPanel {
     private javax.swing.JScrollPane propertiesScrollPane;
     // End of variables declaration//GEN-END:variables
 
-
     private boolean pickerValid = false;
 
+    interface MethodPickerItem {
+	public String getMethodName();
+	public Class[] getParameterTypes();		
+	public MethodDescriptor getMethodDescriptor();
+    }
+    
     private RADComponent[] components;
     private Class requiredType;
-    private MethodDescriptor[] descriptors;
+    private MethodPickerItem[] items;
     private RADComponent selectedComponent;
+    private static Class[] NO_PARAMETERS = new Class[0];	
 
 }

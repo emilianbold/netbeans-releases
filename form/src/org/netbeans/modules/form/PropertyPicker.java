@@ -16,7 +16,7 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import java.util.*;
-import java.awt.*;
+import javax.swing.JFrame;
 
 /** The PropertyPicker is a form which allows user to choose from property set
  * of specified required class.
@@ -92,10 +92,10 @@ public class PropertyPicker extends javax.swing.JPanel {
             componentsCombo.setSelectedItem(selectedComponent.getName());
     }
 
-    PropertyDescriptor getSelectedProperty() {
+    PropertyPickerItem getSelectedProperty() {
         if ((selectedComponent == null) ||(propertyList.getSelectedIndex() == -1))
             return null;
-        return descriptors [propertyList.getSelectedIndex()];
+        return items [propertyList.getSelectedIndex()];
     }
 
     void setSelectedProperty(PropertyDescriptor selectedProperty) {
@@ -108,7 +108,7 @@ public class PropertyPicker extends javax.swing.JPanel {
     // ----------------------------------------------------------------------------
     // private methods
 
-    private void updatePropertyList() {
+    private void updatePropertyList() {	
         RADComponent sel = getSelectedComponent();
         if (sel == null) {
             propertyList.setListData(new Object [0]);
@@ -116,33 +116,80 @@ public class PropertyPicker extends javax.swing.JPanel {
             propertyList.repaint();
         } else {
             PropertyDescriptor[] descs = sel.getBeanInfo().getPropertyDescriptors();
-            ArrayList filtered = new ArrayList();
+            Map filtered = new HashMap();
             for (int i = 0; i < descs.length; i ++) {
                 if ((descs[i].getReadMethod() != null) &&       // filter out non-readable properties
                     (descs[i].getPropertyType() != null) &&  // indexed properties return null from getPropertyType
                     requiredType.isAssignableFrom(descs[i].getPropertyType())) {
-                    filtered.add(descs[i]);
+		    PropertyPickerItem item = createItem(descs[i]);
+                    filtered.put(item.getPropertyName(), item);
                 }
             }
+	    
+	    if(sel == sel.getFormModel().getTopRADComponent() ) {
+		String[] names = FormEditor.getFormJavaSource(sel.getFormModel()).getPropertyReadMethodNames(requiredType);
+		for (int i = 0; i < names.length; i++) {
+		    PropertyPickerItem item = createItem(names[i]);
+		    if(!filtered.keySet().contains(item.getPropertyName())){
+			filtered.put(item.getPropertyName(), item);	
+		    }                    
+		}		
+	    } 
+	    
+	    items = new PropertyPickerItem[filtered.size()];
+            filtered.values().toArray(items);	    
 
             // sort the properties by name
-            Collections.sort(filtered, new Comparator() {
+            Arrays.sort(items, new Comparator() {
                 public int compare(Object o1, Object o2) {
-                    return((PropertyDescriptor)o1).getName().compareTo(((PropertyDescriptor)o2).getName());
+                    return ((PropertyPickerItem)o1).getPropertyName()
+			    .compareTo(((PropertyPickerItem)o2).getPropertyName());
                 }
-            }
-                             );
-
-            descriptors = new PropertyDescriptor[filtered.size()];
-            filtered.toArray(descriptors);
-
-            String[] items = new String [descriptors.length];
-            for (int i = 0; i < descriptors.length; i++)
-                items[i] = descriptors[i].getName();
-            propertyList.setListData(items);
+            });
+            
+	    String[] listItems = new String [items.length];
+            for (int i = 0; i < listItems.length; i++)
+                listItems[i] = items[i].getPropertyName();
+	    
+            propertyList.setListData(listItems);
             propertyList.revalidate();
             propertyList.repaint();
         }
+    }
+
+    private PropertyPickerItem createItem(final PropertyDescriptor desc) {
+	return new PropertyPickerItem() {
+	    public String getPropertyName() {
+		return desc.getName();
+	    }
+	    public String getReadMethodName() {
+		return desc.getReadMethod().getName();
+	    }
+	    public boolean providesPropertyDescriptor() {
+		return true;
+	    }
+	    public PropertyDescriptor getPropertyDescriptor() {
+		return desc;
+	    }
+	};		
+    }
+	    
+    private PropertyPickerItem createItem(final String name) {
+	return new PropertyPickerItem() {
+	    public String getPropertyName() {
+		RADComponent sel = getSelectedComponent();
+		return FormJavaSource.extractPropertyName(name);
+	    }
+	    public String getReadMethodName() {
+		return FormUtils.getMethodName(name, NO_PARAMETERS);
+	    }
+	    public boolean providesPropertyDescriptor() {
+		return false;
+	    }
+	    public PropertyDescriptor getPropertyDescriptor() {
+		return null;
+	    }
+	};		
     }
 
     private void updateState() {
@@ -243,12 +290,18 @@ public class PropertyPicker extends javax.swing.JPanel {
     private javax.swing.JScrollPane propertiesScrollPane;
     // End of variables declaration//GEN-END:variables
 
-
     private boolean pickerValid = false;
 
     private RADComponent[] components;
     private Class requiredType;
-    private PropertyDescriptor[] descriptors;
-    private RADComponent selectedComponent;
+    private PropertyPickerItem[] items;
+    private RADComponent selectedComponent;    
+    private static Class[] NO_PARAMETERS = new Class[0];	
+
+    interface PropertyPickerItem {
+	public String getPropertyName();
+	public String getReadMethodName();
+	public PropertyDescriptor getPropertyDescriptor();
+    }
 
 }

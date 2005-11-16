@@ -566,7 +566,14 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             selectedComponent = picker.getSelectedComponent();
-            selectedMethod = picker.getSelectedMethod();
+	    
+	    MethodPicker.MethodPickerItem selectedItem = picker.getSelectedMethod();	    
+	    selectedMethod = selectedItem.getMethodDescriptor();
+	    if(selectedMethod==null) {
+		switchToCodeArea(selectedItem.getMethodName());				
+		return;		
+	    }
+	                
             methodLabel.setEnabled(true);
             if (selectedComponent == formModel.getTopRADComponent()) {
                 methodLabel.setText(selectedMethod.getName());
@@ -606,7 +613,14 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             selectedComponent = propertyPicker.getSelectedComponent();
-            selectedProperty = propertyPicker.getSelectedProperty();
+	    
+	    PropertyPicker.PropertyPickerItem selectedItem = propertyPicker.getSelectedProperty();
+	    selectedProperty = selectedItem.getPropertyDescriptor();	    
+	    if(selectedProperty == null) {				
+		switchToCodeArea(selectedItem.getReadMethodName());		
+		return;
+	    }
+	    
             propertyLabel.setEnabled(true);
             if (selectedComponent == formModel.getTopRADComponent()) {
                 propertyLabel.setText(selectedProperty.getName());
@@ -618,6 +632,12 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         }
     }//GEN-LAST:event_propertyDetailsButtonActionPerformed
 
+    private void switchToCodeArea(String text) {	
+	codeArea.setText(text);
+	codeButton.setSelected(true);	
+	updateParameterTypes();
+    }
+    
     private void typeButtonPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeButtonPressed
         updateParameterTypes();
         if (beanButton.isSelected()) {
@@ -651,8 +671,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         //codeArea.setEditable(codeButton.isSelected());
         codeArea.getCaret().setVisible(codeButton.isSelected() && codeArea.hasFocus());
         fireStateChange();
-    }
-
+    }   
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField propertyLabel;
     private javax.swing.JTextField methodLabel;

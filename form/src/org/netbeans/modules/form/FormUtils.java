@@ -912,9 +912,12 @@ public class FormUtils
 
     /** @return a formatted name of specified method
      */
-    public static String getMethodName(MethodDescriptor desc) {
-        StringBuffer sb = new StringBuffer(desc.getName());
-        Class[] params = desc.getMethod().getParameterTypes();
+    public static String getMethodName(MethodDescriptor desc) {                
+        return getMethodName(desc.getName(), desc.getMethod().getParameterTypes());
+    }
+    
+    public static String getMethodName(String name, Class[] params) {        
+	StringBuffer sb = new StringBuffer(name);
         if ((params == null) ||(params.length == 0)) {
             sb.append("()"); // NOI18N
         } else {
@@ -928,7 +931,7 @@ public class FormUtils
 
         return sb.toString();
     }
-    
+
     static void sortProperties(Node.Property[] properties) {
         Arrays.sort(properties, new Comparator() {
             public int compare(Object o1, Object o2) {
