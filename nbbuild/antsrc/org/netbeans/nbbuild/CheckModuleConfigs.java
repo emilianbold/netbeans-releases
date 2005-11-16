@@ -86,12 +86,6 @@ public final class CheckModuleConfigs extends Task {
         if (!s.isEmpty()) {
             log(buildPropertiesFile + ": warning: stable and daily-alpha-nbms configs overlap: " + s);
         }
-        // Check that stable-au <= daily-alpha-nbms (is this necessary BTW?):
-        s = new TreeSet((Set) configs.get("stable-au"));
-        s.removeAll((Set) configs.get("daily-alpha-nbms"));
-        if (!s.isEmpty()) {
-            log(buildPropertiesFile + ": warning: stable-au config contains entries not in daily-alpha-nbms config: " + s);
-        }
         /* This is not actually desired; just includes everything:
         // Check that sigtest <= javadoc:
         s = new TreeSet((Set) configs.get("sigtest"));
