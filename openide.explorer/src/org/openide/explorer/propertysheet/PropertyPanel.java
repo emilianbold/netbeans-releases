@@ -694,7 +694,7 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
             displayer = null;
         }
 
-        if (!(inner instanceof RendererPropertyDisplayer)) {
+        if (null != inner && !(inner instanceof RendererPropertyDisplayer)) {
             //Renderers hold no references the property panel doesn't, so avoid 
             //creating a new one for performance reasons in TTV - PropertyPanel
             //will be repeatedly added to and removed from a CellRendererPane
