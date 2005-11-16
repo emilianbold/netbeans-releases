@@ -7,39 +7,42 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.Image;
-import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DnDConstants;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.project.PackageDisplayUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -48,22 +51,22 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.*;
+import org.openide.loaders.ChangeableDataFilter;
+import org.openide.loaders.DataFilter;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.ExTransferable;
-import org.openide.util.datatransfer.PasteType;
 import org.openide.util.datatransfer.MultiTransferObject;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openidex.search.FileObjectFilter;
@@ -591,8 +594,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             try {
                 return new PackageTransferable (this, DnDConstants.ACTION_COPY);
             } catch (ClassNotFoundException e) {
-                Exception ioe = new IOException ();
-                throw (IOException) ErrorManager.getDefault().annotate(ioe,e);
+                throw new AssertionError(e);
             }
         }
         
@@ -600,8 +602,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             try {
                 return new PackageTransferable (this, DnDConstants.ACTION_MOVE);
             } catch (ClassNotFoundException e) {
-                Exception ioe = new IOException ();
-                throw (IOException) ErrorManager.getDefault().annotate(ioe,e);
+                throw new AssertionError(e);
             }
         }
         
@@ -609,8 +610,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             try {
                 return new PackageTransferable (this, DnDConstants.ACTION_NONE);
             } catch (ClassNotFoundException e) {
-                Exception ioe = new IOException ();
-                throw (IOException) ErrorManager.getDefault().annotate(ioe,e);
+                throw new AssertionError(e);
             }
         }
 
@@ -1072,7 +1072,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         private PackageNode node;
 
         public PackageTransferable (PackageNode node, int operation) throws ClassNotFoundException {
-            super (new DataFlavor (PACKAGE_FLAVOR.format(new Object[] {new Integer(operation)})));
+            super(new DataFlavor(PACKAGE_FLAVOR.format(new Object[] {new Integer(operation)}), null, PackageNode.class.getClassLoader()));
             this.node = node;
         }
 

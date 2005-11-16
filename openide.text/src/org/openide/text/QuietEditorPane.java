@@ -7,33 +7,44 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.text;
 
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DropTarget;
-import java.awt.event.InputEvent;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Rectangle;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.InputEvent;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.TransferHandler;
 import javax.swing.SwingConstants;
-import javax.swing.plaf.UIResource;
-import javax.swing.text.*;
-
+import javax.swing.TransferHandler;
+import javax.swing.text.Caret;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
 /** performance trick - 18% of time saved during open of an editor
 *
 * @author Ales Novak
 */
 final class QuietEditorPane extends JEditorPane {
+    
+    static DataFlavor constructActiveEditorDropFlavor() {
+        try {
+            return new DataFlavor("text/active_editor_flavor;class=org.openide.text.ActiveEditorDrop", // NOI18N
+                    "Active Editor Flavor", // XXX missing I18N!
+                    QuietEditorPane.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);
+        }
+    }
+    
     final static int FIRE = 0x1;
     final static int PAINT = 0x2;
     final static int ALL = FIRE | PAINT;

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,28 +28,38 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 import java.io.ObjectStreamException;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-
 import java.text.MessageFormat;
-
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Vector;
-
-import javax.swing.*;
+import javax.swing.AbstractListModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.MutableComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
-
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.explorer.infos.ColumnNodeInfo;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -63,12 +73,6 @@ import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.windows.TopComponent;
-
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.explorer.infos.ColumnNodeInfo;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
 
 public class DataViewWindow extends TopComponent {
     
@@ -596,8 +600,8 @@ public class DataViewWindow extends TopComponent {
             try {
                 DataFlavor multiFlavor = new DataFlavor (
                     "application/x-java-openide-multinode;class=org.openide.util.datatransfer.MultiTransferObject", // NOI18N
-                    NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("transferFlavorsMultiFlavorName")
-                );
+                        NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("transferFlavorsMultiFlavorName"),
+                        MultiTransferObject.class.getClassLoader());
 
                 if (t.isDataFlavorSupported(multiFlavor)) {
                     MultiTransferObject mobj = (MultiTransferObject)t.getTransferData(ExTransferable.multiFlavor);

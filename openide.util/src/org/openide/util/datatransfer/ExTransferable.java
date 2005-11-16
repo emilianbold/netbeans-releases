@@ -7,22 +7,20 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util.datatransfer;
 
-import org.openide.util.NbBundle;
-
-import java.awt.datatransfer.*;
-
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-
 import javax.swing.event.EventListenerList;
-
+import org.openide.util.NbBundle;
 
 /** Provides additional operations on
 * a transferable.
@@ -35,10 +33,17 @@ public class ExTransferable extends Object implements Transferable {
 
     /** Flavor for transfer of multiple objects.
     */
-    public static final DataFlavor multiFlavor = new DataFlavor(
-            "application/x-java-openide-multinode;class=org.openide.util.datatransfer.MultiTransferObject", // NOI18N
-            NbBundle.getBundle(ExTransferable.class).getString("transferFlavorsMultiFlavorName")
-        );
+    public static final DataFlavor multiFlavor;
+    static {
+        try {
+            multiFlavor = new DataFlavor(
+                    "application/x-java-openide-multinode;class=org.openide.util.datatransfer.MultiTransferObject", // NOI18N
+                    NbBundle.getBundle(ExTransferable.class).getString("transferFlavorsMultiFlavorName"),
+                    MultiTransferObject.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);
+        }
+    }
 
     /** hash map that assigns objects to dataflavors (DataFlavor, Single) */
     private LinkedHashMap map;

@@ -7,17 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.explorer.propertysheet;
 
-import org.openide.ErrorManager;
-import org.openide.awt.HtmlRenderer;
-import org.openide.nodes.Node;
-import org.openide.nodes.Node.Property;
-import org.openide.nodes.Node.PropertySet;
-import org.openide.util.NbBundle;
+package org.openide.explorer.propertysheet;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -37,20 +31,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyEditor;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringBufferInputStream;
 import java.io.StringReader;
-
-import java.lang.reflect.InvocationTargetException;
-
 import java.util.EventObject;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -68,13 +56,17 @@ import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.TableModelEvent;
-import javax.swing.plaf.UIResource;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
-
+import org.openide.ErrorManager;
+import org.openide.awt.HtmlRenderer;
+import org.openide.nodes.Node;
+import org.openide.nodes.Node.Property;
+import org.openide.nodes.Node.PropertySet;
+import org.openide.util.NbBundle;
 
 /**
  * A JTable subclass that displays node properties.  To set the properties,
@@ -1565,13 +1557,14 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
                 plainFlavors = new DataFlavor[3];
                 plainFlavors[0] = new DataFlavor("text/plain;class=java.lang.String"); // NOI18N
                 plainFlavors[1] = new DataFlavor("text/plain;class=java.io.Reader"); // NOI18N
+                // XXX isn't this just DataFlavor.plainTextFlavor?
                 plainFlavors[2] = new DataFlavor("text/plain;charset=unicode;class=java.io.InputStream"); // NOI18N
 
                 stringFlavors = new DataFlavor[2];
                 stringFlavors[0] = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class=java.lang.String"); // NOI18N
                 stringFlavors[1] = DataFlavor.stringFlavor;
             } catch (ClassNotFoundException cle) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "error initializing SheetTasbleTransferable"); // NOI18N
+                assert false : cle;
             }
         }
 
@@ -1626,6 +1619,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
                 } else if (Reader.class.equals(flavor.getRepresentationClass())) {
                     return new StringReader(data);
                 } else if (InputStream.class.equals(flavor.getRepresentationClass())) {
+                    // XXX should this enforce UTF-8 encoding?
                     return new StringBufferInputStream(data);
                 }
 

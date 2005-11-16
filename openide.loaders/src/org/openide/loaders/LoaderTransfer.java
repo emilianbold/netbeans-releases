@@ -7,19 +7,21 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.awt.datatransfer.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.io.IOException;
 import java.text.MessageFormat;
-
 import org.openide.ErrorManager;
-import org.openide.util.datatransfer.*;
+import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.datatransfer.MultiTransferObject;
 
 /** Class that contains specific datatransfer flavors and methods to work with
  * transfered DataObjects. There are flavors to allow a DataObject
@@ -200,9 +202,9 @@ public abstract class LoaderTransfer {
     */
     private static DataFlavor createDndFlavor (int actions) {
         try {
-            return new DataFlavor (dndMimeType.format (new Object[] { new Integer (actions) }));
+            return new DataFlavor(dndMimeType.format(new Object[] {new Integer(actions)}), null, DataObject.class.getClassLoader());
         } catch (ClassNotFoundException ex) {
-            throw new InternalError (ex.toString());
+            throw new AssertionError(ex);
         }
     }
 

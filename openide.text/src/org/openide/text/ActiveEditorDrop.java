@@ -10,6 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.text;
 
 import java.awt.datatransfer.DataFlavor;
@@ -97,14 +98,13 @@ public interface ActiveEditorDrop {
      * This DataFlavor should be used for case where target component is instance
      * of JTextComponent.
      */
-    static final DataFlavor FLAVOR = 
-            new DataFlavor("text/active_editor_flavor;class=org.openide.text.ActiveEditorDrop", "Active Editor Flavor"); //NOI18N
+    DataFlavor FLAVOR = QuietEditorPane.constructActiveEditorDropFlavor();
 
     /**
      * A method called from the drop target that supports the artificial DataFlavor.
      * @param targetComponent a Component where drop operation occured.
      * @return true if implementor allowed a drop operation into the targetComponent
      */
-    abstract boolean handleTransfer(JTextComponent targetComponent);
+    boolean handleTransfer(JTextComponent targetComponent);
     
 }

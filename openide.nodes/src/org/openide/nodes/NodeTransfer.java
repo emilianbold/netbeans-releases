@@ -7,20 +7,21 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.nodes;
 
-import org.openide.util.datatransfer.*;
-
-import java.awt.datatransfer.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
-
 import java.io.IOException;
-
 import java.text.MessageFormat;
-
+import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.datatransfer.MultiTransferObject;
+import org.openide.util.datatransfer.PasteType;
 
 /** Class that contains specific datatransfer flavors and methods to work with
 * nodes. There are flavors to allow a node
@@ -65,10 +66,17 @@ public abstract class NodeTransfer extends Object {
     * Provides methods for obtaining a set of {@link PasteType}s when
     * the target node is known.
     */
-    private static final DataFlavor nodePasteFlavor = new DataFlavor(
-            "application/x-java-openide-nodepaste;class=org.openide.nodes.Node", // NOI18N
-            Node.getString("LBL_nodePasteFlavor")
-        );
+    private static final DataFlavor nodePasteFlavor;
+    static {
+        try {
+            nodePasteFlavor = new DataFlavor(
+                    "application/x-java-openide-nodepaste;class=org.openide.nodes.Node", // NOI18N
+                    Node.getString("LBL_nodePasteFlavor"),
+                    Node.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);
+        }
+    }
 
     /** message format to create and parse the mimetype
     */

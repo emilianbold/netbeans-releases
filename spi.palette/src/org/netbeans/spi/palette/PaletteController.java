@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.spi.palette;
 
 import java.awt.datatransfer.DataFlavor;
@@ -22,9 +21,7 @@ import org.netbeans.modules.palette.Item;
 import org.netbeans.modules.palette.Model;
 import org.netbeans.modules.palette.ModelListener;
 import org.netbeans.modules.palette.Settings;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-
 
 /**
  * <p>PaletteController provides access to data in the palette. If an instance
@@ -55,7 +52,16 @@ public final class PaletteController {
      * <code>DataFlavor</code> is the <code>Lookup</code> of the <code>Node</code>
      * representing the palette item being dragged.
      */
-    public static final DataFlavor ITEM_DATA_FLAVOR = new DataFlavor( "application/x-java-openide-paletteitem;class=org.openide.util.Lookup", "Paste Item" );
+    public static final DataFlavor ITEM_DATA_FLAVOR;
+    static {
+        try {
+            ITEM_DATA_FLAVOR = new DataFlavor("application/x-java-openide-paletteitem;class=org.openide.util.Lookup", // NOI18N
+                    "Paste Item", // XXX missing I18N!
+                    Lookup.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);
+        }
+    }
 
     //==========================================================================
     // Names of attributes of palette items and categories that the palette supports.
