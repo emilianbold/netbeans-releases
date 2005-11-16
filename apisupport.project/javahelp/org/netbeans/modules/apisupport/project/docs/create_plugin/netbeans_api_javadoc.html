@@ -16,41 +16,34 @@
 <a href="#seealso">See Also</a> 
 </small></p>
 
-<p>The IDE contains a set of standard project and file templates for module development. 
- The standard distribution of the IDE contains the following module project templates:
 
- <ul>
-<li><b><img src="../images/module.gif" width="16" height="16" alt="Module icon">&nbsp;Module.</b>
-Creates an empty module with a <tt>layer.xml</tt> file and a <tt>Bundle.properties</tt> file.
-You use a module to implement the logic that integrates the 
-library wrappers into the platform and provides a user interface for receiving user input. </li>
-<li><b><img src="../images/module.gif" width="16" height="16" alt="Library Wrapper Module icon">&nbsp;Library Wrapper.</b>
-Creates a library wrapped in a module project and a <tt>Bundle.properties</tt> file.
-You use a library wrapper to put a library JAR file on a module's classpath
- and export some or all of the JAR file's packages from the module as public packages.</li>
-<li><b><img src="../images/suite.gif" width="16" height="16" alt="Module Suite icon">&nbsp;Module Suite.</b>
-Creates an empty module suite. You use a module suite to group and deploy a set of interdependent modules and library wrappers.
-</li>
-</ul>
-<p>For details, see <a href="../create_plugin/projectlevel_create/about_project_wizards.html">About Module Project Templates</a>.
-<p>The standard distribution of the IDE contains the following module file templates:
 
+ <p>The NetBeans Platform Manager is a tool for registering different NetBeans platforms with the IDE.
+ The dialog box lists all your registered NetBeans platforms in the left pane and
+ lists the platform that the IDE currently deploys to as the Default.
+
+<p>You can open the dialog box by choosing Tools &gt; NetBeans Platform Manager.
+
+<p>Using the NetBeans Platform Manager, you can: 
 <ul>
-<li><b><img src="../images/libraries.gif" width="16" height="16" alt="J2SE Library Descriptor icon">&nbsp;J2SE Library Descriptor.</b>
-Adds a new class library to the Library Manager of the user's IDE.
-<li><b><img src="../images/action.gif" width="16" height="16" alt="Action icon">&nbsp;Action.</b>
-Creates an action that can be invoked from a menu item, pop-up menu, toolbar button, or keyboard shortcut.</li>
-<li><b><img src="../images/filetype.gif" width="16" height="16" alt="File Type icon">&nbsp;File Type.</b>
-Lets the IDE recognize a new file type.</li>
-<li><b><img src="../images/projtemplate.gif" width="16" height="16" alt="Project Template icon">&nbsp;Project Template.</b>
-Adds a new template to the New Project wizard.</li>
-<li><b><img src="../images/window.gif" width="16" height="16" alt="Window icon">&nbsp;Window Component.</b>
-Creates a new window with an Open action invoked from a menu item.</li>
-<li><b><img src="../images/wizard.gif" width="16" height="16" alt="Window icon">&nbsp;Wizard.</b>
-Creates a new wizard for creating, for example, new files in the IDE.</li>
+   <li>Register a new platform. </li>
+   <li>View a registered platform's available modules.</li>
+   <li>Register source code for a platform in the Sources
+   tab. If you register the sources, you do not need to register Javadoc separately, because Javadoc is
+   included in the sources. Either the ZIP file containing the sources or the unpacked root folder 
+   can be registered in the Sources tab. You can download the NetBeans sources from <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/downloads/index.html">
+    <param name="text" value="<html><u>http://www.netbeans.org/downloads/index.html</u>.</html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object></li>
+   <li>Register Javadoc documentation 
+   for a platform in the Javadoc tab. Javadoc is available from the Update Center.</li>
 </ul>
-<p>For details, see <a href="../create_plugin/filelevel_create/about_file_wizards.html">About Module File Templates</a>.
-
+<p>Once you have registered a platform, you can configure a module project to use
+	 that platform for deployment. Go to the project's Project
+	 Properties dialog box, select the Libraries node, and choose the appropriate
+	platform in the NetBeans Platform drop-down list. 
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd>  <a href="../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>

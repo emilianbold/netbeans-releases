@@ -16,22 +16,31 @@
  The dialog box lists all your registered NetBeans platforms in the left pane and
  lists the platform that the IDE currently deploys to as the Default.
 
-<p>You can open the dialog box by choosing Tools > NetBeans Platform Manager.
+<p>You can open the dialog box by choosing Tools &gt; NetBeans Platform Manager.
 
 <p>Using the NetBeans Platform Manager, you can: 
 <ul>
    <li>Register a new platform. </li>
-   <li>View registered platform's available modules.</li>
+   <li>View a registered platform's available modules.</li>
    <li>Register source code for a platform in the Sources
-  	 tab.</li>
+   tab. If you register the sources, you do not need to register Javadoc separately, because Javadoc is
+   included in the sources. Either the ZIP file containing the sources or the unpacked root folder 
+   can be registered in the Sources tab. You can download the NetBeans sources from <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/downloads/index.html">
+    <param name="text" value="<html><u>http://www.netbeans.org/downloads/index.html</u>.</html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object></li>
    <li>Register Javadoc documentation 
-	 	for a platform in the  Javadoc tab.</li>
+   for a platform in the Javadoc tab. Javadoc is available from the Update Center.</li>
 </ul>
 <p>Once you have registered a platform, you can configure a module project to use
 	 that platform for deployment. Go to the project's Project
 	 Properties dialog box, select the Libraries node, and choose the appropriate
 	platform in the NetBeans Platform drop-down list. 
 
+
+	
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd>  <a href="../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
