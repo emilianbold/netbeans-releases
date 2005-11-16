@@ -248,7 +248,7 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
      *
      * @node Node context, may be also null.
      */
-    private List obtainProviders (Node node) {
+    /* package private for tests */ List obtainProviders (Node node) {
         List result = null; 
         // search in global lookup first, they had preference
         // XXX - TBD - lookup for all instances, not only one
@@ -266,7 +266,7 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
         if (node != null) {
             DataObject dObj = (DataObject)node.getLookup().lookup(DataObject.class);
             // #64871: Follow DataShadows to their original
-            if (dObj instanceof DataShadow) {
+            while (dObj instanceof DataShadow) {
                 dObj = ((DataShadow)dObj).getOriginal();
             }
             if (dObj != null) {

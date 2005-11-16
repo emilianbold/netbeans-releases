@@ -1,0 +1,22 @@
+/*
+ * Nic.java
+ *
+ * Created on November 15, 2005, 5:30 PM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package org.netbeans.modules.navigator.resources.sample_folder.subfolder1.subfolder2;
+
+/**
+ *
+ * @author ds97930
+ */
+public class Nic {
+    
+    /** Creates a new instance of Nic */
+    public Nic() {
+    }
+    
+}
