@@ -17,7 +17,6 @@ import java.beans.*;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
-import org.netbeans.modules.form.layoutdesign.LayoutDesigner;
 
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
@@ -37,6 +36,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.ClassDefinition;
+import org.openide.nodes.Node.Property;
+import org.openide.util.TopologicalSortException;
 import org.w3c.dom.NamedNodeMap;
 
 /**
@@ -139,6 +140,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     // map of loaded components (not necessarily added to FormModel yet)
     private Map loadedComponents;
+
+    private ConnectedProperties connectedProperties;
 
     // XML persistence of code structure
     private Map expressions; // map of expressions/IDs already saved/loaded
@@ -414,6 +417,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (topComp != null) // load the main form component
             loadComponent(mainElement, topComp, null);
 
+        if(connectedProperties != null) {  
+           connectedProperties.setValues();          
+           connectedProperties = null;
+        }        
+                
         if ((newLayout) && (!underTest)) { // for sure update project classpath with layout extensions library
             FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
         }
@@ -426,8 +434,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
             loadedComponents.clear();
         this.formModel = null;
         return formModel;
-    }
-
+    }  
+    
     private void loadNonVisuals(org.w3c.dom.Node node) throws PersistenceException {
         org.w3c.dom.Node nonVisualsNode =
                                 findSubNode(node, XML_NON_VISUAL_COMPONENTS);
@@ -1681,6 +1689,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
     
+    
+    
     private void loadProperty(org.w3c.dom.Node propNode, RADComponent metacomp, FormProperty property) {
 	
 	Throwable t = null;
@@ -1783,7 +1793,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 				    loadBeanFromXML(node, (BeanPropertyEditor) prEd);	
 				    loadBeanProperty((BeanPropertyEditor) prEd, node);
 				} else if (prEd instanceof XMLPropertyEditor) {								
-				    ((XMLPropertyEditor)prEd).readFromXML(node);  				   
+				    ((XMLPropertyEditor)prEd).readFromXML(node);  				                                       
 				}
 				
 				value = prEd.getValue();					
@@ -1852,18 +1862,69 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 	// set the value to the property
 	try {
-	    property.setValue(value);
-	    if (prEd != null)
-		property.setCurrentEditor(prEd);	     	
-	}
-	catch (Exception ex) {
-	    String msg = createLoadingErrorMessage(
-		FormUtils.getBundleString("MSG_ERR_CannotSetLoadedValue"), // NOI18N
-		propNode);
-	    ErrorManager.getDefault().annotate(ex, msg);
-	    nonfatalErrors.add(ex);
+            if(value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {         
+                boolean accepted = setConnectedProperty(property, 
+                                                       (RADConnectionPropertyEditor.RADConnectionDesignValue) value,
+                                                       metacomp.getName(), 
+                                                       propNode);
+                if(!accepted) {
+                    // makes sense only for PROPERTY, and METHOD type.
+                    // in case it wasn't set for further handling 
+                    // we must set it now.
+                    property.setValue(value);
+                }
+            } else {
+                if(prEd instanceof BeanPropertyEditor) {
+                    // value is no RADConnection, but it still could have
+                    // properties which are RADConnection-s                    
+                    Property[] properties = ((BeanPropertyEditor)prEd).getProperties();
+                    for (int i = 0; i < properties.length; i++) {
+                        Object propValue = properties[i].getValue();
+                        if(propValue instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
+                            setConnectedProperty(properties[i], 
+                                                 (RADConnectionPropertyEditor.RADConnectionDesignValue)propValue, 
+                                                 value.toString(), // XXX getBeanName() ?
+                                                 propNode);                            
+                            // value was already set, so don't care 
+                            // if it also was or wasn't set for further handling.
+                        }
+                    }
+                }     
+                property.setValue(value);    	                     
+            }                        
+            if (prEd != null) {
+                property.setCurrentEditor(prEd);	     	                
+            }            
+        } catch (Exception ex) {
+	    createLoadingErrorMessage(ex, propNode);
 	    return;
 	}	
+    }
+    
+    private boolean setConnectedProperty(Property property, 
+                                         RADConnectionPropertyEditor.RADConnectionDesignValue value,
+                                         String beanName,
+                                         org.w3c.dom.Node propNode) {
+        if(connectedProperties==null) {
+            connectedProperties = new ConnectedProperties();
+        }
+        int type = value.getType();
+        if(type == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_PROPERTY ||
+           type == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_METHOD)
+        {    
+            // makes sense only for PROPERTY, and METHOD type ...                    
+            connectedProperties.put(property, value, beanName, propNode);        
+            return true;
+        }
+        return false;
+    }
+    
+    private void createLoadingErrorMessage(Exception ex, org.w3c.dom.Node propNode) {
+       String msg = createLoadingErrorMessage(
+		FormUtils.getBundleString("MSG_ERR_CannotSetLoadedValue"), // NOI18N
+		propNode);
+        ErrorManager.getDefault().annotate(ex, msg);
+        nonfatalErrors.add(ex); 
     }
     
     private PropertyEditor getPropertyEditor(String editorStr, FormProperty property, Class propertyType, org.w3c.dom.Node propNode) {
@@ -5336,6 +5397,147 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private static Class getCompatibleFormClass(Class formBaseClass) {
         return getClassForKnownFormInfo(getFormInfoForKnownClass(formBaseClass));
     }
+
+    private class ConnectedProperties {        
+        private class ConnectedProperty {
+            private final Property property;            
+            private final String beanName;   
+            private final RADConnectionPropertyEditor.RADConnectionDesignValue value;
+            private final String tostring;    
+            private final Object auxiliaryValue;
+            private String valueName = null;
+            private ConnectedProperty(Property property,                                                             
+                              RADConnectionPropertyEditor.RADConnectionDesignValue value,
+                              String beanName,                                                            
+                              Object auxiliaryValue) 
+            {
+                this.property = property;
+                this.beanName = beanName;
+                this.value = value;                                                     
+                this.tostring = getKey(beanName, property.getName());
+                this.auxiliaryValue = auxiliaryValue;
+            }            
+            public boolean equals(Object obj) {
+                if(!(obj instanceof ConnectedProperty)) return false;
+                if(this == obj) return true;
+                ConnectedProperty cp = (ConnectedProperty) obj;
+                return beanName.equals(cp.beanName) && 
+                       property.equals(cp.property);
+            }
+            public int hashCode() {            
+                return tostring.hashCode();
+            }            
+            private String getBeanName() {
+                return beanName;
+            }                   
+            private Property getProperty() {
+                return property;
+            }   
+            RADConnectionPropertyEditor.RADConnectionDesignValue getValue() {
+                return value;
+            }               
+            private String getValueName() {
+                if(valueName == null) {
+                    if(value.getType() == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_PROPERTY) {
+                        valueName = value.getProperty().getName();
+                    } else if (value.getType() == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_METHOD) {
+                        RADComponent component = value.getRADComponent();
+                        String methodName = value.getMethod().getName();
+                        PropertyDescriptor[] descs = component.getBeanInfo().getPropertyDescriptors();
+                        for (int i = 0; i < descs.length; i++) {
+                            Method method = descs[i].getReadMethod();
+                            if(method!=null && method.getName().equals(methodName)) {
+                                methodName = descs[i].getName();
+                                break;
+                            }
+                        }
+                        valueName = methodName;
+                    }                                       
+                }     
+                return valueName;
+            }
+            Object getAuxiliaryValue() {
+                return auxiliaryValue;
+            }
+            String getKey() {                
+                return getKey(beanName, property.getName());
+            }                        
+            String getSourceKey() {                                    
+                return getKey(value.getRADComponent().getName(), getValueName());
+            }                
+            private String getKey(String beanName, String propertyName) {
+                StringBuffer sb = new StringBuffer();
+                sb.append("[");
+                sb.append(beanName);
+                sb.append(", ");
+                sb.append(propertyName);
+                sb.append("]");
+                return sb.toString();
+            }            
+            public String toString() {
+                return tostring;
+            }       
+        }                
+        private Map properties = new HashMap();      
+        public void put(Property property, 
+                        RADConnectionPropertyEditor.RADConnectionDesignValue value,
+                        String beanName,
+                        Object auxiliaryValue)                        
+        {
+            ConnectedProperty cp = new ConnectedProperty(property, value, beanName, auxiliaryValue);
+            properties.put(cp.getKey(), cp);
+        }     
+        private ConnectedProperty get(String key) {
+            return (ConnectedProperty) properties.get(key);
+        }           
+        public void setValues() { 
+            Collection sorted = sort();
+            for (Iterator it = sorted.iterator(); it.hasNext();) {                
+                ConnectedProperty compProperty = (ConnectedProperty) it.next();                
+                try {                    
+                    compProperty.getProperty().setValue(compProperty.getValue()); 
+                } catch(Exception ex) {
+                    org.w3c.dom.Node node = 
+                        (org.w3c.dom.Node) compProperty.getAuxiliaryValue();                    
+                    createLoadingErrorMessage(ex, node);
+                }
+            }
+        }
+        private Collection sort() {                                           
+            List sortedValues = null;
+            try {
+                sortedValues = Utilities.topologicalSort(properties.values(), getEdges());                                                            
+            } catch (TopologicalSortException tse) {
+                Set[] sets = tse.topologicalSets();                
+                sortedValues = new ArrayList();
+                for (int i = 0; i < sets.length; i++) {
+                    for (Iterator it = sets[i].iterator(); it.hasNext();) {
+                        sortedValues.add(it.next());
+                    }
+                }    
+            }
+            if(sortedValues!=null) {
+                Collections.reverse(sortedValues);             
+                return sortedValues;
+            }
+            // something went wrong, let's fall back
+            // on the unsorted values
+            return properties.values();
+        } 
+        private Map getEdges() {
+            Map edges = new HashMap();
+            for (Iterator it = properties.values().iterator(); it.hasNext();) {
+                ConnectedProperty target = (ConnectedProperty) it.next();                                
+                ConnectedProperty source = get(target.getSourceKey());
+                if(source!=null) {
+                    List l = new ArrayList();                    
+                    l.add(source);
+                    edges.put(target, l);
+                } 
+            }            
+            return edges;
+        }                
+    }           
 
     // FormInfo names used in NB 3.2
     private static final String[] defaultFormInfoNames = {
