@@ -5,12 +5,13 @@
  * Copyright &copy; 2004 Sun Microsystems, Inc.
  * All rights reserved. Use is subject to license terms.
 -->
-  <title>Servlet</title>
+<title>sun-web.xml Visual Editor: Servlet</title>
   
 <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
-
-<h2>Servlet</h2>
+<body>
+<h2><tt>sun-web.xml</tt> Visual Editor: Servlet</h2>
+<p><small><a href="#seealso">See Also</a>&nbsp; </small></p>
 <p>Configure properties for a servlet.<br>
 </p>
 <ul>
@@ -27,31 +28,31 @@ disabled. If the run-as role field displays a value, then the user can
 set a role name that becomes the principal role under which the servlet
 is run.<br>
   </li>
-  <li>Web Service Endpoints: Edit existing Web service endpoint values
-or enter new Web service endpoint values. This operation opens a pop-up
-dialog window from which you can designate the following endpoint
-values:</li>
-  <ul>
-    <li>Port Component Name. This field is required. It should be the
-unique name of the port within the module.<br>
-    </li>
-    <li>Endpoint Address URI. This field is not required if the servlet
-services only one endpoint. Otherwise, it should indicate the endpoint
-address of the endpoint that the servlet services.<br>
-    </li>
-    <li>Transport Guarantee. This value is optional. It may be set by
-selecting from the pull-down list of values: None, Integral, or
-Confidential. None indicates that the application does not require any
-transport guarantees. Integral indicates that the application requires
-that the data sent between client and
-server be sent in such a way that it can&#8217;t be changed in transit.
-Confidential <span class="cCode"></span>means the application requires
-that the data be transmitted in a
-fashion that prevents other entities from observing the contents of the
-transmission. A value of Integral or Confidential indicates that the
-use of SSL is required.</li>
-  </ul>
 </ul>
-<hr><a href="../credits.html"><font size="-2">Legal Notices</font></a>
+<p>For servlet based web service endpoint configuration, see <a href="WebserviceDescriptor.html">Webservice Descriptor</a></p>
+<table>
+  <tr> 
+    <th colspan=2 align=left><a name="seealso">See also</a></th>
+  </tr>
+  <tr> 
+    <td width="23"></td>
+    <td><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a><br>
+      <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/configure/configure_webapp_dd.html">Editing a Web Application's Deployment Descriptors</a><br>
+      <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/deploy/deploy_changeserver.html">Changing 
+      the Target Server</a><br>
+      <tt>sun-web.xml</tt> Visual Editor:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppGeneral.html">General</a><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="SessionConfigurationManager.html">Session</a> 
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppMessages.html">Messages</a> 
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppLocale.html">Locale</a> 
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppCacheGeneral.html">Cache</a>
+    </td>
+  </tr>
+</table>
+<hr>
+<a href="../credits.html"><font size="-2">Legal Notices</font></a>
 </body>
 </html>

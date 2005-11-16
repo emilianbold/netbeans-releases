@@ -34,10 +34,7 @@
     <mapID target="AS_CFG_WebAppGeneral"			url="configeditors/WebAppGeneral.html"  />
     <mapID target="AS_CFG_WebAppJspConfigProperty" 		url="configeditors/WebAppGeneral.html"  />
     <mapID target="AS_CFG_WebAppProperty" 			url="configeditors/WebAppGeneral.html"  />
-    <mapID target="AS_CFG_WebAppIdempotentUrlPatternProperty" 	url="configeditors/WebAppGeneral.html"  />
-    <mapID target="AS_CFG_WebAppServices" 			url="configeditors/WebAppServices.html"  />
     <mapID target="AS_CFG_WebAppMessageDestination" 		url="configeditors/WebAppMessages.html"  />
-    <mapID target="AS_CFG_WebAppWebserviceDescription" 		url="configeditors/WebAppServices.html"  />
     <mapID target="AS_CFG_WebAppLocale" 			url="configeditors/WebAppLocale.html"  />
     <mapID target="AS_CFG_WebAppLocaleCharsetMapping" 		url="configeditors/WebAppLocaleCharsetMapping.html"  />
     <mapID target="AS_CFG_WebAppCacheGeneral" 			url="configeditors/WebAppCacheGeneral.html"  />
@@ -65,6 +62,9 @@
     <mapID target="AS_CFG_ServiceRefPortInfo" 			url="configeditors/ServiceRefPortInfo.html"  />
     <mapID target="AS_CFG_ServiceRefPortInfoStubProperty" 	url="configeditors/ServiceRefPortInfoStubProperty.html"  />
     <mapID target="AS_CFG_ServiceRefPortInfoCallProperty" 	url="configeditors/ServiceRefPortInfoCallProperty.html"  />
+    <mapID target="AS_CFG_WebServices" 	url="configeditors/WebserviceDescriptor.html"  />
+    <mapID target="AS_CFG_WebServiceDescriptor" 	url="configeditors/WebserviceDescriptor.html"  />
+    <mapID target="AS_CFG_WebServiceEndpoint" 	url="configeditors/WebserviceDescriptor.html"  />
 
    <!-- Sun Resource New File wizard and property sheet CSH pages: -->
    <mapID target="AS_Wiz_ConnPool_chooseDB" 		url="resourcewizards/ConnPool_chooseDB.html"  />
@@ -98,9 +98,6 @@
   <mapID target="AS_CFG_Cmp_Resource_Property"            			url="ejbconfigeditors/sun-cmpproperty.html" />
   <mapID target="AS_CFG_Schema_Generator_Property"            			url="ejbconfigeditors/sun-schemagen.html" />
   <mapID target="AS_CFG_Activation_Config_Property"            			url="ejbconfigeditors/mes_activate.html" />
-  <mapID target="AS_CFG_WebserviceDescription"            			url="ejbconfigeditors/sun-webservice.html" />
-  <mapID target="AS_CFG_WebserviceEndpoint"                             	url="ejbconfigeditors/ses-webendpoint.html" />
-  <mapID target="AS_CFG_MessageSecurityBinding"            			url="general/blank.html" />
 
   <!-- sun-application.xml DD editor CSH: -->
   <mapID target="AS_CFG_Application"                    			url="appconfigeditors/sunapplication.html" />
