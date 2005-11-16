@@ -93,7 +93,7 @@ public class ServiceLocatorStrategyPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.TitledBorder(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_ServiceLocatorStrategy")));
+        setBorder(javax.swing.BorderFactory.createTitledBorder(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_ServiceLocatorStrategy")));
         buttonGroup1.add(noServiceLocator);
         noServiceLocator.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(noServiceLocator, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_NoServiceLocator"));
@@ -145,7 +145,10 @@ public class ServiceLocatorStrategyPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
         add(className, gridBagConstraints);
+        className.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("ACS_ExistingClassName"));
+        className.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("ACS_ExistingClassName"));
 
+        jButton1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("MN_Browse").charAt(0));
         jButton1.setText("...");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -156,9 +159,10 @@ public class ServiceLocatorStrategyPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
         add(jButton1, gridBagConstraints);
+        jButton1.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("ACS_Browse"));
+        jButton1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("ACS_Browse"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void classNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classNameActionPerformed
         System.out.println("### 111");
