@@ -13,6 +13,10 @@
 package org.netbeans.modules.collab.channel.filesharing;
 
 import com.sun.collablet.*;
+import org.netbeans.modules.collab.channel.filesharing.eventhandler.LockRegionManager;
+import org.netbeans.modules.collab.channel.filesharing.filehandler.RegionInfo;
+import org.netbeans.modules.collab.channel.filesharing.msgbean.LockRegion;
+import org.netbeans.modules.collab.channel.filesharing.msgbean.LockRegionData;
 
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
@@ -179,6 +183,8 @@ public class FilesharingContext extends CollabContext implements FilesharingCons
     private boolean readOnlyConversation = false;
     private FileChangeListener scfl;
     private FileSystem scfs = null;
+
+    private HashMap lrmanagers = new HashMap();
 
     /**
          * @param version
@@ -2455,4 +2461,42 @@ public class FilesharingContext extends CollabContext implements FilesharingCons
         this.scfs = scfs;
         this.scfl = scfl;
     }
+    
+    public static String createUniqueLockID(String userID, String filename, String regionID) {
+        return userID+filename+regionID;
+    }
+    
+    public LockRegionManager createManager(String userID, LockRegion lockRegion) {
+        LockRegionManager lrm=null;
+        LockRegionData[] lockRegionData = lockRegion.getLockRegionData();
+        if(lockRegionData!=null && lockRegionData.length>0) {
+            CollabFileHandler fh =
+                    getSharedFileGroupManager().getFileHandler(lockRegionData[0].getFileName());
+            if(fh!=null) {
+                RegionInfo regionInfo = fh.getLockRegion(lockRegionData[0]);
+                lrm=createManager(userID, regionInfo);
+            }
+        }
+        return lrm;
+    }
+    
+    public LockRegionManager createManager(String userID, RegionInfo regionInfo) {
+        LockRegionManager lrm = null;
+        String lockID = createUniqueLockID(userID, regionInfo.getFileName(), regionInfo.getID());
+        synchronized(lrmanagers) {
+            if(lrmanagers.containsKey(lockID)) {
+                lrm=(LockRegionManager)lrmanagers.get(lockID);
+            } else {
+                lrm=new LockRegionManager(lockID, this, userID, regionInfo);
+                lrmanagers.put(lockID, lrm);
+            }
+        }
+        return lrm;
+    }
+    
+    public void removeLockManager(String lockID) {
+        synchronized(lrmanagers) {
+            if(lrmanagers.containsKey(lockID)) lrmanagers.remove(lockID);
+        }
+    }        
 }

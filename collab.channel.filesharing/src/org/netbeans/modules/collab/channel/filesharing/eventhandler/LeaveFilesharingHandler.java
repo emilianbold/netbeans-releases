@@ -105,7 +105,12 @@ public class LeaveFilesharingHandler extends FilesharingEventHandler {
 
                             String fileGroupName = fhs[j].getFileGroupName();
                             Debug.out.println("LeaveFS, fileGroup: " + fileGroupName);
-                            deleteSharedFiles(fileGroupName, messageOriginator, false); //remove handler + files
+                            try {
+                                deleteSharedFiles(fileGroupName, messageOriginator, false);
+                            } catch(Exception e) {
+                                Debug.logDebugException("LeaveFS, Exception " + 
+                                        "removing files and filehandlers",e,true);
+                            } 
                         }
                     }
 

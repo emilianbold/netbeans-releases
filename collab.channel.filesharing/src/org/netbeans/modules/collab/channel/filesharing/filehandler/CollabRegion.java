@@ -119,7 +119,7 @@ public interface CollabRegion {
      * @param annotation
      */
     public void addAnnotation(
-        DataObject dataObject, CollabFileHandler fileHandler /*CollabRegionAnnotation annotation*/, int style,
+        DataObject dataObject, CollabFileHandler fileHandler, int style,
         String annotationMessage
     ) throws CollabException;
 

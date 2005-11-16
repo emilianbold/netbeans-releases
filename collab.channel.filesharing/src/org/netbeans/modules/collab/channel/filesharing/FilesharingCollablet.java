@@ -276,7 +276,7 @@ public class FilesharingCollablet extends Object implements InteractiveCollablet
                     new JoinFilesharingBegin(new EventContext(JoinFilesharingBegin.getEventID(), null)), getContext()
                 );
             getContext().addTimerTask(SEND_JOINBEGIN_TIMER_TASK, sendJoinBeginTimerTask);
-            sendJoinBeginTimerTask.schedule(1 + FileshareUtil.getRandomCount(FilesharingTimerTask.JOIN_BEGIN_DELAY));
+            sendJoinBeginTimerTask.schedule(FilesharingTimerTask.JOIN_BEGIN_DELAY*3);
             timerTasks.add(sendJoinBeginTimerTask);
         }
 
@@ -321,7 +321,8 @@ public class FilesharingCollablet extends Object implements InteractiveCollablet
         try {
             getContext().removeAllFileHandlerRef();
         } catch (CollabException e) {
-            Debug.debugNotify(e);
+            Debug.logDebugException("Exception removing files during leave",
+                    e, true);
         }
 
         //invalidate context

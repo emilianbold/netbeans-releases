@@ -32,6 +32,8 @@ import org.netbeans.modules.collab.core.Debug;
  */
 public class CollabLineRegion extends CollabRegionSupport implements CollabRegion {
     private Annotation lineAnnotation = null;
+    CollabRegion parent = null;
+    private boolean assigned = false;
 
     /**
      *
@@ -74,9 +76,8 @@ public class CollabLineRegion extends CollabRegionSupport implements CollabRegio
      * @param dataObject
      * @param annotation
      */
-    public void addAnnotation(
-        DataObject dataObject, CollabFileHandler fileHandler, int style, String annotationMessage
-    ) throws CollabException {
+    public void addAnnotation(DataObject dataObject, CollabFileHandler fileHandler,
+            int style, String annotationMessage) throws CollabException {
         Debug.log(this, "CollabRegionSupport, adding Annotation for region: " + //NoI18n
             regionName
         );
@@ -85,7 +86,9 @@ public class CollabLineRegion extends CollabRegionSupport implements CollabRegio
         Line.Set lineSet = cookie.getLineSet();
         Line currLine = lineSet.getCurrent(getLineIndex());
         removeAnnotation();
-        lineAnnotation = ((CollabFileHandlerSupport) fileHandler).createRegionAnnotation(style, annotationMessage);
+        if(Debug.isEnabled())
+            annotationMessage = String.valueOf(getLineIndex()) + " " + getID(); 
+        lineAnnotation = createRegionAnnotation(style, annotationMessage);
         lineAnnotation.attach(currLine);
     }
 
@@ -97,5 +100,33 @@ public class CollabLineRegion extends CollabRegionSupport implements CollabRegio
         if (lineAnnotation != null) {
             lineAnnotation.detach();
         }
+    }
+
+    /**
+     * setAssigned
+     *
+     */
+    public void setAssigned(CollabRegion parent, boolean assigned) {
+        Debug.log("CollabRegionSupport","CRS, setAssigned: "+assigned);
+        this.parent=parent;
+        this.assigned=assigned;
+    }
+
+    /**
+     * resetAssigned
+     *
+     */
+    public void resetAssigned() {
+        this.parent=null;
+        this.assigned=false;
+    }
+
+    /**
+     * isAssigned
+     *
+     */
+    public boolean isAssigned() {
+        Debug.log("CollabRegionSupport","CRS, isAssigned: "+this.assigned);
+        return this.assigned;
     }
 }

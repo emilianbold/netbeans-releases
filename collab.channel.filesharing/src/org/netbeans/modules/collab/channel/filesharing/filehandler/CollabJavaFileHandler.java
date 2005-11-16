@@ -166,6 +166,51 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
     }
 
     /**
+     * constructs region Node 
+     * 
+     * @param regionName 
+     * @param regionInfo RegionInfo 
+     * @param pregion Protocol region 
+     */ 
+    public void constructRegion(RegionInfo regionInfo, Object pregion) 
+    throws CollabException {
+        String regionName=regionInfo.getID();
+        String mode = regionInfo.getMode();
+        int beginOffset=0;
+        int endOffset=0; 
+        StyledDocument fileDocument = getDocument();
+        
+        if(mode.equals(RegionInfo.LINE_RANGE)) {
+            javax.swing.text.Element beginElement = 
+                fileDocument.getDefaultRootElement().getElement(regionInfo.getbegin());
+            beginOffset = beginElement.getStartOffset();
+
+            javax.swing.text.Element endElement = 
+                fileDocument.getDefaultRootElement().getElement( regionInfo.getend());
+            endOffset = endElement.getEndOffset();
+        } else {
+            beginOffset = regionInfo.getbegin();
+            endOffset = regionInfo.getend();
+            int endCorrection = regionInfo.getCorrection();
+            endOffset+=endCorrection;
+            if(endOffset<0) endOffset=0;
+        } 
+
+        if(pregion instanceof JavaRegion) {
+            JavaRegion javaRegion = (JavaRegion) pregion;
+            int length = endOffset-beginOffset;
+            javaRegion.setRegionName(regionName);
+            javaRegion.setBeginOffset(new java.math.BigInteger(
+                    String.valueOf(beginOffset)));
+            javaRegion.setLength(new java.math.BigInteger(
+                    String.valueOf(length)));
+        } else {
+            super.constructRegion(regionInfo, pregion);
+        }
+    }
+
+
+    /**
      * set lock-region-data with region
      *
      * @param   lockRegionData                the intial lock-region-data Node
@@ -184,15 +229,17 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
      * @param   lockRegionData                the intial lock-region-data Node
      * @return region
      */
-    protected RegionInfo getLockRegion(LockRegionData lockRegionData) {
+    public RegionInfo getLockRegion(LockRegionData lockRegionData) {
         JavaRegion javaRegion = lockRegionData.getJavaRegion();
         int regionBegin = javaRegion.getBeginOffset().intValue();
         int length = javaRegion.getLength().intValue();
         int regionEnd = regionBegin + length;
+        CollabLineRegion[] cLineRegionList=getCollabLineRegion(lockRegionData); 
+        Vector cLineRegions=new Vector(); 
+        cLineRegions.addAll(Arrays.asList(cLineRegionList));             
         RegionInfo regionInfo = new RegionInfo(
                 javaRegion.getRegionName(), getName(), getFileGroupName(), RegionInfo.CHAROFFSET_RANGE, regionBegin,
-                regionEnd, 0
-            );
+                regionEnd, 0, cLineRegions);
 
         return regionInfo;
     }

@@ -83,15 +83,6 @@ public interface CollabFileHandler {
     /**
      * constructs lock-region-data Node
      *
-     * @param   lockRegionData                the intial lock-region-data Node
-     * @throws CollabException
-     */
-    public void constructLockRegionData(LockRegionData lockRegionData)
-    throws CollabException;
-
-    /**
-     * constructs lock-region-data Node
-     *
      * @param   regionInfo                        the RegionInfo bean
      * @param   lockRegionData                the intial lock-region-data Node
      * @throws CollabException
@@ -399,6 +390,14 @@ public interface CollabFileHandler {
      *
      */
     public boolean saveDocument() throws CollabException;
+
+    /**
+     * get region 
+     * 
+     * @param   lockRegionData              the intial lock-region-data Node 
+     * @return region 
+     */ 
+    public RegionInfo getLockRegion(LockRegionData lockRegionData);  
 
     /**
      * setValid

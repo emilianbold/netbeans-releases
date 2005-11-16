@@ -3,3 +3,6 @@
 
 1.0.3:	Removed obsolete workaround from FilesystemExplorerPanel
 	Add "Share Project" action to the project node (#64510)
+
+1.0.4:	Integrated some JSE fixes (Implement 2-phase locking,
+	JSE issue #5101109). Should fix #67308.

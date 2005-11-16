@@ -79,6 +79,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Schema for lock-region -->           
     <xsd:complexType name="_lock-region">
         <xsd:sequence>
+            <xsd:element name="use2phase" type="_use2phase" 
+                        minOccurs="0" maxOccurs="1"/>      
             <xsd:element name="file-groups" type="_file-groups" 
                     minOccurs="1" maxOccurs="1"/>
             <xsd:element name="lock-region-data" type="_lock-region-data" 
@@ -232,6 +234,36 @@ Microsystems, Inc. All Rights Reserved.
         </xsd:sequence>
     </xsd:complexType>
     
+    <!-- Schema for use2phase -->           
+    <xsd:complexType name="_use2phase">
+        <xsd:sequence>    
+            <!-- use2phase-id contains use2phase-id, to track 2phase lock -->
+            <xsd:element name="use2phase-id" type="xsd:string"
+                    minOccurs="1" maxOccurs="1"/>        
+            <xsd:choice maxOccurs="1">
+                <xsd:element name="request" 
+                        minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="response" type="_u2p_response"
+                        minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="begin" 
+                        minOccurs="0" maxOccurs="1"/>                        
+            </xsd:choice> 
+        </xsd:sequence> 
+    </xsd:complexType> 
+                
+    <!-- Schema for use2phase/response -->           
+    <xsd:complexType name="_u2p_response">
+        <xsd:sequence>
+            <!-- contention found/not-found -->
+            <xsd:choice maxOccurs="1">       
+                <xsd:element name="contention-found"
+                        minOccurs="1" maxOccurs="1"/>
+                <xsd:element name="contention-notfound"
+                        minOccurs="1" maxOccurs="1"/>                        
+            </xsd:choice>
+        </xsd:sequence> 
+    </xsd:complexType> 
+        
     <!-- Schema for lock-region -->           
     <xsd:complexType name="_lock-region-data">
         <xsd:sequence>

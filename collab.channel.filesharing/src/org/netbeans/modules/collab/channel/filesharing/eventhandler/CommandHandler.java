@@ -454,7 +454,12 @@ public class CommandHandler extends FilesharingEventHandler {
 
             String fileGroupName = collabFileHandler.getFileGroupName();
             Debug.out.println("CommandHandler, fileGroup: " + fileGroupName);
-            deleteSharedFiles(fileGroupName, messageOriginator, false); //remove handler + files
+            try {
+                deleteSharedFiles(fileGroupName, messageOriginator, false); //remove handler + files
+            } catch(Exception e) {
+                Debug.logDebugException("exception during delete file: " +
+                        deleteFileName, e, true);
+            }
         }
     }
 

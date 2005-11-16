@@ -18,6 +18,7 @@ import java.util.*;
 
 import org.netbeans.modules.collab.channel.filesharing.FilesharingContext;
 import org.netbeans.modules.collab.channel.filesharing.context.LockRegionContext;
+import org.netbeans.modules.collab.channel.filesharing.context.MessageContext;
 import org.netbeans.modules.collab.channel.filesharing.filehandler.CollabFileHandler;
 import org.netbeans.modules.collab.channel.filesharing.filehandler.RegionInfo;
 import org.netbeans.modules.collab.channel.filesharing.filehandler.SharedFileGroup;
@@ -27,6 +28,7 @@ import org.netbeans.modules.collab.channel.filesharing.msgbean.CCollab;
 import org.netbeans.modules.collab.channel.filesharing.msgbean.FileGroups;
 import org.netbeans.modules.collab.channel.filesharing.msgbean.LockRegion;
 import org.netbeans.modules.collab.channel.filesharing.msgbean.LockRegionData;
+import org.netbeans.modules.collab.channel.filesharing.msgbean.Use2phase;
 
 
 /**
@@ -47,6 +49,42 @@ public class LockRegionHandler extends FilesharingEventHandler {
     ////////////////////////////////////////////////////////////////////////////
     // Event Handler methods
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * exec
+     * @param eventID
+     * @param       evContext
+     */
+    public void exec(String eventID, EventContext evContext) throws CollabException {
+        String user=getLoginUser();
+        boolean isUserSame = true;
+
+        if(eventID!=null && eventID.startsWith("receivedMessage")) { //NoI18n
+            CCollab collabBean = ((MessageContext)evContext).getCollab();
+            String messageOriginator = ((MessageContext)evContext).getMessageOriginator();
+            user=messageOriginator;
+            isUserSame = ((MessageContext)evContext).isUserSame();
+            
+            getContext().printAllData("\nIn LRH::before handleMsg event: \n" +
+                    eventID+"/"+LockRegionManager.getLockMessageType(collabBean));
+            
+            handleMsg(collabBean, messageOriginator, isUserSame);
+            
+            getContext().printAllData("\nIn LRH::after handleMsg event: \n" +
+                    eventID+"/"+LockRegionManager.getLockMessageType(collabBean));
+        } else {
+            boolean skipSend = skipSendMessage(eventID);
+            if(!skipSend) {
+                LockRegionContext lockRegionContext = (LockRegionContext)evContext;
+                RegionInfo regionInfo = lockRegionContext.getRegionInfo();
+                //get self LockRegionManager
+                LockRegionManager lrmanager = getContext().createManager(
+                        getContext().getLoginUser(), regionInfo);
+                CCollab collab = constructMsg(evContext);
+                lrmanager.start2PhaseLock(collab, getContext().getConversation().getParticipants().length);
+            }
+        }
+    }
 
     /**
      * constructMsg
@@ -105,8 +143,20 @@ public class LockRegionHandler extends FilesharingEventHandler {
         }
 
         LockRegion lockRegion = collabBean.getChLockRegion();
-        LockRegionData[] lockRegionData = lockRegion.getLockRegionData();
+        Use2phase use2phase=lockRegion.getUse2phase();
+        boolean beginLock=false;
+        if(use2phase!=null) {
+            //get self LockRegionManager
+            LockRegionManager lrmanager = getContext().createManager(
+                    getContext().getLoginUser(), lockRegion);
+            beginLock=lrmanager.processLockReply(messageOriginator, collabBean);
+            //return for response received from remote user either contention or not
+            if (!beginLock) return;
+        } 
 
+        //This section is processed either if beginLock=true or there is no use2phase  
+        //mechanism to lock region 
+        LockRegionData[] lockRegionData = lockRegion.getLockRegionData();
         for (int i = 0; i < lockRegionData.length; i++) {
             String fullPath = lockRegionData[i].getFileName();
             CollabFileHandler collabFileHandler = getContext().getSharedFileGroupManager().getFileHandler(fullPath);

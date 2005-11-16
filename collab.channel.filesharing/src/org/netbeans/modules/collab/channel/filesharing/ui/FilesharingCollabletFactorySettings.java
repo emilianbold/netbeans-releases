@@ -49,8 +49,8 @@ public class FilesharingCollabletFactorySettings extends SystemOption {
         // put them here; e.g. make the getter return them as a
         // default if getProperty returns null. (The class might be
         // initialized partway through module installation.)
-        setLockTimeoutInterval(new Integer(2));
-        setMaxSharedFileFolders(new Integer(20));
+        setLockTimeoutInterval(new Integer(6));//6 seconds
+        setMaxSharedFileFolders(new Integer(20));//20 conversation folders
     }
 
     /**

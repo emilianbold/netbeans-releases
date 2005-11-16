@@ -78,7 +78,7 @@ Microsystems, Inc. All Rights Reserved.
              <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">	
                    <classpath>
                       <pathelement location="../../schema2beans/dev/schema2beansdev.jar" />
-                      <pathelement location="../../nbbuild/netbeans/ide5/modules/org-netbeans-modules-schema2beans.jar" />
+                      <pathelement location="../../nbbuild/netbeans/ide6/modules/org-netbeans-modules-schema2beans.jar" />
                    </classpath>
                     <arg line= "-f src/org/netbeans/modules/collab/channel/filesharing/resources/collab.xsd" />
                     <arg line= "-p org.netbeans.modules.collab.channel.filesharing.msgbean2" />

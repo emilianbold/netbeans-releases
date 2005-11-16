@@ -170,9 +170,12 @@ public class DocumentChangeHandler extends FilesharingEventHandler implements Fi
 
         ((CollabFileHandlerSupport) collabFileHandler).updateStatusFileChanged(offset, textLength, true);
 
-        boolean regionExist = ((CollabFileHandlerSupport) collabFileHandler).regionExist(offset, textLength, 1);
+        boolean regionExist =
+                ((CollabFileHandlerSupport)collabFileHandler).isUserRegionExist(
+                getLoginUser(), offset, textLength,1);
 
         if (!regionExist) {
+            ((CollabFileHandlerSupport) collabFileHandler).lockFileForCreateRegion();
             ((CollabFileHandlerSupport) collabFileHandler).unlockAllUserRegions();
             createNewRegion(true, offset, textLength, text);
         }
@@ -191,11 +194,11 @@ public class DocumentChangeHandler extends FilesharingEventHandler implements Fi
             "SendFileHandler", "DocumentChangeHandler, " + "removeUpdate offset: " + offset + " length: " + length
         ); //NoI18n	
 
-        if ((offset == 0) && (length == 1)) {
+        /*if ((offset == 0) && (length == 1)) {
             Debug.log("SendFileHandler", "DocumentChangeHandler, " + "offset==0 && length==1"); //NoI18n
 
             return;
-        }
+        }*/
 
         //skip updateText related remove
         if (((CollabFileHandlerSupport) collabFileHandler).skipRemoveUpdate(offset, length)) {
@@ -206,10 +209,12 @@ public class DocumentChangeHandler extends FilesharingEventHandler implements Fi
 
         ((CollabFileHandlerSupport) collabFileHandler).updateStatusFileChanged(offset, -length, true);
 
-        boolean regionExist = ((CollabFileHandlerSupport) collabFileHandler).regionExist(offset, -length, 1);
+        boolean regionExist = ((CollabFileHandlerSupport)collabFileHandler).isUserRegionExist(
+                getLoginUser(), offset, -length, 1);             
 
         if (!regionExist) {
-            ((CollabFileHandlerSupport) collabFileHandler).unlockAllUserRegions();
+            ((CollabFileHandlerSupport)collabFileHandler).lockFileForCreateRegion();
+            //((CollabFileHandlerSupport) collabFileHandler).unlockAllUserRegions();
             createNewRegion(false, offset, length, null);
         }
     }

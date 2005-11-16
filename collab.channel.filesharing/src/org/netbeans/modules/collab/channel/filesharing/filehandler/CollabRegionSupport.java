@@ -13,6 +13,8 @@
 package org.netbeans.modules.collab.channel.filesharing.filehandler;
 
 import com.sun.collablet.CollabException;
+import org.netbeans.modules.collab.channel.filesharing.annotations.*;
+import org.netbeans.modules.collab.channel.filesharing.util.FileshareUtil;
 
 import org.openide.loaders.*;
 import org.openide.text.*;
@@ -326,13 +328,49 @@ public class CollabRegionSupport extends Object {
     }
 
     /**
+     * createRegionAnnotation
+     *
+     * @param   message
+     * @return   Annotation
+     */
+    public Annotation createRegionAnnotation(int style, String annotationMessage) { 
+        CollabRegionAnnotation regionAnnotation = null; 
+        switch(style) {
+            case -1: regionAnnotation = new RegionHistoryAnnotation(); 
+                break; 
+            case 0: regionAnnotation = new RegionAnnotation1(); 
+                break; 
+            case 1: regionAnnotation = new RegionAnnotation2(); 
+                break; 
+            case 2: regionAnnotation = new RegionAnnotation3(); 
+                break;                   
+            case 3: regionAnnotation = new RegionAnnotation4(); 
+                break;                   
+            case 4: regionAnnotation = new RegionAnnotation5(); 
+                break;                   
+            case 5: regionAnnotation = new RegionAnnotation6(); 
+                break;                   
+            case 6: regionAnnotation = new RegionAnnotation7(); 
+                break;                   
+            case 7: regionAnnotation = new RegionAnnotation8(); 
+                break;                   
+            case 8: regionAnnotation = new RegionAnnotation9(); 
+                break;                                           
+            default: regionAnnotation = new RegionAnnotation1(); 
+                 break;                   
+        } 
+        regionAnnotation.setShortDescription(annotationMessage); 
+        return regionAnnotation; 
+    } 
+    
+    /** 
      * addAnnotation
      *
      * @param dataObject
      * @param annotation
      */
     public void addAnnotation(
-        DataObject dataObject, CollabFileHandler fileHandler /*CollabRegionAnnotation lineAnnotation*/, int style,
+        DataObject dataObject, CollabFileHandler fileHandler, int style,
         String annotationMessage
     ) throws CollabException {
         Debug.log(this, "CollabRegionSupport, adding Annotation for region: " + //NoI18n
@@ -407,8 +445,8 @@ public class CollabRegionSupport extends Object {
         /** Text range of the guarded section. */
         StyledDocument doc;
         String name;
-        int beginOffset;
-        int endOffset;
+        Position beginOffset;
+        Position endOffset;
         boolean valid = true;
 
         /** Creates new section.
@@ -419,8 +457,17 @@ public class CollabRegionSupport extends Object {
             super();
             this.doc = doc;
             this.name = name;
-            this.beginOffset = beginOffset;
-            this.endOffset = endOffset;
+            try {
+                this.beginOffset = NbDocument.createPosition(getDocument(),
+                        beginOffset,Position.Bias.Forward);
+                this.endOffset = NbDocument.createPosition(getDocument(),
+                        endOffset,Position.Bias.Forward);
+                if(this.beginOffset==null || this.endOffset==null) {
+                    throw new IllegalArgumentException("Region creation failed for: "+regionName);
+                }
+            } catch(javax.swing.text.BadLocationException ex) {
+                throw new IllegalArgumentException("Region creation failed for: "+regionName);
+            }
             markGuarded(CollabRegionSupport.this.getDocument());
         }
 
@@ -436,21 +483,21 @@ public class CollabRegionSupport extends Object {
         * @exception IOException
         */
         void deleteText() throws BadLocationException, IOException {
-            doc.insertString(beginOffset, "", null); // NOI18N
+            doc.insertString(getBegin(), "", null); // NOI18N
         }
 
         /** Marks the section as guarded.
         * @param doc The styled document where this section placed in.
         */
         void markGuarded(StyledDocument doc) {
-            markGuarded(doc, beginOffset, endOffset, true);
+            markGuarded(doc, getBegin(), getPositionAfter(), true);
         }
 
         /** Unmarks the section as guarded.
         * @param doc The styled document where this section placed in.
         */
         void unmarkGuarded(StyledDocument doc) {
-            markGuarded(doc, beginOffset, endOffset, false);
+            markGuarded(doc, getBegin(), getPositionAfter(), false);
         }
 
         /** Gets the begin of section. To this position is set the cursor
@@ -458,7 +505,7 @@ public class CollabRegionSupport extends Object {
         * @return the begin position of section.
         */
         public int getBegin() {
-            return beginOffset;
+            return beginOffset.getOffset();
         }
 
         /** Gets the text contained in the section.
@@ -468,7 +515,7 @@ public class CollabRegionSupport extends Object {
             StringBuffer buf = new StringBuffer();
 
             try {
-                buf.append(doc.getText(beginOffset, endOffset - beginOffset));
+                buf.append(doc.getText(getBegin(), getPositionAfter()-getBegin()));
             } catch (Exception e) {
             }
 
@@ -490,7 +537,8 @@ public class CollabRegionSupport extends Object {
                 p1 -= 1;
             }
 
-            Debug.out.println("CFHS:: updateText: p1: " + p1 + " p2:" + p2 + " text: [" + text + "]");
+            if (Debug.isEnabled())
+                Debug.log("CollabRegionSupport", "CRS:: updateText: p1: " + p1 + " p2:" + p2 + " text: [" + text + "]");
 
             StyledDocument doc = CollabRegionSupport.this.fileDocument;
 
@@ -560,7 +608,7 @@ public class CollabRegionSupport extends Object {
          * @return
          */
         public int getPositionAfter() {
-            return endOffset;
+            return endOffset.getOffset();
         }
 
         /**
@@ -570,7 +618,7 @@ public class CollabRegionSupport extends Object {
          * @return
          */
         public boolean contains(int pos, boolean allowHoles) {
-            return (beginOffset <= pos) && (endOffset >= pos);
+            return (getBegin() <= pos) && (getPositionAfter() >= pos);
         }
 
         /**
@@ -578,7 +626,7 @@ public class CollabRegionSupport extends Object {
          * @return
          */
         public int getPositionBefore() {
-            return beginOffset;
+            return beginOffset.getOffset();
         }
 
         /**
@@ -625,23 +673,6 @@ public class CollabRegionSupport extends Object {
                 NbDocument.markGuarded(doc, begin, end - begin);
             } else {
                 NbDocument.unmarkGuarded(doc, begin, end - begin);
-            }
-        }
-
-        /** Shifts a simpleSectoin.
-        * @param length.
-        */
-        void shiftSection(int length) {
-            this.beginOffset += length;
-
-            if (this.beginOffset < 0) {
-                this.beginOffset = 0;
-            }
-
-            this.endOffset += length;
-
-            if (this.endOffset < 0) {
-                this.endOffset = 0;
             }
         }
     }
