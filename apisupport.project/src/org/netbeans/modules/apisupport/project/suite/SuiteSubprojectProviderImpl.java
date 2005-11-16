@@ -33,12 +33,10 @@ import org.openide.filesystems.FileObject;
  */
 final class SuiteSubprojectProviderImpl implements SubprojectProvider {
     
-    private final SuiteProject project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     
-    public SuiteSubprojectProviderImpl(SuiteProject project, AntProjectHelper helper, PropertyEvaluator eval) {
-        this.project = project;
+    public SuiteSubprojectProviderImpl(AntProjectHelper helper, PropertyEvaluator eval) {
         this.helper = helper;
         this.eval = eval;
     }

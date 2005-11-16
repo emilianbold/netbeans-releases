@@ -12,7 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.suite;
-import java.beans.PropertyChangeEvent;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -20,14 +20,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -55,9 +52,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
+
 /**
  * Represents one module suite project.
  * @author Jesse Glick
@@ -84,7 +81,7 @@ public final class SuiteProject implements Project {
             new SavedHook(),
             new OpenedHook(),
             helper.createSharabilityQuery(eval, new String[0], new String[] {"build", "dist"}), // NOI18N
-            new SuiteSubprojectProviderImpl(this, helper, eval),
+            new SuiteSubprojectProviderImpl(helper, eval),
             new SuiteProviderImpl(),
             new SuiteActions(this),
             new SuiteLogicalView(this),
@@ -141,51 +138,25 @@ public final class SuiteProject implements Project {
         PropertyProvider predefs = helper.getStockPropertyPreprovider();
         File dir = FileUtil.toFile(getProjectDirectory());
         List/*<PropertyProvider>*/ providers = new ArrayList();
-        // XXX listen to changes
         providers.add(helper.getPropertyProvider("nbproject/private/platform-private.properties")); // NOI18N
         providers.add(helper.getPropertyProvider("nbproject/platform.properties")); // NOI18N
         PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
-        String buildS = baseEval.getProperty("user.properties.file"); // NOI18N
-        if (buildS != null) {
-            providers.add(PropertyUtils.propertiesFilePropertyProvider(PropertyUtils.resolveFile(dir, buildS)));
-        } else {
-            providers.add(PropertyUtils.globalPropertyProvider());
-        }
+        providers.add(new Util.UserPropertiesFileProvider(baseEval, dir));
         baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
-        class DestDirProvider implements PropertyProvider, PropertyChangeListener {
-            private final PropertyEvaluator eval;
-            private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        class DestDirProvider extends Util.ComputedPropertyProvider {
             public DestDirProvider(PropertyEvaluator eval) {
-                this.eval = eval;
-                eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
+                super(eval);
             }
-            public Map getProperties() {
-                String platformS = eval.getProperty("nbplatform.active"); // NOI18N
+            protected Map/*<String,String>*/ getProperties(Map/*<String,String>*/ inputPropertyValues) {
+                String platformS = (String) inputPropertyValues.get("nbplatform.active"); // NOI18N
                 if (platformS != null) {
                     return Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"); // NOI18N
                 } else {
                     return Collections.EMPTY_MAP;
                 }
             }
-            public void addChangeListener(ChangeListener l) {
-                synchronized (listeners) {
-                    listeners.add(l);
-                }
-            }
-            public void removeChangeListener(ChangeListener l) {
-                synchronized (listeners) {
-                    listeners.remove(l);
-                }
-            }
-            public void propertyChange(PropertyChangeEvent evt) {
-                ChangeEvent ev = new ChangeEvent(this);
-                Iterator it;
-                synchronized (listeners) {
-                    it = new HashSet(listeners).iterator();
-                }
-                while (it.hasNext()) {
-                    ((ChangeListener) it.next()).stateChanged(ev);
-                }
+            protected Set inputProperties() {
+                return Collections.singleton("nbplatform.active"); // NOI18N
             }
         }
         providers.add(new DestDirProvider(baseEval));
@@ -257,11 +228,11 @@ public final class SuiteProject implements Project {
         
     }
     
-    final class OpenedHook extends ProjectOpenedHook {
+    public final class OpenedHook extends ProjectOpenedHook {
         
         OpenedHook() {}
         
-        protected void projectOpened() {
+        public void projectOpened() {
             // XXX skip this in case nbplatform.active is not defined
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
                 public Object run() {

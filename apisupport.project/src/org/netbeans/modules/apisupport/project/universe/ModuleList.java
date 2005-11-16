@@ -54,7 +54,7 @@ public final class ModuleList {
     static int directoriesChecked;
     static int jarsOpened;
     
-    static final String DEST_DIR_IN_NETBEANS_ORG = "nbbuild" + File.separatorChar + "netbeans"; // NOI18N
+    public static final String DEST_DIR_IN_NETBEANS_ORG = "nbbuild" + File.separatorChar + "netbeans"; // NOI18N
     /** Synch with org.netbeans.nbbuild.ModuleListParser.DEPTH_NB_ALL */
     public static final int DEPTH_NB_ALL = 3;
     

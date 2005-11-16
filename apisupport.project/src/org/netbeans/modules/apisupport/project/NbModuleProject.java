@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +36,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -72,7 +69,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.queries.AccessibilityQueryImpl;
@@ -104,14 +100,13 @@ public final class NbModuleProject implements Project {
             Utilities.loadImage(NB_PROJECT_ICON_PATH));
     
     private final AntProjectHelper helper;
-    private PropertyEvaluator eval;
+    private final PropertyEvaluator eval;
     private final Lookup lookup;
     private Map/*<FileObject,Element>*/ extraCompilationUnits;
     private final GeneratedFilesHelper genFilesHelper;
     private final NbModuleTypeProviderImpl typeProvider;
     
     private LocalizedBundleInfo bundleInfo;
-    private boolean needNewEvaluator;
     
     private boolean manifestChanged;
     
@@ -123,7 +118,7 @@ public final class NbModuleProject implements Project {
             throw new IOException("Misconfigured project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " has no defined <code-name-base>"); // NOI18N
         }
         typeProvider = new NbModuleTypeProviderImpl();
-        eval = createEvaluator(null);
+        eval = new Eval();
         FileBuiltQueryImplementation fileBuilt;
         // XXX could add globs for other package roots too
         if (supportsUnitTests()) {
@@ -221,7 +216,7 @@ public final class NbModuleProject implements Project {
             new SubprojectProviderImpl(this),
             fileBuilt,
             new AccessibilityQueryImpl(this),
-            new SourceLevelQueryImpl(this, evaluator()),
+            new SourceLevelQueryImpl(this),
             helper.createSharabilityQuery(evaluator(), new String[0], new String[] {
                 // currently these are hardcoded
                 "build", // NOI18N
@@ -234,17 +229,6 @@ public final class NbModuleProject implements Project {
             new PrivilegedTemplatesImpl(),
             new ModuleProjectClassPathExtender(this),
             new LocalizedBundleInfoProvider(),
-        });
-        helper.addAntProjectListener(new AntProjectListener() {
-            public void configurationXmlChanged(AntProjectEvent ev) {
-                // type could be changed
-                typeProvider.reset();
-                // other stuff might be changed... not sure what exactly
-                resetEvaluator();
-            }
-            public void propertiesChanged(AntProjectEvent ev) {
-                // should be picked up by other things anyway
-            }
         });
     }
     
@@ -301,6 +285,125 @@ public final class NbModuleProject implements Project {
         return helper;
     }
     
+    public PropertyEvaluator evaluator() {
+        return eval;
+    }
+    
+    /**
+     * Evaluator for the project. Has two special behaviors of note:
+     * 1. Does not call ModuleList until it really needs to.
+     * 2. Is reset upon project.xml changes.
+     */
+    private final class Eval implements PropertyEvaluator, PropertyChangeListener, AntProjectListener {
+        
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+        private PropertyEvaluator delegate;
+        private boolean loadedModuleList = false;
+        
+        public Eval() {
+            delegate = createEvaluator(null);
+            delegate.addPropertyChangeListener(this);
+            getHelper().addAntProjectListener(this);
+        }
+        
+        public String getProperty(String prop) {
+            PropertyEvaluator eval = delegatingEvaluator(false);
+            assert eval != this;
+            String v = eval.getProperty(prop);
+            if ((v == null && isModuleListDependentProperty(prop)) || isModuleListDependentValue(v)) {
+                return delegatingEvaluator(true).getProperty(prop);
+            } else {
+                return v;
+            }
+        }
+        
+        public String evaluate(String text) {
+            String v = delegatingEvaluator(false).evaluate(text);
+            if (isModuleListDependentValue(v)) {
+                return delegatingEvaluator(true).evaluate(text);
+            } else {
+                return v;
+            }
+        }
+        
+        public Map getProperties() {
+            return delegatingEvaluator(true).getProperties();
+        }
+        
+        private boolean isModuleListDependentProperty(String p) {
+            return p.equals("module.classpath") || // NOI18N
+                    p.equals("cp") || p.endsWith(".cp") || p.endsWith(".cp.extra") || // NOI18N
+                    p.equals("cluster") || // NOI18N
+                    // MODULENAME.dir, but not module.jar.dir or the like:
+                    (p.endsWith(".dir") && p.lastIndexOf('.', p.length() - 5) == -1); // NOI18N
+        }
+        
+        private final Pattern ANT_PROP_REGEX = Pattern.compile("\\$\\{([a-zA-Z0-9._-]+)\\}"); // NOI18N
+        private boolean isModuleListDependentValue(String v) {
+            if (v == null) {
+                return false;
+            }
+            Matcher m = ANT_PROP_REGEX.matcher(v);
+            while (m.find()) {
+                if (isModuleListDependentProperty(m.group(1))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+
+        private PropertyEvaluator delegatingEvaluator(boolean reset) {
+            if (reset && !loadedModuleList) {
+                reset();
+                if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    Util.err.log("Needed to reset evaluator in " + NbModuleProject.this + "due to use of module-list-dependent property; now cp=" + delegate.getProperty("cp"));
+                }
+            }
+            return delegate;
+        }
+        
+        private void reset() {
+            loadedModuleList = true;
+            delegate.removePropertyChangeListener(this);
+            try {
+                delegate = createEvaluator(getModuleList());
+            } catch (IOException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                // but leave old evaluator in place for now
+            }
+            delegate.addPropertyChangeListener(this);
+            pcs.firePropertyChange(null, null, null);
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            if ("netbeans.dest.dir".equals(evt.getPropertyName()) || evt.getPropertyName() == null) {
+                // Module list may have changed.
+                reset();
+            } else {
+                Util.err.log("Refiring property change from delegate in " + evt.getPropertyName() + " for " + NbModuleProject.this);
+                pcs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+            }
+        }
+
+        public void configurationXmlChanged(AntProjectEvent ev) {
+            if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
+                reset();
+            }
+        }
+
+        public void propertiesChanged(AntProjectEvent ev) {}
+        
+    }
+    
     /**
      * Create a property evaluator: private project props, shared project props, various defaults.
      * Synch with nbbuild/templates/projectized.xml.
@@ -316,11 +419,11 @@ public final class NbModuleProject implements Project {
         if (type == NbModuleTypeProvider.NETBEANS_ORG) {
             nbroot = ModuleList.findNetBeansOrg(dir);
             assert nbroot != null : "netbeans.org-type module not in a complete netbeans.org source root " + dir;
+            stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
+            // Only needed for netbeans.org modules, since for external modules suite.properties suffices.
+            stock.put("netbeans.dest.dir", new File(nbroot, ModuleList.DEST_DIR_IN_NETBEANS_ORG).getAbsolutePath()); // NOI18N
         } else {
             nbroot = null;
-        }
-        if (nbroot != null) {
-            stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
         }
         if (ml != null) {
             // Register *.dir for nb.org modules. There is no equivalent for external modules.
@@ -335,13 +438,7 @@ public final class NbModuleProject implements Project {
             }
             ModuleEntry thisEntry = ml.getEntry(getCodeNameBase());
             assert thisEntry != null : "Cannot find my own entry (" + getCodeNameBase() + ") in " + ml;
-            if (nbroot != null) {
-                // Only needed for netbeans.org modules, since for external modules suite.properties suffices.
-                stock.put("netbeans.dest.dir", thisEntry.getDestDir().getAbsolutePath()); // NOI18N
-                assert thisEntry.getNetBeansOrgPath() != null : thisEntry;
-            } else {
-                assert thisEntry.getNetBeansOrgPath() == null : thisEntry;
-            }
+            assert nbroot == null ^ thisEntry.getNetBeansOrgPath() != null : thisEntry;
             File clusterDir = thisEntry.getClusterDirectory();
             stock.put("cluster", clusterDir.getAbsolutePath()); // NOI18N
         }
@@ -364,47 +461,22 @@ public final class NbModuleProject implements Project {
         }
         if (type == NbModuleTypeProvider.SUITE_COMPONENT || type == NbModuleTypeProvider.STANDALONE) {
             PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
-            String buildS = baseEval.getProperty("user.properties.file"); // NOI18N
-            if (buildS != null) {
-                providers.add(PropertyUtils.propertiesFilePropertyProvider(PropertyUtils.resolveFile(dir, buildS)));
-            } else {
-                providers.add(PropertyUtils.globalPropertyProvider());
-            }
+            providers.add(new Util.UserPropertiesFileProvider(baseEval, dir));
             baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
-            class DestDirProvider implements PropertyProvider, PropertyChangeListener {
-                private final PropertyEvaluator eval;
-                private final List/*<ChangeListener>*/ listeners = new ArrayList();
+            class DestDirProvider extends Util.ComputedPropertyProvider {
                 public DestDirProvider(PropertyEvaluator eval) {
-                    this.eval = eval;
-                    eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
+                    super(eval);
                 }
-                public Map getProperties() {
-                    String platformS = eval.getProperty("nbplatform.active"); // NOI18N
+                protected Map/*<String,String>*/ getProperties(Map/*<String,String>*/ inputPropertyValues) {
+                    String platformS = (String) inputPropertyValues.get("nbplatform.active"); // NOI18N
                     if (platformS != null) {
                         return Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"); // NOI18N
                     } else {
                         return Collections.EMPTY_MAP;
                     }
                 }
-                public void addChangeListener(ChangeListener l) {
-                    synchronized (listeners) {
-                        listeners.add(l);
-                    }
-                }
-                public void removeChangeListener(ChangeListener l) {
-                    synchronized (listeners) {
-                        listeners.remove(l);
-                    }
-                }
-                public void propertyChange(PropertyChangeEvent evt) {
-                    ChangeEvent ev = new ChangeEvent(this);
-                    Iterator it;
-                    synchronized (listeners) {
-                        it = new HashSet(listeners).iterator();
-                    }
-                    while (it.hasNext()) {
-                        ((ChangeListener) it.next()).stateChanged(ev);
-                    }
+                protected Set inputProperties() {
+                    return Collections.singleton("nbplatform.active"); // NOI18N
                 }
             }
             providers.add(new DestDirProvider(baseEval));
@@ -426,7 +498,7 @@ public final class NbModuleProject implements Project {
         defaults.put("javac.source", "1.4"); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
         if (ml != null) {
-            providers.add(createModuleClasspathPropertyProvider(ml));
+            providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.classpath", computeModuleClasspath(ml)))); // NOI18N
             Map/*<String,String>*/ buildDefaults = new HashMap();
             buildDefaults.put("cp.extra", ""); // NOI18N
             buildDefaults.put("cp", "${module.classpath}:${cp.extra}"); // NOI18N
@@ -462,87 +534,7 @@ public final class NbModuleProject implements Project {
             providers.add(PropertyUtils.fixedPropertyProvider(buildDefaults));
         }
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
-        final PropertyEvaluator currentEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
-        if (ml != null) {
-            return currentEval;
-        } else {
-            // #59550: defer getting a module list until really needed
-            return new PropertyEvaluator() {
-                private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-                private PropertyChangeListener delegatingListener = new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        Util.err.log("Refiring property change from delegate in " + evt.getPropertyName() + " for " + NbModuleProject.this);
-                        pcs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-                    }
-                };
-                {
-                    currentEval.addPropertyChangeListener(delegatingListener);
-                }
-                private boolean haveReset;
-                private PropertyEvaluator delegatingEvaluator(boolean reset) {
-                    if (haveReset) {
-                        return evaluator();
-                    } else if (reset) {
-                        haveReset = true;
-                        resetEvaluator();
-                        currentEval.removePropertyChangeListener(delegatingListener);
-                        PropertyEvaluator nue = evaluator();
-                        nue.addPropertyChangeListener(delegatingListener);
-                        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                            Util.err.log("Needed to reset evaluator in " + NbModuleProject.this + "due to use of module-list-dependent property; now cp=" + nue.getProperty("cp"));
-                        }
-                        return nue;
-                    } else {
-                        return currentEval;
-                    }
-                }
-                public String getProperty(String prop) {
-                    String v = delegatingEvaluator(false).getProperty(prop);
-                    if ((v == null && isModuleListDependentProperty(prop)) || isModuleListDependentValue(v)) {
-                        return delegatingEvaluator(true).getProperty(prop);
-                    } else {
-                        return v;
-                    }
-                }
-                public String evaluate(String text) {
-                    String v = delegatingEvaluator(false).evaluate(text);
-                    if (isModuleListDependentValue(v)) {
-                        return delegatingEvaluator(true).evaluate(text);
-                    } else {
-                        return v;
-                    }
-                }
-                public Map getProperties() {
-                    return delegatingEvaluator(true).getProperties();
-                }
-                private boolean isModuleListDependentProperty(String p) {
-                    return p.equals("module.classpath") || // NOI18N
-                            p.equals("cp") || p.endsWith(".cp") || p.endsWith(".cp.extra") || // NOI18N
-                            p.equals("netbeans.dest.dir") || p.equals("cluster") || // NOI18N
-                            // MODULENAME.dir, but not module.jar.dir or the like:
-                            (p.endsWith(".dir") && p.lastIndexOf('.', p.length() - 5) == -1); // NOI18N
-                }
-                private final Pattern ANT_PROP_REGEX = Pattern.compile("\\$\\{([a-zA-Z0-9._-]+)\\}"); // NOI18N
-                private boolean isModuleListDependentValue(String v) {
-                    if (v == null) {
-                        return false;
-                    }
-                    Matcher m = ANT_PROP_REGEX.matcher(v);
-                    while (m.find()) {
-                        if (isModuleListDependentProperty(m.group(1))) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-                public void addPropertyChangeListener(PropertyChangeListener listener) {
-                    pcs.addPropertyChangeListener(listener);
-                }
-                public void removePropertyChangeListener(PropertyChangeListener listener) {
-                    pcs.removePropertyChangeListener(listener);
-                }
-            };
-        }
+        return PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
     }
     
     /**
@@ -645,61 +637,6 @@ public final class NbModuleProject implements Project {
         }
     }
     
-    private PropertyProvider createModuleClasspathPropertyProvider(ModuleList ml) {
-        // Wraps computeModuleClasspath and refires changes in project.xml.
-        class Provider implements PropertyProvider, AntProjectListener {
-            private final Set/*<ChangeListener>*/ listeners = new HashSet();
-            private String path;
-            Provider(ModuleList ml) {
-                path = computeModuleClasspath(ml);
-                getHelper().addAntProjectListener(this);
-            }
-            public Map getProperties() {
-                return Collections.singletonMap("module.classpath", path); // NOI18N
-            }
-            public void addChangeListener(ChangeListener l) {
-                synchronized (listeners) {
-                    listeners.add(l);
-                }
-            }
-            public void removeChangeListener(ChangeListener l) {
-                synchronized (listeners) {
-                    listeners.remove(l);
-                }
-            }
-            private void maybeFireChange() {
-                ModuleList ml;
-                try {
-                    ml = getModuleList();
-                } catch (IOException e) {
-                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                    return;
-                }
-                String newpath = computeModuleClasspath(ml);
-                if (!newpath.equals(path)) {
-                    Util.err.log("module classpath for " + getProjectDirectory() + " changed to " + newpath);
-                    path = newpath;
-                    ChangeEvent e = new ChangeEvent(this);
-                    Iterator it;
-                    synchronized (listeners) {
-                        it = new HashSet(listeners).iterator();
-                    }
-                    while (it.hasNext()) {
-                        ((ChangeListener) it.next()).stateChanged(e);
-                    }
-                }
-            }
-            public void configurationXmlChanged(AntProjectEvent ev) {
-                // Module dependencies may have changed.
-                maybeFireChange();
-            }
-            public void propertiesChanged(AntProjectEvent ev) {
-                // should be picked up by other things
-            }
-        }
-        return new Provider(ml);
-    }
-    
     /**
      * Should be similar to impl in ParseProjectXml.
      */
@@ -741,31 +678,6 @@ public final class NbModuleProject implements Project {
         }
         cp.append(myself.getClassPathExtensions());
         return cp.toString();
-    }
-    
-    public PropertyEvaluator evaluator() {
-        if (needNewEvaluator) {
-            Util.err.log("Resetting evaluator in " + this);
-            ProjectManager.mutex().readAccess(new Mutex.Action() {
-                public Object run() {
-                    try {
-                        eval = createEvaluator(getModuleList());
-                    } catch (IOException ex) {
-                        // keep the eval as it is
-                        Util.err.notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-                    needNewEvaluator = false;
-                    return null;
-                }
-            });
-        }
-        return eval;
-    }
-    
-    // package-private for unit tests only
-    void resetEvaluator() {
-        Util.err.log("Will reset evaluator in " + this);
-        needNewEvaluator = true;
     }
     
     private final Map/*<String,FileObject>*/ directoryCache = new WeakHashMap();
@@ -865,12 +777,14 @@ public final class NbModuleProject implements Project {
         } else {
             // OK, not it.
             NbPlatform platform = getPlatform(eval);
-            URL[] roots = platform.getSourceRoots();
-            for (int i = 0; i < roots.length; i++) {
-                if (roots[i].getProtocol().equals("file")) { // NOI18N
-                    File f = new File(URI.create(roots[i].toExternalForm()));
-                    if (ModuleList.isNetBeansOrg(f)) {
-                        return f;
+            if (platform != null) {
+                URL[] roots = platform.getSourceRoots();
+                for (int i = 0; i < roots.length; i++) {
+                    if (roots[i].getProtocol().equals("file")) { // NOI18N
+                        File f = new File(URI.create(roots[i].toExternalForm()));
+                        if (ModuleList.isNetBeansOrg(f)) {
+                            return f;
+                        }
                     }
                 }
             }
@@ -901,17 +815,18 @@ public final class NbModuleProject implements Project {
     }
     
     public ModuleList getModuleList() throws IOException {
-        try {
-            ModuleList ml = ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
+        NbPlatform p = getPlatform(false);
+        ModuleList ml = ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()), p.getDestDir());
+        if (ml.getEntry(getCodeNameBase()) == null) {
+            ModuleList.refresh();
+            ml = ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
             if (ml.getEntry(getCodeNameBase()) == null) {
-                ModuleList.refresh();
-                ml = ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
-                if (ml.getEntry(getCodeNameBase()) == null) {
-                    // XXX try to give better diagnostics - as examples are discovered
-                    Util.err.log(ErrorManager.WARNING, "Project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " does not appear to be listed in its own module list; some sort of misconfiguration (e.g. not listed in its own suite)"); // NOI18N
-                }
+                // XXX try to give better diagnostics - as examples are discovered
+                Util.err.log(ErrorManager.WARNING, "Project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " does not appear to be listed in its own module list; some sort of misconfiguration (e.g. not listed in its own suite)"); // NOI18N
             }
-            return ml;
+        }
+        return ml;
+        /*
         } catch (IOException e) {
             // #60094: see if we can fix it quietly by resetting platform to default.
             FileObject platformPropertiesFile = null;
@@ -952,6 +867,7 @@ public final class NbModuleProject implements Project {
             }
             throw e;
         }
+         */
     }
     
     /**
@@ -1108,21 +1024,6 @@ public final class NbModuleProject implements Project {
         OpenedHook() {}
         
         protected void projectOpened() {
-            // register project's classpaths to GlobalClassPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
-            ClassPath[] _boot = cpProvider.getProjectClassPaths(ClassPath.BOOT);
-            assert _boot != null : "No BOOT path";
-            ClassPath[] _source = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
-            assert _source != null : "No SOURCE path";
-            ClassPath[] _compile = cpProvider.getProjectClassPaths(ClassPath.COMPILE);
-            assert _compile != null : "No COMPILE path";
-            // Possible cause of #68414: do not change instance vars until after the dangerous stuff has been computed.
-            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, _boot);
-            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, _source);
-            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, _compile);
-            boot = _boot;
-            source = _source;
-            compile = _compile;
             // write user.properties.file=$userdir/build.properties to platform-private.properties
             if (getModuleType() == NbModuleTypeProvider.STANDALONE) {
                 // XXX skip this in case nbplatform.active is not defined
@@ -1142,6 +1043,21 @@ public final class NbModuleProject implements Project {
                     }
                 });
             }
+            // register project's classpaths to GlobalClassPathRegistry
+            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            ClassPath[] _boot = cpProvider.getProjectClassPaths(ClassPath.BOOT);
+            assert _boot != null : "No BOOT path";
+            ClassPath[] _source = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
+            assert _source != null : "No SOURCE path";
+            ClassPath[] _compile = cpProvider.getProjectClassPaths(ClassPath.COMPILE);
+            assert _compile != null : "No COMPILE path";
+            // Possible cause of #68414: do not change instance vars until after the dangerous stuff has been computed.
+            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, _boot);
+            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, _source);
+            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, _compile);
+            boot = _boot;
+            source = _source;
+            compile = _compile;
             // refresh build.xml and build-impl.xml for external modules
             if (getModuleType() != NbModuleTypeProvider.NETBEANS_ORG) {
                 try {
@@ -1209,9 +1125,13 @@ public final class NbModuleProject implements Project {
         
     }
     
-    private class NbModuleTypeProviderImpl implements NbModuleTypeProvider {
+    private class NbModuleTypeProviderImpl implements NbModuleTypeProvider, AntProjectListener {
         
         private NbModuleType type;
+        
+        public NbModuleTypeProviderImpl() {
+            getHelper().addAntProjectListener(this);
+        }
         
         public NbModuleType getModuleType() {
             if (type == null) {
@@ -1220,9 +1140,13 @@ public final class NbModuleProject implements Project {
             return type;
         }
 
-        void reset() {
-            type = null;
+        public void configurationXmlChanged(AntProjectEvent ev) {
+            if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
+                type = null;
+            }
         }
+
+        public void propertiesChanged(AntProjectEvent ev) {}
         
     }
     

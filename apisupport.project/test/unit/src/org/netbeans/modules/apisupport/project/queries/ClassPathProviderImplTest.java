@@ -35,6 +35,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -74,6 +75,9 @@ public class ClassPathProviderImplTest extends TestBase {
         copyOfMiscProject = (NbModuleProject) ProjectManager.getDefault().findProject(copyOfMiscDir);
         assertNotNull(copyOfMiscProject);
         copyOfMiscXMLManager = new ProjectXMLManager(copyOfMiscProject.getHelper());
+        // make sure its platform-private.properties is correct:
+        Project copyOfSuite2P = ProjectManager.getDefault().findProject(FileUtil.toFileObject(copyOfSuite2));
+        ((SuiteProject.OpenedHook) copyOfSuite2P.getLookup().lookup(SuiteProject.OpenedHook.class)).projectOpened();
     }
     
     private String urlForJar(String path) {

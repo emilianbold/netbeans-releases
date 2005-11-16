@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,13 +24,19 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -37,12 +45,16 @@ import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -597,6 +609,128 @@ public final class Util {
             }
         }
         return null;
+    }
+    
+    /**
+     * Property provider which computes one or more properties based on some properties coming
+     * from an intermediate evaluator, and is capable of firing changes correctly.
+     */
+    public static abstract class ComputedPropertyProvider implements PropertyProvider, PropertyChangeListener {
+        private final PropertyEvaluator eval;
+        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        protected ComputedPropertyProvider(PropertyEvaluator eval) {
+            this.eval = eval;
+            eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
+        }
+        /** get properties based on the incoming properties */
+        protected abstract Map/*<String,String>*/ getProperties(Map/*<String,String>*/ inputPropertyValues);
+        /** specify interesting input properties */
+        protected abstract Set/*<String>*/ inputProperties();
+        public final Map/*<String,String>*/ getProperties() {
+            Map/*<String,String>*/ vals = new HashMap();
+            Iterator it = inputProperties().iterator();
+            while (it.hasNext()) {
+                String k = (String) it.next();
+                vals.put(k, eval.getProperty(k));
+            }
+            return getProperties(vals);
+        }
+        public final void addChangeListener(ChangeListener l) {
+            synchronized (listeners) {
+                listeners.add(l);
+            }
+        }
+        public final void removeChangeListener(ChangeListener l) {
+            synchronized (listeners) {
+                listeners.remove(l);
+            }
+        }
+        public final void propertyChange(PropertyChangeEvent evt) {
+            String p = evt.getPropertyName();
+            if (p != null && !inputProperties().contains(p)) {
+                return;
+            }
+            ChangeEvent ev = new ChangeEvent(this);
+            Iterator it;
+            synchronized (listeners) {
+                if (listeners.isEmpty()) {
+                    return;
+                }
+                it = new HashSet(listeners).iterator();
+            }
+            while (it.hasNext()) {
+                ((ChangeListener) it.next()).stateChanged(ev);
+            }
+        }
+    }
+    
+    public static final class UserPropertiesFileProvider implements PropertyProvider, PropertyChangeListener, ChangeListener {
+        private final PropertyEvaluator eval;
+        private final File basedir;
+        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        private PropertyProvider delegate;
+        public UserPropertiesFileProvider(PropertyEvaluator eval, File basedir) {
+            this.eval = eval;
+            this.basedir = basedir;
+            eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
+            computeDelegate();
+        }
+        private void computeDelegate() {
+            if (delegate != null) {
+                delegate.removeChangeListener(this);
+            }
+            String buildS = eval.getProperty("user.properties.file"); // NOI18N
+            if (buildS != null) {
+                delegate = PropertyUtils.propertiesFilePropertyProvider(PropertyUtils.resolveFile(basedir, buildS));
+                delegate.addChangeListener(this);
+            } else {
+                /* XXX what should we do?
+                delegate = null;
+                 */
+                delegate = PropertyUtils.globalPropertyProvider();
+                delegate.addChangeListener(this);
+            }
+        }
+        public Map getProperties() {
+            if (delegate != null) {
+                return delegate.getProperties();
+            } else {
+                return Collections.EMPTY_MAP;
+            }
+        }
+        public void addChangeListener(ChangeListener l) {
+            synchronized (listeners) {
+                listeners.add(l);
+            }
+        }
+        public void removeChangeListener(ChangeListener l) {
+            synchronized (listeners) {
+                listeners.remove(l);
+            }
+        }
+        public void propertyChange(PropertyChangeEvent evt) {
+            String p = evt.getPropertyName();
+            if (p == null || p.equals("user.properties.file")) { // NOI18N
+                computeDelegate();
+                fireChange();
+            }
+        }
+        public void stateChanged(ChangeEvent e) {
+            fireChange();
+        }
+        private void fireChange() {
+            ChangeEvent ev = new ChangeEvent(this);
+            Iterator it;
+            synchronized (listeners) {
+                if (listeners.isEmpty()) {
+                    return;
+                }
+                it = new HashSet(listeners).iterator();
+            }
+            while (it.hasNext()) {
+                ((ChangeListener) it.next()).stateChanged(ev);
+            }
+        }
     }
     
 }

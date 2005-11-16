@@ -188,6 +188,7 @@ public class NbModuleProjectTest extends TestBase {
         ProjectManager.getDefault().findProject(prjFO);
     }
     
+    /*
     public void testEvaluatorDeadlock_64582a() throws Exception {
         final NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(extexamples.getFileObject("suite1/action-project"));
         
@@ -255,5 +256,6 @@ public class NbModuleProjectTest extends TestBase {
         evaluatorThread.start();
         evaluatorThread.join();
     }
+     */
     
 }

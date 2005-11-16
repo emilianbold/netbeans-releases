@@ -15,7 +15,6 @@ package org.netbeans.modules.apisupport.project.queries;
 
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -24,15 +23,14 @@ import org.openide.filesystems.FileObject;
  */
 public class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
 
-    private NbModuleProject project;
-    private PropertyEvaluator evaluator;
+    private final NbModuleProject project;
 
-    public SourceLevelQueryImpl(NbModuleProject project, PropertyEvaluator evaluator) {
+    public SourceLevelQueryImpl(NbModuleProject project) {
         this.project = project;
-        this.evaluator = evaluator;
     }
 
     public String getSourceLevel(FileObject javaFile) {
+        // XXX should check if it is in a known source root?
         return project.getJavacSource();
     }
     
