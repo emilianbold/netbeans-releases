@@ -248,7 +248,6 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         Insets ins3 = new Insets(0,0,0,0);
         if (pane.getBorder() != null) {
             ins3 = pane.getBorder().getBorderInsets(pane);
-            System.err.println("ins3 = " + ins3);
         }
         
         Rectangle r = pane.getViewportBorderBounds();
