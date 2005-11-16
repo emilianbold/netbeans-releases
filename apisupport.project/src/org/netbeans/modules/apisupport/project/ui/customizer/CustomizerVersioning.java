@@ -106,17 +106,14 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
     }
     
     private boolean checkMajorReleaseVersion() {
+        boolean valid;
         String mrv = majorRelVerValue.getText().trim();
-        if (mrv.length() != 0) {
-            try {
-                if (Integer.parseInt(mrv) < 0) {
-                    return false;
-                }
-            } catch (NumberFormatException nfe) {
-                return false;
-            }
+        try {
+            valid = (mrv.length() != 0 && Integer.parseInt(mrv) >= 0);
+        } catch (NumberFormatException nfe) {
+            valid = false;
         }
-        return true;
+        return valid;
     }
     
     private void checkForm() {
@@ -521,10 +518,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
         addFriend.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
-                if (pce.getPropertyName() == AddFriendPanel.DATA_LOADED_PROPERTY) {
-                    d.pack();
-                    d.setLocationRelativeTo(null);
-                } else if (pce.getPropertyName() == AddFriendPanel.VALID_PROPERTY) {
+                if (pce.getPropertyName() == AddFriendPanel.VALID_PROPERTY) {
                     okButton.setEnabled(((Boolean) pce.getNewValue()).booleanValue());
                 }
             }

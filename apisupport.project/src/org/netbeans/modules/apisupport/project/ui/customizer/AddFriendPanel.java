@@ -15,8 +15,10 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.Window;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.apisupport.project.Util;
@@ -31,13 +33,14 @@ import org.openide.util.NbBundle;
 public class AddFriendPanel extends JPanel {
     
     static final String VALID_PROPERTY = "isPanelValid"; // NOI18N
-    static final String DATA_LOADED_PROPERTY = "dataLoaded"; // NOI18N
     
     boolean valid = false;
     
     /** Creates new form AddFriendPanel */
     public AddFriendPanel(final SingleModuleProperties props) {
         initComponents();
+        // helps prevents flickering
+        friends.setPrototypeDisplayValue("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"); // NOI18N
         Component editorComp = friends.getEditor().getEditorComponent();
         if (editorComp instanceof JTextComponent) {
             ((JTextComponent) editorComp).getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
@@ -60,8 +63,13 @@ public class AddFriendPanel extends JPanel {
                         }
                         friends.setModel(model);
                         friends.setEnabled(true);
-                        AddFriendPanel.this.firePropertyChange(DATA_LOADED_PROPERTY, Boolean.FALSE, Boolean.TRUE);
                         checkValidity();
+                        // data are loaded lets LayoutManager do its work
+                        friends.setPrototypeDisplayValue(null);
+                        Window w = SwingUtilities.getWindowAncestor(AddFriendPanel.this);
+                        if (w != null && w.getWidth() < w.getPreferredSize().getWidth()) {
+                            w.pack();
+                        }
                     }
                 });
             }
