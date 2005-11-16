@@ -355,6 +355,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- <assertions> does not seem to work in Ant 1.6.1? -->
             <jvmarg value="-ea"/>
             <formatter type="brief" usefile="false"/>
+            <formatter type="xml"/>
         </junit>
         <fail if="tests.failed">Some tests failed; see details above.</fail>
     </target>
@@ -371,6 +372,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- <assertions> does not seem to work in Ant 1.6.1? -->
             <jvmarg value="-ea"/>
             <formatter type="brief" usefile="false"/>
+            <formatter type="xml"/>
         </junit>
         <fail if="tests.failed">Some tests failed; see details above.</fail>
     </target>
