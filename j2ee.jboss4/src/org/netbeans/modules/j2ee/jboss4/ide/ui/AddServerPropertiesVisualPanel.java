@@ -468,7 +468,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
 
 
 class DomainComboModel extends AbstractListModel implements ComboBoxModel{
-    private int current = 0;
+    private int current = -1;
     private String currentVal = "";
     private String[][] domains = null;
     
@@ -490,6 +490,8 @@ class DomainComboModel extends AbstractListModel implements ComboBoxModel{
         int len = domains.size();
         this.domains = new String[len][2];
         Enumeration en = domains.keys();
+        
+        if (len > 0) current = 0;
         
         int i = 0;
         while(en.hasMoreElements()){

@@ -77,7 +77,7 @@ public class JBPluginUtils {
         serverFileColl.add("deploy");               // NOI18N
         serverFileColl.add("lib");    // NOI18N
         serverFileColl.add("conf/jboss-service.xml");      // NOI18N
-        serverFileColl.add("lib/jboss-management.jar");      // NOI18N
+//        serverFileColl.add("lib/jboss-management.jar");      // NOI18N
     }
     
     public static boolean isGoodJBInstanceLocation(File candidate){
