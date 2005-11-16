@@ -432,9 +432,9 @@ public class J2SEProjectProperties {
         File projDir = FileUtil.toFile(updateHelper.getAntProjectHelper().getProjectDirectory());
         for( Iterator it = added.iterator(); it.hasNext(); ) {
             ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken()) {
                 // add property to project.properties pointing to relativized 
-                // library jar(s) if possible
+                // library jar(s) if possible                
                 String prop = cs.getLibraryReference( item );
                 prop = prop.substring(2, prop.length()-1); // XXX make a PropertyUtils method for this!
                 String value = relativizeLibraryClasspath(prop, projDir);

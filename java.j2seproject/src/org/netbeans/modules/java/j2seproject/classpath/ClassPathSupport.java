@@ -318,6 +318,8 @@ public class ClassPathSupport {
             if ( getType() != TYPE_LIBRARY ) {
                 throw new IllegalArgumentException( "Item is not of required type - LIBRARY" ); // NOI18N
             }
+            assert object instanceof Library :
+                "Invalid object type: "+object.getClass().getName()+" instance: "+object.toString()+" expected type: Library";   //NOI18N
             return (Library)object;
         }
         
