@@ -76,7 +76,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
 
 
     public void propertyChange(PropertyChangeEvent evt) {        
-        if (!propertyNames.contains(evt.getPropertyName())) {
+        String prop = evt.getPropertyName();
+        if (prop != null && !propertyNames.contains(evt.getPropertyName())) {
             // Not interesting to us.
             return;
         }
