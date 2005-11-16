@@ -32,7 +32,12 @@ class AccController {
 
     static Field getContextField() throws Exception {
         if (context == null) {
-            Field ctx = AccessControlContext.class.getDeclaredField("context"); // NOI18N
+            Field ctx;
+            try {
+                ctx = AccessControlContext.class.getDeclaredField("context"); // NOI18N
+            } catch (NoSuchFieldException nsfe) { // IBM JDK1.5 has different field
+                ctx = AccessControlContext.class.getDeclaredField("domainsArray"); // NOI18N
+            }
             ctx.setAccessible(true);
             context = ctx;
         }
