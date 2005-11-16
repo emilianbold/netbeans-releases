@@ -284,12 +284,11 @@ public class EntityMethodController extends AbstractMethodController {
             boolean remoteGetter, boolean remoteSetter, String description) throws IOException {
         beginWriteJmiTransaction();
         boolean rollback = true;
-        Method getterMethod = null;
         try {
             JavaClass beanClass = getBeanClass();
             registerClassForSave(beanClass);
             addSetterMethod(beanClass, field, MODIFIERS_PUBLIC_ABSTRACT, false, model);
-            getterMethod = addGetterMethod(beanClass, field, MODIFIERS_PUBLIC_ABSTRACT, false, model);
+            addGetterMethod(beanClass, field, MODIFIERS_PUBLIC_ABSTRACT, false, model);
             final String fieldName = field.getName();
             updateFieldAccessors(fieldName, localGetter, localSetter, remoteGetter, remoteSetter);
             rollback = false;
@@ -301,9 +300,6 @@ public class EntityMethodController extends AbstractMethodController {
         f.setDescription(description);
         model.addCmpField(f);
         parent.write(ddFile);
-        if (getterMethod != null) {
-            JMIUtils.openInEditor(getterMethod);
-        }
     }
 
     public void validateNewCmpFieldName(String name) {
