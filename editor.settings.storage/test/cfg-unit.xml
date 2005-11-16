@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
 <!--
+
                 Sun Public License Notice
 
 The contents of this file are subject to the Sun Public License
@@ -9,54 +9,26 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!-- 
-  These classes are excluded by default (defined in build.xml):
-    "**/*Suite.class"
-    "**/*$$*.class"
-    "**/data/**"
-    "**/hidden/**"
-    "**/*Hidden.*"
-    "**/*Hid.*"
--->
-
-<mconfig name="editor settings storage unit test config">
+<mconfig name="editor/settings/storage">
     
-    <testbag testattribs="stable" executor="code" name="testbag_1">
+    <testbag testattribs="stable" executor="unit-executor" name="editor/settings/storage">
         <testset dir="unit/src">
             <patternset>
-                <include name="**/**Test.class"/>
+                <include name="**/*Test.class"/>
             </patternset>
         </testset>
-    </testbag>
-    
-    <testbag testattribs="failing" executor="code" name="testbag_2">
-        <testset dir="unit/src">
-            <patternset>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
-    <!-- (either on cmd line or in the script) to explicitly define which test       -->
-    <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
-    <testbag testattribs="empty" executor="code" name="testbag_empty">
-        <testset dir="unit/src"/>
     </testbag>
 
-    <testbag testattribs="dev" executor="code" name="testbag_dev">
+    <testbag testattribs="empty" executor="unit-executor" name="editor/settings/storage">
         <testset dir="unit/src">
-            <patternset>
-                <!-- Add your own code tests -->
-            </patternset>
         </testset>
     </testbag>
-    
-    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
-    
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
+        
+    <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
     
 </mconfig>
