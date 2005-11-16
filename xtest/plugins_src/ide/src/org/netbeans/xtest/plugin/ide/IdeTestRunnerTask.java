@@ -8,28 +8,31 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-
-
-/*
- * IdeTestRunner.java
- *
- * Created on October 21, 2003, 5:29 PM
  */
 
 package org.netbeans.xtest.plugin.ide;
 
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.types.*;
-import org.netbeans.xtest.testrunner.*;
-import org.apache.tools.ant.taskdefs.*;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.ExecTask;
+import org.apache.tools.ant.taskdefs.ExecuteWatchdog;
+import org.apache.tools.ant.types.Commandline;
+import org.apache.tools.ant.types.Environment;
+import org.netbeans.xtest.testrunner.JUnitTestRunner;
+import org.netbeans.xtest.testrunner.JUnitTestRunnerProperties;
+import org.netbeans.xtest.testrunner.TestBoardLauncher;
+import org.netbeans.xtest.testrunner.TestBoardLauncherException;
+import org.netbeans.xtest.testrunner.TestRunnerHarness;
 
 /**
  * @author mb115822
@@ -69,7 +72,7 @@ protected ExecuteWatchdog watchdog;
      */
     protected ExecuteWatchdog createWatchdog() throws BuildException {
         if ( ideTimeout == null)  return null;
-        IdeExecWatchdog ideWatchdog = new IdeExecWatchdog(ideTimeout.longValue(),project);
+        IdeExecWatchdog ideWatchdog = new IdeExecWatchdog(ideTimeout.longValue(), getProject());
         ideWatchdog.setIdeUserdir(ideUserdir);
         watchdog =  ideWatchdog;        
         return watchdog;

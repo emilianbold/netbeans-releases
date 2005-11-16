@@ -7,21 +7,15 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * IdeArguments.java
- *
- * Created on February 25, 2002, 3:26 PM
  */
 
 package org.netbeans.xtest.plugin.ide;
 
-
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.types.*;
-import java.util.*;
+import java.util.StringTokenizer;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
 
 /**
  * @author lm97939
@@ -42,7 +36,7 @@ public class IdeJvmArgs extends Task {
     public void execute() throws BuildException {
         if (property == null) throw new BuildException("Property 'property' is empty.");
         if (jvm_args == null || jvm_args.equals("")) 
-            project.setProperty(property, "");
+            getProject().setProperty(property, "");
         
         StringBuffer buff = new StringBuffer();
         StringTokenizer str = new StringTokenizer(jvm_args," ");
@@ -53,7 +47,7 @@ public class IdeJvmArgs extends Task {
             buff.append("-J");
             buff.append(token);
         }
-        project.setProperty(property, buff.toString());
+        getProject().setProperty(property, buff.toString());
     }
 
 }

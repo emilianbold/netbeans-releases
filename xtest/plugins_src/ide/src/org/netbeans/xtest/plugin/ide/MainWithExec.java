@@ -13,23 +13,22 @@
 
 package org.netbeans.xtest.plugin.ide;
 
-import java.awt.event.ActionEvent;
-import java.util.Collection;
-import org.netbeans.core.NbPlaces;
-import org.netbeans.core.execution.ProcessNode;
-import org.openide.ErrorManager;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Iterator;
+import javax.swing.Action;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestListener;
 import junit.framework.TestResult;
+import org.netbeans.core.NbPlaces;
+import org.netbeans.core.execution.ProcessNode;
 import org.netbeans.xtest.plugin.ide.services.XTestErrorManager;
-import org.openide.util.actions.SystemAction;
 import org.netbeans.xtest.testrunner.JUnitTestRunner;
+import org.openide.ErrorManager;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  * Portion of Main that needs to run with access to Execution API & impl.
@@ -57,7 +56,7 @@ public class MainWithExec implements Main.MainWithExecInterface {
     }
     
     // finds terminate process action in the action array
-    private static SystemAction findTerminateAction(SystemAction[] actions) {
+    private static Action findTerminateAction(Action[] actions) {
         if (actions == null) {
             throw new IllegalArgumentException();
         }
@@ -67,7 +66,7 @@ public class MainWithExec implements Main.MainWithExecInterface {
         
         String terminateString = NbBundle.getMessage(ProcessNode.class,"terminateProcess");
         for (int i=0; i<actions.length; i++) {
-            if (terminateString.equals(actions[i].getName())) {
+            if (terminateString.equals(actions[i].getValue(Action.NAME))) {
                 return actions[i];
             }
         }
@@ -132,9 +131,9 @@ public class MainWithExec implements Main.MainWithExecInterface {
                         // processes driving the tests, we should not kill them
                         if (!runningProcesses[i].getName().startsWith("org.netbeans.xtest")) {
                             // get actions for the processes
-                            SystemAction[] actions = runningProcesses[i].getActions();
+                            Action[] actions = runningProcesses[i].getActions(false);
                             if (actions != null) {
-                                final SystemAction terminate = findTerminateAction(actions);
+                                final Action terminate = findTerminateAction(actions);
                                 if (terminate != null) {
                                     final ActionEvent av = new ActionEvent(runningProcesses[i],
                                     TERMINATE_CODE,TERMINATE_NAME);
