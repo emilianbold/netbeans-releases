@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,7 +28,14 @@ import org.netbeans.spi.diff.DiffProvider;
  *
  * @author  Martin Entlicher
  */
-public class BuiltInDiffProvider extends DiffProvider {
+public class BuiltInDiffProvider extends DiffProvider implements java.io.Serializable {
+
+    /**
+     * Holds value of property trimLines.
+     */
+    private boolean trimLines = true;
+        
+    static final long serialVersionUID = 1L;
     
     /** Creates a new instance of BuiltInDiffProvider */
     public BuiltInDiffProvider() {
@@ -56,17 +63,36 @@ public class BuiltInDiffProvider extends DiffProvider {
      *        or <code>null</code> when some error occured.
      */
     public Difference[] computeDiff(Reader r1, Reader r2) throws IOException {
-        return HuntDiff.diff(getLines(r1), getLines(r2));
+        return HuntDiff.diff(getLines(r1), getLines(r2));   
     }
     
-    private static String[] getLines(Reader r) throws IOException {
+    private String[] getLines(Reader r) throws IOException {
         BufferedReader br = new BufferedReader(r);
         String line;
         List lines = new ArrayList();
         while ((line = br.readLine()) != null) {
+            if (isTrimLines()) {
+                line = line.trim();
+            }
             lines.add(line);
         }
         return (String[]) lines.toArray(new String[0]);
     }
+
+
+    /** On true all lines are trimmed before passing to diff engine. */
+    public boolean isTrimLines() {
+        return this.trimLines;
+    }
+
+    /**
+     * Setter for property trimLines.
+     * @param trimLines New value of property trimLines.
+     */
+    public void setTrimLines(boolean trimLines) {
+        this.trimLines = trimLines;
+    }
+
+
     
 }
