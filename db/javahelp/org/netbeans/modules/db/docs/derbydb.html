@@ -20,39 +20,89 @@ Microsystems, Inc. All Rights Reserved.
 <h2>Connecting to a Derby Database</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>The IDE includes a bundled Derby database server. You can create and work with 
-  Derby databases without installing any additional software. </p>
-<p>Version 8.2 of the Sun Java System Application Server also bundles the Derby 
-  database server. When you register the application server, the IDE switches 
-  from using the bundled Derby installation to using the installation in the application 
-  server. The IDE also registers the connections to the application server's sample 
-  databases in the Runtime window. All of the databases that you created with 
-  the IDE's bundled Derby installation are still available.</p>
+<p>The Apache Derby Project provides an open source database server that is written 
+  fully in the Java programming language. Starting with version 8.2, the Sun Java 
+  System Application Server bundles the Derby database server instead of the PointBase 
+  database server.</p>
+<p>You can work with the Derby database server in the IDE by doing any of the 
+  following:</p>
+<ul>
+  <li><a href="nbdocs:/org/netbeans/modules/usersguide/configure/modules/autoupdate.html">Install 
+    the Derby module from the NetBeans Update Center</a>. This installs the Derby 
+    database on your computer and registers it in the IDE.</li>
+  <li><a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">Register 
+    an instance of the Sun Java System Application Server 8.2</a>. This registers 
+    the installation of the Derby database server that is packaged with the application 
+    server and registers the sample Derby database in the Runtime window. </li>
+  <li>Register an existing Derby installation. If you already have the Derby database 
+    server installed on your computer, you can register it in the IDE by doing 
+    the following:
+    <ol>
+      <li>Choose Tools &gt; Options.</li>
+      <li>Click Advanced Options.</li>
+      <li>Expand IDE Configuration &gt; Server and External Tool Settings &gt; 
+        Derby Options.</li>
+      <li>Set the location of the Derby JAR files in the Derby Location property.</li>
+      <li>Set the folder where your Derby databases are stored in the Database 
+        Location property.</li>
+      <li>Click Close.</li>
+    </ol>
+  </li>
+</ul>
+<p>Once you have installed the Derby module or registered an instance of version 
+  8.2 of the application server, the Tools &gt; Derby Database menu appears.</p>
+<p><b>To create a new Derby database:</b></p>
+<ol>
+  <li>Choose Tools &gt; Derby Database &gt; Create Derby Database from the main 
+    window.</li>
+  <li>Enter a name for the database.</li>
+</ol>
 <p><b>To connect to a Derby database:</b> </p>
 <ol>
   <li>In the Runtime window, expand Databases &gt; Drivers.</li>
   <li>Right-click the appropriate Apache Derby driver node and choose Connect 
-    Using.</li>
+    Using. There are two drivers you can choose from: 
+    <ul>
+      <li><b>Embedded Driver.</b> Use this driver when you are the only client 
+        of a database (in other words, you are sure your application will access 
+        the database from a single JVM). A single-user Swing JDBC application using a Derby 
+        database as a data store is a typical example of this scenario. </li>
+      <li><b>Net Driver.</b> Use this driver when you need to connect to the database 
+        from multiple JVMs. An example of this scenario is when you need to connect 
+        from the IDE and from a J2EE application on the application server. Using 
+        the net driver, you can also access the database from remote computers.</li>
+    </ul>
+  </li>
   <li>Enter the URL of the database. The URL format is given in the textbox:<br>
-    <tt>jdbc:derby://&lt;HOST&gt;[:&lt;PORT&gt;]/&lt;DB&gt;</tt></li>
+    <tt>jdbc:derby://&lt;HOST&gt;[:&lt;PORT&gt;]/&lt;DB&gt;</tt> 
+    <ul class="note">
+      <li>If the database you are connecting to is in the default Derby database 
+        folder, you only have to specify the database name. You set the default
+        database folder in the IDE Configuration &gt; Server and External Tool Settings &gt; Derby 
+        Options node in the Advanced Options view of the Tools window. If the database is not in the default 
+        database folder, you have to enter the full path to the database and not just the database name. </li>
+    </ul>
+  </li>
   <li>Enter the User name and Password. By default, the Derby database server 
     has an empty username and password.</li>
   <li>Click OK. The IDE registers the connection under the Databases node.</li>
-</ol>
-<p><b>To create a new Derby database:</b></p>
-<ol>
-  <li>Choost Tools &gt; Derby Database &gt; Create Derby Database from the main 
-    window.</li>
-  <li>Enter a name for the database.</li>
-  <li>Optionally, select a new location for the database folder and click OK. 
-    The IDE starts the database server if it is not already running, creates the 
-    database, and registers the connection under the Databases node.</li>
 </ol>
 <p><b>Notes:</b></p>
 <ul>
   <li>Selecting Remember password will store the password for the current IDE 
     session. If left unselected, a dialog box appears prompting you for the password 
     every time you connect to the database.</li>
+  <li>By default, the Derby database server has an empty username and password.</li>
+  <li>If you download and install a bundle of the IDE and Sun Java Application 
+    Server 8.2, the Derby database server is automatically registered in the IDE.</li>
+  <li>If you installed the Derby module from the Update Center, then register 
+    version 8.2 of the application server, the IDE uses the database location 
+    specified in the application server's installation of the Derby database server. 
+    Any connections to databases that you created with the stand-alone Derby module 
+    are broken. To use the databases from the previous installation directory, 
+    go to the IDE Configuration &gt; Server and External Tool Settings &gt; Derby 
+    Options node in the Advanced Options view of the Options window and set the 
+    Database Location property accordingly.</li>
 </ul>
 <dl> 
   <dt><a name="seealso">See Also</a></dt>
