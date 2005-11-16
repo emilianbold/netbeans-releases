@@ -4,9 +4,14 @@
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
             <name>XTest IDE plugin</name>
+            <properties>
+                <property name="netbeans.dest.dir">../../../nbbuild/netbeans</property>
+                <property-file>${netbeans.dest.dir}/moduleCluster.properties</property-file>
+                <property-file>build.properties</property-file>
+            </properties>
             <folders>
                 <source-folder>
-                    <label>src</label>
+                    <label>Sources</label>
                     <type>java</type>
                     <location>src</location>
                 </source-folder>
@@ -33,6 +38,9 @@
                         <location>build.xml</location>
                     </source-file>
                     <source-file>
+                        <location>build.properties</location>
+                    </source-file>
+                    <source-file>
                         <location>plugin_descriptor.xml</location>
                     </source-file>
                     <source-file>
@@ -53,6 +61,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src</package-root>
+                <classpath mode="compile">${basecp}</classpath>
                 <source-level>1.4</source-level>
             </compilation-unit>
         </java-data>

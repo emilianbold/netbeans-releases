@@ -11,63 +11,26 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
-<!-- build script for IDE XTest plugin -->
 <project basedir="." default="deploy" name="XTest IDE plugin">
-    <import file="../../../nbbuild/default-properties.xml"/>
 
-    <property name="plugins.install.dir" location="../../plugins"/>
+    <property name="netbeans.dest.dir" location="../../../nbbuild/netbeans"/>
+    <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
+    <property file="build.properties"/>
 
     <target name="compile">
-        <path id="bootcp" >
-            <pathelement location="${openide/util.dir}/lib/org-openide-util.jar" />
-            <pathelement location="${core/bootstrap.dir}/lib/boot.jar"/>
-            <!-- use junit with already compiled extensions -->        
-            <pathelement location="../../lib/xtest.jar"/>
-            <pathelement location="../../lib/xtest-junit-testrunner.jar"/>
-            <pathelement location="../../lib/nbjunit.jar"/>
-            <pathelement location="${ant.home}/lib/ant.jar"/>
-            <fileset dir="../../external">
-                <include name="junit*.jar"/>
-            </fileset>            
-        </path>
-
-        <path id="dynamiccp" >
-            <path refid="bootcp" />
-            <pathelement location="${core.dir}/core/core.jar"/>
-            <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
-        </path>    
-    
-        <path id="basecp">
-            <path refid="dynamiccp" />
-        
-            <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar" />
-            <pathelement location="${openide/dialogs.dir}/modules/org-openide-dialogs.jar" />
-            <pathelement location="${openide/loaders.dir}/modules/org-openide-loaders.jar" />
-            <pathelement location="${core.dir}/modules/org-netbeans-core.jar" />
-            <pathelement location="${core/execution.dir}/modules/org-netbeans-core-execution.jar"/>
-            <!-- project support classpath -->
-            <pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
-            <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
-            <pathelement location="${java/j2seproject.dir}/modules/org-netbeans-modules-java-j2seproject.jar"/>
-            <pathelement location="${ant/project.dir}/modules/org-netbeans-modules-project-ant.jar"/>
-            <!-- metadata repository support classpath -->
-            <pathelement location="${java/javacore.dir}/modules/org-netbeans-modules-javacore.jar"/>
-            <pathelement location="${mdr/nbjmiutils.dir}/modules/ext/jmiutils.jar"/>
-        </path>
         <mkdir dir="build/classes"/>
         
-        <javac srcdir="src" destdir="build/classes"
+        <javac srcdir="src" destdir="build/classes" source="1.4"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">          
-          <classpath refid="basecp"/>  
+          <classpath path="${basecp}"/>  
           <selector refid="xtest.ide.main" />
         </javac> 
  
-        <javac srcdir="src" destdir="build/classes"
+        <javac srcdir="src" destdir="build/classes" source="1.4"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">          
-          <classpath refid="bootcp"/>
+          <classpath path="${bootcp}"/>
           <selector refid="xtest.ide.plugin" />
         </javac> 
         <!-- Stuff needed for xtest error manager functionality controled by xtest.ide.error.manager property -->
