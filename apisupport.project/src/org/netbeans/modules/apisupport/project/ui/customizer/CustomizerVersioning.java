@@ -109,7 +109,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         boolean valid;
         String mrv = majorRelVerValue.getText().trim();
         try {
-            valid = (mrv.length() != 0 && Integer.parseInt(mrv) >= 0);
+            valid = (mrv.length() == 0 || Integer.parseInt(mrv) >= 0);
         } catch (NumberFormatException nfe) {
             valid = false;
         }
