@@ -11,15 +11,15 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="infoScrollPane" alignment="0" pref="505" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="derbySystemHomeLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="derbySystemHomeTextField" pref="280" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="1"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="browseButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="messageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -32,14 +32,14 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="infoScrollPane" min="-2" pref="54" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="derbySystemHomeTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="derbySystemHomeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="derbySystemHomeTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="34" max="32767" attributes="0"/>
+              <EmptySpace pref="11" max="-2" attributes="0"/>
+              <Component id="infoScrollPane" pref="134" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="messageLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

@@ -57,6 +57,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         
         initComponents();
         databaseNameTextField.getDocument().addDocumentListener(docListener);
+        updateLocation();
     }
     
     public void setDialogDescriptor(DialogDescriptor descriptor) {
@@ -98,6 +99,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
     }
     
+    private void updateLocation() {
+        databaseLocationTextField.setText(derbySystemHome.getAbsolutePath());
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -108,11 +113,32 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         databaseNameLabel = new javax.swing.JLabel();
         databaseNameTextField = new javax.swing.JTextField();
         messageLabel = new javax.swing.JLabel();
+        infoScrollPane = new javax.swing.JScrollPane();
+        infoTextArea = new javax.swing.JTextArea();
+        databaseLocationLabel = new javax.swing.JLabel();
+        databaseLocationTextField = new javax.swing.JTextField();
 
         org.openide.awt.Mnemonics.setLocalizedText(databaseNameLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_DatabaseName"));
 
         messageLabel.setForeground(nbErrorForeground);
         org.openide.awt.Mnemonics.setLocalizedText(messageLabel, " ");
+
+        infoScrollPane.setBorder(null);
+        infoScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        infoScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        infoTextArea.setColumns(20);
+        infoTextArea.setEditable(false);
+        infoTextArea.setLineWrap(true);
+        infoTextArea.setRows(5);
+        infoTextArea.setText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_DatabaseLocationInfo"));
+        infoTextArea.setWrapStyleWord(true);
+        infoTextArea.setFocusable(false);
+        infoTextArea.setOpaque(false);
+        infoScrollPane.setViewportView(infoTextArea);
+
+        org.openide.awt.Mnemonics.setLocalizedText(databaseLocationLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_DatabaseLocation"));
+
+        databaseLocationTextField.setEditable(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -121,11 +147,16 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, infoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
+                    .add(messageLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(databaseNameLabel)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(databaseNameLabel)
+                            .add(databaseLocationLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(databaseNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE))
-                    .add(messageLabel))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(databaseLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
+                            .add(databaseNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -135,7 +166,13 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(databaseNameLabel)
                     .add(databaseNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 38, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(databaseLocationLabel)
+                    .add(databaseLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(11, 11, 11)
+                .add(infoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(messageLabel)
                 .addContainerGap())
         );
@@ -144,8 +181,12 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    public javax.swing.JLabel databaseLocationLabel;
+    public javax.swing.JTextField databaseLocationTextField;
     public javax.swing.JLabel databaseNameLabel;
     public javax.swing.JTextField databaseNameTextField;
+    public javax.swing.JScrollPane infoScrollPane;
+    public javax.swing.JTextArea infoTextArea;
     public javax.swing.JLabel messageLabel;
     // End of variables declaration//GEN-END:variables
     
