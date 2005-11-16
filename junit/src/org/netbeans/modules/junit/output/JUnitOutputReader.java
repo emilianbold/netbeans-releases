@@ -440,6 +440,7 @@ final class JUnitOutputReader {
                                 new InputStreamReader(
                                         new FileInputStream(reportFile),
                                         "UTF-8"));                      //NOI18N
+                        report.antScript = antScript;
                     } catch (UnsupportedCharsetException ex) {
                         assert false;
                     } catch (SAXException ex) {
