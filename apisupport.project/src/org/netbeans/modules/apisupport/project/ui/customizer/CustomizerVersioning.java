@@ -73,7 +73,6 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         eagerMod.setSelected(getBooleanProperty(SingleModuleProperties.IS_EAGER));
         removeFriendButton.setEnabled(false);
         updateAppendImpl();
-        checkForm();
     }
     
     private void attachListeners() {
@@ -195,6 +194,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
             updateAppendImpl();
         } else if (SingleModuleProperties.PROPERTIES_REFRESHED == pName) {
             refresh();
+            checkForm();
         }
     }
     

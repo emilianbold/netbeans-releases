@@ -88,7 +88,8 @@ abstract class NbPropertyPanel extends JPanel implements
      * Gives subclasses a chance to set a warning or an error message after a
      * customizer is loaded/displayed. Just use this method for checking a
      * validity of a panel's data and eventually call {@link
-     * #setWarning(String)} or {@link #setErrorMessage(String)}.
+     * #setWarning(String)} or {@link #setErrorMessage(String)}. Default
+     * implementation does nothing.
      */
     protected void checkForm() {}
 

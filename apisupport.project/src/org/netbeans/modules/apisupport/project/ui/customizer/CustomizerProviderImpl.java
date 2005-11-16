@@ -81,11 +81,6 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
         ProjectCustomizer.Category packaging = createCategory(CATEGORY_PACKAGING, "LBL_ConfigPackaging"); // NOI18N
         ProjectCustomizer.Category documenting = createCategory(CATEGORY_DOCUMENTING, "LBL_ConfigDocumenting"); // NOI18N
         
-        // XXX this is a little clumsy (will be replaced by some general mechanism, now it is rather a demo)
-        // (servers just for checking if category is valid during first invocation)
-        CustomizerVersioning versioningPanel = new CustomizerVersioning(moduleProps);
-        versioning.setValid(versioningPanel.isCustomizerValid());
-        
         ProjectCustomizer.Category build = ProjectCustomizer.Category.create(
                 CATEGORY_BUILD,
                 NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_ConfigBuild"),

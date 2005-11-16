@@ -339,12 +339,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite implement
     private BasicBrandingModel getBrandingModel() {
         return getProperties().getBrandingModel();
     }
-
-    public void addNotify() {
-        super.addNotify();
-        checkForm();
-    }
-
+    
     public void showSubCategory(String name) {
         if (name.equals(SuiteCustomizer.APPLICATION_CREATE_STANDALONE_APPLICATION)) {
             standaloneApp.requestFocus();
