@@ -33,8 +33,8 @@ and HTML files are recognized as such and the IDE provides functionality specifi
      the file extension <tt>.xyz</tt>, you can let the IDE recognize all files with
      this extension and then provide functionality specifically for this file type.
 
-     <p>But you can also let the IDE distinguish between XML files. Even though
-      all XML files have an <tt>.xml</tt> extension, you can let the IDE provide
+     <p>But you can also let the IDE distinguish between XML files. Whether or not
+      an XML has an <tt>.xml</tt> extension, you can let the IDE provide
       different functionality for <tt>abc.xml</tt> than for <tt>def.xml</tt>, based
       on the namespace defined for the XML file in question. Since the namespace of
       each distinguishable XML file is distinct, the namespace is used to distinsguish
@@ -88,6 +88,22 @@ and HTML files are recognized as such and the IDE provides functionality specifi
 </td>
   </tr>
 </table>
+
+<p>For an example of creating a module that recognizes a new file type, see the
+		 <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://platform.netbeans.org/tutorials/nbm-filetype.html">
+    <param name="text" value="<html><u>NetBeans DataLoader Module Tutorial</u>.</html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object>
+
+<p>For an example of how to create a module that extends a new file type by
+ providing syntax highlighting, see the <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://platform.netbeans.org/tutorials/nbm-mfsyntax.html">
+    <param name="text" value="<html><u>NetBeans Manifest File Syntax Highlighting Tutorial</u>.</html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object>
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>

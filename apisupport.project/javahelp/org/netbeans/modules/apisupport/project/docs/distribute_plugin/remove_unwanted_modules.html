@@ -17,7 +17,29 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-<p>tbd
+
+<p>You can exclude unwanted modules from a standalone application, leaving only those
+ you really need. By default, all the modules that the IDE
+uses are included. 
+
+ <p><b>To remove unwanted modules:</b>
+ 
+<ol>
+	<li>Right-click a module-suite project and choose Properties.
+	<li>In the Project Properties dialog box, click Libraries.
+	<li>Uncheck all the clusters that you want to exclude from the standalone application. The only
+	cluster that all standalone applications need is <tt>platform6</tt>. 
+	<li>Expand the nodes of the clusters that you want to keep, and uncheck any module
+	 that you want to exclude from the cluster.
+	 <li>Click OK.
+
+</ol>
+
+<ul class="note">
+	<li>When you <a href="branding_plugins.html">brand a standalone application</a>, the IDE
+	 asks you whether it should exclude IDE-related modules for you. If you do not let the IDE
+	  exclude IDE-related modules, you can do so manually using the steps above.
+</ul>
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>

@@ -16,10 +16,48 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
+
+<p>A <a href="about_window_components.html">window component</a> creates a window (also known as 'view') for a module. The IDE
+ provides the Window Component wizard to simplify the initial creation process.
+
 <p><b>To create a new window component:</b>
 <ol>
 	<li>Right-click a module project and choose New &gt; Window Component.
-	<li>Follow the steps in the <a href="../../csh/BasicSettingsPanel.html">New Window Component wizard</a>.
+	<li>In the Basic Settings page, you set the following: 
+<ul>
+	<li><b>Window Position.</b> Specifies the location of the window component when open in the IDE.
+	 Choose one of the following:
+	 <ul>
+		 <li><tt>output.</tt> The default position of the IDE's Output window.
+		 <li><tt>explorer.</tt> The default position of the IDE's Projects window.
+		 <li><tt>editor.</tt> The default position of the IDE's Source Editor.
+		 <li><tt>properties.</tt> The default position of the IDE's Properties window. This is
+		 on the right side of the Source Editor.
+		 <li><tt>leftSlidingSide.</tt> The window component will be available as a button
+		  on the left sidebar of the IDE.
+		 <li><tt>rightSlidingSide.</tt>  The window component will be available as a button
+		  on the right sidebar of the IDE. 
+		 <li><tt>bottomSlidingSide.</tt>  The window component will be available as a button
+		  on the bottom bar of the IDE. 
+	  </ul>
+	  <p>For standalone modules and for modules that belong to a module suite which includes
+	  the <tt>ide6</tt> cluster in the <a href="../csh/proj_props/SuiteCustomizerModuleList.html">Module List</a>,
+	  the following positions are also available:
+ 	<ul>
+		<li><tt>commonpalette.</tt> The default position of the IDE's Palette for HTML/JSP code snippets.
+		 <li><tt>debugger.</tt> The default position of the IDE's Debugger.
+		 <li><tt>navigator.</tt> The default position of the IDE's Navigator.
+	  </ul>
+	<li><b>Open on Application Start.</b> Specifies whether the window component is open
+	 by default or not.
+ </ul>
+ <li>In the Name, Icon, and Location page, you have to set the following: 
+<ul>
+	<li><b>Class Name.</b> Specifies the name of the new <tt>Action</tt> and <tt>TopComponent</tt> classes.
+	<li><b>Icon.</b> Specifies the icon that will accompany the window component. For example, you
+	 will see the icon in the label of the window component. (Optional)
+	<li><b>Package.</b> Specifies the name of the package where the class will be housed.
+ </ul>
 	<li>After completing the wizard, you can do one or more of the following:
 	<ul>
 		<li>Use the Form editor to design the window.

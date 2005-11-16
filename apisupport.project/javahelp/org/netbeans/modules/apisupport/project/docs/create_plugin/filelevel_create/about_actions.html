@@ -18,13 +18,13 @@
 </small></p>
 
 Actions are defined in the <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-actions/overview-summary.html">
-    <param name="text" value="<html><u>Actions API</u></html>">
+    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-dialogs/overview-summary.html">
+    <param name="text" value="<html><u>Actions API</u>.</html>">
     <param name="textFontSize" value="medium">
     <param name="textColor" value="blue">
-</object>. This API is a standard representation of the actions a user can 
+</object> This API is a standard representation of the actions a user can 
 invoke. It provides
-an interface to such IDE elements as toolbars, menus, and keyboard shortcuts&#8212;allowing
+an interface to such IDE elements as toolbars, menus, and keyboard shortcuts, allowing
 third parties to create actions that are sensitive to context and invocable in
 more than one way. Special superclasses are sensitive to selected nodes and cookie
 sets&#8212;you decide if these apply. The Actions API offers the ability to
@@ -32,13 +32,8 @@ write the action once, and have it automatically apply as appropriate. For examp
 user action might show up in both a toolbar and be selected by a keyboard shortcut,
 all from the same implementation.
 
-<p>All actions in the IDE are subclasses of <tt>SystemAction</tt>, which extends the Swing
-action API to interact smoothly with the IDE. The Actions API provides abilities
-such as context sensitivity, callback support, automatic presentation devices in
-menus and toolbars, and a few other features used by the IDE.
-
-<p>Actions are typically presented in popup menus, or attached to a component such as
-a window, node, data object, or file system.
+<p>Actions are typically presented in pop-up menus, or attached to a component such as
+a window, node, or data object.
 
 
 <p>The Actions API provides two types of action:
@@ -49,7 +44,9 @@ a window, node, data object, or file system.
     <param name="textFontSize" value="medium">
     <param name="textColor" value="blue">
 </object><p>An action called programmatically from menu items in the main menu bar,
- toolbar buttons in the main toolbars, and keyboard shortcuts throughout the IDE.
+toolbar buttons in the main toolbars, and keyboard shortcuts throughout the IDE. For example, in the IDE, the action that
+defines Tools &gt; Options subclasses <tt>CallableSystemAction</tt>.
+ 
 	  <li><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
     <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-nodes/org/openide/util/actions/CookieAction.html">
     <param name="text" value="<html><u>Class CookieAction</u></html>">
@@ -61,7 +58,24 @@ something with it. Nodes add features to DataObjects that the user interacts wit
 localized display names, and icons.</p>
  </ul>
 
- <p>Both types of action can be created with the <a href="../../csh/ActionTypePanel.html">New Action wizard</a>.
+ <p>Both types of action can be created with the <a href="../../csh/ActionTypePanel.html">New Action wizard</a>. The wizard
+ automatically registers actions in the <a href="../../about/about-xml-layers.html"><tt>layer.xml</tt> file</a>.
+
+ <p>For an example of the use of an action that shows up as a menu item and as a toolbar button, see the
+		 <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://platform.netbeans.org/tutorials/quickstart-nbm.html">
+    <param name="text" value="<html><u>NetBeans IDE 5.0 Plug-in Module Quick Start Guide</u>.</html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object>
+
+<p>For an example of an action that shows up as an edit box in a toolbar, see the
+		 <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://platform.netbeans.org/tutorials/nbm-google.html">
+    <param name="text" value="<html><u>NetBeans Google Toolbar Module Tutorial</u>.</html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object>
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>
