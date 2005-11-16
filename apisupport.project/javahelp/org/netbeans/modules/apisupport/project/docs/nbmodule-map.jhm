@@ -46,7 +46,10 @@
 	<mapID target="branding_plugins" url="distribute_plugin/branding_plugins.html"/>
 	<mapID target="install_targetplatform" url="distribute_plugin/install_targetplatform.html"/>
 	<mapID target="install_devide" url="distribute_plugin/install_devide.html"/>
-		<mapID target="run_rich_client" url="distribute_plugin/run_rich_client.html"/>
+	<mapID target="run_rich_client" url="distribute_plugin/run_rich_client.html"/>
+	<mapID target="remove_unwanted_modules" url="distribute_plugin/remove_unwanted_modules.html"/>
+	<mapID target="hide_unwanted_ui" url="distribute_plugin/hide_unwanted_ui.html"/>
+	<mapID target="creating_splash_screen" url="distribute_plugin/creating_splash_screen.html"/>
 	<mapID target="distributing_plugins" url="distribute_plugin/distributing_plugins.html"/>	
 	<mapID target="deploying_plugins" url="distribute_plugin/deploying_plugins.html"/>
 
