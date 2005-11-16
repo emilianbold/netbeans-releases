@@ -18,6 +18,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.j2ee.dd.impl.webservices.WebServicesProxy;
 import org.netbeans.modules.schema2beans.Common;
 import org.openide.filesystems.*;
@@ -257,16 +260,16 @@ public final class DDProvider {
     private DDParse parseDD (InputSource is) 
     throws SAXException, java.io.IOException {
         DDProvider.ErrorHandler errorHandler = new DDProvider.ErrorHandler();
-        org.apache.xerces.parsers.DOMParser parser = new org.apache.xerces.parsers.DOMParser();
+        DocumentBuilder parser=null;
+        try {
+            DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
+            parser = fact.newDocumentBuilder();
+        } catch (ParserConfigurationException ex) {
+            throw new SAXException(ex.getMessage());
+        }
         parser.setErrorHandler(errorHandler);
         parser.setEntityResolver(DDProvider.DDResolver.getInstance());
-        // XXX do we need validation here, if no one is using this then
-        // the dependency on xerces can be removed and JAXP can be used
-        parser.setFeature("http://xml.org/sax/features/validation", true); //NOI18N
-        parser.setFeature("http://apache.org/xml/features/validation/schema", true); // NOI18N
-        parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true); //NOI18N
-        parser.parse(is);
-        Document d = parser.getDocument();
+        Document d = parser.parse(is);
         SAXParseException error = errorHandler.getError();
         return new DDParse(d, error);
     }
