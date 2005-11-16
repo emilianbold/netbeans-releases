@@ -908,7 +908,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     layout.showToolTip(
                             resultSet.getToolTip(), resultSet.getAnchorOffset());
                 } else {
-                    layout.hideToolTip();
+                    hideToolTip();
                 }
             }
         });

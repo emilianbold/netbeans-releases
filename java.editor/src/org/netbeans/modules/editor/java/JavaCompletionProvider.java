@@ -19,10 +19,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JToolTip;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
-import javax.swing.*;
+import javax.swing.text.Position;
 
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
@@ -31,6 +34,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtUtilities;
+import org.netbeans.editor.ext.java.JCExpression;
 import org.netbeans.editor.ext.java.JavaSyntaxSupport;
 import org.netbeans.jmi.javamodel.ClassDefinition;
 import org.netbeans.jmi.javamodel.Element;
@@ -299,14 +303,16 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private JToolTip queryToolTip;
         
-        private boolean nonInitialQuery;
-        
-        /** Method/constructor name for tracking whether the method is still
+        /** Method/constructor '(' position for tracking whether the method is still
          * being completed.
          */
-        private String initialQueryMethodName;
+        private Position queryMethodParamsStartPos = null;
+        
+        private boolean otherMethodContext;
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            Position oldPos = queryMethodParamsStartPos;
+            queryMethodParamsStartPos = null;
             NbJavaJMICompletionQuery query = new NbJavaJMICompletionQuery(true);
             BaseDocument bdoc = (BaseDocument)doc;
             NbJavaJMICompletionQuery.JavaResult res = (NbJavaJMICompletionQuery.
@@ -316,21 +322,21 @@ public class JavaCompletionProvider implements CompletionProvider {
                 queryCaretOffset = caretOffset;
                 List list = new ArrayList();
                 int idx = -1;
+                boolean checked = false;
                 for (Iterator it = res.getData().iterator(); it.hasNext();) {
                     Object o = it.next();
                     if (o instanceof NbJMIResultItem.CallableFeatureResultItem) {
                         NbJMIResultItem.CallableFeatureResultItem item = (NbJMIResultItem.CallableFeatureResultItem) o;
-                        
-                        if (nonInitialQuery) {
-                            if (initialQueryMethodName != null
-                                && !initialQueryMethodName.equals(item.getName())
-                            ) { // Standing on different method for query refreshing
-                                // Request hiding of the completion
-                                Completion.get().hideToolTip();
-                                break;
+
+                        if (!checked) {
+                            JCExpression exp = item.substituteExp;
+                            if (exp.getTokenCount() > 0) {
+                                try {
+                                    queryMethodParamsStartPos = bdoc.createPosition(exp.getTokenOffset(0));
+                                } catch (BadLocationException ble) {
+                                }                                
                             }
-                        } else { // initial query -> remember the active method's name
-                            initialQueryMethodName = item.getName();
+                            checked = true;
                         }
 
                         List parms = item.createParamsList();
@@ -345,7 +351,6 @@ public class JavaCompletionProvider implements CompletionProvider {
 
                 resultSet.setAnchorOffset(queryAnchorOffset = res.getSubstituteOffset() + 1);
                 resultSet.setToolTip(queryToolTip = new MethodParamsTipPaintComponent(list, idx));
-                nonInitialQuery = true;
             }
             resultSet.finish();
         }
@@ -356,24 +361,52 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         protected boolean canFilter(JTextComponent component) {
             String text = null;
-            int caretOffset = component.getCaretPosition();
+            int caretOffset = component.getCaretPosition();            
             Document doc = component.getDocument();
             try {
                 if (caretOffset - queryCaretOffset > 0)
                     text = doc.getText(queryCaretOffset, caretOffset - queryCaretOffset);
                 else if (caretOffset - queryCaretOffset < 0)
                     text = doc.getText(caretOffset, queryCaretOffset - caretOffset);
+                else
+                    text = ""; //NOI18N
             } catch (BadLocationException e) {
             }
-            if (text == null || text.indexOf(',') != -1 || text.indexOf('(') != -1 || text.indexOf(')') != -1) // NOI18N
+            if (text == null)
                 return false;
-            
-            return true;
+
+            boolean filter = true;
+            int balance = 0;
+            for (int i = 0; i < text.length(); i++) {
+                char ch = text.charAt(i);
+                switch (ch) {
+                    case ',':
+                        filter = false;
+                        break;
+                    case '(':
+                        balance++;
+                        filter = false;
+                        break;
+                    case ')':
+                        balance--;
+                        filter = false;
+                        break;
+                }
+                if (balance < 0)
+                    otherMethodContext = true;
+            }
+            if (otherMethodContext && balance < 0)
+                otherMethodContext = false;
+            if (queryMethodParamsStartPos == null || caretOffset <= queryMethodParamsStartPos.getOffset())
+                filter = false;
+            return otherMethodContext || filter;
         }
         
         protected void filter(CompletionResultSet resultSet) {
-            resultSet.setAnchorOffset(queryAnchorOffset);
-            resultSet.setToolTip(queryToolTip);
+            if (!otherMethodContext) {
+                resultSet.setAnchorOffset(queryAnchorOffset);
+                resultSet.setToolTip(queryToolTip);
+            }
             resultSet.finish();
         }
     }
