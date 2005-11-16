@@ -5,15 +5,15 @@
  * Copyright &copy; 2005 Sun Microsystems, Inc.
  * All rights reserved. Use is subject to license terms.
 -->
-  <title>sun-web.xml / sun-ejb-jar.xml Visual Editor: Web Service</title>
+  <title>sun-web.xml/sun-ejb-jar.xml Visual Editor: Web Service Descriptor</title>
   
 <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2> <tt>sun-web.xml</tt> / <tt>sun-ejb-jar.xml</tt> Visual Editor: Web Service Descriptor</h2>
+<h2> <tt>sun-web.xml</tt>/<tt>sun-ejb-jar.xml</tt> Visual Editor: Web Service Descriptor</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>The <tt>sun-web.xml</tt> (or <tt>sun-ejb-jar.xml</tt>) visual editor lets you edit the platform-specific 
-  web (or enterprise bean) deployment descriptor for Sun Java System Application Server. You open the 
+  web (or enterprise bean) deployment descriptor for the Sun Java System Application Server. You open the 
   visual editor by expanding your project's Configuration Files node in the Projects 
   window and double-clicking the <tt>sun-web.xml</tt> (or <tt>sun-ejb-jar.xml</tt> or <tt>sun-cmp-mappings.xml</tt>) 
   file. A web application (or enterprise bean) only contains a <tt>sun-web.xml</tt> (or <tt>sun-ejb-jar.xml</tt> or <tt>sun-cmp-mappings.xml</tt>)
@@ -22,8 +22,10 @@
   in the <tt>sun-web.xml</tt> (or <tt>sun-ejb-jar.xml</tt>) visual editor and clicking the
   web service descriptor node (&nbsp;<img src="../images/WebServiceDescriptorIcon16.png">&nbsp;) 
   for the web service whose runtime properties you wish to edit.</p>
-<p>Note that the Web Services node will only be visible when <tt>webservices.xml</tt> also exists.  
-  In other words, for those web and enterprise bean projects that implement web services.
+<ul class="note">
+<li>The Web Services node is visible one when a <tt>webservices.xml</tt> also exists in the project.  
+  In other words, for this node only appears for web and enterprise bean projects that implement web services.</li>
+</ul>
 <h3>Web Service Description Name</h3>
 <p>This is the web service description name as read from the corresponding entry for this service in your <tt>webservices.xml</tt> file.
 <h3>WSDL Publish Location</h3>
@@ -42,45 +44,45 @@
     <th scope="col" valign="top">Description</th>
   </tr>
   <tr> 
-    <td valign="top"><tt>Port Component Name</tt></td>
-    <td>The port component name for this endpoint.  Matches corresponding port component name
+    <td valign="top">Port Component Name</td>
+    <td>The port component name for this endpoint.  Matches the corresponding port component name
       in <tt>webservices.xml</tt>.  You generally should not need to edit this field.</td>
   </tr>
   <tr> 
-    <td valign="top"><tt>Authentication Method</tt></td>
+    <td valign="top">Authentication Method</td>
     <td>Specifies the authentication configuration for the web service endpoint.  The following options are available:
       <ul>
-        <li><b>NONE</b> The application does not require any authentication. </li>
-        <li><b>BASIC</b> The application uses basic authentication, that is, a user ID and password.  (EJB endpoints only.)</li>
-        <li><b>CLIENT-CERT</b> The application authenticates with a client certificate.  (EJB endpoints only.)</li>
-        <li><b>MESSAGE_SECURITY</b> The application requires that the data be transmitted in a fashion that
+        <li><b>NONE</b>. The application does not require any authentication. </li>
+        <li><b>BASIC</b>. The application uses basic authentication, that is, a user ID and password.  (EJB endpoints only.)</li>
+        <li><b>CLIENT-CERT</b>. The application authenticates with a client certificate.  (EJB endpoints only.)</li>
+        <li><b>MESSAGE_SECURITY</b>. The application requires that the data be transmitted in a fashion that
           prevents other entities from observing the contents of the transmission.  This is displayed here when
-          the message-security-binding property of the endpoint has been set.  For now, you must edit details
+          the <tt>message-security-binding</tt> property of the endpoint has been set.  For now, you must edit details
           of the binding in XML text editor. </li>
       </ul>
-      <p>Note that for servlet endpoints, authentication is either configured in web.xml (see security-constraint) 
-        or with a message-security-binding (either way, it is not configured here.)<p>
+      <p>Note that for servlet endpoints, authentication is either configured in <tt>web.xml</tt> (see security-constraint) 
+        or with a <tt>message-security-binding</tt> (either way, it is not configured here.)<p>
     </td>
   </tr>
   <tr> 
-    <td valign="top"><tt>Endpoint Address URI</tt></td>
+    <td valign="top">Endpoint Address URI</td>
     <td>Specifies the automatically generated endpoint address.  The Endpoint Address must
-      be a fixed pattern; that is, no "*" is allowed. The default value is the web service name for
-      servlet based endpoints or "webservice/[ejb-name]" for an EJB based endpoint.
-      The Endpoint Address is combined with the web server root to form the fully qualified 
-      endpoint address URI for a web service endpoint during deployment time.  The fully qualified 
+      be a fixed pattern. No <tt>*</tt> wildcards are allowed. The default value is the web service name for
+      servlet-based endpoints or <tt>webservice/<i>ejb-name</i></tt> for an EJB-based endpoint.
+      The Endpoint Address is combined with the web server root to form the fully-qualified 
+      endpoint address URI for a web service endpoint during deployment time.  The fully-qualified 
       endpoint address URI is the URI at which the web service can be reached.  The Endpoint
       Address is required for servlet endpoints if the servlet implements more than one endpoint and for 
       all EJB endpoints.</td>
   </tr>
   <tr> 
-    <td valign="top"><tt>Transport Guarantee</tt></td>
-    <td>Specifies the mode of communication between client and server.  The following option are available:
+    <td valign="top">Transport Guarantee</td>
+    <td>Specifies the mode of communication between client and server.  The following options are available:
       <ul>
-        <li><b>NONE</b> Select this to specify that the application does not require any transport guarantees.</li>
-        <li><b>INTEGRAL</b> Select this to specify that the application requires that the data sent between the client
+        <li><b>NONE</b>. Select this to specify that the application does not require any transport guarantees.</li>
+        <li><b>INTEGRAL</b>. Select this to specify that the application requires that the data sent between the client
         and server be sent in such a way that it cannot be changed in transit.</li>
-        <li><b>CONFIDENTIAL</b> Select this to specify that the application requires that the data be
+        <li><b>CONFIDENTIAL</b>. Select this to specify that the application requires that the data be
         transmitted in a fashion that prevents other entities from observing the contents of the transmission.</li>
       </ul>
       <p>Choosing INTEGRAL or CONFIDENTIAL indicates that the use of SSL is required. </p>

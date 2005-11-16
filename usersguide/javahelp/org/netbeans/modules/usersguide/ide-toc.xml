@@ -171,14 +171,14 @@
       <tocitem text="XML Tasks: Quick Reference" target="xml_quickref" />
       <tocitem text="Creating an XML Document" target="xml_createxml" />
       <tocitem text="Editing an XML Document" target="xml_editxml" />
+      <tocitem text="Validating an XML Document" target="xml_validatexml" />
+      <tocitem text="Checking an XML Document for Well-Formedness" target="xml_checkxml" />
       <tocitem text="Creating a DTD" target="xml_createdtd" />
       <tocitem text="Generating DTD Documentation" target="xml_documentdtd" />
       <tocitem text="Working With XML Schemas" target="xml_schemas" />
-      <tocitem text="Validating an XML Document" target="xml_validatexml" />
-      <tocitem text="Checking an XML Document for Well-Formedness" target="xml_checkxml" />
+      <tocitem text="Registering a Local DTD or XML Schema Resource" target="xml_mountcatalogs" />
       <tocitem text="XML Catalogs" >
         <tocitem text="About XML Catalogs" target="xml_catalogs" />
-        <tocitem text="Registering an XML Catalog" target="xml_mountcatalogs" />
         <tocitem text="XML Catalog Formats" target="xml_catalogformats" />
         <tocitem text="Creating and Editing an XML Catalog" target="xml_editcatalogs" />
       </tocitem>
