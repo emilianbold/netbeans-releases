@@ -17,6 +17,8 @@ import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -66,6 +68,10 @@ public class StopAction extends NodeAction {
                         try {
                             progressUI.start();
                             si.stop(progressUI);
+                        } catch (ServerException ex) {
+                            String msg = ex.getLocalizedMessage();
+                            NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(desc);
                         } finally {
                             progressUI.finish();
                         }

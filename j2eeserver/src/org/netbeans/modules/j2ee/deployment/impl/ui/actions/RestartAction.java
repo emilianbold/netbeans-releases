@@ -17,8 +17,11 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.j2ee.deployment.config.Utils;
+import org.netbeans.modules.j2ee.deployment.impl.ServerException;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -68,6 +71,10 @@ public class RestartAction extends NodeAction {
                         try {
                             progressUI.start();
                             si.restart(progressUI);
+                        } catch (ServerException ex) {
+                            String msg = ex.getLocalizedMessage();
+                            NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(desc);
                         } finally {
                             progressUI.finish();
                         }

@@ -137,9 +137,9 @@ public class ProgressUI implements ProgressListener {
     /** Display a failure dialog with the specified message and call finish. */
     public void failed(String message) {
         finish();
-        log(message);
-        NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
-        DialogDisplayer.getDefault().notify(desc);
+        if (logger != null) {
+            log(message);
+        }
     }
     
     /** Set a progress object this progress UI will monitor. */

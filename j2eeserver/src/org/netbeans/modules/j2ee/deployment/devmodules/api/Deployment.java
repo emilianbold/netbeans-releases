@@ -65,70 +65,54 @@ public final class Deployment {
     
     public String deploy (J2eeModuleProvider jmp, boolean debugmode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy, Logger logger) throws DeploymentException {
         DeploymentTargetImpl target = new DeploymentTargetImpl(jmp, clientModuleUrl);
-
-        String err;
         TargetModule[] modules = null;
         final J2eeModule module = target.getModule();
 
         String title = NbBundle.getMessage(Deployment.class, "LBL_Deploying", jmp.getDeploymentName());
         ProgressUI progress = new ProgressUI(title, false, logger);
-        progress.start();
         
         try {
+            progress.start();
+            
             ServerString server = target.getServer(); //will throw exception if bad server id
         
             if (module == null) {
-                err = NbBundle.getMessage (Deployment.class, "MSG_NoJ2eeModule"); //NOI18N
-                progress.failed(err);
-                throw new DeploymentException (err);
+                String msg = NbBundle.getMessage (Deployment.class, "MSG_NoJ2eeModule");
+                throw new DeploymentException(msg);
             }
             if (server == null || server.getServerInstance() == null) {
-                err = NbBundle.getMessage (Deployment.class, "MSG_NoTargetServer"); //NOI18N
-                progress.failed(err);
-                throw new DeploymentException (err);
+                String msg = NbBundle.getMessage (Deployment.class, "MSG_NoTargetServer");
+                throw new DeploymentException(msg);
             }
             
             boolean serverReady = false;
             TargetServer targetserver = new TargetServer(target);
 
             if (alsoStartTargets || debugmode) {
-                serverReady = targetserver.startTargets(debugmode, progress);
+                targetserver.startTargets(debugmode, progress);
             } else { //PENDING: how do we know whether target does not need to start when deploy only
-                serverReady = server.getServerInstance().start(progress);
+                server.getServerInstance().start(progress);
             }
-            if (! serverReady) {
-                err = NbBundle.getMessage (Deployment.class, "MSG_StartServerFailed", target.getServer ().getServerInstance ().getDisplayName ()); //NOI18N
-                progress.failed(err);
-                throw new DeploymentException (err);
-            }
-            
             modules = targetserver.deploy(progress, forceRedeploy);
             // inform the plugin about the deploy action, even if there was
             // really nothing needed to be deployed
             targetserver.notifyIncrementalDeployment(modules);
             
-        } catch (Exception ex) {            
-            err = NbBundle.getMessage (Deployment.class, "MSG_DeployFailed", ex.getLocalizedMessage ());
-            progress.failed(err);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            throw new DeploymentException (err, ex);
-        } finally {
-            if (progress != null)
-                progress.setLogger(null);
-        }
-        
-        try {
             if (modules != null && modules.length > 0) {
                 target.setTargetModules(modules);
-                progress.finish();
             } else {
-                err = NbBundle.getMessage (Deployment.class, "MSG_AnotherError");
-                throw new DeploymentException (err);
+                String msg = NbBundle.getMessage(Deployment.class, "MSG_ModuleNotDeployed");
+                throw new DeploymentException (msg);
             }
             return target.getClientUrl(clientUrlPart);
+        } catch (Exception ex) {            
+            String msg = NbBundle.getMessage (Deployment.class, "MSG_DeployFailed", ex.getLocalizedMessage ());
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            throw new DeploymentException(msg, ex);
         } finally {
-            if (progress != null)
-                progress.setLogger(null);
+            if (progress != null) {
+                progress.finish();
+            }
         }
     }
     

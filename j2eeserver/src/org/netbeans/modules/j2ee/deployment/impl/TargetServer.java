@@ -73,7 +73,7 @@ public class TargetServer {
         this.instance = dtarget.getServer().getServerInstance();
     }
     
-    private void init(ProgressUI ui) {
+    private void init(ProgressUI ui) throws ServerException {
         if (targets == null) {
             instance.start(ui);
             targets = dtarget.getServer().toTargets();
@@ -366,37 +366,28 @@ public class TargetServer {
         }
     }
     
-    public boolean startTargets(boolean debugMode, ProgressUI ui) {
+    public void startTargets(boolean debugMode, ProgressUI ui) throws ServerException {
         this.debugMode = debugMode;
         if (instance.getStartServer().isAlsoTargetServer(null)) {
             if (debugMode) {
-                if (!instance.startDebug(ui)) {
-                    return false;
-                }
+                instance.startDebug(ui);
             } else {
-                if (!instance.start(ui)) {
-                    return false;
-                }
+                instance.start(ui);
             }
             this.targets = dtarget.getServer().toTargets();
-            return true;
+            return;
         }
-        
         instance.start(ui);
         this.targets = dtarget.getServer().toTargets();
         if (debugMode) {
             for (int i=0; i<targets.length; i++) {
-                if (! instance.startDebugTarget(targets[i], ui))
-                    return false;
+                instance.startDebugTarget(targets[i], ui);
             }
         } else {
             for (int i=0; i<targets.length; i++) {
-                if (! instance.startTarget(targets[i], ui))
-                    return false;
+                instance.startTarget(targets[i], ui);
             }
         }
-
-        return true;
     }
     
     private class DistributeEventHandler implements ProgressListener {
@@ -538,11 +529,7 @@ public class TargetServer {
         return (TargetModuleID[]) originals.toArray(new TargetModuleID[originals.size()]);
     }
     
-    public TargetModule[] deploy(ProgressUI ui) throws IOException {
-        return deploy (ui, false);
-    }
-    
-    public TargetModule[] deploy(ProgressUI ui, boolean forceRedeploy) throws IOException {
+    public TargetModule[] deploy(ProgressUI ui, boolean forceRedeploy) throws IOException, ServerException {
         ProgressObject po = null;
         boolean hasActivities = false;
         

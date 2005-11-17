@@ -14,11 +14,14 @@
 
 package org.netbeans.modules.j2ee.deployment.impl.ui.actions;
 
+import org.netbeans.modules.j2ee.deployment.impl.ServerException;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -75,6 +78,10 @@ public class ProfileAction extends NodeAction {
                     try {
                         progressUI.start();
                         si.startProfile(settings, false, progressUI);
+                    } catch (ServerException ex) {
+                        String msg = ex.getLocalizedMessage();
+                        NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
                     } finally {
                         progressUI.finish();
                     }

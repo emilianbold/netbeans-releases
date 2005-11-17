@@ -26,6 +26,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.openide.filesystems.*;
 import java.util.*;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
@@ -95,8 +96,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private boolean isRunning = false;
     
     
-    private static ServerInstance           profiledServerInstance;
-    private static ProfilerServerSettings   profilerSettings;
+    private static ServerInstance   profiledServerInstance;
+    private ProfilerServerSettings  profilerSettings;
     
     // PENDING how to manage connected/disconnected servers with the same manager?
     // maybe concept of 'default unconnected instance' is broken?
@@ -286,11 +287,19 @@ public class ServerInstance implements Node.Cookie, Comparable {
                             for (Iterator it = targetsStartedByIde.iterator(); it.hasNext();) {
                                 ServerTarget serverTarget = getServerTarget((String)it.next());
                                 if (serverTarget != null) {
-                                    _stop(serverTarget.getTarget(), progressUI);
+                                    try {
+                                        _stop(serverTarget.getTarget(), progressUI);
+                                    } catch (ServerException ex) {
+                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                                    }
                                 }
                             }
                             if (isReallyRunning()) {
-                                _stop(progressUI);
+                                try {
+                                    _stop(progressUI);
+                                } catch (ServerException ex) {
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                                }
                             }
                         } finally {
                             progressUI.finish();
@@ -596,26 +605,27 @@ public class ServerInstance implements Node.Cookie, Comparable {
      * Start the admin server. Show UI feedback.
      * Note: for debug mode, always use startDebugTarget() calls because
      * it is sure then the target need to be started.
-     * @return true if successful.
+     *
+     * @throws ServerException if the server cannot be started.
      */
-    public boolean start(ProgressUI ui) {
+    public void start(ProgressUI ui) throws ServerException {
         try {
             setServerState(STATE_WAITING);
-            return startTarget(null, ui);
+            startTarget(null, ui);
         } finally {
             refresh();
         }
     }
     
-    /** Start the admin server in the debug mode. Show UI feedback. */
-    public boolean startDebug(ProgressUI ui) {
+    /** Start the admin server in the debug mode. Show UI feedback. 
+     *
+     * @throws ServerException if the server cannot be started.
+     */
+    public void startDebug(ProgressUI ui) throws ServerException {
         try {
             setServerState(STATE_WAITING);
-            boolean started = startTarget(null, ui, true);
-            if (started) {
-                _retrieveDebugInfo(null);
-            }
-            return started;
+            startTarget(null, ui, true);
+            _retrieveDebugInfo(null);
         } finally {
             refresh();
         }
@@ -623,8 +633,11 @@ public class ServerInstance implements Node.Cookie, Comparable {
     
     /** Start the admin server in the profile mode. Show UI feedback. 
      * @param settings settings that will be used to start the server
+     *
+     * @throws ServerException if the server cannot be started.
      */
-    public boolean startProfile(ProfilerServerSettings settings, boolean forceRestart, ProgressUI ui) {
+    public void startProfile(ProfilerServerSettings settings, boolean forceRestart, ProgressUI ui) 
+    throws ServerException {
         // check whether another server not already running in profile mode
         // and ask whether it is ok to stop it
         if (profiledServerInstance != null && profiledServerInstance != this) {
@@ -635,21 +648,25 @@ public class ServerInstance implements Node.Cookie, Comparable {
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.OK_CANCEL_OPTION);
             if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.CANCEL_OPTION) {
                 // start in profile mode has been cancelled
-                return false;
+                String err = NbBundle.getMessage(ServerInstance.class, "MSG_ProfilingCancelled", getDisplayName());
+                throw new ServerException(err);
             }
         }
         try {
             setServerState(STATE_WAITING);
             // target == null - admin server
-            return startProfileImpl(null, settings, forceRestart, ui);
+            startProfileImpl(null, settings, forceRestart, ui);
         } finally {
             refresh();
         }
     }
     
     /** Restart the admin server in the mode the server was running in before. 
-        Show UI feedback. */
-    public boolean restart(ProgressUI ui) {
+     * Show UI feedback. 
+     *
+     * @throws ServerException if the server cannot be restarted.
+     */
+    public void restart(ProgressUI ui) throws ServerException {
         try {
             setServerState(STATE_WAITING);
             boolean inDebug = isDebuggable(null);
@@ -657,36 +674,34 @@ public class ServerInstance implements Node.Cookie, Comparable {
             boolean stopped = true;
             
             if (inProfile || isReallyRunning()) {
-                stopped = _stop(ui);
+                _stop(ui);
             }
             if (stopped) {
                 // restart in the mode the server was running in before
                 if (inProfile) {
-                    return startProfileImpl(null, profilerSettings, true, ui);
+                    startProfileImpl(null, profilerSettings, true, ui);
                 } else if (inDebug) {
-                    return startDebugTarget(null, ui);
+                    startDebugTarget(null, ui);
                 } else {
-                    return startTarget(null, ui);
+                    startTarget(null, ui);
                 }
             }
         } finally {
             refresh();
         }
-        return false;
     }
     
-    /** Stop admin server. Show UI feedback. */
-    public boolean stop(ProgressUI ui) {
+    /** Stop admin server. Show UI feedback. 
+     *
+     * @throws ServerException if the server cannot be stopped.
+     */
+    public void stop(ProgressUI ui) throws ServerException {
         try {
             setServerState(STATE_WAITING);
-            boolean stopped = false;
             if (profiledServerInstance == this || isReallyRunning()) {
-                stopped = _stop(ui);
+                _stop(ui);
             }
-            if (stopped) {
-                debugInfo.clear();
-            }
-            return stopped;
+            debugInfo.clear();
         } finally {
             refresh();
         }
@@ -714,10 +729,11 @@ public class ServerInstance implements Node.Cookie, Comparable {
      * admin server is running.
      * @param target target server to be started
      * @param ui DeployProgressUI to display start progress
-     * @return true when server is started successfully; else return false.
+     *
+     * @throws ServerException if the target cannot be started.
      */
-    public boolean startTarget(Target target, ProgressUI ui) {
-        return startTarget(target, ui, false);
+    public void startTarget(Target target, ProgressUI ui) throws ServerException {
+        startTarget(target, ui, false);
     }
     
     /**
@@ -725,17 +741,18 @@ public class ServerInstance implements Node.Cookie, Comparable {
      * server only make sure admin server is running.
      * @param target target server to be started
      * @param ui DeployProgressUI to display start progress
-     * @return true when server is started successfully; else return false.
+     *
+     * @throws ServerException if the server cannot be started.
      */
-    public boolean startDebugTarget(Target target, ProgressUI ui) {
-        boolean started = startTarget(target, ui, true);
-        if (started)
-            _retrieveDebugInfo(target);
-        return started;
+    public void startDebugTarget(Target target, ProgressUI ui) throws ServerException {
+        startTarget(target, ui, true);
+        _retrieveDebugInfo(target);
     }
     
     /**
      * Start admin server, mainly for registry actions with no existing progress UI
+     *
+     * @throws ServerException if the server cannot be started.
      */
     private void start() {
         if (isRunning()) {
@@ -746,7 +763,11 @@ public class ServerInstance implements Node.Cookie, Comparable {
             //PENDING maybe a modal dialog instead of async is needed here
             RequestProcessor.Task t = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    start(null);
+                    try {
+                        start(null);
+                    } catch (ServerException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
                 }
             }, 0, Thread.MAX_PRIORITY);
         } else {
@@ -755,6 +776,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
             try {
                 ui.start();
                 start(ui);
+            } catch (ServerException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             } finally {
                 ui.finish();
             }
@@ -764,13 +787,18 @@ public class ServerInstance implements Node.Cookie, Comparable {
     /**
      * Start admin server for profiling, mainly for registry actions with no existing progress UI
      * @param settings settings that will be used to start the server
+     *
+     * @throws ServerException if the server cannot be started.
      */
-    public boolean startProfile(final ProfilerServerSettings settings, boolean forceRestart) {
+    public boolean startProfile(final ProfilerServerSettings settings, boolean forceRestart, Deployment.Logger logger) {
         String title = NbBundle.getMessage(ServerInstance.class, "LBL_StartServerInProfileMode", getDisplayName());
-        ProgressUI ui = new ProgressUI(title, false);
+        ProgressUI ui = new ProgressUI(title, false, logger);
         try {
             ui.start();
-            return startProfile(settings, forceRestart, ui);
+            startProfile(settings, forceRestart, ui);
+            return true;
+        } catch (ServerException ex) {
+            return false;
         } finally {
             ui.finish();
         }
@@ -793,9 +821,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
     
     //------------------------------------------------------------
     /**
-     * @return true if conflict was resolved successfully, i.e. current server was stopped.
+     * @throws ServerException if the conflict has not been resolved.
      */
-    private boolean _resolveServerConflict(Target target, ProgressUI ui, ConflictData cd) {
+    private void resolveServerConflict(Target target, ProgressUI ui, ConflictData cd) throws ServerException {
         
         ServerInstance si = cd.getServerInstance();
         //inform a user and allow him to stop the running instance
@@ -819,117 +847,114 @@ public class ServerInstance implements Node.Cookie, Comparable {
         yes.setDefaultCapable(true);
         nd.setOptions(new Object[] { yes, no });
         Object option = DialogDisplayer.getDefault().notify(nd);
-        if (option != yes) //user pressed No
-            return false;
+        if (option != yes) { //user pressed No
+            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_ServerStartupCancelled", getDisplayName());
+            throw new ServerException(msg);
+        }
         //try to stop running server
         if (si.getStartServer().supportsStartDeploymentManager()) {
             si.stop(ui);
-            if (si.isReallyRunning()) //stopping unsuccessful =>
-                return false;  //starting target server impossible
         } else {
-            return si.errorCannotControlAdmin(ui);
+            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartingThisServerNotSupported", getDisplayName());
+            throw new ServerException(msg);
         }
-        
-        return true;
     }
     
     // multiplexor state-machine core
-    private boolean startTarget(Target target, ProgressUI ui, boolean debugMode) {
+    /**
+     * @throws ServerException if the server cannot be started.
+     */
+    private void startTarget(Target target, ProgressUI ui, boolean debugMode) throws ServerException {
         
         StartServer ss = getStartServer();
         
         // No StartServer, have to assume manually started
         if (ss == null) {
             ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_PluginHasNoStartServerClass", getServer()));
-            return true;
+            return;
         }
         
         boolean canControlAdmin = ss.supportsStartDeploymentManager();
+        boolean canDebug = ss.supportsStartDebugging(target);
         boolean needsRestart = ss.needsRestart(target);
         
         if (ss.isAlsoTargetServer(target)) {
             if (debugMode) {
-                if (ss.isDebuggable(target)) { // implies ss.isRunning() true
+                if (ss.isDebuggable(target)) { // already running in debug mode
                     if (! needsRestart) {
-                        return true;
+                        return;
                     }
-                    if (! canControlAdmin || ! _stop(ui)) {
-                        return errorCannotControlAdmin(ui);
+                    if (!canControlAdmin || !canDebug) {
+                        String msg = NbBundle.getMessage(ServerInstance.class, "MSG_RestartingThisServerNotSupported", getDisplayName());
+                        throw new ServerException(msg);
                     }
-                    
+                    _stop(ui);
                 } else if (isReallyRunning()) { // running but not debuggable
-                    if (canControlAdmin) {
-                        if (! _stop(ui))
-                            return false;
-                    } else {
-                        return errorCannotControlAdmin(ui);
+                    if (!canControlAdmin || !canDebug) {
+                        String msg = NbBundle.getMessage(ServerInstance.class, "MSG_DebugginThisServerNotSupported", getDisplayName());
+                        throw new ServerException(msg);
                     }
+                    _stop(ui);
+                }                
+                // the server is stopped now
+                if (!canDebug) {
+                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_DebugginThisServerNotSupported", getDisplayName());
+                    throw new ServerException(msg);
                 }
+                // resolve conflicts with other servers
                 ConflictData cd = anotherServerDebuggable(target);
-                if (cd != null) //another server instance with the same parameters
-                    if (!_resolveServerConflict(target, ui, cd))
-                        return false;
-                
-                if (canControlAdmin) {
-                    return _startDebug(target, ui);
-                } else {
-                    return errorCannotControlAdmin(ui);
+                if (cd != null) { // another server instance with the same parameters
+                    resolveServerConflict(target, ui, cd);
                 }
+                _startDebug(target, ui);
             } else {
-                if (isReallyRunning()) {
+                if (isReallyRunning()) { // already running 
                     if (! needsRestart) {
-                        return true;
+                        return;
                     }
-                    if (! canControlAdmin || ! _stop(ui)) {
-                        return errorCannotControlAdmin(ui);
+                    if (!canControlAdmin) {
+                        String msg = NbBundle.getMessage(ServerInstance.class, "MSG_RestartingThisServerNotSupported", getDisplayName());
+                        throw new ServerException(msg);
                     }
+                    _stop(ui);
                 }
-                if (canControlAdmin) {
-                    return _start(ui);
-                } else {
-                    return errorCannotControlAdmin(ui);
+                if (!canControlAdmin) {
+                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartingThisServerNotSupported", getDisplayName());
+                    throw new ServerException(msg);
                 }
+                _start(ui);
             }
         } else { // not also target server
             // this block ensure a running admin server to control other targets
             if (! isReallyRunning()) {
-                if (canControlAdmin) {
-                    if (! _start(ui)) {
-                        return false;
-                    }
-                } else {
-                    return errorCannotControlAdmin(ui);
+                if (!canControlAdmin) {
+                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartingThisServerNotSupported", getDisplayName());
+                    throw new ServerException(msg);
                 }
+                _start(ui);
             }
             if (debugMode) {
                 if (ss.isDebuggable(target)) {
                     if ( ! needsRestart) {
-                        return true;
+                        return;
                     }
-                    if (! _stop(target, ui)) {
-                        return false;
-                    }
+                    _stop(target, ui);
                 } else if (ss.isRunning(target)) {
-                    if (! _stop(target, ui)) {
-                        return false;
-                    }
+                    _stop(target, ui);
                 }
                 ConflictData cd = anotherServerDebuggable(target);
-                if (cd != null) //another server instance with the same parameters
-                    if (!_resolveServerConflict(target, ui, cd))
-                        return false;
-                
-                return _startDebug(target, ui);
+                if (cd != null) { //another server instance with the same parameters
+                    resolveServerConflict(target, ui, cd);
+                }
+                _startDebug(target, ui);
             } else {
                 if (ss.isRunning(target)) {
                     if (! needsRestart) {
-                        return true;
+                        return;
                     }
-                    if ( ! _stop(target, ui)) {
-                        return false;
-                    }
+                    _stop(target, ui);
                 }
-                return _start(target, ui);
+                _start(target, ui);
             }
         }
     }
@@ -938,7 +963,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     // state-transition atomic operations (always do-it w/o checking state)
     //------------------------------------------------------------
     // startDeploymentManager
-    private synchronized boolean _start(ProgressUI ui) {
+    private synchronized void _start(ProgressUI ui) throws ServerException {
         String displayName = getDisplayName();
         
         ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StartingServer", displayName));
@@ -954,28 +979,22 @@ public class ServerInstance implements Node.Cookie, Comparable {
             }
             po.addProgressListener(handler);
             
-            String error = null;
             if (isProgressing(po)) {
                 // wait until done or cancelled
                 boolean done = sleep();
                 if (! done) {
-                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", displayName);
+                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", displayName);
+                    throw new ServerException(msg);
                 } else if (! hasCommandSucceeded()) {
-                    return false;
+                    DeploymentStatus status = po.getDeploymentStatus();
+                    throw new ServerException(status.getMessage());
                 }
             } else if (hasFailed(po)) {
-                return false;
+                DeploymentStatus status = po.getDeploymentStatus();
+                throw new ServerException(status.getMessage());
             }
-            
-            if (error != null) {
-                ui.failed(error);
-                return false;
-            }
-            
             managerStartedByIde = true;
             refresh();
-            return true;
-            
         } finally {
             if (ui != null) {
                 ui.setProgressObject(null);
@@ -987,7 +1006,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     // startDebugging
-    private synchronized boolean _startDebug(Target target, ProgressUI ui) {
+    private synchronized void _startDebug(Target target, ProgressUI ui) throws ServerException {
         String displayName = getDisplayName();
         ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StartingDebugServer", displayName));
         
@@ -1002,29 +1021,23 @@ public class ServerInstance implements Node.Cookie, Comparable {
             }
             po.addProgressListener(handler);
             
-            String error = null;
             if (isProgressing(po)) {
                 // wait until done or cancelled
                 boolean done = sleep();
                 if (! done) {
-                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugTimeout", displayName);
+                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugTimeout", displayName);
+                    throw new ServerException(msg);
                 } else if (! hasCommandSucceeded()) {
-                    return false;
+                    DeploymentStatus status = po.getDeploymentStatus();
+                    throw new ServerException(status.getMessage());
                 }
             } else if (hasFailed(po)) {
-                return false;
+                DeploymentStatus status = po.getDeploymentStatus();
+                throw new ServerException(status.getMessage());
             }
-            
-            if (error != null) {
-                ui.failed(error);
-                return false;
-            }
-            
             managerStartedByIde = true;
             refresh();
             setServerState(ServerInstance.STATE_DEBUGGING);
-            return true;
-            
         } finally {
             if (ui != null) {
                 ui.setProgressObject(null);
@@ -1036,27 +1049,23 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     /** start server in the profile mode */
-    private synchronized boolean startProfileImpl(
+    private synchronized void startProfileImpl(
                                     Target target, 
                                     ProfilerServerSettings settings,
                                     boolean forceRestart,
-                                    ProgressUI ui) {
-        if (profiledServerInstance != null) {
-            if (profiledServerInstance != this) {
-                // another server currently running in profiler mode
-                boolean stopped = false;
-                stopped = profiledServerInstance.stop(ui);
-                profiledServerInstance = null;
-            } else if (forceRestart || !settings.equals(profilerSettings)) {
-                boolean stopped = false;
-                stopped = _stop(ui);
-                if (stopped) {
-                    debugInfo.clear();
-                }
-                profiledServerInstance = null;
-            } else {
-                return true; // server is already runnning in profile mode, no need to restart the server
-            }
+                                    ProgressUI ui) throws ServerException {
+        if (profiledServerInstance == this && !forceRestart && settings.equals(profilerSettings)) {
+            return; // server is already runnning in profile mode, no need to restart the server
+        }
+        if (profiledServerInstance != null && profiledServerInstance != this) {
+            // another server currently running in profiler mode
+            profiledServerInstance.stop(ui);
+            profiledServerInstance = null;
+        }
+        if (profiledServerInstance == this || isReallyRunning() || isDebuggable(target)) {
+            _stop(ui);
+            debugInfo.clear();
+            profiledServerInstance = null;
         }
         
         String displayName = getDisplayName();
@@ -1070,38 +1079,32 @@ public class ServerInstance implements Node.Cookie, Comparable {
             Profiler profiler = ServerRegistry.getProfiler();
             if (profiler == null) {
                 // this should not occur, but it is safer this way
-                ui.failed(NbBundle.getMessage(ServerInstance.class, "MSG_ProfilerNotRegistered"));
-                return false;
+                String msg = NbBundle.getMessage(ServerInstance.class, "MSG_ProfilerNotRegistered");
+                throw new ServerException(msg);
             }
             profiler.notifyStarting();
             po = getStartServer().startProfiling(target, settings);
             ui.setProgressObject(po);
             po.addProgressListener(handler);
             
-            String error = null;
             if (isProgressing(po)) {
                 // wait until done or cancelled
                 boolean done = sleep();
                 if (! done) {
-                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartProfileTimeout", displayName);
+                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartProfileTimeout", displayName);
+                    throw new ServerException(msg);
                 } else if (! hasCommandSucceeded()) {
-                    return false;
+                    DeploymentStatus status = po.getDeploymentStatus();
+                    throw new ServerException(status.getMessage());
                 }
             } else if (hasFailed(po)) {
-                return false;
+                DeploymentStatus status = po.getDeploymentStatus();
+                throw new ServerException(status.getMessage());
             }
-            
-            if (error != null) {
-                ui.failed(error);
-                return false;
-            }
-            
             profiledServerInstance = this;
             profilerSettings = settings;
             managerStartedByIde = true;
             refresh();
-            return true;
-            
         } finally {
             if (ui != null) {
                 ui.setProgressObject(null);
@@ -1113,7 +1116,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     /** Tell the profiler to shutdown */
-    private synchronized boolean shutdownProfiler(ProgressUI ui) {
+    private synchronized void shutdownProfiler(ProgressUI ui) throws ServerException {
         ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StoppingProfiler"));
         StartProgressHandler handler = new StartProgressHandler();
         ProgressObject po = null;
@@ -1127,13 +1130,15 @@ public class ServerInstance implements Node.Cookie, Comparable {
                     // wait until done or cancelled
                     boolean done = sleep();
                     if (!done) {
-                        ui.failed(NbBundle.getMessage(ServerInstance.class, "MSG_ProfilerShutdownTimeout"));
-                        return false;
+                        String msg = NbBundle.getMessage(ServerInstance.class, "MSG_ProfilerShutdownTimeout");
+                        throw new ServerException(msg);
                     } else if (! hasCommandSucceeded()) {
-                        return false;
+                        DeploymentStatus status = po.getDeploymentStatus();
+                        throw new ServerException(status.getMessage());
                     }
                 } else if (hasFailed(po)) {
-                    return false;
+                    DeploymentStatus status = po.getDeploymentStatus();
+                    throw new ServerException(status.getMessage());
                 }
             }
         } finally {
@@ -1144,11 +1149,10 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 po.removeProgressListener(handler);
             }
         }
-        return true;
     }
     
     // stopDeploymentManager
-    private synchronized boolean _stop(ProgressUI ui) {
+    private synchronized void _stop(ProgressUI ui) throws ServerException {
         // if the server is started in profile mode, deattach profiler first
         if (profiledServerInstance == this) {
             shutdownProfiler(ui);
@@ -1165,28 +1169,22 @@ public class ServerInstance implements Node.Cookie, Comparable {
             ui.setProgressObject(po);
             po.addProgressListener(handler);
             
-            String error = null;
             if (isProgressing(po)) {
                 // wait until done or cancelled
                 boolean done = sleep();
                 if (! done) {
-                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", displayName);
+                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", displayName);
+                    throw new ServerException(msg);
                 } else if (! hasCommandSucceeded()) {
-                    return false;
+                    DeploymentStatus status = po.getDeploymentStatus();
+                    throw new ServerException(status.getMessage());
                 }
             } else if (hasFailed(po)) {
-                return false;
+                DeploymentStatus status = po.getDeploymentStatus();
+                throw new ServerException(status.getMessage());
             }
-            
-            if (error != null) {
-                ui.failed(error);
-                return false;
-            }
-            
             managerStartedByIde = false;
             reset();
-            return true;
-            
         } finally {
             if (ui != null) {
                 ui.setProgressObject(null);
@@ -1197,10 +1195,11 @@ public class ServerInstance implements Node.Cookie, Comparable {
         }
     }
     
-    private boolean _start(Target target, ProgressUI ui) {
+    private void _start(Target target, ProgressUI ui) throws ServerException {
         ServerTarget serverTarget = getServerTarget(target.getName());
-        if (serverTarget.isRunning())
-            return true;
+        if (serverTarget.isRunning()) {
+            return;
+        }
         
         String displayName = target.getName();
         ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StartingServer", displayName));
@@ -1215,27 +1214,21 @@ public class ServerInstance implements Node.Cookie, Comparable {
             }
             po.addProgressListener(handler);
             
-            String error = null;
             if (isProgressing(po)) {
                 // wait until done or cancelled
                 boolean done = sleep();
                 if (! done) {
-                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", displayName);
+                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", displayName);
+                    throw new ServerException(msg);
                 } else if (! hasCommandSucceeded()) {
-                    return false;
+                    DeploymentStatus status = po.getDeploymentStatus();
+                    throw new ServerException(status.getMessage());
                 }
             } else if (hasFailed(po)) {
-                return false;
+                DeploymentStatus status = po.getDeploymentStatus();
+                throw new ServerException(status.getMessage());
             }
-            
-            if (error != null) {
-                ui.failed(error);
-                return false;
-            } else {
-                targetsStartedByIde.add(serverTarget.getName());
-                return true;
-            }
-            
+            targetsStartedByIde.add(serverTarget.getName());
         } finally {
             if (ui != null) {
                 ui.setProgressObject(null);
@@ -1246,10 +1239,11 @@ public class ServerInstance implements Node.Cookie, Comparable {
         }
     }
     
-    private boolean _stop(Target target, ProgressUI ui) {
+    private void _stop(Target target, ProgressUI ui) throws ServerException {
         ServerTarget serverTarget = getServerTarget(target.getName());
-        if (serverTarget.isRunning())
-            return true;
+        if (serverTarget.isRunning()) {
+            return;
+        }
         
         String displayName = target.getName();
         ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StoppingServer", displayName));
@@ -1264,27 +1258,21 @@ public class ServerInstance implements Node.Cookie, Comparable {
             }
             po.addProgressListener(handler);
             
-            String error = null;
             if (isProgressing(po)) {
                 // wait until done or cancelled
                 boolean done = sleep();
                 if (! done) {
-                    error = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", displayName);
+                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", displayName);
+                    throw new ServerException(msg);
                 } else if (! hasCommandSucceeded()) {
-                    return false;
+                    DeploymentStatus status = po.getDeploymentStatus();
+                    throw new ServerException(status.getMessage());
                 }
             } else if (hasFailed(po)) {
-                return false;
+                DeploymentStatus status = po.getDeploymentStatus();
+                throw new ServerException(status.getMessage());
             }
-            
-            if (error != null) {
-                ui.failed(error);
-                return false;
-            } else {
-                targetsStartedByIde.remove(serverTarget.getName());
-                return true;
-            }
-            
+            targetsStartedByIde.remove(serverTarget.getName());
         } finally {
             if (ui != null) {
                 ui.setProgressObject(null);
@@ -1296,14 +1284,6 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     //-------------- End state-machine operations -------------------
-    public void reportError(String errorText) {
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errorText));
-    }
-    
-    private boolean errorCannotControlAdmin(ProgressUI ui) {
-        ui.failed(NbBundle.getMessage(ServerInstance.class, "MSG_StartingThisServerNotSupported", getDisplayName()));
-        return false;
-    }
     
     public boolean canStartServer() {
         return this.getStartServer() != null && getStartServer().supportsStartDeploymentManager();

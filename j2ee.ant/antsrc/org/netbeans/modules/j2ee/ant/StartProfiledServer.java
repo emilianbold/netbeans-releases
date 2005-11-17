@@ -20,21 +20,22 @@ import org.apache.tools.ant.types.Commandline;
 import org.apache.tools.ant.types.CommandlineJava;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
-import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.openide.filesystems.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+import org.openide.util.NbBundle;
 
 /**
  * Ant task that starts the server in profile mode.
  *
  * @author sherold
  */
-public class StartProfiledServer extends Task /*implements Deployment.Logger*/ {
+public class StartProfiledServer extends Task implements Deployment.Logger {
     
     private static final String PLAT_PROP_ANT_NAME = "platform.ant.name"; //NOI18N
     
@@ -50,7 +51,8 @@ public class StartProfiledServer extends Task /*implements Deployment.Logger*/ {
       
         Profiler profiler = ServerRegistry.getProfiler();
         if (profiler == null) {
-            throw new BuildException("No profiler found"); // NOI18N
+            String msg = NbBundle.getMessage(StartProfiledServer.class, "MSG_ProfierNotFound");
+            throw new BuildException(msg);
         }
         JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
         JavaPlatform platform = null;
@@ -61,7 +63,8 @@ public class StartProfiledServer extends Task /*implements Deployment.Logger*/ {
             }
         }
         if (platform == null) {
-            throw new BuildException("Java platform " + javaPlatform + " does not exist"); // NOI18N
+            String msg = NbBundle.getMessage(StartProfiledServer.class, "MSG_PlatformNotFound", javaPlatform);
+            throw new BuildException(msg);
         }
         String[] envvar = env.getVariables();
         if (envvar == null) {
@@ -71,37 +74,32 @@ public class StartProfiledServer extends Task /*implements Deployment.Logger*/ {
                                                     platform,
                                                     jvmarg.getVmCommand().getArguments(), 
                                                     envvar);
-        
-        log("*****************************************");
-        log("*** StartProfiledServer Task ************");
-        log("*** forceRestart: " + forceRestart);
-        log("*** " + settings);
-        
         FileObject fo = FileUtil.toFileObject(getProject().getBaseDir());
         fo.refresh(); // without this the "build" directory is not found in filesystems
         J2eeModuleProvider jmp = (J2eeModuleProvider)FileOwnerQuery.getOwner(fo).getLookup().lookup(J2eeModuleProvider.class);
         ServerInstance si = ServerRegistry.getInstance().getServerInstance(jmp.getServerInstanceID());
-        log(">>> Starting server...");
-        if (!si.startProfile(settings, forceRestart)) {
-            throw new BuildException("Starting server in profile mode failed"); // NOI18N
+        if (!si.startProfile(settings, forceRestart, this)) {
+            String msg = NbBundle.getMessage(StartProfiledServer.class, "MSG_StartupFailed");
+            throw new BuildException(msg);
         }
-        log(">>> Server ready, attaching profiler...");
+        log(NbBundle.getMessage(StartProfiledServer.class, "MSG_AttachingProfiler"));
         if (!profiler.attachProfiler(getProject().getProperties())) {
-            throw new BuildException("Attaching the profiler to server failed"); // NOI18N
+            String msg = NbBundle.getMessage(StartProfiledServer.class, "MSG_AttachFailed");
+            throw new BuildException(msg);
         }
-        log(">>> Profiler attached, waiting for server startup (timeout after " + startupTimeout + " sec)...");
-        
+        log(NbBundle.getMessage(StartProfiledServer.class, "MSG_ProfilerAttached"));
         // wait for the server to finish its startup
         long timeout = System.currentTimeMillis() + startupTimeout;
         while (true) {
             if (si.isRunning()) {
-                log(">>> Server is up and running.");
+                log(NbBundle.getMessage(StartProfiledServer.class, "MSG_ServerUp"));
                 si.refresh(); // update the server status
                 return;
             }
             // if time-out ran out, suppose command failed
             if (System.currentTimeMillis() > timeout) {
-                throw new BuildException("Profiled server didn't start in time"); // NOI18N
+                String msg = NbBundle.getMessage(StartProfiledServer.class, "MSG_StartTimedOut", String.valueOf(Math.round(startupTimeout / 1000)));
+                throw new BuildException(msg);
             }
             try { 
                 Thread.sleep(1000);  // take a nap before next retry
