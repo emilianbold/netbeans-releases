@@ -519,6 +519,7 @@ public class ColorModel {
     }
     
     private static Map toMap (Collection categories) {
+        if (categories == null) return null;
         Map result = new HashMap ();
         Iterator it = categories.iterator ();
         while (it.hasNext ()) {
