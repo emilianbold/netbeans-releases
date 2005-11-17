@@ -17,7 +17,6 @@
 
 package org.netbeans.modules.j2ee.sun.ide;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 import org.openide.modules.ModuleInstall;
 
 
@@ -36,7 +35,6 @@ public class Installer extends ModuleInstall {
         if (facadeDF != null)
             return facadeDF;
                
-        PluginProperties.configureDefaultServerInstance();
         //register the panel that will ask username password. Global IDE level...
         facadeDF =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory();
         

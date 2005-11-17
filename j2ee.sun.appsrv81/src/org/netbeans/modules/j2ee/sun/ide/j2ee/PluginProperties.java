@@ -215,14 +215,15 @@ public class PluginProperties  {
         if (dir==null){// try to get the default value
             
             final File platformRoot = new File(getDefaultInstallRoot());
+
             if (isGoodAppServerLocation(platformRoot)){
-                javax.swing.SwingUtilities.invokeLater(new Runnable(){
-                    public void run(){
+//                javax.swing.SwingUtilities.invokeLater(new Runnable(){
+//                    public void run(){
                         PluginProperties.getDefault().registerDefaultDomain(platformRoot);
                         PluginProperties.getDefault().saveProperties();
-                    }
-                    
-                });
+//                    }
+//                    
+//                });
             } else {
 
                 PluginProperties.getDefault().saveProperties();
@@ -468,11 +469,11 @@ public class PluginProperties  {
 	File ff = new File(Installer.ideHomeLocation);
 
 	File f3 = new File(ff.getParentFile(),COBUNDLE_DEFAULT_INSTALL_PATH);
-        if (f3!=null){
+        if ((f3!=null)&&(f3.exists())){
             return f3.getAbsolutePath();
         } 
         f3 = new File(ff.getParentFile(),COBUNDLE_DEFAULT_INSTALL_PATH2);
-        if (f3!=null){
+        if ((f3!=null)&&(f3.exists())){
             return f3.getAbsolutePath();
         } 
                         
@@ -511,18 +512,18 @@ public class PluginProperties  {
     private static boolean isGoodAppServerLocation(File candidate){
         if (null == candidate || !candidate.exists() || !candidate.canRead() ||
                 !candidate.isDirectory()  || !hasRequiredChildren(candidate, fileColl)) {
-            
+           
             return false;
         }
         //now test for AS 9 (J2EE 5.0) which should work for this plugin
         if(isGlassFish(candidate)){
-            return true;//we are as9
+           return true;//we are as9
         }
         
         //one extra test to detect 8.0 versus 8.1: dom.jar has to be in lib not endorsed anymore:
-        File f = new File(candidate.getAbsolutePath()+"/lib/dom.jar");
-        return f.exists();
-        
+//        File f = new File(candidate.getAbsolutePath()+"/lib/dom.jar");
+//        return f.exists();
+        return true;
     }
     public boolean isCurrentAppServerLocationValid(){
 
