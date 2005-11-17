@@ -867,7 +867,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
         for (Iterator it = opened.iterator(); it.hasNext(); ) {
             TopComponent tc = (TopComponent)it.next();
             String displayName=tc.getDisplayName();
-            if (displayName!=null && displayName.contains(tcName) && 
+            if (displayName!=null && displayName.indexOf(tcName) != -1 && 
                     displayName.length()>(tcName.length()+8)) {//*[Shared] len>8
                 return tc;
             }
