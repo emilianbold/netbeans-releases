@@ -681,7 +681,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         }
 
         public org.netbeans.api.java.platform.Specification getSpecification() {
-            return new org.netbeans.api.java.platform.Specification ("j2se", new SpecificationVersion ("1.5"));
+            return new org.netbeans.api.java.platform.Specification ("j2se", new SpecificationVersion ("1.4"));
         }
 
         public org.netbeans.api.java.classpath.ClassPath getSourceFolders() {
