@@ -144,12 +144,12 @@ public class JavaCompletionProvider implements CompletionProvider {
         }        
         
         protected void filter(CompletionResultSet resultSet) {
-            if (filterPrefix != null) {
+            if (filterPrefix != null && queryResult != null) {
                 resultSet.setTitle(getFilteredTitle(queryResult.getTitle(), filterPrefix));
                 resultSet.setAnchorOffset(queryAnchorOffset);
                 resultSet.addAllItems(getFilteredData(queryResult.getData(), filterPrefix));
-                resultSet.finish();
             }
+	    resultSet.finish();
         }
 
         private boolean isJavaIdentifierPart(String text) {
