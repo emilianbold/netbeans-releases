@@ -91,8 +91,16 @@ public class J2SEProjectGenerator {
                 assert nl.getLength() == 1;
                 Element testRoots = (Element) nl.item(0);
                 for (int i=0; i<sourceFolders.length; i++) {
-                    String name = sourceFolders[i].getName();
-                    String propName = name + ".dir";    //NOI18N
+                    String propName;
+                    if (i == 0) {
+                        //Name the first src root src.dir to be compatible with NB 4.0
+                        propName = "src.dir";       //NOI18N
+                    }
+                    else {
+                        String name = sourceFolders[i].getName();
+                        propName = name + ".dir";    //NOI18N
+                    }
+                    
                     int rootIndex = 1;
                     EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     while (props.containsKey(propName)) {
@@ -111,8 +119,15 @@ public class J2SEProjectGenerator {
                     if (!testFolders[i].exists()) {
                         testFolders[i].mkdirs();
                     }
-                    String name = testFolders[i].getName();
-                    String propName = "test." + name + ".dir"; // NOI18N
+                    String propName;
+                    if (i == 0) {
+                        //Name the first test root test.src.dir to be compatible with NB 4.0
+                        propName = "test.src.dir";  //NOI18N
+                    }
+                    else {
+                        String name = testFolders[i].getName();
+                        propName = "test." + name + ".dir"; // NOI18N
+                    }                    
                     int rootIndex = 1;
                     EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     while (props.containsKey(propName)) {

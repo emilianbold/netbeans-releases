@@ -135,7 +135,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "run.jvmargs",
         "run.test.classpath",
         "src.dir",
-        "test.test.dir",
+        "test.src.dir",
     };
 
     public void testCreateProject() throws Exception {
@@ -197,7 +197,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
                 File file = helper.resolveFile(eval.evaluate(propValue));
                 assertEquals("Invalid value of src.dir property.", srcRoot, file);
             }
-            else if ("test.test.dir".equals(propName)) {
+            else if ("test.src.dir".equals(propName)) {
                 PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
                 //Remove the file.reference to the source.dir, it is implementation detail
                 //depending on the presence of the AlwaysRelativeCollocationQuery
