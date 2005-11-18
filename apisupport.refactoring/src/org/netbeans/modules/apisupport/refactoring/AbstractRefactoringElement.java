@@ -37,47 +37,35 @@ public abstract class AbstractRefactoringElement extends SimpleRefactoringElemen
     protected FileObject parentFile;
     protected boolean enabled = true;
 
-    /** Creates a new instance of AbstractWhereUsedRefactoringElement */
     public AbstractRefactoringElement() {
     }
 
-    /** Indicates whether this refactoring element is enabled.
-     * @return <code>true</code> if this element is enabled, otherwise <code>false</code>.
-     */
     public boolean isEnabled() {
         return enabled;
     }
 
-    /** Returns text describing the refactoring element.
-     * @return Text.
-     */
     public String getText() {
         return getDisplayText();
     }
 
-    /** Enables/disables this element.
-     * @param enabled If <code>true</code> the element is enabled, otherwise it is disabled.
-     */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
-    /** Returns Java element associated with this refactoring element.
-     * @return MDR Java element.
-     */
     public Element getJavaElement() {
         return null;
     }
 
-    /** Returns file that the element affects (relates to)
-     * @return File
-     */
     public FileObject getParentFile() {
         return parentFile;
     }
+    
+    /** start and end positions of text (must be 2-element array); default [0, 0] */
+    protected int[] location() {
+        return new int[] {0, 0};
+    }
+    private int[] loc; // cached
 
-    /** Returns position bounds of the text to be affected by this refactoring element.
-     */
     public PositionBounds getPosition() {
         try {
             DataObject dobj = DataObject.find(getParentFile());
@@ -85,10 +73,13 @@ public abstract class AbstractRefactoringElement extends SimpleRefactoringElemen
                 EditorCookie.Observable obs = (EditorCookie.Observable)dobj.getCookie(EditorCookie.Observable.class);
                 if (obs != null && obs instanceof CloneableEditorSupport) {
                     CloneableEditorSupport supp = (CloneableEditorSupport)obs;
-                
+
+                    if (loc == null) {
+                        loc = location();
+                    }
                 PositionBounds bounds = new PositionBounds(
-                        supp.createPositionRef(0, Position.Bias.Forward),
-                        supp.createPositionRef(0, Position.Bias.Forward)
+                        supp.createPositionRef(loc[0], Position.Bias.Forward),
+                        supp.createPositionRef(Math.max(loc[0], loc[1]), Position.Bias.Forward)
                         );
                 
                 return bounds;
@@ -100,10 +91,6 @@ public abstract class AbstractRefactoringElement extends SimpleRefactoringElemen
         return null;
     }
 
-    /** Returns the status of this refactoring element (whether it is a normal element,
-     * or a warning.
-     * @return Status of this element.
-     */
     public int getStatus() {
         return status;
     }
@@ -112,7 +99,6 @@ public abstract class AbstractRefactoringElement extends SimpleRefactoringElemen
         this.status = status;
     }
 
-    /** Performs the change represented by this refactoring element.
-     */
     public void performChange() { }
+    
 }

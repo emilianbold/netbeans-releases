@@ -121,7 +121,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                 attributeKey, section);
     }
     
-    protected RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz, FileObject serviceFile) {
+    protected RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz, FileObject serviceFile, int line) {
         return new ServicesRenameRefactoringElement(clazz, serviceFile);
     }
 

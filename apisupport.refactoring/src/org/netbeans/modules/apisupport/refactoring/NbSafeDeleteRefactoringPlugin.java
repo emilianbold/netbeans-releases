@@ -118,7 +118,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                 attributeKey, section);
     }
     
-    protected RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz, FileObject serviceFile) {
+    protected RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz, FileObject serviceFile, int line) {
         return new ServicesSafeDeleteRefactoringElement(clazz, serviceFile);
     }
 

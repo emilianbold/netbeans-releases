@@ -154,7 +154,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
             int line = checkContentOfFile(files[i], name);
             if (line != -1) {
                 RefactoringElementImplementation elem =
-                        createMetaInfServicesRefactoring(clzz, files[i]);
+                        createMetaInfServicesRefactoring(clzz, files[i], line);
                 if (elem != null) {
                     refactoringElements.add(refactoring, elem);
                 }
@@ -357,7 +357,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
     }
     
     protected abstract RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz,
-            FileObject serviceFile);
+            FileObject serviceFile, int line);
     
     protected abstract RefactoringElementImplementation createManifestRefactoring(JavaClass clazz,
             FileObject manifestFile,

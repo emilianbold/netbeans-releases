@@ -13,25 +13,17 @@
 
 package org.netbeans.modules.apisupport.refactoring;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.Modifier;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
+import java.io.StringReader;
 import javax.jmi.reflect.RefObject;
-import org.netbeans.api.java.project.JavaProjectConstants;
+import javax.swing.text.Document;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.jmi.javamodel.Constructor;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
@@ -41,10 +33,17 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.xml.EntityCatalog;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
@@ -128,49 +127,46 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
                                                        attributeKey, section);
     }
 
-    protected RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz, FileObject serviceFile) {
-        return new ServicesWhereUsedRefactoringElement(clazz.getSimpleName(), serviceFile);
+    protected RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz, FileObject serviceFile, int line) {
+        return new ServicesWhereUsedRefactoringElement(clazz.getSimpleName(), serviceFile, line);
     }
     
     protected RefactoringElementImplementation createLayerRefactoring(JavaClass clazz,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerWhereUserRefElement(handle.getLayerFile(), layerFileObject, layerAttribute);
+        return new LayerWhereUsedRefactoringElement(handle.getLayerFile(), layerFileObject, layerAttribute);
     }
     
     protected RefactoringElementImplementation createLayerRefactoring(Method method,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerWhereUserRefElement(handle.getLayerFile(), layerFileObject, layerAttribute);
+        return new LayerWhereUsedRefactoringElement(handle.getLayerFile(), layerFileObject, layerAttribute);
     }
     
     protected RefactoringElementImplementation createLayerRefactoring(Constructor constructor,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        return new LayerWhereUserRefElement(handle.getLayerFile(), layerFileObject, layerAttribute);
+        return new LayerWhereUsedRefactoringElement(handle.getLayerFile(), layerFileObject, layerAttribute);
     }
     
-    public final class LayerWhereUserRefElement extends AbstractRefactoringElement {
+    public final class LayerWhereUsedRefactoringElement extends AbstractRefactoringElement {
         private String attr;
         private String path;
         private String attrValue;
-        public LayerWhereUserRefElement(FileObject fo, FileObject layerFo, String attribute) {
+        public LayerWhereUsedRefactoringElement(FileObject fo, FileObject layerFo, String attribute) {
             parentFile = fo;
             attr = attribute;
             this.path = layerFo.getPath();
             if (attr != null) {
                 Object vl = layerFo.getAttribute("literal:" + attr); //NOI18N
                 if (vl instanceof String) {
-                    attrValue = (String)vl;
+                    attrValue = ((String) vl).replaceFirst("^(new|method):", ""); // NOI18N
                 }
             }
         }
-        /** Returns text describing the refactoring formatted for display (using HTML tags).
-         * @return Formatted text.
-         */
         public String getDisplayText() {
             if (attr != null && attrValue != null) {
                 return NbBundle.getMessage(NbWhereUsedRefactoringPlugin.class, "TXT_LayerAttrValueWhereUsed", path, attr, attrValue);
@@ -179,6 +175,121 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
                 return NbBundle.getMessage(NbWhereUsedRefactoringPlugin.class, "TXT_LayerAttrWhereUsed", path, attr);
             }
             return NbBundle.getMessage(NbWhereUsedRefactoringPlugin.class, "TXT_LayerWhereUsed", path);
+        }
+        protected int[] location() {
+            try {
+                DataObject d = DataObject.find(parentFile);
+                EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
+                Document doc = ec.openDocument();
+                String text = doc.getText(0, doc.getLength());
+                assert text.indexOf('\r') == -1; // should be in newline format only when a Document
+                InputSource in = new InputSource(new StringReader(text));
+                in.setSystemId(parentFile.getURL().toExternalForm());
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                SAXParser parser = factory.newSAXParser();
+                final int[] lineAndColStartAndEnd = new int[4];
+                class Halt extends SAXException {
+                    public Halt() {
+                        super((String) null);
+                    }
+                }
+                class Handler extends DefaultHandler {
+                    private int state = -1; // -1 - not encountered (or already found it but Halt did not work), 0 - in matching element, 1+ - in nested element
+                    private Locator locator;
+                    private String runningPath = "";
+                    public void setDocumentLocator(Locator l) {
+                        locator = l;
+                    }
+                    public void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
+                        if (qname.equals("file") || qname.equals("folder")) { // NOI18N
+                            String name = attr.getValue("name"); // NOI18N
+                            if (name != null) {
+                                if (runningPath.length() > 0) {
+                                    runningPath += '/';
+                                }
+                                runningPath += name;
+                            }
+                        }
+                        if (state == -1 && path.equals(runningPath)) {
+                            lineAndColStartAndEnd[0] = locator.getLineNumber();
+                            lineAndColStartAndEnd[1] = locator.getColumnNumber();
+                            state = 0;
+                        } else if (state != -1) {
+                            state++;
+                        }
+                    }
+                    public void endElement(String uri, String localname, String qname) throws SAXException {
+                        if (qname.equals("file") || qname.equals("folder")) { // NOI18N
+                            runningPath = runningPath.substring(0, Math.max(runningPath.lastIndexOf('/'), 0));
+                        }
+                        if (state > 0) {
+                            state--;
+                        } else if (state == 0) {
+                            lineAndColStartAndEnd[2] = locator.getLineNumber();
+                            lineAndColStartAndEnd[3] = locator.getColumnNumber();
+                            state = -1;
+                            throw new Halt();
+                        }
+                    }
+                    public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
+                        try {
+                            return EntityCatalog.getDefault().resolveEntity(publicId, systemId);
+                        } catch (IOException e) {
+                            throw new SAXException(e);
+                        }
+                    }
+                }
+                try {
+                    parser.parse(in, new Handler());
+                } catch (Halt h) {
+                    // ignore
+                }
+                if (lineAndColStartAndEnd[0] == 0 || lineAndColStartAndEnd[1] == 0 || lineAndColStartAndEnd[2] == 0 || lineAndColStartAndEnd[3] == 0) {
+                    return new int[] {0, 0};
+                }
+                int[] startAndEnd = new int[2];
+                int line = 0;
+                int col = 0;
+                for (int i = 0; i < text.length(); i++) {
+                    if (line == lineAndColStartAndEnd[0] - 1 && col == lineAndColStartAndEnd[1] - 1) {
+                        startAndEnd[0] = i;
+                    } else if (line == lineAndColStartAndEnd[2] - 1 && col == lineAndColStartAndEnd[3] - 1) {
+                        startAndEnd[1] = i;
+                    }
+                    char c = text.charAt(i);
+                    if (c == '\n') {
+                        line++;
+                        col = 0;
+                    } else {
+                        col++;
+                    }
+                }
+                // Start position given by SAX locator may actually be *end* of open tag, which is not good.
+                // Try to backtrack to opening '<'. Shouldn't be any other '<' in an XML element.
+                startAndEnd[0] = Math.max(text.lastIndexOf('<', startAndEnd[0]), 0);
+                if (startAndEnd[1] == 0) {
+                    // Minimized tag. Guess that unescaped '>' will not occur in the value.
+                    startAndEnd[1] = Math.max(text.indexOf('>', startAndEnd[0]), startAndEnd[0]);
+                }
+                // Right now we have the containing file object. Prefer to get the actual string.
+                String match;
+                if (attrValue != null) {
+                    match = attrValue;
+                } else {
+                    match = path.substring(path.lastIndexOf('/') + 1);
+                }
+                int loc = text.indexOf(match, startAndEnd[0]);
+                if (loc != -1 && loc < startAndEnd[1]) {
+                    // Found it.
+                    return new int[] {loc, loc + match.length()};
+                } else {
+                    // OK, just show the whole <file>.
+                    return startAndEnd;
+                }
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                return new int[] {0, 0};
+            }
         }
     }
     
@@ -197,35 +308,79 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
             sectionName = secName;
         }
         
-        
-        /** Returns text describing the refactoring formatted for display (using HTML tags).
-         * @return Formatted text.
-         */
         public String getDisplayText() {
             if (sectionName != null) {
                 return NbBundle.getMessage(NbWhereUsedRefactoringPlugin.class, "TXT_ManifestSectionWhereUsed", this.name, sectionName);
             }
             return NbBundle.getMessage(NbWhereUsedRefactoringPlugin.class, "TXT_ManifestWhereUsed", this.name, attrName);
         }
+
+        protected int[] location() {
+            try {
+                DataObject d = DataObject.find(parentFile);
+                EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
+                Document doc = ec.openDocument();
+                String text = doc.getText(0, doc.getLength());
+                assert text.indexOf('\r') == -1; // should be in newline format only when a Document
+                int start = text.indexOf(name);
+                if (start == -1) {
+                    return new int[] {0, 0};
+                } else {
+                    return new int[] {start, start + name.length()};
+                }
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                return new int[] {0, 0};
+            }
+        }
+        
     }
     
     public final class ServicesWhereUsedRefactoringElement extends AbstractRefactoringElement {
         
+        private final int line;
         
-        /**
-         * Creates a new instance of ServicesWhereUsedRefactoringElement
-         */
-        public ServicesWhereUsedRefactoringElement(String name, FileObject file) {
+        public ServicesWhereUsedRefactoringElement(String name, FileObject file, int line) {
             this.name = name;
             parentFile = file;
+            this.line = line;
         }
         
-        /** Returns text describing the refactoring formatted for display (using HTML tags).
-         * @return Formatted text.
-         */
         public String getDisplayText() {
             return NbBundle.getMessage(NbWhereUsedRefactoringPlugin.class, "TXT_ServicesWhereUsed", this.name);
         }
+
+        protected int[] location() {
+            try {
+                DataObject d = DataObject.find(parentFile);
+                EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
+                Document doc = ec.openDocument();
+                String text = doc.getText(0, doc.getLength());
+                assert text.indexOf('\r') == -1; // should be in newline format only when a Document
+                int[] startAndEnd = new int[2];
+                int line = 0;
+                int col = 0;
+                for (int i = 0; i < text.length(); i++) {
+                    if (line == this.line && col == 0) {
+                        startAndEnd[0] = i;
+                    } else if (line == this.line + 1 && col == 0) {
+                        startAndEnd[1] = i - 1;
+                    }
+                    char c = text.charAt(i);
+                    if (c == '\n') {
+                        line++;
+                        col = 0;
+                    } else {
+                        col++;
+                    }
+                }
+                return startAndEnd;
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                return new int[] {0, 0};
+            }
+        }
+        
     }
     
 }
