@@ -52,6 +52,9 @@ public class ToolbarsListAction extends AbstractAction
         Mnemonics.setLocalizedText(menu, label);
         ToolbarConfiguration curConf = 
             ToolbarConfiguration.findConfiguration(ToolbarPool.getDefault().getConfiguration());
+        if (curConf == null) {
+            return null;
+        }
         return curConf.getToolbarsMenu(menu);
     }
     
