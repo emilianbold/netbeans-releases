@@ -268,7 +268,7 @@ final public class MimeLookup extends Lookup {
         
     }
     
-    private class DelegatorLookup extends ProxyLookup{
+    private class DelegatorLookup extends org.netbeans.modules.editor.mimelookup.OldProxyLookup {
         public DelegatorLookup(){
         }
         
