@@ -434,11 +434,7 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             nameLabel.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "LBL_HtmlName"));
         }
     }
-    
-    public java.awt.Dimension getPreferredSize() {
-        return PageIterator.PREF_SIZE;
-    }
-    
+
     WebModule getWebModule() {
         return wm;
     }

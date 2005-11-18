@@ -50,7 +50,6 @@ import org.netbeans.modules.web.taglib.model.TagFileType;
  * @author  Milan Kuchtiak
  */
 public class PageIterator implements TemplateWizard.Iterator {
-    public static final java.awt.Dimension PREF_SIZE = new java.awt.Dimension(560,350);
 
     private static final long serialVersionUID = -7586964579556513549L;
     

@@ -58,11 +58,7 @@ public class ListenerVisualPanel extends javax.swing.JPanel {
             cb6.setEnabled(false);
         }
     }
-    
-    public java.awt.Dimension getPreferredSize() {
-        return PageIterator.PREF_SIZE;
-    }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
