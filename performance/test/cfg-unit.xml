@@ -17,15 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="Performance unit tests config">
 
 
-    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup or measure_memory or measure_complex_memory" prio="1" executor="prepare_ide" name="Prepare IDE for measure startup time or memory consumption with opened files">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="prepare/PrepareIDEForComplexMeasurements.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-    
-    <testbag testattribs="measure_ide or measure_startup or temp" prio="10" executor="measure_startup" name="Measure IDE startup time">
+    <testbag testattribs="measure_ide or measure_startup" prio="1" executor="measure_startup" name="Measure IDE startup time">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureIDEStartupTime.class/testStartIDE"/>
@@ -33,10 +25,26 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup" prio="11" executor="measure_startup_opened_files" name="Measure IDE startup time">
+    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup or measure_memory or measure_complex_memory" prio="10" executor="prepare_ide" name="Prepare IDE for measure startup time or memory consumption with opened files">
+	<testset dir="unit/src">
+	    <patternset>
+		<include name="prepare/PrepareIDEForComplexMeasurements.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
+    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup" prio="11" executor="measure_startup_opened_files" name="Measure IDE complex startup time">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFiles"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup or measure_complex_startup_nb_project" prio="12" executor="measure_startup_opened_files_nb_project" name="Measure IDE startup time with opened NB project">
+	<testset dir="unit/src">
+	    <patternset>
+		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFilesNBproject"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -57,15 +65,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="measure_ide or measure_warmup" prio="30" executor="measure_warmup" name="Measure warm up">
-	<testset dir="unit/src">
-	    <patternset>
-		<include name="startup/MeasureWarmUp.class/testWarmUp"/>		
-	    </patternset>
-	</testset>
-    </testbag>
-
-    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup or measure_complex_startup_nb_project" prio="100" executor="prepare_ide_nb_project" name="Prepare IDE for measure startup time with opened files from NB project">
+    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup or measure_complex_startup_nb_project" prio="22" executor="prepare_ide_nb_project" name="Prepare IDE for measure startup time with opened files from NB project">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="prepare/PrepareIDEForPluginComplexMeasurements.class"/>
@@ -73,10 +73,10 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup or measure_complex_startup_nb_project" prio="101" executor="measure_startup_opened_files_nb_project" name="Measure IDE startup time with opened NB project">
+    <testbag testattribs="measure_ide or measure_warmup" prio="30" executor="measure_warmup" name="Measure warm up">
 	<testset dir="unit/src">
 	    <patternset>
-		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFilesNBproject"/>
+		<include name="startup/MeasureWarmUp.class/testWarmUp"/>		
 	    </patternset>
 	</testset>
     </testbag>
