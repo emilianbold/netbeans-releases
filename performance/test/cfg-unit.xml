@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup" prio="11" executor="measure_startup_opened_files" name="Measure IDE complex startup time">
+    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup" prio="11" executor="measure_startup_opened_files" name="Measure IDE startup time complex">
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFiles"/>
