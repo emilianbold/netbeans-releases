@@ -63,6 +63,8 @@ Microsystems, Inc. All Rights Reserved.
                 <param name="updateTrackingFiles" value="${zip.platform.update.tracking}"/>
             </custom>
         </selector>
+
+        <property name="netbeans.dest.dir.absolute" location="${netbeans.dest.dir}"/> <!-- #68892 -->
         
         <pathconvert property="zip.platform.clusters.duplicates" pathsep=",">
             <path>
@@ -70,7 +72,7 @@ Microsystems, Inc. All Rights Reserved.
                     <selector refid="zip.platform.included.files"/>
                 </fileset>
             </path>
-            <mapper type="regexp" from="^\Q${netbeans.dest.dir}\E[/\\]([^/\\]+)" to="\1"/>
+            <mapper type="regexp" from="^\Q${netbeans.dest.dir.absolute}\E[/\\]([^/\\]+)" to="\1"/>
         </pathconvert>
         
         <dirset dir="${netbeans.dest.dir}" id="platform.clusters" includes="${zip.platform.clusters.duplicates}"/>
@@ -79,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
             <path>
                 <dirset refid="platform.clusters"/>
             </path>
-            <mapper type="regexp" from="^\Q${netbeans.dest.dir}\E[/\\]([^/\\]+)" to="\1"/>
+            <mapper type="regexp" from="^\Q${netbeans.dest.dir.absolute}\E[/\\]([^/\\]+)" to="\1"/>
         </pathconvert>
         <echo level="verbose">Included platform clusters: ${zip.platform.clusters}</echo>
 
