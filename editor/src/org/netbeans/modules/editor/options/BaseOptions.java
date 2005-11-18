@@ -225,6 +225,9 @@ public class BaseOptions extends OptionSupport {
     
     /** Map of Kit to Options */
     private static final HashMap kitClass2Options = new HashMap();
+    
+    /** Code template expand key setting name */
+    public static final String CODE_TEMPLATE_EXPAND_KEY = "code-template-expand-key";
 
     public BaseOptions() {
         this(BaseKit.class, BASE);
@@ -1742,5 +1745,32 @@ public class BaseOptions extends OptionSupport {
         // BaseOptions should be rewritten to not extend SystemOption ...
         // there is no need to be compatile with NB 3.2 and deserialize its options...
     }
+
+    /** Saves the keystroke of code tamplate expansion into properties.xml file under Editors/text/base */
+    public static void setCodeTemplateExpandKey(KeyStroke ks){
+        String s = OptionUtilities.keyToString(ks);
+        BaseOptions base = getOptions(BaseKit.class);
+        Map map = new HashMap();
+        map.put(CODE_TEMPLATE_EXPAND_KEY, s);
+        base.updateSettings(PropertiesMIMEProcessor.class, map);
+    }
     
+    /** Gets Code Template Expand Key. Can return null if there is no key in the settings file */
+    public static KeyStroke getCodeTemplateExpandKey(){
+        MIMEOptionFolder mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
+        if (mimeFolder != null){
+            MIMEOptionFile file = mimeFolder.getFile(PropertiesMIMEProcessor.class, false);
+            if (file != null){
+                if (!file.isLoaded()) {
+                    file.loadSettings(false);
+                }
+                Map properties = file.getAllProperties();
+                String s = (String) properties.get(CODE_TEMPLATE_EXPAND_KEY);
+                if (s != null){
+                    return OptionUtilities.stringToKey(s);
+                }
+            }
+        }
+        return null;
+    }
 }
