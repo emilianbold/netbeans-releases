@@ -56,7 +56,7 @@ public class SimpleDialogPanel extends JPanel {
                 jTextComponents[i].setText(initValues[i]);
             }
     }
-    
+
     private void initComponents(String[] labels, boolean[] isTextField, int size, boolean[] customizers, char[] mnem, String[] a11yDesc) {
         setLayout(new GridBagLayout());
         jLabels = new JLabel [labels.length];
@@ -104,7 +104,7 @@ public class SimpleDialogPanel extends JPanel {
             for (int i=0;i<customizers.length;i++) {
                 if (customizers[i]) {
                     JButton button = new JButton();
-                    button.setText(NbBundle.getMessage(SimpleDialogPanel.class,"LBL_browse"));
+                    button.setText(NbBundle.getMessage(SimpleDialogPanel.class,"LBL_browse"+String.valueOf(j)));
                     button.setMnemonic(NbBundle.getMessage(SimpleDialogPanel.class,"LBL_browse"+String.valueOf(j++)+"_mnem").charAt(0));
                     button.setMargin(new java.awt.Insets(0, 14, 0, 14));
                     buttonList.add(button);
@@ -190,18 +190,26 @@ public class SimpleDialogPanel extends JPanel {
         public String[] getLabels() {
             return labels;
         }
+        /** Specifies which text fields should contain the Browse buttons
+         * Limited up to 3 Browse bottons (number of "true" items in buttons array)
+         * Example : setButtons (new boolean[] {true, false, false, true, false, false});
+         */
         public void setButtons(boolean[] buttons) {
             this.buttons=buttons;
         }
         public boolean[] getButtons() {
             return buttons;
         }
+        /** Sets the text fields
+         */         
         public void setTextField(boolean[] textField) {
             this.textField=textField;
         }
         public boolean[] isTextField() {
             return textField;
         }
+        /** Sets the init values for text fields
+         */        
         public void setInitValues(String[] initValues) {
             this.initValues=initValues;
             adding=false;
@@ -209,24 +217,32 @@ public class SimpleDialogPanel extends JPanel {
         public String[] getInitValues() {
             return initValues;
         }
+        /** Specifies whether the dialog adds or adits values
+         */
         public void setAdding(boolean adding) {
             this.adding=adding;
         }
         public boolean isAdding() {
             return adding;
         }
+        /** Sets the longest text field size
+         */
         public void setSize(int size) {
             this.size=size;
         }
         public int getSize() {
             return size;
         }
+        /** Sets mnemonics for labels
+         */
         public void setMnemonics(char[] mnem) {
             this.mnem=mnem;
         }
         public char[] getMnemonics() {
             return mnem;
         }
+        /** Sets A11Y desc for text fields
+         */
         public void setA11yDesc(String[] a11yDesc) {
             this.a11yDesc=a11yDesc;
         }
