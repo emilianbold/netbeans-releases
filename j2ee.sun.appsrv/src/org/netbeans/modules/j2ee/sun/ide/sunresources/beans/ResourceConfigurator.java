@@ -164,7 +164,13 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 if(vendorName != null) {
                     name = vendorName;
                 }
-
+                
+                if(vendorName.equals("derby_embedded")){ //NOI18N
+                    NotifyDescriptor d = new NotifyDescriptor.Message(bundle.getString("Err_UnSupportedDerby"), NotifyDescriptor.WARNING_MESSAGE); // NOI18N
+                    DialogDisplayer.getDefault().notify(d);
+                    return;
+                }
+                
                 // Is connection pool already defined
                 String poolName = generatePoolName(name, dir, databaseInfo);
                 if(poolName == null) {
@@ -189,14 +195,17 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     public String createJDBCDataSourceForCmp(String beanName, String databaseInfo, File dir) {
         String name = "jdbc/" + beanName; // NOI18N
         String jndiName = name;
-        
         try {
             if(databaseInfo != null) {
                 String vendorName = convertToValidName(databaseInfo);
                 if(vendorName != null) {
                     name = vendorName;
                 }
-
+                if(vendorName.equals("derby_embedded")){  //NOI18N
+                    NotifyDescriptor d = new NotifyDescriptor.Message(bundle.getString("Err_UnSupportedDerby"), NotifyDescriptor.WARNING_MESSAGE); // NOI18N
+                    DialogDisplayer.getDefault().notify(d);
+                    return null;
+                }
                 // Return if resource already defined
                 String poolName = generatePoolName(name, dir, databaseInfo);
                 if(poolName == null) {
@@ -334,10 +343,12 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             // XXX Refactor database abstractions into own object.  For example,
             // due to lack of member data, we're parsing CPWizard.xml twice here,
             // once in getDatabaseVendorName() and again in getDatasourceClassName()
-            String vendorName = getDatabaseVendorName(databaseUrl);
+            Wizard wizard = getWizardInfo();
+             
+            String vendorName = getDatabaseVendorName(databaseUrl, wizard);
             String datasourceClassName = ""; // NOI18N
             if(!vendorName.equals("")) { // NOI18N
-                datasourceClassName = getDatasourceClassName(vendorName, false);
+                datasourceClassName = getDatasourceClassName(vendorName, false, wizard);
             }
             
             if(datasourceClassName.equals("")) { // NOI18N
@@ -348,16 +359,21 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 jdbcConnectionPool.setDatasourceClassname(datasourceClassName);
             }
             
-            PropertyElement databaseOrUrl = jdbcConnectionPool.newPropertyElement();
-            if(vendorName.equals("pointbase")) { // NOI18N
-                databaseOrUrl.setName("databaseName"); // NOI18N
-            } else {
-                databaseOrUrl.setName("URL"); // NOI18N
+            
+            String url = databaseConnection.getDatabaseURL();
+            if(vendorName.equals("derby_net")) {  //NOI18N)
+                jdbcConnectionPool = setDerbyProps(vendorName, url, jdbcConnectionPool);
+            }else {
+                PropertyElement databaseOrUrl = jdbcConnectionPool.newPropertyElement();
+                if(vendorName.equals("pointbase")) { // NOI18N
+                    databaseOrUrl.setName("databaseName"); // NOI18N
+                } else {
+                    databaseOrUrl.setName("URL"); // NOI18N
+                }
+                databaseOrUrl.setValue(databaseConnection.getDatabaseURL());
+                jdbcConnectionPool.addPropertyElement(databaseOrUrl);
             }
-            
-            databaseOrUrl.setValue(databaseConnection.getDatabaseURL());
-            jdbcConnectionPool.addPropertyElement(databaseOrUrl);
-            
+
             PropertyElement user = jdbcConnectionPool.newPropertyElement();
             user.setName("User"); // NOI18N
             user.setValue(databaseConnection.getUser());
@@ -392,6 +408,29 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
     }
     
+    private JdbcConnectionPool setDerbyProps(String vendorName, String url, JdbcConnectionPool jdbcConnectionPool){
+        String workingUrl = url.substring(url.indexOf("//") + 2, url.length());
+        String hostName = getDerbyServerName(workingUrl);
+        PropertyElement servName = jdbcConnectionPool.newPropertyElement();
+        servName.setName(WizardConstants.__ServerName);
+        servName.setValue(hostName);
+        
+        String portNumber = getDerbyPortNo(workingUrl);
+        PropertyElement portno = jdbcConnectionPool.newPropertyElement();
+        portno.setName(WizardConstants.__DerbyPortNumber);
+        portno.setValue(portNumber);
+        
+        String databaseName = getDerbyDatabaseName(workingUrl);
+        PropertyElement dbName = jdbcConnectionPool.newPropertyElement();
+        dbName.setName(WizardConstants.__DerbyDatabaseName);
+        dbName.setValue(databaseName);
+        
+        jdbcConnectionPool.addPropertyElement(servName);
+        jdbcConnectionPool.addPropertyElement(portno);
+        jdbcConnectionPool.addPropertyElement(dbName);
+        return jdbcConnectionPool;
+    }
+    
     private DatabaseConnection getDatabaseConnection(String name) {
         if (name != null) {
             return ConnectionManager.getDefault().getConnection(name);
@@ -400,16 +439,12 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     }
     
     
-    private String getDatasourceClassName(String vendorName, boolean isXA) {
-        Wizard wizard = null;
+    private String getDatasourceClassName(String vendorName, boolean isXA, Wizard wizard) {
         if(vendorName == null) {
             return null;
         }
         
         try {
-            InputStream in = Wizard.class.getClassLoader().getResourceAsStream(DATAFILE);
-            wizard = Wizard.createGraph(in);
-            
             FieldGroup generalGroup = FieldGroupHelper.getFieldGroup(wizard, WizardConstants.__General);
             
             Field dsField = null;
@@ -418,12 +453,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             } else {
                 dsField = FieldHelper.getField(generalGroup, WizardConstants.__DatasourceClassname);
             }
-            in.close();
             return FieldHelper.getConditionalFieldValue(dsField, vendorName);
-        } catch(IOException ex) {
-            // XXX Report I/O Exception to the user.  We should do a nicely formatted
-            // message identifying the problem.
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
         } catch(Exception ex) {
             // This should really a Schema2BeansException, but for classloader and dependency
             // purposes we're catching Exception instead.
@@ -436,21 +466,14 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     }
     
     
-    private String getDatabaseVendorName(String url) {
+    private String getDatabaseVendorName(String url, Wizard wizard) {
         String vendorName = "";
-        
         try {
-            InputStream in = Wizard.class.getClassLoader().getResourceAsStream(DATAFILE);
-            Wizard wizard = Wizard.createGraph(in);
-            
+            if(wizard == null)
+               wizard = getWizardInfo();
             FieldGroup propGroup = FieldGroupHelper.getFieldGroup(wizard, WizardConstants.__PropertiesURL);
             Field urlField = FieldHelper.getField(propGroup, "vendorUrls"); // NOI18N
             vendorName = FieldHelper.getOptionNameFromValue(urlField, url);
-            in.close();
-        } catch(IOException ex) {
-            // XXX Report I/O Exception to the user.  We should do a nicely formatted
-            // message identifying the problem.
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
         } catch(Exception ex) {
             // This should really a Schema2BeansException, but for classloader and dependency
             // purposes we're catching Exception instead.
@@ -464,7 +487,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     private String convertToValidName(String database) {
         database = stripExtraDBInfo(database);
-        String vendorName = getDatabaseVendorName(database);
+        String vendorName = getDatabaseVendorName(database, null);
         if(vendorName != null) {
             if(!vendorName.equals("")) { // NOI18N
                 if(!isFriendlyFilename(vendorName)) {
@@ -516,7 +539,6 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     private boolean resourceAlreadyDefined(String resName, File dir, String resType) {
         boolean result = false;
-        
         if(dir != null && dir.exists()) {
             String filename = getFileName(resName, resType);
             File resourceFile = new File(dir, filename);
@@ -548,12 +570,35 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             if(pools.length != 0) {
                 JdbcConnectionPool connPool = pools[0];
                 PropertyElement[] pl = (PropertyElement[])connPool.getPropertyElement();
-                for(int i=0; i<pl.length; i++) {
-                    String prop = pl[i].getName();
-                    if(prop.equals("URL") || prop.equals("databaseName")) { // NOI18N
-                        String urlValue = pl[i].getValue();
-                        if(urlValue.equals(databaseUrl)) {
-                            return true;
+                if(databaseUrl.startsWith("jdbc:derby:")){ //NOI18N
+                    String workingUrl = databaseUrl.substring(databaseUrl.indexOf("//") + 2, databaseUrl.length());
+                    String hostName = getDerbyServerName(workingUrl);
+                    String portNumber = getDerbyPortNo(workingUrl);
+                    String databaseName = getDerbyDatabaseName(workingUrl);
+                    String hostProp = null;
+                    String portProp = null;
+                    String dbProp = null;
+                    for(int i=0; i<pl.length; i++) {
+                        String prop = pl[i].getName();
+                        if(prop.equals(WizardConstants.__ServerName)) { 
+                            hostProp = pl[i].getValue();
+                        }else if(prop.equals(WizardConstants.__DerbyPortNumber)){
+                            portProp = pl[i].getValue();
+                        }else if(prop.equals(WizardConstants.__DerbyDatabaseName)){
+                            dbProp = pl[i].getValue();
+                        }
+                    }
+                    if(hostName.equals(hostProp) && portNumber.equals(portProp) && 
+                            databaseName.equals(dbProp))
+                        return true;
+                }else{
+                    for(int i=0; i<pl.length; i++) {
+                        String prop = pl[i].getName();
+                        if(prop.equals("URL") || prop.equals("databaseName")) { // NOI18N
+                            String urlValue = pl[i].getValue();
+                            if(urlValue.equals(databaseUrl)) {
+                                return true;
+                            }
                         }
                     }
                 }
@@ -581,4 +626,39 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             }
         });
     }
+    
+    private Wizard getWizardInfo(){
+        Wizard wizard = null;        
+        try {
+            InputStream in = Wizard.class.getClassLoader().getResourceAsStream(DATAFILE);
+            wizard = Wizard.createGraph(in);
+            in.close();
+        } catch(Exception ex) {
+            // XXX Report I/O Exception to the user.  We should do a nicely formatted
+            // message identifying the problem.
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+        }
+        return wizard;
+    }
+    
+    private static String getDerbyServerName(String url){
+        String hostName = url.substring(0, url.indexOf(":")); //NOI18N
+        return hostName;
+    }
+    
+    private static String getDerbyPortNo(String url){
+        String portNumber = url.substring(url.indexOf(":") + 1, url.indexOf("/")); //NOI18N
+        return portNumber;
+    }
+    
+    private static String getDerbyDatabaseName(String url){
+        String databaseName;
+        int braceIndex = url.indexOf("["); //NOI18N
+        if(braceIndex == -1)
+            databaseName = url.substring(url.indexOf("/") + 1, url.length()); //NOI18N
+        else
+            databaseName = url.substring(url.indexOf("/") + 1, braceIndex + 1).trim(); //NOI18N
+        return databaseName;
+    }
 }
+

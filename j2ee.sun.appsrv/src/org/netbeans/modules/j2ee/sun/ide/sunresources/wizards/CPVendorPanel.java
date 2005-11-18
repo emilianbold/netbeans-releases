@@ -417,8 +417,13 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
                 data.addProperty(name, FieldHelper.toUrl(value));
             else if (name.equals(__DatabaseName) && value.length() > 0)
                 data.addProperty(name, FieldHelper.toUrl(value));
-            else if (name.equals(__User) || name.equals(__Password) || (value.length() > 0 && (!value.equals(__NotApplicable)))) {
+            else if (name.equals(__User) || name.equals(__Password)) {
                 data.addProperty(propFields[i].getName(), value);
+            }else{
+                //All Others
+                if(value.length() > 0 && (value.equals(__NotApplicable))){
+                    data.addProperty(propFields[i].getName(), ""); //NOI18N
+                }
             }
         }
     }
@@ -443,15 +448,16 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
             
             Field urlField = FieldHelper.getField(this.vendorGroup, "vendorUrls"); //NOI18N
             String vendorName = FieldHelper.getOptionNameFromValue(urlField, tmpStr);
-            
+                        
             ResourceConfigData data = this.helper.getData();    
             data.setProperties(new Vector());
             data.setString(__DatabaseVendor, vendorName);
             
             if (vendorName.equals("pointbase")) {  //NOI18N
                 data.addProperty(__DatabaseName, dbconn.getDatabaseURL());
-            }
-            else
+            }else if(vendorName.startsWith("derby")) {  //NOI18N)
+                setDerbyProps(vendorName, url);
+            }else    
                 data.addProperty(__Url, url);
             data.addProperty(__User, user);
             data.addProperty(__Password, password);
@@ -461,6 +467,35 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
            
     }
     
+    private void setDerbyProps(String vendorName, String url) {
+        //change standard properties following database vendor change
+        ResourceConfigData data = this.helper.getData();
+        data.setProperties(new Vector());
+        Field[] propFields = this.propGroup.getField();
+        for (int i = 0; i < propFields.length; i++) {
+            String value = FieldHelper.getConditionalFieldValue(propFields[i], vendorName);
+            if(value.equals(__NotApplicable)){
+                String name = propFields[i].getName();
+                if(vendorName.equals("derby_net")) {//NOI18N
+                    String workingUrl = url.substring(url.indexOf("//") + 2, url.length());
+                    String hostName = workingUrl.substring(0, workingUrl.indexOf(":"));
+                    String portNumber = workingUrl.substring(workingUrl.indexOf(":") + 1, workingUrl.indexOf("/"));
+                    String databaseName;
+                    int braceIndex = workingUrl.indexOf("[");
+                    if(braceIndex == -1)
+                       databaseName = workingUrl.substring(workingUrl.indexOf("/") + 1, workingUrl.length());
+                    else
+                       databaseName = workingUrl.substring(workingUrl.indexOf("/") + 1, braceIndex + 1).trim();
+                    if (name.equals(__DerbyPortNumber))
+                        data.addProperty(name, portNumber);
+                    else if (name.equals(__DerbyDatabaseName))
+                        data.addProperty(name, databaseName);
+                    else if (name.equals(__ServerName))
+                        data.addProperty(name, hostName);
+                }    
+            }
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField nameField;
     private javax.swing.JTextArea descriptionTextArea;

@@ -133,4 +133,8 @@ public interface WizardConstants {
     public static final String __GetProperties = "getProperties";
     public static final String __SetProperty = "setProperty";
     public static final String MAP_RESOURCES = "com.sun.appserv:type=resources,category=config";//NOI18N
+       
+    public static final String __DerbyDatabaseName = "DatabaseName";
+    public static final String __DerbyPortNumber = "PortNumber";
+    public static final String __ServerName = "serverName";
 }

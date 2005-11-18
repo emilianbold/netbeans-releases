@@ -14,7 +14,7 @@
                 <tag-item>sun_msftsql</tag-item>
                 <tag-item>sun_oracle</tag-item>
                 <tag-item>sun_sybase</tag-item>
-                <tag-item>derby</tag-item>
+                <tag-item>derby_net</tag-item> 
                 <tag-item>oracle-thin</tag-item>
                 <tag-item>oracle</tag-item>
                 <tag-item>pointbase</tag-item>
@@ -74,8 +74,8 @@
                     <conditional-value>oracle.jdbc.pool.OracleDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                     <option-name>derby</option-name>
-                    <conditional-value>org.apache.derby.jdbc.EmbeddedDataSource</conditional-value>
+                     <option-name>derby_net</option-name>
+                    <conditional-value>org.apache.derby.jdbc.ClientDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                      <option-name>sun_db2</option-name>
@@ -160,8 +160,8 @@
                     <conditional-value>oracle.jdbc.xa.client.OracleXADataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>derby</option-name>
-                    <conditional-value>org.apache.derby.jdbc.EmbeddedXADataSource</conditional-value>
+                    <option-name>derby_net</option-name>
+                    <conditional-value>org.apache.derby.jdbc.ClientXADataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                      <option-name>sun_db2</option-name>
@@ -239,10 +239,6 @@
                 <option-value-pair>
                     <option-name>oracle-thin</option-name>
                     <conditional-value>jdbc:oracle:thin:@#HOST$:#PORT$:#SID$</conditional-value>
-                </option-value-pair>
-                <option-value-pair>
-                    <option-name>derby</option-name>
-                    <conditional-value>jdbc:derby:#/foo/myDB$;create=true</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                      <option-name>sun_db2</option-name>
@@ -330,6 +326,10 @@
             <name>serverName</name>
             <field-value>
                 <default-field-value></default-field-value>
+                <option-value-pair>
+                    <option-name>derby_net</option-name>
+                    <conditional-value>NA</conditional-value>
+                </option-value-pair>
             </field-value>
         </field>        
         <field field-type="string">
@@ -365,7 +365,27 @@
             <field-value>
                 <default-field-value></default-field-value>
             </field-value>
-        </field>        
+        </field> 
+        <field field-type="string">
+            <name>PortNumber</name>
+            <field-value>
+                <default-field-value></default-field-value>
+                <option-value-pair>
+                    <option-name>derby_net</option-name>
+                    <conditional-value>NA</conditional-value>
+                </option-value-pair>
+            </field-value>
+        </field>
+        <field field-type="string">
+            <name>DatabaseName</name>
+            <field-value>
+                <default-field-value></default-field-value>
+                <option-value-pair>
+                    <option-name>derby_net</option-name>
+                    <conditional-value>NA</conditional-value>
+                </option-value-pair>
+            </field-value>
+        </field>
     </field-group>
     <field-group>
         <name>pool-setting</name>
@@ -477,7 +497,11 @@
                     <conditional-value>jdbc:oracle:thin</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
-                    <option-name>derby</option-name>
+                    <option-name>derby_net</option-name>
+                    <conditional-value>jdbc:derby://</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                    <option-name>derby_embedded</option-name>
                     <conditional-value>jdbc:derby:</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
