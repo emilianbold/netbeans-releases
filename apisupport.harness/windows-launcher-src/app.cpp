@@ -275,7 +275,6 @@ void parseConfigFile(const char* path) {
 	    char *r = NULL;
 	    if ((r = strstr(q, "${APPNAME}")) != NULL) {
 	        strncat(userdir, q, r - q);
-		strcat(userdir, ".");
 		strcat(userdir, appname);
 		q = r + strlen("${APPNAME}");
 	    }
