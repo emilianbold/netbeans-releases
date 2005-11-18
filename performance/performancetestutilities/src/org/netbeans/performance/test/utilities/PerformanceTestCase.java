@@ -263,7 +263,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             
             for(int i=1; i<=repeat && !exceptionDuringMeasurement; i++){
                 try {
-                    tr.startNewEventList("test iteration no."+i); // XXX add test name
+                    tr.startNewEventList("TEST ITERATION no."+i); // XXX add test name
                     tr.connectToAWT(true);
                     prepare();
                     waitNoEvent(WAIT_AFTER_PREPARE);
@@ -276,7 +276,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     
                     logMemoryUsage();
                     
-                    tr.add(tr.TRACK_START, "before open");
+                    tr.add(tr.TRACK_START, "BEFORE OPEN");
                     testedComponentOperator = open();
                     
                     // this is to optimize delays
@@ -296,7 +296,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     new QueueTool().waitEmpty();
                     
                     measuredTime[i] = getMeasuredTime();
-                    tr.add(tr.TRACK_APPLICATION_MESSAGE, "measured time "+measuredTime[i]);
+                    tr.add(tr.TRACK_APPLICATION_MESSAGE, "MEASURED TIME="+measuredTime[i]);
                     // negative HEURISTIC_FACTOR disables heuristic
                     if (HEURISTIC_FACTOR > 0) {
                         wait_after_open_heuristic = (long) (measuredTime[i] * HEURISTIC_FACTOR);

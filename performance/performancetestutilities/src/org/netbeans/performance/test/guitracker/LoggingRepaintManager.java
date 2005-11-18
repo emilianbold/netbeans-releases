@@ -168,7 +168,7 @@ public class LoggingRepaintManager extends RepaintManager {
 //System.out.println("Done superpaint ("+tr+","+hasDirtyMatches+").");        
         if (tr != null && hasDirtyMatches) {
             lastPaint = System.currentTimeMillis();
-            tr.add(tr.TRACK_PAINT, "Done painting");
+            tr.add(tr.TRACK_PAINT, "DONE PAINTING");
 //System.out.println("Done painting.");
             hasDirtyMatches = false;
         }
