@@ -170,6 +170,17 @@ public class WebServiceListModel {
         }
         return false;
     }
+    
+    public WebServiceData findService(WebServiceData webService) {
+        Iterator iter = webservices.keySet().iterator();
+        while(iter.hasNext()){
+            WebServiceData wsData = (WebServiceData) webservices.get(iter.next());
+            if(wsData.equals(webService)) {
+                return wsData;
+            }
+        }
+        return null;
+    }
 
     /** Check if the model contains this service by name */
     public boolean webServiceExists(String serviceName) {

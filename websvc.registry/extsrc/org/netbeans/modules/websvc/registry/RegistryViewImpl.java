@@ -178,12 +178,14 @@ public class RegistryViewImpl implements WebServicesRegistryView, PropertyChange
 
                 while(iter.hasNext()){
                     WebServiceData wsData = (WebServiceData) iter.next();
-
-                    if(wsListModel.webServiceExists(wsData)) {
+                    String targetGroupId = groupId;
+                    WebServiceData existingWS = wsListModel.findService(wsData);
+                    if (existingWS!=null) {
+                        String existingWSGroupId = existingWS.getGroupId();
+                        if (existingWSGroupId!=null) targetGroupId = existingWS.getGroupId();
                         if(replaceService) {
                             // remove old service first
-//                            wsListModel.removeWebService(wsData.getDisplayName());
-                            wsListModel.removeWebService(wsData);
+                            wsListModel.removeWebService(existingWS);
                         } else {
                             // !PW Failed: Web service of that name already exists in model
                             continue;
@@ -206,11 +208,10 @@ public class RegistryViewImpl implements WebServicesRegistryView, PropertyChange
                     wsListModel.addWebService(wsData);
 
                     // Put service in 'default'.
-                    WebServiceGroup wsGroup = wsListModel.getWebServiceGroup(groupId);
-
+                    WebServiceGroup wsGroup = wsListModel.getWebServiceGroup(targetGroupId);
                     // !PW Fix for 49717 - If this group does not exist yet, create it.
                     if(wsGroup == null) {
-                        wsGroup = new WebServiceGroup(groupId);
+                        wsGroup = new WebServiceGroup(targetGroupId);
                         wsListModel.addWebServiceGroup(wsGroup);
                     }
 
