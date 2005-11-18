@@ -90,6 +90,12 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         CreatedModifiedFiles fls = data.getCreatedModifiedFiles();
         createdFilesValue.setText(generateText(fls.getCreatedPaths()));
         modifiedFilesValue.setText(generateText(fls.getModifiedPaths()));
+        //#68294 check if the paths for newly created files are valid or not..
+        String[] invalid  = data.getCreatedModifiedFiles().getInvalidPaths();
+        if (invalid.length > 0) {
+            setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));
+        }
+        
     }
     
     protected void readFromDataModel() {

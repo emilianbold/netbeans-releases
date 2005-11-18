@@ -22,6 +22,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -72,6 +73,11 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
                 data.getCreatedModifiedFiles().getCreatedPaths()));
         modifiedFilesValue.setText(UIUtil.generateTextAreaContent(
                 data.getCreatedModifiedFiles().getModifiedPaths()));
+        //#68294 check if the paths for newly created files are valid or not..
+        String[] invalid  = data.getCreatedModifiedFiles().getInvalidPaths();
+        if (invalid.length > 0) {
+            setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));
+        }
     }
     
     protected void readFromDataModel() {
@@ -327,4 +333,5 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         createdFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CreatedFilesValue"));
         modifiedFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ModifiedFilesValue"));
     }
+
 }

@@ -75,6 +75,13 @@ public final class CreatedModifiedFiles {
          */
         String[] getCreatedPaths();
         
+        /**
+         * returns paths that are already existing but the operaton expects to create it.
+         * Is an error condition and should be shown in UI.
+         *
+         */
+        String[] getInvalidPaths();
+        
         /* XXX should perhaps also have:
         /**
          * True if the created or modified path is relevant to the user and should
@@ -91,6 +98,7 @@ public final class CreatedModifiedFiles {
     
     private final SortedSet/*<String>*/ createdPaths = new TreeSet();
     private final SortedSet/*<String>*/ modifiedPaths = new TreeSet();
+    private final SortedSet/*<String>*/ invalidPaths = new TreeSet();
     
     /** {@link NbModuleProject} this instance manage. */
     private final NbModuleProject project;
@@ -127,6 +135,7 @@ public final class CreatedModifiedFiles {
         // XXX should always show isForEditing files at the top of the list, acc. to Jano
         createdPaths.addAll(Arrays.asList(operation.getCreatedPaths()));
         modifiedPaths.addAll(Arrays.asList(operation.getModifiedPaths()));
+        invalidPaths.addAll(Arrays.asList(operation.getInvalidPaths()));
     }
     
     /**
@@ -172,6 +181,15 @@ public final class CreatedModifiedFiles {
         } else {
             String[] s = new String[modifiedPaths.size()];
             return (String[]) modifiedPaths.toArray(s);
+        }
+    }
+    
+    public String[] getInvalidPaths() {
+        if (invalidPaths == null) {
+            return new String[0];
+        } else {
+            String[] s = new String[invalidPaths.size()];
+            return (String[]) invalidPaths.toArray(s);
         }
     }
     

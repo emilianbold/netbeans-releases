@@ -105,6 +105,7 @@ public final class CreatedModifiedFilesFactory {
         private NbModuleProject project;
         private SortedSet/*<String>*/ createdPaths;
         private SortedSet/*<String>*/ modifiedPaths;
+        private SortedSet/*<String>*/ invalidPaths;
         
         protected OperationBase(NbModuleProject project) {
             this.project = project;
@@ -124,18 +125,29 @@ public final class CreatedModifiedFilesFactory {
             return (String[]) getCreatedPathsSet().toArray(s);
         }
         
-        protected void addCreatedOrModifiedPath(String relPath) {
+        public String[] getInvalidPaths() {
+            String[] s = new String[getInvalidPathsSet().size()];
+            return (String[]) getInvalidPathsSet().toArray(s);
+            
+        }
+        
+        protected void addCreatedOrModifiedPath(String relPath, boolean allowFileModification) {
             // XXX this is probably wrong, since it might be created by an earlier op:
             if (getProject().getProjectDirectory().getFileObject(relPath) == null) {
                 getCreatedPathsSet().add(relPath);
             } else {
-                getModifiedPathsSet().add(relPath);
+                if (allowFileModification) {
+                    getModifiedPathsSet().add(relPath);
+                } else {
+                    getInvalidPathsSet().add(relPath);
+                }
             }
         }
         
         protected void addPaths(CreatedModifiedFiles.Operation o) {
             getCreatedPathsSet().addAll(Arrays.asList(o.getCreatedPaths()));
             getModifiedPathsSet().addAll(Arrays.asList(o.getModifiedPaths()));
+            getInvalidPathsSet().addAll(Arrays.asList(o.getInvalidPaths()));
         }
         
         protected SortedSet/*<String>*/ getCreatedPathsSet() {
@@ -143,6 +155,13 @@ public final class CreatedModifiedFilesFactory {
                 createdPaths = new TreeSet();
             }
             return createdPaths;
+        }
+
+        protected SortedSet/*<String>*/ getInvalidPathsSet() {
+            if (invalidPaths == null) {
+                invalidPaths = new TreeSet();
+            }
+            return invalidPaths;
         }
         
         protected SortedSet/*<String>*/ getModifiedPathsSet() {
@@ -187,7 +206,7 @@ public final class CreatedModifiedFilesFactory {
             this.path = path;
             this.content = content;
             this.tokens = tokens;
-            addCreatedOrModifiedPath(path);
+            addCreatedOrModifiedPath(path, false);
         }
         
         public void run() throws IOException {
@@ -282,7 +301,7 @@ public final class CreatedModifiedFilesFactory {
             } else {
                 this.bundlePath = bundlePath;
             }
-            addCreatedOrModifiedPath(this.bundlePath);
+            addCreatedOrModifiedPath(this.bundlePath, true);
         }
         
         public void run() throws IOException {
@@ -390,7 +409,7 @@ public final class CreatedModifiedFilesFactory {
             this.implClass = implClass;
             this.interfaceClassPath = getProject().getSourceDirectoryPath() +
                     "/META-INF/services/" + interfaceClass; // NOI18N
-            addCreatedOrModifiedPath(interfaceClassPath);
+            addCreatedOrModifiedPath(interfaceClassPath, true);
         }
         
         public void run() throws IOException {
@@ -548,6 +567,11 @@ public final class CreatedModifiedFilesFactory {
                 s.add(prefix + (String) it.next());
             }
             return (String[]) s.toArray(new String[s.size()]);
+        }
+        
+        public String[] getInvalidPaths() {
+            //TODO applicable here?
+            return new String[0];
         }
         
     }

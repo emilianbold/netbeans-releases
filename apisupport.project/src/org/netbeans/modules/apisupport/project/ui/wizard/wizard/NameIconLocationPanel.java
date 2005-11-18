@@ -133,6 +133,10 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
             setErrorMessage(getMessage("MSG_DisplayNameMustBeEntered"));
         } else if (pName.length() == 0 || !UIUtil.isValidPackageName(pName)) {
             setErrorMessage(getMessage("ERR_Package_Invalid"));
+        } else if (data.getCreatedModifiedFiles().getInvalidPaths().length > 0) {
+            //#68294 check if the paths for newly created files are valid or not..
+            String[] invalid  = data.getCreatedModifiedFiles().getInvalidPaths();
+            setErrorMessage(NbBundle.getMessage(NameIconLocationPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));
         } else  {
             setErrorMessage(null);
             valid = true;

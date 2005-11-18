@@ -191,7 +191,7 @@ final class CreatedModifiedFilesProvider  {
             super(prj);
             this.folderToZip = folderToZip;
             this.relativePath = relativePath;
-            addCreatedOrModifiedPath(relativePath);
+            addCreatedOrModifiedPath(relativePath, false);
         }
         
         public void run() throws java.io.IOException {
