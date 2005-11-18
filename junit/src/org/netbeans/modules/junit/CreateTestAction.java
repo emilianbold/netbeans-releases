@@ -36,6 +36,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.jmi.javamodel.*;
@@ -299,15 +300,28 @@ public class CreateTestAction extends TestAction {
                 TestUtil.notifyUser(message,
                                     NotifyDescriptor.INFORMATION_MESSAGE);
 
-            } else if (results.getCreated().size() == 1) {
-                // created exactly one class, highlight it in the explorer
-                // and open it in the editor
-                DataObject dobj = (DataObject)
-                                  results.getCreated().iterator().next();
-                EditorCookie ec = (EditorCookie)
-                                  dobj.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    ec.open();
+            } else {
+                final int createdCount = results.getCreated().size();
+                if (createdCount == 1) {
+                    // created exactly one class, highlight it in the explorer
+                    // and open it in the editor
+                    DataObject dobj = (DataObject)
+                                      results.getCreated().iterator().next();
+                    EditorCookie ec = (EditorCookie)
+                                      dobj.getCookie(EditorCookie.class);
+                    if (ec != null) {
+                        ec.open();
+                    }
+                } else if (createdCount == 0) {
+                    Mutex.EVENT.writeAccess(new Runnable() {
+                        public void run() {
+                            TestUtil.notifyUser(
+                                    NbBundle.getMessage(
+                                            CreateTestAction.class,
+                                            "MSG_No_test_created"),     //NOI18N
+                                    NotifyDescriptor.INFORMATION_MESSAGE);
+                        }
+                    });
                 }
             }
         }
@@ -558,7 +572,8 @@ public class CreateTestAction extends TestAction {
             Iterator scit = srcChildren.iterator();
             while (scit.hasNext()) {
                 Element el = (Element)scit.next();
-                if (!(el instanceof JavaClass)) {
+                if (!(el instanceof JavaClass)
+                        || (el instanceof AnnotationType)) {
                     continue;
                 }
                 
