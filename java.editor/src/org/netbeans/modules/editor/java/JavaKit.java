@@ -17,7 +17,7 @@ import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.List;
 import javax.jmi.reflect.JmiException;
 import javax.swing.*;
@@ -34,7 +34,6 @@ import org.netbeans.jmi.javamodel.ClassDefinition;
 import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.JavaPackage;
 import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.StatementBlock;
 import org.netbeans.jmi.javamodel.TryStatement;
 import org.netbeans.modules.editor.MainMenuAction;
@@ -43,12 +42,14 @@ import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.modules.javacore.internalapi.JavaModelUtil;
+import org.netbeans.modules.javacore.TryWrapper;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.*;
-import org.netbeans.modules.javacore.TryWrapper;
 
 /**
 * Java editor kit with appropriate document
@@ -487,34 +488,6 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 //            return openSource(target, true); // simulate open
 //        }
         
-        private Method findOverridenMethods(Method method) {
-
-            ClassDefinition declaringClass = method.getDeclaringClass();
-
-            List params = new ArrayList();
-            for (Iterator i = method.getParameters().iterator(); i.hasNext(); params.add(((Parameter)i.next()).getType()));
-            
-            ClassDefinition parent = declaringClass.getSuperClass();
-            if (parent != null){
-                parent = JMIUtils.getSourceElementIfExists(parent);
-                Method m = parent.getMethod(method.getName(), params, true);
-                if (m!=null) {
-                    return m;
-                }
-            }
-            
-            Iterator i = declaringClass.getInterfaces().iterator();
-            while (i.hasNext()) {
-                ClassDefinition jc = (ClassDefinition) i.next();
-                if (jc == null) continue;
-                jc = JMIUtils.getSourceElementIfExists(jc);
-                Method m = jc.getMethod(method.getName(), params, true);
-                if (m!=null) {
-                    return m;
-                }
-            }
-            return null;
-        }
 
         protected boolean asynchonous() {
             return false;
@@ -536,11 +509,16 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                     
                     BaseDocument doc = (BaseDocument)target.getDocument();
                     JMIUtils jmiUtils = JMIUtils.get(doc);
+                    FileObject fo = NbEditorUtilities.getDataObject(doc).getPrimaryFile();
                     
-                    Method f;
+                    Method f = null;
                     jmiUtils.beginTrans(false);
                     try {
-                        f = findOverridenMethods((Method) feature);
+                        JavaMetamodel.getManager().setClassPath(fo,true);
+                        Collection methods = JavaModelUtil.getOverriddenMethods((Method) feature);
+                        if (!methods.isEmpty()) {
+                            f = (Method)methods.iterator().next();
+                        }
                     } finally {
                         jmiUtils.endTrans(false);
                     }
