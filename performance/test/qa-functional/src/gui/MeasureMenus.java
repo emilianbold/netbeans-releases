@@ -41,19 +41,15 @@ public class MeasureMenus  {
         
         // recent prj menu is empty and disabled
         // suite.addTest(new MainSubMenus("testFileOpenRecentProjectMenu", "File | Open Recent Project main menu"));
-        // suite.addTest(new MainSubMenus("testViewDocumentationIndicesMenu", "View | Documentation Indices main menu"));
-        // suite.addTest(new MainSubMenus("testViewToolbarsMenu", "View | Toolbars main menu"));
         suite.addTest(new MainSubMenus("testFileSetMainProjectMenu", "File | Set Main Project main menu"));
+        // suite.addTest(new MainSubMenus("testViewDocumentationIndicesMenu", "View | Documentation Indices main menu"));
         suite.addTest(new MainSubMenus("testViewCodeFoldsMenu", "View | Code Folds main menu"));
-        suite.addTest(new MainSubMenus("testRunRunOtherMenu", "Run | Run File main menu"));
+        suite.addTest(new MainSubMenus("testViewEditorsMenu", "View | Editors main menu"));
+        suite.addTest(new MainSubMenus("testViewToolbarsMenu", "View | Toolbars main menu"));
         suite.addTest(new MainSubMenus("testRunStackMenu", "Run | Stack main menu"));
-        //suite.addTest(new MainSubMenus("testVersioningCVSMenu", "Versioning | CVS main menu"));
-        //suite.addTest(new MainSubMenus("testVersioningPVCSMenu", "Versioning | PVCS main menu"));
+        suite.addTest(new MainSubMenus("testRunRunFileMenu", "Run | Run File main menu"));
         suite.addTest(new MainSubMenus("testToolsI18nMenu", "Tools | Internationalization main menu"));
-        //suite.addTest(new MainSubMenus("testWinGuiMenu", "Window | GUI Editing main menu"));
-        suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debug main menu"));
-        //suite.addTest(new MainSubMenus("testWinVersioningMenu", "Window | Versioning main menu"));
-        //suite.addTest(new MainSubMenus("testWinSelectDocumentNodeInMenu", "Window | Select Document Node in main menu"));
+        suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debugging main menu"));
         
         suite.addTest(new ProjectsViewPopupMenu("testProjectNodePopupMenuProjects", "JSE Project node popup in Projects View"));
         suite.addTest(new ProjectsViewPopupMenu("testSourcePackagesPopupMenuProjects", "Source Packages node popup in Projects View"));
@@ -69,7 +65,6 @@ public class MeasureMenus  {
         suite.addTest(new ProjectsViewSubMenus("testProjectNodeCVSsubmenu", "CVS Submenu over projects node in Projects View"));
         suite.addTest(new ProjectsViewSubMenus("testProjectNodeNewSubmenu", "New Submenu over projects node in Projects View"));
         
-//TODO Expand New submenus        
         suite.addTest(new FilesViewPopupMenu("testProjectNodePopupMenuFiles", "Project node popup in Files View"));
         suite.addTest(new FilesViewPopupMenu("testPackagePopupMenuFiles", "Package node popup in Files View"));
         suite.addTest(new FilesViewPopupMenu("testbuildXmlFilePopupMenuFiles", "build.xml file node popup in Files View"));
@@ -91,16 +86,6 @@ public class MeasureMenus  {
 /*  TEMPORARY commented -> try to solve never finished tests
         suite.addTest(new EditorDownButtonPopupMenu("testEditorDownButtonPopupMenu", "Editor Down Button popup")); 
  */
-        
-        
-//TODO        suite.addTest(new WebNodePopupMenu("measureTime", "Web Filesystem node popup"));  
-//TODO        suite.addTest(new WebInfNodePopupMenu("measureTime", "WEB-INF node popup"));  
-//TODO        suite.addTest(new WebXMLNodePopupMenu("measureTime", "web.xml node popup"));
-        
-//TODO        suite.addTest(new VCSRootNodePopupMenu("measureTime", "CVS Filesystem node popup"));
-//TODO        suite.addTest(new VCSJavaNodePopupMenu("measureTime", "CVS Java node popup"));
-//TODO        suite.addTest(new ExplorerPopupSubMenus("testCVSFilesystemsNodeCVSSubMenu", "CVS submenu on CVS Filesystems node"));
-        
         return suite;
     }
     

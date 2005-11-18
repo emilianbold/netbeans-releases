@@ -12,6 +12,7 @@
  */
 package gui.menu;
 
+import gui.Utilities;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -42,7 +43,7 @@ public class FormInspectorNodePopupMenu extends ValidatePopupMenuOnNodes {
     }
    
      public void initialize(){
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance" + '|' +  "JFrame20kB.java"));
+        Utilities.openSmallFormFile();
      }
     
     public void shutdown(){

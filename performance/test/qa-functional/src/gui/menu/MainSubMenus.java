@@ -14,14 +14,16 @@
 package gui.menu;
 
 import gui.Utilities;
-import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.TopComponentOperator;
+
 import org.netbeans.performance.test.guitracker.ActionTracker;
 
 import javax.swing.JMenuItem;
 
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jemmy.drivers.MouseDriver;
 
+import org.netbeans.jemmy.drivers.MouseDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JMenuOperator;
@@ -40,7 +42,7 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     protected static JMenuOperator testedMainMenu;
     protected static String subMenuPath;
     
-    private EditorOperator editor;
+    private TopComponentOperator editor;
     
     private static final int repeat_original = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue(); // initialize original value
     
@@ -72,19 +74,20 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
         testSubMenu("org.netbeans.core.Bundle","File", "org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetMainProjectAction_Name");
     }
 
-    //TODO open form file
-    public void testViewEditorsMenu(){
-        testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.core.multiview.Bundle", "CTL_EditorsAction");
+    public void testViewDocumentationIndicesMenu(){
+        testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.modules.javadoc.search.Bundle", "CTL_INDICES_MenuItem");
     }
     
     public void testViewCodeFoldsMenu(){
-        editor = Utilities.openJavaFile();
+        editor = Utilities.openSmallJavaFile();
         waitNoEvent(5000);
         testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.modules.editor.Bundle", "Menu/View/CodeFolds");
     }
     
-    public void testViewDocumentationIndicesMenu(){
-        testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.modules.javadoc.search.Bundle", "CTL_INDICES_MenuItem");
+    public void testViewEditorsMenu(){
+        editor = Utilities.openSmallFormFile();
+        waitNoEvent(10000);
+        testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.core.multiview.Bundle", "CTL_EditorsAction");
     }
     
     public void testViewToolbarsMenu(){
@@ -95,7 +98,7 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
         testSubMenu("org.netbeans.modules.project.ui.Bundle", "RunProject", "Stack"); // this can't be localized
     }
     
-    public void testRunRunOtherMenu(){
+    public void testRunRunFileMenu(){
         testSubMenu("org.netbeans.modules.project.ui.Bundle", "RunProject", "org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
     }
     
@@ -103,18 +106,8 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
         testSubMenu("org.netbeans.core.Bundle","Tools", "org.netbeans.modules.i18n.Bundle", "LBL_I18nGroupActionName");
     }
     
-    public void testWinGuiMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.modules.form.resources.Bundle", "Menu/Window/Form");
-    }
-    
     public void testWinDebuggingMenu(){
         testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
-    }
-    
-    public void testWinSelectDocumentNodeInMenu(){
-        editor = Utilities.openJavaFile();
-        waitNoEvent(5000);
-        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.core.ui.resources.Bundle", "Menu/Window/SelectDocumentNode");
     }
     
     private void testSubMenu(String mainMenu, String subMenu){
@@ -158,9 +151,13 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     public void close() {
         testedComponentOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
         testedComponentOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-        
-        if(editor != null)
+    }
+    
+    public void shutdown() {
+        if(editor != null){
             editor.close();
+            editor=null;
+        }
     }
     
     public void setUp () {
@@ -177,7 +174,7 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
      * @param args arguments from command line
      */
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(new MainSubMenus("testRunRunOtherMenu"));
+        junit.textui.TestRunner.run(new MainSubMenus("testRunRunFileMenu"));
     }
     
 }

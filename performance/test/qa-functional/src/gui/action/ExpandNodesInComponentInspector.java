@@ -13,6 +13,7 @@
 
 package gui.action;
 
+import gui.Utilities;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -52,7 +53,7 @@ public class ExpandNodesInComponentInspector extends org.netbeans.performance.te
     }
     
     public void initialize(){
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|JFrame20kB.java"));
+        Utilities.openSmallFormFile();
         waitNoEvent(5000);
     }
     

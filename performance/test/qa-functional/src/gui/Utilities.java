@@ -28,6 +28,7 @@ import org.netbeans.jellytools.EditorOperator;
 
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
@@ -139,12 +140,22 @@ public class Utilities {
     }
     
     /*
-     * open a java file in the editor
+     * open small java file in the editor
      */
     public static EditorOperator openSmallJavaFile(){
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),SOURCE_PACKAGES + "|org.netbeans.test.performance|Main20kB.java");
         new OpenAction().performAPI(openFile);
         return new EditorWindowOperator().getEditor("Main20kB.java");
+
+    }
+    
+    /*
+     * open small form file in the editor
+     */
+    public static FormDesignerOperator openSmallFormFile(){
+        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),SOURCE_PACKAGES + "|org.netbeans.test.performance|JFrame20kB.java");
+        new OpenAction().performAPI(openFile);
+        return new FormDesignerOperator("JFrame20kB");
 
     }
     
