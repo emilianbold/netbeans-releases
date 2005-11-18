@@ -556,6 +556,7 @@ public class MetaComponentCreator {
 
         try {
             newComp.initInstance(sourceComp.getBeanClass());
+            newComp.setInModel(true); // Issue 68897
         }
         catch (Exception ex) { // this is rather unlikely to fail
             ErrorManager em = ErrorManager.getDefault();
