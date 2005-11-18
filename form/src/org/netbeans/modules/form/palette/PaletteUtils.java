@@ -267,6 +267,7 @@ public final class PaletteUtils {
     private static boolean representsVisibleCategory(Node node) {
         Object value = node.getValue("psa_" + PaletteController.ATTR_IS_VISIBLE); // NOI18N
         DataFolder df = (DataFolder) node.getCookie(DataFolder.class);
+        if (df == null) return false;
         if (null == value || "null".equals(value)) { // NOI18N
             value = df.getPrimaryFile().getAttribute(PaletteController.ATTR_IS_VISIBLE);
         }
@@ -278,7 +279,7 @@ public final class PaletteUtils {
 
     private static boolean representsValidPaletteCategory(Node node) {        
         DataFolder df = (DataFolder) node.getCookie(DataFolder.class);	
-        return !Boolean.TRUE.equals(df.getPrimaryFile().getAttribute("isNoPaletteCategory")); // NOI18N
+        return (df != null) && !Boolean.TRUE.equals(df.getPrimaryFile().getAttribute("isNoPaletteCategory")); // NOI18N
     }
     
 }
