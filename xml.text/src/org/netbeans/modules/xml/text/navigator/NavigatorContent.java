@@ -30,6 +30,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.WeakHashMap;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -51,7 +52,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
@@ -65,6 +65,7 @@ import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 
@@ -101,12 +102,11 @@ public class NavigatorContent extends JPanel   {
     private NavigatorContent() {
         setLayout(new BorderLayout());
         //init empty panel
+        setBackground(Color.WHITE);
         emptyPanel = new JPanel();
         emptyPanel.setBackground(Color.WHITE);
         emptyPanel.setLayout(new BorderLayout());
         msgLabel = new JLabel();
-        msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        msgLabel.setForeground(Color.GRAY);
         emptyPanel.add(msgLabel, BorderLayout.CENTER);
     }
     
@@ -142,16 +142,19 @@ public class NavigatorContent extends JPanel   {
     
     public void navigate(final BaseDocument bdoc) {
         //called from AWT thread
-        showWaitPanel();
+        showScanningPanel();
         
         //try to find the UI in the UIcache
         final JPanel cachedPanel;
-        WeakReference panelWR = (WeakReference)uiCache.get(bdoc);
-        if(panelWR != null) {
-            cachedPanel = (JPanel)panelWR.get();
-        } else
+        DataObject documentDO = NbEditorUtilities.getDataObject(bdoc);
+        if(documentDO != null) {
+            WeakReference panelWR = (WeakReference)uiCache.get(documentDO);
+            if(panelWR != null) {
+                cachedPanel = (JPanel)panelWR.get();
+            } else
+                cachedPanel = null;
+        } else 
             cachedPanel = null;
-        
         //get the model and create the new UI on background
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -164,17 +167,23 @@ public class NavigatorContent extends JPanel   {
                         model = null; //if the panel is cached it holds a refs to the model - not need to init it again
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
+                            showWaitPanel();
                             JPanel panel = null;
                             if(cachedPanel == null) {
                                 //cache the newly created panel
                                 panel = new NavigatorContentPanel(model);
-                                uiCache.put(bdoc, new WeakReference(panel));
-//                                System.out.println("creating new xml nav panel");
+                                //use the document dataobject as a key since the document itself is very easily discarded and hence
+                                //harly usable as a key of the WeakHashMap
+                                DataObject documentDO = NbEditorUtilities.getDataObject(bdoc);
+                                if(documentDO != null) 
+                                    uiCache.put(documentDO, new WeakReference(panel));
+                                System.out.println("creating new xml nav panel");
                             } else {
                                 panel = cachedPanel;
-//                                System.out.println("panel gotten from cache");
+                                System.out.println("panel gotten from cache");
                             }
                             
+                            //paint the navigator UI
                             removeAll();
                             add(panel, BorderLayout.CENTER);
                             revalidate();
@@ -196,7 +205,7 @@ public class NavigatorContent extends JPanel   {
         closeDocument(peerDO);
     }
     
-    /** A hacky fix for XMLSyncSupport - I need to call EditorCookie.close when the navigator 
+    /** A hacky fix for XMLSyncSupport - I need to call EditorCookie.close when the navigator
      * is deactivated and there is not view pane for the navigated document. Then a the synchronization
      * support releases a strong reference to NbEditorDocument. */
     private void closeDocument(DataObject dobj) {
@@ -211,15 +220,31 @@ public class NavigatorContent extends JPanel   {
     
     public void showDocumentTooLarge() {
         removeAll();
+        msgLabel.setForeground(Color.GRAY);
         msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_TooLarge"));
+        msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
         add(emptyPanel, BorderLayout.CENTER);
         repaint();
     }
     
+    private void showScanningPanel() {
+        removeAll();
+        msgLabel.setIcon(WAIT_ICON);
+        msgLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        msgLabel.setForeground(Color.BLACK);
+        msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_Scan"));
+        add(emptyPanel, BorderLayout.NORTH);
+        repaint();
+    }
+    
+    
     private void showWaitPanel() {
         removeAll();
+        msgLabel.setIcon(null);
+        msgLabel.setForeground(Color.GRAY);
+        msgLabel.setHorizontalAlignment(SwingConstants.LEFT);
         msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_Wait"));
-        add(emptyPanel, BorderLayout.CENTER);
+        add(emptyPanel, BorderLayout.NORTH);
         repaint();
     }
     
@@ -423,5 +448,7 @@ public class NavigatorContent extends JPanel   {
         
     }
     
+    private static final Icon WAIT_ICON = new ImageIcon( Utilities.loadImage(
+            "org/netbeans/modules/xml/text/navigator/resources/wait.gif" ) ); //NOI18N
 }
 
