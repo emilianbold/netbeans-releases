@@ -7,14 +7,13 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
-
 /**
  * Action which shows @@TEMPLATENAME@@ component.
  */
 public class @@TEMPLATENAME@@Action extends AbstractAction {
 
     public @@TEMPLATENAME@@Action() {
-        putValue(NAME, NbBundle.getMessage(@@TEMPLATENAME@@Action.class, "CTL_@@TEMPLATENAME@@Action"));
+        super(NbBundle.getMessage(@@TEMPLATENAME@@Action.class, "CTL_@@TEMPLATENAME@@Action"));
 @@COMMENTICON@@        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(@@TEMPLATENAME@@TopComponent.ICON_PATH, true)));
     }
 
