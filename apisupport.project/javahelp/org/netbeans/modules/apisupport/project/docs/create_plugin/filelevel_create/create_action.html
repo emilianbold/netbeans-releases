@@ -17,13 +17,13 @@
 <a href="#seealso">See Also</a> 
 </small></p>
 
-<p>The New Action wizard creates a new <a href="about_actions.html">Action</a>.
+<p>The New Action wizard creates a new <a href="about_actions.html">action</a>.
 
 
 <p><b>To create a new action:</b>
 <ol>
 	<li>Right-click a module project and choose New &gt; Action.
-<p>In the Action Type page, you set the type: 
+<li>In the Action Type page, you set the type: 
 <ul>
 	<li><b>Always Enabled (use CallableSystemAction).</b> Specifies that the action will be invoked
 	from a menu item in the menu bar, from a toolbar button in a toolbar, or from a keyboard shortcut anywhere
@@ -46,6 +46,33 @@
 	   will also be enabled when more nodes than just the node for which it is created
 	   is selected.</ul>
  </ul>
+ <p>Click Next.
+
+ <li>In the GUI Registration page, you have to specify how the user will
+  be able to call the new action.
+
+<ul>
+	<li><b>Category.</b> Specifies where the action will be displayed
+	 in the Keymap section of the Options window.
+	 <li><b>Global Menu Item.</b> Specifies the menu where the action
+	 will be displayed as an item. You can also specify the position within the menu,
+	  and whether you want a separator to appear before it, after it, or both.
+	 <li><b>Global Toolbar Button.</b> Specifies the toolbar where the action
+	 will be displayed as a button. You can also specify the position within the menu.
+	 <li><b>Global Keyboard Shortcut.</b> Specifies a shortcut that will invoke the
+	 action.
+</ul>
+
+<p>Only if Conditionally Enabled (use CookieAction) is selected in the Action Type page
+ can you set the following items:
+ 
+<ul>
+	<li><b>File Type Context Menu Item.</b> Specifies the file type where
+	 the action will be displayed in the pop-up menu.
+	 <li><b>Editor Context Menu Item.</b> Specifies the IDE editor where the
+	  action will be displayed in the pop-up menu.
+  </ul>
+  <p>Click Next.
  <li>In the Name, Icon, and Location page, you set the following: 
 <ul>
 	<li><b>Class Name.</b> Specifies the name of the new Action class.
@@ -54,15 +81,16 @@
 	 the action will be invoked by a toolbar button, the icon specified here is displayed on
 	  the toolbar button. 
 	<li><b>Package.</b> Specifies the name of the package where the class will be housed.
- </ul>
-	<li>After completing the wizard, you can do the following:
+</ul>
+<p>Click Finish.
+<li>After completing the wizard, you can do the following:
 	<ul>
 		<li>Tweak the <a href="../../about/about-xml-layers.html"><tt>layer.xml</tt> file</a> 
 		to change the icon or to rearrange the position of the action within the actions provided by the available modules.
 		
 	</ul>
-</ol>
 
+</ol>
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>

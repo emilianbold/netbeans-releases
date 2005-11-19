@@ -18,7 +18,7 @@ The following table shows how to work with modules.
    process step. The right column contains detail information to accomplish that process.">
    <tr valign="top"> 
     <td align="center"><img src="../images/circle1.gif" alt="Number one"><br>
-	    <b>Create module project</b></td>
+	    <b>Create<br>the module project</b></td>
    <td> 
 	   <ul>
 		   <li>Create the project using the best <a href="../create_plugin/projectlevel_create/about_project_wizards.html">module
@@ -35,7 +35,7 @@ The following table shows how to work with modules.
   </tr>
   <tr valign="top"> 
     <td align="center"><img src="../images/circle2.gif" alt="Number two"><br>
-	    <b>Create file templates</b></td>
+	    <b>Use<br>the file templates</b></td>
     <td> 
     <ol>
 	    <li>Right-click a module project in the Projects or Files window. Choose New &gt; File/Folder.
@@ -52,7 +52,7 @@ The following table shows how to work with modules.
   </tr>
   <tr valign="top"> 
     <td align="center"><img src="../images/circle3.gif" alt="Number three"><br>
-   <b>Develop the module</b></td>
+   <b>Develop<br>the module</b></td>
     <td> 
       <ol>
 	      <li>In the Projects window or Files window, double-click the file
@@ -76,17 +76,13 @@ The following table shows how to work with modules.
   <tr valign="top"> 
     <td align="center"> 
       <img src="../images/circle4.gif" alt="Number four"><br>
-        <b>Build the module</b> 
+        <b>Build<br>the module</b> 
     </td>
     <td> 
       
 	       <ul>
 	      <li>Choose Build &gt;  <a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_project.html">Build 
-		      Main Project</a> or right-click any project and choose Build Project. In addition, you can use the IDE
-	       to build the following:
-	       <ul><li><a href="../build_plugin/building_nbm.html">NetBeans Module (<tt>.nbm</tt>) file</a>
-		       <li><a href="../build_plugin/building_zip.html">ZIP distribution</a>
-		       <li><a href="../build_plugin/building_jnlp.html">Java Web Start (<tt>.jnlp</tt>) file</a></ul></li>
+		      Main Project</a> or right-click any project and choose Build Project. 
       </ul>
       
     </td>
@@ -99,13 +95,31 @@ The following table shows how to work with modules.
   <tr valign="top"> 
     <td align="center"> 
       <img src="../images/circle5.gif" alt="Number five"><br>
-      <b>Deploy, test, and debug</b>
+      <b>Test and debug<br>the module</b>
     </td>
      <td> 
        <ul>
-        <li>Choose Run &gt; Run Main Project or right-click any project and choose 
-          Run Project.</li>
+	       <li>Right-click a module project node and choose Install/Reload in Target Platform
+	       or Install/Reload in Development IDE to <a href="../distribute_plugin/install_targetplatform.html">test</a> the module.</li>
       </ul>
+    </td>
+  </tr>
+<tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+<tr valign="top"> 
+    <td align="center"> <img src="../images/circle6.gif" alt="Number six"><br>
+	    <b>Distribute<br>the module</b> </td>
+    <td> 
+      <ol>
+	      <li>Right-click the module project and choose Create <a href="../build_plugin/building_nbm.html">NBM</a>.
+	      An NBM file is created. 
+	      <li>Distribute the NBM file for installatiom via the Update Center.
+		
+	      </ul>
+      </ol>
     </td>
   </tr>
   <tr> 
@@ -114,23 +128,20 @@ The following table shows how to work with modules.
     </td>
   </tr>
   <tr valign="top"> 
-    <td align="center"> <img src="../images/circle6.gif" alt="Number six"><br>
-	    <b>Distribute</b> </td>
+    <td align="center"> <img src="../images/circle7.gif" alt="Number six"><br>
+	    <b>Brand and distribute<br>a standalone application</b> </td>
     <td> 
       <ol>
-	      <li>If you have a suite project, right-click its node in the Projects window, choose Properties and use the 
+	      <li>Right-click the module suite node in the Projects window, choose Properties and use the 
 	      Splash Screen panel to brand the application.
-	       <li>Do one of the following:
-	       <ul>
-		  <li>If you do not have a suite project, right-click the module project and choose Create NBM.
-		  An NBM file is created. You can distribute and install this via the Update Center.
-		  <li>If you have a suite project, right-click it and choose Build ZIP Distribution.
-		   A ZIP distribution is built. Distribute the ZIP file.
+	      <li>Right-click the module suite node and choose Build <a href="../build_plugin/building_zip.html">ZIP distribution</a>.
+	      The application's executable and its clusters are packaged in a ZIP distribution.
+	      <li>Distribute the ZIP file.
 	      </ul>
       </ol>
     </td>
   </tr>
-  
+ 
 </table>
 
 <hr>
