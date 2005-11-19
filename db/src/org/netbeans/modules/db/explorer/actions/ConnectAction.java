@@ -31,6 +31,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.db.explorer.ConnectionList;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -203,6 +204,11 @@ public class ConnectAction extends DatabaseAction {
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                                 return;
                             }
+                            
+                            DatabaseConnection realDbcon = ConnectionList.getDefault().getConnection(dbcon);
+                            if (realDbcon != null) {
+                                realDbcon.setPassword(dbcon.getPassword());
+                            }
 
                             if(dlg != null) {
                                 dlg.close();
@@ -240,6 +246,11 @@ public class ConnectAction extends DatabaseAction {
                                         String message = MessageFormat.format(bundle().getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()}); //NOI18N
                                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                                         return;
+                                    }
+                                    
+                                    DatabaseConnection realDbcon = ConnectionList.getDefault().getConnection(dbcon);
+                                    if (realDbcon != null) {
+                                        realDbcon.setPassword(dbcon.getPassword());
                                     }
 
                                     if(dlg != null)
