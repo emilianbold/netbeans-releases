@@ -312,7 +312,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                         }
                     }
                 } else if(sel instanceof EmptyTag) {
-                    Map attribs = crjspeateAttributesMap((Tag)sel);
+                    Map attribs = createAttributesMap((Tag)sel);
                     addedElements.add(dtm.addDocumentElement(((EmptyTag)sel).getTagName(), XML_EMPTY_TAG, attribs,
                             sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 } else if (sel instanceof CDATASectionImpl) {
