@@ -61,6 +61,7 @@ public final class DocumentElement {
     private DocumentModel model;
     private Attributes attributes;
     private boolean elementEmpty;
+    private boolean isRootElement;
     
     //stores DocumentElement listeners
     private HashSet deListeners = new HashSet();
@@ -74,6 +75,7 @@ public final class DocumentElement {
         this.type = type;
         this.attributes = new Attributes(this, attrsMap);
         this.elementEmpty = false;
+        this.isRootElement = false;
         
         //create positions for start and end offsets
         setStartPosition(startOffset);
@@ -210,9 +212,15 @@ public final class DocumentElement {
     
     /* EOF j.s.t.Element methods */
     
+    //called by the model when an element's attributes has changed
+    void setAttributes(Map attrs) {
+        this.attributes = new Attributes(this, attrs);
+    }
+    
+    
     /** called by DocumentModel when checking elements after a document content update */
-    void setElementIsEmptyState() {
-        elementEmpty = true;
+    void setElementIsEmptyState(boolean state) {
+        elementEmpty = state;
     }
     
     /** states whether the document is empty - used only by DocumentModel */
@@ -255,6 +263,15 @@ public final class DocumentElement {
     
     /* <<< EOF public methods */
     
+    //called by the DocumentModel - performance improvement
+    synchronized void setRootElement(boolean value) {
+        this.isRootElement = value;
+    }
+    
+    boolean isRootElement() {
+        return this.isRootElement;
+    }
+    
     void setStartPosition(int offset) throws BadLocationException {
         startPos = model.getDocument().createPosition(offset);
     }
@@ -275,7 +292,7 @@ public final class DocumentElement {
                 case DocumentElementEvent.CHILD_ADDED: cl.elementAdded(dee);break;
                 case DocumentElementEvent.CHILD_REMOVED: cl.elementRemoved(dee);break;
                 case DocumentElementEvent.CONTENT_CHANGED: cl.contentChanged(dee);break;
-                case DocumentElementEvent.ATTRIBUTES_CHANGED: cl.contentChanged(dee);break;
+                case DocumentElementEvent.ATTRIBUTES_CHANGED: cl.attributesChanged(dee);break;
             }
         }
     }
@@ -298,6 +315,12 @@ public final class DocumentElement {
         fireDocumentElementEvent(new DocumentElementEvent(DocumentElementEvent.CONTENT_CHANGED, this, null));
     }
     
+    //called by model when element attribs changed
+    void attributesChanged() {
+        fireDocumentElementEvent(new DocumentElementEvent(DocumentElementEvent.ATTRIBUTES_CHANGED, this, null));
+    }
+
+    
     public boolean equals(Object o) {
         if(!(o instanceof DocumentElement)) return false;
         
@@ -306,7 +329,8 @@ public final class DocumentElement {
         return (de.getName().equals(getName()) &&
                 de.getType().equals(getType()) &&
                 de.getStartOffset() == getStartOffset() &&
-                de.getEndOffset() == getEndOffset());
+                de.getEndOffset() == getEndOffset() /*&&
+                de.getAttributes().isEqual(getAttributes())*/); //equality acc. to attribs causes problems with readding of elements in XMLDocumentModelProvider when changing attributes.
     }
     
     public String toString() {
@@ -336,7 +360,7 @@ public final class DocumentElement {
     
     /** AttributeSet implementation. */
     
-    private static final class Attributes implements AttributeSet {
+    static final class Attributes implements AttributeSet {
         private Map attrs;
         private DocumentElement de;
         
@@ -386,8 +410,26 @@ public final class DocumentElement {
             return true;
         }
         
+        public String toString() {
+            Enumeration e = getAttributeNames();
+            StringBuffer sb = new StringBuffer();
+            while(e.hasMoreElements()) {
+                Object key = e.nextElement();
+                Object value = getAttribute(key);
+                sb.append(key);
+                sb.append('=');
+                sb.append(value);
+                sb.append(' ');
+            }
+            return sb.toString();
+        }
+        
         public AttributeSet getResolveParent() {
             return de.getParentElement() != null ? de.getParentElement().getAttributes() : null;
+        }
+        
+        public int compareTo(AttributeSet as) {
+            return toString().compareTo(as.toString());
         }
         
     }

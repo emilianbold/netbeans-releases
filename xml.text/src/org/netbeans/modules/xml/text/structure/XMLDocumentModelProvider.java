@@ -83,18 +83,24 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
             //parse the document context
             XMLSyntaxSupport sup = (XMLSyntaxSupport)((BaseDocument)model.getDocument()).getSyntaxSupport();
             
-            boolean textOnly = true;
-            //if(dch.getChangeType() == DocumentChange.INSERT) {
+            boolean textOnly = false;
+            boolean attribsOnly = false;
             try {
                 //scan the inserted text - if it contains only text set textOnly flag
                 TokenItem ti = sup.getTokenChain(changeOffset, changeOffset + 1);
                 while(ti != null && ti.getOffset() < (changeOffset + changeLength)) {
-                    if(ti.getTokenID() != XMLTokenIDs.TEXT
-                            && ti.getTokenID() != XMLTokenIDs.DECLARATION
-                            && ti.getTokenID() != XMLTokenIDs.BLOCK_COMMENT
-                            && ti.getTokenID() != XMLTokenIDs.PI_CONTENT
-                            && ti.getTokenID() != XMLTokenIDs.CDATA_SECTION) {
-                        textOnly = false;
+                    if(ti.getTokenID() == XMLTokenIDs.TEXT
+                            || ti.getTokenID() == XMLTokenIDs.DECLARATION
+                            || ti.getTokenID() == XMLTokenIDs.BLOCK_COMMENT
+                            || ti.getTokenID() == XMLTokenIDs.PI_CONTENT
+                            || ti.getTokenID() == XMLTokenIDs.CDATA_SECTION) {
+                        textOnly = true;
+                        break;
+                    }
+                    if(ti.getTokenID() == XMLTokenIDs.ARGUMENT
+                            || ti.getTokenID() == XMLTokenIDs.OPERATOR
+                            || ti.getTokenID() == XMLTokenIDs.VALUE) {
+                        attribsOnly = true;
                         break;
                     }
                     ti = ti.getNext();
@@ -112,8 +118,24 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                 //just a text written into a text element simply fire document element change event and do not regenerate anything
                 //add the element update request into transaction
                 if(debug) System.out.println("ONLY CONTENT UPDATE!!!");
-                dtm.updateDocumentElement(leaf);
+                dtm.updateDocumentElementText(leaf);
 //                continue;
+            }
+            
+            if(attribsOnly
+                    && (leaf.getType().equals(XML_TAG)
+                    || leaf.getType().equals(XML_EMPTY_TAG))) {
+                if(debug) System.out.println("ONLY ATTRIBS UPDATE!!!");
+                //we need to parse the tag element attributes and set them according to the new values
+                try {
+                    SyntaxElement sel = sup.getElementChain(leaf.getStartOffset() + 1);
+                    if(sel instanceof Tag || sel instanceof EmptyTag) {
+                        Map newAttrs = createAttributesMap((Tag)sel);
+                        dtm.updateDocumentElementAttribs(leaf, newAttrs);
+                    }
+                }catch(BadLocationException ble) {
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, ble);
+                }
             }
             
             //if one or more elements are deleted get correct paret to regenerate
@@ -215,7 +237,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                     if(debug) System.out.println("Error found! => adding error element.");
                     String errorText = doc.getText(sel.getElementOffset(), sel.getElementLength());
                     addedElements.add(dtm.addDocumentElement(errorText, XML_ERROR, Collections.EMPTY_MAP,
-                                    sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
+                            sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 }
                 
                 if(sel instanceof StartTag) {
@@ -290,7 +312,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                         }
                     }
                 } else if(sel instanceof EmptyTag) {
-                    Map attribs = createAttributesMap((Tag)sel);
+                    Map attribs = crjspeateAttributesMap((Tag)sel);
                     addedElements.add(dtm.addDocumentElement(((EmptyTag)sel).getTagName(), XML_EMPTY_TAG, attribs,
                             sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 } else if (sel instanceof CDATASectionImpl) {

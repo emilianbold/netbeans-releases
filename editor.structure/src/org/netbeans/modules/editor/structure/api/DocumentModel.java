@@ -34,6 +34,7 @@ import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.editor.structure.DocumentModelProviderFactory;
+import org.netbeans.modules.editor.structure.api.DocumentElement.Attributes;
 import org.netbeans.modules.editor.structure.spi.DocumentModelProvider;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
@@ -60,7 +61,7 @@ import org.openide.util.WeakListeners;
  * <br>
  * The model registers a DocumentListener to the associated Document and
  * listen on its changes. When there is a change in the document,
- * the model waits for next 500 milliseconds if another update happes,
+ * the model waits for a defined amount of time if another update happens,
  * and if not, then asks DocumentModelProvider to regenerate the model's
  * elements. If the document changes during the parsing process,
  * the process will be stopped, all model changes thrown away,
@@ -97,7 +98,7 @@ public final class DocumentModel {
     
     //after each document change update of the model is postponed for following timeout.
     //if another document change happens in the time interval the update is postponed again.
-    private static final int MODEL_UPDATE_TIMEOUT = 500; //milliseconds
+    private static int MODEL_UPDATE_TIMEOUT = 500; //milliseconds
     
     //a Document instance which the model is build upon.
     private BaseDocument doc;
@@ -136,6 +137,7 @@ public final class DocumentModel {
     private static final int ELEMENT_ADDED = 1;
     private static final int ELEMENT_REMOVED = 2;
     private static final int ELEMENT_CHANGED = 3;
+    private static final int ELEMENT_ATTRS_CHANGED = 4;
     
     DocumentModel(Document doc, DocumentModelProvider provider) throws DocumentModelException {
         this.doc = (BaseDocument)doc; //type changed in DocumentModel.getDocumentModel(document);
@@ -279,6 +281,9 @@ public final class DocumentModel {
      */
     public DocumentElement getLeafElementForOffset(int offset) {
         readLock();
+        
+        if(getDocument().getLength() == 0)  return getRootElement();
+        
         try{
             Iterator itr = getElementsSet().iterator();
             DocumentElement leaf = null;
@@ -287,6 +292,10 @@ public final class DocumentModel {
                 if(de.getStartOffset() <= offset) {
                     if(de.getEndOffset() >=offset) {
                         //a possible candidate found
+                        if(de.getStartOffset() == de.getEndOffset() && de.getStartOffset() == offset) {
+                            //empty tag on the offset => return nearest candidate (its parent)
+                            break;
+                        }
                         leaf = de;
                     }
                 } else {
@@ -295,8 +304,6 @@ public final class DocumentModel {
                     break;
                 }
             }
-            
-            if(getDocument().getLength() == 0)  leaf = getRootElement();
             
             assert leaf != null : "at least 'root' document element should always be found!";
             
@@ -308,6 +315,10 @@ public final class DocumentModel {
     }
     
     // ---- private methods -----
+    static void setModelUpdateTimout(int timeout) {
+        MODEL_UPDATE_TIMEOUT = timeout;
+    }
+    
     private synchronized TreeSet getElementsSet() {
         if(documentDirty) resortAndMarkEmptyElements();
         return elements;
@@ -454,7 +465,7 @@ public final class DocumentModel {
                 Iterator i = list.iterator();
                 while(i.hasNext()) {
                     DocumentElement de = (DocumentElement)i.next();
-                    if(isEmpty(de)) de.setElementIsEmptyState();
+                    if(isEmpty(de)) de.setElementIsEmptyState(true);
                     elements.add(de);
                 }
             } finally {
@@ -475,6 +486,7 @@ public final class DocumentModel {
             DocumentModelModificationTransaction dmt = createTransaction(false);
             this.rootElement = dmt.addDocumentElement("root", DOCUMENT_ROOT_ELEMENT_TYPE, Collections.EMPTY_MAP,
                     0, getDocument().getLength());
+            this.rootElement.setRootElement(true);
             dmt.commit();
         }catch(BadLocationException e) {
             //this is very unlikely that the BLE will be thrown from this code
@@ -495,18 +507,18 @@ public final class DocumentModel {
             //test whether the element has been removed - in such a case anyone can still have a reference to it
             //but the element is not held in the document structure elements list
             if(!getElementsSet().contains(de)) {
-                if(debug) System.err.println("Warning: DocumentModel.getChildren(...) called for " + de + " which has already been removed!");
+                if(debug) System.out.println("Warning: DocumentModel.getChildren(...) called for " + de + " which has already been removed!");
                 return Collections.EMPTY_LIST; //do not cache
             }
             
             //there is a problem with empty elements - if an element is removed its boundaries
             //are the some and the standart getParent/getChildren algorith fails.
             //the root element can be empty however it has to return children (also empty)
-            if(!de.equals(getRootElement()) && de.isEmpty()) return Collections.EMPTY_LIST;
+            if(!de.isRootElement() && de.isEmpty()) return Collections.EMPTY_LIST;
             
             //if the root element is empty the rest of elements is also empty and
             //has to be returned as children
-            if(de.equals(getRootElement()) && de.isEmpty()) {
+            if(de.isRootElement() && de.isEmpty()) {
                 ArrayList al = new ArrayList((Collection)getElementsSet().clone());
                 al.remove(de); //remove the root itself
                 return al;
@@ -590,7 +602,7 @@ public final class DocumentModel {
                 throw new IllegalArgumentException("getParent() called for " + de + " which is not in the elements list!");
             }
             
-            if(de.equals(getRootElement())) return null;
+            if(de.isRootElement()) return null;
             
             //get all elements with startOffset <= de.getStartOffset()
             SortedSet head = getElementsSet().headSet(de);
@@ -648,6 +660,7 @@ public final class DocumentModel {
                 case ELEMENT_ADDED: cl.documentElementAdded(de);break;
                 case ELEMENT_REMOVED: cl.documentElementRemoved(de);break;
                 case ELEMENT_CHANGED: cl.documentElementChanged(de);break;
+                case ELEMENT_ATTRS_CHANGED: cl.documentElementAttributesChanged(de);break;
             }
         }
     }
@@ -812,7 +825,7 @@ public final class DocumentModel {
             if(transactionCancelled) throw new DocumentModelTransactionCancelledException();
             
             //we cannot remove root element
-            if(de.equals(getRootElement())) {
+            if(de.isRootElement()) {
                 if(debug) System.out.println("WARNING: root element cannot be removed!");
                 return ;
             }
@@ -833,17 +846,31 @@ public final class DocumentModel {
             modifications.add(dmm);
         }
         
-        /** Adds a new update request to the transaction.
+        /** Adds a new text update request to the transaction.
          *
          * @param de the Document element which text content has been changed.
          */
-        public void updateDocumentElement(DocumentElement de) throws DocumentModelTransactionCancelledException {
+        public void updateDocumentElementText(DocumentElement de) throws DocumentModelTransactionCancelledException {
             //test if the transaction has been cancelled and if co throw TransactionCancelledException
             if(transactionCancelled) throw new DocumentModelTransactionCancelledException();
             
             DocumentModelModification dmm = new DocumentModelModification(de, DocumentModelModification.ELEMENT_CHANGED);
             if(!modifications.contains(dmm)) modifications.add(dmm);
         }
+        
+        /** Adds a attribs update request to the transaction.
+         *
+         * @param de the Document element which text content has been changed.
+         * @param attrs updated attributes
+         */
+        public void updateDocumentElementAttribs(DocumentElement de, Map attrs) throws DocumentModelTransactionCancelledException {
+            //test if the transaction has been cancelled and if co throw TransactionCancelledException
+            if(transactionCancelled) throw new DocumentModelTransactionCancelledException();
+            
+            DocumentModelModification dmm = new DocumentModelModification(de, DocumentModelModification.ELEMENT_ATTRS_CHANGED, attrs);
+            if(!modifications.contains(dmm)) modifications.add(dmm);
+        }
+        
         
         private void commit() throws DocumentModelTransactionCancelledException {
             long a = System.currentTimeMillis();
@@ -863,6 +890,10 @@ public final class DocumentModel {
                 }
                 if(measure) System.out.println("[xmlmodel] removes commit done in " + (System.currentTimeMillis() - r));
                 
+                //if the entire document content has been removed the root element is marked as empty
+                //to be able to add new elements inside we need to unmark it now
+                getRootElement().setElementIsEmptyState(false);
+                
                 long adds = System.currentTimeMillis();
                 //then add all new elements
                 //it is better to add the elements from roots to leafs
@@ -881,12 +912,20 @@ public final class DocumentModel {
                 if(measure) System.out.println("[xmlmodel] adds commit (" + addsNum + ") done in " + (System.currentTimeMillis() - adds));
                 
                 long upds = System.currentTimeMillis();
-                if(debug) System.out.println("\n# commiting UPDATESs");
+                if(debug) System.out.println("\n# commiting text UPDATESs");
                 mods = modifications.iterator();
                 while(mods.hasNext()) {
                     DocumentModelModification dmm = (DocumentModelModification)mods.next();
-                    if(dmm.type == DocumentModelModification.ELEMENT_CHANGED) updateDE(dmm.de);
+                    if(dmm.type == DocumentModelModification.ELEMENT_CHANGED) updateDEText(dmm.de);
                 }
+                
+                if(debug) System.out.println("\n# commiting attribs UPDATESs");
+                mods = modifications.iterator();
+                while(mods.hasNext()) {
+                    DocumentModelModification dmm = (DocumentModelModification)mods.next();
+                    if(dmm.type == DocumentModelModification.ELEMENT_ATTRS_CHANGED) updateDEAttrs(dmm.de, dmm.attrs);
+                }
+                
                 if(measure) System.out.println("[xmlmodel] updates commit done in " + (System.currentTimeMillis() - upds));
             } finally {
                 writeUnlock();
@@ -898,12 +937,23 @@ public final class DocumentModel {
 //            DocumentModelUtils.dumpElementStructure(getRootElement());
         }
         
-        private void updateDE(DocumentElement de) {
+        private void updateDEText(DocumentElement de) {
             //notify model listeners
             fireDocumentModelEvent(de, ELEMENT_CHANGED);
             //notify element listeners
             ((DocumentElement)de).contentChanged();
         }
+        
+        private void updateDEAttrs(DocumentElement de, Map attrs) {
+            //set the new attributes
+            de.setAttributes(attrs);
+            
+            //notify model listeners
+            fireDocumentModelEvent(de, ELEMENT_ATTRS_CHANGED);
+            //notify element listeners
+            ((DocumentElement)de).attributesChanged();
+        }
+        
         
         private void addDE(DocumentElement de) {
             //TODO: add a test for crossed elements??? - in such a case an exception should be thrown
@@ -950,7 +1000,7 @@ public final class DocumentModel {
             if(debug) System.out.println("[DTM] removing " + de);
             DocumentElement parent = null;
             //remove the element itself. Do not do so if the element is root element
-            if(de == getRootElement()) return ;
+            if(de.isRootElement()) return ;
             
             //I need to get the parent before removing from the list!
             parent = getParent(de);
@@ -1001,13 +1051,20 @@ public final class DocumentModel {
             public static final int ELEMENT_ADD = 1;
             public static final int ELEMENT_REMOVED = 2;
             public static final int ELEMENT_CHANGED = 3;
+            public static final int ELEMENT_ATTRS_CHANGED = 4;
             
             public int type;
             public DocumentElement de;
+            public Map attrs = null;
             
             public DocumentModelModification(DocumentElement de, int type) {
                 this.de = de;
                 this.type = type;
+            }
+            
+            public DocumentModelModification(DocumentElement de, int type, Map attrs) {
+                this(de, type);
+                this.attrs = attrs;
             }
             
             public boolean equals(Object o) {
@@ -1032,10 +1089,17 @@ public final class DocumentModel {
     }
     
     //compares elements according to their start offsets
+    //XXX - design - this comparator should be defined in DocumentElement class in the compareTo method!!!!
     private static final Comparator ELEMENTS_COMPARATOR = new Comparator() {
         public int compare(Object o1, Object o2) {
             DocumentElement de1 = (DocumentElement)o1;
             DocumentElement de2 = (DocumentElement)o2;
+            
+            //fastly handle root element comparing
+            if(de1.isRootElement() && !de2.isRootElement()) return -1; 
+            if(!de1.isRootElement() && de2.isRootElement()) return +1;
+            if(de2.isRootElement() && de1.isRootElement()) return 0;
+            
             int startOffsetDelta = de1.getStartOffset() - de2.getStartOffset();
             if(startOffsetDelta != 0)
                 //different startOffsets
@@ -1054,8 +1118,10 @@ public final class DocumentModel {
                         int namesDelta = de1.getName().compareTo(de2.getName());
                         if(namesDelta != 0) return namesDelta;
                         else {
-                            //give it up - just use object identity
+                            //compare according to attributes values
                             return 0;
+//                            //equality acc. to attribs causes problems with readding of elements in XMLDocumentModelProvider when changing attributes.
+//                            return ((DocumentElement.Attributes)de1.getAttributes()).compareTo(de2.getAttributes());
                         }
                     }
                 }
