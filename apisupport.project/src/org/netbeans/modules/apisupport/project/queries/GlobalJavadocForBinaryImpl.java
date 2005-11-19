@@ -28,6 +28,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  * Able to find javadoc in the appropriate NbPlatform for the given URL.
@@ -47,6 +48,13 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
             if (!jar.getProtocol().equals("file")) { // NOI18N
                 Util.err.log(binaryRoot + " is not an archive file."); // NOI18N
                 return null;
+            }
+            if (jar.toExternalForm().endsWith("/xtest/lib/junit.jar")) { // NOI18N
+                // #68685 hack - associate reasonable Javadoc with XTest's version of junit
+                File f = InstalledFileLocator.getDefault().locate("modules/ext/junit-3.8.1.jar", "org.netbeans.modules.junit", false); // NOI18N
+                if (f != null) {
+                    return JavadocForBinaryQuery.findJavadoc(FileUtil.getArchiveRoot(f.toURI().toURL()));
+                }
             }
             File binaryRootF = new File(URI.create(jar.toExternalForm()));
             NbPlatform supposedPlaf = null;

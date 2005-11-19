@@ -505,22 +505,38 @@ public final class NbModuleProject implements Project {
             buildDefaults.put("cp", "${module.classpath}:${cp.extra}"); // NOI18N
             buildDefaults.put("run.cp", "${cp}:${build.classes.dir}"); // NOI18N
             PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
-            buildDefaults.put("junit.jar", findJunitJar(baseEval)); // NOI18N
-            buildDefaults.put("nbjunit.jar", findNbJunitJar(baseEval)); // NOI18N
-            String insaneLibJar = findInsaneLibJar(baseEval);
-            if (insaneLibJar != null) {
-                buildDefaults.put("insanelib.jar", insaneLibJar); // NOI18N
-            }
             buildDefaults.put("test.unit.cp.extra", ""); // NOI18N
-            buildDefaults.put("test.unit.cp", "${cp}:${cluster}/${module.jar}:${junit.jar}:${nbjunit.jar}:${insanelib.jar}:${test.unit.cp.extra}"); // NOI18N
+            String testJars; // #68685 - follow Ant script
+            if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+                // Cf. nbbuild/templates/projectized.xml#test-lib-init
+                buildDefaults.put("xtest.home", "${nb_all}/xtest"); // NOI18N
+                testJars =
+                        "${xtest.home}/lib/junit.jar:" + // NOI18N
+                        "${xtest.home}/lib/nbjunit.jar:" + // NOI18N
+                        "${xtest.home}/lib/nbjunit-ide.jar:" + // NOI18N
+                        "${xtest.home}/lib/insanelib.jar"; // NOI18N
+            } else {
+                // Cf. apisupport/harness/release/build.xml#test-lib-init
+                testJars =
+                        "${test.unit.lib.cp}:" +
+                        "${netbeans.dest.dir}/ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
+                        "${netbeans.dest.dir}/testtools/modules/ext/nbjunit.jar:" + // NOI18N
+                        "${netbeans.dest.dir}/testtools/modules/ext/insanelib.jar:" + // NOI18N
+                        "${netbeans.home}/../ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
+                        "${netbeans.home}/../testtools/modules/ext/nbjunit.jar:" + // NOI18N
+                        "${netbeans.home}/../testtools/modules/ext/insanelib.jar:" + // NOI18N
+                        "${netbeans.user}/modules/ext/nbjunit.jar:" + // NOI18N
+                        "${netbeans.user}/modules/ext/insanelib.jar:" + // NOI18N
+                        "${netbeans.dest.dir}/../../xtest/lib/junit.jar:" + // NOI18N
+                        "${netbeans.dest.dir}/../../xtest/lib/nbjunit.jar:" + // NOI18N
+                        "${netbeans.dest.dir}/../../xtest/lib/insanelib.jar"; // NOI18N
+            }
+            buildDefaults.put("test.unit.cp", "${cp}:${cluster}/${module.jar}:" + testJars + ":${test.unit.cp.extra}"); // NOI18N
             buildDefaults.put("test.unit.run.cp.extra", ""); // NOI18N
             buildDefaults.put("test.unit.run.cp", "${test.unit.cp}:${build.test.unit.classes.dir}:${test.unit.run.cp.extra}"); // NOI18N
             // #61085: need to treat qa-functional tests the same way...
             buildDefaults.put("test.qa-functional.cp.extra", ""); // NOI18N
-            String nbJunitIdeJar = findNbJunitIdeJar(baseEval);
-            if (nbJunitIdeJar != null) {
-                buildDefaults.put("nbjunit-ide.jar", nbJunitIdeJar); // NOI18N
-            }
+            // No idea how XTest finds these, some weird magic, so no Ant script to match up to:
             String jemmyJar = findJemmyJar(baseEval);
             if (jemmyJar != null) {
                 buildDefaults.put("jemmy.jar", jemmyJar); // NOI18N
@@ -529,89 +545,18 @@ public final class NbModuleProject implements Project {
             if (jelly2NbJar != null) {
                 buildDefaults.put("jelly2-nb.jar", jelly2NbJar); // NOI18N
             }
-            buildDefaults.put("test.qa-functional.cp", "${nbjunit.jar}:${nbjunit-ide.jar}:${insanelib.jar}:${jemmy.jar}:${jelly2-nb.jar}:${junit.jar}:${test.qa-functional.cp.extra}"); // NOI18N
+            buildDefaults.put("test.qa-functional.cp", testJars + // NOI18N
+                    ":${netbeans.home}/../testtools/modules/ext/nbjunit-ide.jar" + // NOI18N
+                    ":${netbeans.user}/testtools/modules/ext/nbjunit.jar" + // NOI18N
+                    ":${jemmy.jar}" + // NOI18N
+                    ":${jelly2-nb.jar}" + // NOI18N
+                    ":${test.qa-functional.cp.extra}"); // NOI18N
             buildDefaults.put("build.test.qa-functional.classes.dir", "build/test/qa-functional/classes"); // NOI18N
             buildDefaults.put("test.qa-functional.run.cp", "${test.qa-functional.cp}:${build.test.qa-functional.classes.dir}"); // NOI18N
             providers.add(PropertyUtils.fixedPropertyProvider(buildDefaults));
         }
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
         return PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
-    }
-    
-    /**
-     * Get an Ant location for the root of junit.jar.
-     * Prefer the IDE's lib version; else use xtest/lib/junit.jar.
-     */
-    private String findJunitJar(PropertyEvaluator eval) {
-        File f = InstalledFileLocator.getDefault().locate("modules/ext/junit-3.8.1.jar", "org.netbeans.modules.junit", false); // NOI18N
-        if (f != null) {
-            return f.getAbsolutePath();
-        } else {
-            f = getNbrootFile("xtest/lib/junit.jar", eval); // NOI18N
-            if (f != null) {
-                return f.getAbsolutePath();
-            } else {
-                // External module with no ref to nb.org sources.
-                return "${netbeans.dest.dir}/ide6/modules/ext/junit-3.8.1.jar"; // NOI18N
-            }
-        }
-    }
-    
-    /**
-     * Get an Ant location for the root of nbjunit.jar.
-     */
-    private String findNbJunitJar(PropertyEvaluator eval) {
-        // NOT modules/ext/nbjunit.jar... we want to have it be associated with sources.
-        String path = "testtools/modules/org-netbeans-modules-nbjunit.jar"; // NOI18N
-        File f = getNbrootFile("nbbuild/netbeans/" + path, eval); // NOI18N
-        if (f != null) {
-            return f.getAbsolutePath();
-        } else {
-            f = InstalledFileLocator.getDefault().locate("modules/ext/nbjunit.jar", "org.netbeans.modules.nbjunit", false); // NOI18N
-            if (f != null) {
-                // #64120: downloaded from AU.
-                return f.getAbsolutePath();
-            } else {
-                // External module with no ref to nb.org sources.
-                return "${netbeans.dest.dir}/" + path; // NOI18N
-            }
-        }
-    }
-    
-    /**
-     * Get an Ant location for the root of nbjunit-ide.jar.
-     */
-    private String findNbJunitIdeJar(PropertyEvaluator eval) {
-        String path = "testtools/modules/ext/nbjunit-ide.jar"; // NOI18N
-        File f = getNbrootFile("nbbuild/netbeans/" + path, eval); // NOI18N
-        if (f != null) {
-            return f.getAbsolutePath();
-        } else {
-            f = InstalledFileLocator.getDefault().locate("modules/ext/nbjunit-ide.jar", "org.netbeans.modules.nbjunit", false); // NOI18N
-            if (f != null) {
-                return f.getAbsolutePath();
-            } else {
-                return "${netbeans.dest.dir}/" + path; // NOI18N
-            }
-        }
-    }
-    
-    /**
-     * Get an Ant location for the root of insanelib.jar.
-     */
-    private String findInsaneLibJar(PropertyEvaluator eval) {
-        File f = getNbrootFile("performance/insanelib/dist/insanelib.jar", eval); // NOI18N
-        if (f != null) {
-            return f.getAbsolutePath();
-        } else {
-            f = InstalledFileLocator.getDefault().locate("modules/ext/insanelib.jar", "org.netbeans.modules.nbjunit", false); // NOI18N
-            if (f != null) {
-                // #64120: downloaded from AU.
-                return f.getAbsolutePath();
-            } else {
-                return null;
-            }
-        }
     }
     
     /**

@@ -29,7 +29,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -58,8 +58,33 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
     /** Default constructor for lookup. */
     public GlobalSourceForBinaryImpl() {}
     
-    public Result findSourceRoots(URL binaryRoot) {
+    public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         try {
+            { // #68685 hack - associate reasonable sources with XTest's versions of various test libs
+                String binaryRootS = binaryRoot.toExternalForm();
+                if (binaryRootS.startsWith("jar:file:")) { // NOI18N
+                    URL result;
+                    if (binaryRootS.endsWith("/xtest/lib/nbjunit.jar!/")) { // NOI18N
+                        result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/xtest/lib/nbjunit.jar!/".length()) + "/xtest/nbjunit/src/"); // NOI18N
+                    } else if (binaryRootS.endsWith("/xtest/lib/nbjunit-ide.jar!/")) { // NOI18N
+                        result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/xtest/lib/nbjunit-ide.jar!/".length()) + "/xtest/nbjunit/src/"); // NOI18N
+                    } else if (binaryRootS.endsWith("/xtest/lib/insanelib.jar!/")) { // NOI18N
+                        result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/xtest/lib/insanelib.jar!/".length()) + "/performance/insanelib/src/"); // NOI18N
+                    } else {
+                        result = null;
+                    }
+                    final FileObject resultFO = result != null ? URLMapper.findFileObject(result) : null;
+                    if (resultFO != null) {
+                        return new SourceForBinaryQuery.Result() {
+                            public FileObject[] getRoots() {
+                                return new FileObject[] {resultFO};
+                            }
+                            public void addChangeListener(ChangeListener l) {}
+                            public void removeChangeListener(ChangeListener l) {}
+                        };
+                    }
+                }
+            }
             NbPlatform supposedPlaf = null;
             for (Iterator it = NbPlatform.getPlatforms().iterator(); it.hasNext(); ) {
                 NbPlatform plaf = (NbPlatform) it.next();
@@ -117,7 +142,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                     }
                 } // dirs are currently resolved by o.n.m.apisupport.project.queries.SourceForBinaryImpl
             }
-            return new Result() {
+            return new SourceForBinaryQuery.Result() {
                 public FileObject[] getRoots() {
 //                    return new FileObject[0];
                     return (FileObject[]) candidates.toArray(new FileObject[candidates.size()]);
