@@ -334,18 +334,48 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
             dumpFolds(f.getFold(i), indent+"  ");
         }
     }
+//    
+//    private Fold getFold(FoldHierarchy fh, DocumentElement de) {
+//        int startOffset = de.getStartOffset();
+//        int endOffset = de.getEndOffset();
+//        Iterator allFolds = FoldUtilities.findRecursive(fh.getRootFold()).iterator();
+//        while(allFolds.hasNext()) {
+//            Fold f = (Fold)allFolds.next();
+//            if(debug) System.out.println("testing fold " + f);
+//            if((f.getStartOffset()) == startOffset &&
+//                    ((f.getEndOffset()-1) == endOffset || f.getEndOffset() == endOffset)) {
+//                return f;
+//            }
+//        }
+//        return null;
+//    }
     
-    private Fold getFold(FoldHierarchy fh, DocumentElement de) {
+     private Fold getFold(FoldHierarchy fh, DocumentElement de) {
         int startOffset = de.getStartOffset();
         int endOffset = de.getEndOffset();
-        Iterator allFolds = FoldUtilities.findRecursive(fh.getRootFold()).iterator();
-        while(allFolds.hasNext()) {
-            Fold f = (Fold)allFolds.next();
-            if(debug) System.out.println("testing fold " + f);
-            if((f.getStartOffset()) == startOffset &&
-                    ((f.getEndOffset()-1) == endOffset || f.getEndOffset() == endOffset)) {
-                return f;
-            }
+        
+        Fold f = FoldUtilities.findNearestFold(fh, de.getStartOffset());
+        //no fold found or doesn't start at the exact position
+        if(f == null || f.getStartOffset() != de.getStartOffset()) return null;
+        
+        if(f.getEndOffset() == de.getEndOffset() || (f.getEndOffset()-1) == de.getEndOffset()) return f;
+        
+        //there may be a child inside the found fold which may match the boundaries of de
+        //search them recursivelly
+        return getFold(fh, f, de);
+    }
+    
+    private Fold getFold(FoldHierarchy fh, Fold f, DocumentElement de) {
+        for (int i = 0; i < f.getFoldCount(); i++) {
+            Fold child = f.getFold(i);
+            if(child.getStartOffset() == de.getStartOffset()) {
+                if(child.getEndOffset() == de.getEndOffset()
+                        || ((child.getEndOffset()-1) == de.getEndOffset()))
+                    return f;
+                else 
+                    return getFold(fh, child, de);
+            } else
+                return null; //I suppose that the children are sorted so there cannot be next children with the same startoffset
         }
         return null;
     }
