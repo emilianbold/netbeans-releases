@@ -169,8 +169,15 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
                 l.add(fileToUrl(new File(root, J2EE_14_JAR)));
                 l.add(fileToUrl(new File(root, JAVA_EE_JAR)));//In case we would have a glassfish for now
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
-
                 File doc = InstalledFileLocator.getDefault().locate("docs/j2eeri-1_4-doc-api.zip", null, false); // NOI18N
+                if (getAppServerVersion(root).equals(APPSERVER_VERSION_9)){
+                    
+                    File docJavaEE5 = InstalledFileLocator.getDefault().locate("docs/javaee5-doc-api.zip", null, false); // NOI18N
+                    if (docJavaEE5!=null){
+                        doc =docJavaEE5;
+                    }
+                }
+                
                 if (doc != null) {
                     l = new ArrayList();
                     l.add(fileToUrl(doc));
@@ -197,6 +204,8 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
 
                 l = new ArrayList();
                 l.add(fileToUrl(new File(root, JAX_QNAME_JAR)));
+                l.add(fileToUrl(new File(root, "lib/endorsed/jaxp-api.jar")));
+                
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
                 libraries.add(lib);
 
@@ -285,6 +294,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
                     new File(root, "lib/saaj-impl.jar"),
                     new File(root, "lib/jaxrpc-api.jar"),
                     new File(root, "lib/jaxrpc-impl.jar"),
+                    new File(root, "lib/endorsed/jaxp-api.jar"),
                     new File(root, "lib/appserv-ws.jar")// possibly for AS 9
                 };
             }
