@@ -19,8 +19,9 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.taskdefs.Jar;
+import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.ZipFileSet;
+import org.apache.tools.ant.types.selectors.SelectorUtils;
 
 /**
  * Packs override resources into branding JARs with the correct paths.
@@ -57,13 +58,29 @@ public final class Branding extends Task {
             throw new BuildException("Must specify a valid branding token: " + token, getLocation());
         }
         try {
-            lookForBrandingJars(overrides, cluster);
+            lookForBrandingJars(overrides, cluster, overrides.getAbsolutePath() + File.separatorChar);
         } catch (IOException e) {
             throw new BuildException(e, getLocation());
         }
     }
     
-    private boolean lookForBrandingJars(File srcDir, File destDir) throws IOException {
+    private boolean excluded(File f, String prefix) { // #68929
+        String pathAbs = f.getAbsolutePath();
+        if (!pathAbs.startsWith(prefix)) {
+            throw new BuildException("Examined file " + f + " should have a path starting with " + prefix, getLocation());
+        }
+        // Cannot just call matchPath on the pathAbs because a relative pattern will *never* match an absolute path!
+        String path = pathAbs.substring(prefix.length());
+        String[] excludes = DirectoryScanner.getDefaultExcludes();
+        for (int i = 0; i < excludes.length; i++) {
+            if (SelectorUtils.matchPath(excludes[i], path)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean lookForBrandingJars(File srcDir, File destDir, String srcPrefix) throws IOException {
         if (srcDir.getName().endsWith(".jar")) {
             packBrandingJar(srcDir, destDir);
             return true;
@@ -75,11 +92,14 @@ public final class Branding extends Task {
             boolean used = false;
             for (int i = 0; i < kids.length; i++) {
                 File kid = new File(srcDir, kids[i]);
+                if (excluded(kid, srcPrefix)) {
+                    continue;
+                }
                 if (!kid.isDirectory()) {
                     log("Warning: stray file " + kid + " encountered; ignoring", Project.MSG_WARN);
                     continue;
                 }
-                used |= lookForBrandingJars(kid, new File(destDir, kids[i]));
+                used |= lookForBrandingJars(kid, new File(destDir, kids[i]), srcPrefix);
             }
             if (!used) {
                 log("Warning: stray directory " + srcDir + " with no brandables encountered; ignoring", Project.MSG_WARN);
@@ -91,9 +111,10 @@ public final class Branding extends Task {
     private void packBrandingJar(File srcDir, File destJarBase) throws IOException {
         DirectoryScanner scanner = new DirectoryScanner();
         scanner.setBasedir(srcDir);
+        scanner.addDefaultExcludes(); // #68929
         scanner.scan();
         String[] files = scanner.getIncludedFiles();
-        Jar jar = (Jar) getProject().createTask("jar");
+        Zip zip = (Zip) getProject().createTask("zip");
         String name = destJarBase.getName();
         String nameBase = name.substring(0, name.length() - ".jar".length());
         File destFolder = new File(destJarBase.getParentFile(), "locale");
@@ -101,8 +122,8 @@ public final class Branding extends Task {
             throw new IOException("Could not create directory " + destFolder);
         }
         File destJar = new File(destFolder, nameBase + "_" + token + ".jar");
-        jar.setDestFile(destJar);
-        jar.setCompress(true);
+        zip.setDestFile(destJar);
+        zip.setCompress(true);
         for (int i = 0; i < files.length; i++) {
             ZipFileSet entry = new ZipFileSet();
             entry.setFile(new File(srcDir, files[i]));
@@ -117,11 +138,11 @@ public final class Branding extends Task {
                 brandedPath = basePath.substring(0, dot) + infix + basePath.substring(dot);
             }
             entry.setFullpath(brandedPath);
-            jar.addZipfileset(entry);
+            zip.addZipfileset(entry);
         }
-        jar.setLocation(getLocation());
-        jar.init();
-        jar.execute();
+        zip.setLocation(getLocation());
+        zip.init();
+        zip.execute();
     }
     
 }
