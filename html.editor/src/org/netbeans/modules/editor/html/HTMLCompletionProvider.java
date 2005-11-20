@@ -32,6 +32,7 @@ import org.netbeans.editor.ext.Completion;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.CompletionQuery.ResultItem;
 import org.netbeans.editor.ext.ExtEditorUI;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery.HTMLResultItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -68,7 +69,9 @@ public class HTMLCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        return 0;
+        int type = ((HTMLSyntaxSupport)Utilities.getDocument(component).getSyntaxSupport()).checkCompletion(component, typedText, false);
+        if(type == ExtSyntaxSupport.COMPLETION_POPUP) return COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE;
+        else return 0;
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {

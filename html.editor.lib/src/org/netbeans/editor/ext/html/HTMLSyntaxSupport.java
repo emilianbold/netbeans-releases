@@ -581,10 +581,10 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     public int checkCompletion(JTextComponent target, String typedText, boolean visible ) {
         if( !visible ) {
             int retVal = COMPLETION_CANCEL;
+            int dotPos = target.getCaret().getDot();
+            BaseDocument doc = (BaseDocument)target.getDocument();
             switch( typedText.charAt( typedText.length()-1 ) ) {
                 case '/':
-                    int dotPos = target.getCaret().getDot();
-                    BaseDocument doc = (BaseDocument)target.getDocument();
                     if (dotPos >= 2) { // last char before inserted slash
                         try {
                             String txtBeforeSpace = doc.getText(dotPos-2, 2);
@@ -593,8 +593,15 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                         } catch (BadLocationException e) {}
                     }
                     break;
-
                 case ' ':
+                    HTMLSyntaxSupport sup = (HTMLSyntaxSupport)doc.getSyntaxSupport().get(HTMLSyntaxSupport.class);
+                    try {
+                        TokenItem ti = sup.getTokenChain(dotPos-1, dotPos);
+                        if(ti != null && ti.getTokenID() == HTMLTokenContext.WS) return COMPLETION_POPUP;
+                    }catch(BadLocationException e) {
+                        //do nothing
+                    }
+                    break;
                 case '<':
                 case '&':
                     retVal = COMPLETION_POPUP;
