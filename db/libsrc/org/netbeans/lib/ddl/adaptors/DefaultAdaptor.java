@@ -28,6 +28,11 @@ import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
 public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable {
+    
+    // XXX apart from caching the DatabaseMetaData return values, this class doesn't do almost
+    // anything useful and prevents the db module from compiling on JDK 1.6 -- should be removed
+    // or implemented in a different way
+    
     private transient Connection con;
     private transient DatabaseMetaData dmd;
     protected Map properties;
@@ -3956,7 +3961,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable {
     }
     
     public int getDatabaseMajorVersion() throws SQLException {
-        return -1;
+        return dmd.getDatabaseMajorVersion();
     }
     
     public int getDatabaseMinorVersion() throws SQLException {

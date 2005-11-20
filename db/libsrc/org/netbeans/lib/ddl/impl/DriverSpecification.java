@@ -215,26 +215,25 @@ public class DriverSpecification {
     //another patches
 
     public boolean areViewsSupported() {
-        LinkedList list = new LinkedList();
-
-        list.add("PointBase"); // NOI18N
-        list.add("MySQL"); // NOI18N
-        list.add("HypersonicSQL"); // NOI18N
-//        list.add("InstantDB"); // NOI18N - isn't necessary in the list - getTables() returns empty result set for views
-
         try {
             String productName = dmd.getDatabaseProductName().trim();
-            if (list.contains(productName))
-                if (productName.equalsIgnoreCase("PointBase"))
-                    return ((dmd.getDriverMajorVersion() == 4 && dmd.getDriverMinorVersion() >= 1) || dmd.getDriverMajorVersion() > 4);
-                else
-                    return false;
-            else
-                return true;
+            
+            if ("PointBase".equals(productName)) { // NOI18N
+                int driverMajorVersion = dmd.getDriverMajorVersion();
+                int driverMinorVersion = dmd.getDriverMinorVersion();
+                return ((driverMajorVersion == 4 && driverMinorVersion >= 1) || driverMajorVersion > 4);
+            } else if ("MySQL".equals(productName)) { // NOI18N
+                int databaseMajorVersion = dmd.getDatabaseMajorVersion();
+                return (databaseMajorVersion >= 5);
+            } else if ("HypersonicSQL".equals(productName)) { // NOI18N
+                // XXX is this still true for HypersonicSQL?
+                return false;
+            }
         } catch(SQLException exc) {
-            //PENDING
-            return true;
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
         }
+        
+        return true;
     }
 
     private String getQuoteString() {
