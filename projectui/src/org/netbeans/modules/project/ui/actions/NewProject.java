@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -114,9 +115,8 @@ public class NewProject extends BasicAction {
                         // First. Open all returned projects in the GUI.
 
                         LinkedList filesToOpen = new LinkedList();
+                        List projectsToOpen = new LinkedList();
 
-                        boolean mainProjectSet = false;
-                        Project firstProject = null;
                         for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
                             Object obj = it.next ();
                             FileObject newFo;
@@ -141,15 +141,8 @@ public class NewProject extends BasicAction {
                                 try {
                                     Project p = ProjectManager.getDefault().findProject(newFo);
                                     if (p != null) {
-                                        if (firstProject == null) {
-                                            firstProject = p;
-                                        }
-                                        // It is a project, so open it
-                                        OpenProjectList.getDefault().open(new Project[] {p}, false, true);
-                                        if (setFirstMainFinal && !mainProjectSet) {
-                                            OpenProjectList.getDefault().setMainProject( p );
-                                            mainProjectSet = true;
-                                        }
+                                        // It is a project, so schedule it to open:
+                                        projectsToOpen.add(p);
                                     } else {
                                         // Just a folder to expand
                                         filesToOpen.add(newDo);
@@ -163,13 +156,21 @@ public class NewProject extends BasicAction {
                             }
                         }
                         
+                        Project lastProject = projectsToOpen.size() > 0 ? (Project) projectsToOpen.get(0) : null;
+                        
+                        OpenProjectList.getDefault().open((Project[] ) projectsToOpen.toArray(new Project[0]), false, true);
+                        
+                        if (setFirstMainFinal && lastProject != null) {
+                            OpenProjectList.getDefault().setMainProject(lastProject);
+                        }
+                        
                         // Show the project tab to show the user we did something
                         ProjectUtilities.makeProjectTabVisible( true );
                         
                         // Second open the files                
-                        if (filesToOpen.isEmpty() && firstProject != null) {
+                        if (filesToOpen.isEmpty() && lastProject != null) {
                             // Just select and expand the project node
-                            ProjectUtilities.selectAndExpandProject(firstProject);
+                            ProjectUtilities.selectAndExpandProject(lastProject);
                         }
                         else {
                             for( Iterator it = filesToOpen.iterator(); it.hasNext(); ) { // Open the files
