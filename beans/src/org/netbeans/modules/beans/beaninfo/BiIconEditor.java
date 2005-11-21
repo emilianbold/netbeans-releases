@@ -16,8 +16,6 @@ package org.netbeans.modules.beans.beaninfo;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
-import java.io.*;
-import java.util.*;
 import java.net.URL;
 
 import javax.swing.*;
@@ -29,9 +27,16 @@ import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.ListIterator;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
-
+import org.openide.filesystems.FileUtil;
 /**
  * PropertyEditor for Icons. Depends on existing DataObject for images.
  * Images must be represented by some DataObject which returns itselv
@@ -304,31 +309,11 @@ class BiIconEditor extends PropertyEditorSupport {
             bSelect.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     if (rbClasspath.isSelected()) {
-                        String name;
-                        try {
-                            // selects one folder from data systems
-                            DataObject d = (DataObject)
-                            NodeOperation.getDefault().select(
-                            bundle.getString("CTL_OpenDialogName"),
-                            bundle.getString("CTL_FileSystemName"),
-                            RepositoryNodeFactory.getDefault().repository(DataFilter.ALL),
-                            new NodeAcceptor() {
-                                public boolean acceptNodes(Node[] nodes) {
-                                    if ((nodes == null) || (nodes.length != 1))
-                                        return false;
-                                    return nodes[0].getCookie(DataFolder.class) == null;
-                                }
-                            },
-                            null
-                            )[0].getCookie(DataObject.class);
-                            FileObject sourceFo = d.getPrimaryFile();
-                            ClassPath cp = ClassPath.getClassPath( sourceFo, ClassPath.SOURCE );
-                            name = cp.getResourceName( sourceFo );
-                        } catch (org.openide.util.UserCancelException ex) {
-                            return;
+                        String name = selectResource();
+                        if (name != null) {
+                            tfName.setText("/" + name); // NOI18N
+                            setValue();
                         }
-                        tfName.setText("/" + name); // NOI18N
-                        setValue();
                     }
                 }
             });
@@ -401,5 +386,135 @@ class BiIconEditor extends PropertyEditorSupport {
             return ii;
         }
         
+        private java.util.List getRoots(ClassPath cp) {
+            ArrayList list = new ArrayList(cp.entries().size());
+            Iterator eit = cp.entries().iterator();
+            while(eit.hasNext()) {
+                ClassPath.Entry e = (ClassPath.Entry)eit.next();
+                
+                // try to map it to sources
+                URL url = e.getURL();
+                SourceForBinaryQuery.Result r = SourceForBinaryQuery.findSourceRoots(url);
+                FileObject [] fos = r.getRoots();
+                if (fos.length > 0) {
+                    for (int i = 0 ; i < fos.length; i++) list.add(fos[i]);
+                } else {
+                    if (e.getRoot()!=null)
+                        list.add(e.getRoot()); // add the class-path location directly
+                }
+            }
+            
+            return list;
+        }
+        
+        private String rootDisplayName(FileObject fo) {
+            return FileUtil.getFileDisplayName(fo);
+        }
+        
+        /**
+         * Obtains icon resource from the user.
+         *
+         * @returns name of the selected resource or <code>null</code>.
+         */
+        private String selectResource() {
+            ClassPath executionClassPath = ClassPath.getClassPath(sourceFileObject, ClassPath.EXECUTE);
+            java.util.List roots = (executionClassPath == null) ? Collections.EMPTY_LIST : getRoots(executionClassPath);
+            Node nodes[] = new Node[roots.size()];
+            int selRoot = -1;
+            try {
+                ListIterator iter = roots.listIterator();
+                while (iter.hasNext()) {
+                    FileObject root = (FileObject)iter.next();
+                    DataObject dob = DataObject.find(root);
+                    final String displayName = rootDisplayName(root);
+                    nodes[iter.previousIndex()] = new RootNode(dob.getNodeDelegate(), displayName);
+                }
+            } catch (DataObjectNotFoundException donfex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, donfex);
+                return null;
+            }
+            Children children = new Children.Array();
+            children.add(nodes);
+            final AbstractNode root = new AbstractNode(children);
+            root.setIconBaseWithExtension("org/netbeans/modules/beans/resources/iconResourceRoot.gif"); // NOI18N
+            root.setDisplayName(bundle.getString("CTL_ClassPathName")); // NOI18N
+                            
+            ResourceSelector selector = new ResourceSelector(root);
+            DialogDescriptor dd = new DialogDescriptor(selector, bundle.getString("CTL_OpenDialogName")); // NOI18N
+            Object res = DialogDisplayer.getDefault().notify(dd);
+            nodes = (res == DialogDescriptor.OK_OPTION) ? selector.getNodes() : null;
+            String name = null;
+            if ((nodes != null) && (nodes.length == 1)) {
+                DataObject dob = (DataObject)nodes[0].getCookie(DataObject.class);
+                if (dob != null) {
+                    FileObject fob = dob.getPrimaryFile();
+                    if (fob != null) {                        
+                        if (executionClassPath.contains(fob)) {
+                            name = executionClassPath.getResourceName(fob);
+                        } else {
+                            ClassPath srcClassPath = ClassPath.getClassPath(fob, ClassPath.SOURCE);
+                            name = srcClassPath.getResourceName(fob);
+                        }
+                    }
+                }
+            }
+            return name;
+        }
+        
     } // end of IconPanel
+    
+    private static class RootNode extends FilterNode {
+        RootNode(Node node, String displayName) {
+            super(node);
+            if (displayName != null) {
+                disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME);
+                setDisplayName(displayName);
+            }
+        }
+    } // RootNode
+    
+    private static class ResourceSelector extends JPanel implements ExplorerManager.Provider {
+        /** Manages the tree. */
+        private ExplorerManager manager = new ExplorerManager();
+                
+        public ResourceSelector(Node root) {
+            setLayout(new BorderLayout(0, 5));
+            setBorder(new EmptyBorder(12, 12, 0, 11));
+            getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ResourceSelector")); // NOI18N
+            getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ResourceSelector")); // NOI18N
+            manager.setRootContext(root);
+            
+            BeanTreeView tree = new BeanTreeView();
+            tree.setPopupAllowed(false);
+            tree.setDefaultActionAllowed(false);
+            // install proper border for tree
+            tree.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
+            tree.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ResourceSelectorView")); // NOI18N
+            tree.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ResourceSelectorView")); // NOI18N
+            add(tree, BorderLayout.CENTER);
+        }
+        
+        /**
+         * Gets preferred size. Overrides superclass method.
+         * Height is adjusted to 1/2 screen.
+         */
+        public Dimension getPreferredSize() {
+            Dimension dim = super.getPreferredSize();
+            dim.height = Math.max(dim.height, org.openide.util.Utilities.getUsableScreenBounds().height / 2);
+            return dim;
+        }
+        
+        /**
+         * @return selected nodes
+         */
+        public Node[] getNodes() {
+            return manager.getSelectedNodes();
+        }
+        
+        public ExplorerManager getExplorerManager() {
+            return manager;
+        }
+        
+    } // ResourceSelector
+    
 }
