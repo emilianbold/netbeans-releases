@@ -16,6 +16,7 @@ package org.netbeans.modules.java.j2seproject.ui.wizards;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -24,11 +25,16 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SESourceRootsUi;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -238,11 +244,35 @@ public final class FolderList extends javax.swing.JPanel {
     }//GEN-LAST:event_addButtonActionPerformed
     
     
-    static boolean isValidRoot (File file, File[] relatedRoots, File projectFolder) {        
-        if (FileOwnerQuery.getOwner(file.toURI())!=null 
+    static boolean isValidRoot (File file, File[] relatedRoots, File projectFolder) {
+        Project p;
+        if ((p = FileOwnerQuery.getOwner(file.toURI()))!=null 
             && !file.getAbsolutePath().startsWith(projectFolder.getAbsolutePath()+File.separatorChar)) {
-            return false;
-        }                
+            final Sources sources = (Sources) p.getLookup().lookup(Sources.class);
+            if (sources == null) {
+                return false;
+            }
+            final SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            final SourceGroup[] javaGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            final SourceGroup[] groups = new SourceGroup [sourceGroups.length + javaGroups.length];
+            System.arraycopy(sourceGroups,0,groups,0,sourceGroups.length);
+            System.arraycopy(javaGroups,0,groups,sourceGroups.length,javaGroups.length);
+            final FileObject projectDirectory = p.getProjectDirectory();
+            final FileObject fileObject = FileUtil.toFileObject(file);
+            if (projectDirectory == null || fileObject == null) {
+                return false;
+            }
+            for (int i = 0; i< groups.length; i++) {
+                final FileObject sgRoot = groups[i].getRootFolder();
+                if (fileObject.equals(sgRoot)) {
+                    return false;
+                }
+                if (!projectDirectory.equals(sgRoot) && FileUtil.isParentOf(sgRoot, fileObject)) {
+                    return false;
+                }
+            }
+            return true;
+        }
         else if (contains (file, relatedRoots)) {
             return false;
         }

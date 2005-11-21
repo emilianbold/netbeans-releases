@@ -33,7 +33,10 @@ import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -43,6 +46,7 @@ import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
@@ -297,7 +301,7 @@ public final class J2SESourceRootsUi {
             selectionModel.clearSelection();
             Set rootsFromOtherProjects = new HashSet ();
             Set rootsFromRelatedSourceRoots = new HashSet();
-            for( int i = 0; i < files.length; i++ ) {
+out:        for( int i = 0; i < files.length; i++ ) {
                 File normalizedFile = FileUtil.normalizeFile(files[i]);
                 Project p;
                 if (ownedFolders.contains(normalizedFile)) {
@@ -312,16 +316,41 @@ public final class J2SESourceRootsUi {
                 }
                 else if (this.relatedEditMediator != null && this.relatedEditMediator.ownedFolders.contains(normalizedFile)) {
                     rootsFromRelatedSourceRoots.add (normalizedFile);
+                    continue;
                 }
-                else if ((p=FileOwnerQuery.getOwner(normalizedFile.toURI()))!=null && !p.getProjectDirectory().equals(project.getProjectDirectory())) {
-                    rootsFromOtherProjects.add (normalizedFile);
+                if ((p=FileOwnerQuery.getOwner(normalizedFile.toURI()))!=null && !p.getProjectDirectory().equals(project.getProjectDirectory())) {
+                    final Sources sources = (Sources) p.getLookup().lookup (Sources.class);
+                    if (sources == null) {
+                        rootsFromOtherProjects.add (normalizedFile);
+                        continue;
+                    }
+                    final SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+                    final SourceGroup[] javaGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    final SourceGroup[] groups = new SourceGroup [sourceGroups.length + javaGroups.length];
+                    System.arraycopy(sourceGroups,0,groups,0,sourceGroups.length);
+                    System.arraycopy(javaGroups,0,groups,sourceGroups.length,javaGroups.length);
+                    final FileObject projectDirectory = p.getProjectDirectory();
+                    final FileObject fileObject = FileUtil.toFileObject(normalizedFile);
+                    if (projectDirectory == null || fileObject == null) {
+                        rootsFromOtherProjects.add (normalizedFile);
+                        continue;
+                    }
+                    for (int j=0; j<groups.length; j++) {
+                        final FileObject sgRoot = groups[j].getRootFolder();
+                        if (fileObject.equals(sgRoot)) {
+                            rootsFromOtherProjects.add (normalizedFile);
+                            continue out;
+                        }
+                        if (!projectDirectory.equals(sgRoot) && FileUtil.isParentOf(sgRoot, fileObject)) {
+                            rootsFromOtherProjects.add (normalizedFile);
+                            continue out;
+                        }
+                    }
                 }
-                else {
-                    int current = lastIndex + 1 + i;
-                    rootsModel.insertRow( current, new Object[] {normalizedFile, sourceRoots.createInitialDisplayName(normalizedFile)}); //NOI18N
-                    selectionModel.addSelectionInterval(current,current);
-                    this.ownedFolders.add (normalizedFile);
-                }
+                int current = lastIndex + 1 + i;
+                rootsModel.insertRow( current, new Object[] {normalizedFile, sourceRoots.createInitialDisplayName(normalizedFile)}); //NOI18N
+                selectionModel.addSelectionInterval(current,current);
+                this.ownedFolders.add (normalizedFile);
             }
             if (rootsFromOtherProjects.size() > 0 || rootsFromRelatedSourceRoots.size() > 0) {
                 rootsFromOtherProjects.addAll(rootsFromRelatedSourceRoots);
