@@ -1006,7 +1006,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-layer">
   <p>
-   Yes.
+   Yes. It instals several panels to Options Dialog.
+   <api name="OptionsDialogSPILayers" group="layer" type="import" category="devel" url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
   </p>
  </answer>
 
@@ -1047,8 +1048,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-read">
   <p>
-   <api name="OptionsDialogSPILayers" group="layer" type="import" category="devel" url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
-   For registration of custom top level options panels.
+      No.
   </p>
  </answer>
 

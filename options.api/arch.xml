@@ -1007,7 +1007,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-layer">
   <p>
-   Yes.
+   Yes, it installs OptionsWindowAction to menu, and AdvancedPanel implementation
+   to Options Dialog.
   </p>
  </answer>
 
