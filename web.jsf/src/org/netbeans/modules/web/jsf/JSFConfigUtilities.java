@@ -147,29 +147,33 @@ public class JSFConfigUtilities {
     }
     
     public static boolean validateXML(FileObject dd){
+        boolean value = false;  // the default value of the com.sun.faces.validateXml
         if (dd != null){
             try{
                 WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
                 InitParam param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "com.sun.faces.validateXml"); //NOI18N
-                return  "true".equals(param.getParamValue().trim());
+                if (param != null)
+                    value =   "true".equals(param.getParamValue().trim());
             } catch (java.io.IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
         }
-        return false;
+        return value;
     }
     
     public static boolean verifyObjects(FileObject dd){
+        boolean value = false; // the default value of the com.sun.faces.verifyObjects
         if (dd != null){
             try{
                 WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
                 InitParam param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "com.sun.faces.verifyObjects"); //NOI18N
-                return  "true".equals(param.getParamValue().trim());
+                if (param != null)
+                    value = "true".equals(param.getParamValue().trim());
             } catch (java.io.IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
         }
-        return false;
+        return value;
     }
     
     /** Returns relative path for all jsf configuration files in the web module. If there is no
