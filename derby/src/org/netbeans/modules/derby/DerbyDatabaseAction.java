@@ -14,13 +14,13 @@
 package org.netbeans.modules.derby;
 
 import java.awt.Component;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
@@ -36,16 +36,6 @@ public class DerbyDatabaseAction extends AbstractAction implements Presenter.Men
     
     private JMenuItem menuPresenter = null;
     
-    private PropertyChangeListener pcl = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (DerbyOptions.PROP_DERBY_LOCATION.equals(evt.getPropertyName())) {
-                if (menuPresenter != null) {
-                    setMenuItemVisible(menuPresenter);
-                }
-            }
-        }
-    };
-    
     public DerbyDatabaseAction() {
         super(NbBundle.getMessage(DerbyDatabaseAction.class, "LBL_DerbyDatabase"));
     }
@@ -55,18 +45,12 @@ public class DerbyDatabaseAction extends AbstractAction implements Presenter.Men
 
     public javax.swing.JMenuItem getMenuPresenter() {
         if (menuPresenter == null) {
-            DerbyOptions.getDefault().addPropertyChangeListener(pcl);
             menuPresenter = new MyMenu();
-            setMenuItemVisible(menuPresenter);
         }
         return menuPresenter;
     }
     
-    private static void setMenuItemVisible(JMenuItem menuItem) {
-        menuItem.setVisible(!DerbyOptions.getDefault().isLocationNull());        
-    }
-    
-    private final class MyMenu extends JMenu {
+    private final class MyMenu extends JMenu implements DynamicMenuContent {
         
         public MyMenu() {
             super((String)getValue(Action.NAME));
@@ -85,6 +69,18 @@ public class DerbyDatabaseAction extends AbstractAction implements Presenter.Men
                 add(c);
             }
             return super.getPopupMenu();
+        }
+
+        public JComponent[] synchMenuPresenters(javax.swing.JComponent[] items) {
+            return getMenuPresenters();
+        }
+
+        public JComponent[] getMenuPresenters() {
+            if (!DerbyOptions.getDefault().isLocationNull()) {
+                return new JComponent[] { this };
+            } else {
+                return new JComponent[0];
+            }
         }
     }
 }
