@@ -155,7 +155,7 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
         }
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {}
-        }).waitFinished ();
+        }, 100).waitFinished ();
         assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
         assertNull ("Validation on Finish passes", mfp.failedMsg);        
         assertNull ("Finish was clicked, no initialization either", panels[2].component);
