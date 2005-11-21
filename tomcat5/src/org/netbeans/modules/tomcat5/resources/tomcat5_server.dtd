@@ -263,6 +263,13 @@ You can declare the characteristics of the resource to be returned for JNDI look
 <!ATTLIST Resource name CDATA #REQUIRED>
 <!ATTLIST Resource type CDATA #REQUIRED>
 <!ATTLIST Resource auth CDATA #REQUIRED>
+<!ATTLIST Resource driverClassName CDATA #IMPLIED>
+<!ATTLIST Resource url CDATA #IMPLIED>
+<!ATTLIST Resource username CDATA #IMPLIED>
+<!ATTLIST Resource password CDATA #IMPLIED>
+<!ATTLIST Resource maxActive CDATA #IMPLIED>
+<!ATTLIST Resource maxIdle CDATA #IMPLIED>
+<!ATTLIST Resource maxWait CDATA #IMPLIED>
 <!ATTLIST Resource description CDATA #IMPLIED>
 <!ATTLIST Resource scope CDATA #IMPLIED>
 
