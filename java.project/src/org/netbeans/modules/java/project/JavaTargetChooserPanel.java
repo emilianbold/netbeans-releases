@@ -134,14 +134,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         if (gui != null) {
             setLocalizedErrorMessage (errorMessage);
         }
-        if (errorMessage!=null) returnValue=false;
-        
-        // this enables to display error messages from the bottom panel
-        // Nevertheless, the previous error messages have bigger priorities 
-        if (returnValue && bottomPanel != null) {
-           if (!bottomPanel.isValid())
-               return false;
-        }
+        if (errorMessage!=null) returnValue=false;                
         
         if (type != NewJavaFileWizardIterator.TYPE_PACKAGE && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion)<=0) { 
             if(isValidPackageRequired){
@@ -156,6 +149,14 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         if (specVersion != null && templateSrcLev != null && specVersion.compareTo(new SpecificationVersion(templateSrcLev)) < 0) {
             setErrorMessage("ERR_JavaTargetChooser_WrongPlatform"); // NOI18N
         }
+        
+        // this enables to display error messages from the bottom panel
+        // Nevertheless, the previous error messages have bigger priorities 
+        if (returnValue && bottomPanel != null) {
+           if (!bottomPanel.isValid())
+               return false;
+        }
+        
         return returnValue;
     }
 
