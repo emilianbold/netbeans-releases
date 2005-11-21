@@ -45,8 +45,23 @@ final class CallstackFrameNode extends AbstractNode {
     
     /** Creates a new instance of CallstackFrameNode */
     public CallstackFrameNode(final String frameInfo) {
+        this(frameInfo, null);
+    }
+    
+    /**
+     * Creates a new instance of CallstackFrameNode
+     *
+     * @param  frameInfo  line of a callstack, e.g. <code>foo.bar.Baz:314</code>
+     * @param  displayName  display name for the node, or <code>null</code>
+     *                      to use the default display name for the given
+     *                      callstack frame info
+     */
+    public CallstackFrameNode(final String frameInfo,
+                              final String displayName) {
         super(Children.LEAF);
-        setDisplayName("at " + frameInfo);                              //NOI18N
+        setDisplayName(displayName != null
+                       ? displayName
+                       : "at " + frameInfo);                            //NOI18N
         setIconBaseWithExtension(
                 "org/netbeans/modules/junit/output/res/empty.gif");     //NOI18N
 

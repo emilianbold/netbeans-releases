@@ -44,26 +44,23 @@ final class TestMethodNodeChildren extends Children.Array {
             nodesCount += trouble.stackTrace.length;
         }
         
+        final String topFrameInfo = (trouble.stackTrace != null)
+                                    && (trouble.stackTrace.length != 0)
+                                            ? trouble.stackTrace[0]
+                                            : null;
+
         final Node[] children = new Node[nodesCount];
         int index = 0;
         if (trouble.message != null) {
-            children[index++] = createNoIconNode(trouble.message);
+            children[index++] = new CallstackFrameNode(topFrameInfo,
+                                                       trouble.message);
         }
-        children[index++] = createNoIconNode(trouble.exceptionClsName);
+        children[index++] = new CallstackFrameNode(topFrameInfo,
+                                                   trouble.exceptionClsName);
         for (int i = 0; index < nodesCount; i++) {
             children[index++] = new CallstackFrameNode(trouble.stackTrace[i]);
         }
         add(children);
-    }
-    
-    /**
-     */
-    private Node createNoIconNode(String displayName) {
-        AbstractNode node = new AbstractNode(Children.LEAF);
-        node.setDisplayName(displayName);
-        node.setIconBaseWithExtension(
-                "org/netbeans/modules/junit/output/res/empty.gif");     //NOI18N
-        return node;
     }
     
     /**
