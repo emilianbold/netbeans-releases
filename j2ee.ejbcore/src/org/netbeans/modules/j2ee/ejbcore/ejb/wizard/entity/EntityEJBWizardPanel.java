@@ -170,6 +170,7 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 8);
         add(jLabel1, gridBagConstraints);
 
+        primaryKeyTextField.setText("Long");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
