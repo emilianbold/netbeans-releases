@@ -392,25 +392,37 @@ public class RequestProcessorTest extends NbTestCase {
     /** Check whether task is finished when it should be.
      */
     public void testCheckFinished () {
+        doCheckFinished(false);
+    }
+    public void testCheckFinishedWithFalse () {
+        doCheckFinished(true);
+    }
+    
+    private void doCheckFinished(boolean usefalse) {
         RequestProcessor rp = new RequestProcessor ("Finish");
-        
-        class R extends Object implements Runnable {
-            RequestProcessor.Task t;
-            
-            public void run () {
-                if (t.isFinished ()) {
-                    fail ("Finished when running");
-                }
-            }
+
+class R extends Object implements Runnable {
+    RequestProcessor.Task t;
+    
+    public void run () {
+        if (t.isFinished ()) {
+            fail ("Finished when running");
         }
+    }
+}
         
         R r = new R ();
-        RequestProcessor.Task task = rp.create (r);
+        RequestProcessor.Task task = usefalse ? rp.create(r, false) : rp.create (r);
         r.t = task;
 
         if (task.isFinished ()) {
             fail ("Finished after creation");
         }
+     
+        doCommonTestWithScheduling(task);
+    }
+
+    private void doCommonTestWithScheduling(final RequestProcessor.Task task) {
      
         task.schedule (200);
         
@@ -429,6 +441,31 @@ public class RequestProcessorTest extends NbTestCase {
         if (task.isFinished ()) {
             fail ("Finished when planed");
         }
+    }
+
+    public void testCheckFinishedWithTrue () {
+        RequestProcessor rp = new RequestProcessor ("Finish");
+        
+        class R extends Object implements Runnable {
+            RequestProcessor.Task t;
+            
+            public void run () {
+                if (t.isFinished ()) {
+                    fail ("Finished when running");
+                }
+            }
+        }
+        
+        R r = new R ();
+        RequestProcessor.Task task = rp.create(r, true);
+        r.t = task;
+
+        assertTrue("It has to be finished after creation", task.isFinished());
+
+        task.waitFinished();
+
+        // rest is the same
+        doCommonTestWithScheduling(task);
     }
         
 

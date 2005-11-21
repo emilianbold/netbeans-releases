@@ -842,7 +842,7 @@ public final class LoaderPoolNode extends AbstractNode {
         private static RequestProcessor rp = new RequestProcessor("Refresh Loader Pool"); // NOI18N
         
         public NbLoaderPool() {
-            fireTask = rp.create(this);
+            fireTask = rp.create(this, true);
             mimeResolvers = Lookup.getDefault().lookup(new Lookup.Template(MIMEResolver.class));
             mimeResolvers.addLookupListener(this);            
         }

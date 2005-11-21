@@ -22,6 +22,22 @@ Microsystems, Inc. All Rights Reserved.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="rp-create-true" >
+      <api name="util"/>
+      <summary>Ability to create finished RequestProcessor task</summary>
+      <version major="6" minor="8"/>
+      <date day="22" month="11" year="2005"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" modification="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
+      <description>
+        <a href="@TOP@/org/openide/util/RequestProcessor.html">RequestProcessor.create(Runnable, boolean)</a>
+        has been added to allow creation of 
+        <a href="@TOP@/org/openide/util/RequestProcessor.Task.html">Task</a>
+        that has not executed its runnable yet, but looks like it is finished.
+      </description>
+      <class package="org.openide.util" name="RequestProcessor"/>
+      <issue number="68031"/>
+    </change>
     <change id="less-events-from-proxylookup" >
       <api name="lookup"/>
       <summary>Less change notifications from ProxyLookup</summary>

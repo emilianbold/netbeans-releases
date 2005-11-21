@@ -243,14 +243,36 @@ public final class RequestProcessor {
 
     /** Creates request that can be later started by setting its delay.
     * The request is not immediatelly put into the queue. It is planned after
-    * setting its delay by schedule method.
+    * setting its delay by schedule method. By default the initial state of 
+    * the task is <code>!isFinished()</code> so doing waitFinished() will
+    * block on and wait until the task is scheduled.
     *
     * @param run action to run in the process
     * @return the task to control execution of given action
     */
     public Task create(Runnable run) {
-        return new Task(run);
+        return create(run, false);
     }
+    
+    /** Creates request that can be later started by setting its delay.
+    * The request is not immediatelly put into the queue. It is planned after
+    * setting its delay by schedule method.
+    *
+    * @param run action to run in the process
+    * @param initiallyFinished should the task be marked initially finished? If 
+    *   so the {@link waitFinished} on the task will succeeded immediatelly even
+    *   the task has not yet been {@link Task.schedule}d.
+    * @return the task to control execution of given action
+    * @since 6.8
+    */
+    public Task create(Runnable run, boolean initiallyFinished) {
+        Task t = new Task(run);
+        if (initiallyFinished) {
+            t.notifyFinished();
+        }
+        return t;
+    }
+    
 
     /** Tests if the current thread is request processor thread.
     * This method could be used to prevent the deadlocks using
