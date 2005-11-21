@@ -90,7 +90,6 @@ public class SwitcherTable extends JTable {
     private void init() {
         setBorder(BorderFactory.createLineBorder(getForeground()));
         setShowHorizontalLines(false);
-        setBackground(UIManager.getColor("ComboBox.background")); //NOI18N
         // Calc row height here so that TableModel can adjust number of columns.
         calcRowHeight(getOffscreenGraphics());
     }
@@ -142,13 +141,6 @@ public class SwitcherTable extends JTable {
         }
         
         ren.setOpaque(true);
-        if (selected) {
-            ren.setBackground(getSelectionBackground());
-            ren.setForeground(getSelectionForeground());
-        } else {
-            ren.setBackground(getBackground());
-            ren.setForeground(getForeground());
-        }
         
         return ren;
     }
@@ -163,28 +155,28 @@ public class SwitcherTable extends JTable {
         if (foreground == null) {
             foreground = UIManager.getColor("ComboBox.foreground");
         }
-        return foreground;
+        return foreground != null ? foreground : super.getForeground();
     }
     
     public Color getBackground() {
         if (background == null) {
             background = UIManager.getColor("ComboBox.background");
         }
-        return background;
+        return background != null ? background : super.getBackground();
     }
     
     public Color getSelectionForeground() {
         if (selForeground == null) {
             selForeground = UIManager.getColor("ComboBox.selectionForeground");
         }
-        return selForeground;
+        return selForeground != null ? selForeground : super.getSelectionForeground();
     }
     
     public Color getSelectionBackground() {
         if (selBackground == null) {
             selBackground = UIManager.getColor("ComboBox.selectionBackground");
         }
-        return selBackground;
+        return selBackground != null ? selBackground : super.getSelectionBackground();
     }
     
     /**
