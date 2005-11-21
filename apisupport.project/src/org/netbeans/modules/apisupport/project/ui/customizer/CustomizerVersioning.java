@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -44,6 +45,8 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
     private static final int CHECKBOX_WIDTH = new JCheckBox().getWidth();
     
     private boolean lastAppImplChecked;
+    
+    private Dimension lastSize;
     
     /** Creates new form CustomizerVersioning */
     CustomizerVersioning(SingleModuleProperties props) {
@@ -526,9 +529,14 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         d.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CTL_AddNewFriend_Title"));
         okButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CTL_OK"));
         cancel.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CTL_Cancel"));
-        d.pack();
+        if (lastSize != null) {
+            d.setSize(lastSize);
+        } else {
+            d.pack();
+        }
         d.setLocationRelativeTo(null);
         d.setVisible(true);
+        lastSize = d.getSize();
         if (descriptor.getValue().equals(okButton)) {
             String newFriendCNB = addFriend.getFriendCNB();
             getFriendModel().addFriend(newFriendCNB);
