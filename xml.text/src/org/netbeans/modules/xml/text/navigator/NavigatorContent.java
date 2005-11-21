@@ -177,10 +177,10 @@ public class NavigatorContent extends JPanel   {
                                 DataObject documentDO = NbEditorUtilities.getDataObject(bdoc);
                                 if(documentDO != null) 
                                     uiCache.put(documentDO, new WeakReference(panel));
-                                System.out.println("creating new xml nav panel");
+//                                System.out.println("creating new xml nav panel");
                             } else {
                                 panel = cachedPanel;
-                                System.out.println("panel gotten from cache");
+//                                System.out.println("panel gotten from cache");
                             }
                             
                             //paint the navigator UI
