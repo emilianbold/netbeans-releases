@@ -195,7 +195,16 @@ public class TopLogging
         StringBuffer sb = (boot != null ? new StringBuffer(boot) : new StringBuffer());
         
         // std extensions
-        String extensions = System.getProperty("java.ext.dirs"); // NOI18N
+        findBootJars(System.getProperty("java.ext.dirs"), sb);
+        findBootJars(System.getProperty("java.endorsed.dirs"), sb);
+        return sb.toString();
+    }
+
+    /** Scans path list for something that can be added to classpath.
+     * @param extensions null or path list
+     * @param sb buffer to put results to
+     */
+    private static void findBootJars(final String extensions, final StringBuffer sb) {
         if (extensions != null) {
             for (StringTokenizer st = new StringTokenizer(extensions, File.pathSeparator); st.hasMoreTokens();) {
                 File dir = new File(st.nextToken());
@@ -213,8 +222,6 @@ public class TopLogging
                 }
             }
         }
-        
-        return sb.toString();
     }
     
     protected void finalize() throws Throwable {
