@@ -95,23 +95,31 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
     private JFileChooser getJFileChooser(){
         //JFileChooser chooser = new JFileChooser();
         
-        if (chooser != null)
-            return chooser;
+        if (chooser == null) {
         
-        chooser = new JFileChooser();
+            chooser = new JFileChooser();
+
+            chooser.setDialogTitle(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
+            chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
+
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            chooser.setApproveButtonMnemonic("Choose_Button_Mnemonic".charAt(0)); //NOI18N
+            chooser.setMultiSelectionEnabled(false);
+            chooser.addChoosableFileFilter(new dirFilter());
+            chooser.setAcceptAllFileFilterUsed(false);
+            chooser.setApproveButtonToolTipText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
+
+            chooser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
+            chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
+        }
+
+        // set the current directory
+        File currentLocation = new File(locationTextField.getText());
+        if (currentLocation.exists() && currentLocation.isDirectory()) {
+            chooser.setCurrentDirectory(currentLocation.getParentFile());
+            chooser.setSelectedFile(currentLocation);
+        }
         
-        chooser.setDialogTitle(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
-        chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
-        
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setApproveButtonMnemonic("Choose_Button_Mnemonic".charAt(0)); //NOI18N
-        chooser.setMultiSelectionEnabled(false);
-        chooser.addChoosableFileFilter(new dirFilter());
-        chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setApproveButtonToolTipText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
-        
-        chooser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
-        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
         
         return chooser;
     }
