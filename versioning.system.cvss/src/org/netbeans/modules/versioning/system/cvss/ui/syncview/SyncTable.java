@@ -307,7 +307,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         boolean allLocallyNew = true;
         boolean allLocallyDeleted = true;
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        File [] files = Utils.getCurrentContext(nodes).getFiles();
+        File [] files = Utils.getCurrentContext(null).getFiles();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             FileInformation info = cache.getStatus(file);
