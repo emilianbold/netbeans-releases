@@ -255,6 +255,10 @@ class EjbJarActionProvider implements ActionProvider {
             if (files != null) {
                 p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]), recursive)); // NOI18N
             } else {
+                FileObject[] testRoots = project.getTestSourceRoots().getRoots();
+                files = findSourcesAndPackages(context, testRoots);
+                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(testRoots,files[0]), recursive)); // NOI18N
+                targetNames = new String[] {"compile-test-single"}; // NOI18N
             }
         // TEST PART
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
