@@ -129,7 +129,7 @@ public class CLIHandlerTest extends NbTestCase {
         assertTrue("Port allocated", runner.resultPort() != 0);
         
         CLIHandler.Status res = CLIHandler.initialize(
-            new CLIHandler.Args(new String[0], nullInput, nullOutput, ""), 
+            new CLIHandler.Args(new String[0], nullInput, nullOutput, nullOutput, ""), 
             null, Collections.EMPTY_LIST, false, false, null
         );
         
@@ -161,7 +161,7 @@ public class CLIHandlerTest extends NbTestCase {
         os.close();
         
         CLIHandler.Status res = CLIHandler.initialize(
-            new CLIHandler.Args(new String[0], nullInput, nullOutput, ""), 
+            new CLIHandler.Args(new String[0], nullInput, nullOutput, nullOutput, ""), 
             null, Collections.EMPTY_LIST, false, false, null
         );
         
@@ -225,7 +225,7 @@ public class CLIHandlerTest extends NbTestCase {
         }
         UserDir ud = new UserDir();
         
-        CLIHandler.Status res = cliInitialize(new String[0], ud, nullInput, nullOutput, null);
+        CLIHandler.Status res = cliInitialize(new String[0], ud, nullInput, nullOutput, nullOutput, null);
         
         assertEquals("Our command line handler is called once", 1, ud.cnt);
         assertEquals("Lock file is created in dir", dir, res.getLockFile().getParentFile());
@@ -254,7 +254,7 @@ public class CLIHandlerTest extends NbTestCase {
         
         CLIHandler.Status res = cliInitialize(new String[0], new H[] {
             h1, h2
-        }, nullInput, nullOutput);
+        }, nullInput, nullOutput, nullOutput);
         
         assertEquals("CLI evaluation failed with return code of h1", 1, res.getExitCode());
         assertEquals("First one executed", 1, h1.cnt);
@@ -288,12 +288,12 @@ public class CLIHandlerTest extends NbTestCase {
         H h1 = new H();
         
         
-        CLIHandler.Status res = cliInitialize(template, h1, nullInput, nullOutput, null, currentDir);
+        CLIHandler.Status res = cliInitialize(template, h1, nullInput, nullOutput, nullOutput, null, currentDir);
         
         assertEquals("First one executed", 1, h1.cnt);
         assertEquals("CLI evaluation failed with return code of h1", 1, res.getExitCode());
         
-        res = cliInitialize(template, java.util.Collections.EMPTY_LIST, nullInput, nullOutput, null, currentDir);
+        res = cliInitialize(template, java.util.Collections.EMPTY_LIST, nullInput, nullOutput, nullOutput, null, currentDir);
         assertEquals("But again executed h1", 2, h1.cnt);
         assertEquals("Now the result is 2 as cnt++ was increased", 2, res.getExitCode());
         
@@ -332,11 +332,11 @@ public class CLIHandlerTest extends NbTestCase {
         }
         H h = new H ();
         
-        CLIHandler.Status res = cliInitialize (new String[0], h, nullInput, nullOutput, null);
+        CLIHandler.Status res = cliInitialize (new String[0], h, nullInput, nullOutput, nullOutput, null);
         assertEquals ("Returns 0 as no finishInitialization is called", 0, res.getExitCode ());
         // after two seconds it calls finishInitialization
         RequestProcessor.Task task = RequestProcessor.getDefault ().post (h, 7000); // 7s is higher than socket timeout
-        res = cliInitialize (new String[0], h, nullInput, nullOutput, null);
+        res = cliInitialize (new String[0], h, nullInput, nullOutput, nullOutput, null);
         
         assertEquals ("Returns 2 as afterFinish needed to be set to 2 before" +
         " calling finishInitialization", 2, res.getExitCode ());
@@ -388,7 +388,7 @@ public class CLIHandlerTest extends NbTestCase {
         
         h.toReturn = 7;
         final Integer blockOn = new Integer(99);
-        CLIHandler.Status res = cliInitialize(new String[0], h, nullInput, nullOutput, blockOn);
+        CLIHandler.Status res = cliInitialize(new String[0], h, nullInput, nullOutput, nullOutput, blockOn);
         assertEquals("Called once, increased -1 to 0", 0, h.cnt);
         assertEquals("Result is provided by H", 7, res.getExitCode());
         
@@ -396,7 +396,7 @@ public class CLIHandlerTest extends NbTestCase {
         class R implements Runnable {
             CLIHandler.Status res;
             public void run() {
-                res = cliInitialize(new String[0], Collections.EMPTY_LIST, nullInput, nullOutput, blockOn);
+                res = cliInitialize(new String[0], Collections.EMPTY_LIST, nullInput, nullOutput, nullOutput, blockOn);
             }
         }
         R r = new R();
@@ -413,7 +413,7 @@ public class CLIHandlerTest extends NbTestCase {
         
         // while R is blocked, run another task
         h.toReturn = 0;
-        res = cliInitialize(new String[0], Collections.EMPTY_LIST, nullInput, nullOutput, null);
+        res = cliInitialize(new String[0], Collections.EMPTY_LIST, nullInput, nullOutput, nullOutput, null);
         assertEquals("Called once, increased to 2", 2, h.cnt);
         assertEquals("Result is provided by H, H gives 0, changes into -1 right now", -1, res.getExitCode());
         
@@ -460,7 +460,7 @@ public class CLIHandlerTest extends NbTestCase {
         // why twice? first attempt is direct, second thru the socket server
         for (int i = 0; i < 2; i++) {
             CLIHandler.Status res = cliInitialize(
-                new String[0], new H[] { h1, h2 }, new ByteArrayInputStream(template), nullOutput);
+                new String[0], new H[] { h1, h2 }, new ByteArrayInputStream(template), nullOutput, nullOutput);
             
             assertNotNull("Attempt " + i + ": " + "Can be read", h1.arr);
             assertEquals("Attempt " + i + ": " + "Read two bytes", 2, h1.arr.length);
@@ -505,7 +505,7 @@ public class CLIHandlerTest extends NbTestCase {
         // why twice? first attempt is direct, second thru the socket server
         for (int i = 0; i < 2; i++) {
             CLIHandler.Status res = cliInitialize(
-                new String[0], new H[] { h1 }, new ByteArrayInputStream(template), nullOutput);
+                new String[0], new H[] { h1 }, new ByteArrayInputStream(template), nullOutput, nullOutput);
             
             assertNotNull("Attempt " + i + ": " + "Can be read", h1.arr);
             assertEquals("Attempt " + i + ": " + "First is same", template[0], h1.arr[0]);
@@ -531,6 +531,14 @@ public class CLIHandlerTest extends NbTestCase {
                     OutputStream os = args.getOutputStream();
                     os.write(template);
                     os.close();
+                    
+                    os = args.getErrorStream();
+                    os.write(0); 
+                    os.write(1);
+                    os.write(2);
+                    os.write(3);
+                    os.write(4);
+                    os.close();
                 } catch (IOException ex) {
                     fail("There is an exception: " + ex);
                 }
@@ -545,15 +553,22 @@ public class CLIHandlerTest extends NbTestCase {
         // why twice? first attempt is direct, second thru the socket server
         for (int i = 0; i < 2; i++) {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ByteArrayOutputStream err = new ByteArrayOutputStream();
             
             CLIHandler.Status res = cliInitialize(
-                new String[0], new H[] { h1, h2 }, nullInput, os);
+                new String[0], new H[] { h1, h2 }, nullInput, os, err);
             
             byte[] arr = os.toByteArray();
             assertEquals("Double size of template", template.length * 2, arr.length);
             
             for (int pos = 0; pos < arr.length; pos++) {
                 assertEquals(pos + ". is the same", template[pos % template.length], arr[pos]);
+            }
+            
+            byte[] errArr = err.toByteArray();
+            assertEquals("5 bytes", 10, errArr.length);
+            for (int x = 0; x < errArr.length; x++) {
+                assertEquals(errArr[x], x % 5);
             }
         }
     }
@@ -579,7 +594,7 @@ public class CLIHandlerTest extends NbTestCase {
         H h = new H();
         
         h.toReturn = 7;
-        CLIHandler.Status res = cliInitialize(new String[0], h, nullInput, nullOutput, null);
+        CLIHandler.Status res = cliInitialize(new String[0], h, nullInput, nullOutput, nullOutput, null);
         assertEquals("Called once, increased -1 to 0", 0, h.cnt);
         assertEquals("Result is provided by H", 7, res.getExitCode());
         
@@ -587,7 +602,7 @@ public class CLIHandlerTest extends NbTestCase {
         
         h.toReturn = 5;
         h.cnt = -1;
-        res = cliInitialize(new String[0], Collections.EMPTY_LIST, nullInput, nullOutput, null);
+        res = cliInitialize(new String[0], Collections.EMPTY_LIST, nullInput, nullOutput, nullOutput, null);
         assertEquals("Not called -1", -1, h.cnt);
         // right now the handler will not be called, if there is anything else
         // to do, let's wait for such requirements
@@ -616,7 +631,7 @@ public class CLIHandlerTest extends NbTestCase {
         CLIHandler.finishInitialization(true);
         
         h.toReturn = 7;
-        CLIHandler.Status res = cliInitialize(new String[0], h, nullInput, nullOutput, new Integer(667));
+        CLIHandler.Status res = cliInitialize(new String[0], h, nullInput, nullOutput, nullOutput, new Integer(667));
         // finish all calls
         int newRes = CLIHandler.finishInitialization(false);
         
@@ -628,20 +643,20 @@ public class CLIHandlerTest extends NbTestCase {
     // Utility methods
     //
     
-    private static CLIHandler.Status cliInitialize(String[] args, CLIHandler handler, InputStream is, OutputStream os, Integer lock) {
-        return cliInitialize(args, handler, is, os, lock, System.getProperty ("user.dir"));
+    private static CLIHandler.Status cliInitialize(String[] args, CLIHandler handler, InputStream is, OutputStream os, OutputStream err, Integer lock) {
+        return cliInitialize(args, handler, is, os, err, lock, System.getProperty ("user.dir"));
     }
-    private static CLIHandler.Status cliInitialize(String[] args, CLIHandler handler, InputStream is, OutputStream os, Integer lock, String currentDir) {
-        return cliInitialize(args, Collections.nCopies(1, handler), is, os, lock, currentDir);
+    private static CLIHandler.Status cliInitialize(String[] args, CLIHandler handler, InputStream is, OutputStream os, OutputStream err, Integer lock, String currentDir) {
+        return cliInitialize(args, Collections.nCopies(1, handler), is, os, err, lock, currentDir);
     }
-    private static CLIHandler.Status cliInitialize(String[] args, CLIHandler[] arr, InputStream is, OutputStream os) {
-        return cliInitialize(args, Arrays.asList(arr), is, os, null);
+    private static CLIHandler.Status cliInitialize(String[] args, CLIHandler[] arr, InputStream is, OutputStream os, OutputStream err) {
+        return cliInitialize(args, Arrays.asList(arr), is, os, err, null);
     }
-    private static CLIHandler.Status cliInitialize(String[] args, List coll, InputStream is, OutputStream os, Integer lock) {
-        return cliInitialize (args, coll, is, os, lock, System.getProperty ("user.dir"));
+    private static CLIHandler.Status cliInitialize(String[] args, List coll, InputStream is, OutputStream os, java.io.OutputStream err, Integer lock) {
+        return cliInitialize (args, coll, is, os, err, lock, System.getProperty ("user.dir"));
     }
-    private static CLIHandler.Status cliInitialize(String[] args, List coll, InputStream is, OutputStream os, Integer lock, String currentDir) {
-        return CLIHandler.initialize(new CLIHandler.Args(args, is, os, currentDir), lock, coll, false, true, null);
+    private static CLIHandler.Status cliInitialize(String[] args, List coll, InputStream is, OutputStream os, java.io.OutputStream err, Integer lock, String currentDir) {
+        return CLIHandler.initialize(new CLIHandler.Args(args, is, os, err, currentDir), lock, coll, false, true, null);
     }
     
     private static final class InitializeRunner extends Object implements Runnable {
@@ -671,7 +686,7 @@ public class CLIHandlerTest extends NbTestCase {
         public void run() {
             synchronized (block) {
                 result = CLIHandler.initialize(
-                    new CLIHandler.Args(args, nullInput, nullOutput, ""),
+                    new CLIHandler.Args(args, nullInput, nullOutput, nullOutput, ""),
                     block,
                     handler == null ? java.util.Collections.EMPTY_LIST : java.util.Collections.nCopies(1, handler),
                     false,

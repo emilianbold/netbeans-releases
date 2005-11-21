@@ -36,7 +36,7 @@ public class Main extends Object {
      */
     public static void main (String args[]) throws Exception {
         java.lang.reflect.Method[] m = new java.lang.reflect.Method[1];
-        int res = execute (args, System.in, System.err, m);
+        int res = execute (args, System.in, System.out, System.err, m);
         if (res == -1) {
             // Connected to another running NB instance and succeeded in making a call.
             return;
@@ -55,10 +55,11 @@ public class Main extends Object {
      */
     public static String usage () throws Exception {
         java.io.ByteArrayOutputStream os = new java.io.ByteArrayOutputStream ();
+        java.io.ByteArrayOutputStream err = new java.io.ByteArrayOutputStream ();
         
         String[] newArgs = { "--help" };
         
-        int res = execute (newArgs, System.in, os, null);
+        int res = execute (newArgs, System.in, os, err, null);
         return new String (os.toByteArray ());
     }
         
@@ -75,6 +76,7 @@ public class Main extends Object {
         String[] args, 
         java.io.InputStream reader, 
         java.io.OutputStream writer,
+        java.io.OutputStream error,         
         java.lang.reflect.Method[] methodToCall
     ) throws Exception {     
         // #42431: turn off jar: caches, they are evil
@@ -154,7 +156,7 @@ public class Main extends Object {
         //
         
         CLIHandler.Status result;
-        result = CLIHandler.initialize(args, reader, writer, loader, true, false, loader);
+        result = CLIHandler.initialize(args, reader, writer, error, loader, true, false, loader);
         if (result.getExitCode () == CLIHandler.Status.CANNOT_CONNECT) {
             int value = javax.swing.JOptionPane.showConfirmDialog (
                 null, 
@@ -164,7 +166,7 @@ public class Main extends Object {
                 javax.swing.JOptionPane.WARNING_MESSAGE
             );
             if (value == javax.swing.JOptionPane.OK_OPTION) {
-                result = CLIHandler.initialize(args, reader, writer, loader, true, true, loader);
+                result = CLIHandler.initialize(args, reader, writer, error, loader, true, true, loader);
             }
             
         }

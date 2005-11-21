@@ -57,6 +57,8 @@ public abstract class CLIHandler extends Object {
     private static final int REPLY_WRITE = 11;
     /** request to find out how much data is available */
     private static final int REPLY_AVAILABLE = 12;
+    /** request to write to stderr */
+    private static final int REPLY_ERROR = 13;
     
     /**
      * Used during bootstrap sequence. Should only be used by core, not modules.
@@ -273,13 +275,14 @@ public abstract class CLIHandler extends Object {
         String[] args, 
         InputStream is, 
         OutputStream os, 
+        java.io.OutputStream err,         
         Main.BootClassLoader loader,
         boolean failOnUnknownOptions, 
         boolean cleanLockFile,
         Runnable runWhenHome
     ) {
         return initialize(
-            new Args(args, is, os, System.getProperty ("user.dir")), 
+            new Args(args, is, os, err, System.getProperty ("user.dir")), 
             (Integer)null, 
             loader.allCLIs(), 
             failOnUnknownOptions, 
@@ -590,6 +593,14 @@ public abstract class CLIHandler extends Object {
                                     args.getOutputStream().write(byteArr);
                                     break;
                                 }
+                                case REPLY_ERROR: {
+                                    enterState(45, block);
+                                    int howMuch = replyStream.readInt();
+                                    byte[] byteArr = new byte[howMuch];
+                                    replyStream.read(byteArr);
+                                    args.getErrorStream().write(byteArr);
+                                    break;
+                                }
                                 case REPLY_AVAILABLE:
                                     enterState(46, block);
                                     os.writeInt(args.getInputStream().available());
@@ -711,13 +722,15 @@ public abstract class CLIHandler extends Object {
         private final String[] argsBackup;
         private InputStream is;
         private OutputStream os;
+        private OutputStream err;
         private File currentDir;
         
-        Args(String[] args, InputStream is, OutputStream os, String currentDir) {
+        Args(String[] args, InputStream is, OutputStream os, java.io.OutputStream err, String currentDir) {
             argsBackup = args;
             reset(false);
             this.is = is;
             this.os = os;
+            this.err = err;
             this.currentDir = new File (currentDir);
         }
         
@@ -756,6 +769,13 @@ public abstract class CLIHandler extends Object {
          */
         public OutputStream getOutputStream() {
             return os;
+        }
+        
+        /** Access to error stream.
+         * @return the stream to write error messages to
+         */
+        public OutputStream getErrorStream() {
+            return err;
         }
         
         public File getCurrentDirectory () {
@@ -899,7 +919,13 @@ public abstract class CLIHandler extends Object {
                 }
                 final String currentDir = is.readUTF ();
                 
-                final Args arguments = new Args(args, new IS(is, os), new OS(is, os), currentDir);
+                final Args arguments = new Args(
+                    args, 
+                    new IS(is, os), 
+                    new OS(is, os, REPLY_WRITE), 
+                    new OS(is, os, REPLY_ERROR), 
+                    currentDir
+                );
 
                 class ComputingAndNotifying extends Thread {
                     public int res;
@@ -1010,9 +1036,11 @@ public abstract class CLIHandler extends Object {
         
         private static final class OS extends OutputStream {
             private DataOutputStream os;
+            private int type;
             
-            public OS(DataInputStream is, DataOutputStream os) {
+            public OS(DataInputStream is, DataOutputStream os, int type) {
                 this.os = os;
+                this.type = type;
             }
             
             public void write(int b) throws IOException {
@@ -1033,7 +1061,7 @@ public abstract class CLIHandler extends Object {
             }
             
             public void write(byte[] b, int off, int len) throws IOException {
-                os.write(REPLY_WRITE);
+                os.write(type);
                 os.writeInt(len);
                 os.write(b, off, len);
             }
