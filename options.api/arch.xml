@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.26"
-  module="Options Dialog SPI"
+  module="Options Dialog Implementation and SPI"
   author="jan.jancura@sun.com"
 >
 
@@ -42,8 +42,8 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-overall">
   <p>
    	Options Dialog module contains implementation of Options Dialog and simple SPI. This SPI allows 
-   	installation on custom options panels / categories to Options Dialog.
-
+   	installation of custom options panels / categories to Options Dialog.
+        This module contains implementation of Miscellaneous Panel ans Miscellaneous Panel SPI too.
 	<api name="OptionsDialogSPI" group="java" type="export" category="devel" url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
    	
   </p>
@@ -84,8 +84,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-time">
   <p>
-   Original estimate - 2 developer months. But it was ~6 developer months 
-    on the end.
   </p>
  </answer>
 
@@ -128,7 +126,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-what">
   <p>
-   For users. Old Options Dialog was bad, and this one is better.
+   This module contains implementation of Options Panel and simple SPI.
   </p>
  </answer>
 
@@ -176,7 +174,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-standards">
   <p>
-   No standards. No deviations.
+   No.
   </p>
  </answer>
 
@@ -216,7 +214,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jre">
   <p>
-   Current version of JRE is good enough.
+   JRE 1.4.
   </p>
  </answer>
 
@@ -229,7 +227,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jrejdk">
   <p>
-   JRE is good.
+   JRE is enough.
   </p>
  </answer>
 
@@ -391,8 +389,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-platform">
   <p>
-    It probably runs on all J2SE platforms, but not the same way - like other 
-    Java applications, you know.
+      Runs on all platforms.
   </p>
  </answer>
 
@@ -411,9 +408,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-dependencies">
   <p>
-    This module follows all NetBeans "standards", and you should use 
-    many magic tokens, xmls and one manifest file to declare dependency on it.
-    See NetBeans docuentation for the current version of this rules, please.
   </p>
  </answer>
 
@@ -457,7 +451,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-nbm">
   <p>
-   Why not?
   </p>
  </answer>
 
@@ -501,7 +494,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-shared">
   <p>
-   You can install it anywere.
   </p>
  </answer>
 
@@ -560,7 +552,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-component">
   <p>
-   No. And yours?
+   No.
   </p>
  </answer>
 
@@ -580,8 +572,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-introspection">
   <p>
-   ?!?!? Instance of? Class? Yes of course. I have not seen any code without
-   some instance of!!!
+   No.
   </p>
  </answer>
 
@@ -599,7 +590,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-privateaccess">
   <p>
-   I am not crystal gazer.
+   No.
   </p>
  </answer>
 
@@ -689,7 +680,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-threading">
   <p>
-   No threading model. Just normal NetBeans mass.
   </p>
  </answer>
 
@@ -853,7 +843,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-limit">
   <p>
-   No hardcoded. Practical - yes, of course.
   </p>
  </answer>
 
@@ -867,7 +856,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-mem">
   <p>
-   2megabytes, but it depends on weather.
   </p>
  </answer>
 
@@ -932,7 +920,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-scale">
   <p>
-   Code scales very well.
   </p>
  </answer>
 
@@ -950,8 +937,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-spi">
   <p>
-   I do not know how to enforce perforance of other code running in the same
-   virtual machine. Do you mean some black magic?
   </p>
  </answer>
 
@@ -964,7 +949,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-startup">
   <p>
-   It depends on current implementation of NB core. Probably yes.
+   No.
   </p>
  </answer>
 
@@ -1064,7 +1049,9 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="resources-read">
   <p>
    <api name="OptionsDialogSPILayers" group="layer" type="export" category="devel" url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
-   For registration of custom options panels.
+   For registration of custom top level options panels.
+   <api name="AdvancedPanelSPILayers" group="layer" type="export" category="devel" url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/AdvancedOption.html"/>
+   For registration of custom panels to Miscellaneous Panel.
   </p>
  </answer>
 
