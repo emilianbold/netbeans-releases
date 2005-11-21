@@ -30,12 +30,12 @@ import org.xml.sax.SAXException;
  *
  * @author Jaroslav Tulach
  */
-public class XMLDataObjectGetCookieTest extends LoggingTestCaseHid 
+public class XMLDataObjectGetNoCookieTest extends LoggingTestCaseHid 
 implements Node.Cookie {
 
     private ErrorManager err;
     
-    public XMLDataObjectGetCookieTest(String s) {
+    public XMLDataObjectGetNoCookieTest(String s) {
         super(s);
     }
     protected void setUp() throws Exception {
@@ -46,22 +46,7 @@ implements Node.Cookie {
         registerIntoLookup(ENV);
     }
     
-    public void testGetTheLookupWhileWaitingBeforeAssigningIt() throws IOException {
-        doTest(
-            "THREAD:t2 MSG:parsedId set to NULL" + 
-            "THREAD:t1 MSG:Has already been parsed.*" +
-            "THREAD:t1 MSG:Query for class org.openide.loaders.XMLDataObjectGetCookieTest"
-        );
-    }
-
-    public void testGetTheLookupWhileWaitingAfterParsing() throws IOException {
-        doTest(
-            "THREAD:t1 MSG:New id.*" +
-            "THREAD:t2 MSG:Going to read parseId.*" 
-        );
-    }
-    
-    private void doTest(String switches) throws IOException {
+    public void testNoDTD() throws IOException {
         FileObject res = FileUtil.createData(
             Repository.getDefault().getDefaultFileSystem().getRoot(), 
             getName() + "/R.xml"
@@ -74,7 +59,6 @@ implements Node.Cookie {
         PrintStream ps = new PrintStream(os);
         
         ps.println("<?xml version='1.0' encoding='UTF-8'?>");
-        ps.println("<!DOCTYPE MIME-resolver PUBLIC '-//NetBeans//DTD MIME Resolver 1.0//EN' 'http://www.netbeans.org/dtds/mime-resolver-1_0.dtd'>");
         ps.println("<MIME-resolver>");
         ps.println("    <file>");
         ps.println("        <ext name='lenka'/>");
@@ -91,34 +75,10 @@ implements Node.Cookie {
         
         final DataObject obj = DataObject.find(res);
         
-        class Run implements Runnable {
-            public EP cookie;
-            
-            public void run () {
-                cookie = (EP) obj.getCookie(EP.class);
-            }
-        }
-        
-        Run r1 = new Run();
-        Run r2 = new Run();
-        
-        
-        registerSwitches(switches, 200);
-        
-        RequestProcessor.Task t1 = new RequestProcessor("t1").post(r1);
-        RequestProcessor.Task t2 = new RequestProcessor("t2").post(r2);
-        
-        t1.waitFinished();
-        t2.waitFinished();
-        
-        if (r1.cookie == null && r2.cookie == null) {
-            fail("Both cookies are null");
-        }
-        
-        assertEquals("First result is ok", ENV, r1.cookie);
-        assertEquals("Second result is ok", ENV, r2.cookie);
+        EP cookie = (EP) obj.getCookie(EP.class);
+
+        assertEquals("But cookie is returned correctly", ENV, cookie);
     }
-    
     
     
     private static Object ENV = new EP();
@@ -137,7 +97,7 @@ implements Node.Cookie {
                 ex.printStackTrace();
                 fail("No exception");
             }
-            assertEquals("-//NetBeans//DTD MIME Resolver 1.0//EN", id);
+            assertEquals("No DTD means no ID", null, id);
             return Lookups.singleton(this);
         }
     };

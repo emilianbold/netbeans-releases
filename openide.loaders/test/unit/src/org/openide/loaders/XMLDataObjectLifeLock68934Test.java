@@ -26,42 +26,26 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.xml.sax.SAXException;
 
-/** Ensuring that getCookie really works.
+/** There was a problem for objects queried twice from inside the XML parsing and 
+ * lookup preparation.
  *
  * @author Jaroslav Tulach
  */
-public class XMLDataObjectGetCookieTest extends LoggingTestCaseHid 
+public class XMLDataObjectLifeLock68934Test extends LoggingTestCaseHid 
 implements Node.Cookie {
 
     private ErrorManager err;
     
-    public XMLDataObjectGetCookieTest(String s) {
+    public XMLDataObjectLifeLock68934Test(String s) {
         super(s);
     }
     protected void setUp() throws Exception {
         clearWorkDir();
         
         err = ErrorManager.getDefault().getInstance("TEST-" + getName());
-        
-        registerIntoLookup(ENV);
     }
     
-    public void testGetTheLookupWhileWaitingBeforeAssigningIt() throws IOException {
-        doTest(
-            "THREAD:t2 MSG:parsedId set to NULL" + 
-            "THREAD:t1 MSG:Has already been parsed.*" +
-            "THREAD:t1 MSG:Query for class org.openide.loaders.XMLDataObjectGetCookieTest"
-        );
-    }
-
-    public void testGetTheLookupWhileWaitingAfterParsing() throws IOException {
-        doTest(
-            "THREAD:t1 MSG:New id.*" +
-            "THREAD:t2 MSG:Going to read parseId.*" 
-        );
-    }
-    
-    private void doTest(String switches) throws IOException {
+    public void testQueryFromInsideTheQuery() throws IOException {
         FileObject res = FileUtil.createData(
             Repository.getDefault().getDefaultFileSystem().getRoot(), 
             getName() + "/R.xml"
@@ -91,54 +75,44 @@ implements Node.Cookie {
         
         final DataObject obj = DataObject.find(res);
         
-        class Run implements Runnable {
-            public EP cookie;
+        class EP implements Environment.Provider, Node.Cookie {
+            public EP query = this;
             
-            public void run () {
-                cookie = (EP) obj.getCookie(EP.class);
+            public Lookup getEnvironment(DataObject obj) {
+                
+                if (query == this) {
+                    query = null;
+                    query = (EP)obj.getCookie(EP.class);
+                
+                    assertEquals("Right object: ", XMLDataObject.class, obj.getClass());
+                    XMLDataObject xml = (XMLDataObject)obj;
+                    String id = null;
+                    try {
+                        id = xml.getDocument().getDoctype().getPublicId();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                        fail("No exception");
+                    } catch (SAXException ex) {
+                        ex.printStackTrace();
+                        fail("No exception");
+                    }
+                    assertEquals("-//NetBeans//DTD MIME Resolver 1.0//EN", id);
+                }
+                
+                
+                return Lookups.singleton(this);
             }
-        }
+        };
         
-        Run r1 = new Run();
-        Run r2 = new Run();
+        EP environmentProvider = new EP();
+        registerIntoLookup(environmentProvider);
         
+
+        EP mine = (EP)obj.getCookie(EP.class);
         
-        registerSwitches(switches, 200);
-        
-        RequestProcessor.Task t1 = new RequestProcessor("t1").post(r1);
-        RequestProcessor.Task t2 = new RequestProcessor("t2").post(r2);
-        
-        t1.waitFinished();
-        t2.waitFinished();
-        
-        if (r1.cookie == null && r2.cookie == null) {
-            fail("Both cookies are null");
-        }
-        
-        assertEquals("First result is ok", ENV, r1.cookie);
-        assertEquals("Second result is ok", ENV, r2.cookie);
+        assertEquals("provider is objects cookie", environmentProvider, mine);
+        assertEquals("query inside works as well", environmentProvider, environmentProvider.query);
     }
     
-    
-    
-    private static Object ENV = new EP();
         
-    private static final class EP implements Environment.Provider, Node.Cookie {
-        public Lookup getEnvironment(DataObject obj) {
-            assertEquals("Right object: ", XMLDataObject.class, obj.getClass());
-            XMLDataObject xml = (XMLDataObject)obj;
-            String id = null;
-            try {
-                id = xml.getDocument().getDoctype().getPublicId();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                fail("No exception");
-            } catch (SAXException ex) {
-                ex.printStackTrace();
-                fail("No exception");
-            }
-            assertEquals("-//NetBeans//DTD MIME Resolver 1.0//EN", id);
-            return Lookups.singleton(this);
-        }
-    };
 }

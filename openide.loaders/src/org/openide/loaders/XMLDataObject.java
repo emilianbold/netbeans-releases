@@ -1020,8 +1020,8 @@ public class XMLDataObject extends MultiDataObject {
         /** Getter for public ID of the document.
          */
         public String getPublicId () {
-            waitFinished ();
-            return parsedId == NULL ? null : parsedId;
+            String id = waitFinished ();
+            return id == NULL ? null : id;
         }
         
         /** Does lookup for specific cookie. It also
@@ -1057,9 +1057,22 @@ public class XMLDataObject extends MultiDataObject {
                 
                 Lookup l;
                 for (;;) {
-                    waitFinished ();
-                    if (LOG) ERR.log("Wait finished is over: " + lookup + " id: " + parsedId + " for " + XMLDataObject.this); // NOI18N
-                    l = lookup;
+                    String id = waitFinished();
+                    synchronized (this) {
+                        if (lookup != null) {
+                            l = lookup;
+                        } else {
+                            l = null;
+                        }
+                    }
+                    if (LOG) ERR.log("Lookup is " + l + " for id: " + id); // NOI18N
+                    
+                    if (l == null) {
+                        l = updateLookup(null, id);
+                        if (LOG) ERR.log("Updating lookup: " + l); // NOI18N
+                    }
+
+                    if (LOG) ERR.log("Wait lookup is over: " + l + XMLDataObject.this); // NOI18N
                     if (l != null) {
                         break;
                     }
@@ -1086,38 +1099,41 @@ public class XMLDataObject extends MultiDataObject {
         }
            
         /*
-         * Find out DTD public ID.
-         * Info is then assigned according to it from registry.
+         * Find out DTD public ID. Parses the document and updates content of
+         * parsedId variable.
+         * @return the parsed ID
          */
-        public void waitFinished () {
-            waitFinished (null);
+        public String waitFinished () {
+            return  waitFinished (null);
         }
         
         /*
          * Find out DTD public ID.
          * Info is then assigned according to it from registry.
          */
-        private void waitFinished (String ignorePreviousId) {
+        private String waitFinished (String ignorePreviousId) {
             if (sharedParserImpl == null) {
                 ERR.log("No sharedParserImpl, exiting"); // NOI18N
-                return;
+                return NULL;
             }
             
             XMLReader parser = sharedParserImpl;
             FileObject myFileObject = getPrimaryFile();
-            String previousID;
             String newID = null;
             
             if (LOG) ERR.log("Going to read parsedId for " + XMLDataObject.this);
             
-            previousID = parsedId;
+            String previousID;
+            synchronized (this) {
+                previousID = parsedId;
+            }
 
-            if (parsedId != null && parsedId != NULL) {
+            if (previousID != null) {
                 if (LOG) {
                     ERR.log("Has already been parsed: " + parsedId + " for " + XMLDataObject.this); // NOI18N
                 }
                 // ok, has already been parsed
-                return;
+                return previousID;
             }
             
             URL url = null;
@@ -1126,7 +1142,7 @@ public class XMLDataObject extends MultiDataObject {
                 url = myFileObject.getURL();
             } catch (IOException ex) {
                 warning(ex, "I/O exception while retrieving xml FileObject URL."); //NOI18N
-                return;  // cannot parse
+                return NULL;  // cannot parse
             }
 
             synchronized (this) {
@@ -1135,7 +1151,7 @@ public class XMLDataObject extends MultiDataObject {
                         if (LOG) {
                             ERR.log("Invalid file object: " + myFileObject); // NOI18N
                         }
-                        return;
+                        return NULL;
                     }
                     
                     parsedId = NULL;
@@ -1144,7 +1160,7 @@ public class XMLDataObject extends MultiDataObject {
                         in =  myFileObject.getInputStream();
                     } catch (IOException ex) {
                         warning(ex, "I/O exception while openning xml."); //NOI18N
-                        return;  // cannot parse
+                        return NULL;  // cannot parse
                     }
                     try {
 
@@ -1226,7 +1242,7 @@ public class XMLDataObject extends MultiDataObject {
             if (ignorePreviousId != null && newID.equals (ignorePreviousId)) {
                 // no updates in lookup
                 if (LOG) ERR.log("No update to ID: " + ignorePreviousId + " for " + XMLDataObject.this); // NOI18N
-                return;
+                return newID;
             }
             
             // out of any synchronized blocks udpate the lookup
@@ -1237,15 +1253,19 @@ public class XMLDataObject extends MultiDataObject {
             if (newID != null) {
                 updateLookup (previousID, newID);
             }
+            
+            return newID;
         }
 
         
         /** Updates the ID.
          */
-        private void updateLookup (String previousID, String id) {
-            if (previousID != null && previousID.equals (id)) {
-                ERR.log("No need to update lookup: " + id + " for " + XMLDataObject.this); // NOI18N
-                return;
+        private Lookup updateLookup (String previousID, String id) {
+            synchronized (this) {
+                if (previousID != null && previousID.equals (id) && lookup != null) {
+                    ERR.log("No need to update lookup: " + id + " for " + XMLDataObject.this); // NOI18N
+                    return lookup;
+                }
             }
             
             
@@ -1282,6 +1302,8 @@ public class XMLDataObject extends MultiDataObject {
                     XMLDataObject.this.firePropertyChange (DataObject.PROP_COOKIE, null, null);
                     if (LOG) ERR.log("Firing done for " + XMLDataObject.this); // NOI18N
                 }
+                
+                return newLookup;
             }
         }
 
