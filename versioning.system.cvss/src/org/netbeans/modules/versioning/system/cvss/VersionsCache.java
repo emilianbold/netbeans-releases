@@ -160,13 +160,13 @@ public class VersionsCache {
         return baseFile.getName() + "#" + revision;     // NOI18N   
     }
 
-    private String getRepositoryForDirectory(File directory) {
+    private String getRepositoryForDirectory(File directory, String repository) {
         if (directory == null) return null;
         if (!directory.exists()) {
-            return getRepositoryForDirectory(directory.getParentFile()) + "/" + directory.getName(); // NOI18N
+            return getRepositoryForDirectory(directory.getParentFile(), repository) + "/" + directory.getName(); // NOI18N
         }
         try {
-            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(directory.getAbsolutePath(), ""); // NOI18N
+            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(directory.getAbsolutePath(), repository); // NOI18N
         } catch (IOException e) {
             return null;
         }
@@ -183,8 +183,6 @@ public class VersionsCache {
      * @throws IOException if some I/O error occurs during checkout
      */ 
     private File checkoutRemoteFile(File baseFile, String revision, ExecutorGroup group) throws IOException {
-        
-        String repositoryPath = getRepositoryForDirectory(baseFile.getParentFile()) + "/" + baseFile.getName(); // NOI18N
 
         GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
         String root = getCvsRoot(baseFile.getParentFile());
@@ -192,11 +190,13 @@ public class VersionsCache {
         String repository = cvsRoot.getRepository();
         options.setCVSRoot(root);
 
+        String repositoryPath = getRepositoryForDirectory(baseFile.getParentFile(), repository) + "/" + baseFile.getName(); // NOI18N
+
         CheckoutCommand cmd = new CheckoutCommand();
         cmd.setRecursive(false);
-        if (repositoryPath.startsWith(repository)) {
-            repositoryPath = repositoryPath.substring(repository.length());
-        }
+        assert repositoryPath.startsWith(repository) : repositoryPath + " does not start with: " + repository; // NOI18N  
+
+        repositoryPath = repositoryPath.substring(repository.length());
         if (repositoryPath.startsWith("/")) { // NOI18N
             repositoryPath = repositoryPath.substring(1);
         }
