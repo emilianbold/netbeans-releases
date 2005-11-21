@@ -1298,14 +1298,16 @@ public class EarProjectProperties {
                 final String ns = abpt.getPrimaryConfigurationDataElementNamespace(true);
 //                final String ns = WebProjectType.PROJECT_CONFIGURATION_NAMESPACE;
                 Element webModuleLibs = (Element) data.getElementsByTagNameNS(ns, webLibraryElementName).item(0);
-                NodeList ch = webModuleLibs.getChildNodes();
-                for (int i = 0; i < ch.getLength(); i++) {
-                    if (ch.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                        Element library = (Element) ch.item(i);
-                        Node webFile = library.getElementsByTagNameNS(ns, TAG_FILE).item(0);
-                        NodeList pathInWarElements = library.getElementsByTagNameNS(ns, TAG_PATH_IN_WAR); 
-                        warIncludesMap.put(findText(webFile), pathInWarElements.getLength() > 0 ?
+                if(webModuleLibs != null) {
+                    NodeList ch = webModuleLibs.getChildNodes();
+                    for (int i = 0; i < ch.getLength(); i++) {
+                        if (ch.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                            Element library = (Element) ch.item(i);
+                            Node webFile = library.getElementsByTagNameNS(ns, TAG_FILE).item(0);
+                            NodeList pathInWarElements = library.getElementsByTagNameNS(ns, TAG_PATH_IN_WAR);
+                            warIncludesMap.put(findText(webFile), pathInWarElements.getLength() > 0 ?
                                 findText(pathInWarElements.item(0)) : VisualClassPathItem.PATH_IN_WAR_NONE);
+                        }
                     }
                 }
             }
