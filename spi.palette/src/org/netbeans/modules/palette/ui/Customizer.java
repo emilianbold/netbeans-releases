@@ -258,6 +258,9 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         if (selected.length == 0)
             return;
 
+        if( selected.length == 1 && !selected[0].canDestroy() )
+            return;
+        
         // first user confirmation...
         NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
             Utils.getBundleString("MSG_ConfirmPaletteDelete"), // NOI18N
@@ -268,8 +271,10 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
                     DialogDisplayer.getDefault().notify(desc)))
         {
             try {
-                for (int i=0; i < selected.length; i++)
-                selected[i].destroy();
+                for (int i=0; i < selected.length; i++) {
+                    if( selected[i].canDestroy() )
+                        selected[i].destroy();
+                }
             }
             catch (java.io.IOException e) {
                 ErrorManager.getDefault().notify(e);

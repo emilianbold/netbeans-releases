@@ -101,13 +101,8 @@ public final class RootNode extends FilterNode {
 //    }
 
     public PasteType getDropType(Transferable t, int action, int index) {
-        if( t.isDataFlavorSupported( PaletteController.ITEM_DATA_FLAVOR ) ) {
-            //palette items cannot be dropped to palette's root folder
-            //this actually does not work because refactoring wrap and hide our own dataflavor
-            return null;
-        }
-        
-        return super.getDropType( t, action, index );
+        //no drop is accepted in palette's root node
+        return null;
     }
 
 
@@ -138,6 +133,14 @@ public final class RootNode extends FilterNode {
                 break;
             }
         }
+    }
+
+    public boolean canCut() {
+        return false;
+    }
+
+    public boolean canDestroy() {
+        return false;
     }
 
     // --------------
