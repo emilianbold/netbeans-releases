@@ -409,7 +409,7 @@ public class TomcatProperties {
                     list.add(Utils.fileToUrl(servletApiDoc));
                 } else {
                     File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/j2eeri-1_4-doc-api.zip", null, false); // NOI18N
-                    if (j2eeDoc.exists()) {
+                    if (j2eeDoc != null) {
                         list.add(Utils.fileToUrl(j2eeDoc));
                     }
                 }
