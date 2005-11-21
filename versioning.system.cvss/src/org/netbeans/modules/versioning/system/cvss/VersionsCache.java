@@ -18,6 +18,7 @@ import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.lib.cvsclient.admin.Entry;
+import org.netbeans.lib.cvsclient.CVSRoot;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -165,7 +166,7 @@ public class VersionsCache {
             return getRepositoryForDirectory(directory.getParentFile()) + "/" + directory.getName(); // NOI18N
         }
         try {
-            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(directory.getAbsolutePath(), "").substring(1); // NOI18N
+            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(directory.getAbsolutePath(), ""); // NOI18N
         } catch (IOException e) {
             return null;
         }
@@ -184,17 +185,27 @@ public class VersionsCache {
     private File checkoutRemoteFile(File baseFile, String revision, ExecutorGroup group) throws IOException {
         
         String repositoryPath = getRepositoryForDirectory(baseFile.getParentFile()) + "/" + baseFile.getName(); // NOI18N
-        
+
+        GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
+        String root = getCvsRoot(baseFile.getParentFile());
+        CVSRoot cvsRoot = CVSRoot.parse(root);
+        String repository = cvsRoot.getRepository();
+        options.setCVSRoot(root);
+
         CheckoutCommand cmd = new CheckoutCommand();
         cmd.setRecursive(false);
+        if (repositoryPath.startsWith(repository)) {
+            repositoryPath = repositoryPath.substring(repository.length());
+        }
+        if (repositoryPath.startsWith("/")) { // NOI18N
+            repositoryPath = repositoryPath.substring(1);
+        }
         cmd.setModule(repositoryPath);
         cmd.setPipeToOutput(true);
         cmd.setCheckoutByRevision(revision);
         String msg  = NbBundle.getMessage(VersionsCache.class, "MSG_VersionsCache_FetchingProgress", revision, baseFile.getName());
         cmd.setDisplayName(msg);
 
-        GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
-        options.setCVSRoot(getCvsRoot(baseFile.getParentFile()));
         VersionsCacheExecutor executor = new VersionsCacheExecutor(cmd, options);
         if (group != null) {
             group.progress(msg);
