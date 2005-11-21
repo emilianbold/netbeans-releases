@@ -326,7 +326,11 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     boolean dependingOnImplDependency() {
-        Set/*<ModuleDependency>*/ deps = getDependenciesListModel().getDependencies();
+        DependencyListModel depsModel = getDependenciesListModel();
+        if (depsModel == CustomizerComponentFactory.INVALID_DEP_LIST_MODEL) {
+            return false;
+        }
+        Set/*<ModuleDependency>*/ deps = depsModel.getDependencies();
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             ModuleDependency dep = (ModuleDependency) it.next();
             if (dep.hasImplementationDepedendency()) {
