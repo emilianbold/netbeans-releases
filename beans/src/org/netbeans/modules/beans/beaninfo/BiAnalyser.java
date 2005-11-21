@@ -486,7 +486,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
                     bis.setDescriptorSection( sb.toString(), "}\n"); // NOI18N
                 }
                 else {
-                    bis.setDescriptorSection( sb.toString(), TABx2+ "return beanDescriptor;\n" + TABx2+ "}\n"); // NOI18N
+                    bis.setDescriptorSection( sb.toString(), TABx2+ "return beanDescriptor;\n" + TAB+ "}\n"); // NOI18N
                 }
             }            
         }
@@ -575,7 +575,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
             bis.setPropertiesSection( sb.toString(), propertyCount > 0 ? "}\n" : "  \n" ); // NOI18N
         }
         else{
-            bis.setPropertiesSection( sb.toString(), TABx2+ "return properties;\n" + TABx2+ "}\n"); // NOI18N
+            bis.setPropertiesSection( sb.toString(), TABx2+ "return properties;\n" + TAB + "}\n"); // NOI18N
         }
     }
 
@@ -665,7 +665,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
             bis.setMethodsSection( sb.toString(), methodCount > 0 ? "}\n" : "  \n" ); // NOI18N
         }
         else{
-            bis.setMethodsSection( sb.toString(), TABx2+ "return methods;\n" + TABx2+ "}\n"); // NOI18N
+            bis.setMethodsSection( sb.toString(), TABx2+ "return methods;\n" + TAB + "}\n"); // NOI18N
         }
     }
 
@@ -749,7 +749,7 @@ public final class BiAnalyser extends Object implements Node.Cookie {
             bis.setEventSetsSection( sb.toString(), eventCount > 0 ? "}\n" : "  \n"); // NOI18N
         }
         else{
-            bis.setEventSetsSection( sb.toString(), TABx2+ "return eventSets;\n" + TABx2+ "}\n"); // NOI18N
+            bis.setEventSetsSection( sb.toString(), TABx2+ "return eventSets;\n" + TAB + "}\n"); // NOI18N
         }
     }
 
