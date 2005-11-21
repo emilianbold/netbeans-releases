@@ -268,12 +268,14 @@ public final class NodeOperationImpl extends NodeOperation {
      */
     private static class SheetNodesListener extends NodeAdapter implements PropertyChangeListener {
 
-
         private Dialog dialog;
         private Set listenerSet;
+        /** top component we listen to for name changes */ 
+        private TopComponent tc;
         
-        SheetNodesListener(Dialog dlg, TopComponent tc) {
-            dialog = dlg;
+        SheetNodesListener(Dialog dialog, TopComponent tc) {
+            this.dialog = dialog;
+            this.tc = tc;
             tc.addPropertyChangeListener(this);
         }
         
@@ -301,6 +303,8 @@ public final class NodeOperationImpl extends NodeOperation {
             listenerSet.remove(destroyedNode);
             // close top component (our outer class) if last node was destroyed
             if (listenerSet.isEmpty()) {
+                // #68943 - stop to listen, as we are waving goodbye :-)
+                tc.removePropertyChangeListener(this);
                 Mutex.EVENT.readAccess(new Runnable() {
                     public void run() {
                         dialog.hide();
