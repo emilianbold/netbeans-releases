@@ -31,11 +31,11 @@ $${jnlp.resources}
   </resources>
   <resources os="Mac OS X"> 
       <property name="netbeans.user" value="${user.home}/Library/Application Support/$${app.name}"/>
-  </resource>
+  </resources>
   <application-desc>
     <argument>--branding</argument>
     <argument>$${branding.token}</argument>
-  <application-desc/>
+  </application-desc>
 </jnlp>  
 ]]></echo>
     </target>
