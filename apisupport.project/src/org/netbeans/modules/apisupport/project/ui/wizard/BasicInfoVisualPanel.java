@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -103,7 +105,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             mainProject.setSelected(false);
             mainProject.setVisible(false);
         } else {
-            throw new IllegalStateException("Unknown wizard type =" + wizardType); // NOI18N
+            assert false : "Unknown wizard type =" + wizardType; // NOI18N
         }
         
         attachDocumentListeners();
@@ -205,7 +207,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             folderValue.setText(destFolder.getPath());
         }
         
-        if (isNetBeansOrgFolder()) {
+        if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE || isNetBeansOrgFolder()) {
             detachModuleTypeGroup();
         } else {
             attachModuleTypeGroup();
@@ -299,6 +301,13 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         locationValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { wasLocationUpdate = true; }
         });
+        ActionListener plafAL = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                updateAndCheck();
+            }
+        };
+        platformValue.addActionListener(plafAL);
+        suitePlatformValue.addActionListener(plafAL);
     }
     
     private File getFolder() {
