@@ -267,7 +267,11 @@ public class CvsVersioningSystem {
         
         int sharability = SharabilityQuery.getSharability(file);
         if (sharability == SharabilityQuery.NOT_SHARABLE) {
-            setIgnored(new File [] { file });
+            try {
+                setIgnored(file);
+            } catch (IOException e) {
+                // strange, but does no harm
+            }
             return true;
         } else {
             return false;
@@ -483,16 +487,24 @@ public class CvsVersioningSystem {
     public void setIgnored(File[] files) {
         for (int i = 0; i < files.length; i++) {
             try {
-                if (FILENAME_CVSIGNORE.equals(files[i].getName())) continue;
-                if (files[i].exists()) {
-                    addToCvsIgnore(files[i]);
-                }
+                setIgnored(files[i]);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
         }
     }
 
+    /**
+     * Adds supplied file to 'cvsignore' file.
+     * 
+     * @param file file to ignore
+     */ 
+    public void setIgnored(File file) throws IOException {
+        if (file.exists()) {
+            addToCvsIgnore(file);
+        }
+    }
+    
     public void setNotignored(File[] files) {
         for (int i = 0; i < files.length; i++) {
             try {
