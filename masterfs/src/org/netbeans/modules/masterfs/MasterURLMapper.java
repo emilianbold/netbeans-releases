@@ -61,7 +61,7 @@ public final class MasterURLMapper extends URLMapper {
     }
 
     public URL getURL(final FileObject fo, final int type) {
-        if (!(fo instanceof MasterFileObject)) return null;
+        if (type == URLMapper.NETWORK || !(fo instanceof MasterFileObject)) return null;        
         MasterFileObject hfo = (MasterFileObject) fo;
         File f = (hfo != null) ? hfo.getResource().getFile() : null;
 
