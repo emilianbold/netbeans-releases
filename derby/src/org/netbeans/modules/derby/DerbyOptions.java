@@ -24,6 +24,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
@@ -157,9 +158,19 @@ public class DerbyOptions extends SystemOption {
         RegisterDerby.getDefault().stop();        
     }
     
-    private static void registerDrivers(String newLocation) {
-        registerDriver(DRIVER_NAME_NET, DRIVER_CLASS_NET, DRIVER_PATH_NET, newLocation);
-        registerDriver(DRIVER_NAME_EMBEDDED, DRIVER_CLASS_EMBEDDED, DRIVER_PATH_EMBEDDED, newLocation);
+    private static void registerDrivers(final String newLocation) {
+        try {
+            // registering the drivers in an atomic action so the Drivers node 
+            // is refreshed only once
+            Repository.getDefault().getDefaultFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                public void run() {
+                    registerDriver(DRIVER_NAME_NET, DRIVER_CLASS_NET, DRIVER_PATH_NET, newLocation);
+                    registerDriver(DRIVER_NAME_EMBEDDED, DRIVER_CLASS_EMBEDDED, DRIVER_PATH_EMBEDDED, newLocation);
+                }
+            });
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+        }
     }
 
     private static void registerDriver(String driverName, String driverClass, String driverRelativeFile, String newLocation) {
