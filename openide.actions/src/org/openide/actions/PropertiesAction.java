@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.actions;
@@ -54,19 +54,7 @@ public class PropertiesAction extends NodeAction {
     }
 
     protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes == null) {
-            return false;
-        }
-
-        // This is not quite as exact as checking if the *intersection* of their
-        // properties is also nonempty, but it is pretty close.
-        for (int i = 0; i < activatedNodes.length; i++) {
-            if (activatedNodes[i].getPropertySets().length > 0) {
-                return true;
-            }
-        }
-
-        return false;
+        return activatedNodes != null;
     }
 
     public JMenuItem getPopupPresenter() {
