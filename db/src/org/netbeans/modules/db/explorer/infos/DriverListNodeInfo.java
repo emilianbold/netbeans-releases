@@ -14,6 +14,7 @@
 package org.netbeans.modules.db.explorer.infos;
 import java.util.Vector;
 import java.text.MessageFormat;
+import org.openide.util.RequestProcessor;
 
 import org.openide.util.Utilities;
 
@@ -35,11 +36,18 @@ public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperat
         super();
         JDBCDriverListener listener = new JDBCDriverListener() {
             public void driversChanged() {
-                try {
-                    refreshChildren();
-                } catch (DatabaseException ex) {
-                    // PENDING
-                }
+                // fix for the deadlock in issue 69050: refresh in another thread
+                // refreshChildren() acquires Children.MUTEX write access
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        System.out.println("changed");
+                        try {
+                            refreshChildren();
+                        } catch (DatabaseException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+                    }
+                });
             }
         };
         JDBCDriverManager.getDefault().addDriverListener(listener);
