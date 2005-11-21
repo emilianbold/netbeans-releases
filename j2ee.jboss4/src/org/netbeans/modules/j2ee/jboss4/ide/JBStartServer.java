@@ -69,7 +69,8 @@ public class JBStartServer extends StartServer implements ProgressObject{
     }
     
     public ProgressObject startDebugging(Target target) {
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS"))); //NOI18N
+        String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName))); //NOI18N
         RequestProcessor.getDefault().post(new JBStartRunnable(true), 0, Thread.NORM_PRIORITY);
         isDebugModeUri.put(dm.getUrl(), new Object());
         return this;
@@ -113,7 +114,8 @@ public class JBStartServer extends StartServer implements ProgressObject{
      * Stops the server.
      */
     public ProgressObject stopDeploymentManager() {
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS")));//NOI18N
+        String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));//NOI18N
         RequestProcessor.getDefault().post(new JBStopRunnable(), 0, Thread.NORM_PRIORITY);
         isDebugModeUri.remove(dm.getUrl());
         return this;
@@ -123,7 +125,8 @@ public class JBStartServer extends StartServer implements ProgressObject{
      * Starts the server
      */
     public ProgressObject startDeploymentManager() {
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
+        String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)));//NOI18N
         RequestProcessor.getDefault().post(new JBStartRunnable(false), 0, Thread.NORM_PRIORITY);
         isDebugModeUri.remove(dm.getUrl());
         return this;
@@ -143,7 +146,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
     }
     
     private boolean isReallyRunning(){
-        InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
+        InstanceProperties ip = dm.getInstanceProperties();
         if (ip == null) {
             return false; // finish, it looks like this server instance has been unregistered
         }
@@ -195,7 +198,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
         
         String url = dm.getUrl();
 
-        InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
+        InstanceProperties ip = dm.getInstanceProperties();
         if (ip == null) {
             return false; // finish, it looks like this server instance has been unregistered
         }
@@ -241,20 +244,22 @@ public class JBStartServer extends StartServer implements ProgressObject{
         private  String JBOSS_INSTANCE ="";
         
         public JBStartRunnable(boolean debug) {
-            JBOSS_INSTANCE = InstanceProperties.getInstanceProperties(dm.getUrl()).getProperty(JBPluginProperties.PROPERTY_SERVER);
+            JBOSS_INSTANCE = dm.getInstanceProperties().getProperty(JBPluginProperties.PROPERTY_SERVER);
             this.debug = debug;
         }
         
         public void run() {
 
-            InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
+            InstanceProperties ip = dm.getInstanceProperties();
 
+            String serverName = ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+            
             String strHTTPConnectorPort = ip.getProperty(JBPluginProperties.PROPERTY_PORT);
             try {
                 int HTTPConnectorPort = new Integer(strHTTPConnectorPort).intValue();
                 if (!JBPluginUtils.isPortFree(HTTPConnectorPort)) {
                     fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, 
-                            NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_HTTP_PORT_IN_USE", strHTTPConnectorPort)));//NOI18N
+                            NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_HTTP_PORT_IN_USE", serverName, strHTTPConnectorPort)));//NOI18N
                     return;
                 }
 
@@ -264,7 +269,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 int JNPServicePort = new Integer(strJNPServicePort).intValue();
                 if (!JBPluginUtils.isPortFree(JNPServicePort)) {
                     fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, 
-                            NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_JNP_PORT_IN_USE", strJNPServicePort)));//NOI18N
+                            NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_JNP_PORT_IN_USE", serverName, strJNPServicePort)));//NOI18N
                     return;
                 }
 
@@ -272,17 +277,17 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 int RMINamingServicePort = new Integer(strRMINamingServicePort).intValue();
                 if (!JBPluginUtils.isPortFree(RMINamingServicePort)) {
                     fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, 
-                            NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_RMI_PORT_IN_USE", strRMINamingServicePort)));//NOI18N
+                            NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_RMI_PORT_IN_USE", serverName, strRMINamingServicePort)));//NOI18N
                     return;
                 }
 
-                String serverName = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
-                if (!"minimal".equals(serverName)) {
+                String server = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
+                if (!"minimal".equals(server)) {
                     String strRMIInvokerPort = JBPluginUtils.getRMIInvokerPort(serverDir);
                     int RMIInvokerPort = new Integer(strRMIInvokerPort).intValue();
                     if (!JBPluginUtils.isPortFree(RMIInvokerPort)) {
                         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, 
-                                NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_INVOKER_PORT_IN_USE", strRMIInvokerPort)));//NOI18N
+                                NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_INVOKER_PORT_IN_USE", serverName, strRMIInvokerPort)));//NOI18N
                         return;
                     }
                 }
@@ -300,7 +305,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
             File serverRunFile = new File(serverRunFileName);
 
             if (!serverRunFile.exists()){
-                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_FNF")));//NOI18N
+                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_FNF", serverName)));//NOI18N
                 return;
             }
 
@@ -320,12 +325,12 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
 
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, 
-                        NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_PD", serverRunFileName)));//NOI18N
+                        NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED_PD", serverName, serverRunFileName)));//NOI18N
 
                 return;
             }
 
-            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
+            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)));//NOI18N
 
             // create an output tab for the server output
             InputOutput io = UISupport.getServerIO(dm.getUrl());                
@@ -354,19 +359,19 @@ public class JBStartServer extends StartServer implements ProgressObject{
                         io.getOut().write(line + "\n"); //NOI18N
 
                         if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Server\\] Starting JBoss \\(MX MicroKernel\\)\\.\\.\\.")) {
-                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
+                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)));//NOI18N
                         }
 
                         if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Server\\] Core system initialized")) {
-                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
+                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)));//NOI18N
                         }
 
                         if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Catalina\\] Server startup in [0-9]+ ms")) {
-                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
+                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)));//NOI18N
                         }
 
                         if (line.matches("\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d INFO  \\[Server\\] JBoss \\(MX MicroKernel\\) \\[4\\.0[\\S]+ \\(build: CVSTag=[\\S]+ date=[\\d]+\\)\\] Started in ([\\d]+m:)?[\\d]+s:[\\d]+ms")) {//NOI18N
-                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.COMPLETED, NbBundle.getMessage(JBStartServer.class, "MSG_SERVER_STARTED")));//NOI18N
+                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.COMPLETED, NbBundle.getMessage(JBStartServer.class, "MSG_SERVER_STARTED", serverName)));//NOI18N
                             // start logging
                             JBLogWriter logWriter = JBLogWriter.updateInstance(io, serverProcess.getInputStream(),JBOSS_INSTANCE);
                             dm.setLogWriter(logWriter);
@@ -375,7 +380,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
                         }
 
                         if (line.indexOf("Shutdown complete")>-1) {
-                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED")));//NOI18N
+                            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED", serverName)));//NOI18N
                             return;
                         }
 
@@ -392,7 +397,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
 
-            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED")));//NOI18N
+            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED", serverName)));//NOI18N
                 
         }
         private final static String STARTUP_SH = "/bin/run.sh";
@@ -402,67 +407,70 @@ public class JBStartServer extends StartServer implements ProgressObject{
     private class JBStopRunnable implements Runnable {
         
         public void run() {
-            String configName = InstanceProperties.getInstanceProperties(dm.getUrl()).getProperty("server");
+            
+            InstanceProperties ip = dm.getInstanceProperties();
+            
+            String configName = ip.getProperty("server");
             if ("minimal".equals(configName)) {
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED_MINIMAL")));//NOI18N
                 return;
             }
 
-//                String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
-                String serverLocation = InstanceProperties.getInstanceProperties(dm.getUrl()).
-                                          getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
-                String serverStopFileName = serverLocation + (Utilities.isWindows() ? SHUTDOWN_BAT : SHUTDOWN_SH);
-                
-                File serverStopFile = new File(serverStopFileName);
-                if (!serverStopFile.exists()){
-                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED_FNF")));//NOI18N
-                    return;
-                }
-                
-                NbProcessDescriptor pd = new NbProcessDescriptor(serverStopFileName, "--shutdown");
-                try {
-                    pd.exec();
-                } catch (java.io.IOException ioe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-                    
-                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED, 
-                            NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED_PD", serverStopFileName)));//NOI18N
-                    
-                    return;
-                }
+            String serverName = ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
 
-                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
-                        NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS")));
-                
-                
-                
-                int timeout = 300000;
-                int elapsed = 0;
-                while (elapsed < timeout) {
-                    if (isRunning()) {
-                        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
-                                NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS")));//NOI18N
-                    } else {
-                        try {
-                            Thread.sleep(30000);
-                        } catch (InterruptedException e) {
-                            // do nothing
-                        }
-                        
-                        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
-                                NbBundle.getMessage(JBStartServer.class, "MSG_SERVER_STOPPED")));//NOI18N
-                        return;
-                    }
-                    
+            String serverLocation = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+            String serverStopFileName = serverLocation + (Utilities.isWindows() ? SHUTDOWN_BAT : SHUTDOWN_SH);
+
+            File serverStopFile = new File(serverStopFileName);
+            if (!serverStopFile.exists()){
+                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED_FNF", serverName)));//NOI18N
+                return;
+            }
+
+            NbProcessDescriptor pd = new NbProcessDescriptor(serverStopFileName, "--shutdown");
+            try {
+                pd.exec();
+            } catch (java.io.IOException ioe) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+
+                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED, 
+                        NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED_PD", serverName, serverStopFileName)));//NOI18N
+
+                return;
+            }
+
+            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
+                    NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));
+
+
+
+            int timeout = 300000;
+            int elapsed = 0;
+            while (elapsed < timeout) {
+                if (isRunning()) {
+                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
+                            NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));//NOI18N
+                } else {
                     try {
-                        elapsed += 500;
-                        Thread.sleep(500);
+                        Thread.sleep(30000);
                     } catch (InterruptedException e) {
                         // do nothing
                     }
+
+                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
+                            NbBundle.getMessage(JBStartServer.class, "MSG_SERVER_STOPPED", serverName)));//NOI18N
+                    return;
                 }
-                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                        NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED")));//NOI18N
+
+                try {
+                    elapsed += 500;
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    // do nothing
+                }
+            }
+            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                    NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED", serverName)));//NOI18N
         }
         private final static String SHUTDOWN_SH = "/bin/shutdown.sh";//NOI18N
         private final static String SHUTDOWN_BAT = "/bin/shutdown.bat";//NOI18N

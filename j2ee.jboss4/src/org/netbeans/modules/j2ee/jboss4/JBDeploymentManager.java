@@ -50,6 +50,8 @@ public class JBDeploymentManager implements DeploymentManager {
     // ide specific data
     private JBLogWriter logWriter;
     
+    private InstanceProperties instanceProperties;
+    
     /** 
      * Stores information about running instances. instance is represented by its InstanceProperties,
      *  running state by Boolean.TRUE, stopped state Boolean.FALSE.
@@ -84,6 +86,14 @@ public class JBDeploymentManager implements DeploymentManager {
     
     public String getUrl() {
         return realUri;
+    }
+    
+    
+    public InstanceProperties getInstanceProperties() {
+        if (instanceProperties == null)
+            instanceProperties = InstanceProperties.getInstanceProperties(realUri);
+        
+        return instanceProperties;
     }
     
     ////////////////////////////////////////////////////////////////////////////
