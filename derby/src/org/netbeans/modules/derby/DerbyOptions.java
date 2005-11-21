@@ -107,9 +107,7 @@ public class DerbyOptions extends SystemOption {
                     location = ""; // NOI18N
                 }
             }
-            if (location != null && location.length() > 0) {
-                registerDrivers(location);
-            }
+            registerDrivers(location);
             putProperty(PROP_DERBY_LOCATION, location, true);
         }
     }
@@ -202,15 +200,17 @@ public class DerbyOptions extends SystemOption {
         }
         
         // register the new driver if it exists at the new location
-        File newDriverFile = new File(newLocation, driverRelativeFile);
-        if (newDriverFile.exists()) {
-            try {
-                JDBCDriver newDriver = JDBCDriver.create(driverName, driverClass, new URL[] { newDriverFile.toURI().toURL() });
-                JDBCDriverManager.getDefault().addDriver(newDriver);
-            } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            } catch (DatabaseException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        if (newLocation != null && newLocation.length() >= 0) {
+            File newDriverFile = new File(newLocation, driverRelativeFile);
+            if (newDriverFile.exists()) {
+                try {
+                    JDBCDriver newDriver = JDBCDriver.create(driverName, driverClass, new URL[] { newDriverFile.toURI().toURL() });
+                    JDBCDriverManager.getDefault().addDriver(newDriver);
+                } catch (MalformedURLException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                } catch (DatabaseException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
             }
         }
     }
