@@ -595,6 +595,9 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         }
         
         private void calc() {
+            //#60414 related assertion. The exceptions in the bug can only happen
+            // when this method is called from 2 threads? but that should not be happening
+            assert SwingUtilities.isEventDispatchThread() : "Should be accessed from AWT only or we have a synchronization problem"; //NOI18N
             if (!consumed) {
 //                synchronized (writer) {
                     consumed = true;
