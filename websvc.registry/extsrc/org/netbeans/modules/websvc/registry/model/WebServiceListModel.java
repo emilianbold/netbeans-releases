@@ -276,6 +276,16 @@ public class WebServiceListModel {
         }
         return wsGroups;
     }
+    
+    public WebServiceGroup findWebServiceGroup(String groupName) {
+        Iterator iter = webserviceGroups.keySet().iterator();
+        while(iter.hasNext()) {
+            WebServiceGroup group = (WebServiceGroup) webserviceGroups.get(iter.next());
+            if (groupName.equals(group.getName()))
+                return group;
+        }
+        return null;
+    }
 
     /** Using property change object to signify service adds and removes.
      *  !PW FIXME Should flesh out the ListModel events and move them to the API
