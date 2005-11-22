@@ -1771,6 +1771,6 @@ public class BaseOptions extends OptionSupport {
                 }
             }
         }
-        return null;
+        return KeyStroke.getKeyStroke (KeyEvent.VK_SPACE, 0);
     }
 }
