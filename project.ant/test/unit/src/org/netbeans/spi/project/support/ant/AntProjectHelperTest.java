@@ -14,6 +14,7 @@
 package org.netbeans.spi.project.support.ant;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -650,6 +651,52 @@ public class AntProjectHelperTest extends NbTestCase {
         // XXX check that it cannot be used to load or store primary configuration data
         // or other general fixed metadata
         // XXX try overwriting data
+    }
+    
+    public void test68872() throws Exception {
+        AuxiliaryConfiguration aux = (AuxiliaryConfiguration)p.getLookup().lookup(AuxiliaryConfiguration.class);
+        assertNotNull("AuxiliaryConfiguration present", aux);
+
+        Element data = aux.getConfigurationFragment("data", "urn:test:private-aux", false);
+        Element stuff = Util.findElement(data, "aux-private-stuff", "urn:test:private-aux");
+        assertNotNull("found <aux-private-stuff/>", stuff);
+        // Check write of private data.
+        stuff.setAttribute("attr", "val");
+        aux.putConfigurationFragment(data, false);
+        assertTrue("now project is modified", pm.isModified(p));
+        
+        FileObject privateXMLFO = p.getProjectDirectory().getFileObject("nbproject/private/private.xml");
+        
+        assertNotNull(privateXMLFO);
+        
+        File privateXML = FileUtil.toFile(privateXMLFO);
+        
+        privateXML.delete();
+        
+        privateXMLFO.refresh();
+        privateXMLFO.getParent().refresh();
+        
+        pm.saveProject(p);
+        
+        //the file should be renewed with new data:
+        assertTrue(privateXML.exists());
+        
+        //check the data are written:
+        Document doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PRIVATE_XML_PATH);
+        Element config = doc.getDocumentElement();
+        data = Util.findElement(config, "data", "urn:test:private-aux");
+        assertNotNull("<data> still exists", data);
+        stuff = Util.findElement(data, "aux-private-stuff", "urn:test:private-aux");
+        assertNotNull("still have <aux-private-stuff/>", stuff);
+        assertEquals("attr written correctly", "val", stuff.getAttribute("attr"));
+        
+        //check that on-disk changes are not ignored if the project is saved:
+        privateXML.delete();
+        
+        privateXMLFO.refresh();
+        privateXMLFO.getParent().refresh();
+        
+        assertNull(aux.getConfigurationFragment("data", "urn:test:private-aux", false));
     }
     
     public void testCreatePropertyProvider() throws Exception {

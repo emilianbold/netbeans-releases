@@ -738,9 +738,17 @@ public final class AntProjectHelper {
             String path;
             synchronized (modifiedMetadataPaths) {
                 if (f.equals(resolveFile(PROJECT_XML_PATH))) {
+                    if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {
+                        //#68872: don't do anything if the given file has non-saved changes:
+                        return ;
+                    }
                     path = PROJECT_XML_PATH;
                     projectXml = null;
                 } else if (f.equals(resolveFile(PRIVATE_XML_PATH))) {
+                    if (modifiedMetadataPaths.contains(PRIVATE_XML_PATH)) {
+                        //#68872: don't do anything if the given file has non-saved changes:
+                        return ;
+                    }
                     path = PRIVATE_XML_PATH;
                     privateXml = null;
                 } else {
