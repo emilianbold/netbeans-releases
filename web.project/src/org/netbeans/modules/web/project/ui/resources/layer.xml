@@ -78,9 +78,6 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$DebugWrapper" />
                   </file>
                   <attr boolvalue="true" name="DebugFile.instance/jsp-project-separator-3.instance" />
-                  <file name="jsp-project-separator-3.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
               </folder>
             </folder>
 
