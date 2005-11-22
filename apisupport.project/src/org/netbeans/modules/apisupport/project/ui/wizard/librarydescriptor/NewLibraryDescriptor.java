@@ -17,8 +17,11 @@ import java.io.IOException;
 import java.util.Set;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Wizard <em>J2SE Library Descriptor</em> for registering
@@ -82,13 +85,18 @@ final class NewLibraryDescriptor extends BasicWizardIterator {
         public void setCreatedModifiedFiles(CreatedModifiedFiles files) {
             this.files = files;
         }
-        
+                        
         public String getLibraryName() {
             return libraryName;
         }
         
         public void setLibraryName(String libraryName) {
             this.libraryName = libraryName;
+        }
+
+        public boolean isValidLibraryName() {
+            return getLibraryName() != null && 
+                    getLibraryName().trim().length() != 0;
         }
         
         public String getLibraryDisplayName() {
@@ -99,6 +107,33 @@ final class NewLibraryDescriptor extends BasicWizardIterator {
             this.libraryDisplayName = libraryDisplayName;
         }
         
+        public boolean isValidLibraryDisplayName() {
+            return getLibraryDisplayName() != null && 
+                    getLibraryDisplayName().trim().length() != 0;
+        }
+        
+        public boolean isValidPackageName() {
+            return getPackageName() != null && 
+                    getPackageName().trim().length() != 0 && UIUtil.isValidPackageName(getPackageName() );
+        }
+        
+        boolean libraryAlreadyExists() {
+            FileSystem layerFs = null;
+            LayerUtils.LayerHandle handle  = LayerUtils.layerForProject(getProject());
+            layerFs = handle.layer(false);
+            assert layerFs != null;
+            return (layerFs.findResource(CreatedModifiedFilesProvider.getLibraryDescriptorEntryPath(getLibraryName())) != null);
+        }
+                        
+        public NewLibraryDescriptor.DataModel cloneMe(WizardDescriptor wiz) {
+            NewLibraryDescriptor.DataModel d = new NewLibraryDescriptor.DataModel(wiz);
+            d.setLibrary(this.getLibrary());
+            d.setPackageName(this.getPackageName());
+            d.setCreatedModifiedFiles(this.getCreatedModifiedFiles());
+            d.setLibraryDisplayName(this.getLibraryDisplayName());
+            d.setLibraryName(this.getLibraryName());
+            return d;
+        }        
     }
     
 }

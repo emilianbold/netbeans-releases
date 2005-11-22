@@ -101,7 +101,7 @@ final class CreatedModifiedFilesProvider  {
         return sb.toString();//NOI18N
     }
     
-    private static String getLibraryDescriptorEntryPath(String libraryName) {
+    static String getLibraryDescriptorEntryPath(String libraryName) {
         StringBuffer sb = new StringBuffer();
         
         sb.append(LIBRARY_LAYER_ENTRY).append("/").append(libraryName).append(".xml");//NOI18N

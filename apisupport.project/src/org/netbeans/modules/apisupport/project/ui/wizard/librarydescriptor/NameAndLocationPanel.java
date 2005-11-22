@@ -13,14 +13,19 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
 
+import java.io.IOException;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils.LayerHandle;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -42,10 +47,11 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
                 NbBundle.getMessage(NameAndLocationPanel.class,"LBL_LibraryWizardTitle")); // NOI18N
         
         DocumentListener dListener = new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) {                
-                if (checkValidity()) {
-                    updateData();                    
-                }
+            public void insertUpdate(DocumentEvent e) {
+                NewLibraryDescriptor.DataModel _data = getTemporaryDataModel();                
+                if (checkValidity(_data)) {
+                    setFilesInfoIntoTextAreas(_data);
+                }                
             }
         };
         libraryNameVale.getDocument().addDocumentListener(dListener);
@@ -58,20 +64,30 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     }
     
     protected void storeToDataModel() {
-        updateData();
+        NewLibraryDescriptor.DataModel _temp = getTemporaryDataModel();        
+        data.setPackageName(_temp.getPackageName());
+        data.setLibraryName(_temp.getLibraryName());
+        data.setLibraryDisplayName(_temp.getLibraryDisplayName());        
+        data.setCreatedModifiedFiles(_temp.getCreatedModifiedFiles());        
     }
     
-    private void updateData() {
-        data.setPackageName(packageNameValue.getEditor().getItem().toString());
-        data.setLibraryName(libraryNameVale.getText());
-        data.setLibraryDisplayName(libraryDisplayNameValue.getText());
-        
-        CreatedModifiedFiles files = CreatedModifiedFilesProvider.createInstance(data);
-        data.setCreatedModifiedFiles(files);
-        
-        CreatedModifiedFilesProvider.setCreatedFiles(files, createdFilesValue);
-        CreatedModifiedFilesProvider.setModifiedFiles(files, modifiedFilesValue);
-        checkValidity();
+    private NewLibraryDescriptor.DataModel getTemporaryDataModel() {
+        NewLibraryDescriptor.DataModel _temp = data.cloneMe(getSettings());        
+        _temp.setPackageName(packageNameValue.getEditor().getItem().toString());
+        _temp.setLibraryName(libraryNameVale.getText());
+        _temp.setLibraryDisplayName(libraryDisplayNameValue.getText());        
+        if (_temp.isValidLibraryDisplayName() && _temp.isValidLibraryName() && _temp.isValidPackageName()) {
+            CreatedModifiedFiles files = CreatedModifiedFilesProvider.createInstance(_temp);
+            _temp.setCreatedModifiedFiles(files);
+        }                
+        return _temp;
+    }
+
+    private void setFilesInfoIntoTextAreas(final NewLibraryDescriptor.DataModel _temp) {
+        if (_temp.getCreatedModifiedFiles() != null) {
+            CreatedModifiedFilesProvider.setCreatedFiles(_temp.getCreatedModifiedFiles(), createdFilesValue);
+            CreatedModifiedFilesProvider.setModifiedFiles(_temp.getCreatedModifiedFiles(), modifiedFilesValue);
+        }
     }
     
     protected void readFromDataModel() {
@@ -80,8 +96,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         if (data.getPackageName() != null) {
             packageNameValue.setSelectedItem(data.getPackageName());
         }
-        checkValidity();
-//        updateData();
+        checkValidity(getTemporaryDataModel());
     }
     
     protected String getPanelName() {
@@ -89,41 +104,23 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     }
 
     
-    private boolean checkValidity() {
-        String lName = libraryNameVale.getText();
-        String lDisplayName = libraryDisplayNameValue.getText();
-        boolean pValid = true;
-        if (lName.trim().length() == 0) {
+    private boolean checkValidity(final NewLibraryDescriptor.DataModel _data) {
+        if (!_data.isValidLibraryName()) {
             setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_EmptyName")); // NOI18N
-            pValid = false;
-        }
-        
-        if (pValid && lDisplayName.trim().length() == 0) {
+            return false;
+        } else if (!_data.isValidLibraryDisplayName()) {
             setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_EmptyDescName")); // NOI18N
-            pValid = false;
-        }
-        
-        String packageName = packageNameValue.getEditor().getItem().toString().trim();
-        if (packageName.length() == 0 || !UIUtil.isValidPackageName(packageName)) { //NOI18N
+            return false;
+        } else if (!_data.isValidPackageName()) { //NOI18N
             setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_Package_Invalid")); // NOI18N
-            pValid = false;            
+            return false;
+        } else if (_data.libraryAlreadyExists()) {
+            setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,
+                    "ERR_LibraryExists", _data.getLibraryName()));
+            return false;
         }
-                        
-        CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
-        if (pValid && cmf != null) {
-            String[] modifiedFiles = cmf.getModifiedPaths();
-            pValid = (modifiedFiles != null && modifiedFiles.length == 2);
-            if (!pValid) {
-                setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,
-                        "ERR_LibraryExists", data.getLibraryName()));
-            }
-        }
-        
-        
-        if (pValid) {
-            setErrorMessage(null);
-        }                
-        return pValid;
+        setErrorMessage(null);
+        return true;
     }
     
     protected HelpCtx getHelp() {
@@ -132,7 +129,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     
     public void addNotify() {
         super.addNotify();
-        checkValidity();
+        checkValidity(getTemporaryDataModel());
     }
     
     /** This method is called from within the constructor to
