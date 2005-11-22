@@ -39,6 +39,7 @@ import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 
 
@@ -137,6 +138,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 BreakpointRequest br = getEventRequestManager ().
                     createBreakpointRequest (location);
                 addEventRequest (br);
+                //System.out.println("Breakpoint " + br + location + "created");
             } catch (VMDisconnectedException e) {
             }
         }
@@ -224,6 +226,9 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
         } catch (InternalException iex) {
             // Something wrong in JDI
+            ErrorManager.getDefault().annotate(iex, 
+                    NbBundle.getMessage(LineBreakpointImpl.class,
+                    "MSG_jdi_internal_error") );
             ErrorManager.getDefault().notify(iex);
             // We should indicate somehow that the breakpoint is invalid...
         }
