@@ -80,14 +80,18 @@ public class LoggingTestCaseHid extends NbTestCase {
         try {
             super.runTest ();
         } catch (AssertionFailedError ex) {
+            ErrManager.messages.append("\nGot exception: " + ex.getMessage());
+            Thread.sleep(1000);
             AssertionFailedError ne = new AssertionFailedError (ex.getMessage () + " Log:\n" + ErrManager.messages);
             ne.setStackTrace (ex.getStackTrace ());
             throw ne;
         } catch (IOException iex) {//#66208
+            ErrManager.messages.append("\nGot exception: " + iex.getMessage());
+            Thread.sleep(1000);
             IOException ne = new IOException (iex.getMessage () + " Log:\n" + ErrManager.messages);
             ne.setStackTrace (iex.getStackTrace ());
             throw ne;	    
-	}
+    	}
     }
     
     /** Allows subclasses to register content for the lookup. Can be used in 

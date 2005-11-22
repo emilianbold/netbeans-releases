@@ -35,6 +35,7 @@ import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 import junit.framework.*;
 import org.netbeans.core.startup.Main;
+import org.netbeans.core.startup.MainLookup;
 import org.netbeans.junit.*;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
@@ -55,22 +56,25 @@ import junit.textui.TestRunner;
 /**
  * Tests shortcuts folder to ensure it handles wildcard keystrokes correctly. 
  */
-public class ShortcutsFolderTest extends NbTestCase {
+public class ShortcutsFolderTest extends LoggingTestCaseHid {
     
-    private static Keymap keymap;
-    static {
-        // register lookup
-        System.setProperty("org.openide.util.Lookup", "org.netbeans.core.ShortcutsFolderTest$LKP");
-        Main.initializeURLFactory ();
-        keymap = (Keymap) Lookup.getDefault ().lookup (Keymap.class);
-        ShortcutsFolder.initShortcuts ();
-    }
+    private Keymap keymap;
     
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
     public ShortcutsFolderTest(String s) {
         super(s);
+    }
+    
+    protected void setUp() throws Exception {
+        registerIntoLookup(new ENV());
+
+        Main.initializeURLFactory ();
+        keymap = (Keymap) Lookup.getDefault ().lookup (Keymap.class);
+        
+        assertNotNull("There is a keymap", keymap);
+        ShortcutsFolder.initShortcuts ();
     }
     
     public void testApplyChangeToFactoryActionIssue49597 () throws Exception {
@@ -143,18 +147,7 @@ public class ShortcutsFolderTest extends NbTestCase {
         public void actionPerformed (ActionEvent ae) {}
     }
     
-    public static class LKP extends org.openide.util.lookup.AbstractLookup implements org.openide.loaders.Environment.Provider {
-        public LKP () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private LKP (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            ic.add (new NbKeymap ());
-            //ic.add (new EM ());
-            ic.add (this);
-        }
-        
+    public static class ENV extends Object implements org.openide.loaders.Environment.Provider {
         public Lookup getEnvironment(DataObject obj) {
             if (obj instanceof org.openide.loaders.XMLDataObject) {
                 try {
@@ -172,38 +165,6 @@ public class ShortcutsFolderTest extends NbTestCase {
                 }
             }
             return org.openide.util.Lookup.EMPTY;
-        }
-    }
-    
-    public static class EM extends ErrorManager {
-        public Throwable attachAnnotations (Throwable t, Annotation[] arr) {
-            return t;
-        }
-
-        public void log (int i, String s) {
-            System.err.println(s);
-        }
-        
-        public Annotation[] findAnnotations (Throwable t) {
-            return new Annotation[0];
-        }
-
-        public Throwable annotate (
-            Throwable t, int severity,
-            String message, String localizedMessage,
-            Throwable stackTrace, java.util.Date date
-        ) {
-            System.err.println(message);
-            t.printStackTrace();
-            return t;
-        }
-
-        public void notify (int severity, Throwable t) {
-            t.printStackTrace();
-        }
-
-        public ErrorManager getInstance(String name) {
-            return this;
         }
     }
     

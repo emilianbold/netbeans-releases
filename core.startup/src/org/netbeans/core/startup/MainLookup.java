@@ -46,6 +46,7 @@ public final class MainLookup extends ProxyLookup {
                    Lookups.metaInfServices(classLoader),
                    Lookups.singleton(classLoader),
                    Lookup.EMPTY, // will be moduleLookup
+                   instanceLookup
                });
     }
 
@@ -143,7 +144,6 @@ public final class MainLookup extends ProxyLookup {
             getLookups()[0], // metaInfServicesLookup
             getLookups()[1], // ClassLoader lookup
             getLookups()[2], // ModuleInfo lookup
-            // XXX figure out how to put this ahead of MetaInfServicesLookup (for NonGuiMain):
             instanceLookup, 
             CoreBridge.conditionallyLookupCacheLoad (),
         };
