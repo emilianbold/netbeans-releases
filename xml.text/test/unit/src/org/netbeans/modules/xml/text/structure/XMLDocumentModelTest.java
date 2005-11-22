@@ -693,7 +693,110 @@ public class XMLDocumentModelTest extends NbTestCase {
         
     }
     
+     public void testMergeTwoElementsIntoOne() throws DocumentModelException, BadLocationException, InterruptedException {
+        //initialize documents used in tests
+        initDoc3();
+        //set the document content
+        DocumentModel model = DocumentModel.getDocumentModel(doc);
+        DocumentElement root = model.getRootElement();
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        DocumentElement rootTag = root.getElement(1); //get <wood> element
+        DocumentElement wood1 = rootTag.getElement(0);
+        DocumentElement wood2 = rootTag.getElement(1);
+        
+        assertEquals("tree", wood1.getName());
+        assertEquals("tree", wood2.getName());
+        
+        //listen to model
+        final Vector modelChanges = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementRemoved(DocumentElement de) {
+                modelChanges.add(de);
+            }
+        });
+        
+        //listen to element
+        final Vector elementChanges = new Vector();
+        rootTag.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void elementRemoved(DocumentElementEvent e) {
+                elementChanges.add(e.getChangedChild());
+            }
+        });
+        
+        doc.remove(40,"/><tree id=\"2\"".length());
+        Thread.sleep(MODEL_TIMEOUT * 2); //wait for the model update (started after 500ms)
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        //check events
+        assertEquals(1, modelChanges.size());
+        assertEquals(wood2, modelChanges.get(0));
+        assertEquals(1, elementChanges.size());
+        assertEquals(wood2, elementChanges.get(0));
+        
+        //check the element
+        AttributeSet attrs = wood1.getAttributes();
+        assertNotNull(attrs);
+        
+        assertEquals(1, attrs.getAttributeCount()); //one attribute
+        assertTrue(attrs.containsAttribute("id", "1"));
+        
+     }
     
+    public void testRemoveTwoElementsWithSameName() throws DocumentModelException, BadLocationException, InterruptedException {
+        //initialize documents used in tests
+        initDoc3();
+        //set the document content
+        DocumentModel model = DocumentModel.getDocumentModel(doc);
+        DocumentElement root = model.getRootElement();
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        DocumentElement rootTag = root.getElement(1); //get <wood> element
+        DocumentElement wood1 = rootTag.getElement(0);
+        DocumentElement wood2 = rootTag.getElement(1);
+        
+        assertEquals("tree", wood1.getName());
+        assertEquals("tree", wood2.getName());
+        
+        //listen to model
+        final Vector modelChanges = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementRemoved(DocumentElement de) {
+                System.out.println("removed " + de);
+                modelChanges.add(de);
+            }
+        });
+        
+        //listen to element
+        final Vector elementChanges = new Vector();
+        rootTag.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void elementRemoved(DocumentElementEvent e) {
+                System.out.println("removed " + e.getChangedChild());
+                elementChanges.add(e.getChangedChild());
+            }
+        });
+        
+        doc.remove(27, "<tree id=\"1\"/><tree id=\"2\"/>".length());
+        Thread.sleep(MODEL_TIMEOUT * 2); //wait for the model update (started after 500ms)
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        //check events
+        assertEquals(2, elementChanges.size()); //two elements removed
+        assertEquals(2, modelChanges.size()); //two elements removed
+
+        assertEquals(0, rootTag.getElementCount());
+        
+     }
+     
+     
     private void initDoc1() throws BadLocationException {
         /*
           supposed structure:
@@ -735,6 +838,27 @@ public class XMLDocumentModelTest extends NbTestCase {
         //                  012345678901234567890123456789012345678901234567890123456789
         //                  0         1         2         3         4         5
     }
+    
+    
+    private void initDoc3() throws BadLocationException {
+        /*
+          supposed structure:
+            ROOT
+             |
+             +--<?xml version='1.0'?>
+             +--<wood>
+                   |
+                   +---<tree id="1">
+                   +---<tree id="2">
+         */
+        doc = new BaseDocument(XMLKit.class, false);
+        doc.putProperty("mimeType", "text/xml");
+        
+        doc.insertString(0,"<?xml version=\"1.0\"?><wood><tree id=\"1\"/><tree id=\"2\"/></wood>",null); 
+        //                  01234567890123 4567 89012345678901234567 89 01234567890123456789012345678901234567890123456789012345678901234567890123456789
+        //                  0         1         2         3         4         5         6         7         8
+    }
+        
     
     private static class DocumentModelListenerAdapter implements DocumentModelListener {
         public void documentElementAdded(DocumentElement de) {
