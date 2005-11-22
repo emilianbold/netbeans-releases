@@ -44,12 +44,6 @@ public class InstanceDataObjectModuleTest5 extends InstanceDataObjectModuleTestH
         super(name);
     }
     
-    public static void main(String[] args) {
-        // Turn on verbose logging while developing tests:
-        //System.setProperty("org.netbeans.core.modules", "0");
-        TestRunner.run(new NbTestSuite(InstanceDataObjectModuleTest5.class));
-    }
-    
     public void testReloadSettingsSwitchesLookupByNewClass() throws Exception {
         ERR.log("before twidle enabled");
         twiddle(m2, TWIDDLE_ENABLE);

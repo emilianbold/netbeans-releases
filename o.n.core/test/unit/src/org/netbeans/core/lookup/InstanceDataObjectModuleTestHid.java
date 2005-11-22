@@ -43,6 +43,10 @@ import org.openide.ErrorManager;
 public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     protected ErrorManager ERR;
     
+    static {
+        org.netbeans.core.startup.MainLookup.register (new ErrManager ());
+    }
+    
     
     protected InstanceDataObjectModuleTestHid(String name) {
         super(name);
@@ -67,8 +71,6 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     protected void setUp() throws Exception {
         ERR = ErrManager.getDefault().getInstance("TEST-" + getName());
         
-        mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
-        org.netbeans.core.startup.MainLookup.register (new ErrManager ());
         mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         final File jar1 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test1.jar"));
         final File jar2 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test2.jar"));
@@ -178,16 +180,20 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     protected boolean existsSomeAction(Class c, Lookup.Result r) {
         assertTrue(Action.class.isAssignableFrom(c));
         boolean found = false;
+        ERR.log("Begin iterate");
         Iterator it = r.allInstances().iterator();
         while (it.hasNext()) {
             Action a = (Action)it.next();
+            ERR.log("First action read: " + a);
             assertTrue("Assignable to template class: c=" + c.getName() + " a.class=" + a.getClass().getName(),
                 c.isInstance(a));
             if ("SomeAction".equals(a.getValue(Action.NAME))) {
                 found = true;
+                ERR.log("Action with correct name found: " + a);
                 break;
             }
         }
+        ERR.log("existsSomeAction finished: " + found);
         return found;
     }
     
@@ -258,6 +264,10 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         }
         
         public void log (int severity, String s) {            
+            if (prefix == null) {
+                return;
+            }
+            
             if (messages.length () > 500000) {
                 messages.delete (0,  250000);
             }
@@ -269,6 +279,10 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         }
         
         public void notify (int severity, Throwable t) {
+            if (prefix == null) {
+                return;
+            }
+            
             messages.append (t.getMessage ());
             t.printStackTrace (log);
         }
