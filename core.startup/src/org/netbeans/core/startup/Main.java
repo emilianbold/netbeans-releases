@@ -407,7 +407,7 @@ public final class Main extends Object {
   
     /** Return splash screen.
     */
-    protected Splash.SplashOutput getSplash() {
+    final static Splash.SplashOutput getSplash() {
         return splash;
     }
   

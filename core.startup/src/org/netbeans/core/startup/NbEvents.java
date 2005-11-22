@@ -15,10 +15,12 @@ package org.netbeans.core.startup;
 
 // May use core, GUI, ad nauseum.
 
+import java.awt.Component;
 import java.io.File;
 import java.text.Collator;
 import java.util.*;
 import javax.swing.JOptionPane;
+import org.netbeans.core.startup.Splash.SplashOutput;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
@@ -268,19 +270,53 @@ final class NbEvents extends Events {
         }
     }
     private static final class Notifier implements Runnable {
+        private static int questions;
+        
         private boolean warn;
         private String text;
         private static RequestProcessor RP = new RequestProcessor("Notify About Module System"); // NOI18N
+        private volatile boolean shown;
+        private Object[] options;
+        private Object value;
         
         public Notifier(String text, boolean type) {
             this.warn = type;
             this.text = text;
-            RP.post(this, 0, Thread.MIN_PRIORITY);
+            //this.options = options;
+            RequestProcessor.Task t = RP.post(this, 0, Thread.MIN_PRIORITY);
+            
+            if (questions++ == 0) {
+                this.options = new String[] {
+                    NbBundle.getMessage(Notifier.class, "MSG_continue"),
+                    NbBundle.getMessage(Notifier.class, "MSG_exit"),
+                };
+            }
+            
+            if (options != null) {
+                t.waitFinished();
+            }
+        }
+        
+        public Object getOption() {
+            return value;
         }
         public void run() {
+            shown = true;
+            
             int type = warn ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE;
             String msg = NbBundle.getMessage(Notifier.class, warn ? "MSG_warning" : "MSG_info"); // NOI18N
-            JOptionPane.showMessageDialog(null, text, msg, type);
+
+            Splash.SplashOutput out = org.netbeans.core.startup.Main.getSplash();
+            Component c = out == null ? null : out.getComponent();
+            
+            if (options == null) {
+                JOptionPane.showMessageDialog(null, text, msg, type);
+            } else {
+                int ret = JOptionPane.showOptionDialog(c, text, msg, 0, type, null, options, options[0]);
+                if (ret == 1) {
+                    TopSecurityManager.exit(1);
+                }
+            }
         }
     }
 

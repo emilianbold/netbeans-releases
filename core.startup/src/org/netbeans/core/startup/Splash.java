@@ -15,6 +15,7 @@ package org.netbeans.core.startup;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -105,6 +106,8 @@ public final class Splash  implements SwingConstants {
         public void addAndSetMaxSteps(int steps);
         
         public void increment(int steps);
+        
+        public Component getComponent();
     }
 
     /** This interface is used only internally in this class.
@@ -525,6 +528,10 @@ public final class Splash  implements SwingConstants {
         public void addAndSetMaxSteps(int steps) {
             splashComponent.addAndSetMaxSteps(steps);
         }
+
+        public Component getComponent() {
+            return this;
+        }
         
     }
 
@@ -595,6 +602,10 @@ public final class Splash  implements SwingConstants {
         }
         
         public void addAndSetMaxSteps(int steps) {
+        }
+
+        public Component getComponent() {
+            return this;
         }
         
     }
