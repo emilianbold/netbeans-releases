@@ -95,8 +95,11 @@ public class SetPropertyCustomizer extends javax.swing.JPanel {
         
         int beanIndex = jComboBox1.getSelectedIndex();
         setProperty.setBeanIndex(beanIndex);
-        if (beanIndex == -1) // new or no value selected
-            setProperty.setBean(jComboBox1.getSelectedItem().toString());
+        if (beanIndex == -1) { // new or no value selected
+            Object item = jComboBox1.getSelectedItem();
+            if (item != null)
+                setProperty.setBean(item.toString());
+        }
 
         String property = jTextField2.getText();
         setProperty.setProperty(property);
