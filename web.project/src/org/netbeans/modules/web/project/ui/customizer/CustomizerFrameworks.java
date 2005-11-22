@@ -222,29 +222,36 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
 
     public void valueChanged(javax.swing.event.ListSelectionEvent e) {
         String frameworkName = (String) jListFrameworks.getSelectedValue();
-        WebFrameworkProvider framework = (WebFrameworkProvider) usedFrameworks.get(jListFrameworks.getSelectedIndex());
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        if (framework.getName().equals(frameworkName))
-            if (framework.getConfigurationPanel(wm) != null) {
-                String message = MessageFormat.format(NbBundle.getMessage(CustomizerFrameworks.class, "LBL_FrameworkConfiguration"), new Object[] {frameworkName}); //NOI18N
-                jLabelConfig.setText(message);
-                jPanelConfig.removeAll();
-                
-                java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-                gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-                gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-                gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-                gridBagConstraints.weightx = 1.0;
-                gridBagConstraints.weighty = 1.0;
-                
-                jPanelConfig.add(framework.getConfigurationPanel(wm).getComponent(), gridBagConstraints);
-                jPanelConfig.revalidate();
-            } else {
-                jLabelConfig.setText(""); //NOI18N
-                jPanelConfig.removeAll();
-                jPanelConfig.repaint();
-                jPanelConfig.revalidate();
-            }
+	int selectedIndex = jListFrameworks.getSelectedIndex();
+	if (selectedIndex != -1) {	
+	    WebFrameworkProvider framework = (WebFrameworkProvider) usedFrameworks.get(selectedIndex);
+	    WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+	    if (framework.getName().equals(frameworkName))
+		if (framework.getConfigurationPanel(wm) != null) {
+		    String message = MessageFormat.format(NbBundle.getMessage(CustomizerFrameworks.class, "LBL_FrameworkConfiguration"), new Object[] {frameworkName}); //NOI18N
+		    jLabelConfig.setText(message);
+		    jPanelConfig.removeAll();
+
+		    java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		    gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+		    gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+		    gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		    gridBagConstraints.weightx = 1.0;
+		    gridBagConstraints.weighty = 1.0;
+
+		    jPanelConfig.add(framework.getConfigurationPanel(wm).getComponent(), gridBagConstraints);
+		    jPanelConfig.revalidate();
+		} else {
+		    hideConfigPanel();
+		}
+	} else
+	    hideConfigPanel();
     }
 
+    private void hideConfigPanel() {
+	jLabelConfig.setText(""); //NOI18N
+	jPanelConfig.removeAll();
+	jPanelConfig.repaint();
+	jPanelConfig.revalidate();
+    }
 }
