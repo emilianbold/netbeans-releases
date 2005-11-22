@@ -42,11 +42,13 @@ import org.netbeans.jemmy.operators.JTextAreaOperator;
  */
 public class CommitOperator extends NbDialogOperator {
 
-    /** Waits for "Commit" dialog. */
+    /** Waits for "Commit" dialog. It can have title "Commit - <object>" 
+     * or "Commit files" if there is no file to commit.
+     */
     public CommitOperator() {
-        super(Bundle.getStringTrimmed(
+        super(Bundle.getString(
                 "org.netbeans.modules.versioning.system.cvss.ui.actions.commit.Bundle",
-                "CTL_CommitDialog_Title"));
+                "CTL_CommitOption_Commit"));
     }
 
     /** Selects nodes and call commit action on them.
