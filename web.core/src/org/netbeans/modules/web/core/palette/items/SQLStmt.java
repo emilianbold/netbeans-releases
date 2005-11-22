@@ -31,17 +31,21 @@ public class SQLStmt {
     private String dataSource;
     private String stmt;
     
-    public SQLStmt(String variable, int scopeIndex, String dataSource, String stmt) {
+    private String helpID;
+    
+    public SQLStmt(String variable, int scopeIndex, String dataSource, String stmt, String helpID) {
                    
         this.variable = variable;
         this.scopeIndex = scopeIndex;
         this.dataSource = dataSource;
         this.stmt = stmt;
+        
+        this.helpID = helpID;
     }
 
     public boolean customize(JTextComponent target, String displayName, String stmtLabel, String stmtACSN, String stmtACSD) {
 
-        SQLStmtCustomizer c = new SQLStmtCustomizer(this, target, displayName, stmtLabel, stmtACSN, stmtACSD);
+        SQLStmtCustomizer c = new SQLStmtCustomizer(this, target, displayName, stmtLabel, stmtACSN, stmtACSD, helpID);
         boolean accept = c.showDialog();
         
         return accept;

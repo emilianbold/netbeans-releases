@@ -62,7 +62,7 @@ public class Report implements ActiveEditorDrop {
         }
         catch (Exception e) {}
         
-        stmt = new SQLStmt(variable, scopeIndex, dataSource, query);
+        stmt = new SQLStmt(variable, scopeIndex, dataSource, query, "ReportStmtCustomizer"); // NOI18N
         
     }
 

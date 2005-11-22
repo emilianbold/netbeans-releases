@@ -19,6 +19,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.text.JTextComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
@@ -43,9 +44,11 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
     private String stmtLabel;
     private String stmtACSN;
     private String stmtACSD;
+    private String helpID;
             
     public SQLStmtCustomizer(SQLStmt stmt, JTextComponent target,
-                             String displayName, String stmtLabel, String stmtACSN, String stmtACSD)
+                             String displayName, String stmtLabel, String stmtACSN, String stmtACSD,
+                             String helpID)
     {
         this.stmt = stmt;
         this.target = target;
@@ -54,6 +57,8 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         this.stmtLabel = stmtLabel;
         this.stmtACSN = stmtACSN;
         this.stmtACSD = stmtACSD;
+        
+        this.helpID = helpID;
         
         initComponents();
 
@@ -74,6 +79,8 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         descriptor = new DialogDescriptor
                 (this, NbBundle.getMessage(SQLStmtCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
+                 DialogDescriptor.DEFAULT_ALIGN,
+                 new HelpCtx(helpID),
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
                         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {

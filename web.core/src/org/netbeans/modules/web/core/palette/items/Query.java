@@ -61,7 +61,7 @@ public class Query implements ActiveEditorDrop {
         }
         catch (Exception e) {}
         
-        stmt = new SQLStmt(variable, scopeIndex, dataSource, query);
+        stmt = new SQLStmt(variable, scopeIndex, dataSource, query, "QueryStmtCustomizer"); // NOI18N
         
     }
 

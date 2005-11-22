@@ -61,7 +61,7 @@ public class Insert implements ActiveEditorDrop {
         }
         catch (Exception e) {}
         
-        stmt = new SQLStmt(variable, scopeIndex, dataSource, update);
+        stmt = new SQLStmt(variable, scopeIndex, dataSource, update, "InsertStmtCustomizer"); // NOI18N
         
     }
 

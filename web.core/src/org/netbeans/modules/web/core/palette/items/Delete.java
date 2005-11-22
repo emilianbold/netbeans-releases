@@ -61,7 +61,7 @@ public class Delete implements ActiveEditorDrop {
         }
         catch (Exception e) {}
         
-        stmt = new SQLStmt(variable, scopeIndex, dataSource, update);
+        stmt = new SQLStmt(variable, scopeIndex, dataSource, update, "DeleteStmtCustomizer"); // NOI18N
         
     }
 

@@ -61,7 +61,7 @@ public class Update implements ActiveEditorDrop {
         }
         catch (Exception e) {}
         
-        stmt = new SQLStmt(variable, scopeIndex, dataSource, update);
+        stmt = new SQLStmt(variable, scopeIndex, dataSource, update, "UpdateStmtCustomizer"); // NOI18N
         
     }
 
