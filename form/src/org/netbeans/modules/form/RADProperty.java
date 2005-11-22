@@ -105,6 +105,19 @@ public class RADProperty extends FormProperty {
                 "MSG_ERR_WRITING_TO_PROPERTY", // NOI18N
                 new Object[] { getDisplayName() });
 
+            Throwable tex = ex.getTargetException();
+            if(tex instanceof IllegalArgumentException) {
+                ErrorManager.getDefault().annotate(
+                    tex, ErrorManager.WARNING, null,
+                    message, null, null);                
+                throw (IllegalArgumentException) tex;
+            } else if(tex instanceof IllegalAccessException) {
+                ErrorManager.getDefault().annotate(
+                    tex, ErrorManager.WARNING, null,
+                    message, null, null);                
+                throw (IllegalAccessException) tex;
+            }
+            
             ErrorManager.getDefault().annotate(
                 ex, ErrorManager.WARNING, null,
                 message, null, null);
