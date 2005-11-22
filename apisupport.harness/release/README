@@ -163,7 +163,7 @@ new platform P2 by building S1 + P1. Here's what you need to do in brief:
 
     <target name="create-platform" depends="build-zip">
         <mkdir dir="${p2}"/>
-        <unzip src="dist/${app.name}.zip" dest="p2"/>
+        <unzip src="dist/${app.name}.zip" dest="${p2}"/>
     </target>
 
 where S1/nbproject/project.properties or S1/nbproject/private/private.properties
