@@ -13,7 +13,7 @@
               <EmptySpace max="$pref" attributes="16"/>
               <Group type="parallel" groupAlignment="leading" max="$pref" attributes="16">
                   <Component id="jPanel1" max="Short.MAX_VALUE" attributes="1"/>
-                  <Component id="jTextField1" alignment="trailing" pref="209" max="Short.MAX_VALUE" attributes="1"/>
+                  <Component id="jTextField1" alignment="leading" pref="209" max="Short.MAX_VALUE" attributes="1"/>
               </Group>
               <EmptySpace pref="74" max="Short.MAX_VALUE" attributes="12"/>
           </Group>

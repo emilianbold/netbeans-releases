@@ -1,5 +1,5 @@
 
-package zklayout;
+package org.netbeans.modules.form.layoutdesign;
 
 public class ALT_Resizing04 extends javax.swing.JFrame {
     
