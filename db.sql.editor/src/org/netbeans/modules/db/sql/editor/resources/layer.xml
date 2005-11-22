@@ -82,7 +82,9 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
-            <file name="SQLExample" url="SQLExample"/>
+            <folder name="text">
+                <file name="x-sql" url="SQLExample"/>
+            </folder>
         </folder>
     </folder>
 
