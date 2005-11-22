@@ -175,7 +175,7 @@ public class MakeJNLP extends Task {
             }
             
 
-            File signed = new File(target, dashcnb + ".jar");
+            File signed = new File(target, jar.getName());
             File jnlp = new File(target, dashcnb + ".jnlp");
             
             StringWriter writeJNLP = new StringWriter();
@@ -189,7 +189,7 @@ public class MakeJNLP extends Task {
             writeJNLP.write("  </information>\n");
             writeJNLP.write("  <security><all-permissions/></security>\n");
             writeJNLP.write("  <resources>\n");
-            writeJNLP.write("     <jar href='"); writeJNLP.write(dashcnb + ".jar"); writeJNLP.write("'/>\n");
+            writeJNLP.write("     <jar href='"); writeJNLP.write(jar.getName()); writeJNLP.write("'/>\n");
             
             processExtensions(jar, theJar.getManifest(), writeJNLP, dashcnb, codebase);
             
