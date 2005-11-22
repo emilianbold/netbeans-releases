@@ -388,7 +388,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         configFile = (String)settings.getProperty(WizardProperties.ACTION_CONFIG_FILE);
         Project proj = panel.getProject();
         WebModule wm = WebModule.getWebModule(proj.getProjectDirectory());
-        if (wm != null){
+        if (wm != null && configFile != null && !"".equals(configFile.trim())){  //NOI18N
             org.openide.filesystems.FileObject fo = wm.getDocumentBase().getFileObject(configFile);
             if (fo!=null) {
                 try {

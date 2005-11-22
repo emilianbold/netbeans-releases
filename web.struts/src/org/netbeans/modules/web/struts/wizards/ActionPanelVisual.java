@@ -154,6 +154,7 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
                     NbBundle.getMessage(ActionPanelVisual.class, "MSG_NoSuperClassSelected"));  //NOI18N
             return false;
         }
+        
         // check configuration file
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
         if (configFile == null || configFile.trim().equals("")){

@@ -155,10 +155,11 @@ public class ActionIterator implements TemplateWizard.Iterator {
         
         Project project = Templates.getProject( wizard );
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        if (wm != null) {
+        String configFile = (String) wizard.getProperty(WizardProperties.ACTION_CONFIG_FILE);
+        if (wm != null && configFile != null && !"".equals(configFile)) { //NOI18N
             // the file is created outside a wm -> we don't need to write the declaration.
             dir = wm.getDocumentBase();
-            String configFile = (String) wizard.getProperty(WizardProperties.ACTION_CONFIG_FILE);
+            
             FileObject fo = dir.getFileObject(configFile); 
             StrutsConfigDataObject configDO = (StrutsConfigDataObject)DataObject.find(fo);
             StrutsConfig config= configDO.getStrutsConfig();

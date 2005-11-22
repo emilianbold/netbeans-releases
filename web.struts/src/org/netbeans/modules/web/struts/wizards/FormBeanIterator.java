@@ -134,15 +134,12 @@ public class FormBeanIterator implements TemplateWizard.Iterator {
 
         Project project = Templates.getProject( wizard );
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        if (wm != null){
+        String configFile = (String) wizard.getProperty(WizardProperties.FORMBEAN_CONFIG_FILE);
+
+        if (wm != null && configFile != null && !"".equals(configFile)){ //NOI18N
             // write to a struts configuration file, only when it's inside wm. 
             dir = wm.getDocumentBase();
-            String configFile = (String) wizard.getProperty(WizardProperties.FORMBEAN_CONFIG_FILE);
-            FileObject fo = dir.getFileObject(configFile); //NOI18N
-            StrutsConfigDataObject configDO = (StrutsConfigDataObject)DataObject.find(fo);
-            StrutsConfig config= configDO.getStrutsConfig();
 
-            FormBean formBean = new FormBean();
             String targetName = Templates.getTargetName(wizard);
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -160,20 +157,28 @@ public class FormBeanIterator implements TemplateWizard.Iterator {
             else
                 className=targetName;
 
-            formBean.setAttributeValue("name", targetName); //NOI18N
-            formBean.setAttributeValue("type", className); //NOI18N     
-            if (config != null && config.getFormBeans()==null){
-                config.setFormBeans(new FormBeans());
-            }
+            
+            FileObject fo = dir.getFileObject(configFile); //NOI18N
+            if (fo != null){
+                StrutsConfigDataObject configDO = (StrutsConfigDataObject)DataObject.find(fo);
+                StrutsConfig config= configDO.getStrutsConfig();
 
-            config.getFormBeans().addFormBean(formBean);
-            BaseDocument doc = (BaseDocument)configDO.getEditorSupport().getDocument();
-            if (doc == null){
-                ((OpenCookie)configDO.getCookie(OpenCookie.class)).open();
-                doc = (BaseDocument)configDO.getEditorSupport().getDocument();
+                FormBean formBean = new FormBean();
+                formBean.setAttributeValue("name", targetName); //NOI18N
+                formBean.setAttributeValue("type", className); //NOI18N     
+                if (config != null && config.getFormBeans()==null){
+                    config.setFormBeans(new FormBeans());
+                }
+
+                config.getFormBeans().addFormBean(formBean);
+                BaseDocument doc = (BaseDocument)configDO.getEditorSupport().getDocument();
+                if (doc == null){
+                    ((OpenCookie)configDO.getCookie(OpenCookie.class)).open();
+                    doc = (BaseDocument)configDO.getEditorSupport().getDocument();
+                }
+                StrutsEditorUtilities.writeBean(doc, formBean, "form-bean", "form-beans"); //NOI18N
+                configDO.getEditorSupport().saveDocument();
             }
-            StrutsEditorUtilities.writeBean(doc, formBean, "form-bean", "form-beans"); //NOI18N
-            configDO.getEditorSupport().saveDocument();
         }
         return Collections.singleton(dobj);
     }
