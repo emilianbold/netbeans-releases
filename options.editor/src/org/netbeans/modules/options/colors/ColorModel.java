@@ -434,12 +434,10 @@ public class ColorModel {
         }
         
         private InputStream loadPreviewExample (String language) {
-            String exampleName = language == ALL_LANGUAGES ?
-                "AllLanguagesExample" :
-                language + "Example";
+            String mimeType = getMimeType (language);
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             FileObject exampleFile = fs.findResource 
-                ("OptionsDialog/PreviewExamples/" + exampleName);
+                ("OptionsDialog/PreviewExamples/" + mimeType);
             try {
                 return exampleFile != null ? 
                     exampleFile.getInputStream () : null;

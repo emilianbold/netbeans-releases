@@ -47,16 +47,19 @@ Microsystems, Inc. All Rights Reserved.
         </file>    
         <attr name="Keymaps.instance/Advanced.instance" boolvalue="true" />
         <folder name="PreviewExamples">
-            <file name="AllLanguagesExample" url="../colors/AllLanguagesExample"/>
-            <file name="CSSExample" url="../colors/CSSExample"/>
-            <file name="DTDExample" url="../colors/DTDExample"/>
-            <file name="HTMLExample" url="../colors/HTMLExample"/>
-            <file name="HighlightingExample" url="../colors/HighlightingExample"/>
-            <file name="JSPExample" url="../colors/JSPExample"/>
-            <file name="JavaExample" url="../colors/JavaExample"/>
-            <file name="Plain TextExample" url="../colors/PlainTextExample"/>
-            <file name="PropertiesExample" url="../colors/PropertiesExample"/>
-            <file name="XMLExample" url="../colors/XMLExample"/>
+            <file name="Defaults" url="../colors/AllLanguagesExample"/>
+            <folder name="application">
+                <file name="xml-dtd" url="../colors/DTDExample"/>
+            </folder>
+            <folder name="text">
+                <file name="css" url="../colors/CSSExample"/>
+                <file name="html" url="../colors/HTMLExample"/>
+                <file name="x-jsp" url="../colors/JSPExample"/>
+                <file name="x-java" url="../colors/JavaExample"/>
+                <file name="plain" url="../colors/PlainTextExample"/>
+                <file name="x-properties" url="../colors/PropertiesExample"/>
+                <file name="xml" url="../colors/XMLExample"/>
+            </folder>
         </folder>
     </folder>
 </filesystem>
