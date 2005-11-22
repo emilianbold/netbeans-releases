@@ -63,7 +63,10 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"ERR_PrimaryKeyNotEmpty")); //NOI18N
             return false;
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", " "); //NOI18N
+        String errorMessage = (String) wizardDescriptor.getProperty("WizardPanel_errorMessage");
+        if (errorMessage == null || errorMessage.trim().equals("")) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", " "); //NOI18N
+        }
         return true;
     }
     
