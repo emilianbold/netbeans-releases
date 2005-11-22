@@ -896,15 +896,12 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
         assert SwingUtilities.isEventDispatchThread();
         enterEditRequest();
 
-        if ((editingRow == row) && isEditing() && (column == 0)) {
-            //click on name cell should cancel editing
-            removeEditor();
-            exitEditRequest();
-
-            return false;
-        }
-
-        if ((editingRow == row) && isEditing()) {
+        if( (editingRow == row) && isEditing() ) {
+            if( 0 == column ) {
+                //click on name cell should stop editing
+                getEditor().stopCellEditing();
+                removeEditor();
+            }
             //discard edit requests if we're already editing that cell
             exitEditRequest();
 
