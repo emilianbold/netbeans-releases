@@ -49,9 +49,8 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         DocumentListener dListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 NewLibraryDescriptor.DataModel _data = getTemporaryDataModel();                
-                if (checkValidity(_data)) {
-                    setFilesInfoIntoTextAreas(_data);
-                }                
+                setEnabledForFilesInfo(checkValidity(_data));
+                setFilesInfoIntoTextAreas(_data);
             }
         };
         libraryNameVale.getDocument().addDocumentListener(dListener);
@@ -82,11 +81,18 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         }                
         return _temp;
     }
+    
+    private void setEnabledForFilesInfo(boolean enabled) {        
+        createdFilesValue.setEnabled(enabled);
+        modifiedFilesValue.setEnabled(enabled);
+    }
 
     private void setFilesInfoIntoTextAreas(final NewLibraryDescriptor.DataModel _temp) {
         if (_temp.getCreatedModifiedFiles() != null) {
-            CreatedModifiedFilesProvider.setCreatedFiles(_temp.getCreatedModifiedFiles(), createdFilesValue);
-            CreatedModifiedFilesProvider.setModifiedFiles(_temp.getCreatedModifiedFiles(), modifiedFilesValue);
+            createdFilesValue.setText(UIUtil.generateTextAreaContent(
+                    _temp.getCreatedModifiedFiles().getCreatedPaths()));
+            modifiedFilesValue.setText(UIUtil.generateTextAreaContent(
+                    _temp.getCreatedModifiedFiles().getModifiedPaths()));
         }
     }
     
@@ -150,10 +156,11 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         packageName = new javax.swing.JLabel();
         packageNameValue = UIUtil.createPackageComboBox(data.getSourceRootGroup());
         createdFiles = new javax.swing.JLabel();
-        createdFilesValue = new javax.swing.JTextArea();
         modifiedFiles = new javax.swing.JLabel();
+        createdFilesValueS = new javax.swing.JScrollPane();
+        createdFilesValue = new javax.swing.JTextArea();
+        modifiedFilesValueS = new javax.swing.JScrollPane();
         modifiedFilesValue = new javax.swing.JTextArea();
-        filler = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -235,19 +242,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 12);
         add(createdFiles, gridBagConstraints);
 
-        createdFilesValue.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
-        createdFilesValue.setColumns(20);
-        createdFilesValue.setEditable(false);
-        createdFilesValue.setRows(5);
-        createdFilesValue.setBorder(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 0);
-        add(createdFilesValue, gridBagConstraints);
-
         modifiedFiles.setLabelFor(modifiedFilesValue);
         org.openide.awt.Mnemonics.setLocalizedText(modifiedFiles, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/librarydescriptor/Bundle").getString("LBL_ModifiedFiles"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -258,41 +252,50 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(modifiedFiles, gridBagConstraints);
 
+        createdFilesValue.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
+        createdFilesValue.setColumns(20);
+        createdFilesValue.setEditable(false);
+        createdFilesValue.setRows(5);
+        createdFilesValue.setBorder(null);
+        createdFilesValueS.setViewportView(createdFilesValue);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 0);
+        add(createdFilesValueS, gridBagConstraints);
+
         modifiedFilesValue.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         modifiedFilesValue.setColumns(20);
         modifiedFilesValue.setEditable(false);
         modifiedFilesValue.setRows(5);
         modifiedFilesValue.setToolTipText("modifiedFilesValue");
         modifiedFilesValue.setBorder(null);
+        modifiedFilesValueS.setViewportView(modifiedFilesValue);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        add(modifiedFilesValue, gridBagConstraints);
+        add(modifiedFilesValueS, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(filler, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel createdFiles;
     private javax.swing.JTextArea createdFilesValue;
-    private javax.swing.JLabel filler;
+    private javax.swing.JScrollPane createdFilesValueS;
     private javax.swing.JLabel libraryDisplayName;
     private javax.swing.JTextField libraryDisplayNameValue;
     private javax.swing.JLabel libraryName;
     private javax.swing.JTextField libraryNameVale;
     private javax.swing.JLabel modifiedFiles;
     private javax.swing.JTextArea modifiedFilesValue;
+    private javax.swing.JScrollPane modifiedFilesValueS;
     private javax.swing.JLabel packageName;
     private javax.swing.JComboBox packageNameValue;
     private javax.swing.JLabel projectName;

@@ -58,14 +58,6 @@ final class CreatedModifiedFilesProvider  {
         return retval;
     }
     
-    public static void setCreatedFiles(CreatedModifiedFiles fileManipulator, JTextArea component) {
-        component.setText(UIUtil.generateTextAreaContent(fileManipulator.getCreatedPaths()));
-    }
-    
-    public  static void setModifiedFiles(CreatedModifiedFiles fileManipulator, JTextArea component) {
-        component.setText(UIUtil.generateTextAreaContent(fileManipulator.getModifiedPaths()));
-    }
-    
     private static void addOperations(CreatedModifiedFiles fileSupport, NewLibraryDescriptor.DataModel data)  {
         URL template;
         Map tokens;
