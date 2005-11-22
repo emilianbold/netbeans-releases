@@ -190,20 +190,7 @@ public class BaseOptions extends OptionSupport {
     /** Whether formatting debug messages should be displayed */
     private static final boolean debugFormat
     = Boolean.getBoolean("netbeans.debug.editor.format"); // NOI18N
-    
-    private static final Map textAntialiasingHintsMap;
-    static {
-        Map defaultHints = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty(
-                "awt.font.desktophints")); //NOI18N        
-        textAntialiasingHintsMap = defaultHints == null ? (Map) new HashMap() : 
-            defaultHints;
-        if (defaultHints == null) {
-            textAntialiasingHintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING,
-                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        }
-    }
-
-    
+        
     private transient Settings.Initializer coloringMapInitializer;
     
     /** Version of the options. It's used for patching the options. */
@@ -399,9 +386,7 @@ public class BaseOptions extends OptionSupport {
                 settingsMap.put(SettingsNames.RENDERING_HINTS,
                     new Settings.Evaluator() {
                         public Object getValue(Class kitClass2, String settingName) {
-                            return isTextAntialiasing()
-                                ? textAntialiasingHintsMap
-                                : java.util.Collections.EMPTY_MAP;
+                            return computeTextAntialiasingMap( isTextAntialiasing() );
                         }
                     }
                 );
@@ -415,6 +400,39 @@ public class BaseOptions extends OptionSupport {
         if (kitClass == BaseKit.class && coloringMapInitializer != null) {
             coloringMapInitializer.updateSettingsMap(BaseKit.class, settingsMap);
         }
+    }
+    
+    private Map computeTextAntialiasingMap( boolean aaSetting ) {
+        
+        if ( !aaSetting ) {
+            return Collections.EMPTY_MAP;
+        }
+        
+        Map result;
+        
+        Map defaultHints = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty(
+                "awt.font.desktophints")); //NOI18N        
+        
+        if ( defaultHints != null ) { // OK We're at 1.6 or higher
+            
+            Object systemSetting = defaultHints.get( RenderingHints.KEY_TEXT_ANTIALIASING );
+                        
+            if ( systemSetting == RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT || 
+                 systemSetting == RenderingHints.VALUE_TEXT_ANTIALIAS_OFF ) {
+                result = new HashMap();
+                result.put( RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON );
+            }
+            else {
+                result = defaultHints;
+            }
+        }
+        else {  // Lower than 1.6 Jdk            
+            result = new HashMap();
+            result.put(RenderingHints.KEY_TEXT_ANTIALIASING,
+                       RenderingHints.VALUE_TEXT_ANTIALIAS_ON);                        
+        }
+        
+        return result;        
     }
     
     /* #54893
@@ -1358,7 +1376,9 @@ public class BaseOptions extends OptionSupport {
                 "awt.font.desktophints")); //NOI18N
         if (systemHints != null) {
             Object o = systemHints.get(RenderingHints.KEY_TEXT_ANTIALIASING);
-            boolean result = o != null && !RenderingHints.VALUE_ANTIALIAS_OFF.equals(o);
+            boolean result = o != null && 
+                             o != RenderingHints.VALUE_TEXT_ANTIALIAS_OFF &&  
+                             o != RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT;
             return result;
         } else {
             return false;
