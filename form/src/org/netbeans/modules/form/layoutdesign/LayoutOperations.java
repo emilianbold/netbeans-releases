@@ -332,62 +332,101 @@ class LayoutOperations implements LayoutConstants {
         if (!group.isParallel())
             return;
 
-        for (int i=0; i < group.getSubIntervalCount(); i++) {
+        for (int i=group.getSubIntervalCount()-1; i >= 0; i--) {
             LayoutInterval sub = group.getSubInterval(i);
             if (sub.isParallel()) {
-                int align = sub.getAlignment();
-                boolean sameAlign = true;
-                boolean subResizing = false;
-                Iterator it = sub.getSubIntervals();
-                while (it.hasNext()) {
-                    LayoutInterval li = (LayoutInterval) it.next();
-                    if (!subResizing && LayoutInterval.wantResize(li)) {
-                        subResizing = true;
-                    }
-                    if (li.getAlignment() != align) {
-                        sameAlign = false;
-                    }
-                }
-                boolean compatible;
-                if (subResizing) {
-                    compatible = false;
-                    if (LayoutInterval.canResize(sub) || !LayoutInterval.canResize(group)) {
-                        for (int j=0; j < group.getSubIntervalCount(); j++) {
-                            if (j != i && LayoutInterval.wantResize(group.getSubInterval(j))) {
-                                compatible = true;
-                                break;
-                            }
-                        }
-                        if (!compatible) {
-                            LayoutInterval neighbor = LayoutInterval.getNeighbor(
-                                    group, sub.getAlignment()^1, false, true, true);
-                            if (neighbor != null && neighbor.isEmptySpace()
-                                && neighbor.getPreferredSize() == NOT_EXPLICITLY_DEFINED)
-                            {   // default fixed padding means there is no space for
-                                // independent size chane, so the subgroup can be merged
-                                compatible = true;
-                            }
-                        }
-                    }
-                }
-                else compatible = sameAlign;
+                mergeParallelGroups(sub);
+                dissolveRedundantGroup(sub);
+            }
+        }
+    }
 
-                if (compatible) { // the sub-group can be dissolved into parent group
-                    mergeParallelGroups(sub);
-                    layoutModel.removeInterval(group, i--);
-                    while (sub.getSubIntervalCount() > 0) {
-                        LayoutInterval li = sub.getSubInterval(0);
-                        if (li.getRawAlignment() == DEFAULT
-                            && sub.getGroupAlignment() != group.getGroupAlignment())
-                        {   // force alignment explicitly
-                            layoutModel.setIntervalAlignment(li, li.getAlignment());
+    /**
+     * Dissolves given group to parent group in case it is redundant.
+     * @return true if the group was dissolved
+     */
+    boolean dissolveRedundantGroup(LayoutInterval group) {
+        LayoutInterval parent = group.getParent();
+        if (parent == null)
+            return false;
+
+        boolean dissolve = false;
+        if (group.getSubIntervalCount() == 1) {
+            dissolve = true;
+        }
+        else if (group.isSequential() && parent.isSequential()) {
+            dissolve = true;
+        }
+        else if (group.isParallel() && parent.isParallel()) {
+            // check for compatible alignment and resizability
+            int align = group.getAlignment();
+            boolean sameAlign = true;
+            boolean subResizing = false;
+            Iterator it = group.getSubIntervals();
+            while (it.hasNext()) {
+                LayoutInterval li = (LayoutInterval) it.next();
+                if (!subResizing && LayoutInterval.wantResize(li)) {
+                    subResizing = true;
+                }
+                if (li.getAlignment() != align && group.getSubIntervalCount() > 1) {
+                    sameAlign = false;
+                }
+            }
+            boolean compatible;
+            if (subResizing) {
+                compatible = false;
+                if (LayoutInterval.canResize(group) || !LayoutInterval.canResize(parent)) {
+                    it = parent.getSubIntervals();
+                    while (it.hasNext()) {
+                        LayoutInterval li = (LayoutInterval) it.next();
+                        if (li != group && LayoutInterval.wantResize(li)) {
+                            compatible = true;
+                            break;
                         }
-                        layoutModel.removeInterval(li);
-                        layoutModel.addInterval(li, group, ++i);
+                    }
+                    if (!compatible) {
+                        LayoutInterval neighbor = LayoutInterval.getNeighbor(
+                                parent, group.getAlignment()^1, false, true, true);
+                        if (neighbor != null && neighbor.isEmptySpace()
+                            && neighbor.getPreferredSize() == NOT_EXPLICITLY_DEFINED)
+                        {   // default fixed padding means there is no space for
+                            // independent size change, so the subgroup can be merged
+                            compatible = true;
+                        }
                     }
                 }
             }
+            else compatible = sameAlign;
+
+            dissolve = compatible;
         }
+
+        if (dissolve) { // the sub-group can be dissolved into parent group
+            int index = layoutModel.removeInterval(group);
+            while (group.getSubIntervalCount() > 0) {
+                LayoutInterval li = group.getSubInterval(0);
+                if (parent.isParallel()) { // moving to parallel group
+                    if (group.isParallel()) { // from parallel group
+                        if (li.getRawAlignment() == DEFAULT
+                            && group.getGroupAlignment() != parent.getGroupAlignment())
+                        {   // force alignment explicitly
+                            layoutModel.setIntervalAlignment(li, li.getAlignment());
+                        }
+                    }
+                    else { // from sequential group
+                        layoutModel.setIntervalAlignment(li, group.getRawAlignment());
+                    }
+                }
+                else { // moving to sequential group
+                    if (li.getRawAlignment() != DEFAULT)
+                        layoutModel.setIntervalAlignment(li, DEFAULT);
+                }
+                layoutModel.removeInterval(li);
+                layoutModel.addInterval(li, parent, index++);
+            }
+            return true;
+        }
+        return false;
     }
 
     /**

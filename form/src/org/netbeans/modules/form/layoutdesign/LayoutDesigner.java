@@ -1868,42 +1868,7 @@ public class LayoutDesigner implements LayoutConstants {
             return;
         }
 
-        // Destroy parallel groups with one sub-interval
-        if (group.isParallel() && (group.getSubIntervalCount() == 1)) {
-            LayoutInterval interval = group.getSubInterval(0);
-            int index = parent.indexOf(group);
-            layoutModel.removeInterval(interval);
-            layoutModel.removeInterval(group);
-            layoutModel.setIntervalAlignment(interval, group.getAlignment());
-            layoutModel.addInterval(interval, parent, index);
-            if (interval.isGroup()) {
-                destroyGroupIfRedundant(interval, boundary);
-            }
-            return;
-        }
-        
-        // Sequential group can be dissolved in sequential parent
-        boolean dissolve = parent.isSequential() && group.isSequential();
-        
-        // Parallel groups can be sometimes dissolved in parallel parent
-        if (parent.isParallel() && group.isParallel()) {
-            dissolve = true;
-            Iterator iter = group.getSubIntervals();
-            while (iter.hasNext()) {
-                LayoutInterval subInterval = (LayoutInterval)iter.next();
-                if (subInterval.getAlignment() != group.getAlignment()) {
-                    dissolve = false;
-                    break;
-                }
-            }
-        }
-        if (dissolve) {
-            int index = layoutModel.removeInterval(group);
-            for (int i=group.getSubIntervalCount()-1; i>=0; i--) {
-                LayoutInterval subInterval = group.getSubInterval(i);
-                layoutModel.removeInterval(subInterval);
-                layoutModel.addInterval(subInterval, parent, index);
-            }
+        if (operations.dissolveRedundantGroup(group)) {
             destroyGroupIfRedundant(parent, boundary);
         }
     }
@@ -2582,11 +2547,8 @@ public class LayoutDesigner implements LayoutConstants {
         for (int i=0; i < DIM_COUNT; i++) {
             LayoutInterval li = component.getLayoutInterval(i);
             int defPref = li.getPreferredSize();
-            if (LayoutInterval.canResize(li)
-                && (!li.getParent().isParallel()
-                    || LayoutInterval.canResize(li.getParent())
-                    || defPref > 0)) // < 0 default size, == 0 subordinate component (filling)
-            {   // resizing component with size-defining role in parent
+            if (LayoutInterval.wantResizeInLayout(li) && defPref != 0) { // == 0 subordinate component (filling)
+                // resizing component with size-defining role in parent
                 int current = li.getCurrentSpace().size(i);
                 int pref = i == HORIZONTAL ? preferred.width : preferred.height;
                 if (defPref == NOT_EXPLICITLY_DEFINED)
@@ -2602,6 +2564,8 @@ public class LayoutDesigner implements LayoutConstants {
         int min = gap.getMinimumSize();
         int pref = gap.getPreferredSize();
         if (pref == NOT_EXPLICITLY_DEFINED) {
+            if (!LayoutInterval.wantResizeInLayout(gap))
+                return; // don't change default gap if not resizing
             pad = LayoutUtils.getSizeOfDefaultGap(gap, visualMapper);
             pref = pad;
         }
