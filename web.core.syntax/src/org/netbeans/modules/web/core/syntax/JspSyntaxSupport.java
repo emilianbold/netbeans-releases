@@ -1426,7 +1426,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                        (isValueBeginning(item.getImage())))
                     item = item.getNext();
                 StringBuffer value = new StringBuffer();
-                while ((item != null) && (item.getTokenID().getNumericID() == JspTagTokenContext.ATTR_VALUE_ID)) {
+                while ((item != null) 
+                    && (item.getTokenID().getNumericID() == JspTagTokenContext.ATTR_VALUE_ID)
+                        || (item.getTokenID().getNumericID() == JspTagTokenContext.EOL_ID)) {
                     value.append(item.getImage());
                     item = item.getNext();
                     // request time values
