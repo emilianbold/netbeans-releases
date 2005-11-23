@@ -24,6 +24,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
@@ -39,6 +40,9 @@ import org.openide.util.Utilities;
 final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private static final Map PURE_TEMPLATES_FILTER = new HashMap(2);
+
+    private static final String TEMPLATES_DIR = "Templates"; // NOI18N
+    private static final String DEFAULT_CATEGORY_PATH = TEMPLATES_DIR + "/Other"; // NOI18N
     
     static {
         PURE_TEMPLATES_FILTER.put("template", Boolean.TRUE); // NOI18N
@@ -79,17 +83,17 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         return getMessage("LBL_NameIconLocation_Title");
     }
     
+    private String getCategoryPath() {
+        String path = UIUtil.getSFSPath(category, TEMPLATES_DIR);
+        return path == null ? DEFAULT_CATEGORY_PATH : path;
+    }
+    
     protected void storeToDataModel() {
         data.setClassNamePrefix(getClassNamePrefix());
         data.setDisplayName(displayName.getText());
         data.setIcon(icon.getText().equals(NONE_LABEL) ? null : icon.getText());
         data.setPackageName(packageName.getEditor().getItem().toString());
-        Object item = category.getSelectedItem();
-        if (item != null && item instanceof UIUtil.LayerItemPresenter) {
-            data.setCategory(((UIUtil.LayerItemPresenter) item).getFullPath());
-        } else {
-            data.setCategory("Templates/Other"); // NOI18N
-        }
+        data.setCategory(getCategoryPath());
     }
     
     protected void readFromDataModel() {
@@ -137,6 +141,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
             //#68294 check if the paths for newly created files are valid or not..
             String[] invalid  = data.getCreatedModifiedFiles().getInvalidPaths();
             setErrorMessage(NbBundle.getMessage(NameIconLocationPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));
+        } else if (!Util.isValidSFSPath(getCategoryPath())) {
+            setErrorMessage(getMessage("ERR_Category_Invalid"));
         } else  {
             setErrorMessage(null);
             valid = true;
@@ -154,7 +160,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private void loadCategories() {
         category.setModel(UIUtil.createLayerPresenterComboModel(
-                data.getProject(), "Templates", PURE_TEMPLATES_FILTER)); // NOI18N
+                data.getProject(), TEMPLATES_DIR, PURE_TEMPLATES_FILTER)); // NOI18N
     }
     
     protected HelpCtx getHelp() {
@@ -255,6 +261,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 12);
         add(categoryTxt, gridBagConstraints);
 
+        category.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -393,7 +400,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private void iconButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iconButtonActionPerformed
         JFileChooser chooser = UIUtil.getIconFileChooser(icon.getText());
-        int ret = chooser.showDialog(this, getMessage("LBL_Select")); // NOI18N
+        int ret = chooser.showDialog(this, getMessage("LBL_Select"));
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file =  chooser.getSelectedFile();
             icon.setText(file.getAbsolutePath());
