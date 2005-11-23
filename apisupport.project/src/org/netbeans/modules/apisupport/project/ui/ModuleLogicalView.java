@@ -37,6 +37,9 @@ import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -140,7 +143,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             Set roots = new HashSet();
             Sources sources = ProjectUtils.getSources(project);
             
-            // TODO add Sources.addChengeListener(this)
+            // TODO add Sources.addChangeListener(this)
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             for (int i = 0; i<groups.length; i++) {
                 SourceGroup group = groups[i];
@@ -172,7 +175,8 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         
     }
     
-    private static final String IMPORTANT_FILES_NAME = "important.files"; // NOI18N
+    /** Package private for unit tests. */
+    static final String IMPORTANT_FILES_NAME = "important.files"; // NOI18N
     
     private static final class RootChildren extends Children.Keys {
         
@@ -280,6 +284,9 @@ public final class ModuleLogicalView implements LogicalViewProvider {
      */
     private static final class ImportantFilesChildren extends Children.Keys {
         
+        private List visibleFiles = new ArrayList();
+        private FileChangeListener fcl;
+        
         /** Abstract location to display name. */
         private static final java.util.Map/*<String,String>*/ FILES = new LinkedHashMap();
         static {
@@ -305,31 +312,33 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         
         protected void addNotify() {
             super.addNotify();
-            List l = new ArrayList();
-            LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
-            if (handle.getLayerFile() != null) {
-                l.add(handle);
-            }
-            Iterator it = FILES.keySet().iterator();
-            Set files = new HashSet();
-            while (it.hasNext()) {
-                String loc = (String) it.next();
-                String locEval = project.evaluator().evaluate(loc);
-                if (locEval == null) {
-                    continue;
+            try {
+                if (fcl == null) {
+                    fcl = new FileChangeAdapter() {
+                        public void fileDataCreated(FileEvent fe) {
+                            refreshKeys();
+                        }
+                        public void fileDeleted(FileEvent fe) {
+                            refreshKeys();
+                        }
+                    };
                 }
-                FileObject file = project.getHelper().resolveFileObject(locEval);
-                if (file != null) {
-                    l.add(loc);
-                    files.add(file);
-                }
+                project.getProjectDirectory().getFileSystem().addFileChangeListener(fcl);
+            } catch (FileStateInvalidException ex) {
+                assert false : ex;
             }
-            setKeys(l);
-            ((ImportantFilesNode)getNode()).setFiles(files);
+            refreshKeys();
         }
         
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
+            if (fcl != null) {
+                try {
+                    project.getProjectDirectory().getFileSystem().removeFileChangeListener(fcl);
+                } catch (FileStateInvalidException ex) {
+                    assert false : ex;
+                }
+            }
             super.removeNotify();
         }
         
@@ -348,6 +357,34 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                 return new Node[] {new LayerNode((LayerUtils.LayerHandle) key)};
             } else {
                 throw new AssertionError(key);
+            }
+        }
+
+        private void refreshKeys() {
+            List newVisibleFiles = new ArrayList();
+            LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
+            if (handle.getLayerFile() != null) {
+                newVisibleFiles.add(handle);
+            }
+            Iterator it = FILES.keySet().iterator();
+            Set files = new HashSet();
+            while (it.hasNext()) {
+                String loc = (String) it.next();
+                String locEval = project.evaluator().evaluate(loc);
+                if (locEval == null) {
+                    newVisibleFiles.remove(loc);
+                    continue;
+                }
+                FileObject file = project.getHelper().resolveFileObject(locEval);
+                if (file != null) {
+                    newVisibleFiles.add(loc);
+                    files.add(file);
+                }
+            }
+            if (!newVisibleFiles.equals(visibleFiles)) {
+                visibleFiles = newVisibleFiles;
+                setKeys(visibleFiles);
+                ((ImportantFilesNode) getNode()).setFiles(files);
             }
         }
         

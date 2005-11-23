@@ -46,6 +46,18 @@ public class ModuleLogicalViewTest extends TestBase {
         // XXX test that layer.xml is found under Original Files, not Sources
     }
     
+    public void testImportantFilesListening() throws Exception {
+        Project p = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
+        assertNotNull("have a LogicalViewProvider", lvp);
+        Node root = lvp.createLogicalView();
+        Node iFiles = root.getChildren().findChild(ModuleLogicalView.IMPORTANT_FILES_NAME);
+        assertNotNull("have the Important Files node", iFiles);
+        assertEquals("four important files", 4, iFiles.getChildren().getNodesCount());
+        FileUtil.createData(p.getProjectDirectory(), "nbproject/project.properties");
+        assertEquals("nbproject/project.properties noticed", 5, iFiles.getChildren().getNodesCount());
+    }
+    
     private Node find(LogicalViewProvider lvp, String path) throws Exception {
         FileObject f = FileUtil.toFileObject(file(path));
         assertNotNull("found " + path, f);
