@@ -25,10 +25,11 @@ public class ModuleUISettings extends SystemOption {
     private static final long serialVersionUID = 736430338589073397L;
     
     private static final String LAST_USED_MODULE_LOCATION = "lastUsedModuleLocation"; // NOI18N
+    private static final String LAST_CHOSEN_LIBRARY_LOCATION = "lastChosenLibraryLocation"; // NOI18N
     private static final String NEW_MODULE_COUNTER = "newModuleCounter";  //NOI18N
     private static final String NEW_SUITE_COUNTER = "newSuiteCounter";  //NOI18N
     private static final String CONFIRM_RELOAD_IN_IDE = "confirmReloadInIDE"; // NOI18N
-
+    
     public static ModuleUISettings getDefault() {
         return (ModuleUISettings) SystemOption.findObject(ModuleUISettings.class, true);
     }
@@ -75,6 +76,19 @@ public class ModuleUISettings extends SystemOption {
     
     public void setConfirmReloadInIDE(boolean b) {
         putProperty(CONFIRM_RELOAD_IN_IDE, Boolean.valueOf(b), true);
+    }
+    
+    public String getLastChosenLibraryLocation() {
+        String location = (String) getProperty(LAST_CHOSEN_LIBRARY_LOCATION);
+        if (location == null) {
+            location = System.getProperty("user.home"); // NOI18N
+        }
+        return location;
+    }
+    
+    public void setLastChosenLibraryLocation(String location) {
+        assert location != null : "Location can not be null"; // NOI18N
+        putProperty(LAST_CHOSEN_LIBRARY_LOCATION, location, true);
     }
     
 }

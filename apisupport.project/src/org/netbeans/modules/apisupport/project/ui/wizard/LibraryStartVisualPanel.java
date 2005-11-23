@@ -24,13 +24,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 /**
- * first panel of the librarywrapper module wizard
+ * First panel of the librarywrapper module wizard.
  * @author Milos Kleint
  */
 final class LibraryStartVisualPanel extends BasicVisualPanel {
@@ -65,12 +66,11 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
     
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_LibraryStartVisualPanel"));
-        jButton1.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BrowseLibraries"));
-        jButton2.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BrowseLicense"));
+        browseLibraryButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BrowseLibraries"));
+        browseLicenceButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_BrowseLicense"));
         txtLibrary.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Library"));
         txtLicense.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_License"));
     }
-    
     
     private void checkLibraryAndLicense() {
         String text = txtLibrary.getText().trim();
@@ -112,9 +112,9 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
     }
     
     void refreshData() {
-        String license = (String)getSettings().getProperty(PROP_LICENSE_PATH);
-        String jars = (String)getSettings().getProperty(PROP_LIBRARY_PATH);
-        
+        // XXX should be cleaned out if it is not needed
+//        String license = (String)getSettings().getProperty(PROP_LICENSE_PATH);
+//        String jars = (String)getSettings().getProperty(PROP_LIBRARY_PATH);
         
 //        String cnb = data.getCodeNameBase();
 //        codeNameBaseValue.setText(cnb);
@@ -194,7 +194,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
             } finally {
                 if (jf != null) {
                     try {
@@ -217,7 +217,6 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         }
         return wrongOnes;
     }
-    
     
     public void addNotify() {
         super.addNotify();
@@ -264,9 +263,9 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         txtLibrary = new javax.swing.JTextField();
         lblLicense = new javax.swing.JLabel();
         txtLicense = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
+        browseLibraryButton = new javax.swing.JButton();
+        browseLicenceButton = new javax.swing.JButton();
+        filler = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -302,22 +301,22 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         gridBagConstraints.weightx = 1.0;
         confPanel.add(txtLicense, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(LibraryStartVisualPanel.class, "CTL_BrowseButton_o"));
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(browseLibraryButton, org.openide.util.NbBundle.getMessage(LibraryStartVisualPanel.class, "CTL_BrowseButton_o"));
+        browseLibraryButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                browseLibraryButtonActionPerformed(evt);
             }
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
-        confPanel.add(jButton1, gridBagConstraints);
+        confPanel.add(browseLibraryButton, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(LibraryStartVisualPanel.class, "CTL_BrowseButton_w"));
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(browseLicenceButton, org.openide.util.NbBundle.getMessage(LibraryStartVisualPanel.class, "CTL_BrowseButton_w"));
+        browseLicenceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                browseLicenceButtonActionPerformed(evt);
             }
         });
 
@@ -326,7 +325,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        confPanel.add(jButton2, gridBagConstraints);
+        confPanel.add(browseLicenceButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -336,7 +335,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        confPanel.add(jPanel1, gridBagConstraints);
+        confPanel.add(filler, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -348,11 +347,10 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         add(confPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        JFileChooser chooser = new JFileChooser(txtLicense.getText());
+    private void browseLicenceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLicenceButtonActionPerformed
+        JFileChooser chooser = new JFileChooser(ModuleUISettings.getDefault().getLastChosenLibraryLocation());
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled(false);
         if (txtLicense.getText().trim().length() > 0) {
@@ -361,12 +359,12 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         int ret = chooser.showDialog(this, getMessage("LBL_Select"));
         if (ret == JFileChooser.APPROVE_OPTION) {
             txtLicense.setText(chooser.getSelectedFile().getAbsolutePath());
+            ModuleUISettings.getDefault().setLastChosenLibraryLocation(txtLicense.getText());
         }
-        
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_browseLicenceButtonActionPerformed
     
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        JFileChooser chooser = new JFileChooser();
+    private void browseLibraryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLibraryButtonActionPerformed
+        JFileChooser chooser = new JFileChooser(ModuleUISettings.getDefault().getLastChosenLibraryLocation());
         File[] olds = convertStringToFiles(txtLibrary.getText().trim());
         chooser.setSelectedFiles(olds);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -380,9 +378,9 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                 path = path + files[i] + ( i == files.length - 1 ? "" : File.pathSeparator);
             }
             txtLibrary.setText(path);
+            ModuleUISettings.getDefault().setLastChosenLibraryLocation(files[0].getParentFile().getAbsolutePath());
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
-    
+    }//GEN-LAST:event_browseLibraryButtonActionPerformed
     
     static File[] convertStringToFiles(String path) {
         StringTokenizer tok = new StringTokenizer(path, File.pathSeparator);
@@ -394,10 +392,10 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton browseLibraryButton;
+    private javax.swing.JButton browseLicenceButton;
     private javax.swing.JPanel confPanel;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel filler;
     private javax.swing.JLabel lblLibrary;
     private javax.swing.JLabel lblLicense;
     private javax.swing.JTextField txtLibrary;
@@ -409,7 +407,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
             return  pathname.isDirectory() || pathname.getName().endsWith("zip") || pathname.getName().endsWith("jar"); // NOI18N
         }
         public String getDescription() {
-            return NbBundle.getMessage(LibraryStartVisualPanel.class, "LibraryStartVisualPanel_jar_zip_filter");
+            return getMessage("LibraryStartVisualPanel_jar_zip_filter");
         }
     }
     
