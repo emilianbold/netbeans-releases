@@ -111,6 +111,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
 
             // completion request originates from area covered by DOM, 
             if (helper.getCompletionType() != SyntaxQueryHelper.COMPLETION_TYPE_DTD) {
+                List all = new ArrayList();
                 List list = null;
                 switch (helper.getCompletionType()) {
                     case SyntaxQueryHelper.COMPLETION_TYPE_ATTRIBUTE:
@@ -141,30 +142,32 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                      if (helper.getPreText().endsWith("<") && helper.getToken().getTokenID() == TEXT) { // NOI18N
                          List startTags = findStartTag((SyntaxNode)helper.getSyntaxElement(), "/"); // NOI18N
 
-                         boolean addEndTag = list.isEmpty() == false;
-                         if (addEndTag) {
-                             SyntaxNode ctx = (SyntaxNode)helper.getSyntaxElement();
-                             SyntaxElement nextElement = ctx != null ? ctx.getNext() : null;
-                             if (nextElement instanceof EndTag) {
-                                 EndTag endtag = (EndTag) nextElement;
-                                 String nodename = endtag.getNodeName();
-                                 if (nodename != null && startTags.isEmpty() == false) {
-                                     ElementResultItem item = (ElementResultItem)startTags.get(0);
-                                     if (("/" + nodename).equals(item.getItemText())) {  // NOI18N
-                                         addEndTag = false;
-                                     }
+                         boolean addEndTag = true;
+                         SyntaxNode ctx = (SyntaxNode)helper.getSyntaxElement();
+                         SyntaxElement nextElement = ctx != null ? ctx.getNext() : null;
+                         if (nextElement instanceof EndTag) {
+                             EndTag endtag = (EndTag) nextElement;
+                             String nodename = endtag.getNodeName();
+                             if (nodename != null && startTags.isEmpty() == false) {
+                                 ElementResultItem item = (ElementResultItem)startTags.get(0);
+                                 if (("/" + nodename).equals(item.getItemText())) {  // NOI18N
+                                     addEndTag = false;
                                  }
                              }
                          }
+
                          if (addEndTag) {
-                             list.addAll(startTags);
+                             all.addAll(startTags);
                          }
+                         
                      }
+                    
+                    all.addAll(list);
 
                     return new CompletionQuery.DefaultResult(
                             component,
                             title,
-                            list,
+                            all,
                             helper.getOffset() - helper.getEraseCount(),
                             helper.getEraseCount()
                     );
