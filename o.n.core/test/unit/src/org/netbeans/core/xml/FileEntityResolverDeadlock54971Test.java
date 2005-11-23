@@ -90,7 +90,7 @@ public class FileEntityResolverDeadlock54971Test extends TestCase {
                 " fully executed, wrong it should be", 1, Env.howManyTimesWeHandledRequestForEnvironmentOfOurObject);
     }
     
-    private FileObject createSettings (FileObject root, String name) throws IOException {
+    static FileObject createSettings (FileObject root, String name) throws IOException {
         FileObject set = FileUtil.createData (root, name);
 
         FileLock lock = set.lock ();
@@ -155,7 +155,7 @@ public class FileEntityResolverDeadlock54971Test extends TestCase {
     private static final class Env 
     implements InstanceCookie, org.openide.loaders.Environment.Provider {
         public static int howManyTimesWeHandledRequestForEnvironmentOfOurObject;
-        private static Env INSTANCE = new Env ();
+        public static final Env INSTANCE = new Env ();
         
         private Env () {
             assertNull (INSTANCE);

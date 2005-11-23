@@ -454,9 +454,9 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
         private DataObject xml;
         
         /** last file folder we are listening on. Initialized lazily */
-        private FileObject folder;
+        private volatile FileObject folder;
         /** a data object that produces values Initialized lazily */
-        private DataObject obj;
+        private volatile DataObject obj;
         
         /** @param id the id to work on */
         public Lkp (String id, DataObject xml) {
@@ -483,7 +483,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
             if (LOG) ERR.log("update: " + id + " for " + xml); // NOI18N
             FileObject[] last = new FileObject[1];
             FileObject fo = findObject (id, last);
-            
+            if (LOG) ERR.log("fo: " + fo + " for " + xml); // NOI18N
             DataObject o = null;
             
             if (fo != null) {
@@ -510,9 +510,6 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                 } 
             } else {
                 // data object changed
-                obj = o;
-                if (LOG) ERR.log("data object updated to " + obj + " for " + xml); // NOI18N
-                
                 Lookup l = findLookup(xml, o);
                 
                 if (o != null && l != null) {
@@ -525,7 +522,12 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                     setLookups (new Lookup[] { l });
                     if (LOG) ERR.log("change in lookup done" + " for " + xml); // NOI18N
                     // and exit
+                    obj = o;
+                    if (LOG) ERR.log("data object updated to " + obj + " for " + xml); // NOI18N
                     return;
+                } else {
+                    obj = o;
+                    if (LOG) ERR.log("data object updated to " + obj + " for " + xml); // NOI18N
                 }
             }
             
