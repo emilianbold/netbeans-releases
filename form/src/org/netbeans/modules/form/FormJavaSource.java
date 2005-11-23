@@ -33,7 +33,6 @@ import org.netbeans.jmi.javamodel.PrimitiveTypeKind;
 import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.java.JavaEditor;
 import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.filesystems.FileObject;
 
 	

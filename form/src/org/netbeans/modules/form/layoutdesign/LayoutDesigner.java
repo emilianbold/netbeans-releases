@@ -23,7 +23,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.util.*;
-import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.util.Utilities;
 

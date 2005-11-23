@@ -16,7 +16,6 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import java.util.*;
-import javax.swing.JFrame;
 
 /** The PropertyPicker is a form which allows user to choose from property set
  * of specified required class.

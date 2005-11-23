@@ -14,7 +14,6 @@
 package org.netbeans.modules.form.layoutdesign;
 
 import java.awt.Rectangle;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,10 +21,8 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import org.netbeans.jmi.javamodel.ClassDefinition;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.Type;
 import org.netbeans.jmi.javamodel.UnresolvedClass;

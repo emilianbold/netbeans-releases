@@ -14,8 +14,6 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
-import java.beans.EventSetDescriptor;
-import java.lang.reflect.Method;
 import javax.swing.*;
 import javax.swing.undo.*;
 import javax.swing.border.Border;
@@ -32,7 +30,6 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
-import org.netbeans.modules.form.codestructure.CodeStructure;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
 

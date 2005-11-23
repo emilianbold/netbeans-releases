@@ -17,7 +17,6 @@ package org.netbeans.modules.form;
 import java.beans.*;
 import java.util.*;
 import java.awt.*;
-import org.openide.util.Utilities;
 
 /** The MethodPicker is a form which allows user to pick one of methods
  * with specified required return type.

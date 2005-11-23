@@ -14,7 +14,6 @@
 package org.netbeans.modules.form.layoutdesign;
 
 import java.util.*;
-import org.openide.ErrorManager;
 import org.w3c.dom.*;
 
 /**
