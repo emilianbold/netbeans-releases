@@ -182,7 +182,7 @@ public class CreateTableDialog {
             final JComboBox combo = new JComboBox(ttab);
             combo.setSelectedIndex(0);
             table.setDefaultEditor(String.class, new DataCellEditor(new JTextField()));
-            table.getColumn("type").setCellEditor(new DefaultCellEditor(combo)); // NOI18N
+            table.getColumn("type").setCellEditor(new ComboBoxEditor(combo)); // NOI18N
             table.getColumn("size").setCellEditor(new DataCellEditor(new ValidableTextField(new TextFieldValidator.integer()))); // NOI18N
             table.getColumn("scale").setCellEditor(new DataCellEditor(new ValidableTextField(new TextFieldValidator.integer()))); // NOI18N
             table.setRowHeight(combo.getPreferredSize().height);
@@ -380,6 +380,7 @@ public class CreateTableDialog {
         static final long serialVersionUID =1222037401669064863L;
         public DataTable(TableModel model) {
             super(model);
+            setSurrendersFocusOnKeystroke(true);
             TableColumnModel cmodel = getColumnModel();
             int i;
             int ccount = model.getColumnCount();
@@ -444,6 +445,37 @@ public class CreateTableDialog {
         }
     }
     
+    class PopupInvoker implements Runnable {
+        private JComboBox jComboBox;
+
+        public PopupInvoker(JComboBox aJComboBox) {
+            jComboBox = aJComboBox;
+        }
+
+        public void run() {
+            try {
+                jComboBox.showPopup();
+            } catch (IllegalComponentStateException icse) {
+                // This is a valid exception that occurs
+                // if the jComboBox is somehow hide. Do nothing.
+            }
+        }
+
+    }
+
+    class ComboBoxEditor extends DefaultCellEditor {
+        public ComboBoxEditor(final JComboBox jComboBox) {
+            super(jComboBox);
+            jComboBox.addFocusListener(new FocusListener() {
+                public void focusGained(FocusEvent e) {
+                    SwingUtilities.invokeLater(new PopupInvoker(jComboBox));
+                }
+
+                public void focusLost(FocusEvent e) {}
+            });
+        }
+    }
+
     private static final class ListCellRendererImpl extends DefaultListCellRenderer {
         
         public Dimension getPreferredSize() {
