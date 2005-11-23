@@ -31,12 +31,17 @@ import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.DialogDescriptor;
 import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
 
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.*;
 
 /**
  * Exports diff to file:
@@ -117,7 +122,7 @@ public class ExportDiffAction extends AbstractSystemAction {
             return;
         }
 
-        JFileChooser chooser = new AccessibleJFileChooser(NbBundle.getMessage(ExportDiffAction.class, "ACSD_Export"));
+        final JFileChooser chooser = new AccessibleJFileChooser(NbBundle.getMessage(ExportDiffAction.class, "ACSD_Export"));
         chooser.setDialogTitle(NbBundle.getMessage(ExportDiffAction.class, "CTL_Export_Title"));
         chooser.setMultiSelectionEnabled(false);
         javax.swing.filechooser.FileFilter[] old = chooser.getChoosableFileFilters();
@@ -137,27 +142,49 @@ public class ExportDiffAction extends AbstractSystemAction {
         });
         
         chooser.setApproveButtonMnemonic(NbBundle.getMessage(ExportDiffAction.class, "MNE_Export_ExportAction").charAt(0));
-        int ret = chooser.showDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(ExportDiffAction.class, "CTL_Export_ExportAction"));
-        if (ret == JFileChooser.APPROVE_OPTION) {
-            File destination = chooser.getSelectedFile();
-            String name = destination.getName();
-            boolean requiredExt = false;
-            requiredExt |= name.endsWith(".diff");  // NOI18N
-            requiredExt |= name.endsWith(".dif");   // NOI18N
-            requiredExt |= name.endsWith(".patch"); // NOI18N
-            if (requiredExt == false) {
-                File parent = destination.getParentFile();
-                destination = new File(parent, name + ".patch"); // NOI18N
-            }
-            CvsModuleConfig.getDefault().setDefaultValue("ExportDiff.saveFolder", destination.getParent()); // NOI18N
+        chooser.setApproveButtonText(NbBundle.getMessage(ExportDiffAction.class, "CTL_Export_ExportAction"));
+        DialogDescriptor dd = new DialogDescriptor(chooser, NbBundle.getMessage(ExportDiffAction.class, "CTL_Export_Title"));
+        dd.setOptions(new Object[0]);
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
 
-            final File out = destination;
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    async(nodes, out);
+        chooser.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String state = (String)e.getActionCommand();
+                if (state.equals(JFileChooser.APPROVE_SELECTION)) {
+                    File destination = chooser.getSelectedFile();
+                    String name = destination.getName();
+                    boolean requiredExt = false;
+                    requiredExt |= name.endsWith(".diff");  // NOI18N
+                    requiredExt |= name.endsWith(".dif");   // NOI18N
+                    requiredExt |= name.endsWith(".patch"); // NOI18N
+                    if (requiredExt == false) {
+                        File parent = destination.getParentFile();
+                        destination = new File(parent, name + ".patch"); // NOI18N
+                    }
+
+                    if (destination.exists()) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportDiffAction.class, "BK3005", destination.getAbsolutePath()));
+                        nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+                        DialogDisplayer.getDefault().notify(nd);
+                        if (nd.getValue().equals(NotifyDescriptor.OK_OPTION) == false) {
+                            return;
+                        }
+                    }
+
+                    CvsModuleConfig.getDefault().setDefaultValue("ExportDiff.saveFolder", destination.getParent()); // NOI18N
+
+                    final File out = destination;
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            async(nodes, out);
+                        }
+                    });
                 }
-            });
-        }
+                dialog.dispose();
+            }
+        });
+        dialog.setVisible(true);
+
     }
 
     protected boolean asynchronous() {
