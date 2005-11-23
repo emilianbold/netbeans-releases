@@ -115,7 +115,8 @@ public class TestKit {
     }
     
     public static void removeAllData(String project_name) {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 15000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 25000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 25000);
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
         rootNode.performPopupActionNoBlock("Delete Project");
         NbDialogOperator ndo = new NbDialogOperator("Delete");
