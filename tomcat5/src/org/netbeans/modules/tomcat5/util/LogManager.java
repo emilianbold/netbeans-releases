@@ -226,6 +226,7 @@ public class LogManager {
                     return;
                 } catch (NullPointerException npe) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+                    return;
                 }
 		juliLogViewer.addLogViewerStopListener(new LogViewer.LogViewerStopListener() {
                    public void callOnStop() {

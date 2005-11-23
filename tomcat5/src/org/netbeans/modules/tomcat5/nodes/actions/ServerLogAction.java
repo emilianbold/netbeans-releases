@@ -35,6 +35,7 @@ public class ServerLogAction extends NodeAction {
             }
             TomcatManager tm = cookie.getTomcatManager();
             if (tm != null) {
+                tm.ensureCatalinaBaseReady();
                 tm.logManager().openJuliLog();
             }
         }
