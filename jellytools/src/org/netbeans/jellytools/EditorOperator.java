@@ -21,9 +21,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.fold.Fold;
+import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 
@@ -437,7 +442,10 @@ public class EditorOperator extends TopComponentOperator {
         return NbDocument.findLineNumber(doc, offset) + 1;
     }
     
-    /** Pushes key of requested key code. */
+    /**
+     * Pushes key of requested key code.
+     * @param keyCode key code
+     */
     public void pushKey(int keyCode) {
         // need to request focus before any key push
         this.requestFocus();
@@ -704,6 +712,217 @@ public class EditorOperator extends TopComponentOperator {
         }
     }
     
+    /********************************** Code folding **************************/
+    /*************************** Thanks to Martin Roskanin ********************/
+
+    /** Waits for code folding initialization. */
+    public void waitFolding(){
+        JTextComponent textComponent = (JTextComponent)txtEditorPane().getSource();
+        final AbstractDocument adoc = (AbstractDocument)txtEditorPane().getDocument();
+        // Dump fold hierarchy
+        final FoldHierarchy hierarchy = FoldHierarchy.get(textComponent);
+        getOutput().printTrace("Wait folding is initialized.");
+        waitState(new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+                adoc.readLock();
+                try {
+                    hierarchy.lock();
+                    try {
+                        return hierarchy.getRootFold().getFoldCount() > 0;
+                    } finally {
+                        hierarchy.unlock();
+                    }
+                } finally {
+                    adoc.readUnlock();
+                }
+            }
+            public String getDescription() {
+                return("Folding initialized"); // NOI18N
+            }
+        });
+    }
+    
+    /** Waits for fold at cursor position is collapsed. */
+    public void waitCollapsed() {
+        getOutput().printTrace("Wait fold is collapsed at line "+getLineNumber());
+        waitState(new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+                return isCollapsed();
+            }
+            public String getDescription() {
+                return("Fold collapsed");
+            }
+        });
+    }
+    
+    /** Waits for fold at cursor position is expanded. */
+    public void waitExpanded() {
+        getOutput().printTrace("Wait fold is expanded at line "+getLineNumber());
+        waitState(new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+                return !isCollapsed();
+            }
+            public String getDescription() {
+                return("Fold expanded");
+            }
+        });
+    }
+    
+    /** Collapses fold at cursor position using CTRL+'-'. It waits until fold 
+     * is not collapsed.
+     */
+    public void collapseFold(){
+	getOutput().printTrace("Collapse fold at line "+getLineNumber());
+        requestFocus();
+        txtEditorPane().pushKey(KeyEvent.VK_SUBTRACT, KeyEvent.CTRL_DOWN_MASK);
+        waitCollapsed();
+    }
+
+    /** Collapses fold at specified line using CTRL+'-'. It waits until fold 
+     * is not collapsed.
+     * @param lineNumber number of line (starts at 1)
+     */
+    public void collapseFold(int lineNumber){
+        setCaretPositionToLine(lineNumber);
+        collapseFold();
+    }
+
+    /** Expands fold at specified line using CTRL+'+'. It waits until fold 
+     * is not expanded.
+     */
+    public void expandFold(){
+	getOutput().printTrace("Expand fold at line "+getLineNumber());
+        requestFocus();
+        txtEditorPane().pushKey(KeyEvent.VK_ADD, KeyEvent.CTRL_DOWN_MASK);
+        waitExpanded();
+    }
+
+    /** Expands fold at specified line using CTRL+'+'. It waits until fold 
+     * is not expanded.
+     * @param lineNumber number of line (starts at 1)
+     */
+    public void expandFold(int lineNumber){
+        setCaretPositionToLine(lineNumber);
+        expandFold();
+    }
+    
+    /** Returns true if fold at cursor position is collapsed, false if it is 
+     * expanded.
+     * @return true if fold is collapsed, false if it is  expanded.
+     */
+    public boolean isCollapsed() {
+        return isCollapsed(getLineNumber());
+    }
+    
+    /** Returns true if fold at specified line is collapsed, false if it is 
+     * expanded.
+     * @param lineNumber number of line (starts at 1)
+     * @return true if fold is collapsed, false if it is expanded.
+     */
+    public boolean isCollapsed(int lineNumber) {
+        JTextComponent textComponent = (JTextComponent)txtEditorPane().getSource();
+        FoldHierarchy hierarchy = FoldHierarchy.get(textComponent);
+        int dot = getLineOffset(lineNumber);
+        hierarchy.lock();
+        try{
+            try{
+                int rowStart = javax.swing.text.Utilities.getRowStart(textComponent, dot);
+                int rowEnd = javax.swing.text.Utilities.getRowEnd(textComponent, dot);
+                Fold fold = getLineFold(hierarchy, dot, rowStart, rowEnd);
+                if (fold != null){
+                    return fold.isCollapsed();
+                } else {
+                    throw new JemmyException("No fold found at position "+dot+".");
+                }
+            } catch(BadLocationException ble){
+                throw new JemmyException("BadLocationException when seraching for fold.", ble);
+            }
+        }finally {
+            hierarchy.unlock();
+        }
+    }
+    
+    /** Returns the fold that should be collapsed/expanded in the caret row
+     *  @param hierarchy hierarchy under which all folds should be collapsed/expanded.
+     *  @param dot caret position offset
+     *  @param lineStart offset of the start of line
+     *  @param lineEnd offset of the end of line
+     *  @return the fold that meet common criteria in accordance with the caret position
+     */
+    private static Fold getLineFold(FoldHierarchy hierarchy, int dot, int lineStart, int lineEnd){
+        Fold caretOffsetFold = FoldUtilities.findOffsetFold(hierarchy, dot);
+
+        // beginning searching from the lineStart
+        Fold fold = FoldUtilities.findNearestFold(hierarchy, lineStart);  
+        
+        while (fold != null && 
+                  (fold.getEndOffset() <= dot || // find next available fold if the 'fold' is one-line
+                      // or it has children and the caret is in the fold body
+                      // i.e. class A{ |public void method foo(){}}
+                      (!fold.isCollapsed() && fold.getFoldCount() > 0  && fold.getStartOffset()+1 < dot) 
+                   )
+               ){
+
+            // look for next fold in forward direction
+            Fold nextFold = FoldUtilities.findNearestFold(hierarchy,
+               (fold.getFoldCount()>0) ? fold.getStartOffset()+1 : fold.getEndOffset());
+            if (nextFold!=null && nextFold.getStartOffset()<lineEnd){
+               if (nextFold == fold) return fold;
+               fold = nextFold;
+            } else {
+               break;
+            }
+        }
+        
+        // a fold on the next line was found, returning fold at offset (in most cases inner class)
+        if (fold == null || fold.getStartOffset() > lineEnd) {
+            // in the case:
+            // class A{
+            // }     |
+            // try to find an offset fold on the offset of the line beginning
+            if (caretOffsetFold == null){
+                caretOffsetFold = FoldUtilities.findOffsetFold(hierarchy, lineStart);
+            }
+            return caretOffsetFold;
+        }
+        
+        // no fold at offset found, in this case return the fold
+        if (caretOffsetFold == null) {
+            return fold;
+        }
+        
+        // skip possible inner class members validating if the innerclass fold is collapsed
+        if (caretOffsetFold.isCollapsed()) {
+            return caretOffsetFold;
+        }
+        
+        // in the case:
+        // class A{
+        // public vo|id foo(){} }
+        // 'fold' (in this case fold of the method foo) will be returned
+        if (caretOffsetFold.getEndOffset() > fold.getEndOffset() && 
+             fold.getEndOffset() > dot){
+            return fold;
+        }
+        
+        // class A{
+        // |} public void method foo(){}
+        // inner class fold will be returned
+        if (fold.getStartOffset() > caretOffsetFold.getEndOffset()) {
+            return caretOffsetFold;
+        }
+        
+        // class A{
+        // public void foo(){} |}
+        // returning innerclass fold
+        if (fold.getEndOffset() < dot) {
+            return caretOffsetFold;
+        }
+        return fold;
+    }
+    
+    /********************************** Miscellaneous **************************/
+    
     /** Waits for given modified state of edited source.
      * @param modified boolean true waits for file state change to modified, false for change to
      * unmodified (saved).
@@ -749,10 +968,16 @@ public class EditorOperator extends TopComponentOperator {
      * Used in findTopComponent method.
      */
     public static final class EditorSubchooser implements ComponentChooser {
+        /** Checks component.
+         * @param comp component
+         * @return true if component instance of CloneableEditor
+         */
         public boolean checkComponent(Component comp) {
             return (comp instanceof CloneableEditor);
         }
-        
+        /** Description.
+         * @return Description
+         */
         public String getDescription() {
             return "org.openide.text.CloneableEditor";
         }
