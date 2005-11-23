@@ -27,6 +27,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.WeakHashMap;
 import javax.swing.BorderFactory;
@@ -153,7 +154,7 @@ public class NavigatorContent extends JPanel   {
                 cachedPanel = (JPanel)panelWR.get();
             } else
                 cachedPanel = null;
-        } else 
+        } else
             cachedPanel = null;
         //get the model and create the new UI on background
         RequestProcessor.getDefault().post(new Runnable() {
@@ -165,32 +166,42 @@ public class NavigatorContent extends JPanel   {
                         model = DocumentModel.getDocumentModel(bdoc);
                     else
                         model = null; //if the panel is cached it holds a refs to the model - not need to init it again
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            showWaitPanel();
-                            JPanel panel = null;
-                            if(cachedPanel == null) {
-                                //cache the newly created panel
-                                panel = new NavigatorContentPanel(model);
-                                //use the document dataobject as a key since the document itself is very easily discarded and hence
-                                //harly usable as a key of the WeakHashMap
-                                DataObject documentDO = NbEditorUtilities.getDataObject(bdoc);
-                                if(documentDO != null) 
-                                    uiCache.put(documentDO, new WeakReference(panel));
-//                                System.out.println("creating new xml nav panel");
-                            } else {
-                                panel = cachedPanel;
-//                                System.out.println("panel gotten from cache");
+                    
+                    //I need to lock the model for update since during the model
+                    //update the UI is updated synchronously in AWT (current thread)
+                    if(model != null) model.readLock();
+                    try {
+                        SwingUtilities.invokeAndWait(new Runnable() {
+                            public void run() {
+                                showWaitPanel();
+                                JPanel panel = null;
+                                if(cachedPanel == null) {
+                                    //cache the newly created panel
+                                    panel = new NavigatorContentPanel(model);
+                                    //use the document dataobject as a key since the document itself is very easily discarded and hence
+                                    //harly usable as a key of the WeakHashMap
+                                    DataObject documentDO = NbEditorUtilities.getDataObject(bdoc);
+                                    if(documentDO != null)
+                                        uiCache.put(documentDO, new WeakReference(panel));
+                                } else {
+                                    panel = cachedPanel;
+                                }
+                                
+                                //paint the navigator UI
+                                removeAll();
+                                add(panel, BorderLayout.CENTER);
+                                revalidate();
+                                //panel.revalidate();
+                                repaint();
                             }
-                            
-                            //paint the navigator UI
-                            removeAll();
-                            add(panel, BorderLayout.CENTER);
-                            revalidate();
-                            //panel.revalidate();
-                            repaint();
-                        }
-                    });
+                        });
+                    }catch(InterruptedException ie) {
+                        ErrorManager.getDefault().notify(ErrorManager.WARNING, ie);
+                    }catch(InvocationTargetException ite) {
+                        ErrorManager.getDefault().notify(ErrorManager.ERROR, ite);
+                    }finally {
+                        if(model != null) model.readUnlock();
+                    }
                 }catch(DocumentModelException dme) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dme);
                 }

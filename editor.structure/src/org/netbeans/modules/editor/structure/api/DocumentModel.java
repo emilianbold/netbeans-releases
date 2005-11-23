@@ -693,7 +693,7 @@ public final class DocumentModel {
     // ------ model synchronization -------
     //-------------------------------------
     
-    private synchronized final void readLock() {
+    public synchronized final void readLock() {
         try {
             while (currWriter != null) {
                 if (currWriter == Thread.currentThread()) {
@@ -708,7 +708,7 @@ public final class DocumentModel {
         }
     }
     
-    private synchronized final void readUnlock() {
+    public synchronized final void readUnlock() {
         if (currWriter == Thread.currentThread()) {
             // writer has full read access.
             return;
