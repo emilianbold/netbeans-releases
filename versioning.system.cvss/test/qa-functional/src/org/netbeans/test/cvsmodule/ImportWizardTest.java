@@ -1,0 +1,528 @@
+/* 
+ * ImportWizardTest.java
+ *
+ * Created on 17 September 2005, 08:45
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+package org.netbeans.test.cvsmodule;
+
+import java.io.File;
+import java.io.InputStream;
+import junit.textui.TestRunner;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputOperator;
+import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.modules.javacvs.BrowseRepositoryFolderOperator;
+import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
+import org.netbeans.jellytools.modules.javacvs.EditCVSRootOperator;
+import org.netbeans.jellytools.modules.javacvs.FolderToImportStepOperator;
+import org.netbeans.jellytools.modules.javacvs.ImportWizardOperator;
+import org.netbeans.jellytools.modules.javacvs.ProxyConfigurationOperator;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JFileChooserOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JPasswordFieldOperator;
+import org.netbeans.jemmy.operators.JProgressBarOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.ide.ProjectSupport;
+/**
+ *
+ * @author peter
+ */
+public class ImportWizardTest extends JellyTestCase {
+    
+    String os_name;
+    File file;
+    static String sessionCVSroot;
+    final String projectName = "ForImport";
+    final String pathToMain = "forimport|Main.java";
+    final String PROTOCOL_FOLDER = "protocol";
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        // TODO code application logic here
+        
+        TestRunner.run(suite());
+    }
+    
+    public static NbTestSuite suite() {
+        
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new ImportWizardTest("prepareProject"));
+        suite.addTest(new ImportWizardTest("testImportWizardPserverUI"));
+        suite.addTest(new ImportWizardTest("testImportWizardLocalUI"));
+        suite.addTest(new ImportWizardTest("testImportWizardForkUI"));
+        suite.addTest(new ImportWizardTest("testImportWizardExtUI"));
+        suite.addTest(new ImportWizardTest("testImportWizardExt"));
+        suite.addTest(new ImportWizardTest("testImportWizardLocal"));
+        suite.addTest(new ImportWizardTest("testImportWizardFork"));
+        suite.addTest(new ImportWizardTest("testImportWizardPserver"));
+        suite.addTest(new ImportWizardTest("testImportWizardLoginSuccess"));
+        suite.addTest(new ImportWizardTest("testImportWizardSecondStepUI"));
+        suite.addTest(new ImportWizardTest("testImportWizardFinish"));
+        suite.addTest(new ImportWizardTest("removeAllData"));
+        //debug
+        //suite.addTest(new ImportWizardTest("prepareProject"));
+        
+        //suite.addTest(new ImportWizardTest("removeAllData"));
+        return suite;
+    }
+    protected void setUp() throws Exception {
+        
+        os_name = System.getProperty("os.name");
+        //System.out.println(os_name);
+        System.out.println("### "+getName()+" ###");
+        
+    }
+    
+    protected boolean isUnix() {
+        boolean unix = false;
+        if (os_name.indexOf("Windows") == -1) {
+            unix = true;
+        }
+        return unix;
+    }
+    
+    /** Creates a new instance of ImportWizardTest */
+    public ImportWizardTest(String name) {
+        super(name);
+    }
+    
+    public void testImportWizardPserverUI() {   
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        CVSRootStepOperator crso = new CVSRootStepOperator();
+        crso.setCVSRoot(":local:/cvs");
+        //Invalid CVS Root
+        crso.setCVSRoot(":pserver:test");
+        try {
+            JLabelOperator inv = new JLabelOperator(crso, "Invalid CVS Root");
+        } catch (TimeoutExpiredException e) {
+            throw e;
+        }
+        
+        crso.setCVSRoot(":pserver:test@localhost:2401/cvs");
+        //start test UI
+        
+        //combobox
+        try {
+            JComboBoxOperator combo = new JComboBoxOperator(crso);
+            JPasswordFieldOperator passwd = new JPasswordFieldOperator(crso);
+            JButtonOperator btnEdit = new JButtonOperator(crso, "Edit...");
+            JButtonOperator btnProxy = new JButtonOperator(crso, "Proxy Configuration...");
+            JButtonOperator btnBack = new JButtonOperator(crso, "< Back");
+            JButtonOperator btnNext = new JButtonOperator(crso, "Next >");
+            JButtonOperator btnFinish = new JButtonOperator(crso, "Finish");
+            JButtonOperator btnCancel = new JButtonOperator(crso, "Cancel");
+            JButtonOperator btnHelp = new JButtonOperator(crso, "Help");
+        }  catch (TimeoutExpiredException e) {
+            throw e;
+        }
+        //end test UI
+        iwo.cancel();
+    }
+    
+    public void testImportWizardLocalUI() {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        CVSRootStepOperator crso = new CVSRootStepOperator();
+        crso.setCVSRoot(":local:/cvs");
+        //Invalid CVS Root
+        crso.setCVSRoot(":loca:");
+        try {
+            JLabelOperator inv = new JLabelOperator(crso, "Only :pserver:, :local:, :ext: and :fork: connection methods supported");
+        } catch (TimeoutExpiredException e) {
+            throw e;
+        }
+        crso.setCVSRoot(":local:/cvs");
+        Exception ex;
+        //start test UI
+        //combobox
+        try {
+            JComboBoxOperator combo = new JComboBoxOperator(crso);
+            //JPasswordFieldOperator passwd = new JPasswordFieldOperator(crso);
+            JButtonOperator btnEdit = new JButtonOperator(crso, "Edit...");
+            JButtonOperator btnBack = new JButtonOperator(crso, "< Back");
+            JButtonOperator btnNext = new JButtonOperator(crso, "Next >");
+            JButtonOperator btnFinish = new JButtonOperator(crso, "Finish");
+            JButtonOperator btnCancel = new JButtonOperator(crso, "Cancel");
+            JButtonOperator btnHelp = new JButtonOperator(crso, "Help");
+        } catch (TimeoutExpiredException e) {
+            throw e;
+        }
+        //end test UI
+        
+        iwo.cancel();
+    }
+    
+    public void testImportWizardForkUI() {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        CVSRootStepOperator crso = new CVSRootStepOperator();
+        crso.setCVSRoot(":fork:/cvs");
+        //Invalid CVS Root
+        crso.setCVSRoot(":for:");
+        try {
+            JLabelOperator inv = new JLabelOperator(crso, "Only :pserver:, :local:, :ext: and :fork: connection methods supported");
+            assertNotNull(inv);
+        } catch (TimeoutExpiredException e) {
+            throw e;
+        }
+        
+        crso.setCVSRoot(":fork:/cvs");
+        //start test UI
+        
+        try {
+            JComboBoxOperator combo = new JComboBoxOperator(crso);
+            //JPasswordFieldOperator passwd = new JPasswordFieldOperator(crso);
+            JButtonOperator btnEdit = new JButtonOperator(crso, "Edit...");
+            JButtonOperator btnBack = new JButtonOperator(crso, "< Back");
+            JButtonOperator btnNext = new JButtonOperator(crso, "Next >");
+            JButtonOperator btnFinish = new JButtonOperator(crso, "Finish");
+            JButtonOperator btnCancel = new JButtonOperator(crso, "Cancel");
+            JButtonOperator btnHelp = new JButtonOperator(crso, "Help");
+        } catch (TimeoutExpiredException e) {
+            throw e;
+        }
+        //end test UI
+        
+        iwo.cancel();
+    }
+    
+    public void testImportWizardExtUI() {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        CVSRootStepOperator crso = new CVSRootStepOperator();
+        crso.setCVSRoot(":ext:test@localhost:2401/cvs");
+        //Invalid CVS Root
+        crso.setCVSRoot(":ext:test");
+        try {
+            JLabelOperator inv = new JLabelOperator(crso, "Invalid CVS Root");
+        } catch (TimeoutExpiredException e) {
+            throw e;
+        }
+        
+        crso.setCVSRoot(":ext:test@localhost:2401/cvs");
+        //start test UI
+        try {
+            JComboBoxOperator combo = new JComboBoxOperator(crso);
+            JPasswordFieldOperator passwd = new JPasswordFieldOperator(crso);
+            JButtonOperator btnEdit = new JButtonOperator(crso, "Edit...");
+            JButtonOperator btnProxy = new JButtonOperator(crso, "Proxy Configuration...");
+            JRadioButtonOperator internal = new JRadioButtonOperator(crso, "Use Internal SSH");
+            JRadioButtonOperator external = new JRadioButtonOperator(crso, "Use External Shell");
+            JCheckBoxOperator remeber = new JCheckBoxOperator(crso, "Remember Password");
+            JTextFieldOperator sshCommand = new JTextFieldOperator(crso);
+            JButtonOperator btnBack = new JButtonOperator(crso, "< Back");
+            JButtonOperator btnNext = new JButtonOperator(crso, "Next >");
+            JButtonOperator btnFinish = new JButtonOperator(crso, "Finish");
+            JButtonOperator btnCancel = new JButtonOperator(crso, "Cancel");
+            JButtonOperator btnHelp = new JButtonOperator(crso, "Help");
+        } catch (TimeoutExpiredException e) {
+            throw e;
+        }
+        //end test UI
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+        iwo.cancel();
+    }
+    
+    public void testImportWizardLoginSuccess() throws Exception {
+        //invoke CVSCheckoutWizard
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        final CVSRootStepOperator crso = new CVSRootStepOperator();
+        crso.setCVSRoot(":pserver:test@localhost:/cvs");
+        ProxyConfigurationOperator pco = crso.proxyConfiguration();
+        pco.noProxyDirectConnection();
+        pco.ok();
+        //crso.setPassword("test");
+        
+        //prepare stream for successful authentification and run PseudoCVSServer
+        InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
+        if (in == null) {
+            System.err.println(getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm());
+            in.markSupported();
+        }
+        PseudoCvsServer cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        cvss.ignoreProbe();
+        crso.setCVSRoot(cvss.getCvsRoot());
+        
+        crso.next();
+              
+        try {
+           JProgressBarOperator progress = new JProgressBarOperator(crso);
+           JButtonOperator btnStop = new JButtonOperator(crso);
+        } catch (TimeoutExpiredException e) {
+            throw e;
+        }
+        
+        //Wizard proceeded to 2nd step.
+        FolderToImportStepOperator folderToImportOper = new FolderToImportStepOperator();
+        cvss.stop();
+        in.close();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+        iwo.cancel();
+    }
+    
+    public void testImportWizardExt() {
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        CVSRootStepOperator crso = new CVSRootStepOperator();
+        crso.setCVSRoot(":ext:test@localhost:2401/cvs");
+        crso.rbUseInternalSSH().setSelected(true);
+        crso.setPassword("test");
+        crso.cbRememberPassword().setSelected(true);
+        crso.cbRememberPassword().setSelected(false);
+        crso.rbUseExternalShell().setSelected(true);
+        crso.setSSHCommand("plink.exe -l user -i private_key.ppk");
+        EditCVSRootOperator editOperator = crso.edit();
+        assertEquals("Wrong access method in Edit CVSRoot dialog", "ext", editOperator.getAccessMethod());
+        assertEquals("Wrong username Edit CVSRoot dialog", "test", editOperator.getUser());
+        assertEquals("Wrong hostname in Edit CVSRoot dialog", "localhost", editOperator.getHost());
+        assertEquals("Wrong port Edit CVSRoot dialog", "2401", editOperator.getPort());
+        assertEquals("Wrong repository path Edit CVSRoot dialog", "/cvs", editOperator.getRepositoryPath());
+        
+        //change values in EditCVSRoot dialog but cancel it
+        editOperator.selectAccessMethod(editOperator.ITEM_EXT);
+        editOperator.setRepositoryPath("/cvs/repo");
+        editOperator.setHost("127.0.0.1");
+        editOperator.setUser("user");
+        editOperator.setPort("8080");
+        editOperator.cancel();
+        assertEquals("Values are propagated, but Cancel was push", ":ext:test@localhost:2401/cvs", crso.getCVSRoot());
+        
+        //change values in EditCVSRoot dialog
+        editOperator = crso.edit();
+        editOperator.selectAccessMethod(editOperator.ITEM_EXT);
+        editOperator.setRepositoryPath("/cvs/repo");
+        editOperator.setHost("127.0.0.1");
+        editOperator.setUser("user");
+        editOperator.setPort("8080");
+        editOperator.ok();
+        assertEquals("Values are not propagated correctly", ":ext:user@127.0.0.1:8080/cvs/repo", crso.getCVSRoot());
+        crso.cancel();
+    }
+    
+    public void testImportWizardLocal() {
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        CVSRootStepOperator crso = new CVSRootStepOperator();
+        crso.setCVSRoot(":local:/cvs");
+        
+        EditCVSRootOperator editOperator = crso.edit();
+        assertEquals("Wrong access method in Edit CVSRoot dialog", "local", editOperator.getAccessMethod());
+        assertEquals("Wrong repository path in Edit CVSRoot dialog", "/cvs", editOperator.getRepositoryPath());
+        
+        //change values in EditCVSRoot dialog but cancel it
+        editOperator.setRepositoryPath("/cvs/repo");
+        editOperator.cancel();
+        assertEquals("Values are propagated, but Cancel was push", ":local:/cvs", crso.getCVSRoot());
+        
+        //change values in EditCVSRoot dialog
+        editOperator = crso.edit();
+        editOperator.setRepositoryPath("/cvs/repo");
+        editOperator.ok();
+        assertEquals("Values are propagated, but Cancel was push", ":local:/cvs/repo", crso.getCVSRoot());
+        crso.cancel();
+    }
+    
+    public void testImportWizardFork() {
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        CVSRootStepOperator crso = new CVSRootStepOperator();
+        crso.setCVSRoot(":fork:/cvs");
+        
+        EditCVSRootOperator editOperator = crso.edit();
+        assertEquals("Wrong access method in Edit CVSRoot dialog", "fork", editOperator.getAccessMethod());
+        assertEquals("Wrong repository path in Edit CVSRoot dialog", "/cvs", editOperator.getRepositoryPath());
+        
+        //change values in EditCVSRoot dialog but cancel it
+        editOperator.setRepositoryPath("/cvs/repo");
+        editOperator.cancel();
+        assertEquals("Values are propagated, but Cancel was push", ":fork:/cvs", crso.getCVSRoot());
+        
+        //change values in EditCVSRoot dialog
+        editOperator = crso.edit();
+        editOperator.setRepositoryPath("/cvs/repo");
+        editOperator.ok();
+        assertEquals("Values are propagated, but Cancel was push", ":fork:/cvs/repo", crso.getCVSRoot());
+        crso.cancel();
+    }
+    
+    public void testImportWizardPserver() {
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        CVSRootStepOperator crso = new CVSRootStepOperator();
+        
+        crso.setCVSRoot(":pserver:test@localhost:2401/cvs");
+        crso.setPassword("test");
+        
+        //crso.cbRememberPassword().setSelected(true);
+        //crso.cbRememberPassword().setSelected(false);
+        EditCVSRootOperator editOperator = crso.edit();
+        assertEquals("Wrong access method in Edit CVSRoot dialog", "pserver", editOperator.getAccessMethod());
+        assertEquals("Wrong username Edit CVSRoot dialog", "test", editOperator.getUser());
+        assertEquals("Wrong hostname in Edit CVSRoot dialog", "localhost", editOperator.getHost());
+        assertEquals("Wrong port Edit CVSRoot dialog", "2401", editOperator.getPort());
+        assertEquals("Wrong repository path Edit CVSRoot dialog", "/cvs", editOperator.getRepositoryPath());
+        
+        //change values in EditCVSRoot dialog but cancel it
+        editOperator.selectAccessMethod(editOperator.ITEM_PSERVER);
+        editOperator.setRepositoryPath("/cvs/repo");
+        editOperator.setHost("127.0.0.1");
+        editOperator.setUser("user");
+        editOperator.setPort("8080");
+        editOperator.cancel();
+        assertEquals("Values are propagated, but Cancel was push", ":pserver:test@localhost:2401/cvs", crso.getCVSRoot());
+        
+        //change values in EditCVSRoot dialog
+        editOperator = crso.edit();
+        editOperator.selectAccessMethod(editOperator.ITEM_PSERVER);
+        editOperator.setRepositoryPath("/cvs/repo");
+        editOperator.setHost("127.0.0.1");
+        editOperator.setUser("user");
+        editOperator.setPort("8080");
+        editOperator.ok();
+        assertEquals("Values are not propagated correctly", ":pserver:user@127.0.0.1:8080/cvs/repo", crso.getCVSRoot());
+        crso.cancel();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+    }
+    
+    public void testImportWizardSecondStepUI() throws Exception {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        final CVSRootStepOperator crso = new CVSRootStepOperator();
+        crso.setCVSRoot(":pserver:test@localhost:/cvs");
+        ProxyConfigurationOperator pco = crso.proxyConfiguration();
+        pco.noProxyDirectConnection();
+        pco.ok();
+        //crso.setPassword("test");
+        
+        //prepare stream for successful authentification and run PseudoCVSServer
+        InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
+        if (in == null) {
+            System.err.println(getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm());
+            in.markSupported();
+        }
+        PseudoCvsServer cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        cvss.ignoreProbe();
+        crso.setCVSRoot(cvss.getCvsRoot());
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
+        crso.next();
+              
+        try {
+           JProgressBarOperator progress = new JProgressBarOperator(crso);
+           JButtonOperator btnStop = new JButtonOperator(crso);
+        } catch (TimeoutExpiredException e) {
+            throw e;
+        }
+        
+        //Wizard proceeded to 2nd step.
+        
+        FolderToImportStepOperator folderToImportOper = new FolderToImportStepOperator();
+        cvss.stop();
+        in.close();
+        folderToImportOper.setFolderToImport(getWorkDirPath());
+        JFileChooserOperator browseFolder = folderToImportOper.browseFolderToImport();
+        assertEquals("Directory set in wizard not propagated to file chooser:", getWorkDir().getAbsolutePath(), browseFolder.getCurrentDirectory().getAbsolutePath()); // NOI18N
+        browseFolder.cancel();
+        folderToImportOper.setImportMessage("Import message"); //NOI18N
+        
+        in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "repository_browsing.in");
+        cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        String CVSroot = cvss.getCvsRoot();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
+        
+        folderToImportOper.setRepositoryFolder("folder");
+        BrowseRepositoryFolderOperator browseRepositoryOper =  folderToImportOper.browseRepositoryFolder();
+        browseRepositoryOper.selectFolder(""); // NOI18N
+        browseRepositoryOper.ok();
+        folderToImportOper.checkCheckoutAfterImport(false);
+        iwo.cancel();
+        cvss.stop();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+    }
+    
+    public void testImportWizardFinish() throws Exception {
+        String CVSroot;
+        PseudoCvsServer cvss;
+        TestKit.unversionProject(file, projectName);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 2000);
+        ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
+        CVSRootStepOperator crso = new CVSRootStepOperator();
+        JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
+        crso.setCVSRoot(":pserver:test@localhost:/cvs");
+        ProxyConfigurationOperator pco = crso.proxyConfiguration();
+        pco.noProxyDirectConnection();
+        pco.ok();
+        //crso.setPassword("test");
+        
+        //prepare stream for successful authentification and run PseudoCVSServer
+        InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
+        if (in == null) {
+            System.err.println(getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm());
+            in.markSupported();
+        }
+        cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        cvss.ignoreProbe();
+        CVSroot = cvss.getCvsRoot();        
+        sessionCVSroot = CVSroot;
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
+        crso.setCVSRoot(CVSroot);
+        crso.next();
+              
+        try {
+           JProgressBarOperator progress = new JProgressBarOperator(crso);
+           JButtonOperator btnStop = new JButtonOperator(crso);
+        } catch (TimeoutExpiredException e) {
+            throw e;
+        }
+        
+        //Wizard proceeded to 2nd step.
+        
+        FolderToImportStepOperator folderToImportOper = new FolderToImportStepOperator();
+        cvss.stop();
+        in.close();
+        folderToImportOper.setImportMessage("initial import");
+        folderToImportOper.checkCheckoutAfterImport(false);
+        in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "import_finish.in");
+        cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        CVSroot = cvss.getCvsRoot();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
+        //cvss.ignoreProbe();
+        
+        //crso.setCVSRoot(CVSroot);/
+        folderToImportOper.finish();
+        
+        OutputOperator oo = OutputOperator.invoke();
+        //System.out.println(CVSroot);
+        OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        oto.waitText("Importing finished");
+        cvss.stop();
+        in.close();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+        //TestKit.removeAllData(projectName, file);
+    }
+    
+    public void prepareProject() throws Exception {
+        file = TestKit.prepareProject("General", "Java Application", projectName, "Main.java");
+    }
+    
+    public void removeAllData() throws Exception {
+        TestKit.removeAllData(projectName);
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+    }
+}
