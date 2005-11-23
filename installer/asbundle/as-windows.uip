@@ -52,24 +52,20 @@
             <property array="True" length="0" name="JVMFileResources" type="string"/>
             <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15Xwin32.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk15win32_sun.jvm</property>
                     <property name="fullSearch">False</property>
-                    <property name="key">win32</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk14Xwin32.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk142win32_sun.jvm</property>
                     <property name="fullSearch">False</property>
-                    <property name="key">win32</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk16Xwin32.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk16win32_sun.jvm</property>
                     <property name="fullSearch">False</property>
-                    <property name="key">win32</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk142win32_ibm.jvm</property>
                     <property name="fullSearch">False</property>
-                    <property name="key">win32</property>
                 </arrayItem>
             </property>
             <property name="JVMResolution">2</property>
@@ -110,8 +106,6 @@
         <visible>true</visible>
         <installPrecedence>-1</installPrecedence>
         <uninstallPrecedence>-1</uninstallPrecedence>
-        <comments/>
-        <conditionOperator>AND</conditionOperator>
         <component id="beanCoreIDE">
             <key>
                 <uid>40a49beb171d0e39df3e1e94e7000000</uid>
@@ -890,15 +884,15 @@
                     <property name="fileName">setupwin32.exe</property>
                     <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk15Xwin32.jvm</property>
+                            <property name="fileName">$A(basedir)/../lib/resources/jdk15win32_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk14Xwin32.jvm</property>
+                            <property name="fileName">$A(basedir)/../lib/resources/jdk142win32_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk16Xwin32.jvm</property>
+                            <property name="fileName">$A(basedir)/../lib/resources/jdk16win32_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                         <arrayItem type="com.installshield.util.jvm.JVMFile">

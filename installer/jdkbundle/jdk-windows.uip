@@ -50,21 +50,22 @@
         <property name="beanId">bean149</property>
         <extendedProperty name="win32ppk" type="com.installshield.wizard.platform.win32.Win32JVMResolutionExtra">
             <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="3" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+            <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15Xwin32.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk15win32_sun.jvm</property>
                     <property name="fullSearch">False</property>
-                    <property name="key">win32</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk14Xwin32.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk142win32_sun.jvm</property>
                     <property name="fullSearch">False</property>
-                    <property name="key">win32</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk16Xwin32.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk16win32_sun.jvm</property>
                     <property name="fullSearch">False</property>
-                    <property name="key">win32</property>
+                </arrayItem>
+                <arrayItem type="com.installshield.util.jvm.JVMFile">
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk142win32_ibm.jvm</property>
+                    <property name="fullSearch">False</property>
                 </arrayItem>
             </property>
             <property name="JVMResolution">2</property>

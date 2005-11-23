@@ -49,19 +49,16 @@
             <property array="True" length="0" name="JVMFileResources" type="string"/>
             <property array="True" length="3" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15Xunix.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
-                    <property name="key">solaris</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk14Xunix.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
-                    <property name="key">solaris</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk16Xunix.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
-                    <property name="key">solaris</property>
                 </arrayItem>
             </property>
             <property name="JVMResolution">2</property>

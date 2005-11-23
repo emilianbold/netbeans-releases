@@ -93,7 +93,7 @@ Microsystems, Inc. All Rights Reserved.
         <arg value="@{input.ismp.project}.uip" />
         <arg value="-build" />
         <arg value="-alias"/>
-        <arg value="cluster.basedir=${basedir}"/>
+        <arg value="basedir=${basedir}"/>
         <arg value="-alias"/>
         <arg value="cluster.dir=${cluster.dir}"/>      
         <classpath>
