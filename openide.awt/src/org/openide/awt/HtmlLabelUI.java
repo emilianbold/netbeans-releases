@@ -376,8 +376,8 @@ class HtmlLabelUI extends LabelUI {
         }
 
         if (replace) {
-            int avg = (bg.getRed() + bg.getGreen() + bg.getBlue()) / 3;
-            boolean darker = avg >= 128;
+            int lum = luminance(bg);
+            boolean darker = lum >= 128;
 
             if (darker) {
                 fg = Color.BLACK;
@@ -388,12 +388,13 @@ class HtmlLabelUI extends LabelUI {
 
         return fg;
     }
-
+    
     private static int difference(Color a, Color b) {
-        int avg1 = (b.getRed() + b.getGreen() + b.getBlue()) / 3;
-        int avg2 = (a.getRed() + a.getGreen() + a.getBlue()) / 3;
+        return Math.abs(luminance(a) - luminance(b));
+    }
 
-        return Math.abs(avg1 - avg2);
+    private static int luminance(Color c) {
+        return (299*c.getRed() + 587*c.getGreen() + 114*c.getBlue()) / 1000;
     }
 
     static Color getBackgroundFor(HtmlRendererImpl r) {
