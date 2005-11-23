@@ -692,14 +692,13 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             return;
         }
 
-        /* [dafe] can't put the warning in, because I don't know how to fix 
-         output window, which places html tags into its display name sometimes 
+        // warning if display name contains html tags
         if (BasicHTML.isHTMLString(displayName)) {
             ErrorManager.getDefault().log(ErrorManager.WARNING, 
-                "WARNING: Call of " + getClass().getName() + ".setDisplayName("" + displayName + "")" +
-                "shouldn't contain any HTML tags. Please use " + getClass().getName() + ".setHtmlDisplayName(String)" +
+                "WARNING: Call of " + getClass().getName() + ".setDisplayName(\"" + displayName + "\")" +
+                " shouldn't contain any HTML tags. Please use " + getClass().getName() + ".setHtmlDisplayName(String)" +
                 "for such purpose. For details please see http://www.netbeans.org/issues/show_bug.cgi?id=66777.");
-        } */
+        }
         
         this.displayName = displayName;
         firePropertyChange("displayName", old, displayName); // NOI18N
