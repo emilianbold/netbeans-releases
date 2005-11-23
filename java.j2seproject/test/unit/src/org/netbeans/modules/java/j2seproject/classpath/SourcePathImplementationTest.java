@@ -15,10 +15,16 @@ package org.netbeans.modules.java.j2seproject.classpath;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.java.j2seproject.J2SEProject;
+import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
@@ -31,6 +37,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.SourceRootsTest;
+import org.openide.util.Mutex;
 
 public class SourcePathImplementationTest extends NbTestCase {
 
@@ -43,7 +50,7 @@ public class SourcePathImplementationTest extends NbTestCase {
     private FileObject sources;
     private ProjectManager pm;
     private AntProjectHelper helper;
-    private Project pp;
+    private J2SEProject pp;
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -53,7 +60,7 @@ public class SourcePathImplementationTest extends NbTestCase {
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null); //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         pm = ProjectManager.getDefault();
-        pp = pm.findProject(projdir);
+        pp = (J2SEProject) pm.findProject(projdir).getLookup().lookup(J2SEProject.class);
         sources = projdir.getFileObject("src");
     }
 
@@ -83,6 +90,45 @@ public class SourcePathImplementationTest extends NbTestCase {
         assertEquals("There must be src root",roots[0],sources);
         assertEquals("There must be other root",roots[1],newRoot);
         cp.removePropertyChangeListener(tl);
+    }
+    
+    public void testWSClientSupport () throws Exception {
+        ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)pp.getLookup().lookup(ClassPathProviderImpl.class);
+        ClassPath[] cps = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
+        ClassPath cp = cps[0];
+        List entries = cp.entries();
+        assertNotNull ("Entries can not be null", entries);
+        assertEquals ("There must be 2 src entries",2, entries.size());
+        assertEquals("There must be src root",((ClassPath.Entry)entries.get(0)).getRoot(),sources);
+        String buildDir = (String) J2SEProjectUtil.getEvaluatedProperty(pp,"${build.dir}");
+        assertNotNull ("There is no build.dir property", buildDir);
+        File f = new File (new File (pp.getAntProjectHelper().resolveFile(buildDir),"generated"),"wsclient");
+        URL url = f.toURI().toURL();
+        if (!f.exists()) {
+            url = new URL (url.toExternalForm() + "/");
+        }
+        assertEquals("There must be WSClient entry",((ClassPath.Entry)entries.get(1)).getURL(),url);                
+        ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction () {
+            public Object run () throws Exception {
+                EditableProperties ep = pp.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                ep.put("build.dir","build2");   //NOI18N
+                pp.getAntProjectHelper().putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
+                ProjectManager.getDefault().saveProject(pp);
+                return null;
+            }
+        });                
+        entries = cp.entries();
+        assertNotNull ("Entries can not be null", entries);
+        assertEquals ("There must be 2 src entries",2, entries.size());
+        assertEquals("There must be src root",((ClassPath.Entry)entries.get(0)).getRoot(),sources);
+        buildDir = (String) J2SEProjectUtil.getEvaluatedProperty(pp,"${build.dir}");
+        assertNotNull ("There is no build.dir property", buildDir);
+        f = new File (new File (pp.getAntProjectHelper().resolveFile(buildDir),"generated"),"wsclient");
+        url = f.toURI().toURL();
+        if (!f.exists()) {
+            url = new URL (url.toExternalForm() + "/");
+        }
+        assertEquals("There must be WSClient entry",((ClassPath.Entry)entries.get(1)).getURL(),url);
     }
 
     private static class TestListener implements PropertyChangeListener {
