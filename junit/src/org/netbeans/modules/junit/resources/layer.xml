@@ -95,7 +95,9 @@
         </folder>
        
         <folder name="Window">
-            <file name="org-netbeans-modules-junit-output-ResultWindowOpenAction.instance"/>
+            <file name="org-netbeans-modules-junit-output-ResultWindowOpenAction.instance">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/output/res/testResults.png"/> 
+            </file>
         </folder> <!-- Window -->
 
     </folder>
