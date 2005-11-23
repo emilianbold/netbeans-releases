@@ -38,9 +38,7 @@ public class SunURIManager  {
     public static InstanceProperties getInstanceProperties(File serverLocation, String host, int port){
         InstanceProperties  instanceProperties =
                 InstanceProperties.getInstanceProperties("["+serverLocation.getAbsolutePath()+"]"+SUNSERVERSURI+host+":"+port);
-        if (instanceProperties==null){
-            instanceProperties =  InstanceProperties.getInstanceProperties(SUNSERVERSURI+host+":"+port);
-        }
+
         return instanceProperties;
     }
     /**

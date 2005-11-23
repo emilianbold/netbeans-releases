@@ -67,7 +67,7 @@ public class PluginProperties  {
     public static String COBUNDLE_DEFAULT_INSTALL_PATH2 ="AS8.2";  //NOI18N
     
     /** holds value of com.sun.aas.installRoot */
-    private  File platformRoot = null;
+//    private  File platformRoot = null;
     
     static private PluginProperties thePluginProperties=null;
     static final private String IDEHOME = "${ide.home}";
@@ -81,8 +81,7 @@ public class PluginProperties  {
     
     
     private  PluginProperties(){
-	ideHomeLocation = Installer.ideHomeLocation;
-	ideHomeLocation = new File(ideHomeLocation).getParentFile().getAbsolutePath();
+	ideHomeLocation = new File(Installer.ideHomeLocation).getParentFile().getAbsolutePath();
 
         java.io.InputStream inStream = null;
         try {
@@ -97,9 +96,12 @@ public class PluginProperties  {
                 Constants.pluginLogger.throwing(PluginProperties.class.getName(), "<init>", //NOI18N
                         ioe);
             } finally {
-                loadPluginProperties(inStream);
-                if (null != inStream)
+                Properties inProps = new Properties();
+                if (null != inStream){
+                    inProps.load(inStream);
                     inStream.close();
+                }
+                loadPluginProperties(inProps);
             }
         } catch (java.io.IOException ioe) {
         }
@@ -120,14 +122,7 @@ public class PluginProperties  {
     }
     
     
-    void loadPluginProperties(java.io.InputStream inStream) {
-        Properties inProps = new Properties();
-        if (null != inStream)
-            try {
-                inProps.load(inStream);
-            } catch (java.io.IOException ioe) {
-                Constants.pluginLogger.throwing(PluginProperties.class.toString(), "loadPluginProperties", ioe); //NOI18N
-            }
+    void loadPluginProperties(Properties inProps) {
         
         logLevel = inProps.getProperty(LOG_LEVEL_KEY, java.util.logging.Level.OFF.toString());
         String[] inputUsers = getArrayPropertyValue(inProps, PRINCIPAL_PREFIX);
@@ -137,13 +132,22 @@ public class PluginProperties  {
         String b= inProps.getProperty(INCREMENTAL,"true");//true by default
         incrementalDeployPossible = b.equals("true");
         String loc = inProps.getProperty(INSTALL_ROOT_KEY);
-
         if (loc!=null){
-	    if (loc.startsWith(IDEHOME)){
-		loc = ideHomeLocation + loc.substring(IDEHOME.length(),loc.length());
-	    }
-	    platformRoot = new File(loc);
+            final File platformRoot = new File(getDefaultInstallRoot());
+            
+            if (isGoodAppServerLocation(platformRoot)){
+                registerDefaultDomain(platformRoot);
+            saveProperties();
+            }
+            
         }
+    
+                        
+////////////////////	    if (loc.startsWith(IDEHOME)){
+////////////////////		loc = ideHomeLocation + loc.substring(IDEHOME.length(),loc.length());
+////////////////////	    }
+////////////////////	    platformRoot = new File(loc);
+        
 
 /*        String loc = inProps.getProperty(INSTALL_ROOT_KEY);
 
@@ -210,9 +214,10 @@ public class PluginProperties  {
     }
     
     static public void configureDefaultServerInstance(){
+        PluginProperties.getDefault();//for init for this
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject dir = fs.findResource("J2EE/platform.properties");
-        if (dir==null){// try to get the default value
+        FileObject props = fs.findResource("J2EE/platform.properties");
+        if (props==null){// try to get the default value
             
             final File platformRoot = new File(getDefaultInstallRoot());
 
@@ -406,16 +411,16 @@ public class PluginProperties  {
             outProp.setProperty(LOG_LEVEL_KEY, logLevel);
         if (!getCharsetDisplayPreferenceStatic().equals(CharsetDisplayPreferenceEditor.DEFAULT_PREF_VAL))
 	    outProp.setProperty(CHARSET_DISP_PREF_KEY, getCharsetDisplayPreferenceStatic().toString());
-	if (platformRoot != null){
-	    String dirloc=platformRoot.getAbsolutePath();
-	    if (dirloc.startsWith(ideHomeLocation)){
-		dirloc = IDEHOME + dirloc.substring(ideHomeLocation.length(),dirloc.length());
-		outProp.setProperty(INSTALL_ROOT_KEY,dirloc);
-		
-	    } else{
-		outProp.setProperty(INSTALL_ROOT_KEY,dirloc);
-	    }
-	}
+////	if (platformRoot != null){
+////	    String dirloc=platformRoot.getAbsolutePath();
+////	    if (dirloc.startsWith(ideHomeLocation)){
+////		dirloc = IDEHOME + dirloc.substring(ideHomeLocation.length(),dirloc.length());
+////		outProp.setProperty(INSTALL_ROOT_KEY,dirloc);
+////		
+////	    } else{
+////		outProp.setProperty(INSTALL_ROOT_KEY,dirloc);
+////	    }
+////	}
         FileLock l = null;
         java.io.OutputStream outStream = null;
         try {
@@ -445,11 +450,6 @@ public class PluginProperties  {
         
     }
     
-
-    
-    public File getPlatformRoot() {
-        return platformRoot;
-    }
 
 
 
@@ -525,10 +525,7 @@ public class PluginProperties  {
 //        return f.exists();
         return true;
     }
-    public boolean isCurrentAppServerLocationValid(){
 
-        return isGoodAppServerLocation(platformRoot);
-    }
     
     private static void registerDefaultDomain(File platformRoot){
         String username ="admin";//default//NOI18N

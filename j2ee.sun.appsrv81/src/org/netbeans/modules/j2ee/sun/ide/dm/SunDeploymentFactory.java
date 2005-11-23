@@ -112,13 +112,11 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
         if (uri==null)
             return false;
         if(uri.startsWith("[")){//NOI18N
+            if (uri.indexOf(SunURIManager.SUNSERVERSURI)!=-1)
             return true;
         }
-        //old style : need to geet app server root from prop file
-        if (uri.startsWith(SunURIManager.SUNSERVERSURI)){
-            return true;
-            
-        }
+
+
         
         return false;
     }
@@ -138,9 +136,8 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
         if(uri.startsWith("[")){//NOI18N
             String loc = uri.substring(1,uri.indexOf("]"));
             return  new File(loc);
-        } else   if (uri.startsWith(SunURIManager.SUNSERVERSURI)){
-            return PluginProperties.getDefault().getPlatformRoot();
         }
+        
         throw new DeploymentManagerCreationException(uri+bundle.getString("MSG_WrongInstallDir"));
     }
     private static String getRealURI(String uri) throws DeploymentManagerCreationException{
