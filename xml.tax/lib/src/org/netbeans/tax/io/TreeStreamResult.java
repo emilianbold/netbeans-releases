@@ -257,7 +257,7 @@ public class TreeStreamResult implements TreeOutputResult {
                         encoding = TreeUtilities.iana2java (encoding);
                     }
                     
-                    writer = new OutputStreamWriter (outputStream, encoding);
+                    writer = (encoding == null ? new OutputStreamWriter(outputStream): new OutputStreamWriter (outputStream, encoding));
                 } catch (UnsupportedEncodingException exc) {
                     throw new TreeException (exc);
                 }
