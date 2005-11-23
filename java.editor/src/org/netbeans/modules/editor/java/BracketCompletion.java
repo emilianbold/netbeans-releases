@@ -272,7 +272,7 @@ class BracketCompletion {
      */
     static int getRowOrBlockEnd(BaseDocument doc, int caretOffset) throws BadLocationException {
         int rowEnd = Utilities.getRowLastNonWhite(doc, caretOffset);
-        if (rowEnd == -1){
+        if (rowEnd == -1 || caretOffset >= rowEnd){
             return caretOffset;
         }
         rowEnd += 1;

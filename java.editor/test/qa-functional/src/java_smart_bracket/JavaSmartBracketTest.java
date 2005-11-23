@@ -54,7 +54,30 @@ public class JavaSmartBracketTest extends JavaEditorTestCase {
             closeFileWithDiscard();
         }
     }
- 
+
+    /** Testing problem of issue #68992 */
+    public void testJavaSmartBracketAfterLBraceAndSpace(){
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+        
+            EditorOperator editor = getDefaultSampleEditorOperator();
+
+            // 1. move to adequate place 
+            editor.setCaretPosition(6, 22);
+
+            // 2. hit Enter 
+            JEditorPaneOperator txtOper = editor.txtEditorPane();
+            txtOper.pushKey(KeyEvent.VK_ENTER);
+
+            // Compare document content to golden file
+            compareReferenceFiles(txtOper.getDocument());
+
+        } finally {
+            closeFileWithDiscard();
+        }
+    }
+    
     public void testJavaSmartBracketAfterLBraceAndComment(){
         openDefaultProject();
         openDefaultSampleFile();
