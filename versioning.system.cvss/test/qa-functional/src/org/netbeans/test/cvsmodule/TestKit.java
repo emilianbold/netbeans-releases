@@ -123,8 +123,9 @@ public class TestKit {
         cb.setSelected(true);
         JButtonOperator btnYes = new JButtonOperator(ndo, "Yes");
         btnYes.push();
-        JProgressBarOperator progress = new JProgressBarOperator(ndo, 0);
-        progress.waitValue("100%");
+        //JProgressBarOperator progress = new JProgressBarOperator(ndo, 0);
+        //progress.waitValue("100%");
+        ndo.waitClosed();
         //TestKit.deleteRecursively(file);
     }
     
