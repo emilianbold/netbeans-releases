@@ -38,6 +38,7 @@ public class PluginOptions extends SystemOption {
     
     public void setUserList(String [] list) {
         PluginProperties.getDefault().setUserList(list);
+       firePropertyChange("displayPreference",null, list);
     }
     
     public String[] getGroupList() {
@@ -46,6 +47,7 @@ public class PluginOptions extends SystemOption {
     
     public void setGroupList(String [] list) {
         PluginProperties.getDefault().setGroupList(list);
+       firePropertyChange("groupList",null, list);
     }
     
     public String getLogLevel() {
@@ -54,6 +56,7 @@ public class PluginOptions extends SystemOption {
     
     public void setLogLevel(String ll) {
         PluginProperties.getDefault().setLogLevel(ll);
+       firePropertyChange("logLevel",null, ll);
     }
     
     public Integer getCharsetDisplayPreference() {
@@ -62,6 +65,7 @@ public class PluginOptions extends SystemOption {
     
     public void setCharsetDisplayPreference(Integer displayPreference) {
         PluginProperties.getDefault().setCharsetDisplayPreference(displayPreference);
+        firePropertyChange("charsetDisplayPreference",null, displayPreference);
     }
     
     public Boolean getIncrementalDeploy(){
@@ -70,24 +74,9 @@ public class PluginOptions extends SystemOption {
     
     public void setIncrementalDeploy(Boolean b) {
         PluginProperties.getDefault().setIncrementalDeploy(b);
+        firePropertyChange("IncrementalDeploy",null, b);
     }
-//    public File getInstallRoot(){
-//        File irf = PluginProperties.getDefault().getPlatformRoot();
-//        if (null == irf || !irf.exists()) {
-//            return null;
-//        }
-//        return irf;
-//    }
-//    
-//    public void setInstallRoot(File f) {
-//        File current= getInstallRoot();
-//        
-//        if ((current==null)||(!f.getAbsolutePath().equals(current.getAbsolutePath()))){
-//            PluginProperties.getDefault().setPlatformRoot(f);
-//            
-//        }
-        
-//    }
+
     public void readExternal(java.io.ObjectInput in){
         //do nothing, we use a propertie file storage
         
