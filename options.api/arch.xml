@@ -552,7 +552,19 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-component">
   <p>
-   No.
+   No. But This module sets some property on core OptionsAction:
+   <api name='org.netbeans.core.actions.OptionsAction.additionalActionName' 
+        category='private'
+        type='import'
+        group='property'>
+        Crates button with given string in bottom left corner of Options Dialog.
+   </api>
+   <api name='org.netbeans.core.actions.OptionsAction.additionalActionListener' 
+        category='private'
+        type='import'
+        group='property'>
+        Given ActionListener is notified when custom button is pressed.
+   </api>
   </p>
  </answer>
 
