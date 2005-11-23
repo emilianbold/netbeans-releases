@@ -103,15 +103,24 @@ abstract class CompletionLayoutPopup {
     
     final Rectangle getScreenBounds() {
         if (screenBounds == null) {
-            screenBounds = getEditorComponent().getGraphicsConfiguration().getBounds();
+	    JTextComponent editorComponent = getEditorComponent();
+            screenBounds = (editorComponent != null)
+		? editorComponent.getGraphicsConfiguration().getBounds()
+		: new Rectangle();
         }
         return screenBounds;
     }
     
     final int getAnchorOffset() {
-        return (anchorOffset != -1)
-            ? anchorOffset
-            : getEditorComponent().getCaretPosition();
+	int offset = anchorOffset;
+	if (offset == -1) {
+	    // Get caret position
+	    JTextComponent editorComponent = getEditorComponent();
+	    if (editorComponent != null) {
+		offset = editorComponent.getCaretPosition();
+	    }
+	}
+	return offset;
     }
     
     final JComponent getContentComponent() {
@@ -148,10 +157,14 @@ abstract class CompletionLayoutPopup {
     }
 
     final Rectangle getAnchorOffsetBounds() {
+	JTextComponent editorComponent = getEditorComponent();
+	if (editorComponent == null) {
+	    return new Rectangle();
+	}
         if (anchorOffsetBounds == null){ 
             int anchorOffset = getAnchorOffset();
             try {
-                anchorOffsetBounds = getEditorComponent().modelToView(anchorOffset);
+                anchorOffsetBounds = editorComponent.modelToView(anchorOffset);
                 if (anchorOffsetBounds != null){
                     anchorOffsetBounds.x -= getAnchorHorizontalShift();
                 } else {
@@ -161,7 +174,7 @@ abstract class CompletionLayoutPopup {
                 anchorOffsetBounds = new Rectangle(); // use empty rectangle
             }
             Point anchorOffsetPoint = anchorOffsetBounds.getLocation();
-            SwingUtilities.convertPointToScreen(anchorOffsetPoint, getEditorComponent());
+            SwingUtilities.convertPointToScreen(anchorOffsetPoint, editorComponent);
             anchorOffsetBounds.setLocation(anchorOffsetPoint);
         }
         return anchorOffsetBounds;

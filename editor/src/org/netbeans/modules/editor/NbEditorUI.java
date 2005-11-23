@@ -385,7 +385,7 @@ public class NbEditorUI extends ExtEditorUI {
     }
     
     protected JToolBar createToolBarComponent() {
-        return new NbEditorToolBar(this);
+        return new NbEditorToolBar(getComponent());
     }
 
     private class SystemActionPerformer implements PropertyChangeListener{

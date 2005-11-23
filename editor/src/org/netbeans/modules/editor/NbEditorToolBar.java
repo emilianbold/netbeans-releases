@@ -23,6 +23,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -150,16 +152,16 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
        
 
     
-    /** Editor kit to which this support belongs */
-    private NbEditorUI editorUI;
+    /** Text component for which the toolbar gets constructed. */
+    private Reference componentRef;
     
     private boolean presentersAdded;
 
     private boolean addListener = true;
     
    
-    NbEditorToolBar(NbEditorUI editorUI) {
-        this.editorUI = editorUI;
+    NbEditorToolBar(JTextComponent component) {
+        this.componentRef = new WeakReference(component);
         
         setFloatable(false);
         //mkleint - instead of here, assign the border in CloneableEditor and MultiView module.
@@ -234,11 +236,13 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     }
     
     public void settingsChange(SettingsChangeEvent evt) {
-        final boolean visible = isToolBarVisible();        
+        final boolean visible = isToolBarVisible();
+	JTextComponent c = getComponent();
         final boolean keyBindingsChanged = 
                 evt!=null && 
                 SettingsNames.KEY_BINDING_LIST.equals(evt.getSettingName()) &&
-                evt.getKitClass() == Utilities.getKitClass(editorUI.getComponent());
+                c != null
+		&& evt.getKitClass() == Utilities.getKitClass(c);
         Runnable r = new Runnable() {
                 public void run() {
                     if (visible) {
@@ -342,7 +346,8 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     }
     
     private String getMimeType() {
-        EditorKit kit = Utilities.getKit(editorUI.getComponent());
+	JTextComponent c = getComponent();
+        EditorKit kit = (c != null) ? Utilities.getKit(c) : null;
         String mimeType = (kit != null) ? kit.getContentType() : null;
         return mimeType;
     }
@@ -423,7 +428,8 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
             }
         }
 
-        EditorKit kit = Utilities.getKit(editorUI.getComponent());
+	JTextComponent c = getComponent();
+        EditorKit kit = (c != null) ? Utilities.getKit(c) : null;
         if (kit instanceof BaseKit) {
             BaseKit baseKit = (BaseKit)kit;
             BaseOptions options = BaseOptions.getOptions(kit.getClass());
@@ -439,6 +445,10 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         
     }
     
+    private JTextComponent getComponent() {
+	return (JTextComponent)componentRef.get();
+    }
+    
     /** Add the presenters (usually buttons) for the contents of the toolbar
      * contained in the base and mime folders.
      * @param baseFolder folder that corresponds to "text/base"
@@ -449,7 +459,8 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         
         List keyBindingsList = getKeyBindingList();
 
-        EditorKit kit = Utilities.getKit(editorUI.getComponent());
+	JTextComponent c = getComponent();
+        EditorKit kit = (c != null) ? Utilities.getKit(c) : null;
         if (kit instanceof BaseKit) {
             BaseKit baseKit = (BaseKit)kit;
 
@@ -542,7 +553,8 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     }
     
     private Lookup createActionContext() {
-        DataObject dobj = NbEditorUtilities.getDataObject(editorUI.getDocument());
+	JTextComponent c = getComponent();
+        DataObject dobj = (c != null) ? NbEditorUtilities.getDataObject(c.getDocument()) : null;
 
         if (dobj != null){
             Node node = dobj.getNodeDelegate();
@@ -550,10 +562,9 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         }
         
         Lookup lookup = null;
-        JTextComponent component = editorUI.getComponent();
-        for (java.awt.Component c = component; c != null; c = c.getParent()) {
-            if (c instanceof Lookup.Provider) {
-                lookup = ((Lookup.Provider)c).getLookup ();
+        for (java.awt.Component comp = c; comp != null; comp = comp.getParent()) {
+            if (comp instanceof Lookup.Provider) {
+                lookup = ((Lookup.Provider)comp).getLookup ();
                 if (lookup != null) {
                     break;
                 }

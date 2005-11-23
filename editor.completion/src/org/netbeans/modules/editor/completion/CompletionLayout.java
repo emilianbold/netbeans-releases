@@ -20,6 +20,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.AbstractAction;
@@ -66,7 +68,7 @@ public final class CompletionLayout {
      */
     static final int POPUP_VERTICAL_GAP = 1;
 
-    private JTextComponent editorComponent;
+    private Reference editorComponentRef;
 
     private final CompletionPopup completionPopup;
     private final DocPopup docPopup;
@@ -88,12 +90,14 @@ public final class CompletionLayout {
     }
     
     public JTextComponent getEditorComponent() {
-        return editorComponent;
+        return (editorComponentRef != null)
+	    ? (JTextComponent)editorComponentRef.get()
+	    : null;
     }
 
     public void setEditorComponent(JTextComponent editorComponent) {
         hideAll();
-        this.editorComponent = editorComponent;
+        this.editorComponentRef = new WeakReference(editorComponent);
     }
 
     private void hideAll() {
@@ -258,6 +262,11 @@ public final class CompletionLayout {
         public void show(List data, String title, int anchorOffset,
         ListSelectionListener listSelectionListener) {
             
+	    JTextComponent editorComponent = getEditorComponent();
+	    if (editorComponent == null) {
+		return;
+	    }
+
             Dimension lastSize;
             int lastAnchorOffset = getAnchorOffset();
 
@@ -269,15 +278,16 @@ public final class CompletionLayout {
                 lastSize = new Dimension(0, 0); // no last size => use (0,0)
 
                 setContentComponent(new CompletionScrollPane(
-                    getEditorComponent(), listSelectionListener,
+                    editorComponent, listSelectionListener,
                     new MouseAdapter() {
                         public void mouseClicked(MouseEvent evt) {
+			    JTextComponent c = getEditorComponent();
                             if (SwingUtilities.isLeftMouseButton(evt)) {
-                                if (getEditorComponent() != null && evt.getClickCount() == 2 ) {
+                                if (c != null && evt.getClickCount() == 2 ) {
                                     CompletionItem selectedItem
                                             = getCompletionScrollPane().getSelectedCompletionItem();
                                     if (selectedItem != null) {
-                                        selectedItem.defaultAction(getEditorComponent());
+                                        selectedItem.defaultAction(c);
                                     }
                                 }
                             }
@@ -344,8 +354,13 @@ public final class CompletionLayout {
         }
         
         protected void show(CompletionDocumentation doc, int anchorOffset) {
+	    JTextComponent editorComponent = getEditorComponent();
+	    if (editorComponent == null) {
+		return;
+	    }
+
             if (!isVisible()) { // documentation already visible
-                setContentComponent(new DocumentationScrollPane(getEditorComponent()));
+                setContentComponent(new DocumentationScrollPane(editorComponent));
             }
             
             getDocumentationScrollPane().setData(doc);

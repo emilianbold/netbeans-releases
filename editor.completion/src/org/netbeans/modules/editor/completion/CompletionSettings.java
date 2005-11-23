@@ -15,6 +15,8 @@ package org.netbeans.modules.editor.completion;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.JTextComponent;
@@ -38,7 +40,7 @@ public final class CompletionSettings implements SettingsChangeListener {
     
     private static final Object NULL_VALUE = new Object();
     
-    private JTextComponent editorComponent;
+    private Reference editorComponentRef;
     
     private Map settingName2value = new HashMap();
     
@@ -100,7 +102,7 @@ public final class CompletionSettings implements SettingsChangeListener {
     }
     
     public void notifyEditorComponentChange(JTextComponent newEditorComponent) {
-        this.editorComponent = newEditorComponent;
+        this.editorComponentRef = new WeakReference(newEditorComponent);
         clearSettingValues();
     }
     
@@ -111,7 +113,7 @@ public final class CompletionSettings implements SettingsChangeListener {
         }
         
         if (value == null) {
-            JTextComponent c = editorComponent;
+            JTextComponent c = (JTextComponent)editorComponentRef.get();
             if (c != null) {
                 Class kitClass = Utilities.getKitClass(c);
                 if (kitClass != null) {
