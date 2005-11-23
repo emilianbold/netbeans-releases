@@ -167,12 +167,26 @@ public abstract class EditorSettings {
 	Map highlightings
     );
     
+    /**
+     * Returns FontColorSettings for given mimetypes.
+     *
+     * @return FontColorSettings for given mimetypes
+     */
+    public abstract FontColorSettings getFontColorSettings (String[] mimeTypes);
+    
     
     // KeyMaps .................................................................
     
     /** Property name constant. */
     public static final String PROP_CURRENT_KEY_MAP_PROFILE = "currentKeyMapProfile";
 
+    
+    /**
+     * Returns KeyBindingSettings for given mimetypes.
+     *
+     * @return KeyBindingSettings for given mimetypes
+     */
+    public abstract KeyBindingSettings getKeyBindingSettings (String[] mimeTypes);
     
     /**
      * Returns set of keymap profiles.

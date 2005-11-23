@@ -16,7 +16,9 @@ package org.netbeans.modules.editor.settings.storage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -30,6 +32,8 @@ import java.util.Set;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.netbeans.modules.editor.settings.storage.api.FontColorSettings;
+import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettings;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -249,8 +253,9 @@ public class EditorSettingsImpl extends EditorSettings {
             return;
         }
         
+        if (fontColors.equals (defaultColors.get (profile))) return;
+        
         // 2) save new values to cache
-	Object oldColors = defaultColors.get (profile);
         defaultColors.put (profile, fontColors);
         
         // 3) save new values to disk
@@ -351,6 +356,8 @@ public class EditorSettingsImpl extends EditorSettings {
             pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
             return;
         }
+        
+        if (fontColors.equals (highlightings.get (profile))) return;
         
         // 2) save new values to cache
         highlightings.put (profile, fontColors);
@@ -595,5 +602,35 @@ public class EditorSettingsImpl extends EditorSettings {
         if (result != null) return result;
         keyMapProfiles.put (profile, profile);
         return profile;
+    }
+    
+    private Map keyBindings = new HashMap ();
+    
+    public KeyBindingSettings getKeyBindingSettings (String[] mimeTypes) {
+        List key = Arrays.asList (mimeTypes);
+        WeakReference reference = (WeakReference) keyBindings.get (key);
+        KeyBindingSettingsImpl result = null;
+        if (reference != null) 
+            result = (KeyBindingSettingsImpl) reference.get ();
+        if (result == null) {
+            result = new KeyBindingSettingsImpl (mimeTypes);
+            keyBindings.put (key, new WeakReference (result));
+        }
+        return result;
+    }
+    
+    private Map fontColors = new HashMap ();
+    
+    public FontColorSettings getFontColorSettings (String[] mimeTypes) {
+        List key = Arrays.asList (mimeTypes);
+        WeakReference reference = (WeakReference) fontColors.get (key);
+        FontColorSettings result = null;
+        if (reference != null) 
+            result = (FontColorSettings) reference.get ();
+        if (result == null) {
+            result = new FontColorSettingsImpl (mimeTypes);
+            fontColors.put (key, new WeakReference (result));
+        }
+        return result;
     }
 }
