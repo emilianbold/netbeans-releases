@@ -1706,7 +1706,7 @@ class TreeTable extends JTable implements Runnable {
                     targetRow = getSelectedRow();
                 }
             } else {
-                if (getSelectedColumn() == 0) {
+                if (getSelectedColumn() <= 0) {
                     targetColumn = getColumnCount() - 1;
                     targetRow = getSelectedRow() - 1;
                 } else {
