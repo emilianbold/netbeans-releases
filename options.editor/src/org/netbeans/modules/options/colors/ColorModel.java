@@ -51,7 +51,6 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 
 import org.netbeans.editor.AnnotationType;
@@ -247,8 +246,8 @@ public class ColorModel {
             return editorSettings.getDefaultFontColors (profile);
 
         String mimeType = getMimeType (language);
-	FontColorSettings fcs = (FontColorSettings) MimeLookup.
-	    getMimeLookup (mimeType).lookup (FontColorSettings.class);
+	FontColorSettings fcs = EditorSettings.getDefault ().
+            getFontColorSettings (new String[] {mimeType});
         return fcs.getAllFontColors (profile);
     }
     
@@ -260,8 +259,8 @@ public class ColorModel {
             return editorSettings.getDefaultFontColorDefaults (profile);
 
         String mimeType = getMimeType (language);
-	FontColorSettings fcs = (FontColorSettings) MimeLookup.
-	    getMimeLookup (mimeType).lookup (FontColorSettings.class);
+	FontColorSettings fcs = EditorSettings.getDefault ().
+            getFontColorSettings (new String[] {mimeType});
         return fcs.getAllFontColorDefaults (profile);
     }
     
@@ -284,8 +283,8 @@ public class ColorModel {
                 System.out.println("ColorModelImpl.setCategories - unknown language " + language);
             return;
         }
-	FontColorSettings fcs = (FontColorSettings) MimeLookup.
-	    getMimeLookup (mimeType).lookup (FontColorSettings.class);
+	FontColorSettings fcs = EditorSettings.getDefault ().
+            getFontColorSettings (new String[] {mimeType});
 	fcs.setAllFontColors (
             profile,
 	    categories
@@ -344,6 +343,7 @@ public class ColorModel {
             final Collection /*<Category>*/ highlightings,
             final Collection /*<Category>*/ syntaxColorings
         ) {
+            System.out.println("setParameters " + language);
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     String internalMimeType = null;
@@ -352,9 +352,8 @@ public class ColorModel {
                         currentLanguage = language;
                         internalMimeType = languageToInternalMimeType 
                             (language);
-                        fontColorSettings = (FontColorSettings) 
-                            getMimeLookup (internalMimeType).
-                            lookup (FontColorSettings.class);
+                        fontColorSettings = EditorSettings.getDefault ().
+                            getFontColorSettings (new String[] {internalMimeType});
                     }
                     
                     if (internalMimeType == null)
@@ -384,7 +383,6 @@ public class ColorModel {
          */
         private void updateMimeType (String language) {
             String internalMimeType = languageToInternalMimeType (language);
-            getMimeLookup (internalMimeType);
             Document document = editorPane.getDocument ();
             document.putProperty ("mimeType", internalMimeType);
             editorPane.setContentType (internalMimeType);
@@ -454,16 +452,6 @@ public class ColorModel {
                 "text/x-java" : // Highlighting & All Languages
                 getMimeType (language);
             return "test" + ColorModel.this.hashCode () + "_" + mimeType;
-        }
-        
-        private Map lookups = new HashMap ();
-        private MimeLookup getMimeLookup (String mimeType) {
-            if (!lookups.containsKey (mimeType))
-                lookups.put (
-                    mimeType,
-                    MimeLookup.getMimeLookup (mimeType)
-                );
-            return (MimeLookup) lookups.get (mimeType);
         }
     }
     
