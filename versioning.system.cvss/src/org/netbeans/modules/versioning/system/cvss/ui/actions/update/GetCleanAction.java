@@ -28,9 +28,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileLock;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Revert modifications action.
@@ -140,13 +140,47 @@ public class GetCleanAction extends AbstractSystemAction {
         try {
             File cleanFile = VersionsCache.getInstance().getRemoteFile(file, revision, group);
             if (cleanFile != null) {
+                // 'atomic' action  >>>
                 backup(file);
-                FileUtils.copyFile(cleanFile, file);
+                try {
+                    CvsVersioningSystem.ignoreFilesystemEvents(true);
+                    FileObject fo = FileUtil.toFileObject(cleanFile);
+                    FileObject target = FileUtil.toFileObject(file);
+                    InputStream in = null;
+                    OutputStream out = null;
+                    FileLock lock = null;
+                    try {
+                        in = fo.getInputStream();
+                        lock = target.lock();
+                        out = target.getOutputStream(lock);
+                        copyStream(in, out);
+                    } finally {
+                        if (in != null) {
+                            try {
+                                in.close();
+                            } catch (IOException alreadyClosed) {
+                            }
+                        }
+                        if (out != null) {
+                            try {
+                                out.close();
+                            } catch (IOException alreadyClosed) {
+                            }
+                        }
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                    }
+
+                } finally {
+                    CvsVersioningSystem.ignoreFilesystemEvents(false);
+                }
                 if (entry != null && entry.isUserFileToBeRemoved()) {
                     entry.setRevision(entry.getRevision().substring(1));
                     ah.setEntry(file, entry);
                 }
                 cache.refresh(file, revision == VersionsCache.REVISION_BASE ? FileStatusCache.REPOSITORY_STATUS_UPTODATE : FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                // 'atomic' action  <<<
             } else {
                 // locally delete? NOt yet there seems to be bug in checkout -p
                 ErrorManager.getDefault().log(ErrorManager.WARNING, "Unable to checkout " + file.getName()); // NOI18N
@@ -158,6 +192,15 @@ public class GetCleanAction extends AbstractSystemAction {
             } else {
                 ErrorManager.getDefault().notify(e);
             }
+        }
+    }
+
+    private static void copyStream(InputStream in, OutputStream out) throws IOException {
+        byte [] buffer = new byte[4096];
+        for (;;) {
+            int n = in.read(buffer, 0, 4096);
+            if (n < 0) return;
+            out.write(buffer, 0, n);
         }
     }
 

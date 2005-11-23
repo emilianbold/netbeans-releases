@@ -169,7 +169,12 @@ public class UpdateExecutor extends ExecutorSupport implements FileChangeListene
         
         for (Iterator i = filesystems.iterator(); i.hasNext();) {
             FileSystem fileSystem = (FileSystem) i.next();
-            fileSystem.refresh(true);
+            try {
+                CvsVersioningSystem.ignoreFilesystemEvents(true);
+                fileSystem.refresh(true); // fires fileChanged
+            } finally {
+                CvsVersioningSystem.ignoreFilesystemEvents(false);
+            }
         }
         
         if (ucmd.getUpdateByRevision() != null || ucmd.isResetStickyOnes()) {

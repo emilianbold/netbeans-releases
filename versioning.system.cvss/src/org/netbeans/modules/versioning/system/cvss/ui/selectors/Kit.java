@@ -75,6 +75,7 @@ public final class Kit implements Client.Factory {
         }
     }
 
+    /** Creates client suitable for read only operations */
     public static Client createClient(CVSRoot cvsRoot, ProxyDescriptor proxy) {
         Connection connection = ClientRuntime.setupConnection(cvsRoot, proxy);
         Client client = new Client(connection, new StandardAdminHandler());

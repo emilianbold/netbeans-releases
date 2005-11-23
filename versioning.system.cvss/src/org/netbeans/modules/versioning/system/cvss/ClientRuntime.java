@@ -228,6 +228,8 @@ public class ClientRuntime {
     private Client createClient() {
         Connection connection = setupConnection(CVSRoot.parse(cvsRoot), null);
         Client client = new Client(connection, CvsVersioningSystem.getInstance().getAdminHandler());
+        client.setUncompressedFileHandler(CvsVersioningSystem.getInstance().getFileHandler());
+        client.setGzipFileHandler(CvsVersioningSystem.getInstance().getGzippedFileHandler());
         return client;
     }
     

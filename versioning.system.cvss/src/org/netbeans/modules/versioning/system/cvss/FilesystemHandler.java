@@ -38,31 +38,60 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
 
     private final FileStatusCache   cache;
     private final Map savedMetadata = new HashMap();
+    private static Thread ignoredThread;
 
     public FilesystemHandler(CvsVersioningSystem cvs) {
         cache = cvs.getStatusCache();
     }
-    
+
+    /**
+     * Ignores (internal) events from current thread. E.g.:
+     * <pre>
+     * try {
+     *     FilesystemHandler.ignoreEvents(true);
+     *     fo.createData(file.getName());
+     * } finally {
+     *     FilesystemHandler.ignoreEvents(false);
+     * }
+     * </pre>
+     *
+     * <p>It assumes that filesystem operations fire
+     * synchronous events.
+     * @see http://javacvs.netbeans.org/nonav/issues/show_bug.cgi?id=68961
+     */
+    static void ignoreEvents(boolean ignore) {
+        if (ignore) {
+            ignoredThread = Thread.currentThread();
+        } else {
+            ignoredThread = null;
+        }
+    }
+
     // FileChangeListener implementation ---------------------------
     
     public void fileFolderCreated(FileEvent fe) {
+        if (Thread.currentThread() == ignoredThread) return;
         eventProcessor.post(new FileCreatedTask(FileUtil.toFile(fe.getFile())));
     }
 
     public void fileDataCreated(FileEvent fe) {
+        if (Thread.currentThread() == ignoredThread) return;
         eventProcessor.post(new FileCreatedTask(FileUtil.toFile(fe.getFile())));
     }
     
     public void fileChanged(FileEvent fe) {
+        if (Thread.currentThread() == ignoredThread) return;
         eventProcessor.post(new FileChangedTask(FileUtil.toFile(fe.getFile())));
     }
 
     public void fileDeleted(FileEvent fe) {
         // needed for external deletes; othewise, beforeDelete is quicker
+        if (Thread.currentThread() == ignoredThread) return;
         eventProcessor.post(new FileDeletedTask(FileUtil.toFile(fe.getFile())));
     }
 
     public void fileRenamed(FileRenameEvent fe) {
+        if (Thread.currentThread() == ignoredThread) return;
         eventProcessor.post(new FileRenamedTask(fe));
     }
 
@@ -73,7 +102,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     // InterceptionListener implementation ---------------------------
     
     public void createSuccess(FileObject fo) {
-      if (fo.isFolder() && fo.getNameExt().equals(CvsVersioningSystem.FILENAME_CVS)) {
+        if (fo.isFolder() && fo.getNameExt().equals(CvsVersioningSystem.FILENAME_CVS)) {
             File f = new File(FileUtil.toFile(fo), CvsLiteAdminHandler.INVALID_METADATA_MARKER);
             try {
                 f.createNewFile();

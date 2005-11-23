@@ -20,6 +20,7 @@ import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.command.*;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
+import org.netbeans.lib.cvsclient.file.FileHandler;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
@@ -70,6 +71,8 @@ public class CvsVersioningSystem {
     private FileStatusCache fileStatusCache;
 
     private CvsLiteAdminHandler sah;
+    private CvsLiteFileHandler  workdirFileHandler;
+    private CvsLiteGzippedFileHandler workdirGzippedFileHandler;
     private FilesystemHandler filesystemHandler;
 
     private Annotator annotator;
@@ -77,6 +80,7 @@ public class CvsVersioningSystem {
     private final Set   userIgnorePatterns = new HashSet();
     private boolean     userIgnorePatternsReset;
     private long        userIgnorePatternsTimestamp;
+
 
     public static synchronized CvsVersioningSystem getInstance() {
         if (instance == null) {
@@ -89,6 +93,8 @@ public class CvsVersioningSystem {
     private void init() {
         defaultGlobalOptions = CvsVersioningSystem.createGlobalOptions();
         sah = new CvsLiteAdminHandler();
+        workdirFileHandler = new CvsLiteFileHandler();
+        workdirGzippedFileHandler = new CvsLiteGzippedFileHandler();
         fileStatusCache = new FileStatusCache(this);
         filesystemHandler  = new FilesystemHandler(this);
         annotator = new Annotator(this);
@@ -393,6 +399,14 @@ public class CvsVersioningSystem {
         return sah;
     }
 
+    public FileHandler getFileHandler() {
+        return workdirFileHandler;
+    }
+
+    public FileHandler getGzippedFileHandler() {
+        return workdirGzippedFileHandler;
+    }
+
     public Annotator getAnnotator() {
         return annotator;
     }
@@ -580,8 +594,13 @@ public class CvsVersioningSystem {
      * 
      * @return InterceptionListener returns file system handler instance
      */ 
-    InterceptionListener getFileSystemHandler() {
+    FilesystemHandler getFileSystemHandler() {
         return filesystemHandler;
+    }
+
+    /** @see FilesystemHandler#ignoreEvents */
+    public static void ignoreFilesystemEvents(boolean ignore) {
+        FilesystemHandler.ignoreEvents(ignore);
     }
 
     void shutdown() {
