@@ -93,6 +93,7 @@ public class FilesystemExplorerPanel extends JPanel implements ExplorerManager.P
 
         // Create explorer tree
         treeView = new BeanTreeView();
+        treeView.setBorder(UIManager.getBorder("ScrollPane.border"));
         treeView.setRootVisible(true);
         treeView.setAllowedDropActions(DnDConstants.ACTION_COPY);
 

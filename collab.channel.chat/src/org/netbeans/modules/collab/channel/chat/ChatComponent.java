@@ -21,6 +21,8 @@ import com.sun.collablet.Conversation;
 import com.sun.collablet.ConversationPrivilege;
 import com.sun.collablet.UserInterface;
 import com.sun.collablet.chat.ChatCollablet;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import org.openide.ErrorManager;
 
 import org.openide.awt.*;
@@ -193,12 +195,10 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
         JSplitPane splitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true);
         splitPanel.setResizeWeight(0.85f);
         splitPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
-        splitPanel.setDividerSize(5);
 
         // We must set the editor kit explicitly in order to keep NetBeans
         // from installing its own document type
         transcriptPane = new JEditorPane();
-        transcriptPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         transcriptPane.setEditable(false);
 
         // Install our own editor kit in order to ensure rendering of the
@@ -222,7 +222,6 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
         // Create a scroll pane to contain the conversation transcript
         JScrollPane transcriptScrollPane1 = new JScrollPane(transcriptPane);
         transcriptScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        transcriptScrollPane1.setBorder(new EmptyBorder(0, 0, 0, 0));
 
         JPanel transcriptPanel = new JPanel(new BorderLayout());
         transcriptPanel.add(transcriptScrollPane1, BorderLayout.CENTER);
@@ -231,7 +230,7 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
         // Panel to hold the various input components
         JPanel inputPanel = new JPanel();
         inputPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
-        inputPanel.setLayout(new BorderLayout());
+        inputPanel.setLayout(new GridBagLayout());
 
         boolean canSendMessages = false;
 
@@ -259,12 +258,21 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
             sendButton.addActionListener(new SendButtonActionListener());
 
             // Add the toolbar
-            JPanel controlPanel = new JPanel();
-            controlPanel.setLayout(new BorderLayout());
-            controlPanel.add(initializeToolbar(), BorderLayout.CENTER);
-            controlPanel.add(sendButton, BorderLayout.EAST);
-            controlPanel.add(new JSeparator(), BorderLayout.SOUTH);
-            inputPanel.add(controlPanel, BorderLayout.NORTH);
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.fill = gbc.HORIZONTAL;
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            gbc.weightx = 1.0;
+            gbc.weighty = 0.0;
+            inputPanel.add(initializeToolbar(), gbc);
+            gbc = new GridBagConstraints();
+            gbc.fill = gbc.NONE;
+            gbc.anchor = gbc.EAST;
+            gbc.gridx = 1;
+            gbc.gridy = 2;
+            gbc.weightx = 0.0;
+            gbc.weighty = 0.0;
+            inputPanel.add(sendButton, gbc);
 
             // Create an input pane
             inputPane = new ChatInputPane(this);
@@ -287,13 +295,23 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
             // Create a scroll pane to contain the input pane
             JScrollPane inputScrollPane = new JScrollPane(inputPane);
             inputScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            inputScrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
-            inputPanel.add(inputScrollPane, BorderLayout.CENTER);
+            gbc = new GridBagConstraints();
+            gbc.fill = gbc.BOTH;
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            gbc.weightx = 1.0;
+            gbc.weighty = 1.0;
+            inputPanel.add(inputScrollPane, gbc);
 
             typingMessageLabel = new JLabel();
             typingMessageLabel.setBackground(Color.white);
             typingMessageLabel.setOpaque(true);
-            inputPanel.add(typingMessageLabel, BorderLayout.SOUTH);
+            gbc.fill = gbc.HORIZONTAL;
+            gbc.gridy = 1;
+            gbc.weightx = 1.0;
+            gbc.weighty = 0.0;
+            inputPanel.add(typingMessageLabel, gbc);
         } else {
             // Instead, add a label that indicates that the user cannot
             // send messages in this conversation
@@ -301,12 +319,21 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
                     NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_NoPrivilege"), // NOI18N
                     SwingConstants.CENTER
                 );
-            inputPanel.add(messageLabel, BorderLayout.CENTER);
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.fill = gbc.HORIZONTAL;
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.weightx = 1.0;
+            gbc.weighty = 0.0;
+            inputPanel.add(messageLabel, gbc);
             typingMessageLabel = new JLabel();
 
-            //			typingMessageLabel.setBackground(Color.white);
             typingMessageLabel.setOpaque(true);
-            inputPanel.add(typingMessageLabel, BorderLayout.SOUTH);
+            gbc.fill = gbc.HORIZONTAL;
+            gbc.gridy = 1;
+            gbc.weightx = 1.0;
+            gbc.weighty = 0.0;
+            inputPanel.add(typingMessageLabel, gbc);
         }
 
         splitPanel.add(inputPanel, JSplitPane.BOTTOM);
@@ -426,8 +453,7 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
     private JToolBar initializeToolbar() {
         JToolBar inputToolbar = new JToolBar(JToolBar.HORIZONTAL);
         inputToolbar.setFloatable(false);
-        inputToolbar.setBorder(new CompoundBorder(new EmptyBorder(3, 0, 3, 0), inputToolbar.getBorder()));
-        inputToolbar.add(Box.createHorizontalStrut(5));
+        inputToolbar.setBorder(new CompoundBorder(new EmptyBorder(3, 0, 0, 0), inputToolbar.getBorder()));
 
         ContentTypeActionListener actionListener = new ContentTypeActionListener();
 
@@ -504,8 +530,6 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
         inputToolbar.add(allowEnterButton);
         inputToolbar.addSeparator();
         inputToolbar.add(allowTabsButton);
-        inputToolbar.addSeparator();
-        inputToolbar.add(Box.createHorizontalGlue());
 
         return inputToolbar;
     }

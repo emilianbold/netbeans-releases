@@ -100,7 +100,7 @@ public class ConversationComponent extends CloneableTopComponent implements Prop
     private Conversation conversation;
     private Reference nodeRef;
     private JList participantList;
-    private SplittedPanel mainSplitPane;
+    private JSplitPane mainSplitPane;
     private JSplitPane channelChatSplitPane;
     private ChatCollablet chatChannel;
     private ViewSwitcherPane channelsPane;
@@ -161,30 +161,18 @@ public class ConversationComponent extends CloneableTopComponent implements Prop
         // Set our layout--if we don't do this, nothing will appear in 
         // the component
         setLayout(new BorderLayout());
-
-        // Show the account name
-        JPanel accountLabelPanel = new JPanel(new BorderLayout());
-
-        JLabel accountLabel = new JLabel(
-                NbBundle.getMessage(ConversationComponent.class, "LBL_ConversationComponent_AccountNameLabel")
-            );
-        accountLabel.setBorder(BorderFactory.createEmptyBorder(2, 5, 5, 0));
-        accountLabelPanel.add(accountLabel, BorderLayout.WEST);
-
-        JLabel accountNameLabel = new JLabel(
-                getConversation().getCollabSession().getAccount().getDisplayName(),
-                new ImageIcon(Utilities.loadImage(ACCOUNT_ICON)), JLabel.LEFT
-            );
-        accountNameLabel.setBorder(BorderFactory.createEmptyBorder(2, 3, 5, 0));
-        accountLabelPanel.add(accountNameLabel, BorderLayout.CENTER);
-
-        accountLabelPanel.add(new JSeparator(), BorderLayout.SOUTH);
-
+	
+	
+	setBorder(BorderFactory.createEmptyBorder(
+		UIManager.getInt("SplitPane.dividerSize"), 
+		UIManager.getInt("SplitPane.dividerSize"), 
+		0, 
+		UIManager.getInt("SplitPane.dividerSize"))
+	);
+	
         // Create a view for listing participants in the conversation
         JPanel participantContainerPanel = new JPanel();
         participantContainerPanel.setLayout(new BorderLayout());
-
-        participantContainerPanel.add(accountLabelPanel, BorderLayout.NORTH);
 
         // Add the invitee search panel
         //		participantContainerPanel.add(
@@ -199,11 +187,16 @@ public class ConversationComponent extends CloneableTopComponent implements Prop
             }
         );
 
-        // Create a panel to inset the invite button
-        JPanel inviteButtonInsetPanel = new JPanel(new BorderLayout());
-        inviteButtonInsetPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        inviteButtonInsetPanel.add(inviteButton, BorderLayout.CENTER);
-        participantContainerPanel.add(inviteButtonInsetPanel, BorderLayout.SOUTH);
+        // Create a toolbar to inset the invite button
+        JToolBar iviteButtonInsetToolBar = new JToolBar(JToolBar.HORIZONTAL);
+        iviteButtonInsetToolBar.setFloatable(false);
+        iviteButtonInsetToolBar.setBorder(new CompoundBorder(
+                new EmptyBorder(3, 0, 0, 0), 
+                iviteButtonInsetToolBar.getBorder())
+            );
+        iviteButtonInsetToolBar.setLayout(new java.awt.GridLayout(1,1));
+        iviteButtonInsetToolBar.add(inviteButton);
+        participantContainerPanel.add(iviteButtonInsetToolBar, BorderLayout.SOUTH);
 
         // Quick inner class
         class ParticipantsRootNode extends AbstractNode {
@@ -227,18 +220,6 @@ public class ConversationComponent extends CloneableTopComponent implements Prop
         participantTree.expandRow(0);
 
         JScrollPane treeScrollPane = new JScrollPane(participantTree);
-        treeScrollPane.setBorder(
-            new CompoundBorder(
-                BorderFactory.createEmptyBorder(0, 5, 0, 5),
-                new CompoundBorder(
-                    new TitledBorder(
-                        NbBundle.getMessage(
-                            ConversationComponent.class, "LBL_ConversationComponent_ParticipantSection"
-                        )
-                    ), BorderFactory.createEmptyBorder(0, 5, 5, 5)
-                )
-            )
-        );
         participantContainerPanel.add(treeScrollPane, BorderLayout.CENTER);
 
         // Discover the channels
@@ -298,7 +279,6 @@ public class ConversationComponent extends CloneableTopComponent implements Prop
 
         //		splitPane.setResizeWeight(0.5f);
         channelChatSplitPane.setDividerLocation(0.4d);
-        channelChatSplitPane.setDividerSize(6);
         channelChatSplitPane.setBorder(BorderFactory.createEmptyBorder());
 
         // Restore the split position
@@ -327,21 +307,17 @@ public class ConversationComponent extends CloneableTopComponent implements Prop
         //		}
         // Note, this is the workaround for bug 5081902.  Apparently, the bug
         // is a Swing bug in JSplitPane.
-        mainSplitPane = new SplittedPanel();
-        mainSplitPane.setSplitType(SplittedPanel.HORIZONTAL);
-        mainSplitPane.setContinuousLayout(true);
+        mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, participantContainerPanel, channelChatSplitPane);
 
+        mainSplitPane.setOneTouchExpandable(true);
+        mainSplitPane.setBorder(BorderFactory.createEmptyBorder());
+	
         // Restore the split position
         int mainSplitPosition = HiddenCollabSettings.getDefault().getLastConversationMainSplit();
 
-        if (mainSplitPosition == -1) {
-            mainSplitPane.setSplitPosition(SplittedPanel.FIRST_PREFERRED);
-        } else {
-            mainSplitPane.setSplitPosition(mainSplitPosition);
+        if (mainSplitPosition != -1) {
+	    mainSplitPane.setDividerLocation(mainSplitPosition);
         }
-
-        mainSplitPane.add(participantContainerPanel, SplittedPanel.ADD_LEFT);
-        mainSplitPane.add(channelChatSplitPane, SplittedPanel.ADD_RIGHT);
 
         add(mainSplitPane, BorderLayout.CENTER);
 
@@ -586,7 +562,9 @@ public class ConversationComponent extends CloneableTopComponent implements Prop
                 HiddenCollabSettings.getDefault().setLastOpenedMode(mode.getName());
             }
 
-            HiddenCollabSettings.getDefault().setLastConversationMainSplit(mainSplitPane.getSplitPosition());
+            HiddenCollabSettings.getDefault().setLastConversationMainSplit(
+                    mainSplitPane.getDividerLocation()
+            );
             HiddenCollabSettings.getDefault().setLastConversationChatChannelSplit(
                 channelChatSplitPane.getDividerLocation()
             );
