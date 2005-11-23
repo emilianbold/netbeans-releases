@@ -19,7 +19,7 @@ import org.netbeans.editor.TokenItem;
 
 import org.netbeans.modules.xml.spi.dom.*;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
-import org.netbeans.modules.xml.text.syntax.XMLDefaultTokenContext;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 /**
  * Read-only PI DOM node.
  *

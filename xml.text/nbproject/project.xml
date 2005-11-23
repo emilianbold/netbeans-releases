@@ -165,6 +165,10 @@ Microsystems, Inc. All Rights Reserved.
                </dependency>
             </module-dependencies>
             <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.core.syntax</friend>
+                <package>org.netbeans.modules.xml.text.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

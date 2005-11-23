@@ -32,7 +32,7 @@ import org.netbeans.editor.ext.ExtFormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.xml.text.syntax.XMLDefaultTokenContext;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.modules.xml.text.syntax.XMLTokenIDs;
 

@@ -17,7 +17,7 @@ import org.netbeans.editor.BaseTokenID;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
 
-import org.netbeans.modules.xml.text.syntax.XMLDefaultTokenContext;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 
 import org.openide.ErrorManager;
 

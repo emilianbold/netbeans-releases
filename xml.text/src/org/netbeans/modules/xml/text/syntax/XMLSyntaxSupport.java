@@ -25,6 +25,7 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 
 import org.netbeans.modules.xml.text.syntax.dom.*;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.openide.ErrorManager;
 import org.openide.util.WeakListeners;
 

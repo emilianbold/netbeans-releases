@@ -25,6 +25,7 @@ import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.netbeans.modules.xml.text.syntax.*;
 import org.netbeans.modules.xml.text.syntax.dom.*;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

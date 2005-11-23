@@ -14,6 +14,7 @@ package org.netbeans.modules.xml.text.syntax;
 
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 
 /**
  * Gracefull lexical analyzer for XML source files. It rather returns <code>ERROR</code>

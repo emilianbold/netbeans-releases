@@ -25,6 +25,7 @@ import org.netbeans.editor.AcceptorFactory;
 import org.netbeans.editor.TokenCategory;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 
 /**
  * Editor settings defaults.

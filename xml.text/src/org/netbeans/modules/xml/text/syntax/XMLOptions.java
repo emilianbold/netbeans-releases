@@ -16,6 +16,8 @@ import java.util.*;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.xml.text.indent.XMLIndentEngine;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
+
 
 /**
  * Options for the xml editor kit
