@@ -18,8 +18,6 @@ import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.TabDisplayerUI;
-
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -38,10 +36,10 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.swing.tabcontrol.LocationInformer;
-import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  * Basic UI class for view tabs - non scrollable tabbed displayer, which shows all
@@ -639,6 +637,11 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                 if (change) {
                     getSelectionModel().setSelectedIndex(i);
                     tabState.setSelected(i);
+                    Component tc = getDataModel().getTab(i).getComponent();
+                    if( null != tc && tc instanceof TopComponent
+                        && !((TopComponent)tc).isAncestorOf( KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner() ) ) {
+                        ((TopComponent)tc).requestActive();
+                    }
                 }
             } 
             // update pressed state

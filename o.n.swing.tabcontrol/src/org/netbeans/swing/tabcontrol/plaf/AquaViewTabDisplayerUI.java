@@ -20,6 +20,7 @@ import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import org.openide.windows.TopComponent;
 
 /**
  * A view tabs ui for OS-X adapted from the view tabs UI for Metal.
@@ -345,6 +346,11 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 if (shouldPerformAction (TabDisplayer.COMMAND_SELECT, i, e)) {
                     getSelectionModel().setSelectedIndex(i);
                     tabState.setSelected(i);
+                    Component tc = getDataModel().getTab(i).getComponent();
+                    if( null != tc && tc instanceof TopComponent
+                        && !((TopComponent)tc).isAncestorOf( KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner() ) ) {
+                        ((TopComponent)tc).requestActive();
+                    }
                 }
             }
             if (shouldReact(e) && closeRectIdx != -1) {
