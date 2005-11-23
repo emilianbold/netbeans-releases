@@ -44,6 +44,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
@@ -362,8 +363,8 @@ public final class UIUtil {
         return path;
     }
     
-    public static Project chooseSuiteComponent(Component parent, String suiteDisplayName) {
-        Project suiteComponent = null;
+    public static NbModuleProject chooseSuiteComponent(Component parent, String suiteDisplayName) {
+        NbModuleProject suiteComponent = null;
         Project project = chooseProject(parent);
         if (project != null) {
             NbModuleTypeProvider nmtp = (NbModuleTypeProvider) project.
@@ -384,10 +385,10 @@ public final class UIUtil {
                         NotifyDescriptor.OK_CANCEL_OPTION);
                 DialogDisplayer.getDefault().notify(confirmation);
                 if (confirmation.getValue() == NotifyDescriptor.OK_OPTION) {
-                    suiteComponent = project;
+                    suiteComponent = (NbModuleProject) project;
                 }
             } else if (nmtp.getModuleType() == NbModuleTypeProvider.STANDALONE) {
-                suiteComponent = project;
+                suiteComponent = (NbModuleProject) project;
             } else if (nmtp.getModuleType() == NbModuleTypeProvider.NETBEANS_ORG) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddNBORGModule",

@@ -89,7 +89,8 @@ public final class SuiteUtils {
                     // add new modules
                     for (Iterator it = currentModules.iterator(); it.hasNext(); ) {
                         NbModuleProject currentModule = (NbModuleProject) it.next();
-                        if (origSubModules.contains(currentModule)) {
+                        if (SuiteUtils.contains(suiteProps.getProject(), currentModule)) {
+                            Util.err.log("Module \"" + currentModule + "\" or a module with the same CNB is already contained in the suite."); // NOI18N
                             continue;
                         }
                         utils.addModule(currentModule);
@@ -117,11 +118,12 @@ public final class SuiteUtils {
                     Set/*<Project>*/ subModules = spp.getSubprojects();
                     final SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
                             suite.getEvaluator(), subModules);
-                    if (!subModules.contains(project)) {
+                    if (!SuiteUtils.contains(suite, project)) {
                         SuiteUtils utils = new SuiteUtils(suiteProps);
                         utils.addModule(project);
-                        
                         suiteProps.storeProperties();
+                    } else {
+                        Util.err.log("Module \"" + project + "\" or a module with the same CNB is already contained in the suite."); // NOI18N
                     }
                     ProjectManager.getDefault().saveProject(suite);
                     return null;
@@ -277,7 +279,7 @@ public final class SuiteUtils {
         // adjust suite project's properties
         File projectDirF = FileUtil.toFile(subModule.getProjectDirectory());
         File suiteDirF = suiteProps.getProjectDirectoryFile();
-        String projectPropKey = "project." + ProjectUtils.getInformation(subModule).getName(); // NOI18N
+        String projectPropKey = generatePropertyKey(subModule);
         if (CollocationQuery.areCollocated(projectDirF, suiteDirF)) {
             suiteProps.setProperty(projectPropKey,
                     PropertyUtils.relativizeFile(suiteDirF, projectDirF));
@@ -298,6 +300,17 @@ public final class SuiteUtils {
         NbModuleProjectGenerator.createSuiteProperties(subModule.getProjectDirectory(), suiteDirF);
         setNbModuleType(subModule, NbModuleTypeProvider.SUITE_COMPONENT);
         ProjectManager.getDefault().saveProject(subModule);
+    }
+    
+    /** Generates unique property key suitable for a given modules. */
+    private String generatePropertyKey(final Project subModule) {
+        String key = "project." + ProjectUtils.getInformation(subModule).getName(); // NOI18N
+        String[] keys = suiteProps.getProperty(MODULES_PROPERTY).split("(?<=:)", -1); // NOI18N
+        int index = 0;
+        while (Arrays.binarySearch(keys, "${" + key + "}") >= 0) { // NOI18N
+            key += "_" + ++index; // NOI18N
+        }
+        return key;
     }
     
     private static void setNbModuleType(Project module, NbModuleTypeProvider.NbModuleType type) throws IOException {
@@ -335,6 +348,25 @@ public final class SuiteUtils {
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
+    }
+
+    /**
+     * Returns whether a given suite already contains a given project or a
+     * project with the same code name base.
+     */
+    public static boolean contains(final SuiteProject suite, final NbModuleProject project) {
+        SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
+        Set/*<Project>*/ subModules = spp.getSubprojects();
+        if (subModules.contains(project)) {
+            return true;
+        }
+        for (Iterator it = subModules.iterator(); it.hasNext();) {
+            NbModuleProject p = (NbModuleProject) it.next();
+            if (p.getCodeNameBase().equals(project.getCodeNameBase())) {
+                return true;
+            }
+        }
+        return false;
     }
     
 }

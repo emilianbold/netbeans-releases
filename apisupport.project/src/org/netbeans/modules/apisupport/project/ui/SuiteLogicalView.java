@@ -37,7 +37,9 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -195,22 +197,24 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         }
         
         public void actionPerformed(ActionEvent evt) {
-            Project project = UIUtil.chooseSuiteComponent(
+            NbModuleProject project = UIUtil.chooseSuiteComponent(
                     WindowManager.getDefault().getMainWindow(),
                     ProjectUtils.getInformation(suite).getDisplayName());
             if (project != null) {
-                SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
-                Set/*<Project>*/ subModules = spp.getSubprojects();
-                if (!subModules.contains(project)) {
+                if (!SuiteUtils.contains(suite, project)) {
                     try {
                         SuiteUtils.addModule(suite, (NbModuleProject) project);
                         ProjectManager.getDefault().saveProject(suite);
                     } catch (IOException ex) {
                         ErrorManager.getDefault().notify(ex);
                     }
+                } else {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            NbBundle.getMessage(SuiteLogicalView.class, "MSG_SuiteAlreadyContainsCNB", project.getCodeNameBase())));
                 }
             }
         }
+        
     }
     
     private static Children createSuiteComponentNodes(final SuiteProject suite) {
