@@ -303,7 +303,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testPserverUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
@@ -337,7 +337,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testLocalUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
@@ -371,7 +371,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     
     public void testForkUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
@@ -404,7 +404,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testExtUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":ext:test@localhost:2401/cvs");
@@ -441,7 +441,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testEditCVSRootDialogUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         EditCVSRootOperator ecro = crso.edit();
@@ -479,7 +479,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     /** Test login for Pserver */
     public void testPserverLoginFailed() throws Exception{
         //invoke CVSCheckoutWizard
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:test@localhost:/cvs");
@@ -509,7 +509,7 @@ public class CheckOutWizardTest extends JellyTestCase {
             throw e;
         }
         
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 2000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         try {
             JLabelOperator message = new JLabelOperator(crso, "Please check username, password and repository.");
         } catch (TimeoutExpiredException e) {
@@ -522,7 +522,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testPserverLoginSuccess() throws Exception{
         //invoke CVSCheckoutWizard
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         ProxyConfigurationOperator pco = crso.proxyConfiguration();
@@ -559,7 +559,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testRepositoryBrowsing() throws Exception {
         String CVSroot = "";
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
@@ -611,7 +611,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testAliasBrowsing() throws Exception {
         String CVSroot = "";
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
@@ -662,7 +662,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testBranchBrowsing() throws Exception {
         String CVSroot;
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
@@ -721,7 +721,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     public void testTagBrowsing() throws Exception {
         String CVSroot;
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
@@ -779,7 +779,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testCheckWizardSecondStepUI() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
@@ -877,8 +877,8 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testCheckWizardFinish() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 10000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
         String storeCVSroot;
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
@@ -951,5 +951,4 @@ public class CheckOutWizardTest extends JellyTestCase {
         TestKit.removeAllData(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
-
 }

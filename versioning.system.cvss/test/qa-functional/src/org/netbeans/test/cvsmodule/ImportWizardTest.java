@@ -101,7 +101,7 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardPserverUI() {   
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":local:/cvs");
@@ -135,7 +135,7 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardLocalUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":local:/cvs");
@@ -168,7 +168,7 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardForkUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":fork:/cvs");
@@ -202,7 +202,7 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardExtUI() {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":ext:test@localhost:2401/cvs");
@@ -240,7 +240,7 @@ public class ImportWizardTest extends JellyTestCase {
     
     public void testImportWizardLoginSuccess() throws Exception {
         //invoke CVSCheckoutWizard
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:test@localhost:/cvs");
@@ -398,7 +398,7 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardSecondStepUI() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:test@localhost:/cvs");
@@ -458,7 +458,7 @@ public class ImportWizardTest extends JellyTestCase {
         String CVSroot;
         PseudoCvsServer cvss;
         TestKit.unversionProject(file, projectName);
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 2000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
         CVSRootStepOperator crso = new CVSRootStepOperator();
         JComboBoxOperator combo = new JComboBoxOperator(crso, 0);

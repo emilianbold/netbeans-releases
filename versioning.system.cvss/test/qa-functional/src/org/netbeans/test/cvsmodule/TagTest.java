@@ -83,8 +83,8 @@ public class TagTest extends JellyTestCase {
     }
     
     public void testCheckOutProject() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 10000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         //JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
@@ -182,8 +182,8 @@ public class TagTest extends JellyTestCase {
     }
     
     public void testCreateNewTag() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         PseudoCvsServer cvss;
         InputStream in;
         
@@ -243,8 +243,8 @@ public class TagTest extends JellyTestCase {
     }
     
     public void testOnNonVersioned() throws Exception{
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 1000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 1000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         //delete fake versioning of file
         //TestKit.unversionProject(file, projNonName);
         

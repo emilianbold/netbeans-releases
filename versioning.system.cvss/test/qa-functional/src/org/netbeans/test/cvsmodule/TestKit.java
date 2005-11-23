@@ -122,7 +122,7 @@ public class TestKit {
         JCheckBoxOperator cb = new JCheckBoxOperator(ndo, "Also");
         cb.setSelected(true);
         JButtonOperator btnYes = new JButtonOperator(ndo, "Yes");
-        btnYes.push();
+        btnYes.pushNoBlock();
         //JProgressBarOperator progress = new JProgressBarOperator(ndo, 0);
         //progress.waitValue("100%");
         ndo.waitClosed();

@@ -177,7 +177,7 @@ public class StandardWorkFlow extends JellyTestCase {
     }
     
     public void testIgnoreUnignoreFile() throws Exception{
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 2000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         VersioningOperator vo;
         OutputOperator oo;
         OutputTabOperator oto;
@@ -259,7 +259,7 @@ public class StandardWorkFlow extends JellyTestCase {
     }
     
     public void testIgnoreUnignoreGuiForm() throws Exception{
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 2000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         VersioningOperator vo;
         OutputOperator oo;
         OutputTabOperator oto;
@@ -352,7 +352,7 @@ public class StandardWorkFlow extends JellyTestCase {
     }
     
     public void testCommit() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);   
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss, cvss2, cvss3;
         InputStream in, in2, in3;
         CommitOperator co;
@@ -431,7 +431,7 @@ public class StandardWorkFlow extends JellyTestCase {
     }
     
     public void testDiffFile() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);   
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss;
         InputStream in;
         OutputOperator oo;
@@ -470,7 +470,7 @@ public class StandardWorkFlow extends JellyTestCase {
     }
     
     public void testCreateBranchForProject() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);   
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss, cvss2, cvss3;
         InputStream in, in2, in3;
         OutputOperator oo;
@@ -507,7 +507,7 @@ public class StandardWorkFlow extends JellyTestCase {
     }
     
     public void testSwitchProjectToBranch() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);   
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss;
         InputStream in;
         OutputOperator oo;
@@ -540,7 +540,7 @@ public class StandardWorkFlow extends JellyTestCase {
     }
     
     public void testRevertModifications() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);   
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss;
         InputStream in;
         OutputOperator oo;
@@ -574,7 +574,7 @@ public class StandardWorkFlow extends JellyTestCase {
     }
     
     public void testShowAnnotations() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);   
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss, cvss2;
         InputStream in, in2;
         OutputOperator oo;
@@ -604,7 +604,7 @@ public class StandardWorkFlow extends JellyTestCase {
     }
     
     public void testSearchHistory() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);   
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss, cvss2;
         InputStream in, in2;
         OutputOperator oo;
@@ -649,7 +649,7 @@ public class StandardWorkFlow extends JellyTestCase {
     }
     
     public void testVersioningButtons() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 2000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         VersioningOperator vo;
         OutputOperator oo;
         OutputTabOperator oto;
