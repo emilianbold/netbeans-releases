@@ -71,8 +71,7 @@ public class InstanceNode extends AbstractNode implements ServerInstance.StateLi
         if (instance.getServerState() != ServerInstance.STATE_WAITING
             && instance.getServerState() != ServerInstance.STATE_SUSPENDED) {
             setChildren(new InstanceChildren(instance));
-            InstanceChildren ch = (InstanceChildren) getChildren();
-            ch.updateKeys();
+            getChildren().getNodes(true);
         } else if (instance.getServerState() == ServerInstance.STATE_SUSPENDED) {
             setChildren(Children.LEAF);
         }
@@ -84,9 +83,6 @@ public class InstanceNode extends AbstractNode implements ServerInstance.StateLi
             this.serverInstance = inst;
         }
         protected void addNotify() {
-            setKeys(serverInstance.getTargets());
-        }
-        public void updateKeys() {
             setKeys(serverInstance.getTargets());
         }
         protected void removeNotify() {

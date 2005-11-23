@@ -94,26 +94,12 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
                         newOriginal = parent.getDelegateTargetNode();
                     if (newOriginal != null && newOriginal != Node.EMPTY)
                         this.changeOriginal(newOriginal);
-                    else {
-                        RequestProcessor.getDefault().post(new Runnable() {
-                            public void run() {
-                                try {
-                                    instance.isRunning();
-                                } catch (IllegalStateException e) {
-                                    // might happen when user removing instance
-                                    org.openide.ErrorManager.getDefault().log(e.toString());
-                                }
-                            }
-                        });
-                    }
                 }
             } else {
                 this.setKeys(java.util.Collections.EMPTY_SET);
             }
         }
-        public void updateKeys() {
-            addNotify();
-        }
+        
         private boolean isFurtherExpandable() {
             ServerRegistryNode root = ServerRegistryNode.getServerRegistryNode();
             if (root != null) 
@@ -160,7 +146,7 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
             instanceTarget = null;
             resetDelegateTargetNode();
             setChildren(new InstanceTargetChildren(Node.EMPTY, instance));
-            ((InstanceTargetChildren)getChildren()).updateKeys();
+            getChildren().getNodes(true);
         } else if (instance.getServerState() == ServerInstance.STATE_SUSPENDED) {
             setChildren(Children.LEAF);
         }

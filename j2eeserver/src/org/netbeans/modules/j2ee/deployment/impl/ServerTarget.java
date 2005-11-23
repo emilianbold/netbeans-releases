@@ -24,11 +24,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 // PENDING issue  --   Target <==> J2EEDomain relationship 1 to many, many to 1, 1 to 1, or many to many
 public class ServerTarget implements Node.Cookie {
     
-    public static final String EVT_STARTING = "j2ee.state.starting";
-    public static final String EVT_RUNNING = "j2ee.state.running";
-    public static final String EVT_FAILED = "j2ee.state.failed";
-    public static final String EVT_STOPPED = "j2ee.state.stopped";
-    public static final String EVT_STOPPING = "j2ee.state.stopping";
     ServerInstance instance;
     Target target;
     //PENDING: caching state, sync, display through icon and action list.

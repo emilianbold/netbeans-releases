@@ -14,12 +14,19 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.status.*;
 import javax.swing.JButton;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
@@ -105,6 +112,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
         this.server = server;
         this.url = url;
         instanceProperties = new InstancePropertiesImpl(url);
+        // listen to debugger changes so that we can update server status accordingly
+        DebuggerManager.getDebuggerManager().addDebuggerListener(new DebuggerStateListener());
     }
     
     /** Return this server instance InstanceProperties. */
@@ -540,9 +549,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
                     }
                 }
             } else {
-                String host = attCookie.getHostName();
+                String host = stripHostName(attCookie.getHostName());
                 if (host == null) continue;
-                if (host.equalsIgnoreCase(sdi.getHost())) {
+                if (host.equalsIgnoreCase(stripHostName(sdi.getHost()))) {
                     if (attCookie.getPortNumber() == sdi.getPort()) {
                         Object d = s.lookupFirst(null, JPDADebugger.class);
                         if (d != null) {
@@ -555,7 +564,6 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 }
             }
         }
-        
         return false;
     }
     
@@ -865,7 +873,6 @@ public class ServerInstance implements Node.Cookie, Comparable {
      * @throws ServerException if the server cannot be started.
      */
     private void startTarget(Target target, ProgressUI ui, boolean debugMode) throws ServerException {
-        
         StartServer ss = getStartServer();
         
         // No StartServer, have to assume manually started
@@ -964,6 +971,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     //------------------------------------------------------------
     // startDeploymentManager
     private synchronized void _start(ProgressUI ui) throws ServerException {
+        
         String displayName = getDisplayName();
         
         ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StartingServer", displayName));
@@ -994,6 +1002,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 throw new ServerException(status.getMessage());
             }
             managerStartedByIde = true;
+            coTarget = null;
+            targets = null;
+            initCoTarget();
             refresh();
         } finally {
             if (ui != null) {
@@ -1007,6 +1018,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     
     // startDebugging
     private synchronized void _startDebug(Target target, ProgressUI ui) throws ServerException {
+        
         String displayName = getDisplayName();
         ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StartingDebugServer", displayName));
         
@@ -1036,6 +1048,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 throw new ServerException(status.getMessage());
             }
             managerStartedByIde = true;
+            coTarget = null;
+            targets = null;
+            initCoTarget();
             refresh();
             setServerState(ServerInstance.STATE_DEBUGGING);
         } finally {
@@ -1467,8 +1482,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
             if (t == null) {
                 for (Iterator it = debugInfo.keySet().iterator(); t == null && it.hasNext(); ) {
                     Target cachedTarget = (Target) it.next();
-                    if (ss.isAlsoTargetServer(cachedTarget))
+                    if (ss.isAlsoTargetServer(cachedTarget)) {
                         t = cachedTarget;
+                    }
                 }
             } else {
                 if (ss.isAlsoTargetServer(target))
@@ -1476,12 +1492,15 @@ public class ServerInstance implements Node.Cookie, Comparable {
             }
         } else {
             ServerTarget[] targets = getTargets();
-            for (int i = 0; t == null && i < targets.length; i++)
-                if (ss.isAlsoTargetServer(targets[i].getTarget()))
+            for (int i = 0; t == null && i < targets.length; i++) {
+                if (ss.isAlsoTargetServer(targets[i].getTarget())) {
                     t = targets[i].getTarget();
+                }
+            }
             
-            if (t == null && targets.length > 0)
+            if (t == null && targets.length > 0) {
                 t = targets[0].getTarget();
+            }
         }
         
         return t;
@@ -1494,4 +1513,71 @@ public class ServerInstance implements Node.Cookie, Comparable {
         return getDisplayName().compareTo(((ServerInstance)other).getDisplayName());
     }
     
+    /** Take for example myhost.xyz.org and return myhost */
+    private String stripHostName(String host) {
+        if (host == null) {
+            return null;
+        }
+        int idx = host.indexOf('.');
+        return idx != -1 ? host.substring(0, idx) : host;
+    }
+    
+    /** DebugStatusListener listens to debugger state changes and calls refresh() 
+     *  if needed. If the debugger stops at a breakpoint, the server status will
+     *  thus change to suspended, etc. */
+    private class DebuggerStateListener extends DebuggerManagerAdapter {
+            
+            private RequestProcessor.Task refreshTask;
+            
+            public void sessionAdded(Session session) {
+                Target target = _retrieveTarget(null);
+                ServerDebugInfo sdi = getServerDebugInfo(target);
+                if (sdi == null) {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + ServerInstance.this);
+                    return; // give it up
+                }
+                AttachingDICookie attCookie = (AttachingDICookie)session.lookupFirst(null, AttachingDICookie.class);
+                if (attCookie == null) {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "AttachingDICookie cannot be found for: " + ServerInstance.this);
+                    return; // give it up
+                }
+                if (ServerDebugInfo.TRANSPORT_SHMEM.equals(sdi.getTransport())) {
+                    String shmem = attCookie.getSharedMemoryName();
+                    if (shmem != null && shmem.equalsIgnoreCase(sdi.getShmemName())) {
+                        registerListener(session);
+                    }
+                } else {
+                    String host = stripHostName(attCookie.getHostName());                    
+                    if (host != null && host.equalsIgnoreCase(stripHostName(sdi.getHost()))) {
+                        if (attCookie.getPortNumber() == sdi.getPort()) {
+                            registerListener(session);
+                        }
+                    }
+                }
+            }
+            
+            private void registerListener(Session session) {
+                final JPDADebugger jpda = (JPDADebugger)session.lookupFirst(null, JPDADebugger.class);
+                if (jpda != null) {
+                    jpda.addPropertyChangeListener(JPDADebugger.PROP_STATE, new PropertyChangeListener() {
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            if (refreshTask == null) {
+                                refreshTask = RequestProcessor.getDefault().create(new Runnable() {
+                                    public void run() {
+                                        if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
+                                            setServerState(ServerInstance.STATE_SUSPENDED);
+                                        } else {
+                                            setServerState(ServerInstance.STATE_DEBUGGING);
+                                        }
+                                    }
+                                });
+                            }
+                            // group fast arriving refresh calls
+                            refreshTask.schedule(500);
+                        }
+                    });
+                }
+                
+            }
+        }
 }
