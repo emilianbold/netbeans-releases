@@ -287,7 +287,7 @@
 	<mapID target="org.netbeans.modules.websvc.dev.wizard.WebServiceWizardDescriptor" url="webservice/csh/wizards/WebServiceWizardDescriptor.html" />
 	<mapID target="org.netbeans.modules.websvc.wsdl.wizard.WsdlPanel" url="webservice/csh/wizards/WsdlPanel.html" />
 	<mapID target="org.netbeans.modules.websvc.dev.wizard.MessageHandlerWizard" url="webservice/csh/wizards/MessageHandlerWizard.html" />
-	<mapID target="	org.netbeans.modules.websvc.registry.netbeans.WebServicesRootNodeInterface" url="webservice/csh/WebServicesRootNodeInterface.html" />
+	<mapID target="org.netbeans.modules.websvc.registry.netbeans.WebServicesRootNodeInterface" url="webservice/csh/WebServicesRootNodeInterface.html" />
 
 <!-- End of "Developing Web Services" help -->
 
