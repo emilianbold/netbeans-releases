@@ -161,14 +161,9 @@ public class UpdateExecutor extends ExecutorSupport implements FileChangeListene
         
         cvs.setParameter(CvsVersioningSystem.PARAM_BATCH_REFRESH_RUNNING, null);
         if (hasConflict) {
-            NotifyDescriptor nd = new NotifyDescriptor(
-                    NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateGeneratedConflicts_Prompt"),
-                    NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateGeneratedConflicts_Title"),
-                    NotifyDescriptor.DEFAULT_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE,
-                    null,
-                    null
-            );
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateGeneratedConflicts_Prompt"), 
+                    NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
         }
         
