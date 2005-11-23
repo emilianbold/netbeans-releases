@@ -174,10 +174,10 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                     
                     if (helper.getPreText().endsWith("</") && helper.getToken().getTokenID() == TEXT) { // NOI18N
                         list = findStartTag((SyntaxNode)helper.getSyntaxElement());
-                        if (list != null && list.size() == 1) {
-                            ElementResultItem item = (ElementResultItem)list.get(0);
-                            item.substituteText(component, helper.getOffset(), 0, 0);
-                            return null;
+                        if (list != null && !list.isEmpty()) {
+                            String title = Util.THIS.getString("MSG_result", helper.getPreText());
+                            return new CompletionQuery.DefaultResult(component, title,
+                                    list, helper.getOffset(), 0);
                         }
                     }
 
