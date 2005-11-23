@@ -177,7 +177,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                 }
                 
                 if ( project != null ) {
-                    OpenProjectList.getDefault().open( project );
+                    OpenProjectList.getDefault().open( new Project[] {project}, false, true );
                     ProjectTab ptLogial  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
                     Node root = ptLogial.getExplorerManager ().getRootContext ();
                     Node projNode = root.getChildren ().findChild ( project.getProjectDirectory().getName ());
