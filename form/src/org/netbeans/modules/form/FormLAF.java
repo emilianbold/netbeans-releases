@@ -151,7 +151,7 @@ class FormLAF {
         // ClassLoader set by the IDE sometimes is not able to load UI components.
         // See UIDefaults.getUI() for details.
         // The "ClassLoader" value is returned back in useIDELookAndFeel().
-        UIManager.put("ClassLoader", null);
+        UIManager.put("ClassLoader", null); // NOI18N
 
         copyMap(UIManager.getDefaults(), lafDefaults);
     }

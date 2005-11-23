@@ -331,7 +331,7 @@ public class LayoutDesigner implements LayoutConstants {
 	}
         prepareDragger(comps, bounds, hotspot, LayoutDragger.ALL_EDGES);
         if (logTestCode()) {
-            testCode.add("{");
+            testCode.add("{"); // NOI18N
 	    // lc should be already filled in the MetaComponentCreator.getPrecreatedComponent
             LayoutTestUtils.writeLayoutComponentArray(testCode, "comps", "lc");				    //NOI18N
             LayoutTestUtils.writeRectangleArray(testCode, "bounds", bounds);				    //NOI18N
@@ -407,7 +407,7 @@ public class LayoutDesigner implements LayoutConstants {
             testCode.add("Point hotspot = new Point(" + new Double(hotspot.getX()).intValue() + "," +  //NOI18N
 		    new Double(hotspot.getY()).intValue() + ");"); //NOI18N
             LayoutTestUtils.writeIntArray(testCode, "resizeEdges", resizeEdges); //NOI18N
-            testCode.add("boolean inLayout = " + inLayout + ";");
+            testCode.add("boolean inLayout = " + inLayout + ";"); // NOI18N
             testCode.add("ld.startResizing(compIds, bounds, hotspot, resizeEdges, inLayout);"); //NOI18N
             testCode.add("}"); //NOI18N
         }

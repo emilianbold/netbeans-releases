@@ -59,7 +59,7 @@ final class FormClassLoader extends ClassLoader {
         int type = ClassPathUtils.getClassLoadingType(name);
         if (type == ClassPathUtils.UNSPECIFIED_CLASS) {
             if (projectClassLoader == null)
-                throw new ClassNotFoundException(ClassPathUtils.getBundleString("MSG_NullClassPath"));
+                throw new ClassNotFoundException(ClassPathUtils.getBundleString("MSG_NullClassPath")); // NOI18N
             return projectClassLoader.loadClass(name);
         }
         if (type == ClassPathUtils.SYSTEM_CLASS)

@@ -5467,11 +5467,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }                
             private String getKey(String beanName, String propertyName) {
                 StringBuffer sb = new StringBuffer();
-                sb.append("[");
+                sb.append("["); // NOI18N
                 sb.append(beanName);
-                sb.append(", ");
+                sb.append(", "); // NOI18N
                 sb.append(propertyName);
-                sb.append("]");
+                sb.append("]"); // NOI18N
                 return sb.toString();
             }            
             public String toString() {

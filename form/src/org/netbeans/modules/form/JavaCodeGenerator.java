@@ -907,7 +907,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 initCodeWriter.write("// </editor-fold>\n"); // NOI18N
             }
             else {
-                initCodeWriter.write("\n");
+                initCodeWriter.write("\n"); // NOI18N
             }
             initCodeWriter.close();
 
@@ -2038,8 +2038,8 @@ class JavaCodeGenerator extends CodeGenerator {
 			if( (varType & CodeVariable.LOCAL) == CodeVariable.LOCAL ) {
 			    codeWriter.write(
 				FormUtils.getFormattedBundleString(
-				    "MSG_WrongLocalVariableSettingComment",
-				    new Object[] { componentParameterString })); // NOI18N
+				    "MSG_WrongLocalVariableSettingComment", // NOI18N
+				    new Object[] { componentParameterString }));
 			}
 			
                         codeWriter.write(k == 0 ? "if (" : "else if ("); // NOI18N
@@ -2306,7 +2306,7 @@ class JavaCodeGenerator extends CodeGenerator {
             codeWriter.write(bodyText);
             codeWriter.flush();
             i2 = buffer.getBuffer().length();
-            codeWriter.write("}\n"); // footer with new line
+            codeWriter.write("}\n"); //NOI18N // footer with new line
             codeWriter.flush();
 
             sec.setHeader(buffer.getBuffer().substring(0,i1));
@@ -2375,7 +2375,7 @@ class JavaCodeGenerator extends CodeGenerator {
             codeWriter.write(header.substring(index + oldHandlerName.length()));
             codeWriter.flush();
             int i1 = buffer.getBuffer().length();
-            codeWriter.write("}\n"); // footer with new line
+            codeWriter.write("}\n"); // NOI18N // footer with new line
             codeWriter.flush();
 
             sec.setHeader(buffer.getBuffer().substring(0, i1));

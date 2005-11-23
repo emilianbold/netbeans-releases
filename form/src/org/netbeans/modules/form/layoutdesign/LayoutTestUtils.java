@@ -145,9 +145,9 @@ public class LayoutTestUtils implements LayoutConstants {
                 JavaClass testClass = (JavaClass) resolveType("org.netbeans.modules.form.layoutdesign." + testFO.getName()); //NOI18N
                 if (!(testClass instanceof UnresolvedClass)) {
                     org.netbeans.jmi.javamodel.Method m = ((JavaModelPackage)testClass.refImmediatePackage()).getMethod().createMethod();
-                    m.setName("doChanges" + modelCounter);
+                    m.setName("doChanges" + modelCounter); // NOI18N
                     m.setBodyText(code);
-                    m.setType(resolveType("void"));
+                    m.setType(resolveType("void")); // NOI18N
                     m.setModifiers(Modifier.PUBLIC);
                                         
                     testClass.getContents().add(m);
