@@ -14,6 +14,7 @@
 package org.netbeans.modules.xml.multiview;
 
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -82,7 +83,8 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     private FileLock saveLock;
     private static final String PROPERTY_MODIFICATION_LISTENER = "modificationListener"; // NOI18N;
     private boolean suppressXmlView = false;
-
+    private static final String PROP_PANE = "CloneableEditorSupport.Pane"; //NOI18N //hack - copied form CES
+    
     public XmlMultiViewEditorSupport() {
         super(null, null);
     }
@@ -197,6 +199,15 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         CloneableTopComponent mvtc =
                 MultiViewFactory.createCloneableMultiView(descs, descs[0], new MyCloseHandler(dObj));
 
+        //#68896 hack - make the EditorCookie.Observable.getOpenedPanes() working
+        //create a dummy Pane and set it to the TC
+        mvtc.putClientProperty(PROP_PANE, new Pane() {
+            public JEditorPane getEditorPane() { return new JEditorPane();}
+            public CloneableTopComponent getComponent() { return null; }
+            public void updateName() {}
+            public void ensureVisible() {}
+        });
+        
         // #45665 - dock into editor mode if possible..
         Mode editorMode = WindowManager.getDefault().findMode(org.openide.text.CloneableEditorSupport.EDITOR_MODE);
 
