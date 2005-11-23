@@ -44,12 +44,14 @@ public class ProjectCustomizerTest extends NbTestCase {
     }
 
     private WeakReference[] runTestCategoriesAreReclaimable() throws Exception {
-        final WeakReference[] result = new WeakReference[2];
-        final Category test = Category.create("test", "test", null, null);
+        final WeakReference[] result = new WeakReference[4];
+              Category test1 = Category.create("test1", "test1", null, null);
+        final Category test2 = Category.create("test2", "test3", null, new Category[] {test1});
+        final Category test3 = Category.create("test3", "test3", null, null);
         
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-                Dialog d = ProjectCustomizer.createCustomizerDialog(new Category[] {test}, new CategoryComponentProviderImpl(), null, new ActionListener() {
+                Dialog d = ProjectCustomizer.createCustomizerDialog(new Category[] {test2, test3}, new CategoryComponentProviderImpl(), null, new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         //ignore
                     }
@@ -102,7 +104,9 @@ public class ProjectCustomizerTest extends NbTestCase {
             }
         });
                 
-        result[1] = new WeakReference(test);
+        result[1] = new WeakReference(test1);
+        result[2] = new WeakReference(test2);
+        result[3] = new WeakReference(test3);
         
         return result;
     }
@@ -110,8 +114,9 @@ public class ProjectCustomizerTest extends NbTestCase {
     public void testCategoriesAreReclaimable() throws Exception {
         final WeakReference[] refs = runTestCategoriesAreReclaimable();
                 
-        assertGC("Category is reclaimable", refs[1]);
-        assertGC("Dialog is reclaimable", refs[0]);
+        for (int cntr = 0; cntr < refs.length; cntr++) {
+            assertGC("Is reclaimable", refs[cntr]);
+        }
     }
     
     private static final class CategoryComponentProviderImpl implements CategoryComponentProvider {

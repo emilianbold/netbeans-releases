@@ -20,6 +20,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -102,8 +105,16 @@ public class CustomizerDialog {
         
         dialog.addWindowListener(new WindowAdapter() {
             public void windowClosed(WindowEvent e) {
-                for (int cntr = 0; cntr < categories.length; cntr++) {
-                    Utilities.removeCategoryChangeSupport(categories[cntr]);
+                List queue = new LinkedList(Arrays.asList(categories));
+                
+                while (!queue.isEmpty()) {
+                    ProjectCustomizer.Category category = (ProjectCustomizer.Category) queue.remove(0);
+                    
+                    Utilities.removeCategoryChangeSupport(category);
+                    
+                    if (category.getSubcategories() != null) {
+                        queue.addAll(Arrays.asList(category.getSubcategories()));
+                    }
                 }
             }
         });
