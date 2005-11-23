@@ -119,7 +119,7 @@ public final class PasteAction extends CallbackSystemAction {
         } else {
             PasteType[] arr = getPasteTypes();
 
-            if ((arr != null) && (arr.length > 0) && arr [0] instanceof PasteType) {
+            if ((arr != null) && (arr.length > 0)) {
                 t = arr[0];
             } else {
                 t = null;
@@ -136,7 +136,7 @@ public final class PasteAction extends CallbackSystemAction {
                 // Look at ExplorerActions.OwnPaste#getValue method.
                 Object[] arr = (Object[]) ac.getValue("delegates"); // NOI18N
 
-                if ((arr != null) && (arr.length > 0)) {
+                if ((arr != null) && (arr.length > 0) && arr [0] instanceof PasteType) {
                     t = (PasteType) arr[0];
                 } else {
                     ac.actionPerformed(ev);
