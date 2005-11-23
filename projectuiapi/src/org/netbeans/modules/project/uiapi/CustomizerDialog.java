@@ -16,6 +16,8 @@ package org.netbeans.modules.project.uiapi;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
@@ -46,7 +48,7 @@ public class CustomizerDialog {
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
                 
     public static Dialog createDialog( ActionListener okOptionListener, JPanel innerPane,
-            HelpCtx helpCtx, ProjectCustomizer.Category[] categories ) {
+            HelpCtx helpCtx, final ProjectCustomizer.Category[] categories ) {
         
         ListeningButton okButton = new ListeningButton(
                 NbBundle.getMessage(CustomizerDialog.class, "LBL_Customizer_Ok_Option"), // NOI18N
@@ -97,6 +99,15 @@ public class CustomizerDialog {
         dialogDescriptor.setClosingOptions( new Object[] { options[ OPTION_OK ], options[ OPTION_CANCEL ] } );
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
+        
+        dialog.addWindowListener(new WindowAdapter() {
+            public void windowClosed(WindowEvent e) {
+                for (int cntr = 0; cntr < categories.length; cntr++) {
+                    Utilities.removeCategoryChangeSupport(categories[cntr]);
+                }
+            }
+        });
+        
         return dialog;
         
     }

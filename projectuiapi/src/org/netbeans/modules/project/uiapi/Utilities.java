@@ -62,4 +62,8 @@ public class Utilities {
         Utilities.CATEGORIES.put(category, wrapper);
     }
     
+    public static void removeCategoryChangeSupport(ProjectCustomizer.Category category) {
+        Utilities.CATEGORIES.remove(category);
+    }
+    
 }
