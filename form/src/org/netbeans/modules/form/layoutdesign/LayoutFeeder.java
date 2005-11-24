@@ -414,7 +414,7 @@ class LayoutFeeder implements LayoutConstants {
             && LayoutInterval.getCount(parent, -1, true) == 1)
         {   // alone in sequence
             LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(interval, alignment, false);
-            if (neighbor.isEmptySpace() && !LayoutInterval.canResize(neighbor)
+            if (neighbor != null && neighbor.isEmptySpace() && !LayoutInterval.canResize(neighbor)
                 && LayoutInterval.getCount(parent.getParent(), LayoutRegion.ALL_POINTS, true) == 2)
             {   // otherwise only one sibling in parallel group - candidate for aligned interval
                 indent = true;
