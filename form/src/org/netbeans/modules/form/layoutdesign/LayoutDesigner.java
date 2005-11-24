@@ -888,7 +888,7 @@ public class LayoutDesigner implements LayoutConstants {
      */
     public void paintSelection(Graphics2D g, String componentId) {
         LayoutComponent comp = layoutModel.getLayoutComponent(componentId);
-        if (comp != null) {
+        if ((comp != null) && (comp.getParent() != null)) {
             paintSelection(g, comp, HORIZONTAL);
             paintSelection(g, comp, VERTICAL);
         }
