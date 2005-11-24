@@ -39,6 +39,11 @@ import org.openide.modules.InstalledFileLocator;
  */
 public final class DerbySupport {
     
+    /**
+     * The default derby.system.home location relative to the home directory.
+     */
+    private static final String DEFAULT_SYSTEM_HOME = ".netbeans-derby"; // NOI18N
+    
     private DerbySupport() {
     }
     
@@ -76,6 +81,19 @@ public final class DerbySupport {
         return DerbyOptions.getDefault().getSystemHome();
     }
     
+    /**
+     * Returns the default Derby system home. It is not guaranteed that
+     * the directory returned by this method exists.
+     */
+    public static String getDefaultSystemHome() {
+        String userHome = System.getProperty("user.home"); // NOI18N
+        return new File(userHome, DEFAULT_SYSTEM_HOME).getAbsolutePath();
+    }
+    
+    /**
+     * Creates a sample directory in the Derby system home and registers it
+     * in the Database Explorer.
+     */
     public static DatabaseConnection registerSampleDatabase() throws DatabaseException {
         String targetDirectory = getSystemHome();
         if ("".equals(targetDirectory)) { // NOI18N
