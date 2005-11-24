@@ -72,44 +72,41 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
     private transient AgentPanel.AgentWizardPanel agentOptionsPanel;
     private transient TemplateWizard.Panel agentPanel;
     private transient WizardDescriptor.Panel currentPanel;
-
+    
     /**
      * Returns an agent wizard. Called with the menu new->file->JMX Agent
      * @return <CODE>JMXAgentIterator</CODE>
      */
-    public static JMXAgentIterator createAgentIterator()
-    {
+    public static JMXAgentIterator createAgentIterator() {
         return new JMXAgentIterator();
     }
-
+    
     /**
      * Contruct an agent wizard.
      */
-    public JMXAgentIterator()
-    {
+    public JMXAgentIterator() {
         bundle = NbBundle.getBundle(JMXAgentIterator.class);
     }
     
     /**
-     * Called to really start the wizard in 
+     * Called to really start the wizard in
      * case of a direct call from the menu
      * @param wiz <CODE>WizardDescriptor</CODE> a wizard
      */
-    public void initialize (TemplateWizard wiz)
-    {
+    public void initialize(TemplateWizard wiz) {
         this.wizard = wiz;
-
+        
         String[] steps = initSteps(false);
         
         wiz.putProperty("setAsMain", false); // NOI18N
-
+        
         try {
             // setup project location for the current project
             WizardHelpers.setProjectValues(wiz);
-
+            
             // initialize each panel
             initializeComponents(steps, 0);
-
+            
         } catch (Exception ex) {
             WizardHelpers.logErrorMessage("initialize", ex);// NOI18N
         }
@@ -120,8 +117,7 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
      *
      *@param wizardIntegrated true if this wizard is integrated in another
      */
-    private String[] initSteps (boolean wizardIntegrated) 
-    {
+    private String[] initSteps(boolean wizardIntegrated) {
         int size = 2;
         if (wizardIntegrated)
             size--;
@@ -132,64 +128,59 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
         steps[size - 1] = bundle.getString("LBL_Agent");// NOI18N
         return steps;
     }
-
+    
     /**
      * WizardIntegration method :
      * Called when integrating this wizard within a higher level wizard.
      * @param wiz <CODE>WizardDescriptor</CODE> a wizard
      * @return <CODE>String[]</CODE> step names
      */
-    public String[] initializeSteps(WizardDescriptor wiz)
-    {
+    public String[] initializeSteps(WizardDescriptor wiz) {
         this.wizard = (TemplateWizard) wiz;
         return initSteps(true);
     }
-
+    
     /**
      * WizardIntegration method :
      * Called when integrating this wizard within a higher level wizard.
      * @param steps Panels list to use
      * @param panelOffset number of the first panel of this wizard
      */
-    public void initializeComponents(String[] steps, int panelOffset)
-    {
+    public void initializeComponents(String[] steps, int panelOffset) {
         JComponent jc = null;
         
         agentOptionsPanel = new AgentPanel.AgentWizardPanel();
         initializeComponent(steps,panelOffset + 0,
                 (JComponent)agentOptionsPanel.getComponent());
         Project project = Templates.getProject(wizard);
-        SourceGroup[] agentSrcGroups = 
-                    WizardHelpers.getSourceGroups(project);
+        SourceGroup[] agentSrcGroups =
+                WizardHelpers.getSourceGroups(project);
         agentPanel = JavaTemplates.createPackageChooser(project,
-                                                        agentSrcGroups,
-                                                        agentOptionsPanel);
+                agentSrcGroups,
+                agentOptionsPanel);
         initializeComponent(steps,panelOffset + 0,
                 (JComponent)agentPanel.getComponent());
         currentPanel = agentPanel;
     }
-
+    
     /**
      *
      */
-    private void initializeComponent(String[] steps, int panelOffset,JComponent jc) 
-    {
+    private void initializeComponent(String[] steps, int panelOffset,JComponent jc) {
         jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
         jc.putClientProperty("WizardPanel_contentSelectedIndex", panelOffset);// NOI18N
     }
     
-    public void uninitialize(TemplateWizard wiz)
-    {
+    public void uninitialize(TemplateWizard wiz) {
         this.wizard = null;
     }
-
-    public java.util.Set/*<FileObject>*/ instantiate (TemplateWizard wiz)
-          throws java.io.IOException
-    {
-        // agent generation 
+    
+    public java.util.Set/*<FileObject>*/ instantiate(TemplateWizard wiz)
+    throws java.io.IOException {
+        // agent generation
         try {
             AgentGenerator gen = new AgentGenerator();
-
+            
             java.util.Set set = gen.generateAgent(wizard).getCreated();
             FileObject agentFile = (FileObject) set.toArray()[0];
             
@@ -200,94 +191,89 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
                 Boolean mainProjectClassSelected = (Boolean) wiz.getProperty(
                         WizardConstants.PROP_AGENT_MAIN_CLASS_SELECTED);
                 
-                if ( ((mainMethodSelected != null) && (mainMethodSelected)) &&
-                        ((mainProjectClassSelected != null) && (mainProjectClassSelected)) ) {
-                    Project project = Templates.getProject(wizard);
-                    Resource agentRc = JavaModel.getResource(agentFile);
-                    JavaClass agentClass = WizardHelpers.getJavaClass(agentRc,
-                            agentFile.getName());
-                    J2SEProjectType.overwriteProperty(project, "main.class", agentClass.getName());// NOI18N
+                Project project = Templates.getProject(wizard);
+                if(J2SEProjectType.isProjectTypeSupported(project)) {
+                    if ( ((mainMethodSelected != null) && (mainMethodSelected)) &&
+                            ((mainProjectClassSelected != null) && (mainProjectClassSelected)) ) {
+                        
+                        Resource agentRc = JavaModel.getResource(agentFile);
+                        JavaClass agentClass = WizardHelpers.getJavaClass(agentRc,
+                                agentFile.getName());
+                        J2SEProjectType.overwriteProperty(project, "main.class", agentClass.getName());// NOI18N
+                    }
                 }
             } catch (Exception ex) {
                 WizardHelpers.logErrorMessage("Setting project Main Class failure : ", ex);// NOI18N
             }
             
             return set;
-                
+            
         } catch (Exception ex) {
             WizardHelpers.logErrorMessage("Agent generation failure : ", ex);// NOI18N
             return Collections.EMPTY_SET;
         }
         
     }
-
-    public String name ()
-    {
+    
+    public String name() {
         Component c = currentPanel.getComponent();
-
+        
         if (c != null)
             return c.getName();
-
+        
         return null;
     }
-
-    public org.openide.WizardDescriptor.Panel current()
-    {
-       return currentPanel;
+    
+    public org.openide.WizardDescriptor.Panel current() {
+        return currentPanel;
     }
-
-    public boolean hasNext()
-    {
-        return false; 
-    }
-
-    public boolean hasPrevious()
-    {
+    
+    public boolean hasNext() {
         return false;
     }
-
-    public void nextPanel ()
-    {   if (!hasNext()) {
-            throw new NoSuchElementException();
-        } 
+    
+    public boolean hasPrevious() {
+        return false;
     }
-
-    public void previousPanel ()
-    {
+    
+    public void nextPanel() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
+    }
+    
+    public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
-        } 
-    }
-
-    private transient Set listeners = new HashSet (1); // Set<ChangeListener>
-
-    public final void addChangeListener (ChangeListener l)
-    {
-        synchronized (listeners) {
-            listeners.add (l);
         }
     }
-
-    public final void removeChangeListener (ChangeListener l)
-    {
+    
+    private transient Set listeners = new HashSet(1); // Set<ChangeListener>
+    
+    public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
-            listeners.remove (l);
+            listeners.add(l);
         }
     }
-
+    
+    public final void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
+    
     /**
      * Fire a ChangeEvent.
      */
-    protected final void fireChangeEvent ()
-    {
+    protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
-            it = new HashSet (listeners).iterator ();
+            it = new HashSet(listeners).iterator();
         }
-        ChangeEvent ev = new ChangeEvent (this);
-        while (it.hasNext ()) {
-            ((ChangeListener) it.next ()).stateChanged (ev);
+        ChangeEvent ev = new ChangeEvent(this);
+        while (it.hasNext()) {
+            ((ChangeListener) it.next()).stateChanged(ev);
         }
-    } 
-
+    }
+    
 }
