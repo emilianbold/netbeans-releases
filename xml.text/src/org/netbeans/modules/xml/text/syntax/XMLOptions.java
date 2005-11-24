@@ -101,26 +101,28 @@ public class XMLOptions extends AbstractBaseOptions {
      * Get coloring, possibly remap setting from previous versions
      * to new one.
      */
-    public synchronized Map getColoringMap() {
+    public Map getColoringMap() {
         Map colors = super.getColoringMap();
         
-        // get old customized colors and map them to new token IDs
-        // the map will contain only such old colors that was customized AFAIK
-        // because current initializer does not create them
-        
-        for (int i = 0; i<TRANSLATE_COLORS.length; i++) {
-            String oldKey = TRANSLATE_COLORS[i][0];
-            Object color = colors.get(oldKey);
-            if (color != null) {
-                colors.remove(oldKey);
-                String newKey = TRANSLATE_COLORS[i][1];
-                colors.put(newKey, color);
+        synchronized (this) {
+            // get old customized colors and map them to new token IDs
+            // the map will contain only such old colors that was customized AFAIK
+            // because current initializer does not create them
+            
+            for (int i = 0; i<TRANSLATE_COLORS.length; i++) {
+                String oldKey = TRANSLATE_COLORS[i][0];
+                Object color = colors.get(oldKey);
+                if (color != null) {
+                    colors.remove(oldKey);
+                    String newKey = TRANSLATE_COLORS[i][1];
+                    colors.put(newKey, color);
+                }
             }
+            
+            // do not save it explicitly if the user will do a customization
+            // it get saved automatically (i.e.old keys removal will apply)
+            
+            return colors;
         }
-
-        // do not save it explicitly if the user will do a customization
-        // it get saved automatically (i.e.old keys removal will apply)
-        
-        return colors;
     }
 }
