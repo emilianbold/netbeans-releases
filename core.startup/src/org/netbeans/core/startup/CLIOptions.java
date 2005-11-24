@@ -193,7 +193,11 @@ public class CLIOptions extends CLIHandler {
     public static void initialize() {
         if (!noLogging) {
             try {
-                logger = new TopLogging(getLogDir());
+                if ("memory".equals(getUserDir())) { // NOI18N
+                    logger = new TopLogging(null); // without user dir --> log to stderr
+                } else {
+                    logger = new TopLogging(getLogDir());
+                }
             } catch (IOException e) {
                 System.err.println("Cannot create log file. Logging disabled."); // NOI18N
                 e.printStackTrace();
