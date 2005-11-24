@@ -94,7 +94,7 @@ public class LayoutModel implements LayoutConstants {
         }
         for (int i=component.getSubComponentCount()-1; i>=0; i--) {
             LayoutComponent sub = component.getSubComponent(i);
-            removeComponent(sub, !sub.isLayoutContainer());
+            removeComponentAndIntervals(sub, !sub.isLayoutContainer());
         }
         if (component.getParent() == null) { // non-container without a parent
             removeComponent(component, true);
