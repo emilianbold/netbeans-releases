@@ -504,7 +504,15 @@ public class FormEditorSupport extends JavaEditor
         return name;
     }
     
-    private static String getMVTCDisplayName(FormDataObject formDataObject) {  
+    /**
+     * Returns display name of the multiview top component.
+     * The first item of the array is normal display name,
+     * the second item of the array is HTML display name.
+     *
+     * @param formDataObject form data object representing the multiview tc.
+     * @return display names of the MVTC. The second item can be <code>null</code>.
+     */
+    private static String[] getMVTCDisplayName(FormDataObject formDataObject) {  
         
         boolean readonly = !formDataObject.getPrimaryFile().canWrite();
         
@@ -527,16 +535,19 @@ public class FormEditorSupport extends JavaEditor
         }
 
         Node node = formDataObject.getNodeDelegate();
-        String title = node.getHtmlDisplayName();
-        if (title == null) {
-            title = node.getDisplayName();
-        } else {
-            if (!title.trim().startsWith("<html>")) { // NOI18N
-                title = "<html>" + title; // NOI18N
+        String htmlTitle = node.getHtmlDisplayName();
+        String title = node.getDisplayName();
+        if (htmlTitle != null) {
+            if (!htmlTitle.trim().startsWith("<html>")) { // NOI18N
+                htmlTitle = "<html>" + htmlTitle; // NOI18N
             }
         }
-        return FormUtils.getFormattedBundleString("FMT_FormMVTCTitle", // NOI18N
-            new Object[] {new Integer(version), title});
+        return new String[] {
+            FormUtils.getFormattedBundleString("FMT_FormMVTCTitle", new Object[] {new Integer(version), title}), // NOI18N
+            (htmlTitle == null) ?
+                null :
+                FormUtils.getFormattedBundleString("FMT_FormMVTCTitle", new Object[] {new Integer(version), htmlTitle}) // NOI18N
+        };
     }
 
     /** Updates title (display name) of all multiviews for given form. Replans
@@ -557,11 +568,12 @@ public class FormEditorSupport extends JavaEditor
         if ((multiviewTC == null) || (!formDataObject.isValid())) // Issue 67544
             return;
 
-        String title = getMVTCDisplayName(formDataObject);
+        String[] titles = getMVTCDisplayName(formDataObject);
         Enumeration en = multiviewTC.getReference().getComponents();
         while (en.hasMoreElements()) {
             TopComponent tc = (TopComponent) en.nextElement();
-            tc.setDisplayName(title);
+            tc.setDisplayName(titles[0]);
+            tc.setHtmlDisplayName(titles[1]);
         }
     }
 
@@ -618,7 +630,9 @@ public class FormEditorSupport extends JavaEditor
      */
     void setTopComponent(TopComponent topComp) {
         multiviewTC = (CloneableTopComponent)topComp;
-        multiviewTC.setDisplayName(getMVTCDisplayName(formDataObject));
+        String[] titles = getMVTCDisplayName(formDataObject);
+        multiviewTC.setDisplayName(titles[0]);
+        multiviewTC.setHtmlDisplayName(titles[1]);
         multiviewTC.setToolTipText(getMVTCToolTipText(formDataObject));
         opened.add(this);
         attachTopComponentsListener();
@@ -937,7 +951,9 @@ public class FormEditorSupport extends JavaEditor
             super.updateName();
             if (multiViewObserver != null) {
                 FormDataObject formDataObject = (FormDataObject)((DataEditorSupport) cloneableEditorSupport ()).getDataObject();
-                setDisplayName(getMVTCDisplayName(formDataObject));
+                String[] titles = getMVTCDisplayName(formDataObject);
+                setDisplayName(titles[0]);
+                setHtmlDisplayName(titles[1]);
             }
         }
 
