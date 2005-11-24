@@ -33,7 +33,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -199,7 +198,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         public void actionPerformed(ActionEvent evt) {
             NbModuleProject project = UIUtil.chooseSuiteComponent(
                     WindowManager.getDefault().getMainWindow(),
-                    ProjectUtils.getInformation(suite).getDisplayName());
+                    suite);
             if (project != null) {
                 if (!SuiteUtils.contains(suite, project)) {
                     try {
@@ -218,8 +217,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
     }
     
     private static Children createSuiteComponentNodes(final SuiteProject suite) {
-        SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
-        Set/*<Project>*/ subModules = spp.getSubprojects();
+        Set/*<Project>*/ subModules = SuiteUtils.getSubProjects(suite);
         Node[] nodes = new Node[subModules.size()];
         Children children = new Children.Array();
         int i = 0;

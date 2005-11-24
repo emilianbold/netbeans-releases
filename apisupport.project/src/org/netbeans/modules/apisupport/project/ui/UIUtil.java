@@ -49,6 +49,8 @@ import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
@@ -363,10 +365,17 @@ public final class UIUtil {
         return path;
     }
     
-    public static NbModuleProject chooseSuiteComponent(Component parent, String suiteDisplayName) {
+    public static NbModuleProject chooseSuiteComponent(Component parent, SuiteProject suite) {
         NbModuleProject suiteComponent = null;
         Project project = chooseProject(parent);
         if (project != null) {
+            if (SuiteUtils.getSubProjects(suite).contains(project)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(UIUtil.class, "MSG_SuiteAlreadyContainsProject",
+                        ProjectUtils.getInformation(suite).getDisplayName(),
+                        ProjectUtils.getInformation(project).getDisplayName())));
+                return null;
+            }
             NbModuleTypeProvider nmtp = (NbModuleTypeProvider) project.
                     getLookup().lookup(NbModuleTypeProvider.class);
             if (nmtp == null) { // not netbeans module
@@ -378,7 +387,7 @@ public final class UIUtil {
                     ProjectUtils.getInformation(project).getDisplayName(),
                             getSuiteProjectName(project),
                             getSuiteProjectDirectory(project),
-                            suiteDisplayName,
+                            ProjectUtils.getInformation(suite).getDisplayName(),
                 };
                 NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(
                         NbBundle.getMessage(UIUtil.class, "MSG_MoveFromSuiteToSuite", params),

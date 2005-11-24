@@ -167,7 +167,7 @@ final class SuiteCustomizerSources extends NbPropertyPanel.Suite {
     }//GEN-LAST:event_removeModule
     
     private void addModule(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModule
-        Project project = UIUtil.chooseSuiteComponent(this, getProperties().getProjectDisplayName());
+        Project project = UIUtil.chooseSuiteComponent(this, getProperties().getProject());
         if (project != null) {
             if (getModuleListModel().contains(project)) {
                 moduleList.setSelectedValue(project, true);
