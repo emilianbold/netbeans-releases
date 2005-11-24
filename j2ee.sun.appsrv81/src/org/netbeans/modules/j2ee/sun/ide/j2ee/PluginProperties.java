@@ -72,6 +72,8 @@ public class PluginProperties  {
     static private PluginProperties thePluginProperties=null;
     static final private String IDEHOME = "${ide.home}";
     private String ideHomeLocation;
+    
+    private File rootInstallCandidate =null;
     public static PluginProperties getDefault(){
         if (thePluginProperties==null)
             thePluginProperties= new PluginProperties();
@@ -116,6 +118,9 @@ public class PluginProperties  {
             retVal = dir.getFileObject("platform","properties"); // NOI18N
             if (null == retVal) {
                 retVal = dir.createData("platform","properties"); //NOI18N
+                
+                rootInstallCandidate = new File(getDefaultInstallRoot());
+                
             }
         }
         return retVal;
@@ -131,8 +136,8 @@ public class PluginProperties  {
         setCharsetDisplayPreferenceStatic(Integer.valueOf(inProps.getProperty(CHARSET_DISP_PREF_KEY, "1")));
         String b= inProps.getProperty(INCREMENTAL,"true");//true by default
         incrementalDeployPossible = b.equals("true");
-        String loc = inProps.getProperty(INSTALL_ROOT_KEY);
-        if (loc!=null){
+        String loc = inProps.getProperty(INSTALL_ROOT_KEY);//old style 4.1: we need to import and refresh
+        if ((loc!=null)||(rootInstallCandidate!=null)){
             final File platformRoot = new File(getDefaultInstallRoot());
             
             if (isGoodAppServerLocation(platformRoot)){
@@ -215,7 +220,7 @@ public class PluginProperties  {
     
     static public void configureDefaultServerInstance(){
         PluginProperties.getDefault();//for init for this
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+/*        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         FileObject props = fs.findResource("J2EE/platform.properties");
         if (props==null){// try to get the default value
             
@@ -234,7 +239,7 @@ public class PluginProperties  {
                 PluginProperties.getDefault().saveProperties();
             }
         }
-        
+        */
     }
     
     public void setIncrementalDeploy(Boolean b){
