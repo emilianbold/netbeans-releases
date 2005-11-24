@@ -25,6 +25,7 @@ import java.awt.image.ImageObserver;
 import java.lang.ref.*;
 import java.util.*;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.AbstractLookup.Pair;
 
@@ -48,11 +49,13 @@ public class MIMESupport69049Test extends TestCase {
     protected void tearDown () throws Exception {
     }
 
-    public void testProblemWithRecursionInIssue69049() throws Exception {
+    public void testProblemWithRecursionInIssue69049() throws Throwable {
         Lkp lkp = (Lkp)Lookup.getDefault();
         
-        class Pair extends AbstractLookup.Pair {
+        class Pair extends AbstractLookup.Pair implements Runnable {
             public MIMEResolver[] all;
+            public MIMEResolver[] all2;
+            public Throwable ex;
             
             
             protected boolean instanceOf(Class c) {
@@ -64,9 +67,13 @@ public class MIMESupport69049Test extends TestCase {
             }
 
             public Object getInstance() {
-                assertNull("Not queried yet", all);
-                all = MIMESupport.getResolvers();
-                assertNotNull("Computed", all);
+                if (all == null) {
+                    all = MIMESupport.getResolvers();
+                    assertNotNull("Computed", all);
+                } else {
+                    all2 = MIMESupport.getResolvers();
+                    assertNotNull("Computed", all2);
+                }
                 return null;
             }
 
@@ -81,21 +88,51 @@ public class MIMESupport69049Test extends TestCase {
             public String getDisplayName() {
                 return getId();
             }
+            
+            public void run() {
+                try {
+                    all = MIMESupport.getResolvers();
+                } catch (Throwable e) {
+                    ex.printStackTrace();
+                    ex = e;
+                }
+            }
+            
+            public void assertResults() throws Throwable {
+                if (ex != null) {
+                    throw ex;
+                }
+
+                assertNotNull("result was computed", all);
+                assertEquals("There is one", 1, all.length);
+                assertEquals("There is C1", Lkp.c1, all[0]);
+            }
         }
         
         lkp.turn(Lkp.c1);
         Pair p = new Pair();
         lkp.ic.addPair(p);
-        for (int i = 0; i < 30; i++) {
-            lkp.ic.add(new Integer(i));
-        }
+
+        Pair run1 = new Pair();
+        Pair run2 = new Pair();
         
-        MIMEResolver[] all = MIMESupport.getResolvers();
-        assertEquals("There is one", 1, all.length);
-        assertEquals("There is C1", Lkp.c1, all[0]);
+        RequestProcessor.Task t1 = new RequestProcessor("t1").post(run1);
+        RequestProcessor.Task t2 = new RequestProcessor("t2").post(run2);
         
+        t1.waitFinished();
+        t2.waitFinished();
+        
+        assertTrue("t1 done", t1.isFinished());
+        assertTrue("t2 done", t2.isFinished());
+        
+        run1.assertResults();
+        run2.assertResults();
+
         assertNotNull("Been in the query", p.all);
         assertEquals("In query we cannot do better than nothing", 0, p.all.length);
+        assertNotNull("Been in the query twice", p.all2);
+        assertEquals("Second query knows the result", 1, p.all2.length);
+        assertEquals("and the result is right", Lkp.c1, p.all2[0]);
     }
     
     
@@ -142,7 +179,7 @@ public class MIMESupport69049Test extends TestCase {
     
     
     private static class ErrMgr extends ErrorManager {
-        public static boolean switchDone;
+        private boolean block = true;
         
         public Throwable attachAnnotations (Throwable t, ErrorManager.Annotation[] arr) {
             return null;
@@ -157,13 +194,25 @@ public class MIMESupport69049Test extends TestCase {
         }
 
         public void notify (int severity, Throwable t) {
+            t.printStackTrace();
         }
 
-        public void log (int severity, String s) {
-            if (s.startsWith ("Resolvers computed")) {
-                switchDone = true;
-                Lkp lkp = (Lkp)org.openide.util.Lookup.getDefault ();
-                lkp.turn (Lkp.c2);
+        public synchronized void log (int severity, String s) {
+//            System.err.println(Thread.currentThread().getName() + " - " + s);
+            if (s.startsWith ("Computing resolvers")) {
+                notifyAll();
+                if (block) {
+                    try {
+                        wait(200);
+                    } catch (InterruptedException ex) {
+                        fail("Wrong exception");
+                    }
+                }
+            }
+            
+            if (s.startsWith("Resolvers computed")) {
+                block = false;
+                notifyAll();
             }
         }
 

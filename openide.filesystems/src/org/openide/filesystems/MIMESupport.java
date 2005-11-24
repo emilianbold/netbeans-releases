@@ -117,18 +117,25 @@ final class MIMESupport extends Object {
         }
 
         private static MIMEResolver[] getResolvers() {
+            Set creators;
             synchronized (CachedFileObject.class) {
                 if (resolvers instanceof MIMEResolver[]) {
                     return (MIMEResolver[])resolvers;
                 }
-                if (resolvers == Thread.currentThread()) {
-                    // prevent stack overflow
-                    ERR.log("Stack Overflow prevention. Returning previousResolvers: " + previousResolvers);
-                    Object toRet = previousResolvers;
-                    if (!(toRet instanceof MIMEResolver[])) {
-                        toRet = new MIMEResolver[0];
+                if (resolvers instanceof Set) {
+                    creators = (Set)resolvers;
+                    if (creators.contains (Thread.currentThread())) {
+                        // prevent stack overflow
+                        ERR.log("Stack Overflow prevention. Returning previousResolvers: " + previousResolvers);
+                        Object toRet = previousResolvers;
+                        if (!(toRet instanceof MIMEResolver[])) {
+                            toRet = new MIMEResolver[0];
+                        }
+                        return (MIMEResolver[]) toRet;
                     }
-                    return (MIMEResolver[]) toRet;
+                } else {
+                    creators = new HashSet();
+                    resolvers = creators;
                 }
 
                 if (result == null) {
@@ -152,15 +159,17 @@ final class MIMESupport extends Object {
                 }
 
                 // ok, let's compute the value
-                resolvers = Thread.currentThread();
+                creators.add(Thread.currentThread());
             }
 
+            ERR.log("Computing resolvers"); // NOI18N
+            
             MIMEResolver[] toRet = (MIMEResolver[])result.allInstances().toArray(new MIMEResolver[0]);
 
             ERR.log("Resolvers computed"); // NOI18N
 
             synchronized (CachedFileObject.class) {
-                if (resolvers == Thread.currentThread()) {
+                if (resolvers == creators) {
                     // ok, we computed the value and nobody cleared it till now
                     resolvers = toRet;
                     previousResolvers = null;
