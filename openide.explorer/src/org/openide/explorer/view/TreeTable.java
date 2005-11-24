@@ -373,6 +373,10 @@ class TreeTable extends JTable implements Runnable {
 
         try {
             super.tableChanged(e);
+            //#61728 - force update of tree's horizontal scrollbar
+            if( null != getTree() ) {
+                firePropertyChange( "positionX", -1, getPositionX() );
+            }
         } finally {
             ignoreClearSelection = false;
         }
