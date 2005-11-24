@@ -263,10 +263,10 @@ public class AttachJDialogOperator extends JDialogOperator {
     public static void main(String args[]) {
 //        new AttachJDialogOperator().verify();
         System.out.println("AttachJDialogOperator verification finished.");
-        java.util.Enumeration enum =  System.getProperties().keys();
+        java.util.Enumeration enumeration =  System.getProperties().keys();
         String property;
-        while (enum.hasMoreElements()) {
-            property = (String) enum.nextElement();
+        while (enumeration.hasMoreElements()) {
+            property = (String) enumeration.nextElement();
             System.out.println(property + "\t" + System.getProperty(property) );
         }
         
