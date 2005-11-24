@@ -819,7 +819,6 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             if (target != null) {
                 BaseDocument doc = (BaseDocument)target.getDocument();
                 int caretPosition = -1;
-                TryWrapper wrapper;
                 TryStatement t;
                 int selectionStart = target.getSelectionStart();
                 int selectionEnd = target.getSelectionEnd();
@@ -835,7 +834,11 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 JavaModel.getJavaRepository().beginTrans(true);
                 try {
                     //create a wrapper and wrap selected text
-                    wrapper = new TryWrapper(NbEditorUtilities.getDataObject(doc).getPrimaryFile(), selectionStart, selectionEnd);
+                    TryWrapper wrapper;
+                    FileObject fo = NbEditorUtilities.getDataObject(doc).getPrimaryFile();
+                    JavaModel.setClassPath(fo);
+                    
+                    wrapper = new TryWrapper(fo, selectionStart, selectionEnd);
                     t = wrapper.wrap(); 
                 } catch (JmiException e) {
                     //if error - write it on status line
