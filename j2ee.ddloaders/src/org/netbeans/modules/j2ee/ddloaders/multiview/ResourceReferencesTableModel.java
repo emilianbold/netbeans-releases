@@ -91,6 +91,10 @@ public class ResourceReferencesTableModel extends InnerTableModel {
         final NotifyDescriptor.InputLine inputLine = new NotifyDescriptor.InputLine(text, title);
         DialogDisplayer.getDefault().notify(inputLine);
         final String name = inputLine.getInputText();
+        return addRow(name);
+    }
+
+    public int addRow(String name) {
         if (name != null && name.trim().length() > 0) {
             ResourceRef resourceRef = ejb.newResourceRef();
             resourceRef.setResRefName(name);
@@ -100,7 +104,7 @@ public class ResourceReferencesTableModel extends InnerTableModel {
         int row = getRowCount() - 1;
         return row;
     }
-
+    
     public void removeRow(int row) {
         ejb.removeResourceRef(ejb.getResourceRef(row));
         modelUpdatedFromUI();
