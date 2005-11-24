@@ -24,6 +24,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -96,7 +97,7 @@ public abstract class CLIHandler extends Object {
      */
     protected abstract int cli(Args args);
     
-    private static void showHelp(PrintWriter w, List handlers) {
+    private static void showHelp(PrintWriter w, Collection handlers) {
 //        w.println("  -? or --help          Show this help information.");
         Iterator it = handlers.iterator();
         while (it.hasNext()) {
@@ -153,7 +154,7 @@ public abstract class CLIHandler extends Object {
     /** Notification of available handlers.
      * @return non-zero if one of the handlers fails
      */
-    private static int notifyHandlers(Args args, List handlers, int when, boolean failOnUnknownOptions, boolean consume) {
+    private static int notifyHandlers(Args args, Collection handlers, int when, boolean failOnUnknownOptions, boolean consume) {
         try {
             //System.err.println("notifyHandlers: handlers=" + handlers + " when=" + when + " args=" + Arrays.asList(args.getArguments()));
             String[] argv = args.getArguments();
@@ -405,7 +406,7 @@ public abstract class CLIHandler extends Object {
      */
     static Status initialize(
         final Args args, Integer block, 
-        final List handlers, 
+        final Collection handlers, 
         final boolean failOnUnknownOptions, 
         boolean cleanLockFile,
         Runnable runWhenHome
@@ -797,12 +798,12 @@ public abstract class CLIHandler extends Object {
         private byte[] key;
         private ServerSocket socket;
         private Integer block;
-        private List handlers;
+        private Collection handlers;
         private Socket work;
         private static volatile int counter;
         private final boolean failOnUnknownOptions;
         
-        public Server(byte[] key, Integer block, List handlers, boolean failOnUnknownOptions) throws IOException {
+        public Server(byte[] key, Integer block, Collection handlers, boolean failOnUnknownOptions) throws IOException {
             super("CLI Requests Server"); // NOI18N
             this.key = key;
             this.setDaemon(true);
@@ -814,7 +815,7 @@ public abstract class CLIHandler extends Object {
             start();
         }
         
-        public Server(Socket request, byte[] key, Integer block, List handlers, boolean failOnUnknownOptions) throws IOException {
+        public Server(Socket request, byte[] key, Integer block, Collection handlers, boolean failOnUnknownOptions) throws IOException {
             super("CLI Handler Thread Handler: " + ++counter); // NOI18N
             this.key = key;
             this.setDaemon(true);

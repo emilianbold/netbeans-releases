@@ -24,6 +24,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.jar.JarFile;
 import java.security.*;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Template;
+import org.openide.util.lookup.Lookups;
 
 /** Bootstrap main class.
  * @author Jaroslav Tulach, Jesse Glick
@@ -194,11 +197,14 @@ public class Main extends Object {
     
     static final class BootClassLoader extends JarClassLoader 
     implements Runnable {
-        private List allCLIs;
-        private Set allCLIclasses;
+        private Lookup metaInf;
+
+        private List handlers;
         
         public BootClassLoader(List cp, ClassLoader[] parents) {
             super(cp, parents);
+            
+            metaInf = Lookups.metaInfServices(this);
     
             String value = null;
             try {
@@ -239,11 +245,13 @@ public class Main extends Object {
             }
             return value;
         }
-        
+
+        private boolean onlyRunRunOnce;
         /** Checks for new JARs in netbeans.user */
         public void run () {
             // do not call this method twice
-            if (allCLIclasses == Collections.EMPTY_SET) return;
+            if (onlyRunRunOnce) return;
+            onlyRunRunOnce = true;
             
             ArrayList toAdd = new ArrayList ();
             String user = System.getProperty ("netbeans.user"); // NOI18N
@@ -262,10 +270,12 @@ public class Main extends Object {
                 
                 if (!toAdd.isEmpty ()) {
                     addSources (toAdd);
-                    // search for new CLIs from the newly added JARs
-                    allCLIs ();
+                    metaInf = Lookups.metaInfServices(this);
+                    if (handlers != null) {
+                        handlers.clear();
+                        handlers.addAll(metaInf.lookup(new Lookup.Template(CLIHandler.class)).allInstances());
+                    }
                 }
-                allCLIclasses = Collections.EMPTY_SET;
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -290,65 +300,11 @@ public class Main extends Object {
 
         /** For a given classloader finds all registered CLIHandlers.
          */
-        public final List allCLIs () {
-            if (allCLIclasses == Collections.EMPTY_SET) return allCLIs;
-            
-            if (allCLIclasses == null) {
-                allCLIclasses = new HashSet ();
+        public final Collection allCLIs () {
+            if (handlers == null) {
+                handlers = new ArrayList(metaInf.lookup(new Lookup.Template(CLIHandler.class)).allInstances());
             }
-
-            if (allCLIs == null) {
-                /* should be, but we cannot use it yet, as openide is not separated:
-                return new ArrayList(Lookups.metaInfServices(loader).lookup(new Lookup.Template(CLIHandler.class)).allInstances());
-                 */
-                allCLIs = new ArrayList();
-            }
-            Enumeration en;
-            try {
-                en = getResources("META-INF/services/org.netbeans.CLIHandler"); // NOI18N
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                return Collections.EMPTY_LIST;
-            }
-            while (en.hasMoreElements()) {
-                URL url = (URL)en.nextElement();
-                try {
-                    InputStream is = url.openStream();
-                    try {
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
-                        while (true) {
-                            String line = reader.readLine();
-                            if (line == null) break;
-
-                            // Ignore blank lines and comments.
-                            line = line.trim();
-                            if (line.length() == 0) continue;
-
-                            boolean remove = false;
-                            if (line.charAt(0) == '#') {
-                                if (line.length() == 1 || line.charAt(1) != '-') {
-                                    continue;
-                                }
-
-                                // line starting with #- is a sign to remove that class from lookup
-                                remove = true;
-                                line = line.substring(2);
-                            }
-                            Class inst = Class.forName(line, false, this);
-                            if (allCLIclasses.add (inst)) {
-                                Object obj = inst.newInstance();
-                                allCLIs.add((CLIHandler)obj);
-                            }
-                        }
-                    } finally {
-                        is.close();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            return allCLIs;
+            return handlers;
         }
 
         protected boolean isSpecialResource (String pkg) {
