@@ -29,8 +29,10 @@ import java.io.OutputStreamWriter;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager ;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -180,14 +182,32 @@ public class RegisterPointbase implements DatabaseRuntime {
         }
 
         
-        File localInstall = new File(irf,"derby");//NOI18N
-        if (localInstall.exists()){
-            DerbySupport.setLocation(localInstall.getAbsolutePath()); 
-            DerbySupport.setSystemHome(localInstall.getAbsolutePath());
-	}         
+        final File derbyInstall = new File(irf,"derby");//NOI18N
+        if (derbyInstall.exists()){
+            
+            if ("".equals(DerbySupport.getSystemHome())) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            File dbdir = new File(DerbySupport.getDefaultSystemHome());
+                            if (dbdir.exists()==false){
+                                dbdir.mkdirs();
+                            }
+                            DerbySupport.setLocation(derbyInstall.getAbsolutePath());
+                            DerbySupport.setSystemHome(dbdir.getAbsolutePath());
+                            
+                            
+                            DerbySupport.registerSampleDatabase();
+                        } catch (DatabaseException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                });
+            }
+        } 
         
 
-        localInstall = new File(irf,"pointbase");  //NOI18N
+        File localInstall = new File(irf,"pointbase");  //NOI18N
 
         if (!localInstall.exists()){
             return ;  
