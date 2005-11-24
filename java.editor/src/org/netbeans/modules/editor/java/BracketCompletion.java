@@ -16,7 +16,9 @@ package org.netbeans.modules.editor.java;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenProcessor;
 import org.netbeans.editor.TokenContextPath;
@@ -53,28 +55,23 @@ class BracketCompletion {
   static void charInserted(BaseDocument doc,  
 			   int dotPos, 
 			   Caret caret,
-			   char ch) throws BadLocationException 
-  {
-    if (doc.getSyntaxSupport() instanceof ExtSyntaxSupport && completionSettingEnabled()) {
-      
-      if (ch == ')'|| ch == ']'|| ch =='('|| ch =='[') {
-	TokenID tokenAtDot = 
-	  ((ExtSyntaxSupport)doc.getSyntaxSupport()).getTokenID(dotPos);
-
-	if (tokenAtDot == JavaTokenContext.RBRACKET || tokenAtDot == JavaTokenContext.RPAREN) {
-	  skipClosingBracket(doc, caret, ch);
-	} 
-	else if (tokenAtDot == JavaTokenContext.LBRACKET || tokenAtDot == JavaTokenContext.LPAREN) {
-	  completeOpeningBracket(doc, dotPos, caret, ch);
-	}
+			   char ch) throws BadLocationException {
+      SyntaxSupport syntaxSupport = doc.getSyntaxSupport();
+      if (!(syntaxSupport instanceof ExtSyntaxSupport) || !completionSettingEnabled()){
+          return;
       }
-      else if (ch == '\"' || ch == '\'') {
-	completeQuote(doc, dotPos, caret, ch);
-      } 
-      else if (ch == ';') {
+
+      ExtSyntaxSupport support = (ExtSyntaxSupport)syntaxSupport;
+      if (ch == ')'|| ch == ']'|| ch =='('|| ch =='[') {
+          TokenID tokenAtDot = support.getTokenID(dotPos);
+          if (tokenAtDot == JavaTokenContext.RBRACKET || tokenAtDot == JavaTokenContext.RPAREN) {
+              skipClosingBracket(doc, caret, ch);
+          } else if (tokenAtDot == JavaTokenContext.LBRACKET || tokenAtDot == JavaTokenContext.LPAREN) {
+              completeOpeningBracket(doc, dotPos, caret, ch);
+          }
+      } else if (ch == ';') {
           moveSemicolon(doc, dotPos, caret);
       }
-    }
   }
 
     private static void moveSemicolon(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
@@ -342,12 +339,12 @@ class BracketCompletion {
    * @param doc the document
    * @param dotPos position of the inserted bracket
    * @param caret caret
-   * @param theBracket the bracket character ']' or ')'
+   * @param bracket the bracket character ']' or ')'
    */
-  private static void skipClosingBracket(BaseDocument doc, Caret caret, char theBracket)
+  private static void skipClosingBracket(BaseDocument doc, Caret caret, char bracket)
   throws BadLocationException {
 
-      TokenID bracketId = (theBracket == ')')
+      TokenID bracketId = (bracket == ')')
           ? JavaTokenContext.RPAREN 
           : JavaTokenContext.RBRACKET;
 
@@ -524,15 +521,15 @@ class BracketCompletion {
    * @param doc the document
    * @param dotPos position of the opening bracket (already in the doc)
    * @param caret caret
-   * @param theBracket the bracket that was inserted
+   * @param bracket the bracket that was inserted
    */
   private static void completeOpeningBracket(BaseDocument doc,
 					      int dotPos,
 					      Caret caret,
-					      char theBracket) throws BadLocationException 
+					      char bracket) throws BadLocationException 
   {
     if (isCompletablePosition(doc, dotPos+1)) {
-      String matchinBracket = "" + matching(theBracket);
+      String matchinBracket = "" + matching(bracket);
       doc.insertString(dotPos + 1, matchinBracket,null);
       caret.setDot(dotPos+1);
     }
@@ -550,29 +547,54 @@ class BracketCompletion {
    * @param doc the document
    * @param dotPos position of the opening bracket (already in the doc)
    * @param caret caret
-   * @param theBracket the character that was inserted
+   * @param bracket the character that was inserted
    */
-  private static void completeQuote(BaseDocument doc, int dotPos, Caret caret,
-  char theBracket) 
-				    throws BadLocationException 
-  {
-    if (isEscapeSequence(doc, dotPos)){
-        return;
+  static boolean completeQuote(BaseDocument doc, int dotPos, Caret caret,
+          char bracket) throws BadLocationException {
+
+    if (isEscapeSequence(doc, dotPos)){ // \" or \' typed
+        return false;
     } 
-    if ((posWithinQuotes(doc,
-			dotPos+1, 
-			theBracket,
-			(theBracket =='\"' ? JavaTokenContext.STRING_LITERAL : JavaTokenContext.CHAR_LITERAL)) &&
-	isCompletablePosition(doc, dotPos+1)) || (isUnclosedStringAtLineEnd(doc, dotPos) && doc.getLength() != dotPos+1 && doc.getChars(dotPos+1, 1)[0] != '\"')) {
-      doc.insertString(dotPos + 1, "" + theBracket ,null);
-      caret.setDot(dotPos+1);
-    } else {
-      char [] charss = doc.getChars(dotPos+1, 1);
-      // System.out.println("NOT Within string, " + new String(charss));
-      if (charss != null && charss[0] == theBracket) {
-	doc.remove(dotPos+1, 1);
-      }
+    
+    SyntaxSupport s = doc.getSyntaxSupport();
+    if (!(s instanceof ExtSyntaxSupport)){
+        return false;
     }
+
+    ExtSyntaxSupport syntax = (ExtSyntaxSupport)s;
+    // Examine token at the caret offset
+    TokenID token = null;
+    if (doc.getLength() > dotPos){
+        token = syntax.getTokenID(dotPos);
+    }
+
+    boolean completablePosition = isQuoteCompletablePosition(doc, dotPos);    
+    int lastNonWhite = Utilities.getRowLastNonWhite(doc, dotPos);
+    // eol - true if the caret is at the end of line (ignoring whitespaces)
+    boolean eol = lastNonWhite < dotPos; 
+    boolean insideString = token == JavaTokenContext.STRING_LITERAL;
+    
+    if (!insideString){
+        // check if the caret is at the very end of the line and there
+        // is an unterminated string literal
+        if (token == JavaTokenContext.WHITESPACE && eol){
+            if (dotPos-1 > 0){
+                token = syntax.getTokenID(dotPos-1);
+                insideString = token == JavaTokenContext.STRING_LITERAL;
+            }
+        }
+    }
+
+    if (eol && insideString){
+        return false; // do not complete
+    }
+    
+    if ((completablePosition && !insideString) || eol){
+        doc.insertString(dotPos, "" + bracket , null);
+        return true;
+    }
+    
+    return false;
   }
 
   /** 
@@ -603,6 +625,28 @@ class BracketCompletion {
     }
   }
 
+  private static boolean isQuoteCompletablePosition(BaseDocument doc, int dotPos)
+          throws BadLocationException{
+      if (dotPos == doc.getLength()) // there's no other character to test
+          return true;
+      else {
+          // test that we are in front of ) , " or ' ... etc.
+          int eol = Utilities.getRowEnd(doc, dotPos);
+          if (dotPos == eol || eol == -1){
+              return false;
+          }
+          int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(doc, dotPos, eol);
+          if (firstNonWhiteFwd == -1){
+              return false;
+          }
+          char chr = doc.getChars(firstNonWhiteFwd,1)[0];
+          return (chr == ')' ||
+                  chr == ',' ||
+                  chr == '+'||
+                  chr == '}' ||
+                  chr == ';');
+      }
+  }
 
   /** 
    * Returns true if bracket completion is enabled in options.
@@ -615,8 +659,8 @@ class BracketCompletion {
    * Returns for an opening bracket or quote the appropriate closing
    * character.
    */
-  private static char matching(char theBracket) {
-    switch (theBracket) {
+  private static char matching(char bracket) {
+    switch (bracket) {
     case '(' : return ')';
     case '[' : return ']';
     case '\"' : return '\"'; // NOI18N

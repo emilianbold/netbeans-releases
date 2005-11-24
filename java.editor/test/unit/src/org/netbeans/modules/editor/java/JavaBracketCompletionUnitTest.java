@@ -14,6 +14,7 @@
 package org.netbeans.modules.editor.java;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.java.JavaTokenContext;
@@ -119,13 +120,205 @@ public class JavaBracketCompletionUnitTest extends JavaBaseDocumentUnitTestCase 
         );
     }
 
+    
+    // ------- Tests for completion of quote -------------    
+    public void testSimpleQuoteInEmptyDoc () throws Exception {
+        setLoadDocumentText (
+            "|"
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Simple Quote In Empty Doc", 
+            "\"|\""
+        );
+    }
 
+    public void testSimpleQuoteAtBeginingOfDoc () throws Exception {
+        setLoadDocumentText (
+            "|  "
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Simple Quote At Begining Of Doc", 
+            "\"|\"  "
+        );
+    }
+
+    public void testSimpleQuoteAtEndOfDoc () throws Exception {
+        setLoadDocumentText (
+            "  |"
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Simple Quote At End Of Doc", 
+            "  \"|\""
+        );
+    }
+    
+    public void testSimpleQuoteInWhiteSpaceArea () throws Exception {
+        setLoadDocumentText (
+            "  |  "
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Simple Quote In White Space Area", 
+            "  \"|\"  "
+        );
+    }
+    
+    public void testQuoteAtEOL () throws Exception {
+        setLoadDocumentText (
+            "  |\n"
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote At EOL", 
+            "  \"|\"\n"
+        );
+    }
+    
+    public void testQuoteWithUnterminatedStringLiteral () throws Exception {
+        setLoadDocumentText (
+            "  \"unterminated string| \n"
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote With Unterminated String Literal", 
+            "  \"unterminated string\"| \n"
+        );
+    }
+    
+    public void testQuoteAtEOLWithUnterminatedStringLiteral () throws Exception {
+        setLoadDocumentText (
+            "  \"unterminated string |\n"
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote At EOL With Unterminated String Literal", 
+            "  \"unterminated string \"|\n"
+        );
+    }
+
+    public void testQuoteInsideStringLiteral () throws Exception {
+        setLoadDocumentText (
+            "  \"stri|ng literal\" "
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote Inside String Literal", 
+            "  \"stri\"|ng literal\" "
+        );
+    }
+
+    public void testQuoteInsideEmptyParentheses () throws Exception {
+        setLoadDocumentText (
+            " System.out.println(|) "
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote Inside Empty Parentheses", 
+            " System.out.println(\"|\") "
+        );
+    }
+
+    public void testQuoteInsideNonEmptyParentheses () throws Exception {
+        setLoadDocumentText (
+            " System.out.println(|some text) "
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote Inside Non Empty Parentheses", 
+            " System.out.println(\"|some text) "
+        );
+    }
+    
+    public void testQuoteInsideNonEmptyParenthesesBeforeClosingParentheses () throws Exception {
+        setLoadDocumentText (
+            " System.out.println(i+|) "
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote Inside Non Empty Parentheses Before Closing Parentheses", 
+            " System.out.println(i+\"|\") "
+        );
+    }
+    
+    public void testQuoteInsideNonEmptyParenthesesBeforeClosingParenthesesAndUnterminatedStringLiteral () throws Exception {
+        setLoadDocumentText (
+            " System.out.println(\"unterminated string literal |); "
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote Inside Non Empty Parentheses Before Closing Parentheses And Unterminated String Literal", 
+            " System.out.println(\"unterminated string literal \"|); "
+        );
+    }
+
+    public void testQuoteBeforePlus () throws Exception {
+        setLoadDocumentText (
+            " System.out.println(|+\"string literal\"); "
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote Before Plus", 
+            " System.out.println(\"|\"+\"string literal\"); "
+        );
+    }
+
+    public void testQuoteBeforeComma () throws Exception {
+        setLoadDocumentText (
+            "String s[] = new String[]{|,\"two\"};"
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote Before Comma", 
+            "String s[] = new String[]{\"|\",\"two\"};"
+        );
+    }
+
+    public void testQuoteBeforeBrace () throws Exception {
+        setLoadDocumentText (
+            "String s[] = new String[]{\"one\",|};"
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote Before Brace", 
+            "String s[] = new String[]{\"one\",\"|\"};"
+        );
+    }
+
+    public void testQuoteBeforeSemicolon() throws Exception {
+        setLoadDocumentText (
+            "String s = \"\" + |;"
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote Before Semicolon", 
+            "String s = \"\" + \"|\";"
+        );
+    }
+
+    public void testQuoteBeforeSemicolonWithWhitespace() throws Exception {
+        setLoadDocumentText (
+            "String s = \"\" +| ;"
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote Before Semicolon With Whitespace", 
+            "String s = \"\" +\"|\" ;"
+        );
+    }
+
+    public void testQuoteAfterEscapeSequence() throws Exception {
+        setLoadDocumentText (
+            "\\|"
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote Before Semicolon With Whitespace", 
+            "\\\"|"
+        );
+    }
+    
+    
     // ------- Private methods -------------
     
     private void typeChar(char ch) throws Exception {
         int pos = getCaretOffset();
         getDocument ().insertString(pos, String.valueOf(ch), null);
         BracketCompletion.charInserted(getDocument(), pos, getCaret(), ch);
+    }
+    
+    private void typeQuoteChar(char ch) throws Exception {
+        int pos = getCaretOffset();
+        Caret caret = getCaret();
+        boolean inserted = BracketCompletion.completeQuote(getDocument(), pos, caret, ch);        
+        getDocument ().insertString(pos, String.valueOf(ch), null);
+        if (inserted){
+            caret.setDot(pos+1);
+        }
     }
     
     private boolean isSkipRightParen() {
