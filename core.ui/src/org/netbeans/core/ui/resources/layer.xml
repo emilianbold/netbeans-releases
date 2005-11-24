@@ -39,7 +39,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-EditAction.instance"/>
             <file name="org-netbeans-core-actions-SystemExit.instance"/>
-            <file name="org-openide-actions-FileSystemAction.instance"/>
             <file name="org-openide-actions-GarbageCollectAction.instance"/>
             <file name="org-netbeans-core-actions-OptionsAction.instance"/>
             <file name="org-openide-actions-InstantiateAction.instance"/>
