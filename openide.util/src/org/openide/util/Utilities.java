@@ -2575,7 +2575,14 @@ widthcheck:  {
 
                 // switch to replacement action if there is some
                 if (action instanceof ContextAwareAction) {
-                    action = ((ContextAwareAction) action).createContextAwareInstance(context);
+                    Action contextAwareAction = ((ContextAwareAction) action).createContextAwareInstance(context);
+                    if(contextAwareAction == null) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+                                new NullPointerException("ContextAwareAction.createContextAwareInstance(context) returns null. That is illegal!" // NOI18N
+                                        + " action=" + action +", context=" + context)); // NOI18N
+                    } else {
+                        action = contextAwareAction;
+                    }                    
                 }
 
                 JMenuItem item;
