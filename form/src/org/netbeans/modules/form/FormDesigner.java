@@ -673,6 +673,17 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         return selectedComponents;
     }
 
+    Node[] getSelectedComponentNodes() {
+        Node[] selectedNodes = new Node[selectedComponents.size()];
+        Iterator iter = selectedComponents.iterator();
+        int i = 0;
+        while (iter.hasNext()) {
+            RADComponent metacomp = (RADComponent) iter.next();
+            selectedNodes[i++] = metacomp.getNodeReference();
+        }
+        return selectedNodes;
+    }
+    
     java.util.List getSelectedLayoutComponents() {
         return selectedLayoutComponents;
     }
@@ -1076,13 +1087,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         if (ci.getFocusedForm() != formEditor)
             return;
 
-        Node[] selectedNodes = new Node[selectedComponents.size()];
-        Iterator iter = selectedComponents.iterator();
-        int i = 0;
-        while (iter.hasNext()) {
-            RADComponent metacomp = (RADComponent) iter.next();
-            selectedNodes[i++] = metacomp.getNodeReference();
-        }
+        Node[] selectedNodes = getSelectedComponentNodes();
         try {
             setActivatedNodes(selectedNodes); // Issue 62356
             ci.setSelectedNodes(selectedNodes, formEditor);

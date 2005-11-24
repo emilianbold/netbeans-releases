@@ -243,6 +243,7 @@ public class ComponentInspector extends TopComponent
             getExplorerManager().setRootContext(emptyInspectorNode);
         }
         else {
+            Node[] selectedNodes = FormEditor.getFormDesigner(form.getFormModel()).getSelectedComponentNodes();
             testAction.setFormModel(form.getFormModel());
 
             Node formNode = form.getFormRootNode();
@@ -252,6 +253,13 @@ public class ComponentInspector extends TopComponent
             }
             else
                 getExplorerManager().setRootContext(formNode);
+            
+            try {
+                getExplorerManager().setSelectedNodes(selectedNodes);
+            } catch (PropertyVetoException ex) {                
+                ex.printStackTrace();   // should not happen
+            }
+                        
         }
 
         if (visibility > 0)
@@ -386,8 +394,8 @@ public class ComponentInspector extends TopComponent
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (!ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()))
-                return;
-
+                return;            
+            
             FormDesigner designer;
             if (focusedForm == null
                     || (designer = focusedForm.getFormDesigner()) == null)
