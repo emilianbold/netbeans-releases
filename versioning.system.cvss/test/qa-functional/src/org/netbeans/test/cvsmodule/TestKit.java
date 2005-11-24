@@ -115,18 +115,15 @@ public class TestKit {
     }
     
     public static void removeAllData(String project_name) {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 100000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 100000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
         rootNode.performPopupActionNoBlock("Delete Project");
         NbDialogOperator ndo = new NbDialogOperator("Delete");
         JCheckBoxOperator cb = new JCheckBoxOperator(ndo, "Also");
         cb.setSelected(true);
-        JButtonOperator btnYes = new JButtonOperator(ndo, "Yes");
-        btnYes.pushNoBlock();
-        //JProgressBarOperator progress = new JProgressBarOperator(ndo, 0);
-        //progress.waitValue("100%");
-        ndo.waitClosed();
+        ndo.yes();
+        ndo.waitClosed(); 
         //TestKit.deleteRecursively(file);
     }
     
