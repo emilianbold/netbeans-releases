@@ -35,7 +35,7 @@ public class MeasureAPIsupport  {
         
         //dialogs
         suite.addTest(new NetBeansPlatformManager("measureTime", "NetBeans Platform Manager open"));
-        suite.addTest(new ProjectPropertiesWindow_NBproject("measureTime", "NB Project Properties window open"));
+        suite.addTest(new ProjectPropertiesWindow("testNBProject", "NB Project Properties window open"));
 
         //menus
         suite.addTest(new ProjectsViewPopupMenu("testNBProjectNodePopupMenuProjects", "NB Project node popup in Projects View"));

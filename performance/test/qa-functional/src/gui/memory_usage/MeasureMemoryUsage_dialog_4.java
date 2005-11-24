@@ -37,7 +37,7 @@ public class MeasureMemoryUsage_dialog_4 {
         suite.addTest(new OpenFileDialog("doMeasurement", "Open File dialog open"));
         
         suite.addTest(new FindInProjects("doMeasurement", "Find in Projects dialog open"));
-        suite.addTest(new ProjectPropertiesWindow_JSEproject("doMeasurement", "Project Properties window open"));
+        suite.addTest(new ProjectPropertiesWindow("testJSEProject", "JSE Project Properties window open"));
  
         return suite;
     }
