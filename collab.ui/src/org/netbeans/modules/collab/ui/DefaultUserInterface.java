@@ -25,6 +25,7 @@ import java.util.*;
 import javax.swing.*;
 
 import org.openide.*;
+import org.openide.awt.Mnemonics;
 import org.openide.cookies.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -128,21 +129,49 @@ public class DefaultUserInterface extends UserInterface {
                 );
         }
 
-        String acceptOption = NbBundle.getMessage(
-                DefaultUserInterface.class, "OPT_DefaultUserInterface_AcceptConference"
-            );
-        String declineOption = NbBundle.getMessage(
-                DefaultUserInterface.class, "OPT_DefaultUserInterface_DeclineConference"
-            );
+        JOptionPane messageText = new JOptionPane(
+            NbBundle.getMessage(DefaultUserInterface.class, "MSG_DefaultUserInterface_AcceptConference", new Object[] { name, message }),
+            JOptionPane.PLAIN_MESSAGE,
+            0, // options type
+            null, // icon
+            new Object[0], // options
+            null // value
+        ) {
+            public int getMaxCharactersPerLineCount() {
+                return 100;
+            }
+        };
+        messageText.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DefaultUserInterface.class,
+            "ACSD_NAME_MSG_DefaultUserInterface_AcceptConference"));
+        messageText.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DefaultUserInterface.class,
+            "ACSD_DESC_MSG_DefaultUserInterface_AcceptConference"));
+
+        JButton acceptOption = new JButton();
+        Mnemonics.setLocalizedText (acceptOption, NbBundle.getMessage(DefaultUserInterface.class,
+            "OPT_DefaultUserInterface_AcceptConference"));
+        acceptOption.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DefaultUserInterface.class,
+            "ACSD_NAME_DefaultUserInterface_AcceptConference"));
+        acceptOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DefaultUserInterface.class,
+            "ACSD_DESC_DefaultUserInterface_AcceptConference"));
+
+        JButton declineOption = new JButton();
+        Mnemonics.setLocalizedText (declineOption, NbBundle.getMessage(DefaultUserInterface.class,
+            "OPT_DefaultUserInterface_DeclineConference"));
+        declineOption.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DefaultUserInterface.class,
+            "ACSD_NAME_DefaultUserInterface_DeclineConference"));
+        declineOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DefaultUserInterface.class,
+            "ACSD_DESC_DefaultUserInterface_DeclineConference"));
 
         // Prompt to accept conference
-        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(
-                    DefaultUserInterface.class, "MSG_DefaultUserInterface_AcceptConference",
-                    new Object[] { name, message }
-                )
-            );
-        descriptor.setOptions(new Object[] { acceptOption, declineOption });
+        Object[] options=new Object[] {acceptOption,declineOption};
+        NotifyDescriptor descriptor=new NotifyDescriptor(
+            messageText,
+            NbBundle.getMessage (NotifyDescriptor.class, "NTF_QuestionTitle"),
+            NotifyDescriptor.YES_NO_OPTION,
+            NotifyDescriptor.QUESTION_MESSAGE,
+            options,
+            options[0]
+        );
 
         return DialogDisplayer.getDefault().notify(descriptor) == acceptOption;
     }
