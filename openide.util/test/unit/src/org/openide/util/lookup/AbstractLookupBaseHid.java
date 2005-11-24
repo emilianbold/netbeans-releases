@@ -23,6 +23,7 @@ import junit.framework.*;
 import org.netbeans.junit.*;
 import java.io.Serializable;
 import org.openide.util.Lookup.Item;
+import org.openide.util.Lookup.Provider;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Lookup.Template;
 
@@ -1274,10 +1275,22 @@ public class AbstractLookupBaseHid extends NbTestCase {
     public void testChangeOfNodeDoesNotFireChangeInActionMap() {
         ActionMap am = new ActionMap();
         Lookup s = Lookups.singleton(am);
-        doChangeOfNodeDoesNotFireChangeInActionMap(am, s);
+        doChangeOfNodeDoesNotFireChangeInActionMap(am, s, false);
+    }
+    public void testChangeOfNodeDoesNotFireChangeInActionMapSimple() {
+        ActionMap am = new ActionMap();
+        Lookup s = Lookups.singleton(am);
+        doChangeOfNodeDoesNotFireChangeInActionMap(am, s, true);
     }
 
+    public void testChangeOfNodeDoesNotFireChangeInActionMapWithBeforeLookupSimple() {
+        doChangeOfNodeDoesNotFireChangeInActionMapWithBeforeLookup(true);
+    }
+    
     public void testChangeOfNodeDoesNotFireChangeInActionMapWithBeforeLookup() {
+        doChangeOfNodeDoesNotFireChangeInActionMapWithBeforeLookup(false);
+    }
+    private void doChangeOfNodeDoesNotFireChangeInActionMapWithBeforeLookup(boolean wrapBySimple) {
         final ActionMap am = new ActionMap();
         
         class Before extends AbstractLookup {
@@ -1300,15 +1313,43 @@ public class AbstractLookupBaseHid extends NbTestCase {
         }
         
         Before s = new Before();
-        doChangeOfNodeDoesNotFireChangeInActionMap(am, s);
+        doChangeOfNodeDoesNotFireChangeInActionMap(am, s, wrapBySimple);
         
         assertNull("beforeLookup called once", s.ic);
     }
     
-    private void doChangeOfNodeDoesNotFireChangeInActionMap(final ActionMap am, Lookup actionMapLookup) {
+    private void doChangeOfNodeDoesNotFireChangeInActionMap(final ActionMap am, Lookup actionMapLookup, final boolean wrapBySimple) {
         Lookup[] lookups = { lookup, actionMapLookup };
-        ProxyLookup proxy = new ProxyLookup(lookups);
-        Lookup.Result res = proxy.lookup(new Lookup.Template(ActionMap.class));
+        
+        class Provider implements Lookup.Provider {
+            ProxyLookup delegate;
+            Lookup query;
+            
+            public Provider(Lookup[] arr) {
+                if (wrapBySimple) {
+                    delegate = new ProxyLookup(arr);
+                    query = Lookups.proxy(this);
+                } else {
+                    query = delegate = new ProxyLookup(arr);
+                }
+            }
+            
+            public Lookup getLookup() {
+                return delegate;
+            }
+            
+            public void setLookups(Lookup[] arr) {
+                if (wrapBySimple) {
+                    delegate = new ProxyLookup(arr);                    
+                } else {
+                    delegate.setLookups(arr);
+                }
+            }
+        }
+        
+        Provider p = new Provider(lookups);
+        
+        Lookup.Result res = p.query.lookup(new Lookup.Template(ActionMap.class));
         LL ll = new LL();
         res.addLookupListener(ll);
 
@@ -1329,10 +1370,10 @@ public class AbstractLookupBaseHid extends NbTestCase {
         assertEquals("No change in ActionMap 2", 0, ll.getCount());
         ic.add(m2);
         assertEquals("No change in ActionMap 3", 0, ll.getCount());
-        proxy.setLookups(new Lookup[]{ lookup, actionMapLookup, Lookup.EMPTY });
+        p.setLookups(new Lookup[]{ lookup, actionMapLookup, Lookup.EMPTY });
         assertEquals("No change in ActionMap 4", 0, ll.getCount());
         
-        ActionMap am2 = (ActionMap)proxy.lookup(ActionMap.class);
+        ActionMap am2 = (ActionMap)p.query.lookup(ActionMap.class);
         assertEquals("Still the same action map", am, am2);
         
         
@@ -1360,7 +1401,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         // adding different Before, but returning the same instance
         // this happens with metaInfServices lookup often, moreover
         // it adds the instance in beforeLookup, which confuses a lot
-        proxy.setLookups(new Lookup[]{ lookup, new Before() });
+        p.setLookups(new Lookup[]{ lookup, new Before() });
         assertEquals("No change in ActionMap 5", 0, ll.getCount());
         
         
