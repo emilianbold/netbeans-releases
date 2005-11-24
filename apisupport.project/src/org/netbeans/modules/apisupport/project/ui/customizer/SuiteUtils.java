@@ -114,10 +114,8 @@ public final class SuiteUtils {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws Exception {
-                    SubprojectProvider spp = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
-                    Set/*<Project>*/ subModules = spp.getSubprojects();
                     final SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
-                            suite.getEvaluator(), subModules);
+                            suite.getEvaluator(), getSubProjects(suite));
                     if (!SuiteUtils.contains(suite, project)) {
                         SuiteUtils utils = new SuiteUtils(suiteProps);
                         utils.addModule(project);
@@ -146,10 +144,8 @@ public final class SuiteUtils {
                     SuiteProject suite = SuiteUtils.findSuite(suiteComponent);
                     if (suite != null) {
                         // detach module from its current suite
-                        SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
-                        Set/*<Project>*/ subModules = spp.getSubprojects();
                         SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
-                                suite.getEvaluator(), subModules);
+                                suite.getEvaluator(), getSubProjects(suite));
                         SuiteUtils utils = new SuiteUtils(suiteProps);
                         utils.removeModule(suiteComponent);
                         suiteProps.storeProperties();
@@ -355,8 +351,7 @@ public final class SuiteUtils {
      * project with the same code name base.
      */
     public static boolean contains(final SuiteProject suite, final NbModuleProject project) {
-        SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
-        Set/*<Project>*/ subModules = spp.getSubprojects();
+        Set/*<Project>*/ subModules = getSubProjects(suite);
         if (subModules.contains(project)) {
             return true;
         }
@@ -367,6 +362,15 @@ public final class SuiteUtils {
             }
         }
         return false;
+    }
+    
+    /**
+     * Utility method to acquire modules contains within a given suite. Just
+     * delegates to {@link SubprojectProvider#getSubprojects()}.
+     */
+    public static Set/*<Project>*/ getSubProjects(final Project suite) {
+        SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
+        return spp.getSubprojects();
     }
     
 }

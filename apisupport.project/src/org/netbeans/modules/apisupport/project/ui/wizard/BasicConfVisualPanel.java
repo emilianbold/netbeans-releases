@@ -23,7 +23,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -181,8 +181,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         FileObject suiteDirFO = FileUtil.toFileObject(new File(suiteDir));
         try {
             Project suite = ProjectManager.getDefault().findProject(suiteDirFO);
-            SubprojectProvider sp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
-            for (Iterator it = sp.getSubprojects().iterator(); it.hasNext();) {
+            for (Iterator it = SuiteUtils.getSubProjects(suite).iterator(); it.hasNext();) {
                 Project p = (Project) it.next();
                 if (ProjectUtils.getInformation(p).getName().equals(cnb)) {
                     result = true;

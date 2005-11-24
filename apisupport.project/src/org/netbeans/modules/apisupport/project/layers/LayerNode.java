@@ -26,7 +26,6 @@ import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
@@ -243,7 +242,7 @@ public final class LayerNode extends FilterNode {
             if (suite == null) {
                 throw new IOException("Could not load suite for " + p); // NOI18N
             }
-            Set/*<Project>*/ modules = ((SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class)).getSubprojects();
+            Set/*<Project>*/ modules = SuiteUtils.getSubProjects(suite);
             return LayerUtils.createLayerClasspath(modules, LayerUtils.getPlatformJarsForSuiteComponentProject(p, suite));
         } else if (type == NbModuleTypeProvider.NETBEANS_ORG) {
             return LayerUtils.createLayerClasspath(LayerUtils.getProjectsForNetBeansOrgProject(p), Collections.EMPTY_SET);

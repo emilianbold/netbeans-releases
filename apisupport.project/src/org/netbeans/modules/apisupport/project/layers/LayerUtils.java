@@ -53,7 +53,6 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.modules.xml.tax.parser.XMLParsingSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.tax.TreeDocumentRoot;
 import org.netbeans.tax.TreeException;
@@ -559,7 +558,7 @@ public class LayerUtils {
                     throw new IOException("Could not load suite for " + p); // NOI18N
                 }
                 List/*<FileSystem>*/ readOnlyLayers = new ArrayList();
-                Set/*<Project>*/ modules = ((SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class)).getSubprojects();
+                Set/*<Project>*/ modules = SuiteUtils.getSubProjects(suite);
                 Iterator it = modules.iterator();
                 while (it.hasNext()) {
                     NbModuleProject sister = (NbModuleProject) it.next();

@@ -15,15 +15,11 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.spi.project.SubprojectProvider;
-import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /** Checks the behaviour of enabled module list.
@@ -31,12 +27,11 @@ import org.openide.nodes.Node;
  * @author Jaroslav Tulach
  */
 public class SuiteCustomizerModuleListTest extends TestBase {
+
     private FileObject suiteRepoFO;
     private SuiteProject suite1Prj;
-    private SuiteProject suite2Prj;
     private SuiteProperties suite1Props;
     private FileObject suite1FO;
-    private FileObject suite2FO;
     
     private SuiteCustomizerLibraries customizer;
     
@@ -48,13 +43,9 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         super.setUp();
         suiteRepoFO = FileUtil.toFileObject(copyFolder(extexamplesF));
         suite1FO = suiteRepoFO.getFileObject("suite1");
-        suite2FO = suiteRepoFO.getFileObject("suite2");
         suite1Prj = (SuiteProject) ProjectManager.getDefault().findProject(suite1FO);
-        suite2Prj = (SuiteProject) ProjectManager.getDefault().findProject(suite1FO);
-        SubprojectProvider suite1spp = (SubprojectProvider) suite1Prj.getLookup().lookup(SubprojectProvider.class);
-        Set/*<Project>*/ suite1subModules = suite1spp.getSubprojects();
         this.suite1Props = new SuiteProperties(suite1Prj, suite1Prj.getHelper(),
-                suite1Prj.getEvaluator(), suite1subModules);
+                suite1Prj.getEvaluator(), SuiteUtils.getSubProjects(suite1Prj));
         
         customizer = new SuiteCustomizerLibraries(this.suite1Props);
     }

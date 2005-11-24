@@ -51,7 +51,6 @@ import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -432,10 +431,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     String[] getAvailableFriends() {
         SortedSet set = new TreeSet();
         if (isSuiteComponent()) {
-            SuiteProject suite = getSuite();
-            SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
-            Set/*<Project>*/ subModules = spp.getSubprojects();
-            for (Iterator it = subModules.iterator(); it.hasNext();) {
+            for (Iterator it = SuiteUtils.getSubProjects(getSuite()).iterator(); it.hasNext();) {
                 Project prj = (Project) it.next();
                 String cnb = ProjectUtils.getInformation(prj).getName();
                 if (!getCodeNameBase().equals(cnb)) {
