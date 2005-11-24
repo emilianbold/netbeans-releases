@@ -2967,7 +2967,7 @@ class JavaCodeGenerator extends CodeGenerator {
             return new PropertyEditorSupport() {
                 public Component getCustomEditor() {
                     return new CustomCodeEditor(CodePropertySupportRW.this,
-                                                formEditorSupport.getFormDataObject());
+                                                FormEditor.createCodeEditorPane(formModel));
                 }
 
                 public boolean supportsCustomEditor() {
