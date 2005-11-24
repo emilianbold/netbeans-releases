@@ -6,3 +6,5 @@
 
 1.0.4:	Integrated some JSE fixes (Implement 2-phase locking,
 	JSE issue #5101109). Should fix #67308.
+
+1.0.5:  Conversation UI cleanup (#68576)

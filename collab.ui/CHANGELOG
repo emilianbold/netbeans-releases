@@ -13,3 +13,6 @@
 1.0.7:	Really implement the robust menu positioning (#64531)
 
 1.0.8:	Don't request restart any more, better fix for (#66452, #67952)
+
+1.0.9:  Conversation UI cleanup (#68576)
+	Fix preferredID() warning
