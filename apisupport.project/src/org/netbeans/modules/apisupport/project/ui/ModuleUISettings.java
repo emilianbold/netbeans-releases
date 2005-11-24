@@ -29,6 +29,7 @@ public class ModuleUISettings extends SystemOption {
     private static final String NEW_MODULE_COUNTER = "newModuleCounter";  //NOI18N
     private static final String NEW_SUITE_COUNTER = "newSuiteCounter";  //NOI18N
     private static final String CONFIRM_RELOAD_IN_IDE = "confirmReloadInIDE"; // NOI18N
+    private static final String LAST_USED_PLATFORM_ID = "lastUsedPlatformId"; // NOI18N
     
     public static ModuleUISettings getDefault() {
         return (ModuleUISettings) SystemOption.findObject(ModuleUISettings.class, true);
@@ -37,10 +38,15 @@ public class ModuleUISettings extends SystemOption {
     public String displayName() {
         return "NBMProjectUISetting"; // NOI18N (not shown in UI)
     }
+
+    private Object getProperty(Object key, Object fallback) {
+        Object value = getProperty(key);
+        return value == null ? fallback : value;
+    }
     
     public int getNewModuleCounter() {
-        Integer counter = (Integer) getProperty(NEW_MODULE_COUNTER);
-        return counter == null ? 0 : counter.intValue();
+        Integer counter = (Integer) getProperty(NEW_MODULE_COUNTER, Integer.valueOf(0));
+        return counter.intValue();
     }
     
     public void setNewModuleCounter(int count) {
@@ -48,8 +54,8 @@ public class ModuleUISettings extends SystemOption {
     }
     
     public int getNewSuiteCounter() {
-        Integer counter = (Integer) getProperty(NEW_SUITE_COUNTER);
-        return counter == null ? 0 : counter.intValue();
+        Integer counter = (Integer) getProperty(NEW_SUITE_COUNTER, Integer.valueOf(0));
+        return counter.intValue();
     }
     
     public void setNewSuiteCounter(int count) {
@@ -57,11 +63,7 @@ public class ModuleUISettings extends SystemOption {
     }
     
     public String getLastUsedModuleLocation() {
-        String location = (String) getProperty(LAST_USED_MODULE_LOCATION);
-        if (location == null) {
-            location = System.getProperty("user.home"); // NOI18N
-        }
-        return location;
+        return (String) getProperty(LAST_USED_MODULE_LOCATION, System.getProperty("user.home")); // NOI18N
     }
     
     public void setLastUsedModuleLocation(String location) {
@@ -70,8 +72,8 @@ public class ModuleUISettings extends SystemOption {
     }
     
     public boolean getConfirmReloadInIDE() {
-        Boolean b = (Boolean) getProperty(CONFIRM_RELOAD_IN_IDE);
-        return b != null ? b.booleanValue() : true;
+        Boolean b = (Boolean) getProperty(CONFIRM_RELOAD_IN_IDE, Boolean.TRUE);
+        return b.booleanValue();
     }
     
     public void setConfirmReloadInIDE(boolean b) {
@@ -79,16 +81,21 @@ public class ModuleUISettings extends SystemOption {
     }
     
     public String getLastChosenLibraryLocation() {
-        String location = (String) getProperty(LAST_CHOSEN_LIBRARY_LOCATION);
-        if (location == null) {
-            location = System.getProperty("user.home"); // NOI18N
-        }
-        return location;
+        return (String) getProperty(LAST_CHOSEN_LIBRARY_LOCATION, System.getProperty("user.home")); // NOI18N
     }
     
     public void setLastChosenLibraryLocation(String location) {
         assert location != null : "Location can not be null"; // NOI18N
         putProperty(LAST_CHOSEN_LIBRARY_LOCATION, location, true);
+    }
+    
+    public String getLastUsedPlatformID() {
+        return (String) getProperty(LAST_USED_PLATFORM_ID, "default"); // NOI18N
+    }
+    
+    public void setLastUsedPlatformID(String id) {
+        assert id != null : "Location can not be null"; // NOI18N
+        putProperty(LAST_USED_PLATFORM_ID, id, true);
     }
     
 }

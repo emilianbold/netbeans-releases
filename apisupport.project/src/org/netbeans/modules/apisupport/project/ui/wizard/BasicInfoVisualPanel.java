@@ -76,6 +76,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         wizardType = wizType;
         initComponents();
         initAccessibility();
+        initPlatformCombos();
         data = NewModuleProjectData.getData(setting);
         setComponentsVisibility();
         if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
@@ -261,9 +262,9 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         data.setStandalone(standAloneModule.isSelected());
         data.setSuiteRoot((String) moduleSuiteValue.getSelectedItem());
         if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
-            data.setPlatform(((NbPlatform) suitePlatformValue.getSelectedItem()).getID());
+            data.setPlatformID(((NbPlatform) suitePlatformValue.getSelectedItem()).getID());
         } else {
-            data.setPlatform(((NbPlatform) platformValue.getSelectedItem()).getID());
+            data.setPlatformID(((NbPlatform) platformValue.getSelectedItem()).getID());
         }
     }
     
@@ -349,6 +350,24 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
     private static String getMessage(String key) {
         return NbBundle.getMessage(BasicInfoVisualPanel.class, key);
+    }
+    
+    private void initPlatformCombos() {
+        boolean set = false;
+        String idToSelect = ModuleUISettings.getDefault().getLastUsedPlatformID();
+        for (int i = 0; i < platformValue.getItemCount(); i++) {
+            if (((NbPlatform) platformValue.getItemAt(i)).getID().equals(idToSelect)) {
+                platformValue.setSelectedIndex(i);
+                suitePlatformValue.setSelectedIndex(i);
+                set = true;
+                break;
+            }
+        }
+        if (!set) {
+            NbPlatform defPlaf = NbPlatform.getDefaultPlatform();
+            platformValue.setSelectedItem(defPlaf);
+            suitePlatformValue.setSelectedItem(defPlaf);
+        }
     }
     
     /** This method is called from within the constructor to

@@ -73,6 +73,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         final NewModuleProjectData data = NewModuleProjectData.getData(settings);
         final File projectFolder = new File(data.getProjectFolder());
         ModuleUISettings.getDefault().setLastUsedModuleLocation(data.getProjectLocation());
+        ModuleUISettings.getDefault().setLastUsedPlatformID(data.getPlatformID());
         if (type == TYPE_MODULE) {
             ModuleUISettings.getDefault().setNewModuleCounter(data.getModuleCounter());
             if (data.isNetBeansOrg()) {
@@ -84,7 +85,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
                 // create standalone module
                 NbModuleProjectGenerator.createStandAloneModule(projectFolder,
                         data.getCodeNameBase(), data.getProjectDisplayName(),
-                        data.getBundle(), data.getLayer(), data.getPlatform());
+                        data.getBundle(), data.getLayer(), data.getPlatformID());
             } else {
                 // create suite-component module
                 NbModuleProjectGenerator.createSuiteComponentModule(projectFolder,
@@ -107,7 +108,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
             
         } else if (this.type == TYPE_SUITE) {
             ModuleUISettings.getDefault().setNewSuiteCounter(data.getSuiteCounter());
-            SuiteProjectGenerator.createSuiteProject(projectFolder, data.getPlatform());
+            SuiteProjectGenerator.createSuiteProject(projectFolder, data.getPlatformID());
         } else {
             throw new IllegalStateException("Uknown wizard type: " + this.type); // NOI18N
         }

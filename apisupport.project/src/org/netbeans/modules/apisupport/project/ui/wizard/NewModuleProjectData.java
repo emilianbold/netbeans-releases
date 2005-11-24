@@ -33,7 +33,7 @@ final class NewModuleProjectData {
     private String suiteRoot;
     private boolean mainProject;
     private String codeNameBase;
-    private String platform;
+    private String platformID;
     private String bundle;
     private String layer;
     private String projectDisplayName;
@@ -125,12 +125,12 @@ final class NewModuleProjectData {
         this.codeNameBase = codeNameBase;
     }
     
-    String getPlatform() {
-        return platform;
+    String getPlatformID() {
+        return platformID;
     }
     
-    void setPlatform(String platform) {
-        this.platform = platform;
+    void setPlatformID(String platformID) {
+        this.platformID = platformID;
     }
     
     String getBundle() {
