@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,12 +31,14 @@ public class Options extends org.netbeans.performance.test.utilities.Performance
     public Options(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN = 10000;
     }
     
     /** Creates a new instance of Options */
     public Options(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN = 10000;
     }
     
     public void prepare(){
