@@ -13,17 +13,10 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import java.util.ArrayList;
 import javax.swing.Action;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.actions.Presenter;
 
 /**
  * Action which just holds a few other SystemAction's for grouping purposes.
@@ -47,43 +40,8 @@ public class AddActionGroup extends EJBActionGroup {
         };
     }
     
-    public JMenuItem getPopupPresenter() {
-        return new EnabledItemsOnlyLazyMenu(actionContext);
-    }
-    
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx(PromoteBusinessMethodAction.class);
     }
     
-   private final class EnabledItemsOnlyLazyMenu extends JMenu {
-        
-        private Lookup l;
-        
-        public EnabledItemsOnlyLazyMenu(Lookup lookup) {
-            super(AddActionGroup.this.getName());
-            l = lookup;
-        }
-        
-        public JPopupMenu getPopupMenu() {
-            if (getItemCount() == 0) {
-                Action[] grouped = grouped();
-                for (int i = 0; i < grouped.length; i++) {
-                    Action action = grouped[i];
-                    if (action == null) {
-                        addSeparator();
-                    } else {
-                        if (action instanceof ContextAwareAction) {
-                            action = ((ContextAwareAction)action).createContextAwareInstance(l);
-                        }
-                        if (action instanceof Presenter.Popup){
-                             add(((Presenter.Popup)action).getPopupPresenter());
-                        }
-                    }
-                }
-            }
-            return super.getPopupMenu();
-        }
-    }
 }

@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import javax.swing.*;
+import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -56,7 +57,7 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
     }
     
     public JMenuItem getPopupPresenter() {
-        if (isEjbProject()) {
+        if (isEnabled() && isEjbProject()) {
             return getMenu();
         }
         JMenuItem i = super.getPopupPresenter();
@@ -82,7 +83,7 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
         try {
             JavaClass jc = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
             boolean result = false;
-            if (jc != null) {
+            if (jc != null && !(jc instanceof UnresolvedClass)) {
                 EjbMethodController c = EjbMethodController.createFromClass(jc);
                 result = (c != null);
             }
@@ -118,8 +119,7 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
     /** Implements <code>ContextAwareAction</code> interface method. */
     public Action createContextAwareInstance(Lookup actionContext) {
         this.actionContext = actionContext;
-        boolean enable = enable((Node[])actionContext.lookup(new Lookup.Template (Node.class)).allInstances().toArray(new Node[0]));
-        return enable ? super.createContextAwareInstance(actionContext) : null;
+        return super.createContextAwareInstance(actionContext);
     }
     
 

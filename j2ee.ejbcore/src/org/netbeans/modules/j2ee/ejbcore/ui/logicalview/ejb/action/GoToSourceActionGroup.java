@@ -16,18 +16,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import javax.swing.JMenuItem;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -67,43 +64,21 @@ public class GoToSourceActionGroup extends EJBActionGroup {
         return (Action[]) actions.toArray(new Action[actions.size()]);
     }
 
-    public JMenuItem getPopupPresenter() {
-        return getMenu();
-    }
-    
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
     // private helpers =========================================================
     
-    /** 
-     * Checks if the node represents Java source file.
-     */
-    private JavaClass javaClassForNode(Node n) {
-        JavaClass jc = null;
-        DataObject dobj = (DataObject) n.getCookie(DataObject.class);
-        if (dobj != null) {
-            Resource res = JavaModel.getResource(dobj.getPrimaryFile());
-            if (res != null) {
-                List/*<JavaClass>*/ classes = res.getClassifiers();
-                if (classes.size() == 1) {
-                    jc = (JavaClass)classes.get(0);
-                }
-            }
-        }
-        return jc;
-    }
-
     private ClassPath getClassPath() {
-        JavaClass jc = javaClassForNode(getActivatedNodes()[0]);
+        JavaClass jc = JMIUtils.getJavaClassFromNode(getActivatedNodes()[0]);
         FileObject fo = JavaModel.getFileObject(jc.getResource());
         return ClassPath.getClassPath(fo, ClassPath.SOURCE);
     }
     
     private EntityAndSession getEjb() {
         try {
-            JavaClass jc = javaClassForNode(getActivatedNodes()[0]);
+            JavaClass jc = JMIUtils.getJavaClassFromNode(getActivatedNodes()[0]);
             EjbJar ejbJar = DDProvider.getDefault().getDDRoot(getDDFileObject(jc));
             Ejb[] ejbs = ejbJar.getEnterpriseBeans().getEjbs();
             for (int i = 0; i < ejbs.length; i++) {

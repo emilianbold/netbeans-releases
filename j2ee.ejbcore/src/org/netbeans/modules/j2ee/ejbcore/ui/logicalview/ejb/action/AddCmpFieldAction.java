@@ -18,6 +18,7 @@ import java.io.IOException;
 import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.Field;
 import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.common.ui.nodes.FieldCustomizer;
@@ -57,10 +58,17 @@ public class AddCmpFieldAction extends NodeAction {
     }
 
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
+        if (activatedNodes == null || activatedNodes.length < 1) {
+            return false;
+        }
         EjbMethodController c;
+        JavaClass jc = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
+        if (jc == null || (jc instanceof UnresolvedClass)) {
+            return false;
+        }
         return activatedNodes.length == 1 &&
                isCallable(activatedNodes[0]) &&
-               (c = EjbMethodController.create(JMIUtils.getJavaClassFromNode(activatedNodes[0]))) != null &&
+               (c = EjbMethodController.create(jc)) != null &&
                c instanceof EntityMethodController &&
                ((EntityMethodController) c).isCMP();
     }

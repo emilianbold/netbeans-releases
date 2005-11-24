@@ -15,6 +15,7 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 
 import org.netbeans.jmi.javamodel.Feature;
+import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.j2ee.ejbcore.patterns.DTOGenerator;
 import org.netbeans.modules.j2ee.ejbcore.patterns.DTOHelper;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
@@ -45,10 +46,17 @@ public class GenerateDTOAction extends NodeAction {
     }
     
     protected boolean enable(Node[] nodes) {
+        if (nodes == null || nodes.length < 1) {
+            return false;
+        }
         EjbMethodController c;
+        Feature feature = getMemberElement(nodes[0]);
+        if (feature == null || (feature instanceof UnresolvedClass)) {
+            return false;
+        }
         return nodes.length == 1 &&
                 isMemberElement(nodes[0]) &&
-                (c = EjbMethodController.create(getMemberElement(nodes[0]))) != null &&
+                (c = EjbMethodController.create(feature)) != null &&
                 c instanceof EntityMethodController &&
                 ((EntityMethodController) c).isCMP();
     }
