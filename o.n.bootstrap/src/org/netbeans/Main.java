@@ -138,13 +138,6 @@ public class Main extends Object {
             Main.class.getClassLoader()
         });
         
-        String className = System.getProperty(
-            "netbeans.mainclass", "org.netbeans.core.startup.Main" // NOI18N
-        );
-        
-	Class c = loader.loadClass(className);
-        Method m = c.getMethod ("main", new Class[] { String[].class }); // NOI18N
-        
         // Needed for Lookup.getDefault to find NbTopManager.Lkp.
         // Note that ModuleManager.updateContextClassLoaders will later change
         // the loader on this and other threads to be MM.SystemClassLoader anyway.
@@ -170,6 +163,14 @@ public class Main extends Object {
             }
             
         }
+        
+        
+        String className = System.getProperty(
+            "netbeans.mainclass", "org.netbeans.core.startup.Main" // NOI18N
+        );
+        
+        Class c = loader.loadClass(className);
+        Method m = c.getMethod ("main", new Class[] { String[].class }); // NOI18N
         
         if (methodToCall != null) {
             methodToCall[0] = m;
