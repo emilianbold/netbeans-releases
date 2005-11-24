@@ -87,14 +87,14 @@ class BracketCompletion {
                 return;
             }
         }
-        if (isForLoopSemicolon(token)) {
+        if (isForLoopSemicolon(token) || posWithinAnyQuote(doc,dotPos)) {
             return;
         }
         doc.remove(dotPos, 1);
         doc.insertString(lastParenPos, ";", null); // NOI18N
         caret.setDot(lastParenPos + 1);
     }
-
+   
     private static boolean isForLoopSemicolon(TokenItem token) {
         if (token == null || token.getTokenID() != JavaTokenContext.SEMICOLON) {
             return false;
@@ -701,6 +701,23 @@ class BracketCompletion {
     } catch (BadLocationException ex) {
       return false;
     }
+  }
+
+  static boolean posWithinAnyQuote(BaseDocument doc, int dotPos) {
+      try {
+          MyTokenProcessor proc = new MyTokenProcessor();
+          doc.getSyntaxSupport().tokenizeText( proc,
+                  dotPos-1,
+                  doc.getLength(), true);
+          if(proc.tokenID == JavaTokenContext.STRING_LITERAL ||
+                  proc.tokenID == JavaTokenContext.CHAR_LITERAL) {
+              char[] ch = doc.getChars(dotPos-1,1);
+              return dotPos - proc.tokenStart == 1 || (ch[0]!='\"' && ch[0]!='\'');
+          }
+          return false;
+      } catch (BadLocationException ex) {
+          return false;
+      }
   }
 
 
