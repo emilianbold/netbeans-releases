@@ -343,7 +343,6 @@ public class ColorModel {
             final Collection /*<Category>*/ highlightings,
             final Collection /*<Category>*/ syntaxColorings
         ) {
-            System.out.println("setParameters " + language);
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     String internalMimeType = null;
