@@ -882,8 +882,8 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testCheckWizardFinish() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         String storeCVSroot;
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();

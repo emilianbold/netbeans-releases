@@ -92,8 +92,8 @@ public class BranchTest extends JellyTestCase {
     }
     
     public void testCheckOutProject() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         String CVSroot;
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
@@ -154,6 +154,7 @@ public class BranchTest extends JellyTestCase {
         //sessionCVSroot = CVSroot;
         OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
         oto.waitText("Checking out finished");
+        Thread.sleep(1000);
         cvss.stop();
         in.close();
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");

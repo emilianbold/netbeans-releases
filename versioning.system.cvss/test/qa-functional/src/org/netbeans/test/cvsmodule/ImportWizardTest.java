@@ -460,10 +460,12 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardFinish() throws Exception {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         String CVSroot;
         PseudoCvsServer cvss;
         TestKit.unversionProject(file, projectName);
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
         CVSRootStepOperator crso = new CVSRootStepOperator();
         JComboBoxOperator combo = new JComboBoxOperator(crso, 0);

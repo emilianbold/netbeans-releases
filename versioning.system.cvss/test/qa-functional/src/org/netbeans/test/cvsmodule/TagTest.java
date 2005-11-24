@@ -88,8 +88,8 @@ public class TagTest extends JellyTestCase {
     }
     
     public void testCheckOutProject() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
-        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 18000);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         //JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
