@@ -14,7 +14,24 @@
 package org.netbeans.modules.derby.spi.support;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.derby.DerbyOptions;
+import org.netbeans.modules.derby.RegisterDerby;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  *
@@ -57,5 +74,69 @@ public final class DerbySupport {
      */
     public static String getSystemHome() {
         return DerbyOptions.getDefault().getSystemHome();
+    }
+    
+    public static DatabaseConnection registerSampleDatabase() throws DatabaseException {
+        String targetDirectory = getSystemHome();
+        if ("".equals(targetDirectory)) { // NOI18N
+            throw new IllegalStateException("derby.system.home not set"); // NOI18N
+        }
+        File source = InstalledFileLocator.getDefault().locate("modules/ext/derbysampledb.zip", null, false);
+        FileObject target = FileUtil.toFileObject(new File(targetDirectory));
+        extractZip(source, target);
+        JDBCDriver drivers[] = JDBCDriverManager.getDefault().getDrivers(RegisterDerby.NET_DRIVER_CLASS_NAME);
+        if (drivers.length == 0) {
+            throw new IllegalStateException("derby driver not found"); // NOI18N
+        }
+        DatabaseConnection con = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:1527/sample", null, "APP", null, false);
+        ConnectionManager.getDefault().addConnection(con);
+        return con;
+    }
+    
+    private static void extractZip(File source, FileObject target) {
+        FileInputStream is = null;
+        try {
+            is = new FileInputStream(source);
+            ZipInputStream zis = new ZipInputStream(is);
+            ZipEntry ze;
+
+
+            while ((ze = zis.getNextEntry()) != null) {
+                String name = ze.getName();
+
+                if (ze.isDirectory()) {
+                    FileUtil.createFolder(target, name);
+                    continue;
+                }
+
+                // copy the file
+                FileObject fd = FileUtil.createData(target, name);
+                FileLock lock = fd.lock();
+
+                try {
+                    OutputStream os = fd.getOutputStream(lock);
+
+                    try {
+                        FileUtil.copy(zis, os);
+                    } finally {
+                        os.close();
+                    }
+                } finally {
+                    lock.releaseLock();
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } finally {
+            if (is != null)
+                try {
+                    is.close();
+                }
+                catch (IOException e) {
+                    // can't do anything
+                }
+        }
     }
 }
