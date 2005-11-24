@@ -109,6 +109,9 @@ public class CreateNBProject extends org.netbeans.performance.test.utilities.Per
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new CreateNBProject("testCreateModuleProject"));
     }

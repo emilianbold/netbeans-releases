@@ -65,6 +65,9 @@ public class CreateTestsDialog extends org.netbeans.performance.test.utilities.P
         return new NbDialogOperator("Create Tests"); //NOI18N
     }
 
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new CreateTestsDialog("measureTime"));
     }

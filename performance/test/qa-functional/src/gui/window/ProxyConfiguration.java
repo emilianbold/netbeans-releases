@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -70,4 +70,12 @@ public class ProxyConfiguration extends org.netbeans.performance.test.utilities.
         if(wizard!=null && wizard.isShowing())
             wizard.close();
     }
+    
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(new ProxyConfiguration("measureTime"));
+    }
+    
 }

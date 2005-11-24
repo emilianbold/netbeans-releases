@@ -72,6 +72,5 @@ public class RuntimeViewPopupMenu extends ValidatePopupMenuOnNodes{
     public static void main(String[] args) {
         junit.textui.TestRunner.run(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime"));
     }
-    
 
 }

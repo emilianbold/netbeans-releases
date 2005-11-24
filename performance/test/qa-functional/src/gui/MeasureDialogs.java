@@ -43,7 +43,7 @@ public class MeasureDialogs  {
         suite.addTest(new OpenFileDialog("measureTime", "Open File dialog open"));
  
         suite.addTest(new UpdateCenter("measureTime", "Update Center wizard open"));
-        //remove from test run for NB4.1        suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
+        suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
         
         suite.addTest(new FavoritesWindow("measureTime", "Favorites window open"));
         //remove from test run for NB4.1        suite.addTest(new FilesWindow("measureTime", "Files window open"));
@@ -62,8 +62,7 @@ public class MeasureDialogs  {
         
         suite.addTest(new AddServerInstanceDialog("measureTime", "Add JDBC Driver dialog open"));
         suite.addTest(new NewDatabaseConnectionDialog("measureTime", "New Database Connection dialog open"));
-        //remove from test run for NB4.1        suite.addTest(new SetDefaultServerDialog("measureTime", "Set Default Server dialog open"));
-        suite.addTest(new MountXMLCatalogDialog("measureTime", "Mount XML Catalog dialog open"));
+        suite.addTest(new AddXMLandDTDSchemaCatalog("measureTime", "Add Catalog dialog open"));
         
         suite.addTest(new FindInProjects("measureTime", "Find in Projects dialog open"));
         suite.addTest(new ProjectPropertiesWindow("testJSEProject", "JSE Project Properties window open"));
