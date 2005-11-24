@@ -12,9 +12,11 @@
  */
 package org.netbeans.modules.j2ee.jboss4.ide;
 
+import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
@@ -146,50 +148,77 @@ public class JBStartServer extends StartServer implements ProgressObject{
     }
     
     private boolean isReallyRunning(){
-        InstanceProperties ip = dm.getInstanceProperties();
+        final InstanceProperties ip = dm.getInstanceProperties();
         if (ip == null) {
             return false; // finish, it looks like this server instance has been unregistered
         }
-        
-        ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
-        String serverRoot = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
-        URLClassLoader loader = ((JBDeploymentFactory)JBDeploymentFactory.create()).getJBClassLoader(serverRoot);
-        
-        Thread.currentThread().setContextClassLoader(loader);
-        java.util.Hashtable env = new java.util.Hashtable();
-        
-        env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-        env.put(Context.PROVIDER_URL, "jnp://localhost:"+JBPluginUtils.getJnpPort(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR)));
-        env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");
-        env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
-        env.put("jnp.disableDiscovery", Boolean.TRUE); // NOI18N
-        
-        String checkingConfigName = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
-        
-        try{
-            InitialContext ctx = new InitialContext(env);
-            Object srv = ctx.lookup("/jmx/invoker/RMIAdaptor");
-            java.lang.reflect.Method  method = loader.loadClass("javax.management.ObjectName").getMethod("getInstance", new Class[] {String.class} );
-            Object target = method.invoke(null, new Object[]{"jboss.system:type=ServerConfig"});
-            Object serverName = srv.getClass().getMethod("getAttribute", new Class[]{loader.loadClass("javax.management.ObjectName"),String.class}).invoke(srv, new Object[]{target, "ServerName"});
-            String configName = (String)serverName;
-            //temporary debug message
-            if (checkingConfigName.equals(configName)){
-                return true;
-            }else{
-                return false;
+        // this should prevent the thread from getting stuck if the server is in suspended state 
+        SafeTrueTest test = new SafeTrueTest() {
+            public void run() {
+                ClassLoader oldLoader = null;
+                String checkingConfigName = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
+                try{
+                    oldLoader = Thread.currentThread().getContextClassLoader();
+                    String serverRoot = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+                    JBDeploymentFactory df = (JBDeploymentFactory)JBDeploymentFactory.create();
+                    URLClassLoader loader = df.getJBClassLoader(serverRoot);
+                    Thread.currentThread().setContextClassLoader(loader);
+
+                    Hashtable env = new Hashtable();
+                    env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory"); // NOI18N
+                    String serverDir = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+                    env.put(Context.PROVIDER_URL, "jnp://localhost:" + JBPluginUtils.getJnpPort(serverDir));
+                    env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");                      // NOI18N
+                    env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces");   // NOI18N
+                    env.put("jnp.disableDiscovery", Boolean.TRUE);                              // NOI18N
+
+                    InitialContext ctx = new InitialContext(env);
+                    Object srv = ctx.lookup("/jmx/invoker/RMIAdaptor");                 // NOI18N
+                    Class objectName = loader.loadClass("javax.management.ObjectName"); // NOI18N
+                    Method getInstance = objectName.getMethod("getInstance", new Class[] {String.class} );          // NOI18N
+                    Object target = getInstance.invoke(null, new Object[]{"jboss.system:type=ServerConfig"});       // NOI18N
+                    Class[] params = new Class[]{loader.loadClass("javax.management.ObjectName"), String.class};    // NOI18N
+                    Method getAttribute = srv.getClass().getMethod("getAttribute", params);                 // NOI18N
+                    Object serverName = getAttribute.invoke(srv, new Object[]{target, "ServerName"});       // NOI18N
+                    if (checkingConfigName.equals(serverName)) {
+                        result = true;
+                    }
+                } catch(NameNotFoundException e){
+                    if (checkingConfigName.equals("minimal")) { // NOI18N
+                        result = true;
+                    }
+                } catch(Exception e) {
+                    // no op
+                } finally{
+                    if (oldLoader != null) {
+                        Thread.currentThread().setContextClassLoader(oldLoader);
+                    }
+                }
             }
-        }catch(NameNotFoundException e){
-            if (checkingConfigName.equals("minimal")) // NOI18N
-                return true;
-            else
-                return false;
-        }catch(Exception e){
-            return false;
-        } finally{
-            Thread.currentThread().setContextClassLoader(oldLoader);
+        };
+        return safeTrueTest(test, 10000);
+    }
+    
+    /** Safe true/false test useful. */
+    private abstract static class SafeTrueTest implements Runnable {
+        protected boolean result = false;
+        
+        public abstract void run();
+        
+        public final boolean result() {
+            return result;
         }
-        // return true;
+    };
+    
+    /** Return the result of the test or false if the given time-out ran out. */
+    private boolean safeTrueTest(SafeTrueTest test, int timeout) {
+        try {
+           new RequestProcessor().post(test).waitFinished(timeout);
+        } catch (InterruptedException ie) {
+            // no op
+        } finally {
+            return test.result();
+        }
     }
     
     public boolean isRunning() {
