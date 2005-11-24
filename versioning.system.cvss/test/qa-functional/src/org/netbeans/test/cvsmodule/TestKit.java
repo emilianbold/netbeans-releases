@@ -123,7 +123,7 @@ public class TestKit {
         JCheckBoxOperator cb = new JCheckBoxOperator(ndo, "Also");
         cb.setSelected(true);
         ndo.yes();
-        //ndo.waitClosed(); 
+        ndo.waitClosed(); 
         //TestKit.deleteRecursively(file);
     }
     
