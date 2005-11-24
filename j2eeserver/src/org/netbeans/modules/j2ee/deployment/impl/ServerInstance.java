@@ -1556,28 +1556,35 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 }
             }
             
+            public synchronized void sessionRemoved(Session session) {
+                refreshTask = null;
+            }
+            
             private void registerListener(Session session) {
                 final JPDADebugger jpda = (JPDADebugger)session.lookupFirst(null, JPDADebugger.class);
                 if (jpda != null) {
                     jpda.addPropertyChangeListener(JPDADebugger.PROP_STATE, new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {
-                            if (refreshTask == null) {
-                                refreshTask = RequestProcessor.getDefault().create(new Runnable() {
-                                    public void run() {
-                                        if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
-                                            setServerState(ServerInstance.STATE_SUSPENDED);
-                                        } else {
-                                            setServerState(ServerInstance.STATE_DEBUGGING);
+                            RequestProcessor.Task task; 
+                            synchronized (DebuggerStateListener.this) {
+                                if (refreshTask == null) {
+                                    refreshTask = RequestProcessor.getDefault().create(new Runnable() {
+                                        public void run() {
+                                            if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
+                                                setServerState(ServerInstance.STATE_SUSPENDED);
+                                            } else {
+                                                setServerState(ServerInstance.STATE_DEBUGGING);
+                                            }
                                         }
-                                    }
-                                });
+                                    });
+                                }
+                                task = refreshTask;
                             }
                             // group fast arriving refresh calls
-                            refreshTask.schedule(500);
+                            task.schedule(500);
                         }
                     });
                 }
-                
             }
         }
 }
