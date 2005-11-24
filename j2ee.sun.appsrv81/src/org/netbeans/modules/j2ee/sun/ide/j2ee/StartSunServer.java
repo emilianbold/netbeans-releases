@@ -544,11 +544,28 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             if (DialogDisplayer.getDefault().notify(d) ==NotifyDescriptor.OK_OPTION){
                 
                 mpw = d.getInputText();
+                //now validate the password:
+            try {
+                
+                File pwdFile2 = new File(domainDir + File.separator + domain  +File.separator+"config/domain-passwords");
+		SunDeploymentManagerInterface sdm = (SunDeploymentManagerInterface)dm;
+		ClassLoader loader = ServerLocationManager.getNetBeansAndServerClassLoader(sdm.getPlatformRoot());
+                Class pluginRootFactoryClass =loader.loadClass("com.sun.enterprise.security.store.PasswordAdapter");//NOI18N
+                java.lang.reflect.Constructor constructor =pluginRootFactoryClass.getConstructor(new Class[] {String.class, getMasterPasswordPassword().getClass()});
+                //this would throw an ioexception of the password is not the good one
+                constructor.newInstance(new Object[] {pwdFile2.getAbsolutePath(),mpw.toCharArray() });               
+               
+                return mpw;
+
+            } catch (Exception ex) {
+              //  ex.printStackTrace();
+              //  System.out.println("INVALID  master PASSWORD");
+                return null;
+            }                    
             } else{
                 return null;
                 
             }
-            return mpw;
         }
     }  
     
