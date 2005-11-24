@@ -296,7 +296,7 @@
 	 </tocitem>
 	 <tocitem text="Deploying and Testing Web Services" >
                  <tocitem text="Deploying a Web Service" target="expose_ws" />
-		 <tocitem text="Preparing a Web Service for Testing" target="register_ws" />
+		 <tocitem text="Registering a Web Service" target="register_ws" />
 		 <tocitem text="Testing a Web Service on the Service Side" target="test_ws" /> 
 	 </tocitem>
 	 <tocitem text="Consuming Web Services" >
