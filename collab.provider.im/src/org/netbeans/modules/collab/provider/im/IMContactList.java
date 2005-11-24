@@ -363,7 +363,7 @@ public class IMContactList extends Object {
             Debug.out.println("watcher size: " + watchers.size());
 
             while (iterator.hasNext()) {
-                // FIXME [pnejedly] no Watcer class in new service API
+                // FIXME [pnejedly] no Watcher class in new service API
 
                 /*                                Watcher watcher = (Watcher)iterator.next();
                                                 String uid = watcher.getAddress();
