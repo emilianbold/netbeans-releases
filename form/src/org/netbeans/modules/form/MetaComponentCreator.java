@@ -236,6 +236,8 @@ public class MetaComponentCreator {
     void addPrecreatedComponent(RADComponent targetComp,
                                 Object constraints)
     {
+        if (preMetaComp == null)
+            return;
         if (checkFormClass(preMetaComp.getBeanClass())) {
             addVisualComponent2(preMetaComp,
                                 targetComp,
