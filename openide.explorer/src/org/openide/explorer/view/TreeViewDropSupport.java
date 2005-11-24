@@ -132,14 +132,15 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
 
     /** Process events dragEnter or dragOver. */
     private void doDragOver(DropTargetDragEvent dtde) {
-        int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
-                dtde.getDropAction(), view.getAllowedDropActions()
-            );
+        int dropAction = dtde.getDropAction();
+        int allowedDropActions = view.getAllowedDropActions();
         ExplorerDnDManager.getDefault().prepareCursor(
             DragDropUtilities.chooseCursor(
                 dtde.getDropTargetContext().getComponent(), dropAction, (dropAction & view.getAllowedDropActions()) != 0
             )
         );
+        dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
+                dropAction, allowedDropActions);
 
         // 1. test if I'm over any node
         TreePath tp = getTreePath(dtde, dropAction);
