@@ -3,7 +3,7 @@ package examples;
 
 public class Antenna extends javax.swing.JFrame {
     
-    /** Creates new form Antenna2 */
+    /** Creates new form Antenna */
     public Antenna() {
         initComponents();
     }
@@ -245,9 +245,10 @@ public class Antenna extends javax.swing.JFrame {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Antenna2().setVisible(true);
+                new Antenna().setVisible(true);
             }
-       Antenna }
+        });
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
