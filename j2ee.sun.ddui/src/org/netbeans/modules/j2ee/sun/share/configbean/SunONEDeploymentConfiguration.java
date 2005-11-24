@@ -298,7 +298,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 if(resourceDir == null) {
                     // Unable to create JMS resource for message driven bean.
                     postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
-                            "ERR_NoJMSResource", theEjbDCB.getEjbName()));
+                            "ERR_NoJMSResource", theEjbDCB.getEjbName())); // NOI18N
                     // fall through and continue creating the remaining configuration elements though.
                 } else {
                     rci.createJMSResource(jndiName, messageDestinationType, messageDestinationName, ejbName, resourceDir);
@@ -340,7 +340,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                     if(resourceDir == null) {
                         // Unable to create JDBC data source for resource ref.
                         postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
-                                "ERR_NoRefJdbcDataSource", theResRefDCB.getResRefName()));
+                                "ERR_NoRefJdbcDataSource", theResRefDCB.getResRefName())); // NOI18N
                         return;
                     }
                     
@@ -360,14 +360,16 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                     resourceProcessor.post(new Runnable() {
                         public void run() {
                             ResourceConfiguratorInterface rci = getResourceConfigurator();
-                            rci.createJDBCDataSourceFromRef(refName, description, targetDir);
+                            if(rci != null) {
+                                rci.createJDBCDataSourceFromRef(refName, description, targetDir);
+                            }
                         }
                     }, 500);
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "No ResourceRef DConfigBean found bound to resource-ref DDBean: " + ddBean);
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "No ResourceRef DConfigBean found bound to resource-ref DDBean: " + ddBean); // NOI18N
                 }
             } else {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DDBean from wrong tree in ensureResourceDefined: " + ddBean);
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DDBean from wrong tree in ensureResourceDefined: " + ddBean); // NOI18N
             }
         } else if("entity".equals(type)) { //NOI18N
             // Find the DConfigBean for this ddBean.  This is actually quite complicated since
@@ -376,7 +378,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             BaseEjb theEjbDCB = getEjbDConfigBean(ddBean);
             
             if(theEjbDCB == null) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("EJB DConfigBean cannot be found for DDBean: " + ddBean));
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("EJB DConfigBean cannot be found for DDBean: " + ddBean)); // NOI18N
                 return;
             }
 
@@ -388,7 +390,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                     // Unable to create JDBC data source for CMP.
                     // JNDI name of CMP resource field not set.
                     postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
-                            "ERR_NoCmpOrJdbcDataSource", cmpEjbDCB.getEjbName()));
+                            "ERR_NoCmpOrJdbcDataSource", cmpEjbDCB.getEjbName())); // NOI18N
                     return;
                 }
                 
@@ -415,7 +417,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                         }
                     } else {
                         // Should never happen
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("CmpEntityBean DConfigBean parent is of wrong type: " + parentDCB));
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("CmpEntityBean DConfigBean parent is of wrong type: " + parentDCB)); // NOI18N
                     }
                 }
             }
