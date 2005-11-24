@@ -332,6 +332,8 @@ public final class AddDomainWizardIterator implements
                 if (wizard.getProperty(TYPE) != REMOTE)
                     RegisterPointbase.getDefault().register((File) wizard.getProperty(PLATFORM_LOCATION));
                 RunTimeDDCatalog.getRunTimeDDCatalog().refresh();
+                wizard.putProperty(USER_NAME,BLANK);
+                wizard.putProperty(PASSWORD,BLANK);
                 return instanceProperties;
             }
             

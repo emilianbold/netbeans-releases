@@ -14,8 +14,11 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.FileInputStream;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -100,6 +103,10 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
             } 
             wiz.putProperty(AddDomainWizardIterator.PLATFORM_LOCATION,location);
         }
+        wiz.putProperty(AddDomainWizardIterator.USER_NAME,
+                AddDomainWizardIterator.BLANK);
+        wiz.putProperty(AddDomainWizardIterator.PASSWORD,
+                AddDomainWizardIterator.BLANK);
         Object selectedType = component.getSelectedType();
         if (selectedType == AddDomainWizardIterator.DEFAULT) {
             File[] usableDomains = Util.getRegisterableDefaultDomains(location);
@@ -121,14 +128,41 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
                         "Msg_InValidDomainDir",                                     //NOI18N
                         component.getDomainDir()));
                 retVal = false;
-            }
+            } else {
             //File platformDir = (File) wiz.getProperty(AddDomainWizardIterator.PLATFORM_LOCATION);
             Util.fillDescriptorFromDomainXml(wiz, domainDir);
+            // fill in the admin name and password from the asadminprefs file
+            String username = "admin";
+            String password = null;
+            File f = new File(System.getProperty("user.home")+"/.asadminprefs"); //NOI18N
+            try{
+                
+                FileInputStream fis = new FileInputStream(f);
+                Properties p = new Properties();
+                p.load(fis);
+                fis.close();
+                
+                Enumeration e = p.propertyNames() ;
+                for ( ; e.hasMoreElements() ;) {
+                    String v = (String)e.nextElement();
+                    if (v.equals("AS_ADMIN_USER"))//admin user//NOI18N
+                        username = p.getProperty(v );
+                    else if (v.equals("AS_ADMIN_PASSWORD")){ // admin password//NOI18N
+                        password = p.getProperty(v );
+                    }
+                }
+                
+            } catch (Exception e){
+                //either the file does not exist or not available. No big deal, we continue ands NB will popup the request dialog.
+            }
+            wiz.putProperty(AddDomainWizardIterator.PASSWORD, password);
+            wiz.putProperty(AddDomainWizardIterator.USER_NAME,username);
+            }
             }
         } else if (selectedType == AddDomainWizardIterator.REMOTE) {
             wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
             wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION,"");
-            wiz.putProperty(AddDomainWizardIterator.DOMAIN,"");
+            wiz.putProperty(AddDomainWizardIterator.DOMAIN,"");            
         } else if (selectedType == AddDomainWizardIterator.LOCAL) {
             wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
         } else if (selectedType == AddDomainWizardIterator.PERSONAL) {

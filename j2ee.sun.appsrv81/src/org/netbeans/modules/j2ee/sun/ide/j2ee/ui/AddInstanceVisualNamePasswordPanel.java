@@ -39,8 +39,16 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
                 "StepName_EnterAdminLoginInfo");                                // NOI18N
     }
     
+    void setUName(String uname) {
+        adminName.setText(uname);
+    }
+    
     String getUName() {
         return adminName.getText();
+    }
+    
+    void setPWord(String pw) {
+        adminPassword.setText(pw);
     }
 
     String getPWord() {

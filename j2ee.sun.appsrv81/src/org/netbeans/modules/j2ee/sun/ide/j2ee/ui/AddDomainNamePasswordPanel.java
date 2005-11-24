@@ -103,6 +103,9 @@ class AddDomainNamePasswordPanel implements WizardDescriptor.Panel, ChangeListen
     // by the user.
     public void readSettings(Object settings) {
         wiz = (WizardDescriptor) settings;
+        getComponent();
+        component.setPWord((String) wiz.getProperty(AddDomainWizardIterator.PASSWORD));
+        component.setUName((String) wiz.getProperty(AddDomainWizardIterator.USER_NAME));
     }
     public void storeSettings(Object settings) {
         // TODO implement?
