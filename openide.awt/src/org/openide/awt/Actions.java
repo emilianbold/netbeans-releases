@@ -432,6 +432,11 @@ public class Actions extends Object {
         * @param action the action
         */
         public Bridge(JComponent comp, Action action) {
+            if(comp == null || action == null) {
+                throw new IllegalArgumentException(
+                    "None of the arguments can be null: comp=" + comp + //NOI18N
+                    ", action=" + action); // NOI18N
+            }
             this.comp = comp;
             this.action = action;
 
