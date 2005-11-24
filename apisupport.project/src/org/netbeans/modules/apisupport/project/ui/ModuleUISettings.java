@@ -45,7 +45,7 @@ public class ModuleUISettings extends SystemOption {
     }
     
     public int getNewModuleCounter() {
-        Integer counter = (Integer) getProperty(NEW_MODULE_COUNTER, Integer.valueOf(0));
+        Integer counter = (Integer) getProperty(NEW_MODULE_COUNTER, new Integer(0));
         return counter.intValue();
     }
     
@@ -54,7 +54,7 @@ public class ModuleUISettings extends SystemOption {
     }
     
     public int getNewSuiteCounter() {
-        Integer counter = (Integer) getProperty(NEW_SUITE_COUNTER, Integer.valueOf(0));
+        Integer counter = (Integer) getProperty(NEW_SUITE_COUNTER, new Integer(0));
         return counter.intValue();
     }
     
