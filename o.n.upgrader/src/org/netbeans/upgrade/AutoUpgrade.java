@@ -32,6 +32,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.NbBundle;
@@ -194,9 +195,7 @@ public final class AutoUpgrade {
                 throw e;
             }
             
-            old = new org.openide.filesystems.MultiFileSystem (
-                new org.openide.filesystems.FileSystem[] { lfs, xmlfs }
-            );
+            old = createLayeredSystem(lfs, xmlfs);
         }
         org.openide.filesystems.FileSystem mine = Repository.getDefault ().
             getDefaultFileSystem ();
@@ -282,6 +281,19 @@ public final class AutoUpgrade {
         // set current coloring to NetBeans41
         FileObject newEditors = mine.getRoot ().getFileObject ("Editors");
         newEditors.setAttribute ("currentFontColorProfile", "NetBeans41");
+    }
+
+    static MultiFileSystem createLayeredSystem(final LocalFileSystem lfs, final XMLFileSystem xmlfs) {
+        MultiFileSystem old;
+        
+        old = new MultiFileSystem (
+            new org.openide.filesystems.FileSystem[] { lfs, xmlfs }
+        ) {
+            {
+                setPropagateMasks(true);
+            }
+        };
+        return old;
     }
 
     /**

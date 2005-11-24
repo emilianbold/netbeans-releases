@@ -73,11 +73,17 @@ final class Copy extends Object {
             } else {
                 FileObject folder = prefix == null ? target : FileUtil.createFolder (target, prefix);
                 FileObject tg = folder.getFileObject (arr[i].getNameExt ());
-                if (tg == null) {
-                    // copy the file otherwise keep old content
-                    tg = FileUtil.copyFile (arr[i], folder, arr[i].getName(), arr[i].getExt ());
+                try {
+                    if (tg == null) {
+                        // copy the file otherwise keep old content
+                        tg = FileUtil.copyFile (arr[i], folder, arr[i].getName(), arr[i].getExt ());
+                    }
+                } catch (IOException ex) {
+                    if (arr[i].getNameExt().endsWith("_hidden")) {
+                        continue;
+                    }
+                    throw ex;
                 }
-                
                 FileUtil.copyAttributes (arr[i], tg);
             }
         }

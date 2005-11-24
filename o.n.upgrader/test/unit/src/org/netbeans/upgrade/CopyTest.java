@@ -14,13 +14,16 @@
 package org.netbeans.upgrade;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.XMLFileSystem;
 
 /** Tests to check that copy of files works.
  *
@@ -173,24 +176,37 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
         assertEquals ("The content is kept from project", content, "content-project");
     }
     
-    public void testDoesNotCopyHiddenFiles () throws Exception {
+    public void testDoesCopyHiddenFiles () throws Exception {
         String[] res = {
             "root/Yes.txt", 
             "root/X.txt_hidden", 
         };
-        FileSystem fs = createLocalFileSystem (res);
-        MultiFileSystem mfs = new MultiFileSystem (new FileSystem[] { fs });
+        LocalFileSystem fs = createLocalFileSystem (res);
+        URL url = getClass().getResource("layer4.1.xml");
+        assertNotNull("found sample layer", url);
+        XMLFileSystem xfs = new XMLFileSystem(url);
+        
+        MultiFileSystem mfs = AutoUpgrade.createLayeredSystem(fs, xfs); 
         
         FileObject fo = mfs.findResource ("root");
-        FileObject tg = mfs.getRoot().createFolder ("target");
+        
+        FileSystem original = FileUtil.createMemoryFileSystem();
+        
+        MultiFileSystem tgfs = new MultiFileSystem(new FileSystem[] { fs, original });
+        FileObject tg = tgfs.getRoot().createFolder ("target");
+        FileObject toBeHidden = FileUtil.createData(original.getRoot(), "target/X.txt");
+        
+        assertEquals ("One file is there", 1, tg.getChildren().length);
+        assertEquals ("X.txt", tg.getChildren()[0].getNameExt());
+        
         
         HashSet set = new HashSet ();
         set.add ("Yes.txt");
         set.add ("X.txt_hidden");
         Copy.copyDeep (fo, tg, set);
         
-        assertEquals ("One file copied", 1, tg.getChildren().length);
-        assertEquals ("Name is Yes.txt", "Yes.txt", tg.getChildren ()[0].getNameExt());
+        assertEquals ("After the copy there is still one file", 1, tg.getChildren().length);
+        assertEquals ("but the file is Yes.txt, as X.txt is hidden by txt_hidden", "Yes.txt", tg.getChildren()[0].getNameExt());
     }
     
     private static void writeTo (FileSystem fs, String res, String content) throws java.io.IOException {
@@ -202,7 +218,7 @@ public final class CopyTest extends org.netbeans.junit.NbTestCase {
         lock.releaseLock ();
     }
     
-    public FileSystem createLocalFileSystem(String[] resources) throws IOException {
+    public LocalFileSystem createLocalFileSystem(String[] resources) throws IOException {
         File mountPoint = new File(getWorkDir(), "tmpfs"); 
         mountPoint.mkdir();
         

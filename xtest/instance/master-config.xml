@@ -86,6 +86,9 @@ Microsystems, Inc. All Rights Reserved.
         <module name="openide/execution" testtypes="unit" attributes="stable"/>
         <module name="core/execution" testtypes="unit" attributes="stable"/>
         
+        
+        <module name="ide/launcher/upgrade" testtypes="unit" attributes="stable" />
+        
         <!-- does not run: core/multiview -->
         <!-- other candidate modules in current default moduleconfig: debuggercore debuggerjpda editor editor/fold editor/util httpserver mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks web/core web/jspparser xml/api xml/core xml/schema xml/text-edit xml/xsl -->
     </config>
