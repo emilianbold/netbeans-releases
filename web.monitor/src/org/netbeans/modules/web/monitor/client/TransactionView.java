@@ -192,6 +192,7 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
      */
     private TransactionView() {
         setIcon(frameIcon.getImage());
+        setToolTipText(NbBundle.getMessage(TransactionView.class, "MON_Window_Tooltip"));
 	controller = Controller.getInstance();
 	initialize();
 	this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_monitorDesc"));
