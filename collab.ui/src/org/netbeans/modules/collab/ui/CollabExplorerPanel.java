@@ -90,7 +90,7 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
      *
      */
     protected String preferredID() {
-        return super.preferredID();
+        return "COLLAB_EXPLORER";
     }
 
     /**
