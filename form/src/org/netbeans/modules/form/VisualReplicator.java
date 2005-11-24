@@ -233,7 +233,28 @@ public class VisualReplicator { //implements VisualMapper
             else {
                 if (comp.getParent() != null)
                     comp.getParent().remove(comp);
-                comp.setVisible(true); // e.g. CardLayout hides components
+            }
+
+            // make the component visible, but preserve explicit or original visibility
+            Boolean visible = null;
+            FormProperty visibilityProp = metacomp.getBeanProperty("visible"); // NOI18N
+            if (visibilityProp != null && visibilityProp.isChanged()) {
+                Object value;
+                try {
+                    value = visibilityProp.getRealValue();
+                } catch (Exception ex) { // should not happen
+                    value = null;
+                }
+                if (value instanceof Boolean)
+                    visible = (Boolean) value;
+            }
+            if (visible == null) {
+                Component defaultComp = (Component) BeanSupport.getDefaultInstance(comp.getClass());
+                if (defaultComp != null)
+                    visible = defaultComp.isVisible() ? Boolean.TRUE : Boolean.FALSE;
+            }
+            if (visible != null) {
+                comp.setVisible(visible.booleanValue());
             }
 
             // re-attach fake peer

@@ -171,7 +171,16 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             designPanel.add(nonVisualTray, BorderLayout.SOUTH);
         }
         
-        layeredPane = new JLayeredPane();
+        layeredPane = new JLayeredPane() {
+            // hack: before each paint make sure the dragged components have
+            // bounds set out of visible area (as they physically stay in their
+            // container and the layout manager may lay them back if some
+            // validation occurs)
+            protected void paintChildren(Graphics g) {
+                handleLayer.maskDraggingComponents();
+                super.paintChildren(g);
+            }
+        };
         layeredPane.setLayout(new OverlayLayout(layeredPane));
         layeredPane.add(designPanel, new Integer(1000));
         layeredPane.add(handleLayer, new Integer(1001));
@@ -421,17 +430,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         componentLayer.repaint();
     }
 
-    // updates layout of a container - used by HandleLayer when starting and
-    // canceling component dragging - it changes the layout model temporarily
-    // without changing the meta-components
-    void updateContainerLayout(RADVisualContainer metacont, boolean revalidate) {
+    // updates layout of a container in designer to match current model - used
+    // by HandleLayer when canceling component dragging
+    void updateContainerLayout(RADVisualContainer metacont) {
         replicator.updateContainerLayout(metacont);
-        if (revalidate) {
-            updateComponentLayer(true);
-        }
-        else {
-            componentLayer.repaint();
-        }
+        componentLayer.revalidate();
+        componentLayer.repaint();
     }
 
     public static Container createFormView(final RADVisualComponent metacomp,

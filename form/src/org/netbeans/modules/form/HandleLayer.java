@@ -315,6 +315,12 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         return paintStroke;
     }
 
+    void maskDraggingComponents() {
+        if (draggedComponent != null) {
+            draggedComponent.maskDraggingComponents();
+        }
+    }
+
     public boolean isOpaque() {
         return false;
     }
@@ -1930,6 +1936,15 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             }
         }
 
+        final void maskDraggingComponents() {
+            if (!isTopComponent()) {
+                for (int i=0; i < showingComponents.length; i++) {
+                    Rectangle r = movingBounds[i];
+                    showingComponents[i].setBounds(r.x + Short.MIN_VALUE, r.y + Short.MIN_VALUE, r.width, r.height);
+                }
+            }
+        }
+
         final void paintFeedback(Graphics2D g) {
             if ((movingBounds.length < 1) || (movingBounds[0].x == Integer.MIN_VALUE))
                 return;
@@ -1946,7 +1961,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 {   // new layout support
                     // paint the component being moved
                     if (!isTopComponent()) {
-                        showingComponents[i].setBounds(movingBounds[i]);
                         doLayout(showingComponents[i]);
                         paintDraggedComponent(showingComponents[i], gg);
                     } // resized top design component is painted automatically
@@ -1964,16 +1978,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 else if (oldDrag && ((targetContainer != null && targetContainer.getLayoutSupport() != null)
                         || (targetContainer == null && isTopComponent()))) {
                     if (!isTopComponent()) {
-                        showingComponents[i].setBounds(movingBounds[i]);
                         doLayout(showingComponents[i]);
                         oldPaintFeedback(g, gg);
                     }
                 }
-                else if (showingComponents != null) { // non-visual area
-                    Component comp = showingComponents[i];
-                    comp.setBounds(movingBounds[i]);
-                    doLayout(comp);
-                    paintDraggedComponent(comp, gg);
+                else { // non-visual area
+                    doLayout(showingComponents[i]);
+                    paintDraggedComponent(showingComponents[i], gg);
                 }
             }
         }
@@ -2010,19 +2021,20 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
         void init() {
             if (showingComponents != null) {
-                // showing components need to be in a container to paint correctly,
-                // components in new layout need to be hidden on their original location
+                // showing components need to be in a container to paint
+                // correctly (relates to newly added components);
+                // components in old layout need to be hidden
+                RADVisualContainer sourceCont = getSourceContainer();
+                boolean oldSource = sourceCont != null && sourceCont.getLayoutSupport() != null;
                 dragPanel.removeAll();
                 for (int i=0; i < showingComponents.length; i++) {
                     Component comp = showingComponents[i];
                     if (comp.getParent() == null) {
                         dragPanel.add(comp);
                     }
-                    else {
-                        // Should not hide top designed component
-                        if (!formDesigner.getTopDesignComponent().equals(movingComponents[i])) {
-                            comp.setVisible(false);
-                        }
+                    else if (oldSource) {
+                        comp.setVisible(false);
+                        // VisualReplicator makes it visible again...
                     }
                     avoidDoubleBuffering(comp);
                 }
@@ -2192,7 +2204,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             }
             else { // canceled
                 formDesigner.getLayoutDesigner().endMoving(false);
-                formDesigner.updateContainerLayout(originalCont, false);
+                formDesigner.updateContainerLayout(originalCont); //, false);
             }
 
             return true;
@@ -2355,7 +2367,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     compLayer.repaint();
                 }
                 else { // add resized component back
-                    formDesigner.updateContainerLayout(getSourceContainer(), false);
+                    formDesigner.updateContainerLayout(getSourceContainer()); //, false);
                 }
             }
             return true;
