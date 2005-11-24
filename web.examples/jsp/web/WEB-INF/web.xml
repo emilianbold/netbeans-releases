@@ -106,67 +106,39 @@
     <!-- Define servlets that are included in the example application -->
 
     <servlet>
-      <servlet-name>
-          servletToJsp
-      </servlet-name>
-      <servlet-class>
-          servletToJsp
-      </servlet-class>
+      <servlet-name>servletToJsp</servlet-name>
+      <servlet-class>servletToJsp</servlet-class>
     </servlet>
 
     <servlet>
-        <servlet-name>
-            CompressionFilterTestServlet
-        </servlet-name>
-        <servlet-class>
-            compressionFilters.CompressionFilterTestServlet
-        </servlet-class>
+        <servlet-name>CompressionFilterTestServlet</servlet-name>
+        <servlet-class>compressionFilters.CompressionFilterTestServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>
-            CompressionFilterTestServlet
-        </servlet-name>
-        <url-pattern>
-            /CompressionTest
-        </url-pattern>
+        <servlet-name>CompressionFilterTestServlet</servlet-name>
+        <url-pattern>/CompressionTest</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>
-            servletToJsp
-        </servlet-name>
-        <url-pattern>
-            /servletToJsp
-        </url-pattern>
+        <servlet-name>servletToJsp</servlet-name>
+        <url-pattern>/servletToJsp</url-pattern>
     </servlet-mapping>
 
     <jsp-config>
         <taglib>
-	    <taglib-uri>
-	       http://jakarta.apache.org/tomcat/debug-taglib
-	    </taglib-uri>
-	    <taglib-location>
-	       /WEB-INF/jsp/debug-taglib.tld
-	    </taglib-location>
+	    <taglib-uri>http://jakarta.apache.org/tomcat/debug-taglib</taglib-uri>
+	    <taglib-location>/WEB-INF/jsp/debug-taglib.tld</taglib-location>
 	</taglib>
 
 	<taglib>
-	    <taglib-uri>
-	       http://jakarta.apache.org/tomcat/examples-taglib
-	    </taglib-uri>
-	    <taglib-location>
-	       /WEB-INF/jsp/example-taglib.tld
-	    </taglib-location>
+	    <taglib-uri>http://jakarta.apache.org/tomcat/examples-taglib</taglib-uri>
+	    <taglib-location>/WEB-INF/jsp/example-taglib.tld</taglib-location>
 	</taglib>
 
 	<taglib>
-	    <taglib-uri>
-	       http://jakarta.apache.org/tomcat/jsp2-example-taglib
-	    </taglib-uri>
-	    <taglib-location>
-	       /WEB-INF/jsp2/jsp2-example-taglib.tld
-	    </taglib-location>
+	    <taglib-uri>http://jakarta.apache.org/tomcat/jsp2-example-taglib</taglib-uri>
+	    <taglib-location>/WEB-INF/jsp2/jsp2-example-taglib.tld</taglib-location>
 	</taglib>
 
 	<jsp-property-group>
