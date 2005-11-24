@@ -140,7 +140,7 @@ class PSheet extends JPanel implements MouseListener {
 
                     int pos = manager().getScrollPositionForNodeName(s);
 
-                    if ((pos != 0) && (pos < jsc.getVerticalScrollBar().getModel().getMaximum())) {
+                    if ((pos >= 0) && (pos < jsc.getVerticalScrollBar().getModel().getMaximum())) {
                         jsc.getVerticalScrollBar().getModel().setValue(pos);
                     }
                 }

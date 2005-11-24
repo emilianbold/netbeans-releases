@@ -47,11 +47,11 @@ class SelectionAndScrollPositionManager {
     /**
      * Store the current scroll position.
      *
-     * @param pos A scroll position.  Will only be stored if > 0.
+     * @param pos A scroll position.  Will only be stored if >= 0.
      * @param name A node or tab name
      */
     public void storeScrollPosition(int pos, String name) {
-        if (pos > 0) {
+        if (pos >= 0) {
             synchronized (namesToPositions) {
                 namesToPositions.put(name, new Integer(pos));
             }
