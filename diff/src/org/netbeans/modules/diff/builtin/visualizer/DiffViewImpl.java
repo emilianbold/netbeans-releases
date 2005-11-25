@@ -178,6 +178,10 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
         }
     }
 
+    public boolean requestFocusInWindow() {
+        return jEditorPane1.requestFocusInWindow();
+    }
+
     public Component getComponent() {
         return this;
     }

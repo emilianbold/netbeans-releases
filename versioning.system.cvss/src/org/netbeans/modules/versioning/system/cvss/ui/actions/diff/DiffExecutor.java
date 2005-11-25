@@ -158,6 +158,12 @@ public class DiffExecutor {
             return new HelpCtx(getClass());
         }
 
+        protected void componentActivated() {
+            super.componentActivated();
+            DiffMainPanel mainPanel = ((DiffMainPanel) getComponent(0));
+            mainPanel.requestActive();
+        }
+
         public Collection getSetups() {
             DiffSetupSource mainPanel = ((DiffSetupSource) getComponent(0));
             return mainPanel.getSetups();
