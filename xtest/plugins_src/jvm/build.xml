@@ -8,35 +8,22 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="all" name="XTest JVM plugin">
-
-
-    <property name="plugins.install.dir" value="../../plugins"/>
-    <property name="plugin.install.dir" value="${plugins.install.dir}/jvm"/>
-
+    
+    <property file="build.properties"/>
+    
     <target name="all" depends="deploy">        
     </target>
-    
-    
 
     <target name="compile">
-        <path id="basecp">
-            <pathelement location="../../lib/xtest.jar"/>
-            <pathelement location="../../lib/xtest-junit-testrunner.jar"/>
-            <pathelement location="../../lib/nbjunit.jar"/>
-            <pathelement location="${ant.home}/lib/ant.jar"/>            
-            <fileset dir="../../external">
-                <include name="junit*.jar"/>
-            </fileset>            
-        </path>
         <mkdir dir="build/classes"/>
         <javac srcdir="src" destdir="build/classes"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">          
-          <classpath refid="basecp"/>
+          <classpath path="${basecp}"/>
         </javac>     
     </target>
     
@@ -51,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     
-    <target name="deploy" depends="jar">        
+    <target name="deploy" depends="jar">
         <mkdir dir="${plugin.install.dir}/lib"/>        
         <copy file="plugin_descriptor.xml" toDir="${plugin.install.dir}"/>
         <copy todir="${plugin.install.dir}/lib">
