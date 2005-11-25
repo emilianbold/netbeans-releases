@@ -13,11 +13,14 @@
 
 package org.netbeans.modules.derby;
 
+import java.awt.Image;
+import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -42,5 +45,18 @@ public class DerbyOptionsBeanInfo extends SimpleBeanInfo {
             ErrorManager.getDefault().notify(ex);
             return new PropertyDescriptor[0];
         }
+    }
+    
+    public Image getIcon(int type)
+    {
+        Image image = null;
+        
+        if (type == BeanInfo.ICON_COLOR_16x16) {
+            image = Utilities.loadImage("org/netbeans/modules/derby/resources/optionsIcon16.png"); // NOI18N
+        } else if (type == BeanInfo.ICON_COLOR_32x32) {
+            image = Utilities.loadImage("org/netbeans/modules/derby/resources/optionsIcon32.png"); // NOI18N
+        }
+        
+        return image != null ? image : super.getIcon(type);
     }
 }
