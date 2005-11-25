@@ -14,11 +14,14 @@
 package org.netbeans.core.windows.services;
 
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.openide.DialogDescriptor;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
@@ -27,6 +30,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -35,6 +39,8 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -311,16 +317,20 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         uninitializeClosingOptions ();
     }
     
+    private final HackTypeAhead hack = new HackTypeAhead();
     public void addNotify() {
         super.addNotify();
         initializePresenter();
+        
+        hack.activate();
     }
 
     public void removeNotify() {
         super.removeNotify();
         uninitializePresenter();
+        
     }
-    
+
     /** Creates option pane message.
      */
     private JOptionPane createOptionPane() {
@@ -1156,4 +1166,60 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
             }
         }
     }
+
+    static Field markers;
+    static Method dequeue;
+    static {
+        if (Boolean.getBoolean("netbeans.hack.50423")) { // NOI18N
+            try {
+                markers = DefaultKeyboardFocusManager.class.getDeclaredField("typeAheadMarkers"); // NOI18N
+                markers.setAccessible(true);
+                dequeue = DefaultKeyboardFocusManager.class.getDeclaredMethod("dequeueKeyEvents", new Class[] { Long.TYPE, java.awt.Component.class });
+                dequeue.setAccessible(true);
+            } catch (Throwable ex) {
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Not activating workaround for #50423"); // NOI18N
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+    }
+    
+    private final class HackTypeAhead implements Runnable {
+        private RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
+        
+        
+        public HackTypeAhead() {
+        }
+        
+        public void activate() {
+            if (markers != null) {
+                task.schedule(1000);
+            }
+        }
+        
+        public void run() {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(this);
+                return;
+            }
+
+            KeyboardFocusManager fm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+            Collection result = null;
+            try {
+                result = (Collection) markers.get(fm);
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+
+            if (result == null || result.isEmpty()) {
+                return;
+            }
+
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Symptoms of #50423: There is something in type ahead: " + result + " requesting focus change"); // NOI18N
+            try {
+                dequeue.invoke(fm, new Object[] { new Long(-1), NbPresenter.this });
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+    } // end of HackTypeAhead
 }
