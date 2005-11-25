@@ -13,16 +13,20 @@
 
 package org.netbeans.modules.tomcat5.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
+import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
-import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
@@ -35,7 +39,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
-
 /**
  * Utility class.
  *
@@ -129,70 +132,67 @@ public class Utils {
     
     /** Return true if a Tomcat server is running on the specifed port */
     public static boolean pingTomcat(int port, int timeout) {
-        Pinger test = new Pinger(port);
-        Thread t = new Thread(test);
-        t.start();
+        // checking whether a socket can be created is not reliable enough, see #47048
+        Socket socket = null;
+        BufferedReader in = null;
+        PrintWriter out = null;
         try {
-            t.join(timeout);
-        } catch(InterruptedException ie) {
-        }
-        if (t.isAlive()) {
-            t.interrupt(); // for thread deadlock
-        }
-        return test.result();
-    }
-    
-    private static class Pinger implements Runnable {
-        private int port;
-        private boolean result;
-
-        public Pinger(int port) {
-            this.port = port;
-        }
-
-        public void run() {
-            // Issue #47048 - on some windowsXP boxes previous test, which
-            // used Socket to determine whether Tomcat is running sometimes 
-            // failed. The HttpURLConnection is used instead now. The 
-            // requestURI is "/netbeans-tomcat-status-test" to make it 
-            // possible for the http monitor to filter it out.            
-            URL url = null;
-            try {
-                url = new URL("http://localhost:" + port  + "/netbeans-tomcat-status-test"); //NOI18N
-            } catch(MalformedURLException e) {
-                return;
+            socket = new Socket();
+            socket.connect(new InetSocketAddress("localhost", port), timeout); // NOI18N
+            socket.setSoTimeout(timeout);
+            
+            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            
+            // request
+            out.println("GET /netbeans-tomcat-status-test HTTP/1.1\n"); // NOI18N
+            
+            // response
+            String text = in.readLine();
+            if (text == null || !text.startsWith("HTTP/")) { // NOI18N
+                return false; // not an http response
             }
-            HttpURLConnection con = null;
-            try {
-                con = (HttpURLConnection)url.openConnection();
-                con.getResponseCode();
-                // check whether it is really a Tomcat server
-                Map headerFileds = con.getHeaderFields();
-                List/*<String>*/ server = (List/*<String>*/)headerFileds.get("Server"); // NIO18N
-                if (server != null) {
-                    if (server.contains("Apache-Coyote/1.1")) { // NOI18N
-                        if (headerFileds.get("X-Powered-By") == null) { // NIO18N
-                            // if X-Powered-By header is set, it is probably jboss
-                            result = true;
-                            return;
-                        }
-                    } else if (server.contains("Sun-Java-System/Web-Services-Pack-1.4")) {  // NOI18N
-                        // it is probably Tomcat with JWSDP installed
-                        result = true;
-                        return;
+            Map headerFileds = new HashMap();
+            while ((text = in.readLine()) != null && text.length() > 0) {
+                int colon = text.indexOf(':');
+                if (colon <= 0) {
+                    return false; // not an http header
+                }
+                String name = text.substring(0, colon).trim();
+                String value = text.substring(colon + 1).trim();
+                List list = (List)headerFileds.get(name);
+                if (list == null) {
+                    list = new ArrayList();
+                    headerFileds.put(name, list);
+                }
+                list.add(value);
+            }
+            
+            List/*<String>*/ server = (List/*<String>*/)headerFileds.get("Server"); // NIO18N
+            if (server != null) {
+                if (server.contains("Apache-Coyote/1.1")) { // NOI18N
+                    if (headerFileds.get("X-Powered-By") == null) { // NIO18N
+                        // if X-Powered-By header is set, it is probably jboss
+                        return true;
                     }
-                }
-                result = false;
-            } catch (IOException ioe) { // no op
-            } finally {
-                if (con != null) {
-                    con.disconnect();
+                } else if (server.contains("Sun-Java-System/Web-Services-Pack-1.4")) {  // NOI18N
+                    // it is probably Tomcat with JWSDP installed
+                    return true;
                 }
             }
-        }
-        
-        public final boolean result() {
-            return result;
+            return false;
+        } catch (IOException ioe) {
+            return false;
+        } finally {
+            if (in != null) {
+                try { in.close(); } catch (IOException ioe) { } // no op
+            }
+            if (out != null) {
+                out.close();
+            }
+            if (socket != null) {
+                try { socket.close(); } catch (IOException ioe) { } // no op
+            }
         }
     }
 }
