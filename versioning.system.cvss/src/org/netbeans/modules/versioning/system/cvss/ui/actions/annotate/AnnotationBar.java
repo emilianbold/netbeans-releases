@@ -693,9 +693,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
 
         if (al != null && al.getRevision().equals(recentRevision)) {
-            g.setColor(selectedColor);
+            g.setColor(selectedColor());
         } else {
-            g.setColor(foregroundColor);
+            g.setColor(foregroundColor());
         }
         g.drawString(annotation, 0, yBase + editorUI.getLineAscent());
     }
@@ -804,7 +804,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         View rootView = Utilities.getDocumentView(component);
         if (rootView == null) return;
 
-        g.setColor(backgroundColor);
+        g.setColor(backgroundColor());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
         AbstractDocument doc = (AbstractDocument)component.getDocument();
@@ -841,6 +841,32 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             doc.readUnlock();
         }
     }
+
+    private Color backgroundColor() {
+        if (textComponent != null) {
+            return textComponent.getBackground();
+        }
+        return backgroundColor;
+    }
+
+    private Color foregroundColor() {
+        if (textComponent != null) {
+            return textComponent.getForeground();
+        }
+        return foregroundColor;
+    }
+
+    private Color selectedColor() {
+        if (backgroundColor == backgroundColor()) {
+            return selectedColor;
+        }
+        if (textComponent != null) {
+            return textComponent.getForeground();
+        }
+        return selectedColor;
+
+    }
+
 
     /** GlyphGutter copy pasted utility method. */
     private int getLineFromMouseEvent(MouseEvent e){
