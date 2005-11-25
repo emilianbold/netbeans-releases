@@ -373,6 +373,8 @@ public class LayoutModel implements LayoutConstants {
                 String sourceId = (String)entry.getKey();
                 LayoutComponent sourceLC = sourceModel.getLayoutComponent(sourceId);
                 targetLC = new LayoutComponent(targetId, sourceLC.isLayoutContainer());
+            }
+            if (targetLC.getParent() == null) {
                 addComponent(targetLC, targetContainer, -1);
             }
         }
