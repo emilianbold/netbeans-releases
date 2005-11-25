@@ -637,7 +637,9 @@ public class LayoutDesigner implements LayoutConstants {
                     for (int dim=0; dim < DIM_COUNT; dim++) {
                         components[0].getLayoutInterval(dim).setCurrentSpace(space);
                     }
-                    imposeCurrentContainerSize(components[0], dragger.getSizes(), true);
+                    if (components[0].isLayoutContainer()) {
+                        imposeCurrentContainerSize(components[0], dragger.getSizes(), true);
+                    }
                 }
 
                 if (dragger.isResizing() && components[0].isLayoutContainer())
