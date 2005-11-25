@@ -27,6 +27,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -90,6 +91,9 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     public void propertyChange (PropertyChangeEvent event) {
         if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(event.getPropertyName())) {
             String newProjectName = NewJ2SEProjectWizardIterator.getPackageName((String) event.getNewValue());
+            if (!Utilities.isJavaIdentifier(newProjectName)) {
+                newProjectName = NbBundle.getMessage (PanelOptionsVisual.class, "TXT_PackageNameSuffix", newProjectName); 
+            }
             this.mainClassTextField.setText (MessageFormat.format(
                 NbBundle.getMessage (PanelOptionsVisual.class,"TXT_ClassName"), new Object[] {newProjectName}
             ));
@@ -198,19 +202,12 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         String mainClassName = this.mainClassTextField.getText ();
         StringTokenizer tk = new StringTokenizer (mainClassName, "."); //NOI18N
         boolean valid = true;
-out:        while (tk.hasMoreTokens()) {
+        while (tk.hasMoreTokens()) {
             String token = tk.nextToken();
-            if (token.length() == 0) {
+            if (token.length() == 0 || !Utilities.isJavaIdentifier(token)) {
                 valid = false;
-                break out;
-            }
-            for (int i=0; i< token.length();i++) {
-                if ((i == 0 && !Character.isJavaIdentifierStart(token.charAt(0)))
-                    || (i != 0 && !Character.isJavaIdentifierPart(token.charAt(i)))) {
-                        valid = false;                        
-                        break out;
-                }
-            }
+                break;
+            }            
         }
         this.valid = valid;
         this.panel.fireChangeEvent();
