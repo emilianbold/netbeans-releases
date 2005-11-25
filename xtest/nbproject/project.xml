@@ -4,6 +4,11 @@
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
             <name>XTest</name>
+            <properties>
+                <property name="netbeans.dest.dir">../nbbuild/netbeans</property>
+                <property-file>${netbeans.dest.dir}/moduleCluster.properties</property-file>
+                <property-file>build.properties</property-file>
+            </properties>
             <folders>
                 <source-folder>
                     <label>src</label>
@@ -32,6 +37,9 @@
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
+                    <source-file>
+                        <location>build.properties</location>
+                    </source-file>
                 </items>
                 <context-menu>
                     <ide-action name="build"/>
@@ -43,10 +51,12 @@
                     </action>
                 </context-menu>
             </view>
+            <subprojects/>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src</package-root>
+                <classpath mode="compile">${basecp}</classpath>
                 <source-level>1.4</source-level>
             </compilation-unit>
         </java-data>

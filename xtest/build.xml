@@ -12,20 +12,10 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="xtest" default="netbeans" basedir=".">
-  <import file="../nbbuild/default.xml"/> 
   
-  <property name="nball.cvs.root" location=".."/>
-  <property name="build.sysclasspath" value="ignore"/>
-  <property name="build.compiler.deprecation" value="off"/>    
-  <property name="build.compiler.debug" value="on"/>
-  <property name="xtest.license.file" location="xtest-license.txt"/>
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="plugins.install.dir" location="plugins"/>
-
-  <property name="ant.jar" location="${ant.home}/lib/ant.jar"/>
-
-  <property name="build.classes.dir" location="build/classes"/>
+    <property name="netbeans.dest.dir" location="../nbbuild/netbeans"/>
+    <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
+    <property file="build.properties"/>
     
   <target name="prepare-nbjunit"> 
     <ant dir="nbjunit" target="jar-nbjunit" inheritAll="false"/>
@@ -35,20 +25,12 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="${xtest/nbjunit.dir}/modules/ext/nbjunit-ide.jar" todir="lib"/>
   </target>
 
-  <target name="compile" depends="init,prepare-nbjunit">
-    <path id="basecp">	
-	<pathelement location="src"/>
-        <pathelement location="${ant.jar}"/>
-        <fileset dir="external">          
-          <include name="junit*.jar"/>
-        </fileset>
-	<pathelement location="lib/nbjunit.jar"/>
-    </path>
+  <target name="compile" depends="prepare-nbjunit">
     <mkdir dir="${build.classes.dir}"/>
     <javac srcdir="src" destdir="${build.classes.dir}"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}" source="1.4">
-      <classpath refid="basecp"/>
+        <classpath path="${basecp}"/> 
     </javac>
 
   </target>
@@ -87,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="${plugins.install.dir}"/>
     <ant dir="plugins_src/base" target="deploy"/>
     <ant dir="plugins_src/jvm" target="deploy"/>    
-    <ant dir="plugins_src/ide" target="deploy"/>
+    <ant dir="plugins_src/ide" target="deploy" inheritall="false"/>
   </target>
   
   <target name="build-all" depends="build-xtest, build-plugins"/>
@@ -137,18 +119,6 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="clean" depends="clean-xtest,clean-plugins"/>
 
-  <target name="real-clean" depends="clean">
-    <!-- depending modules -->
-    <ant dir="../openide" antfile="build.xml" target="clean"/>
-    <ant dir="../openide/loaders" antfile="build.xml" target="clean"/>
-    <ant dir="../openide/io" antfile="build.xml" target="clean"/>
-    <ant dir="../openide/execution" antfile="build.xml" target="clean"/>
-    <ant dir="../core" antfile="build.xml" target="clean"/>
-    <ant dir="../core/execution" antfile="build.xml" target="clean"/>
-    <ant dir="../core/term" antfile="build.xml" target="clean"/>
-    <ant dir="../core/output" antfile="build.xml" target="clean"/>    
-  </target>
-  
   <target name="version" depends="jars">
         <ant antfile="lib/module_harness.xml" target="version">
             <property name="xtest.home" value="./"/>
@@ -181,13 +151,13 @@ Microsystems, Inc. All Rights Reserved.
   
     <!-- Calls bootstrap target from nbbuild/build.xml to satisfy that nbantext.jar is ready -->
     <target name="call-bootstrap" depends="check-bootstrap" unless="bootstrap-ready">
-        <ant dir="${nb_all}/nbbuild" target="bootstrap"/>
+        <ant dir="../nbbuild" target="bootstrap"/>
     </target>
 
     <!-- Checks nbantext.jar is up to date -->
     <target name="check-bootstrap">
-        <uptodate targetfile="${nb_all}/nbbuild/nbantext.jar" property="bootstrap-ready">
-            <srcfiles dir= "${nb_all}/nbbuild/antsrc"/>
+        <uptodate targetfile="../nbbuild/nbantext.jar" property="bootstrap-ready">
+            <srcfiles dir= "../nbbuild/antsrc"/>
         </uptodate>
     </target>
 </project>
