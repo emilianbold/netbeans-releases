@@ -14,6 +14,7 @@
 package org.netbeans.modules.web.project.ui.wizards;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
@@ -225,6 +227,24 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         }
 
         File destFolder = new File(projectLocationPath);
+	
+	// #47611: if there is a live project still residing here, forbid project creation.
+        if (destFolder.isDirectory()) {
+            FileObject destFO = FileUtil.toFileObject(destFolder);
+            assert destFO != null : "No FileObject for " + destFolder;
+            boolean clear = false;
+            try {
+                clear = ProjectManager.getDefault().findProject(destFO) == null;
+            } catch (IOException e) {
+                // need not report here; clear remains false -> error
+            }
+            if (!clear) {
+		setErrorMessage("MSG_ProjectFolderHasDeletedProject"); //NOI18N
+		return false;
+            }
+        }
+
+	
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             String file = null;
