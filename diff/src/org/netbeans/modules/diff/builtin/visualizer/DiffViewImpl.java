@@ -36,6 +36,7 @@ import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.Lookup;
+import org.openide.ErrorManager;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
@@ -82,6 +83,9 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
     private String source2;
     
     private static final String PLAIN_TEXT_MIME = "text/plain";
+
+    private int onLayoutLine;
+    private int onLayoutLength;
 
     public DiffViewImpl() {
     }
@@ -333,7 +337,9 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
     }//GEN-LAST:event_jEditorPane2CaretUpdate
     
     public void setCurrentLine(int line, int diffLength) {
-      if (line > 0) showLine(line, diffLength);
+        if (line > 0) showLine(line, diffLength);
+        onLayoutLine = line;
+        onLayoutLength = diffLength;
     }
 
     private void initActions() {
@@ -371,6 +377,12 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
         expandFolds();
         initGlobalSizes();
         addChangeListeners();
+    }
+
+    public void doLayout() {
+        super.doLayout();
+        setCurrentLine(onLayoutLine, onLayoutLength);
+        onLayoutLine = 0;
     }
 
     private Hashtable kitActions;
@@ -473,22 +485,21 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
         p1 = jViewport1.getViewPosition();
         p2 = jViewport2.getViewPosition();
         ypos = (totalHeight*(line - padding - 1))/(totalLines + 1);
+
+        try {
+            off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getDocument(), line - 1);
+            off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getDocument(), line - 1);
+
+            jEditorPane1.setCaretPosition(off1);
+            jEditorPane2.setCaretPosition(off2);
+        } catch (IndexOutOfBoundsException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+
         if (ypos < p1.y || ypos + ((diffLength + padding)*totalHeight)/totalLines > p1.y + viewHeight) {
             p1.y = ypos;
-            p2.y = ypos;
-            setViewPosition(p1, p2);
+            jViewport1.setViewPosition(p1);  // joinScrollBar will move paired view
         }
-        off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getDocument(), line - 1);
-        off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getDocument(), line - 1);
-        jEditorPane1.setCaretPosition(off1);
-        jEditorPane2.setCaretPosition(off2);
-    }
-    
-    private void setViewPosition(java.awt.Point p1, java.awt.Point p2) {
-        jViewport1.setViewPosition(p1);
-        jViewport1.repaint(jViewport1.getViewRect());
-        jViewport2.setViewPosition(p2);
-        jViewport2.repaint(jViewport2.getViewRect());
     }
     
     private void joinScrollBars() {

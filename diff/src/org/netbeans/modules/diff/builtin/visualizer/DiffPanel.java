@@ -462,7 +462,6 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
         p1 = jViewport1.getViewPosition();
         p2 = jViewport2.getViewPosition();
         ypos = (totalHeight*(line - padding - 1))/(totalLines + 1);
-        int viewSize = jViewport1.getViewRect().y;
 
         try {
             off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getDocument(), line - 1);
@@ -475,12 +474,9 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
         }
 
         if (ypos < p1.y || ypos + ((diffLength + padding)*totalHeight)/totalLines > p1.y + viewHeight) {
-            //System.out.println("resetting posision=" + ypos);
             p1.y = ypos;
             jViewport1.setViewPosition(p1);  // joinScrollBar will move paired view
         }
-        //D.deb("off1 = "+off1+", off2 = "+off2+", totalHeight = "+totalHeight+", totalLines = "+totalLines+", ypos = "+ypos);
-        //System.out.println("off1 = "+off1+", off2 = "+off2+", totalHeight = "+totalHeight+", totalLines = "+totalLines+", ypos = "+ypos);
     }
     
     private void joinScrollBars() {
