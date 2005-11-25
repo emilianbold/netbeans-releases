@@ -60,7 +60,7 @@ implements DocumentListener, KeyListener {
     /**
      * Property preventing nested template expanding.
      */
-    private static final Object EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template";
+    private static final Object EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N
     
     private final CodeTemplate codeTemplate;
     
@@ -612,11 +612,11 @@ implements DocumentListener, KeyListener {
         ) {
             SyncDocumentRegion region = activeMasterImpl.getRegion();
             if (isManagedInsert(offset)) {
-                doc.putProperty("abbrev-ignore-modification", Boolean.TRUE);
+                doc.putProperty("abbrev-ignore-modification", Boolean.TRUE); // NOI18N
                 try {
                     region.sync((offset == lastActiveRegionStartOffset) ? insertLength : 0);
                 } finally {
-                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE);
+                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
                 }
                 activeMasterImpl.setValue(getDocParameterValue(activeMasterImpl), false);
                 activeMasterImpl.markUserModified();
@@ -635,11 +635,11 @@ implements DocumentListener, KeyListener {
         ) {
             SyncDocumentRegion region = activeMasterImpl.getRegion();
             if (isManagedRemove(evt.getOffset(), evt.getLength())) {
-                doc.putProperty("abbrev-ignore-modification", Boolean.TRUE);
+                doc.putProperty("abbrev-ignore-modification", Boolean.TRUE); // NOI18N
                 try {
                     region.sync(0);
                 } finally {
-                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE);
+                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
                 }
                 activeMasterImpl.setValue(getDocParameterValue(activeMasterImpl), false);
                 activeMasterImpl.markUserModified();

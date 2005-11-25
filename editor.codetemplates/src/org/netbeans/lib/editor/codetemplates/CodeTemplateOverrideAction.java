@@ -35,7 +35,7 @@ final class CodeTemplateOverrideAction extends TextAction {
      * Action property that gets filled by the original action in the action map
      * before the custom actions get installed.
      */
-    public static final String ORIGINAL_ACTION_PROPERTY = "original-action";
+    public static final String ORIGINAL_ACTION_PROPERTY = "original-action"; // NOI18N
 
     private static final int DEFAULT_KEY_TYPED = 0;
     private static final int TAB = 1;

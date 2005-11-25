@@ -216,7 +216,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         Color resultingColor;
         
         if (type == UpToDateStatus.UP_TO_DATE_DIRTY) {
-                drawOneColorGlobalStatus(g, UIManager.getColor("Panel.background"));
+                drawOneColorGlobalStatus(g, UIManager.getColor("Panel.background")); // NOI18N
         } else {
             if (type == UpToDateStatus.UP_TO_DATE_PROCESSING) {
 //                Status totalStatus = data.computeTotalStatus();
@@ -228,7 +228,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
                     
                     drawOneColorGlobalStatus(g, getColorForGlobalStatus(totalStatus));
                 } else {
-                    throw new IllegalStateException("Unknown up-to-date type: " + type);
+                    throw new IllegalStateException("Unknown up-to-date type: " + type); // NOI18N
                 }
             }
         }

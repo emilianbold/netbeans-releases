@@ -326,13 +326,13 @@ implements LookupListener, Runnable, SettingsChangeListener {
                         String abbrevText = (String)entry.getValue();
                         
                         String parametrizedText = abbrevText.replaceAll(
-                                "([^|]+)[|]([^|]+)", "$1\\${cursor}$2");
-                        parametrizedText.replaceAll("[|][|]", "[|]");
+                                "([^|]+)[|]([^|]+)", "$1\\${cursor}$2"); // NOI18N
+                        parametrizedText.replaceAll("[|][|]", "[|]"); // NOI18N
 
                         String desc = abbrevText;
                         int nlInd = abbrevText.indexOf('\n');
                         if (nlInd != -1) {
-                            desc = abbrevText.substring(0, nlInd) + "...";
+                            desc = abbrevText.substring(0, nlInd) + "..."; // NOI18N
                         }
                         StringBuffer htmlText = new StringBuffer();
                         ParametrizedTextParser parser = new ParametrizedTextParser(null, desc);

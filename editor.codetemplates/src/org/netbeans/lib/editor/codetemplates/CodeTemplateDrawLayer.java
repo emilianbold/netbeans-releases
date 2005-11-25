@@ -31,7 +31,7 @@ import org.netbeans.lib.editor.util.swing.PositionRegion;
  */
 final class CodeTemplateDrawLayer extends DrawLayer.AbstractLayer {
     
-    public static final String NAME = "code-template-draw-layer";
+    public static final String NAME = "code-template-draw-layer"; // NOI18N
     
     public static final int VISIBILITY = 5000;
     

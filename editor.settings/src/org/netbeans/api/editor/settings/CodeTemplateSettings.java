@@ -35,7 +35,7 @@ public abstract class CodeTemplateSettings {
      */
     public CodeTemplateSettings() {
         // Control instantiation of the allowed subclass only
-        if (!"org.netbeans.modules.editor.settings.xxx".equals(getClass().getName())) {
+        if (!"org.netbeans.modules.editor.settings.xxx".equals(getClass().getName())) { // NOI18N
             throw new IllegalStateException("Instantiation prohibited."); // NOI18N
         }
     }

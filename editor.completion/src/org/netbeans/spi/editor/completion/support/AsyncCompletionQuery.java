@@ -164,7 +164,7 @@ public abstract class AsyncCompletionQuery {
      *  by {@link org.netbeans.spi.editor.completion.CompletionResultSet#finish()}.
      */
     protected void filter(CompletionResultSet resultSet) {
-        throw new IllegalStateException("Filtering not supported");
+        throw new IllegalStateException("Filtering not supported"); // NOI18N
     }
     
     /**

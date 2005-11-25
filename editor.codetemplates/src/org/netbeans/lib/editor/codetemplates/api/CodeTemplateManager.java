@@ -68,7 +68,7 @@ public final class CodeTemplateManager {
      * @return non-null code template that can be inserted into the document.
      */
     public CodeTemplate createTemporary(String parametrizedText) {
-        return new CodeTemplate(operation, "", "", parametrizedText);
+        return new CodeTemplate(operation, "", "", parametrizedText); // NOI18N
     }
     
     /**

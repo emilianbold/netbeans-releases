@@ -51,13 +51,13 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
             char ch = text.charAt(i);
             switch (ch) {
                 case '<':
-                    rep = "&lt;";
+                    rep = "&lt;"; // NOI18N
                     break;
                 case '>':
-                    rep = "&gt;";
+                    rep = "&gt;"; // NOI18N
                     break;
                 case '\n':
-                    rep = "<br>";
+                    rep = "<br>"; // NOI18N
                     break;
                 default:
                     rep = null;
@@ -110,7 +110,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         
         if (icon == null) {
             icon = new ImageIcon(Utilities.loadImage(
-                "org/netbeans/lib/editor/codetemplates/resources/code_template.png"));
+                "org/netbeans/lib/editor/codetemplates/resources/code_template.png")); // NOI18N
         }
         CompletionUtilities.renderHtml(icon, getLeftText(), getRightText(),
                 g, defaultFont, defaultColor, width, height, selected);
@@ -178,7 +178,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
 
     public CharSequence getInsertPrefix() {
         String insertPrefix = codeTemplate.getParametrizedText();
-        int dollarIndex = insertPrefix.indexOf("${");
+        int dollarIndex = insertPrefix.indexOf("${"); // NOI18N
         if (dollarIndex >= 0) {
             insertPrefix = insertPrefix.substring(0, dollarIndex);
         }
@@ -217,20 +217,20 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         
         private String createText() {
             // Parametrized text - parsed; parameters in bold
-            StringBuffer htmlText = new StringBuffer("<html><pre>");
+            StringBuffer htmlText = new StringBuffer("<html><pre>"); // NOI18N
             ParametrizedTextParser parser = new ParametrizedTextParser(null, codeTemplate.getParametrizedText());
             parser.parse();
             parser.appendHtmlText(htmlText);
-            htmlText.append("</pre>");
+            htmlText.append("</pre>"); // NOI18N
 
             // Append abbreviation
-            htmlText.append("<br>Abbreviation: &nbsp;");
+            htmlText.append("<br>Abbreviation: &nbsp;"); // NOI18N
             htmlText.append(toHtmlText(codeTemplate.getAbbreviation()));
-            htmlText.append("&nbsp; [");
+            htmlText.append("&nbsp; ["); // NOI18N
             // Append expansion keystroke
             String mimeType = CodeTemplateApiPackageAccessor.get().getOperation(codeTemplate).getMimeType();
             htmlText.append(AbbrevSettings.get(mimeType).getExpandKeyStrokeText());
-            htmlText.append(" for expansion]</html>");
+            htmlText.append(" for expansion]</html>"); // NOI18N
             return htmlText.toString();
         }
         

@@ -185,7 +185,7 @@ public final class PatchedHtmlRenderer {
                                 g.setClip(new Rectangle(x, y, w, h));
                             }
 
-                            g.drawString("...", x, y);
+                            g.drawString("...", x, y); // NOI18N
                             g.setClip(shape);
                         }
                     }
@@ -424,7 +424,7 @@ public final class PatchedHtmlRenderer {
                 }
 
                 if (done) {
-                    throw new IllegalArgumentException("HTML rendering failed on string \"" + s + "\"");
+                    throw new IllegalArgumentException("HTML rendering failed on string \"" + s + "\""); // NOI18N
                 }
 
                 if (inClosingTag) {
@@ -447,7 +447,7 @@ public final class PatchedHtmlRenderer {
 
                         if (!bold) {
                             throwBadHTML("Closing bold tag w/o " + //NOI18N
-                                "opening bold tag", pos, chars
+                                "opening bold tag", pos, chars // NOI18N
                             ); //NOI18N
                         }
 
@@ -474,7 +474,7 @@ public final class PatchedHtmlRenderer {
 
                         if (!italic) {
                             throwBadHTML("Closing italics tag w/o" //NOI18N
-                                 +"opening italics tag", pos, chars
+                                 +"opening italics tag", pos, chars // NOI18N
                             ); //NOI18N
                         }
 
@@ -960,14 +960,14 @@ public final class PatchedHtmlRenderer {
                 result = new Color(rgb);
             } catch (NumberFormatException nfe) {
                 throwBadHTML("Illegal hexadecimal color text: " + s + //NOI18N
-                    " in HTML string", colorPos, ch
+                    " in HTML string", colorPos, ch // NOI18N
                 ); //NOI18N
             }
         }
 
         if (result == null) {
             throwBadHTML("Unresolvable html color: " + s //NOI18N
-                 +" in HTML string \n  ", pos, ch
+                 +" in HTML string \n  ", pos, ch // NOI18N
             ); //NOI18N
         }
 
@@ -1064,7 +1064,7 @@ public final class PatchedHtmlRenderer {
         Arrays.fill(chh, ' '); //NOI18N
         chh[pos - 1] = '^'; //NOI18N
 
-        String out = msg + "\n  " + new String(chars) + "\n  " + new String(chh) + "\n Full HTML string:" +
+        String out = msg + "\n  " + new String(chars) + "\n  " + new String(chh) + "\n Full HTML string:" + // NOI18N
             new String(chars); //NOI18N
 
         if (!STRICT_HTML) {
@@ -1077,7 +1077,7 @@ public final class PatchedHtmlRenderer {
                     //ErrorManager bug, issue 38372 - log messages containing
                     //newlines are truncated - so for now we iterate the
                     //string we've just constructed
-                    StringTokenizer tk = new StringTokenizer(out, "\n", false);
+                    StringTokenizer tk = new StringTokenizer(out, "\n", false); // NOI18N
 
                     while (tk.hasMoreTokens()) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING, tk.nextToken());

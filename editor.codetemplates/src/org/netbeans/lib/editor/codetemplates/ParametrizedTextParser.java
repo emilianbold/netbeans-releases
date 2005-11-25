@@ -127,13 +127,13 @@ public final class ParametrizedTextParser {
         int fragIndex = 1;
         for (Iterator it = paramImpls.iterator(); it.hasNext();) {
             CodeTemplateParameterImpl paramImpl = (CodeTemplateParameterImpl)it.next();
-            htmlTextBuffer.append("<b>");
+            htmlTextBuffer.append("<b>"); // NOI18N
             if (CodeTemplateParameter.CURSOR_PARAMETER_NAME.equals(paramImpl.getName())) {
-                htmlTextBuffer.append("|");
+                htmlTextBuffer.append("|"); // NOI18N
             } else {
                 htmlTextBuffer.append(toHtmlText(paramImpl.getValue()));
             }
-            htmlTextBuffer.append("</b>");
+            htmlTextBuffer.append("</b>"); // NOI18N
             htmlTextBuffer.append(toHtmlText((String)parametrizedTextFragments.get(fragIndex)));
             fragIndex++;
         }

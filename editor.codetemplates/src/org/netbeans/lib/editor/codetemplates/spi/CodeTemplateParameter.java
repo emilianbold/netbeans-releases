@@ -58,7 +58,7 @@ public final class CodeTemplateParameter {
     /**
      * Name of the hint that defines an explicit default value of a parameter.
      */
-    public static final String DEFAULT_VALUE_HINT_NAME = "default";
+    public static final String DEFAULT_VALUE_HINT_NAME = "default"; // NOI18N
     
     /**
      * Name of the hint that defines whether the given parameter is editable
@@ -73,7 +73,7 @@ public final class CodeTemplateParameter {
      * ${param editable=false}
      * </pre>
      */
-    public static final String EDITABLE_HINT_NAME = "editable";
+    public static final String EDITABLE_HINT_NAME = "editable"; // NOI18N
     
     
     private final CodeTemplateParameterImpl impl;

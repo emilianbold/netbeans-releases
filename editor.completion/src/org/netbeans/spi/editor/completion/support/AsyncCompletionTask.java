@@ -211,6 +211,6 @@ public final class AsyncCompletionTask implements CompletionTask, Runnable {
     }
 
     public String toString() {
-        return "AsyncCompletionTask: query=" + query;
+        return "AsyncCompletionTask: query=" + query; // NOI18N
     }
 }

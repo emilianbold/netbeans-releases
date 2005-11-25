@@ -332,12 +332,12 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         if (component != getActiveComponent()) {
             activeProviders = getCompletionProvidersForComponent(component);
             if (debug) {
-                StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n");
+                StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
                 if (activeProviders != null) {
                     for (int i = 0; i < activeProviders.length; i++) {
-                        sb.append("providers[");
+                        sb.append("providers["); // NOI18N
                         sb.append(i);
-                        sb.append("]: ");
+                        sb.append("]: "); // NOI18N
                         sb.append(activeProviders[i].getClass());
                         sb.append('\n');
                     }

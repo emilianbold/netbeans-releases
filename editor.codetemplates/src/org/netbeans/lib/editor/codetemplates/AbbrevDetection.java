@@ -55,7 +55,7 @@ PropertyChangeListener, KeyListener {
      * This is useful e.g. for code templates parameter replication.
      */
     private static final String ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY
-            = "abbrev-ignore-modification";
+            = "abbrev-ignore-modification"; // NOI18N
     
     private static final AbbrevExpander[] abbrevExpanders = { new CodeTemplateAbbrevExpander() };
     
