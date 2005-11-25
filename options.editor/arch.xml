@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-overall">
   <p>
    	This module contains implementation of several Option Dialog's top level panels: General, 
-        Editor, Fonts &amp Colors and Keymaps.
+        Editor, Fonts &amp; Colors and Keymaps.
 	<api name="OptionsDialogSPI" group="java" type="import" category="devel" url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
    	<api name="EditorSettingsStorageAPI" group="java" type="import" category="friend"/>
   </p>
@@ -650,9 +650,29 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="exec-reflection">
-  <p>
-   No.
-  </p>
+   Yes. This module calls:
+<ul>
+  <li>getCodeFoldingProps, setCodeFoldingProps,
+getCompletionAutoPopup, setCompletionAutoPopup, getJavaDocAutoPopup,
+setJavaDocAutoPopup, getPairCharactersCompletion,
+getCompletionAutoPopup, getShowDeprecatedMembers,
+getCompletionInstantSubstitution, getCompletionCaseSensitive,
+setPairCharactersCompletion, setCompletionAutoPopup,
+setShowDeprecatedMembers, setCompletionInstantSubstitution,
+setCompletionCaseSensitive&nbsp;on various implementations of
+BaseOptions</li>
+  <li>org.netbeans.modules.java.project.PackageViewSettings.getPackageViewType,
+setPackageViewType</li>
+  <li>isExpandTabs, setExpandTabs,
+getJavaFormatLeadingStarInComment, setJavaFormatLeadingStarInComment,
+getJavaFormatSpaceBeforeParenthesis,
+setJavaFormatSpaceBeforeParenthesis, getJavaFormatNewlineBeforeBrace,
+setJavaFormatNewlineBeforeBrace,
+getJavaFormatStatementContinuationIndent,
+setJavaFormatStatementContinuationIndent, getSpacesPerTab,
+setSpacesPerTab on various implementations of
+org.openide.text.IndentEngine</li>
+</ul>
  </answer>
 
 
