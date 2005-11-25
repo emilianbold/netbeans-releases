@@ -946,6 +946,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         OutputOperator oo = OutputOperator.invoke();
         //System.out.println(CVSroot);
         OutputTabOperator oto = oo.getOutputTab(storeCVSroot);
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Checking out finished");
         cvss.stop();
         in.close();

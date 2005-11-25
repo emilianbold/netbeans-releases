@@ -164,6 +164,7 @@ public class StandardWorkFlow extends JellyTestCase {
         //System.out.println(CVSroot);
         
         OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Checking out finished");
         cvss.stop();
         in.close();

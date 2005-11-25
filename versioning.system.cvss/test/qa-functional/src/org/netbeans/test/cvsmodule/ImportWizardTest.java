@@ -517,6 +517,7 @@ public class ImportWizardTest extends JellyTestCase {
         OutputOperator oo = OutputOperator.invoke();
         //System.out.println(CVSroot);
         OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Importing finished");
         cvss.stop();
         in.close();
