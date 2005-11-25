@@ -125,10 +125,10 @@ public class MTestExecutor extends Task {
                 if (exec == null) throw new BuildException("Testbag "+testbag.getName()+" has not a executor.");
 
                 Ant ant_new = (Ant) getProject().createTask( "ant" );
-                ant_new.setOwningTarget( target ); 
+                ant_new.setOwningTarget(getOwningTarget()); 
                 ant_new.setAntfile( exec.getAntFile() );
                 ant_new.setTarget( exec.getTarget() );
-                if (exec.getDir() != null) ant_new.setDir( project.resolveFile ( exec.getDir()));
+                if (exec.getDir() != null) ant_new.setDir( getProject().resolveFile ( exec.getDir()));
                 ant_new.init();
                 
                 /// ??????? add xtest.userdata| prefix ?????

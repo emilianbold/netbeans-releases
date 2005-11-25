@@ -174,9 +174,9 @@ public class ForTask extends Task {
             if (o instanceof MyAnt) {
                 MyAnt a = (MyAnt)o;
                 Iterator prop = a.properties.iterator();
-                Ant ant = (Ant) project.createTask("ant");
+                Ant ant = (Ant) getProject().createTask("ant");
                 ant.init();
-                ant.setLocation(location);
+                ant.setLocation(getLocation());
                 ant.setTarget(a.target);
                 ant.setDir(a.dir);
                 ant.setAntfile(a.antfile);
@@ -201,9 +201,9 @@ public class ForTask extends Task {
                 if (o instanceof MyAntCall) {
                     MyAntCall a = (MyAntCall)o;
                     Iterator prop = a.properties.iterator();
-                    CallTarget ant = (CallTarget) project.createTask("antcall");
+                    CallTarget ant = (CallTarget) getProject().createTask("antcall");
                     ant.init();
-                    ant.setLocation(location);
+                    ant.setLocation(getLocation());
                     ant.setTarget(a.target);
                     if(name != null) {
                         Property p1 = ant.createParam();

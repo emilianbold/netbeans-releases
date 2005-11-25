@@ -13,6 +13,7 @@
 
 package org.netbeans.xtest;
 
+import java.text.SimpleDateFormat;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 import org.apache.tools.ant.taskdefs.*;
@@ -108,18 +109,18 @@ public class NbExecutor extends Task {
               try {  
                 Java  callee = (Java) getProject().createTask( "java" );
                 
-                callee.setOwningTarget(target);
+                callee.setOwningTarget(getOwningTarget());
                 callee.setTaskName(getTaskName());
-                callee.setLocation(location);
+                callee.setLocation(getLocation());
                 callee.init();
 
                 callee.setClassname("org.apache.tools.ant.Main");
-                callee.createClasspath().setPath(project.getProperty("java.class.path"));
+                callee.createClasspath().setPath(getProject().getProperty("java.class.path"));
                 callee.setFork(true);
                 callee.setFailonerror(true);
                 
-                callee.setDir(project.getBaseDir());
-                callee.createArg().setLine("-buildfile " + "\"" + project.getProperty("ant.file") + "\"");
+                callee.setDir(getProject().getBaseDir());
+                callee.createArg().setLine("-buildfile " + "\"" + getProject().getProperty("ant.file") + "\"");
 
                 outputfile = getLogFile(test.getModule() + "_" + test.getType());
                 if (outputfile != null) {
@@ -127,7 +128,7 @@ public class NbExecutor extends Task {
                     callee.createArg().setLine("-logfile " + "\"" + outputfile + "\"");
                 }
                 
-                debug_level = project.getProperty("xtest.debug.level");
+                debug_level = getProject().getProperty("xtest.debug.level");
                 if (debug_level != null) {
                     if (debug_level.equals("debug") || debug_level.equals("verbose")) {
                         callee.createArg().setValue("-" + debug_level);
@@ -147,7 +148,7 @@ public class NbExecutor extends Task {
                     callee.createArg().setValue("-D" + (String)map.getKey() + "=" + (String)map.getValue());
                 }
                 
-                Hashtable ps = project.getProperties();
+                Hashtable ps = getProject().getProperties();
                 Enumeration en = ps.keys();
                 while (en.hasMoreElements()) {
                     String name = (String) en.nextElement();
@@ -157,13 +158,13 @@ public class NbExecutor extends Task {
                     }
                 }
                 for (int i=0; i<propertiesToPass.length; i++) {
-                    String p = project.getProperty(propertiesToPass[i]);
+                    String p = getProject().getProperty(propertiesToPass[i]);
                     if (p != null) {
                         callee.createArg().setValue("-D" + propertiesToPass[i] + "=" + p);
                     }
                 }
                 
-                log("Executing module " + test.getModule() + ", testtype " + test.getType() + " at " + new Date().toLocaleString());
+                log("Executing module " + test.getModule() + ", testtype " + test.getType() + " at " + new Date().toString());
                 if (outputfile != null) log("Output is redirected to " + outputfile.getAbsolutePath());
                 callee.execute(); 
                 log("Executed successfully.");
@@ -204,10 +205,10 @@ public class NbExecutor extends Task {
     }
     
     private File getLogFile(String prefix) {
-        String testrundir = project.getProperty("xtest.results.testrun.dir");
+        String testrundir = getProject().getProperty("xtest.results.testrun.dir");
         if (testrundir == null) return null;
         String dir = testrundir + File.separator + "logs";
-        File dirfile = project.resolveFile(dir);
+        File dirfile = getProject().resolveFile(dir);
         if (!dirfile.exists()) dirfile.mkdirs();
         String new_prefix = prefix.replace('/','_');
         File file = new File(dirfile, new_prefix + ".log");
@@ -225,9 +226,9 @@ public class NbExecutor extends Task {
         if (testrun == null)
             return;
         TestRunInfoTask task = (TestRunInfoTask) getProject().createTask( "testruninfo" );
-        task.setOwningTarget(target);
+        task.setOwningTarget(getOwningTarget());
         task.setTaskName(getTaskName());
-        task.setLocation(location);
+        task.setLocation(getLocation());
         task.init();
         
         //TestRunInfoTask  task = new TestRunInfoTask();
@@ -247,9 +248,9 @@ public class NbExecutor extends Task {
     
     private void executeSetup(final String name, File dir, String antfile, String targetname, boolean onBackground, int delay) throws BuildException {
         if (antfile == null && targetname == null) return;
-        final Ant ant = (Ant) project.createTask("ant");
-        ant.setOwningTarget(target);
-        ant.setLocation(location);
+        final Ant ant = (Ant) getProject().createTask("ant");
+        ant.setOwningTarget(getOwningTarget());
+        ant.setLocation(getLocation());
         ant.init();
         ant.setDir(dir);
         ant.setAntfile(antfile);

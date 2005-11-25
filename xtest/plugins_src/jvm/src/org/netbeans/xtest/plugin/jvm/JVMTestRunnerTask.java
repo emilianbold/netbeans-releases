@@ -70,7 +70,7 @@ public class JVMTestRunnerTask extends Task implements TestBoardLauncher {
     
     public Path createClasspath() {
         log("Creating classpath",Project.MSG_DEBUG);
-        return commandLine.createClasspath(project).createPath();
+        return commandLine.createClasspath(getProject()).createPath();
     }
     
     // work directory
@@ -334,7 +334,7 @@ public class JVMTestRunnerTask extends Task implements TestBoardLauncher {
         if (workDir != null) {
             execute.setWorkingDirectory(workDir);
             // ????? what does this do ??????
-            execute.setAntRun(project);
+            execute.setAntRun(getProject());
         }
         // execute
         log("Executing: "+cmd.toString(), Project.MSG_VERBOSE);
@@ -342,7 +342,7 @@ public class JVMTestRunnerTask extends Task implements TestBoardLauncher {
         try {
             int result = execute.execute();
         } catch (IOException e) {
-            throw new BuildException("Process fork failed.", e, location);
+            throw new BuildException("Process fork failed.", e, getLocation());
         }
     }
     

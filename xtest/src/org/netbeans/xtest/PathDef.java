@@ -35,7 +35,7 @@ public class PathDef extends Task {
     private String id;
     
     public Path createPath() {
-        Path p = new Path(project);
+        Path p = new Path(getProject());
         elements.add(p);
         return p;
     }
@@ -48,13 +48,13 @@ public class PathDef extends Task {
         if (null == id)
             throw new BuildException("Set attribute 'useid'.");
 
-        Path path = new Path(project);
+        Path path = new Path(getProject());
         Iterator i = elements.iterator();
         while(i.hasNext()) {
             Path p = (Path)i.next();
             path.append(p);
         }
         
-        project.addReference(id, path);
+        getProject().addReference(id, path);
     }
 }

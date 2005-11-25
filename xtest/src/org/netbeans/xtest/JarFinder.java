@@ -67,7 +67,7 @@ public class JarFinder extends Task {
         while (filetokens.hasMoreTokens()) {
             found = false;
             String file = filetokens.nextToken();
-            File ffile = project.resolveFile(file);
+            File ffile = getProject().resolveFile(file);
             if (ffile.exists()) {
                 found = true;
                 if (buffer.length() > 0) buffer.append(File.pathSeparator);
@@ -77,7 +77,7 @@ public class JarFinder extends Task {
             StringTokenizer dirtokens = new StringTokenizer(dirlist,",;"+File.pathSeparator);
             while (dirtokens.hasMoreTokens()) {
                 String dir = dirtokens.nextToken();
-                File fdir = project.resolveFile(dir);
+                File fdir = getProject().resolveFile(dir);
                 if (!fdir.exists() || !fdir.isDirectory()) 
                     throw new BuildException("Directory " + fdir.getAbsolutePath() + " not found (from '" + dirlist + "').");
                 ffile = new File(fdir,file);
@@ -92,7 +92,7 @@ public class JarFinder extends Task {
                 throw new BuildException("File "+file+" was not found in any directory of "+dirlist+".");
         }
         log ("Setting property " + property + " to " + buffer.toString());
-        project.setProperty(property,buffer.toString());
+        getProject().setProperty(property,buffer.toString());
     }
 
 }

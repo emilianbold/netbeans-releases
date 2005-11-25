@@ -62,7 +62,7 @@ public class PrintSummary extends Task {
         XTestResultsReport report = null;
         try {
             File reportFile = new File(ResultsUtils.getXMLResultDir(resultsDir),PEConstants.TESTREPORT_XML_FILE);
-            report = XTestResultsReport.loadReportFromFile(reportFile);                        
+            report = XTestResultsReport.loadFromFile(reportFile);                        
         } catch (IOException ioe) {
             log("Unable to load results, caught IOException :"+ioe);
             return;

@@ -127,11 +127,11 @@ public class MTestConfigTask extends Task {
         if (passed_attribset.isEmpty() && passed_testbags.isEmpty())
             throw new BuildException("Either attribute testattributes or testbags is required.");
         if (config != null && !config.equals("")) {
-            configfile = project.resolveFile(config);
+            configfile = getProject().resolveFile(config);
             if (!configfile.exists() || !configfile.isFile())
                 throw new BuildException("Config file "+configfile.getAbsolutePath()+" doesn't exist or is not a file.");
         } else {
-            configfile = new File(project.getBaseDir(), "cfg-" + testtype + ".xml");
+            configfile = new File(getProject().getBaseDir(), "cfg-" + testtype + ".xml");
         }
         try {
             mconfig = MTestConfig.loadConfig(configfile, passed_patternattribs, passed_attribset, passed_executors, passed_testbags);
@@ -141,8 +141,8 @@ public class MTestConfigTask extends Task {
             Enumeration en = additionalPatterns.elements();
             while (en.hasMoreElements()) {
                 PatternSet pattern = (PatternSet)en.nextElement();
-                String include[] = pattern.getIncludePatterns(project);
-                String exclude[] = pattern.getExcludePatterns(project);
+                String include[] = pattern.getIncludePatterns(getProject());
+                String exclude[] = pattern.getExcludePatterns(getProject());
                 if (include != null)
                     includes_list.addAll(Arrays.asList(include));
                 if (exclude != null)

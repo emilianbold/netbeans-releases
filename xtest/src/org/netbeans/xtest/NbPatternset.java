@@ -105,7 +105,7 @@ public class NbPatternset extends Task {
         
         // try to get reference
         PatternSet patternset;
-        Object ref = project.getReferences().get(id);
+        Object ref = getProject().getReferences().get(id);
         if (null != ref) {
             if (!(ref instanceof PatternSet)) {
                 log("Object denoted by " + id + " isn't valid PatternSet.", Project.MSG_VERBOSE);
@@ -118,12 +118,12 @@ public class NbPatternset extends Task {
         
         Iterator i = additionalPatterns.iterator();
         
-        patternset.append(defaultPatterns, project);
+        patternset.append(defaultPatterns, getProject());
         while(i.hasNext()) {
             PatternSet p = (PatternSet)i.next();
-            patternset.append(p, project);
+            patternset.append(p, getProject());
         }
         
-        project.getReferences().put(id, patternset);
+        getProject().getReferences().put(id, patternset);
     }
 }

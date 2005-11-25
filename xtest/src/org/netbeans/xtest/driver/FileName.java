@@ -49,11 +49,11 @@ public class FileName extends Task {
         if (nameext_prop == null) throw new BuildException("Attribute 'nameExtProperty' is empty.");
         
         String name = file.getName();
-        project.setProperty(nameext_prop,name);
+        getProject().setProperty(nameext_prop,name);
         int i = name.lastIndexOf(".");
         if (i > 0) 
             name = name.substring(0,i);
-        project.setProperty(name_prop,name);
+        getProject().setProperty(name_prop,name);
     }
 
 }

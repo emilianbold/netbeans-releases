@@ -37,7 +37,7 @@ public class GetSystemProperty extends Task {
         if (ant_prop == null) ant_prop = system_prop;
         
         String value = System.getProperty(system_prop);
-        if (value != null) project.setProperty(ant_prop,value);
+        if (value != null) getProject().setProperty(ant_prop,value);
     }
 
 }

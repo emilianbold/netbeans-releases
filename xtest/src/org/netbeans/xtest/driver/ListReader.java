@@ -61,7 +61,7 @@ public class ListReader extends Task {
         StringTokenizer tokens = new StringTokenizer(list,",");
         while (tokens.hasMoreTokens()) {
             String property = prefix+"."+tokens.nextElement();
-            project.setProperty(property,value);
+            getProject().setProperty(property,value);
         }
     }
 

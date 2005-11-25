@@ -46,7 +46,7 @@ public class NbMultiTaskDef extends Task {
 
     public Path createClasspath() {
         if (this.classpath == null) {
-            this.classpath = new Path(project);
+            this.classpath = new Path(getProject());
         }
         return this.classpath.createPath();
     }
@@ -88,7 +88,7 @@ public class NbMultiTaskDef extends Task {
 
         if (classpath != null) {
             log("Using Ant classloader.", Project.MSG_DEBUG);
-            AntClassLoader al = new AntClassLoader(loader, project, classpath,
+            AntClassLoader al = new AntClassLoader(loader, getProject(), classpath,
                                                  true);
             // need to load Task via system classloader or the new
             // task we want to define will never be a Task but always
@@ -135,14 +135,14 @@ public class NbMultiTaskDef extends Task {
         } catch (ClassNotFoundException cnfe) {
             String msg = "taskdef class " + classname +
                 " cannot be found";
-            throw new BuildException(msg, cnfe, location);
+            throw new BuildException(msg, cnfe, getLocation());
         } catch (NoClassDefFoundError ncdfe) {
             String msg = "taskdef class " + classname +
                 " cannot be found";
-            throw new BuildException(msg, ncdfe, location);
+            throw new BuildException(msg, ncdfe, getLocation());
         }
 
-        project.addTaskDefinition(taskname, taskClass);
+        getProject().addTaskDefinition(taskname, taskClass);
     }
     
     public static class NbTaskDef {

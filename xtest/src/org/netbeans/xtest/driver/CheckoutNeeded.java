@@ -93,7 +93,7 @@ public class CheckoutNeeded extends Task {
                 else
                     cvs.setCvsRoot( ":pserver:anoncvs@" + repository ); //NOI18N
                 
-                File destfile = project.resolveFile(directory);
+                File destfile = getProject().resolveFile(directory);
                 if (!destfile.exists()) destfile.mkdirs();
                 cvs.setDest(destfile);
                 
@@ -190,7 +190,7 @@ public class CheckoutNeeded extends Task {
               instance_branch = cvs_root;
           checkoutModule(instance,instance_branch);
           
-          readMasterConfig(modules_set,project.resolveFile(master_config),config,testroot);
+          readMasterConfig(modules_set,getProject().resolveFile(master_config),config,testroot);
           log("Master config read: "+modules_set);
           Iterator mod = modules_set.iterator();
           while (mod.hasNext()) {
@@ -267,7 +267,7 @@ public class CheckoutNeeded extends Task {
                 break;
             }
         }
-        if (!found) throw new BuildException("Configuration '"+config+"' was not found in "+file.getAbsolutePath(), location);
+        if (!found) throw new BuildException("Configuration '"+config+"' was not found in "+file.getAbsolutePath(), getLocation());
         Node modules_attrib = node.getAttributes().getNamedItem( "modules" );
         if (modules_attrib != null) {
             fillHashSet(set,prefix,modules_attrib.getNodeValue());

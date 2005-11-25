@@ -72,15 +72,15 @@ public class UserPropertyWriter extends Task {
         final String PREFIX = "xtest.userdata";
         Properties properties = new Properties();
         
-        if (file == null) throw new BuildException("Attribute 'file' is empty.", location);
-        if (attribs == null) throw new BuildException("Attribute 'attribs' is empty.", location);
+        if (file == null) throw new BuildException("Attribute 'file' is empty.", getLocation());
+        if (attribs == null) throw new BuildException("Attribute 'attribs' is empty.", getLocation());
         if (prefix == null) 
             log("No propertyPrefix set. All properties will be written to file.");
         
         if (!file.getParentFile().exists())
             file.getParentFile().mkdirs();
         
-        Hashtable table = project.getProperties();
+        Hashtable table = getProject().getProperties();
         Enumeration en = table.keys();
         while (en.hasMoreElements()) {
             String key = (String) en.nextElement();
@@ -90,9 +90,9 @@ public class UserPropertyWriter extends Task {
                 if (prefix == null || key.startsWith(prefix+"|") || key.startsWith(PREFIX+"("+attr+")|")) {
                       int i = key.indexOf("|");
                       if (prefix == null || i == -1)
-                          properties.setProperty(key,project.getProperty(key));
+                          properties.setProperty(key,getProject().getProperty(key));
                       else 
-                          properties.setProperty(key.substring(i+1),project.getProperty(key));
+                          properties.setProperty(key.substring(i+1),getProject().getProperty(key));
                       break;
                 }
             }
@@ -102,7 +102,7 @@ public class UserPropertyWriter extends Task {
             properties.store(bos,HEADER);
             bos.close();
         }
-        catch (java.io.IOException e) { throw new BuildException(e,location); }
+        catch (java.io.IOException e) { throw new BuildException(e, getLocation()); }
 
     }
 

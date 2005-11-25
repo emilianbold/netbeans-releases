@@ -103,22 +103,22 @@ public class ParseBuildInfo extends Task {
         String buildNumber = bi.getBuildNumber();
         
         // setting all these properties for this project
-        project.setProperty(buildNumberProperty, buildNumber);
+        getProject().setProperty(buildNumberProperty, buildNumber);
         // buildinfo.date will be used by cvs update
-        project.setProperty(buildDateProperty, buildNumber);
+        getProject().setProperty(buildDateProperty, buildNumber);
         // set also project info
-        if (project.getProperty(buildProjectProperty) == null) {
-            project.setProperty(buildProjectProperty, bi.getProductName());
+        if (getProject().getProperty(buildProjectProperty) == null) {
+            getProject().setProperty(buildProjectProperty, bi.getProductName());
         }
         
         if (buildTimestampProperty != null) {
             String timestamp = getTimestamp(buildNumber);
             if (timestamp != null)
-                project.setUserProperty(buildTimestampProperty,timestamp);
+                getProject().setUserProperty(buildTimestampProperty,timestamp);
         }
         
         // build info file was succesfully parsed
-        project.setProperty(buildInfoParsedProperty, "true");
+        getProject().setProperty(buildInfoParsedProperty, "true");
     }
     
 }

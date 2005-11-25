@@ -58,7 +58,7 @@ public class LookForTimestamp extends Task {
             BufferedReader reader = new BufferedReader(new FileReader(timestampfile));
             String timestamp = reader.readLine();
             reader.close();
-            project.setUserProperty(prop,timestamp);
+            getProject().setUserProperty(prop,timestamp);
           }
           catch (IOException e) {
               throw new BuildException(e);

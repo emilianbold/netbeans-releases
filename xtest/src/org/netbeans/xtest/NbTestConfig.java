@@ -172,16 +172,16 @@ public class NbTestConfig extends Task {
         for (int i = 0; i < attrs.getLength(); i++) {
             org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
             if (attr.getName().equals("dir")) { // <start dir="???">
-                ss.dir = project.resolveFile(ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties()));
+                ss.dir = getProject().resolveFile(PropertyHelper.getPropertyHelper(getProject()).replaceProperties("", attr.getValue(), getProject().getProperties()));
             }
             if (attr.getName().equals("target")) { // <start target="???">
-                ss.target = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
+                ss.target = PropertyHelper.getPropertyHelper(getProject()).replaceProperties("", attr.getValue(), getProject().getProperties());
             }
             if (attr.getName().equals("antfile")) { // <start antfile="???">
-                ss.antfile = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
+                ss.antfile = PropertyHelper.getPropertyHelper(getProject()).replaceProperties("", attr.getValue(), getProject().getProperties());
             }
             if (attr.getName().equals("onBackground")) { // <start onBackground="???">
-                String ob = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
+                String ob = PropertyHelper.getPropertyHelper(getProject()).replaceProperties("", attr.getValue(), getProject().getProperties());
                 if (ob.equalsIgnoreCase("true") || ob.equalsIgnoreCase("yes") || ob.equals("1"))
                     ss.onBackground = true;
                 else 
@@ -191,7 +191,7 @@ public class NbTestConfig extends Task {
                         throw new BuildException ("Unknown value of attribute onBackground: "+ob);
             }
             if (attr.getName().equals("delay")) { // <start delay="???">
-                String d = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
+                String d = PropertyHelper.getPropertyHelper(getProject()).replaceProperties("", attr.getValue(), getProject().getProperties());
                 int delay = 0;
                 try { 
                     delay = Integer.parseInt(d); 
@@ -389,22 +389,22 @@ public class NbTestConfig extends Task {
         for (int i = 0; i < attrs.getLength(); i++) {
             org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
             if (attr.getName().equals("file")) { // <property file="???">
-                file = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
+                file = PropertyHelper.getPropertyHelper(getProject()).replaceProperties("", attr.getValue(), getProject().getProperties());
             }
             else if (attr.getName().equals("name")) { // <property name="???">
-                name =  ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
+                name = PropertyHelper.getPropertyHelper(getProject()).replaceProperties("", attr.getValue(), getProject().getProperties());
             }
             else if (attr.getName().equals("value")) { // <property value="???">
-                value = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
+                value = PropertyHelper.getPropertyHelper(getProject()).replaceProperties("", attr.getValue(), getProject().getProperties());
             }
             else {
                 throw new BuildException ("Unexpected attribute '" + attr.getName() + "'.");
             }
         }
         
-        if (name == null && file == null) throw new BuildException("Either 'name' or 'file' attribute is empty.",location);
-        if (name != null && value == null) throw new BuildException("Attribute 'value' is empty.",location);
-        if (value != null && file != null) throw new BuildException("Attributes 'file' and 'value' can't be defined together.",location);
+        if (name == null && file == null) throw new BuildException("Either 'name' or 'file' attribute is empty.",getLocation());
+        if (name != null && value == null) throw new BuildException("Attribute 'value' is empty.",getLocation());
+        if (value != null && file != null) throw new BuildException("Attributes 'file' and 'value' can't be defined together.",getLocation());
  
         if (name != null) 
             properties.put(name,value);
@@ -415,7 +415,7 @@ public class NbTestConfig extends Task {
     
     private void convertProperties(Hashtable table, String filename)  {
        try {  
-         File file = project.resolveFile (filename);
+         File file = getProject().resolveFile (filename);
          if (!file.exists()) throw new BuildException("Property file "+file.getAbsolutePath()+" not found.");
          java.util.Properties javaprop = new java.util.Properties();
          BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
