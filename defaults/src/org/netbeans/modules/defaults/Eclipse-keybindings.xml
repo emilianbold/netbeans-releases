@@ -18,15 +18,19 @@
     <bind actionName="caret-up" key="KP_UP"/>
     <bind actionName="collapse-fold" key="C-SUBTRACT"/>
     <bind actionName="completion-show" key="C-SPACE"/>
+    <bind actionName="copy-to-clipboard" key="COPY"/>
+    <bind actionName="cut-to-clipboard" key="CUT"/>
     <bind actionName="delete-next" key="DELETE"/>
     <bind actionName="delete-previous" key="BACK_SPACE"/>
     <bind actionName="expand-all-folds" key="C-MULTIPLY"/>
     <bind actionName="expand-fold" key="C-ADD"/>
     <bind actionName="fast-import" key="CS-M"/>
+    <bind actionName="find" key="FIND"/>
     <bind actionName="find-next" key="C-K"/>
     <bind actionName="find-previous" key="CS-K"/>
     <bind actionName="fix-imports" key="CS-O"/>
     <bind actionName="format" key="CS-F"/>
+    <bind actionName="goto" key="C-L"/>
     <bind actionName="goto-declaration" key="F3"/>
     <bind actionName="goto-source" key="C-F3"/>
     <bind actionName="insert-break" key="ENTER"/>
@@ -36,10 +40,12 @@
     <bind actionName="match-brace" key="CAS-P"/>
     <bind actionName="page-down" key="PAGE_DOWN"/>
     <bind actionName="page-up" key="PAGE_UP"/>
+    <bind actionName="paste-from-clipboard" key="PASTE"/>
     <bind actionName="remove-tab" key="S-TAB"/>
     <bind actionName="remove-line" key="C-D"/>
     <bind actionName="remove-word-next" key="C-DELETE"/>
     <bind actionName="remove-word-previous" key="C-BACK_SPACE"/>
+    <bind actionName="replace" key="CS-F"/>
     <bind actionName="scroll-down" key="C-UP"/>
     <bind actionName="scroll-up" key="C-DOWN"/>
     <bind actionName="select-all" key="D-A"/>
@@ -62,5 +68,6 @@
     <bind actionName="to-lower-case" key="CS-Y"/>
     <bind actionName="to-upper-case" key="CS-X"/>
     <bind actionName="toggle-typing-mode" key="INSERT"/>
+    <bind actionName="undo" key="UNDO"/>
     <bind actionName="word-match-next" key="A-SLASH"/>
 </bindings>
