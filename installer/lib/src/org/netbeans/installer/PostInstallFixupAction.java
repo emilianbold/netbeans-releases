@@ -55,8 +55,7 @@ public class PostInstallFixupAction extends ProductAction {
             support.putRequiredService(FileService.NAME);
             support.putRequiredService(ProductService.NAME);
             support.putRequiredService(Win32RegistryService.NAME);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
         }
     }
@@ -76,8 +75,7 @@ public class PostInstallFixupAction extends ProductAction {
             } else {
                 nbInstallDir = rootInstallDir;
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logEvent(this, Log.ERROR, e);
             nbInstallDir = Util.getNbInstallDir();
         }
@@ -112,8 +110,7 @@ public class PostInstallFixupAction extends ProductAction {
                 String fileName = nbInstallDir + sep + nbClusterDir + sep + "config" + sep + "productid";
                 logEvent(this, Log.DBG, "create file: " + fileName + " content: '" + productID + "'");
                 fileService.createAsciiFile(fileName,new String[] { productID });
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 logEvent(this, Log.ERROR, ex);
             }
         }
@@ -129,12 +126,11 @@ public class PostInstallFixupAction extends ProductAction {
             String fileName = nbInstallDir + sep + nbClusterDir + sep + "var" + sep + "license_accepted";
             logEvent(this, Log.DBG, "create file: " + fileName);
             fileService.createBinaryFile(fileName,new byte[0]);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
         }
         
-        installIDEConfigFile();
+        addJDKHomeToIDEConfigFile();
         
         if (Util.isMacOSX()) {
             createSymbolicLink();
@@ -171,8 +167,7 @@ public class PostInstallFixupAction extends ProductAction {
             logEvent(this, Log.DBG, "uninstall Delete install dir on exit: " + rootInstallDir);
             SystemUtilService systemUtilService = (SystemUtilService) getServices().getService(SystemUtilService.NAME);
             systemUtilService.deleteDirectoryOnExit(rootInstallDir,false);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
         }
     }
@@ -242,8 +237,7 @@ public class PostInstallFixupAction extends ProductAction {
         logEvent(this, Log.DBG, "Symbolic link deleted Link: " + linkName);
     }
     
-    public void installIDEConfigFile() {
-        
+    private void addJDKHomeToIDEConfigFile() {
         try {
             String configFilename = configDir + sep + "netbeans.conf";
             logEvent(this, Log.DBG, "patching " + configFilename);
@@ -280,8 +274,7 @@ public class PostInstallFixupAction extends ProductAction {
             String line = content[whereToReplace].trim();
             logEvent(this, Log.DBG, "replace line "+line);
             fileService.updateAsciiFile(configFilename, new String[] {newLine}, whereToReplace);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
         }
     }
@@ -316,8 +309,7 @@ public class PostInstallFixupAction extends ProductAction {
             if (Util.isWindowsOS()) {
                 deleteFiles(nbInstallDir + sep + "_uninst", new String[] {"nb-uninstall.template"});
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
         }
     }
@@ -424,14 +416,12 @@ public class PostInstallFixupAction extends ProductAction {
         }
         public void processErrorData(java.io.InputStream ipStream){
             try {
-
                 InputStreamReader isr = new InputStreamReader(ipStream);
                 BufferedReader br = new BufferedReader(isr);
                 String line;
                 while ((line = br.readLine()) != null) {
                     logEvent(this, Log.WARNING, line);
                 }
-
             } catch (IOException ioe) {
                 PostInstallFixupAction.this.logEvent(this, Log.ERROR, "Reading of ln output failed");
             }
