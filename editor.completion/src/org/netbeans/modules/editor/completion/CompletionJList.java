@@ -65,9 +65,9 @@ public class CompletionJList extends JList {
                         bgColor = list.getBackground();
                         if ((index % 2) == 0) { // every second item slightly different
                             bgColor = new Color(
-                                    bgColor.getRed() - DARKER_COLOR_COMPONENT,
-                                    bgColor.getGreen() - DARKER_COLOR_COMPONENT,
-                                    bgColor.getBlue() - DARKER_COLOR_COMPONENT
+                                    Math.abs(bgColor.getRed() - DARKER_COLOR_COMPONENT),
+                                    Math.abs(bgColor.getGreen() - DARKER_COLOR_COMPONENT),
+                                    Math.abs(bgColor.getBlue() - DARKER_COLOR_COMPONENT)
                             );
                         }
                         fgColor = list.getForeground();
