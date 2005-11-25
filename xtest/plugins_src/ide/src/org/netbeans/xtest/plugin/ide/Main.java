@@ -188,7 +188,7 @@ public class Main extends Object {
             initThread.join(60000L);  // wait 1 minute at the most
         }
         catch (InterruptedException iex) {
-            errMan.notify(ErrorManager.EXCEPTION, iex);
+            // ignore it
         } finally {
             // workaround for JDK bug 4924516 (see below)
             Toolkit.getDefaultToolkit().removeAWTEventListener(distributingHierarchyListener);
