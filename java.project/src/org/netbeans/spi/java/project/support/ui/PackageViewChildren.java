@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -354,9 +355,22 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             }
             else {
                 FileObject parent = fo.getParent();
-                PackageNode n = get( parent );
+                final PackageNode n = get( parent );
                 if ( n != null ) {
-                    n.updateChildren();
+                    //#61027: workaround to a deadlock when the package is being changed from non-leaf to leaf:
+                    boolean leaf = n.isLeaf();
+                    DataFolder df = n.getDataFolder();
+                    boolean empty = n.isEmpty( df );
+                    
+                    if (leaf != empty) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                n.updateChildren();
+                            }
+                        });
+                    } else {
+                        n.updateChildren();
+                    }
                 }
                 // If the parent folder only contains folders remove it
                 if ( toBeRemoved( parent ) ) {
