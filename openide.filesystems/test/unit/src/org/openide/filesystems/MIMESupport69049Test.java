@@ -117,7 +117,7 @@ public class MIMESupport69049Test extends TestCase {
         Pair run2 = new Pair();
         
         RequestProcessor.Task t1 = new RequestProcessor("t1").post(run1);
-        RequestProcessor.Task t2 = new RequestProcessor("t2").post(run2);
+        RequestProcessor.Task t2 = new RequestProcessor("t2").post(run2, 20, Thread.NORM_PRIORITY);
         
         t1.waitFinished();
         t2.waitFinished();
@@ -131,8 +131,11 @@ public class MIMESupport69049Test extends TestCase {
         assertNotNull("Been in the query", p.all);
         assertEquals("In query we cannot do better than nothing", 0, p.all.length);
         assertNotNull("Been in the query twice", p.all2);
+        /* second query does not need to know anything, it can either see
+         * result of the previous one or not
         assertEquals("Second query knows the result", 1, p.all2.length);
         assertEquals("and the result is right", Lkp.c1, p.all2[0]);
+         */
     }
     
     
