@@ -37,6 +37,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 
@@ -130,6 +131,10 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     }
     
     public void notifyMoving() throws IOException {
+        if (!this.project.getUpdateHelper().requestSave()) {
+            throw new IOException (NbBundle.getMessage(J2SEProjectOperations.class,
+                "MSG_OldProjectMetadata"));
+        }
         notifyDeleting();
     }
     
