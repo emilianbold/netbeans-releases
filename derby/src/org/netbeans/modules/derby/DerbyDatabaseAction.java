@@ -20,6 +20,9 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
+import org.openide.ErrorManager;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -43,34 +46,20 @@ public class DerbyDatabaseAction extends AbstractAction implements Presenter.Men
     public void actionPerformed(java.awt.event.ActionEvent e) {
     }
 
-    public javax.swing.JMenuItem getMenuPresenter() {
+    public JMenuItem getMenuPresenter() {
         if (menuPresenter == null) {
-            menuPresenter = new MyMenu();
+            menuPresenter = new MenuPresenter();
         }
         return menuPresenter;
     }
     
-    private final class MyMenu extends JMenu implements DynamicMenuContent {
+    private final class MenuPresenter extends JMenu implements DynamicMenuContent, MenuListener {
         
-        public MyMenu() {
+        public MenuPresenter() {
             super((String)getValue(Action.NAME));
+            addMenuListener(this);
         }
         
-        public JPopupMenu getPopupMenu() {
-            removeAll();
-            JPopupMenu menu = Utilities.actionsToPopup(new Action[] {
-                SystemAction.get(StartAction.class),
-                SystemAction.get(StopAction.class),
-                SystemAction.get(CreateDatabaseAction.class),
-            }, Utilities.actionsGlobalContext());
-            while (menu.getComponentCount() > 0) {
-                Component c = menu.getComponent(0);
-                menu.remove(0);
-                add(c);
-            }
-            return super.getPopupMenu();
-        }
-
         public JComponent[] synchMenuPresenters(javax.swing.JComponent[] items) {
             return getMenuPresenters();
         }
@@ -81,6 +70,26 @@ public class DerbyDatabaseAction extends AbstractAction implements Presenter.Men
             } else {
                 return new JComponent[0];
             }
+        }
+
+        public void menuSelected(MenuEvent e) {
+            getPopupMenu().removeAll();
+            JPopupMenu menu = Utilities.actionsToPopup(new Action[] {
+                SystemAction.get(StartAction.class),
+                SystemAction.get(StopAction.class),
+                SystemAction.get(CreateDatabaseAction.class),
+            }, Utilities.actionsGlobalContext());
+            while (menu.getComponentCount() > 0) {
+                Component c = menu.getComponent(0);
+                menu.remove(0);
+                getPopupMenu().add(c);
+            }
+        }
+        
+        public void menuCanceled(MenuEvent e) {
+        }
+        
+        public void menuDeselected(MenuEvent e) {
         }
     }
 }
