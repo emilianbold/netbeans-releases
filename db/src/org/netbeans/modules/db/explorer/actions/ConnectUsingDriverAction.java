@@ -21,8 +21,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JTabbedPane;
@@ -48,6 +46,7 @@ import org.netbeans.modules.db.explorer.dlg.NewConnectionPanel;
 import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverSupport;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
@@ -176,13 +175,28 @@ public class ConnectUsingDriverAction extends DatabaseAction {
 
             final ExceptionListener excListener = new ExceptionListener() {
                 public void exceptionOccurred(Exception exc) {
-                    if (exc instanceof ClassNotFoundException) {
-                        String message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                    if (exc instanceof DDLException) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc.getCause());
                     } else {
-                        String message = MessageFormat.format(bundle().getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                     }
+                    
+                    String message = null;
+                    if (exc instanceof ClassNotFoundException) {
+                        message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
+                    } else {
+                        StringBuffer buffer = new StringBuffer();
+                        buffer.append(MessageFormat.format(bundle().getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()})); //NOI18N
+                        if (exc instanceof DDLException && exc.getCause() instanceof SQLException) {
+                            SQLException sqlEx = ((SQLException)exc.getCause()).getNextException();
+                            while (sqlEx != null) {
+                                buffer.append("\n\n" + sqlEx.getMessage()); // NOI18N
+                                sqlEx = sqlEx.getNextException();
+                            }
+                        }
+                        message = buffer.toString();
+                    }
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                 }
             };
 
