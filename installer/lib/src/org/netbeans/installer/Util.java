@@ -141,6 +141,14 @@ public class Util {
         setStringPropertyValue("nbInstallDir", nbInstallDir);
     }
     
+    public static String getASInstallDir() {
+        return getStringPropertyValue("asInstallDir");
+    }
+    
+    public static void setASInstallDir(String asInstallDir) {
+        setStringPropertyValue("asInstallDir", asInstallDir);
+    }
+    
     public static Vector getNbInstallList() {
         return (Vector) System.getProperties().get("nbInstallList");
     }
