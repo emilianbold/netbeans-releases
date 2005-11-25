@@ -9,11 +9,17 @@ package Templates.Beans;
 /**
  * @author __USER__
  */
-public class Customizer extends javax.swing.JPanel {
+public class Customizer extends javax.swing.JPanel implements java.beans.Customizer {
+
+    private Object bean;
 
     /** Creates new customizer __NAME__ */
     public Customizer() {
         initComponents();
+    }
+
+    public void setObject(Object bean) {
+        this.bean = bean;
     }
 
     /** This method is called from within the constructor to
