@@ -224,12 +224,26 @@ class ProjectNode extends AbstractNode {
         }
 
         protected boolean enable(Node[] activatedNodes) {
-            for (int i=0; i<activatedNodes.length; i++) {
-                if (activatedNodes[i].getLookup().lookup(Project.class) == null) {
-                    return false;
-                }
-            }
-            return true;
+	    Project[] openProjs = OpenProjects.getDefault().getOpenProjects();
+	    for (int i = 0; i < activatedNodes.length; i++) {
+		Project proj = (Project) activatedNodes[i].getLookup().lookup(Project.class);
+		if (proj == null) {
+		    return false;
+		}
+
+		boolean opened = false;
+		for (int j = 0; j < openProjs.length; j++) {
+		    if (proj == openProjs[j]) {
+			opened = true;
+			break;
+		    }
+		}
+		if (opened == false) {
+		    return true;
+		}
+	    }
+
+	    return false;
         }
 
         public String getName() {
