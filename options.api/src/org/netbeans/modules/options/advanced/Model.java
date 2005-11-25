@@ -33,6 +33,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderLookup;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -112,6 +113,15 @@ public final class Model extends TabbedPanelModel {
             if (((PanelController) it.next ()).isChanged ())
                 return true;
         return false;
+    }
+    
+    Lookup getLookup () {
+        List lookups = new ArrayList ();
+        Iterator it = categoryToController.values ().iterator ();
+        while (it.hasNext ())
+            lookups.add (((PanelController) it.next ()).getLookup ());
+        return new ProxyLookup 
+            ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
     }
     
     HelpCtx getHelpCtx (JComponent panel) {

@@ -105,6 +105,10 @@ public final class AdvancedPanel extends JPanel {
         return model.isChanged ();
     }
     
+    public Lookup getLookup () {
+        return model.getLookup ();
+    }
+    
     void setLoookup (Lookup masterLookup) {
         model.setLoookup (masterLookup);
     }

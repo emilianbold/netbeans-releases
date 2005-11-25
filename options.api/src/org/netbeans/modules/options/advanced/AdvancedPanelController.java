@@ -49,6 +49,10 @@ public final class AdvancedPanelController extends PanelController {
     public boolean isChanged () {
         return advancedPanel.isChanged ();
     }
+        
+    public Lookup getLookup () {
+        return advancedPanel.getLookup ();
+    }
     
     public JComponent getComponent (Lookup masterLookup) {
         advancedPanel.setLoookup (masterLookup);
