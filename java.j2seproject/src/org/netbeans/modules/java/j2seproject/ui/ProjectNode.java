@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.ArrayList;
@@ -225,8 +226,13 @@ class ProjectNode extends AbstractNode {
         }
 
         protected boolean enable(Node[] activatedNodes) {
+            final Collection/*<Project>*/ openedProjects =Arrays.asList(OpenProjects.getDefault().getOpenProjects());
             for (int i=0; i<activatedNodes.length; i++) {
-                if (activatedNodes[i].getLookup().lookup(Project.class) == null) {
+                Project p;
+                if ((p = (Project) activatedNodes[i].getLookup().lookup(Project.class)) == null) {
+                    return false;
+                }
+                if (openedProjects.contains(p)) {
                     return false;
                 }
             }
