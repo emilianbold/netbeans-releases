@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -17,137 +17,137 @@ Microsystems, Inc. All Rights Reserved.
     <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
     <property file="build.properties"/>
     
-  <target name="prepare-nbjunit"> 
-    <ant dir="nbjunit" target="jar-nbjunit" inheritAll="false"/>
-    <!-- Need to initialize ${xtest/nbjunit.dir} property -->
-    <property file="${moduleCluster.file}"/>
-    <copy file="${xtest/nbjunit.dir}/modules/ext/nbjunit.jar" todir="lib"/>
-    <copy file="${xtest/nbjunit.dir}/modules/ext/nbjunit-ide.jar" todir="lib"/>
-  </target>
+    <target name="prepare-nbjunit"> 
+        <ant dir="nbjunit" target="jar-nbjunit" inheritAll="false"/>
+        <!-- Need to initialize ${xtest/nbjunit.dir} property -->
+        <property file="${moduleCluster.file}"/>
+        <copy file="${xtest/nbjunit.dir}/modules/ext/nbjunit.jar" todir="lib"/>
+        <copy file="${xtest/nbjunit.dir}/modules/ext/nbjunit-ide.jar" todir="lib"/>
+    </target>
 
-  <target name="compile" depends="prepare-nbjunit">
-    <mkdir dir="${build.classes.dir}"/>
-    <javac srcdir="src" destdir="${build.classes.dir}"
-           deprecation="${build.compiler.deprecation}"
-           debug="${build.compiler.debug}" source="1.4">
-        <classpath path="${basecp}"/> 
-    </javac>
+    <target name="compile" depends="prepare-nbjunit">
+        <mkdir dir="${build.classes.dir}"/>
+        <javac srcdir="src" destdir="${build.classes.dir}"
+            deprecation="${build.compiler.deprecation}"
+            debug="${build.compiler.debug}" source="1.4">
+            <classpath path="${basecp}"/> 
+        </javac>
 
-  </target>
+    </target>
   
 
-  <target name="jars" depends="compile">
-    <mkdir dir="lib"/>
-    <mkdir dir="lib/patches"/>
-    <jar jarfile="lib/xtest.jar"
+    <target name="jars" depends="compile">
+        <mkdir dir="lib"/>
+        <mkdir dir="lib/patches"/>
+        <jar jarfile="lib/xtest.jar"
             manifest="manifest.mf"
             basedir="${build.classes.dir}"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false">
-	<include name="org/netbeans/xtest/**"/>
-        <exclude name="org/netbeans/xtest/pe/server*/**"/>
-        <exclude name="org/netbeans/xtest/testrunner/**"/>
-    </jar>	    
+            <include name="org/netbeans/xtest/**"/>
+            <exclude name="org/netbeans/xtest/pe/server*/**"/>
+            <exclude name="org/netbeans/xtest/testrunner/**"/>
+        </jar>	    
     
-    <jar jarfile="lib/xtest-junit-testrunner.jar"
+        <jar jarfile="lib/xtest-junit-testrunner.jar"
             manifest="manifest.mf"
             basedir="${build.classes.dir}"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false">
-	<include name="org/netbeans/xtest/testrunner/**"/>
-    </jar>	        
+            <include name="org/netbeans/xtest/testrunner/**"/>
+        </jar>	        
   
-    <copy file="external/junit-3.8.1.jar" tofile="lib/junit.jar"/>
-    <copy file="external/insanelib.jar" tofile="lib/insanelib.jar"/>
-  </target>
+        <copy file="external/junit-3.8.1.jar" tofile="lib/junit.jar"/>
+        <copy file="external/insanelib.jar" tofile="lib/insanelib.jar"/>
+    </target>
   
-  <target name="build-xtest" depends="jars"/>
+    <target name="build-xtest" depends="jars"/>
     
   
-  <!-- builds XTest's plugins -->
-  <target name="build-plugins">
-    <mkdir dir="${plugins.install.dir}"/>
-    <ant dir="plugins_src/base" target="deploy"/>
-    <ant dir="plugins_src/jvm" target="deploy"/>    
-    <ant dir="plugins_src/ide" target="deploy" inheritall="false"/>
-  </target>
+    <!-- builds XTest's plugins -->
+    <target name="build-plugins">
+        <mkdir dir="${plugins.install.dir}"/>
+        <ant dir="plugins_src/base" target="deploy"/>
+        <ant dir="plugins_src/jvm" target="deploy"/>    
+        <ant dir="plugins_src/ide" target="deploy" inheritall="false"/>
+    </target>
   
-  <target name="build-all" depends="build-xtest, build-plugins"/>
+    <target name="build-all" depends="build-xtest, build-plugins"/>
   
   
-  <target name="makedist">
-     <!-- build xtest from nbbuild, so required openide/core modules are built as well -->     
-     <ant dir="../nbbuild" target="all-xtest" inheritAll="false"/>
-     <antcall target="zipdist"/>
-  </target>
+    <target name="makedist">
+        <!-- build xtest from nbbuild, so required openide/core modules are built as well -->     
+        <ant dir="../nbbuild" target="all-xtest" inheritAll="false"/>
+        <antcall target="zipdist"/>
+    </target>
 
-  <target name="zipdist">
-      <!-- Zip already built xtest distribution. -->
-     <zip zipfile="xtest-distribution.zip">     
-	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll,**/*.properties,**/*.dylib"/>
-        <zipfileset dir="plugins" prefix="plugins" includes="**"/>
-        <zipfileset dir="." includes="dist_build.xml" fullpath="build.xml"/>
-        <zipfileset dir="." includes="standard-test-includes.txt,standard-test-excludes.txt"/>
-     </zip>
-  </target>
+    <target name="zipdist">
+        <!-- Zip already built xtest distribution. -->
+        <zip zipfile="xtest-distribution.zip">     
+            <zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll,**/*.properties,**/*.dylib"/>
+            <zipfileset dir="plugins" prefix="plugins" includes="**"/>
+            <zipfileset dir="." includes="dist_build.xml" fullpath="build.xml"/>
+            <zipfileset dir="." includes="standard-test-includes.txt,standard-test-excludes.txt"/>
+        </zip>
+    </target>
 
-  <target name="netbeans" depends="build-all"/>
+    <target name="netbeans" depends="build-all"/>
 
-  <target name="clean-xtest">
-    <ant dir="nbjunit" target="clean"/>
-    <delete file="lib/nbjunit.jar"/>
-    <delete file="lib/nbjunit-ide.jar"/>
-    <delete file="lib/insanelib.jar"/>
-    <delete dir="build"/>
-    <delete file="module-manifest-subst.mf"/>
-    <delete dir="lib/patches"/>
-    <delete file="lib/xtest.jar"/>
-    <delete file="lib/junit.jar"/>
-    <delete file="lib/xtest-junit-testrunner.jar"/>
-    <delete file="xtest-distribution.zip"/>
-    <delete file="xtest-pes-distribution.zip"/>
-    <delete dir="${plugins.install.dir}"/>
-  </target>
+    <target name="clean-xtest">
+        <ant dir="nbjunit" target="clean"/>
+        <delete file="lib/nbjunit.jar"/>
+        <delete file="lib/nbjunit-ide.jar"/>
+        <delete file="lib/insanelib.jar"/>
+        <delete dir="build"/>
+        <delete file="module-manifest-subst.mf"/>
+        <delete dir="lib/patches"/>
+        <delete file="lib/xtest.jar"/>
+        <delete file="lib/junit.jar"/>
+        <delete file="lib/xtest-junit-testrunner.jar"/>
+        <delete file="xtest-distribution.zip"/>
+        <delete file="xtest-pes-distribution.zip"/>
+        <delete dir="${plugins.install.dir}"/>
+    </target>
   
-   <target name="clean-plugins">
-    <!-- plugins -->
-    <ant dir="plugins_src/base" target="clean"/>
-    <ant dir="plugins_src/jvm" target="clean"/>
-    <ant dir="plugins_src/ide" target="clean"/>  
-  </target>
+    <target name="clean-plugins">
+        <!-- plugins -->
+        <ant dir="plugins_src/base" target="clean"/>
+        <ant dir="plugins_src/jvm" target="clean"/>
+        <ant dir="plugins_src/ide" target="clean"/>  
+    </target>
   
   
-  <target name="clean" depends="clean-xtest,clean-plugins"/>
+    <target name="clean" depends="clean-xtest,clean-plugins"/>
 
-  <target name="version" depends="jars">
+    <target name="version" depends="jars">
         <ant antfile="lib/module_harness.xml" target="version">
             <property name="xtest.home" value="./"/>
         </ant>
-  </target>  
+    </target>  
  
   
-  <target name="all-xtest">
-     <!-- build xtest from nbbuild, so required openide/core modules are built as well -->     
-     <ant dir="../nbbuild" target="all-xtest" inheritAll="false"/>
-  </target>  
+    <target name="all-xtest">
+        <!-- build xtest from nbbuild, so required openide/core modules are built as well -->     
+        <ant dir="../nbbuild" target="all-xtest" inheritAll="false"/>
+    </target>  
   
-  <!-- XTest PES proxy targets -->
-  <target name="makedist-pes">
-    <ant dir="pes" target="makedist"/>
-  </target>
+    <!-- XTest PES proxy targets -->
+    <target name="makedist-pes">
+        <ant dir="pes" target="makedist"/>
+    </target>
   
-  <target name="clean-pes">
-    <ant dir="pes" target="clean"/>
-  </target>
+    <target name="clean-pes">
+        <ant dir="pes" target="clean"/>
+    </target>
  
-  <!-- Build distribution against existing netbeans build. You can set 
-       -Dnetbeans.dest.dir to point to custom location. -->
-  <target name="makedist-simple" depends="call-bootstrap">
-     <antcall target="netbeans">
-         <param name="scan.binaries" value="true"/>
-     </antcall>    
-     <antcall target="zipdist"/>
-  </target>
+    <!-- Build distribution against existing netbeans build. You can set 
+         -Dnetbeans.dest.dir to point to custom location. -->
+    <target name="makedist-simple" depends="call-bootstrap">
+        <antcall target="netbeans">
+            <param name="scan.binaries" value="true"/>
+        </antcall>    
+        <antcall target="zipdist"/>
+    </target>
   
     <!-- Calls bootstrap target from nbbuild/build.xml to satisfy that nbantext.jar is ready -->
     <target name="call-bootstrap" depends="check-bootstrap" unless="bootstrap-ready">
