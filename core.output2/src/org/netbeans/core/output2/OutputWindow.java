@@ -256,23 +256,19 @@ public class OutputWindow extends AbstractOutputWindow {
     protected void updateSingletonName(String name) {
         String winName = NbBundle.getMessage(OutputWindow.class, "LBL_OUTPUT"); //NOI18N
         if (name != null) {
-            String newName = hackHtml(NbBundle.getMessage(OutputWindow.class,
-                "FMT_OUTPUT", new Object[] {winName, name})); //NOI18N
-            setDisplayName(newName);
+            String newName = NbBundle.getMessage(OutputWindow.class,
+                "FMT_OUTPUT", new Object[] {winName, name}); //NOI18N
+            if (newName.indexOf ("<html>") != -1) {
+                newName = Utilities.replaceString(newName, "<html>", ""); //NOI18N
+                setHtmlDisplayName("<html>" + newName); //NOI18N
+            } else {
+                setDisplayName(newName);
+            }
         } else {
             setDisplayName(winName);
         }
     }
 
-    private static String hackHtml (String name) {
-        //XXX only until TopComponent.getHtmlDisplayName() in place
-        if (name.indexOf ("<html>") != -1) {
-            name = Utilities.replaceString(name, "<html>", ""); //NOI18N
-            return "<html>" + name; //NOI18N
-        } else {
-            return name;
-        }
-    }
 
     public OutputTab[] getHiddenTabs() {
         if (hiddenTabs != null && !hiddenTabs.isEmpty()) {
