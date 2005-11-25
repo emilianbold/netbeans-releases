@@ -214,7 +214,7 @@ public class BaseOptions extends OptionSupport {
     private static final HashMap kitClass2Options = new HashMap();
     
     /** Code template expand key setting name */
-    public static final String CODE_TEMPLATE_EXPAND_KEY = "code-template-expand-key";
+    public static final String CODE_TEMPLATE_EXPAND_KEY = "code-template-expand-key"; // NOI18N
 
     public BaseOptions() {
         this(BaseKit.class, BASE);
