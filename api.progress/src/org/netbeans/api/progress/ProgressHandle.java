@@ -140,6 +140,15 @@ public final class ProgressHandle {
     }
     
     /**
+     * change the display name of the progress task. Use with care, please make sure the changed name is not completely different,
+     * or otherwise it might appear to the user as a different task.
+     * @since 1.5
+     */
+    public void setDisplayName(String newDisplayName) {
+        internal.updateDisplayName(newDisplayName);
+    }
+    
+    /**
      * have the component in custom location, don't include in the status bar.
      */
     JComponent extractComponent() {

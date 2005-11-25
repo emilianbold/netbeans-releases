@@ -134,6 +134,12 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         runImmediately(evnts);
     }
     
+    void displayNameChange(InternalHandle handle, int units, int percentage, long estimate, String display) {
+        Collection evnts = new ArrayList();
+        evnts.add(new ProgressEvent(handle, null, units, percentage, estimate, isWatched(handle), display));
+        runImmediately(evnts);
+    }
+    
     private boolean isWatched(InternalHandle hndl) {
         return model.getExplicitSelection() == hndl;
     }
