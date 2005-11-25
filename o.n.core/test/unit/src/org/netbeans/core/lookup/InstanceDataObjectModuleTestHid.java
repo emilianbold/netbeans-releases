@@ -113,6 +113,7 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     }
     
     protected void tearDown() throws Exception {
+        ERR.log("going to teardown");
         try {
             mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws Exception {

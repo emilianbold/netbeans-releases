@@ -49,7 +49,9 @@ public class InstanceDataObjectModuleTest2 extends InstanceDataObjectModuleTestH
             assertTrue("Some instance of Action with name 'SomeAction' found in lookup after module installation",
                 existsSomeAction(Action.class));
         } finally {
+            ERR.log("Before twidle disable");
             twiddle(m2, TWIDDLE_DISABLE);
+            ERR.log("After twidle disable");
         }
         assertTrue("The action was removed from lookup after module uninstallation",
             !existsSomeAction(Action.class));
