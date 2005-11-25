@@ -113,7 +113,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     
     protected Node[] createNodes( Object obj ) {
         FileObject fo = root.getFileObject( (String)obj );
-        if ( fo != null ) {
+        if ( fo != null && fo.isValid()) {
             Object o = names2nodes.get( obj );
             PackageNode n;
             if ( o == NODE_NOT_CREATED ) {
