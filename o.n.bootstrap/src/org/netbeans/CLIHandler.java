@@ -541,6 +541,8 @@ public abstract class CLIHandler extends Object {
                         enterState(30, block);
                         
                         DataInputStream replyStream = new DataInputStream(socket.getInputStream());
+                        byte[] outputArr = new byte[4096];
+                        
                         COMMUNICATION: for (;;) {
                             enterState(32, block);
                             int reply = replyStream.read();
@@ -577,11 +579,13 @@ public abstract class CLIHandler extends Object {
                                 case REPLY_READ: {
                                     enterState(42, block);
                                     int howMuch = replyStream.readInt();
-                                    byte[] byteArr = new byte[howMuch];
-                                    int really = args.getInputStream().read(byteArr);
+                                    if (howMuch > outputArr.length) {
+                                        outputArr = new byte[howMuch];
+                                    }
+                                    int really = args.getInputStream().read(outputArr, 0, howMuch);
                                     os.write(really);
                                     if (really > 0) {
-                                        os.write(byteArr, 0, really);
+                                        os.write(outputArr, 0, really);
                                     }
                                     os.flush();
                                     break;
@@ -589,17 +593,21 @@ public abstract class CLIHandler extends Object {
                                 case REPLY_WRITE: {
                                     enterState(44, block);
                                     int howMuch = replyStream.readInt();
-                                    byte[] byteArr = new byte[howMuch];
-                                    replyStream.read(byteArr);
-                                    args.getOutputStream().write(byteArr);
+                                    if (howMuch > outputArr.length) {
+                                        outputArr = new byte[howMuch];
+                                    }
+                                    replyStream.read(outputArr, 0, howMuch);
+                                    args.getOutputStream().write(outputArr, 0, howMuch);
                                     break;
                                 }
                                 case REPLY_ERROR: {
                                     enterState(45, block);
                                     int howMuch = replyStream.readInt();
-                                    byte[] byteArr = new byte[howMuch];
-                                    replyStream.read(byteArr);
-                                    args.getErrorStream().write(byteArr);
+                                    if (howMuch > outputArr.length) {
+                                        outputArr = new byte[howMuch];
+                                    }
+                                    replyStream.read(outputArr, 0, howMuch);
+                                    args.getErrorStream().write(outputArr, 0, howMuch);
                                     break;
                                 }
                                 case REPLY_AVAILABLE:
