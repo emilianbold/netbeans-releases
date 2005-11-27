@@ -166,12 +166,16 @@ public class NbEditorKit extends ExtKit {
         addSystemActionMapping(cutAction, org.openide.actions.CutAction.class);
         addSystemActionMapping(copyAction, org.openide.actions.CopyAction.class);
         addSystemActionMapping(pasteAction, org.openide.actions.PasteAction.class);
-        addSystemActionMapping(removeSelectionAction, org.openide.actions.DeleteAction.class);
+        // #69077 - DeleteAction now delegates to deleteNextCharAction
+        addSystemActionMapping(deleteNextCharAction, org.openide.actions.DeleteAction.class);
         addSystemActionMapping(showPopupMenuAction, org.openide.actions.PopupAction.class);
 
         addSystemActionMapping(findAction, org.openide.actions.FindAction.class);
         addSystemActionMapping(replaceAction, org.openide.actions.ReplaceAction.class);
         addSystemActionMapping(gotoAction, org.openide.actions.GotoAction.class);
+
+        addSystemActionMapping(undoAction, org.openide.actions.UndoAction.class);
+        addSystemActionMapping(redoAction, org.openide.actions.RedoAction.class);
     }
 
     private boolean isInheritorOfNbEditorKit(){
