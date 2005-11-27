@@ -26,6 +26,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -181,21 +183,20 @@ public class RegisterDerby implements DatabaseRuntime {
     
     /** Posts the creation of the new database to request processor.
      */
-    void postCreateNewDatabase(final File location) throws Exception {
+    void postCreateNewDatabase(final File location, final String user, final String password) throws Exception {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run () {
                 try {
-                    createNewDatabase(location);
+                    createNewDatabase(location, user, password);
                 }
                 catch (Exception e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
-            
         });
     }
     
-    private void createNewDatabase(final File location) throws Exception {
+    private void createNewDatabase(final File location, String user, String password) throws Exception {
         ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(
                 RegisterDerby.class, "MSG_CreatingDBProgressLabel", location));
         ph.start();
@@ -206,12 +207,28 @@ public class RegisterDerby implements DatabaseRuntime {
             String url = "jdbc:derby://localhost:" + getPort() + "/" + location; // NOI18N
             String urlForCreation = url + ";create=true"; // NOI18N
             Connection connection = driver.connect(urlForCreation, props);
+            
+            boolean setupAuthentication = (user != null && user.length() >= 0);
+            
+            if (setupAuthentication) {
+                setupDatabaseAuthentication(connection, user, password);
+            }
+            
             connection.close();
+            
+            if (setupAuthentication) {
+                // we have to reboot the database for the authentication properties
+                // to take effect
+                try {
+                    connection = driver.connect(url + ";shutdown=true", props); // NOI18N
+                } catch (SQLException e) {
+                    // OK, will always occur
+                }
+            }
 
             JDBCDriver jdbcDriver = getRegisteredDerbyDriver();
-
-            DatabaseConnection cinfo = DatabaseConnection.create(jdbcDriver, url, null, 
-                    "APP", null, false); // NOI18N
+            DatabaseConnection cinfo = DatabaseConnection.create(jdbcDriver, url, user, 
+                    "APP", setupAuthentication ? password : null, setupAuthentication); // NOI18N
 
             ConnectionManager cm = ConnectionManager.getDefault();
             cm.addConnection(cinfo);
@@ -219,6 +236,26 @@ public class RegisterDerby implements DatabaseRuntime {
         finally {
             ph.finish();
         }
+    }
+    
+    private void setupDatabaseAuthentication(Connection conn, String user, String password) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("{call SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY(?, ?)}"); // NOI18N
+        
+        stmt.setString(1, "derby.connection.requireAuthentication"); // NOI18N
+        stmt.setString(2, "true"); // NOI18N
+        stmt.execute();
+        
+        stmt.clearParameters();
+        stmt.setString(1, "derby.authentication.provider"); // NOI18N
+        stmt.setString(2, "BUILTIN"); // NOI18N
+        stmt.execute();
+        
+        stmt.clearParameters();
+        stmt.setString(1, "derby.user." + user); // NOI18N
+        stmt.setString(2, password); // NOI18N
+        stmt.execute();
+        
+        stmt.close();
     }
     
     private String getDerbySystemHome() {

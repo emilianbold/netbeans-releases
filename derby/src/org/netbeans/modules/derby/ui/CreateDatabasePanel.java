@@ -29,6 +29,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private File derbySystemHome;
     private DialogDescriptor descriptor;
     private Color nbErrorForeground;
+    private Color nbWarningForeground;
     
     private DocumentListener docListener = new DocumentListener() {
         
@@ -52,11 +53,17 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
             nbErrorForeground = new Color(255, 0, 0); // RGB suggested by jdinga in #65358
         }
-        
+        nbWarningForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
+        if (nbWarningForeground == null) {
+            nbWarningForeground = new Color(51, 51, 51); // Label.foreground
+        }
+
         this.derbySystemHome = new File(derbySystemHome);
         
         initComponents();
         databaseNameTextField.getDocument().addDocumentListener(docListener);
+        userTextField.getDocument().addDocumentListener(docListener);
+        passwordTextField.getDocument().addDocumentListener(docListener);
         updateLocation();
     }
     
@@ -69,12 +76,24 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         return databaseNameTextField.getText().trim();
     }
     
+    public String getUser() {
+        String user = userTextField.getText().trim();
+        return user.length() > 0 ? user : null;
+    }
+    
+    public String getPassword() {
+        String password = passwordTextField.getText().trim();
+        return password.length() > 0 ? password : null;
+    }
+    
     private void validateDatabaseName() {
         if (descriptor == null) {
             return;
         }
         
         String error = null;
+        String warning = null;
+        
         String databaseName = getDatabaseName();
         
         if (databaseName.length() <= 0) { // NOI18N
@@ -88,11 +107,20 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         } else if (databaseName.length() > 0 && new File(derbySystemHome, databaseName).exists()) { // NOI18N
             String format = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseDirectoryExists");
             error = MessageFormat.format(format, new Object[] { databaseName });
+        } else if (getUser() == null || getPassword() == null) {
+            warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_UserNamePasswordRecommended");
         }
         
         if (error != null) {
+            messageLabel.setForeground(nbErrorForeground);
             messageLabel.setText(error);
+            messageLabel.setToolTipText(error);
             descriptor.setValid(false);
+        } else if (warning != null) {
+            messageLabel.setForeground(nbWarningForeground);
+            messageLabel.setText(warning);
+            messageLabel.setToolTipText(warning);
+            descriptor.setValid(true);
         } else {
             messageLabel.setText(" "); // NOI18N
             descriptor.setValid(true);
@@ -112,16 +140,17 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private void initComponents() {
         databaseNameLabel = new javax.swing.JLabel();
         databaseNameTextField = new javax.swing.JTextField();
-        messageLabel = new javax.swing.JLabel();
         infoScrollPane = new javax.swing.JScrollPane();
         infoTextArea = new javax.swing.JTextArea();
         databaseLocationLabel = new javax.swing.JLabel();
         databaseLocationTextField = new javax.swing.JTextField();
+        userLabel = new javax.swing.JLabel();
+        userTextField = new javax.swing.JTextField();
+        passwordLabel = new javax.swing.JLabel();
+        passwordTextField = new javax.swing.JTextField();
+        messageLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(databaseNameLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_DatabaseName"));
-
-        messageLabel.setForeground(nbErrorForeground);
-        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, " ");
 
         infoScrollPane.setBorder(null);
         infoScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -140,6 +169,16 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
         databaseLocationTextField.setEditable(false);
 
+        org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_UserName"));
+
+        userTextField.setColumns(15);
+
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_Password"));
+
+        passwordTextField.setColumns(15);
+
+        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, " ");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -147,16 +186,20 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, infoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE)
-                    .add(messageLabel)
+                    .add(infoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(databaseNameLabel)
+                            .add(userLabel)
+                            .add(passwordLabel)
                             .add(databaseLocationLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(databaseLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
-                            .add(databaseNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE))))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, userTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, databaseNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                            .add(databaseLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -166,18 +209,25 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(databaseNameLabel)
                     .add(databaseNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(11, 11, 11)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(userLabel)
+                    .add(userTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(databaseLocationLabel)
-                    .add(databaseLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(passwordLabel)
+                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(11, 11, 11)
-                .add(infoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(databaseLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(databaseLocationLabel))
+                .add(11, 11, 11)
+                .add(infoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(messageLabel)
                 .addContainerGap())
         );
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -188,6 +238,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     public javax.swing.JScrollPane infoScrollPane;
     public javax.swing.JTextArea infoTextArea;
     public javax.swing.JLabel messageLabel;
+    public javax.swing.JLabel passwordLabel;
+    public javax.swing.JTextField passwordTextField;
+    public javax.swing.JLabel userLabel;
+    public javax.swing.JTextField userTextField;
     // End of variables declaration//GEN-END:variables
     
 }

@@ -11,24 +11,28 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="infoScrollPane" alignment="1" pref="492" max="32767" attributes="0"/>
-                  <Component id="messageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="infoScrollPane" alignment="0" pref="440" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="databaseNameLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="userLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="databaseLocationLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="databaseLocationTextField" pref="365" max="32767" attributes="0"/>
-                          <Component id="databaseNameTextField" alignment="0" pref="365" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="passwordTextField" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="userTextField" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="databaseNameTextField" alignment="0" pref="310" max="32767" attributes="0"/>
+                          <Component id="databaseLocationTextField" alignment="1" pref="310" max="32767" attributes="0"/>
                       </Group>
                   </Group>
+                  <Component id="messageLabel" alignment="1" pref="440" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -40,16 +44,26 @@
                   <Component id="databaseNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="databaseNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="databaseLocationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="databaseLocationTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="userLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="userTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
-              <Component id="infoScrollPane" pref="85" max="32767" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="databaseLocationTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="databaseLocationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+              <Component id="infoScrollPane" pref="66" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="messageLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -63,14 +77,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="databaseNameTextField">
-    </Component>
-    <Component class="javax.swing.JLabel" name="messageLabel">
-      <Properties>
-        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="nbErrorForeground" type="code"/>
-        </Property>
-        <Property name="text" type="java.lang.String" value=" "/>
-      </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="infoScrollPane">
       <Properties>
@@ -112,6 +118,35 @@
     <Component class="javax.swing.JTextField" name="databaseLocationTextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="userLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/derby/ui/Bundle.properties" key="LBL_UserName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="userTextField">
+      <Properties>
+        <Property name="columns" type="int" value="15"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="passwordLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/derby/ui/Bundle.properties" key="LBL_Password" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="passwordTextField">
+      <Properties>
+        <Property name="columns" type="int" value="15"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="messageLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value=" "/>
       </Properties>
     </Component>
   </SubComponents>

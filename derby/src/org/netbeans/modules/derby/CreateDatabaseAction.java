@@ -67,18 +67,27 @@ public class CreateDatabaseAction extends CallableSystemAction {
         }
         
         String databaseName = panel.getDatabaseName();
+        String user = panel.getUser();
+        String password = panel.getPassword();
+        
+        // if only the username or password is null, ensure they are both null
+        if (user == null || password == null) {
+            user = null;
+            password = null;
+        }
+        
         try {
             if (!RegisterDerby.getDefault().isRunning()) {
                 RegisterDerby.getDefault().start(5000);
             }
-            makeDatabase(databaseName);
+            makeDatabase(databaseName, user, password);
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
         }
     }
     
-    void makeDatabase(String dbname) throws Exception {
-        RegisterDerby.getDefault().postCreateNewDatabase(new File(dbname));
+    void makeDatabase(String dbname, String user, String password) throws Exception {
+        RegisterDerby.getDefault().postCreateNewDatabase(new File(dbname), user, password);
     }
 
     protected boolean asynchronous() {
