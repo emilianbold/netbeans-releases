@@ -116,9 +116,6 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="ImportIntorepository.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.instance"/>
                 </file>
-                <file name="MergeChangesFromBranch.shadow">
-                    <attr name="originalFile" stringvalue="Menu/BuildProject/org-apache-tools-ant-module-run-StopBuildingAction.instance"/>
-                </file>
                 <file name="RevertModifications.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-update-GetCleanAction.instance"/>
                 </file>
