@@ -188,9 +188,11 @@ ActionListener {
             cbInsertSingleProposals.isSelected (),
             cbCaseSensitive.isSelected ()
         );
+        changed = false;
     }
     
     void cancel () {
+        changed = false;
     }
     
     boolean dataValid () {
