@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Array;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -318,7 +319,24 @@ public class ReflectionHelper {
         
         Class parameterClass = null;
         try {
-            parameterClass = Class.forName(inPackageName + "." + parameterClassName,true,urlClassLoader);
+            if ("java.lang.String".equals(parameterClassName))
+                parameterClass = String.class;
+            else if ("int".equals(parameterClassName))
+                parameterClass = Integer.class;
+            else if ("long".equals(parameterClassName))
+                parameterClass = Long.class;
+            else if ("byte".equals(parameterClassName))
+                parameterClass = Byte.class;
+            else if ("float".equals(parameterClassName))
+                parameterClass = Float.class;
+            else if ("double".equals(parameterClassName))
+                parameterClass = Double.class;  
+            else if ("boolean".equals(parameterClassName))
+                parameterClass = Boolean.class;   
+            else if ("char".equals(parameterClassName))
+                parameterClass = Character.class;
+            else
+                parameterClass = Class.forName(inPackageName + "." + parameterClassName,true,urlClassLoader);
         } catch(ClassNotFoundException cnfe) {
             throw new WebServiceReflectionException("ClassNotFoundException",cnfe);
         }
@@ -449,11 +467,32 @@ public class ReflectionHelper {
             method = clazz.getMethod(inMethodName, paramClasses);
             
         } catch(NoSuchMethodException nsme) {
-            /**
-             * Make sure to reset the classloader
-             */
-            Thread.currentThread().setContextClassLoader(savedLoader);
-            throw new WebServiceReflectionException("NoSuchMethodException",nsme);
+            try {
+                Class [] newClasses = new Class[paramClasses.length];
+                for (int i=0;i<newClasses.length;i++) {
+                    if (Integer[].class==paramClasses[i])
+                        newClasses[i]=int[].class;
+                    else if (Long[].class==paramClasses[i])
+                        newClasses[i]=long[].class;
+                    else if (Float[].class==paramClasses[i])
+                        newClasses[i]=float[].class;
+                    else if (Double[].class==paramClasses[i])
+                        newClasses[i]=double[].class;
+                    else if (Boolean[].class==paramClasses[i])
+                        newClasses[i]=boolean[].class;
+                    else if (Character[].class==paramClasses[i])
+                        newClasses[i]=char[].class;
+                    else 
+                        newClasses[i]=paramClasses[i];
+                }
+                method = clazz.getMethod(inMethodName, newClasses);
+            } catch(NoSuchMethodException nsmex) {
+                /**
+                 * Make sure to reset the classloader
+                 */
+                Thread.currentThread().setContextClassLoader(savedLoader);
+                throw new WebServiceReflectionException("NoSuchMethodException",nsmex);
+            }
         }
         
         
@@ -468,11 +507,31 @@ public class ReflectionHelper {
             throw new WebServiceReflectionException("InvocationTargetException",ite);
             
         } catch(IllegalArgumentException ia) {
-            /**
-             * Make sure to reset the classloader
-             */
-            Thread.currentThread().setContextClassLoader(savedLoader);
-            throw new WebServiceReflectionException("IllegalArgumentException",ia);
+            try {
+                Object[] newParamValues = new Object[paramValues.length];
+                for (int i=0;i<newParamValues.length;i++) {
+                    newParamValues[i] = convertToPrimitiveArrayType(paramValues[i]);
+                }
+                returnObject = method.invoke(classInstance,newParamValues);
+            } catch (IllegalArgumentException iaex) { 
+                /**
+                 * Make sure to reset the classloader
+                 */
+                Thread.currentThread().setContextClassLoader(savedLoader);
+                throw new WebServiceReflectionException("IllegalArgumentException",ia);
+            } catch(IllegalAccessException iae) {
+                /**
+                 * Make sure to reset the classloader
+                 */
+                Thread.currentThread().setContextClassLoader(savedLoader);
+                throw new WebServiceReflectionException("IllegalAccessException",iae);
+            } catch(InvocationTargetException ite) {
+                /**
+                 * Make sure to reset the classloader
+                 */
+                Thread.currentThread().setContextClassLoader(savedLoader);
+                throw new WebServiceReflectionException("InvocationTargetException",ite);
+            }
             
         } catch(IllegalAccessException iae) {
             /**
@@ -613,5 +672,53 @@ public class ReflectionHelper {
             return char.class;
         }
         return null;
+    }
+    
+    private static Object convertToPrimitiveArrayType(Object arrayObject) {
+        Object result=null;
+        if (arrayObject instanceof Integer[]) {
+            Integer[] val = (Integer[])arrayObject;
+            result = new int[val.length];
+            for (int j=0;j<val.length;j++) {
+                ((int[])result)[j] = val[j].intValue();
+            }
+        } else if (arrayObject instanceof Long[]) {
+            Long[] val = (Long[])arrayObject;
+            result = new long[val.length];
+            for (int j=0;j<val.length;j++) {
+                ((long[])result)[j] = val[j].longValue();
+            }
+        } else if (arrayObject instanceof Byte[]) {
+            Byte[] val = (Byte[])arrayObject;
+            result = new byte[val.length];
+            for (int j=0;j<val.length;j++) {
+                ((byte[])result)[j] = val[j].byteValue();
+            }
+        } else if (arrayObject instanceof Float[]) {
+            Float[] val = (Float[])arrayObject;
+            result = new float[val.length];
+            for (int j=0;j<val.length;j++) {
+                ((float[])result)[j] = val[j].floatValue();
+            }
+        } else if (arrayObject instanceof Double[]) {
+            Double[] val = (Double[])arrayObject;
+            result = new double[val.length];
+            for (int j=0;j<val.length;j++) {
+                ((double[])result)[j] = val[j].doubleValue();
+            }
+        } else if (arrayObject instanceof Boolean[]) {
+            Boolean[] val = (Boolean[])arrayObject;
+            result = new boolean[val.length];
+            for (int j=0;j<val.length;j++) {
+                ((boolean[])result)[j] = val[j].booleanValue();
+            }
+        } else if (arrayObject instanceof Character[]) {
+            Character[] val = (Character[])arrayObject;
+            result = new char[val.length];
+            for (int j=0;j<val.length;j++) {
+                ((char[])result)[j] = val[j].charValue();
+            }
+        } else result=arrayObject;
+        return result;
     }
 }
