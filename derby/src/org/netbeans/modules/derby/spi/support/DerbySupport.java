@@ -99,14 +99,21 @@ public final class DerbySupport {
         if ("".equals(targetDirectory)) { // NOI18N
             throw new IllegalStateException("derby.system.home not set"); // NOI18N
         }
+        File targetDirFile = new File(targetDirectory);
+        if (!targetDirFile.exists()){
+            targetDirFile.mkdirs();
+        }
         File source = InstalledFileLocator.getDefault().locate("modules/ext/derbysampledb.zip", null, false);
-        FileObject target = FileUtil.toFileObject(new File(targetDirectory));
-        extractZip(source, target);
+        FileObject target = FileUtil.toFileObject(targetDirFile);
+        FileObject sampleDir = target.getFileObject("sample");
+        if (sampleDir == null) {
+          extractZip(source, target);
+        }
         JDBCDriver drivers[] = JDBCDriverManager.getDefault().getDrivers(RegisterDerby.NET_DRIVER_CLASS_NAME);
         if (drivers.length == 0) {
             throw new IllegalStateException("derby driver not found"); // NOI18N
         }
-        DatabaseConnection con = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:1527/sample", null, "APP", null, false);
+        DatabaseConnection con = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:1527/sample", "public", "APP", null, false);
         ConnectionManager.getDefault().addConnection(con);
         return con;
     }
