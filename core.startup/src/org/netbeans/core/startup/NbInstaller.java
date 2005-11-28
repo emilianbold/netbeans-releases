@@ -930,7 +930,7 @@ final class NbInstaller extends ModuleInstaller {
             // loaders, nodes, text...
             if ("org/openide/cookies/".equals (pkg)) return true; // NOI18N
 
-            // someone should really clear these two
+            // someone should really clear this one
             if ("org/openide/resources/".equals (pkg)) return true; // NOI18N
 
             // some are provided by java/srcmodel
