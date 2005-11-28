@@ -179,6 +179,19 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Undo.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
                 </file>
+                <file name="start-macro-recording"/>
+                <file name="stop-macro-recording"/>
+                <file name="find"/>
+                <file name="find-next"/>
+                <file name="find-previous"/>
+                <file name="find-selection"/>
+                <file name="replace"/>
+                <file name="redo"/>
+                <file name="undo"/>
+                <file name="cut-to-clipboard"/>
+                <file name="copy-to-clipboard"/>
+                <file name="paste-from-clipboard"/>
+                <file name="delete-next"/>
             </folder>
             <folder name="File">
                 <file name="Close Project.shadow">
@@ -284,6 +297,11 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Toggle Bookmark.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
                 </file>
+                <file name="goto"/>
+                <file name="goto-delcalaration"/>
+                <file name="goto-source"/>
+                <file name="goto-super-implementation"/>
+                <file name="goto-help"/>
             </folder>
             <folder name="Help">
                 <file name="About.shadow">
@@ -306,6 +324,9 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="Refactor">
+                <file name="Rename.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RenameAction.instance"/>
+                </file>
                 <file name="Redo.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-RedoAction.instance"/>
                 </file>
@@ -341,9 +362,6 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
                 <file name="Push Down.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-PushDownAction.instance"/>
-                </file>
-                <file name="Rename.shadow">
-                    <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
                 </file>
                 <file name="Safely Delete....shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-SafeDeleteAction.instance"/>
@@ -407,6 +425,12 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Step Into.shadow">
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
                 </file>
+                <file name="Run File.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+                </file>
+                <file name="Run Main Project.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
+                </file>
                 <file name="Run Project.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunProject.instance"/>
                 </file>
@@ -427,6 +451,15 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Override Methods....shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-java-tools-OverrideAction.instance"/>
                 </file>
+                <file name="comment"/>
+                <file name="fix-imports"/>
+                <file name="format"/>
+                <file name="try-catch"/>
+                <file name="shift-line-left"/>
+                <file name="shift-line-right"/>
+                <file name="uncomment"/>
+                <file name="word-match-next"/>
+                <file name="word-match-prev"/>
             </folder>
             <folder name="Tools">
                 <file name="Add to Palette.shadow">
@@ -485,6 +518,18 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Web Browser.shadow">
                     <attr name="originalFile" stringvalue="Actions/View/org-netbeans-core-actions-HTMLViewAction.instance"/>
                 </file>
+                <file name="collapse-all-folds"/>
+                <file name="collapse-all-comment-folds"/>
+                <file name="collapse-all-code-block-folds"/>
+                <file name="collapse-all-javadoc-folds"/>
+                <file name="collapse-all-scripting-folds"/>
+                <file name="collapse-fold"/>
+                <file name="expand-all-folds"/>
+                <file name="expand-all-comment-folds"/>
+                <file name="expand-all-code-block-folds"/>
+                <file name="expand-all-javadoc-folds"/>
+                <file name="expand-all-scripting-folds"/>
+                <file name="expand-fold"/>
             </folder>
             <folder name="Window">
                 <file name="Local Variables.shadow">
@@ -576,6 +621,9 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="System">
+                <file name="Rename.shadow">
+                    <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
+                </file>
                 <file name="Move Up.shadow">
                     <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-MoveUpAction.instance"/>
                 </file>
