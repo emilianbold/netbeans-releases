@@ -15,20 +15,18 @@ package org.netbeans.modules.xml.text.indent;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.regex.Pattern;
-import javax.swing.text.Document;
+import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 
 import org.netbeans.editor.Syntax;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.AbstractFormatLayer;
 import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.editor.ext.FormatLayer;
 import org.netbeans.editor.ext.FormatSupport;
-import org.netbeans.editor.ext.ExtFormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseDocument;
@@ -39,6 +37,8 @@ import org.netbeans.modules.xml.text.syntax.XMLTokenIDs;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.xml.text.syntax.javacc.lib.JJEditorSyntax;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author  Marek Fukala
@@ -47,6 +47,8 @@ public class XMLFormatter extends ExtFormatter {
     
     //at least one character
     private static final Pattern VALID_TAG_NAME = Pattern.compile("[\\w+|-]*"); // NOI18N
+    
+    private static final int WORKUNITS_MAX = 100;
     
     public XMLFormatter(Class kitClass) {
         super(kitClass);
@@ -64,16 +66,16 @@ public class XMLFormatter extends ExtFormatter {
         addFormatLayer(new StripEndWhitespaceLayer());
     }
     
-    public Writer reformat(BaseDocument doc, int startOffset, int endOffset,
-            boolean indentOnly) throws BadLocationException, IOException {
+    public Writer reformat(final BaseDocument doc, final int startOffset, final int endOffset,
+            final boolean indentOnly) throws BadLocationException, IOException {
         
         //TODO: we are not preserving whitespaces yet - make an editor option for that and make it enabled by default
         
         //System.out.println("reformat from "+ startOffset + " to " + endOffset + ": " +doc.getText(startOffset, endOffset-startOffset));
         
-        int pos = Utilities.getRowStart(doc, endOffset);
+        
         TokenItem token = null;
-        XMLSyntaxSupport sup = (XMLSyntaxSupport)(doc.getSyntaxSupport().get(XMLSyntaxSupport.class));
+        final XMLSyntaxSupport sup = (XMLSyntaxSupport)(doc.getSyntaxSupport().get(XMLSyntaxSupport.class));
         if(sup == null) return null; //do not format anything what is not a XML
         
         if (startOffset == endOffset){
@@ -115,95 +117,167 @@ public class XMLFormatter extends ExtFormatter {
             return null;
         }
         
-        /*TokenItem ti = sup.getTokenChain(startOffset, endOffset + 1);
-        do {
-            System.out.println(ti);
-        } while ((ti = ti.getNext()) != null);
-         */
+        //do the reformat in non-awt thread && show progressbar when REFORMATTING bigger files
+        if(!indentOnly && (endOffset - startOffset) > 50000) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        doReformat(doc, sup, startOffset, endOffset, indentOnly, true);
+                    }catch(BadLocationException ble) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
+                    }
+                }
+            },0,Math.max(0,Thread.currentThread().getPriority() - 1));
+        } else doReformat(doc, sup, startOffset, endOffset, indentOnly, false);
         
-        int lastPairTokenRowOffset = -1;
-        do {
-            try{
-                int fnw = Utilities.getRowFirstNonWhite(doc, pos);
-                if (fnw == -1) fnw = pos;
-                token = sup.getTokenChain(fnw, fnw+1);
-                if (token != null && token.getNext() != null){
-                    //if we backtracked over the lastpair token => reset
-                    if(token.getOffset() <= lastPairTokenRowOffset) lastPairTokenRowOffset = -1;
+        return null;
+    }
+    
+    protected void doReformat(BaseDocument origdoc, XMLSyntaxSupport origsup, int startOffset, int endOffset,
+            boolean indentOnly, boolean progress) throws BadLocationException {
+        ProgressHandle ph = null;
+        if(progress) {
+            ph = ProgressHandleFactory.createHandle(NbBundle.getBundle(XMLFormatter.class).getString("MSG_code_reformat"));//NOI18N
+            ph.start();
+            ph.switchToDeterminate(WORKUNITS_MAX);
+        }
+        
+        //copy the entire original document into a fakeone
+        BaseDocument doc = new HackedBaseDocument(origdoc.getKitClass(), false);
+        doc.insertString(0, origdoc.getText(0, origdoc.getLength()), null);
+        XMLSyntaxSupport sup = new XMLSyntaxSupport(doc);
+        
+        //line boundaries of the reformatted area
+        int firstLine = Utilities.getLineOffset(origdoc, startOffset);
+        int lastLine = Utilities.getLineOffset(origdoc, endOffset);
+        int linesToReformat = lastLine - firstLine;
+        //reformat the fake document
+        doc.atomicLock();
+        try {
+            int pos = Utilities.getRowStart(doc, endOffset);
+            int lastPairTokenRowOffset = -1;
+            int lastPerc = 0;
+            TokenItem token = null;
+            do {
+                try{
+                    int fnw = Utilities.getRowFirstNonWhite(doc, pos);
+                    if (fnw == -1) fnw = pos;
+                    token = sup.getTokenChain(fnw, fnw+1);
                     
-                    if (token.getTokenID() == XMLTokenIDs.TAG && token.getImage().startsWith("</")) {
-                        //the tag is an end tag (starts with </)
-                        String tag = token.getImage().substring(2); //cut off the '</'
-                        int poss = -1;
-                        //search backward for a pair token
-                        while ( token != null) {
-                            //It must be ensured that we do not backtrack the tokens over
-                            //last found pair token. The lastPairTokenRowOffset variable
-                            //is used to remember the last pair token offset
-                            //fix for #49411
-                            if( token.getOffset() > lastPairTokenRowOffset) {
-                                if (token.getTokenID() == XMLTokenIDs.TAG
-                                        && !sup.isSingletonTag(token)) {
-                                    if (token.getImage().substring(1).trim().equals(tag) &&
-                                            token.getImage().startsWith("<") &&
-                                            !token.getImage().startsWith("</")){
-                                        //found an open tag with the searched name e.g. <table>
-                                        if (poss == 0){
-                                            doc.remove(pos, fnw-pos);
-                                            fnw = Utilities.getRowFirstNonWhite(doc, token.getOffset());
-                                            poss = Utilities.getRowStart(doc, fnw);
-                                            doc.insertString(pos, doc.getText(poss, fnw-poss), null);
-                                            int tagIndentation = Utilities.getRowIndent(doc, pos);
-                                            if (!indentOnly){
-                                                int rowOffset = Utilities.getRowStart(doc, Utilities.getRowStart(doc, pos) - 1);
-                                                int indentation = Utilities.getRowIndent(doc, pos) + this.getShiftWidth();
-                                                int delta = 0;
-                                                int deltahelp;
-                                                
-                                                while (rowOffset > poss){
-                                                    deltahelp = Utilities.getRowFirstNonWhite(doc, rowOffset );
-                                                    if (deltahelp > -1){
-                                                        token = sup.getTokenChain(deltahelp, deltahelp+1);
-                                                        if (token != null && token.getTokenContextPath().contains(XMLDefaultTokenContext.contextPath)){
-                                                            changeRowIndent(doc, rowOffset, indentation);
-                                                            int htmlindent = Utilities.getRowIndent(doc, rowOffset);
-                                                            delta = delta + Utilities.getRowFirstNonWhite(doc, rowOffset ) - deltahelp;
+                    //count progress
+                    if(progress) {
+                        int lineOfs = Utilities.getLineOffset(doc, fnw);
+                        int perc = 100 -((lineOfs*100) / linesToReformat);
+                        if((perc % 10) == 0 && lastPerc < perc) {
+                            lastPerc = perc;
+                            ph.progress((int)(perc*0.8)); //show progress up to 80%
+                        }
+                    }
+                    
+                    if (token != null && token.getNext() != null){
+                        //if we backtracked over the lastpair token => reset
+                        if(token.getOffset() <= lastPairTokenRowOffset) lastPairTokenRowOffset = -1;
+                        
+                        if (token.getTokenID() == XMLTokenIDs.TAG && token.getImage().startsWith("</")) {
+                            //the tag is an end tag (starts with </)
+                            String tag = token.getImage().substring(2); //cut off the '</'
+                            int poss = -1;
+                            //search backward for a pair token
+                            while ( token != null) {
+                                //It must be ensured that we do not backtrack the tokens over
+                                //last found pair token. The lastPairTokenRowOffset variable
+                                //is used to remember the last pair token offset
+                                //fix for #49411
+                                if( token.getOffset() > lastPairTokenRowOffset) {
+                                    if (token.getTokenID() == XMLTokenIDs.TAG
+                                            && !sup.isSingletonTag(token)) {
+                                        if (token.getImage().substring(1).trim().equals(tag) &&
+                                                token.getImage().startsWith("<") &&
+                                                !token.getImage().startsWith("</")){
+                                            //found an open tag with the searched name e.g. <table>
+                                            if (poss == 0){
+                                                doc.remove(pos, fnw-pos);
+                                                fnw = Utilities.getRowFirstNonWhite(doc, token.getOffset());
+                                                poss = Utilities.getRowStart(doc, fnw);
+                                                doc.insertString(pos, doc.getText(poss, fnw-poss), null);
+                                                if (!indentOnly){
+                                                    int rowOffset = Utilities.getRowStart(doc, Utilities.getRowStart(doc, pos) - 1);
+                                                    int indentation = Utilities.getRowIndent(doc, pos) + this.getShiftWidth();
+                                                    int delta = 0;
+                                                    int deltahelp;
+                                                    
+                                                    while (rowOffset > poss){
+                                                        deltahelp = Utilities.getRowFirstNonWhite(doc, rowOffset );
+                                                        if (deltahelp > -1){
+                                                            token = sup.getTokenChain(deltahelp, deltahelp+1);
+                                                            if (token != null && token.getTokenContextPath().contains(XMLDefaultTokenContext.contextPath)){
+                                                                changeRowIndent(doc, rowOffset, indentation);
+                                                                delta = delta + Utilities.getRowFirstNonWhite(doc, rowOffset ) - deltahelp;
+                                                            }
                                                         }
+                                                        rowOffset = Utilities.getRowStart(doc, rowOffset-1);
                                                     }
-                                                    rowOffset = Utilities.getRowStart(doc, rowOffset-1);
+                                                    pos = pos + delta;
+                                                    //remember last found pair token offset
+                                                    lastPairTokenRowOffset = poss;
                                                 }
-                                                pos = pos + delta;
-                                                //remember last found pair token offset
-                                                lastPairTokenRowOffset = poss;
+                                                break;
+                                            } else{
+                                                poss--;
                                             }
-                                            break;
-                                        } else{
-                                            poss--;
-                                        }
-                                    } else {
-                                        //close tag e.g. </table>
-                                        if (token.getImage().length() > 1 && token.getImage().substring(2).equals(tag)){
-                                            //close tag with the some name as the searched tag => increase deepness
-                                            poss++;
+                                        } else {
+                                            //close tag e.g. </table>
+                                            if (token.getImage().length() > 1 && token.getImage().substring(2).equals(tag)){
+                                                //close tag with the some name as the searched tag => increase deepness
+                                                poss++;
+                                            }
                                         }
                                     }
+                                    token = token.getPrevious();
+                                } else {
+                                    //reset the last found pair token
+                                    lastPairTokenRowOffset = -1;
+                                    break;
                                 }
-                                token = token.getPrevious();
-                            } else {
-                                //reset the last found pair token
-                                lastPairTokenRowOffset = -1;
-                                break;
                             }
                         }
                     }
+                } catch (Exception e){
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
                 }
-            } catch (Exception e){
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-            }
-            pos = Utilities.getRowStart(doc, pos-1);
-        } while (pos > startOffset && pos > 0);
+                pos = Utilities.getRowStart(doc, pos-1);
+            } while (pos > startOffset && pos > 0);
+            
+        }finally{
+            doc.atomicUnlock();
+        }
         
-        return null;
+        //copy the affected area line by line (it preserves annotations bindend to j.s.t.Position-s)
+        origdoc.atomicLock();
+        try {
+            for(int i = firstLine; i <= lastLine; i++) {
+                //offsets of the reformatted area in the fake document
+                int fakeStartOffset = Utilities.getRowStartFromLineOffset(doc, i);
+                int fakeNWF = Utilities.getFirstNonWhiteFwd(doc, fakeStartOffset);
+                int fakeIndent = (fakeNWF - fakeStartOffset);
+                if(fakeNWF > 0) {
+                    //offsets of the affected part in the original document
+                    int newStartOffset = Utilities.getRowStartFromLineOffset(origdoc, i);
+                    int newNWF = Utilities.getFirstNonWhiteFwd(origdoc, newStartOffset);
+                    int newIndent = newNWF - newStartOffset;
+                    
+                    if(newIndent != fakeIndent) {
+                        if(newNWF > 0)
+                            origdoc.remove(newStartOffset, newNWF - newStartOffset); //remove original formatting
+                        origdoc.insertString(newStartOffset, doc.getText(fakeStartOffset, fakeNWF - fakeStartOffset), null);
+                    }
+                }
+            }
+        }finally{
+            origdoc.atomicUnlock();
+        }
+        
+        if(progress) ph.finish();
     }
     
     public int[] getReformatBlock(JTextComponent target, String typedText) {
@@ -219,7 +293,6 @@ public class XMLFormatter extends ExtFormatter {
                 //get the token before typed text
                 TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
                 TokenItem origToken = token;
-                int start = token.getOffset();
                 if (token.getTokenID() == XMLDefaultTokenContext.TAG &&
                         !token.getImage().endsWith("/>")) {
                     // > is a xml token which interests us
@@ -409,6 +482,22 @@ public class XMLFormatter extends ExtFormatter {
                     }
                 }
             }
+        }
+    }
+    
+    //some of not needed methods are removed - I do not need them in the fake document
+    private class HackedBaseDocument extends BaseDocument {
+        public HackedBaseDocument(Class kitClass, boolean addToRegistry) {
+            super(kitClass, addToRegistry);
+        }
+        boolean notifyModifyCheckStart(int offset, String vetoExceptionText) throws BadLocationException {
+            return false;
+        }
+        protected void fireInsertUpdate(DocumentEvent e) {
+            //do nothing
+        }
+        protected void postRemoveUpdate(DefaultDocumentEvent chng) {
+            //do ng
         }
     }
     

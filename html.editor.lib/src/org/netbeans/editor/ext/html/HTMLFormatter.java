@@ -16,10 +16,16 @@ package org.netbeans.editor.ext.html;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.regex.Pattern;
+import javax.swing.event.DocumentEvent;
+import javax.swing.text.AbstractDocument.DefaultDocumentEvent;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenID;
@@ -33,6 +39,8 @@ import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Formatter for html files.
@@ -45,6 +53,8 @@ public class HTMLFormatter extends ExtFormatter {
     private static final Pattern VALID_TAG_NAME = Pattern.compile("\\w+"); // NOI18N
     
     private static final String[] UNFORMATTABLE_TAGS = new String[]{"pre", "script"}; //NOI18N
+    
+    private static final int WORKUNITS_MAX = 100;
     
     /** Creates a new instance of HTMLFormater */
     public HTMLFormatter(Class kitClass) {
@@ -60,20 +70,19 @@ public class HTMLFormatter extends ExtFormatter {
         addFormatLayer(new OutLineLayer());
     }
     
-    
-    public Writer reformat(BaseDocument doc, int startOffset, int endOffset,
-            boolean indentOnly) throws BadLocationException, IOException {
+    public Writer reformat(final BaseDocument doc, final int startOffset, final int endOffset,
+            final boolean indentOnly) throws BadLocationException, IOException {
         
-        int pos = Utilities.getRowStart(doc, endOffset);
-        TokenItem token = null;
-        HTMLSyntaxSupport sup = (HTMLSyntaxSupport)(doc.getSyntaxSupport().get(HTMLSyntaxSupport.class));
         
+        final HTMLSyntaxSupport sup = (HTMLSyntaxSupport)(doc.getSyntaxSupport().get(HTMLSyntaxSupport.class));
+        
+        //do indentation in awt
         if (startOffset == endOffset){
             //pressed enter - called from indentNewLine
             //get first non-white token backward
             int nonWSTokenBwd = Utilities.getFirstNonWhiteBwd(doc, endOffset);
             if(nonWSTokenBwd != -1) {
-                token = sup.getTokenChain(nonWSTokenBwd, nonWSTokenBwd + 1);
+                TokenItem token = sup.getTokenChain(nonWSTokenBwd, nonWSTokenBwd + 1);
                 if(token != null
                         && token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL
                         && !token.getImage().equals("/>")) {
@@ -112,112 +121,191 @@ public class HTMLFormatter extends ExtFormatter {
             return null;
         }
         
-        int lastPairTokenRowOffset = -1;
-        do {
-            try{
-                int fnw = Utilities.getRowFirstNonWhite(doc, pos);
-                if (fnw == -1) fnw = pos;
-                token = sup.getTokenChain(fnw, fnw+1);
-                if (token != null && token.getNext() != null){
-                    //now we need the token itself - there is only a tag symbol on the begginning of the line
-                    token = token.getNext();
+        //do the reformat in non-awt thread && show progressbar when REFORMATTING bigger files
+        if(!indentOnly && (endOffset - startOffset) > 50000) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        doReformat(doc, sup, startOffset, endOffset, indentOnly, true);
+                    }catch(BadLocationException ble) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
+                    }
+                }
+            },0,Math.max(0,Thread.currentThread().getPriority() - 1));
+        } else doReformat(doc, sup, startOffset, endOffset, indentOnly, false);
+        
+        return null;
+    }
+    
+    protected void doReformat(BaseDocument origdoc, HTMLSyntaxSupport origsup, int startOffset, int endOffset,
+            boolean indentOnly, boolean progress) throws BadLocationException {
+        ProgressHandle ph = null;
+        if(progress) {
+            ph = ProgressHandleFactory.createHandle(NbBundle.getBundle(HTMLFormatter.class).getString("MSG_code_reformat"));//NOI18N
+            ph.start();
+            ph.switchToDeterminate(WORKUNITS_MAX);
+        }
+        
+        //copy the entire original document into a fakeone
+        BaseDocument doc = new HackedBaseDocument(origdoc.getKitClass(), false);
+        doc.insertString(0, origdoc.getText(0, origdoc.getLength()), null);
+        HTMLSyntaxSupport sup = new HTMLSyntaxSupport(doc);
+        
+        //line boundaries of the reformatted area
+        int firstLine = Utilities.getLineOffset(origdoc, startOffset);
+        int lastLine = Utilities.getLineOffset(origdoc, endOffset);
+        int linesToReformat = lastLine - firstLine;
+        //reformat the fake document
+        doc.atomicLock();
+        try {
+            int lastPairTokenRowOffset = -1;
+            int pos = Utilities.getRowStart(doc, endOffset);
+            TokenItem token = null;
+            int lastPerc = 0;
+            do {
+                try{
+                    int fnw = Utilities.getRowFirstNonWhite(doc, pos);
+                    if (fnw == -1) fnw = pos;
+                    token = sup.getTokenChain(fnw, fnw+1);
                     
-                    //if we backtracked over the lastpair token => reset
-                    if(token.getOffset() <= lastPairTokenRowOffset) lastPairTokenRowOffset = -1;
+                    //count progress
+                    if(progress) {
+                        int lineOfs = Utilities.getLineOffset(doc, fnw);
+                        int perc = 100 -((lineOfs*100) / linesToReformat);
+                        if((perc % 10) == 0 && lastPerc < perc) {
+                            lastPerc = perc;
+                            ph.progress((int)(perc*0.8)); //show progress up to 80%
+                        }
+                    }
                     
-                    if (token.getTokenContextPath().contains(HTMLTokenContext.contextPath) &&
-                            token.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_ID) {
-                        //the tag is an end tag
-                        String tag = token.getImage();
-                        int poss = -1;
-                        //search backward for a pair token
-                        while ( token != null) {
-                            //It must be ensured that we do not backtrack the tokens over
-                            //last found pair token. The lastPairTokenRowOffset variable
-                            //is used to remember the last pair token offset
-                            //fix for #49411
-                            if( token.getOffset() > lastPairTokenRowOffset) {
-                                if (token.getTokenContextPath().contains(HTMLTokenContext.contextPath) 
+                    if (token != null && token.getNext() != null){
+                        //now we need the token itself - there is only a tag symbol on the begginning of the line
+                        token = token.getNext();
+                        
+                        //if we backtracked over the lastpair token => reset
+                        if(token.getOffset() <= lastPairTokenRowOffset) lastPairTokenRowOffset = -1;
+                        
+                        if (token.getTokenContextPath().contains(HTMLTokenContext.contextPath) &&
+                                token.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_ID) {
+                            //the tag is an end tag
+                            String tag = token.getImage();
+                            int poss = -1;
+                            //search backward for a pair token
+                            while ( token != null) {
+                                //It must be ensured that we do not backtrack the tokens over
+                                //last found pair token. The lastPairTokenRowOffset variable
+                                //is used to remember the last pair token offset
+                                //fix for #49411
+                                if( token.getOffset() > lastPairTokenRowOffset) {
+                                    if (token.getTokenContextPath().contains(HTMLTokenContext.contextPath)
                                     && HTMLSyntaxSupport.isTag(token)
                                     && !sup.isSingletonTag(token)) {
-                                    if (token.getImage().trim().equals(tag) &&
-                                            token.getTokenID().getNumericID() == HTMLTokenContext.TAG_OPEN_ID){
-                                        if (poss == 0){
-                                            if(isFormattableTag(token.getImage()) || indentOnly) {
-                                                doc.remove(pos, fnw-pos);
-                                                fnw = Utilities.getRowFirstNonWhite(doc, token.getOffset());
-                                                poss = Utilities.getRowStart(doc, fnw);
-                                                doc.insertString(pos, doc.getText(poss, fnw-poss), null);
-                                                int tagIndentation = Utilities.getRowIndent(doc, pos);
-                                                if (!indentOnly){
-                                                    int rowOffset = Utilities.getRowStart(doc, Utilities.getRowStart(doc, pos) - 1);
-                                                    int indentation = Utilities.getRowIndent(doc, pos) + this.getShiftWidth();
-                                                    int delta = 0;
-                                                    int deltahelp;
-                                                    
-                                                    String  unformattable = null;
-                                                    while (rowOffset > poss){
-                                                        deltahelp = Utilities.getRowFirstNonWhite(doc, rowOffset );
-                                                        if (deltahelp > -1){
-                                                            token = sup.getTokenChain(deltahelp, deltahelp+1);
-                                                            
-                                                            boolean unformattableJustFound = false;
-                                                            TokenItem t = token;
-                                                            //check whether the line contains an open tag from the list of unformattable tags
-                                                            while(t != null && (Utilities.getRowStart(doc, t.getOffset()) == Utilities.getRowStart(doc, token.getOffset()))) {
-                                                                if(t.getTokenID() == HTMLTokenContext.TAG_OPEN && unformattable != null && t.getImage().equalsIgnoreCase(unformattable)) {
-                                                                    unformattable = null; //we found an end of the unformattable area
-                                                                    unformattableJustFound = false;
+                                        if (token.getImage().trim().equals(tag) &&
+                                                token.getTokenID().getNumericID() == HTMLTokenContext.TAG_OPEN_ID){
+                                            if (poss == 0){
+                                                if(isFormattableTag(token.getImage()) || indentOnly) {
+                                                    doc.remove(pos, fnw-pos);
+                                                    fnw = Utilities.getRowFirstNonWhite(doc, token.getOffset());
+                                                    poss = Utilities.getRowStart(doc, fnw);
+                                                    doc.insertString(pos, doc.getText(poss, fnw-poss), null);
+                                                    int tagIndentation = Utilities.getRowIndent(doc, pos);
+                                                    if (!indentOnly){
+                                                        int rowOffset = Utilities.getRowStart(doc, Utilities.getRowStart(doc, pos) - 1);
+                                                        int indentation = Utilities.getRowIndent(doc, pos) + this.getShiftWidth();
+                                                        int delta = 0;
+                                                        int deltahelp;
+                                                        
+                                                        String  unformattable = null;
+                                                        while (rowOffset > poss){
+                                                            deltahelp = Utilities.getRowFirstNonWhite(doc, rowOffset );
+                                                            if (deltahelp > -1){
+                                                                token = sup.getTokenChain(deltahelp, deltahelp+1);
+                                                                
+                                                                boolean unformattableJustFound = false;
+                                                                TokenItem t = token;
+                                                                //check whether the line contains an open tag from the list of unformattable tags
+                                                                while(t != null && (Utilities.getRowStart(doc, t.getOffset()) == Utilities.getRowStart(doc, token.getOffset()))) {
+                                                                    if(t.getTokenID() == HTMLTokenContext.TAG_OPEN && unformattable != null && t.getImage().equalsIgnoreCase(unformattable)) {
+                                                                        unformattable = null; //we found an end of the unformattable area
+                                                                        unformattableJustFound = false;
+                                                                    }
+                                                                    if(t.getTokenID() == HTMLTokenContext.TAG_CLOSE) {
+                                                                        //an unformattable area start
+                                                                        unformattable = !isFormattableTag(t.getImage().trim()) ? t.getImage().trim() : null;
+                                                                        unformattableJustFound = true;
+                                                                    }
+                                                                    t = t.getNext();
                                                                 }
-                                                                if(t.getTokenID() == HTMLTokenContext.TAG_CLOSE) {
-                                                                    //an unformattable area start
-                                                                    unformattable = !isFormattableTag(t.getImage().trim()) ? t.getImage().trim() : null;
-                                                                    unformattableJustFound = true;
+                                                                
+                                                                //reformat only when there isn't any unformattable tag
+                                                                if ((unformattableJustFound || unformattable == null) && token != null &&
+                                                                        token.getTokenContextPath().contains(HTMLTokenContext.contextPath)){
+                                                                    changeRowIndent(doc, rowOffset, indentation);
+                                                                    int htmlindent = Utilities.getRowIndent(doc, rowOffset);
+                                                                    delta = delta + Utilities.getRowFirstNonWhite(doc, rowOffset ) - deltahelp;
                                                                 }
-                                                                t = t.getNext();
                                                             }
-                                                            
-                                                            //reformat only when there isn't any unformattable tag
-                                                            if ((unformattableJustFound || unformattable == null) && token != null &&
-                                                                    token.getTokenContextPath().contains(HTMLTokenContext.contextPath)){
-                                                                changeRowIndent(doc, rowOffset, indentation);
-                                                                int htmlindent = Utilities.getRowIndent(doc, rowOffset);
-                                                                delta = delta + Utilities.getRowFirstNonWhite(doc, rowOffset ) - deltahelp;
-                                                            }
+                                                            rowOffset = Utilities.getRowStart(doc, rowOffset-1);
                                                         }
-                                                        rowOffset = Utilities.getRowStart(doc, rowOffset-1);
+                                                        pos = pos + delta;
+                                                        //remember last found pair token offset
+                                                        lastPairTokenRowOffset = poss;
                                                     }
-                                                    pos = pos + delta;
-                                                    //remember last found pair token offset
-                                                    lastPairTokenRowOffset = poss;
+                                                    break;
                                                 }
-                                                break;
+                                            } else{
+                                                poss--;
                                             }
-                                        } else{
-                                            poss--;
-                                        }
-                                    } else {
-                                        if (token.getImage().equals(tag)){
-                                            poss++;
+                                        } else {
+                                            if (token.getImage().equals(tag)){
+                                                poss++;
+                                            }
                                         }
                                     }
+                                    token = token.getPrevious();
+                                } else {
+                                    //reset the last found pair token
+                                    lastPairTokenRowOffset = -1;
+                                    break;
                                 }
-                                token = token.getPrevious();
-                            } else {
-                                //reset the last found pair token
-                                lastPairTokenRowOffset = -1;
-                                break;
                             }
                         }
                     }
+                } catch (Exception e){
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
                 }
-            } catch (Exception e){
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-            }
-            pos = Utilities.getRowStart(doc, pos-1);
-        } while (pos > startOffset && pos > 0);
+                pos = Utilities.getRowStart(doc, pos-1);
+            } while (pos > startOffset && pos > 0);
+        }finally{
+            doc.atomicUnlock();
+        }
         
-        return null;
+        //copy the affected area line by line (it preserves annotations bindend to j.s.t.Position-s)
+        origdoc.atomicLock();
+        try {
+            for(int i = firstLine; i <= lastLine; i++) {
+                //offsets of the reformatted area in the fake document
+                int fakeStartOffset = Utilities.getRowStartFromLineOffset(doc, i);
+                int fakeNWF = Utilities.getFirstNonWhiteFwd(doc, fakeStartOffset);
+                int fakeIndent = (fakeNWF - fakeStartOffset);
+                if(fakeNWF > 0) {
+                    //offsets of the affected part in the original document
+                    int newStartOffset = Utilities.getRowStartFromLineOffset(origdoc, i);
+                    int newNWF = Utilities.getFirstNonWhiteFwd(origdoc, newStartOffset);
+                    int newIndent = newNWF - newStartOffset;
+                    
+                    if(newIndent != fakeIndent) {
+                        if(newNWF > 0)
+                            origdoc.remove(newStartOffset, newNWF - newStartOffset); //remove original formatting
+                        origdoc.insertString(newStartOffset, doc.getText(fakeStartOffset, fakeNWF - fakeStartOffset), null);
+                    }
+                }
+            }
+        }finally{
+            origdoc.atomicUnlock();
+        }
+        
+        if(progress) ph.finish();
     }
     
     public int[] getReformatBlock(JTextComponent target, String typedText) {
@@ -430,4 +518,21 @@ public class HTMLFormatter extends ExtFormatter {
         
         
     }
+    
+    //some of not needed methods are removed - I do not need them in the fake document
+    private class HackedBaseDocument extends BaseDocument {
+        public HackedBaseDocument(Class kitClass, boolean addToRegistry) {
+            super(kitClass, addToRegistry);
+        }
+        boolean notifyModifyCheckStart(int offset, String vetoExceptionText) throws BadLocationException {
+            return false;
+        }
+        protected void fireInsertUpdate(DocumentEvent e) {
+            //do nothing
+        }
+        protected void postRemoveUpdate(DefaultDocumentEvent chng) {
+            //do ng
+        }
+    }
+    
 }
