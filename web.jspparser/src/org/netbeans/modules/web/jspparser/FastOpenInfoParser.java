@@ -352,6 +352,7 @@ public class FastOpenInfoParser {
      * with defined encoding resp. marks a set of JSPs to be xml documents. */
     private static DDParseInfo parse(InputSource src) throws IOException, SAXException, ParserConfigurationException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setValidating(false);
         SAXParser parser = factory.newSAXParser();
         final DDParseInfo ddParseInfo = new DDParseInfo();
         
