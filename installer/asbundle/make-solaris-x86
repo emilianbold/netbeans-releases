@@ -2,5 +2,5 @@
 # $AS_INSTALLER_PATH is location of SJS AS installer
 ant \
 -Dismp.home=$IS_HOME \
--Das.installer=$AS_INSTALLER_PATH/sjsas_pe-8.2_2005Q2-fcs-bin-b01-solaris-i586-10_nov_2005.bin \
+-Das.installer=$AS_INSTALLER_PATH/sjsas_pe-8_2-fcs-bin-b03-solaris-i586-23_nov_2005.bin \
 build-solaris-x86
