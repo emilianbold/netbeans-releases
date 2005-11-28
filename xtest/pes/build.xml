@@ -17,9 +17,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="build.compiler.deprecation" value="off"/>    
   <property name="build.compiler.debug" value="on"/>
   
-  <target name="init"/>
-  
-  <target name="compile" depends="init">
+  <target name="compile">
       <mkdir dir="build/classes"/>
       <!-- compile xtest first -> pes depends on several of its classes -->
       <javac srcdir="../src" destdir="build/classes"
