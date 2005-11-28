@@ -350,13 +350,17 @@ public class StrutsConfigUtilities {
             while (resource == null && index < files.length){
                 configDO = DataObject.find(files[index]);
                 if (configDO != null && configDO instanceof StrutsConfigDataObject){
-                    MessageResources[] resources = ((StrutsConfigDataObject)configDO).getStrutsConfig().getMessageResources();
-                    for (int i = 0; i < resources.length; i++){
-                        if (resources[i].getAttributeValue("key") == null)    {  //NOI18N
-                            resource = resources[i];
-                            break;
+                    StrutsConfig strutsConfig = ((StrutsConfigDataObject)configDO).getStrutsConfig();
+                    // we need to chech, whether the config is parseable
+                    if (strutsConfig != null){
+                        MessageResources[] resources = strutsConfig.getMessageResources();
+                        for (int i = 0; i < resources.length; i++){
+                            if (resources[i].getAttributeValue("key") == null)    {  //NOI18N
+                                resource = resources[i];
+                                break;
+                            }
                         }
-                    } 
+                    }
                 }
                 index++;
             }
