@@ -382,7 +382,8 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                 if (
                     moduleCodeBase != null && 
                     ModuleInfoManager.getDefault().isReloaded(moduleCodeBase) &&
-                    type.getClassLoader () != ClassLoader.getSystemClassLoader ()
+                    type.getClassLoader () != ClassLoader.getSystemClassLoader () &&
+                    type.getClassLoader() != null
                 ) {
                     // special treatment for classes that could be reloaded
                     ModuleInfo info = ModuleInfoManager.getDefault().getModule (moduleCodeBase);
