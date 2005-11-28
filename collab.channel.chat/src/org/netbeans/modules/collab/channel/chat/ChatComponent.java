@@ -861,17 +861,20 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
             // Convert message to HTML
             String html = convertToHtml(message);
 
-            // fixme: pattern ") is first expanded to &amp;) which will then find a smile there.
-            
-            for (int i=0; i<smiles.length; i++) {
-                if (strContains(html, smiles[i][0])) {
-                    URL smileUrl = ChatComponent.class.getResource(
-                        "resources/emoticons/" + smiles[i][1]);
-                    String tag = "<img align=\"center\" src=" + smileUrl + "></img>";
-                    html = replaceAll(html, smiles[i][0], tag);
+            // fixme: pattern ") is first expanded to &quot;) which will then find a smile there.
+            // Replace smiles only in plain text
+            String contentType = message.getHeader(ChatCollablet.DISPLAY_CONTENT_TYPE_HEADER);
+            if ((contentType == null) || contentType.equals(ContentTypes.UNKNOWN_TEXT)) {
+                for (int i=0; i<smiles.length; i++) {
+                    if (strContains(html, smiles[i][0])) {
+                        URL smileUrl = ChatComponent.class.getResource(
+                            "resources/emoticons/" + smiles[i][1]);
+                        String tag = "<img align=\"center\" src=" + smileUrl + "></img>";
+                        html = replaceAll(html, smiles[i][0], tag);
+                    }
                 }
             }
-
+            
             // Insert the message text before the start of the epilogue
             HTMLDocument document = (HTMLDocument) getTranscriptPane().getDocument();
             document.insertBeforeStart(getEndElement(), html);
