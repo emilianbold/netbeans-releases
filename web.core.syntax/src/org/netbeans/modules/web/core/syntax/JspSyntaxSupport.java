@@ -1175,6 +1175,11 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                         return getTagOrDirectiveChain(false, elementStart, offset);
                     }
                 }
+                if(elementStart.getTokenID() == JspTagTokenContext.ERROR 
+                        || elementStart.getTokenID() == JspDirectiveTokenContext.ERROR) {
+                    //an error in JSP code
+                    return null;
+                }
                 if (elementStart.getTokenID() == JspTagTokenContext.COMMENT
                         || elementStart.getTokenID() == JspDirectiveTokenContext.COMMENT) {
                     return null;
