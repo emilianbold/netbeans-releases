@@ -13,19 +13,36 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
+import java.beans.FeatureDescriptor;
+import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.xml.catalog.spi.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.xml.api.model.GrammarEnvironment;
+import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.xml.sax.*;
 import org.netbeans.modules.xml.api.model.DTDUtil;
 import org.netbeans.api.xml.services.UserCatalog;
-import org.netbeans.modules.xml.api.model.GrammarQueryManager;/** Catalog for App Server 8PE DTDs that enables completion support in editor.
+import org.netbeans.modules.xml.api.model.GrammarQueryManager;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogListener;
+import org.netbeans.modules.xml.catalog.spi.CatalogReader;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+
+/** Catalog for App Server 8PE DTDs that enables completion support in editor.
  *
  * @author Ludo
  */
+
 public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogReader, CatalogDescriptor,org.xml.sax.EntityResolver  {
     
     private static final String XML_XSD="http://www.w3.org/2001/xml.xsd"; // NOI18N
@@ -95,9 +112,12 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     };
     
     File platformRootDir=null;
+    
     /** Creates a new instance of RunTimeDDCatalog */
     public RunTimeDDCatalog() {
-        platformRootDir = org.netbeans.modules.j2ee.sun.api.ServerLocationManager.getLatestPlatformLocation();
+        // lazy call to possible registration. This is called only when needed (i.e runtime tab DTD exploration
+        PluginProperties.configureDefaultServerInstance();        
+        platformRootDir = ServerLocationManager.getLatestPlatformLocation();
     }
     private static RunTimeDDCatalog ddCatalog;
     
@@ -120,7 +140,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
             return null;
         }
         
-        String  installRoot = platformRootDir.getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
+        String  installRoot = platformRootDir.getAbsolutePath(); 
         if (installRoot == null) {
             return null;
         }
@@ -178,7 +198,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * Refresh content according to content of mounted catalog.
      */
     public void refresh() {
-        File newLoc = org.netbeans.modules.j2ee.sun.api.ServerLocationManager.getLatestPlatformLocation();
+        File newLoc = ServerLocationManager.getLatestPlatformLocation();
         if (platformRootDir!=newLoc){
             platformRootDir = newLoc;
             getRunTimeDDCatalog().fireCatalogListeners();
@@ -186,7 +206,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     
     }
     
-    private java.util.List/*<CatalogListeners>*/ catalogListeners = new java.util.ArrayList(1);
+    private List catalogListeners = new ArrayList(1);
     
     /**
      * Optional operation allowing to listen at catalog for changes.
@@ -212,7 +232,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     }
     
     public  void fireCatalogListeners() {
-        platformRootDir = org.netbeans.modules.j2ee.sun.api.ServerLocationManager.getLatestPlatformLocation();
+        platformRootDir = ServerLocationManager.getLatestPlatformLocation();
         java.util.Iterator iter = catalogListeners.iterator();
         while (iter.hasNext()) {
             CatalogListener l = (CatalogListener) iter.next();
@@ -221,7 +241,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     }
     
     /** Registers new listener.  */
-    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+    public void addPropertyChangeListener(PropertyChangeListener l) {
     }
     
     /**
@@ -318,7 +338,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @param systemId systemId for resolved entity
      * @return InputSource for
      */
-    public org.xml.sax.InputSource resolveEntity(String publicId, String systemId) throws org.xml.sax.SAXException, java.io.IOException {
+    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         
         if (SCHEMASLOCATION == null) {
             if (platformRootDir == null) {
@@ -380,7 +400,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     
     
     
-    public java.util.Enumeration enabled(org.netbeans.modules.xml.api.model.GrammarEnvironment ctx) {
+    public Enumeration enabled(GrammarEnvironment ctx) {
         if (ctx.getFileObject() == null) return null;
         InputSource is= ctx.getInputSource();
         java.util.Enumeration en = ctx.getDocumentChildren();
@@ -481,13 +501,13 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         return null;
     }
     
-    public java.beans.FeatureDescriptor getDescriptor() {
-        return new java.beans.FeatureDescriptor();
+    public FeatureDescriptor getDescriptor() {
+        return new FeatureDescriptor();
     }
     
     /** Returns pseudo DTD for code completion
      */
-    public org.netbeans.modules.xml.api.model.GrammarQuery getGrammar(org.netbeans.modules.xml.api.model.GrammarEnvironment ctx) {
+    public GrammarQuery getGrammar(GrammarEnvironment ctx) {
         UserCatalog catalog = UserCatalog.getDefault();
         ///System.out.println("bbb");
         InputSource is= ctx.getInputSource();
