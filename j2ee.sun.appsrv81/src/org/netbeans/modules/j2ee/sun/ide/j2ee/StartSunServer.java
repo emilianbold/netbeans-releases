@@ -749,6 +749,9 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         if (sunDm.isRunning()==false){
             return null;
         }
+        if (isSuspended((SunDeploymentManagerInterface)this.dm)){
+            return (ServerDebugInfo)debugInfoMap.get(sunDm.getHost()+sunDm.getPort());
+        }
         try{
             String addr= sunDm.getDebugAddressValue();
 
