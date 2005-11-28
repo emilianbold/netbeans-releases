@@ -312,33 +312,13 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         
         protected void addNotify() {
             super.addNotify();
-            try {
-                if (fcl == null) {
-                    fcl = new FileChangeAdapter() {
-                        public void fileDataCreated(FileEvent fe) {
-                            refreshKeys();
-                        }
-                        public void fileDeleted(FileEvent fe) {
-                            refreshKeys();
-                        }
-                    };
-                }
-                project.getProjectDirectory().getFileSystem().addFileChangeListener(fcl);
-            } catch (FileStateInvalidException ex) {
-                assert false : ex;
-            }
+            attachListeners();
             refreshKeys();
         }
         
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
-            if (fcl != null) {
-                try {
-                    project.getProjectDirectory().getFileSystem().removeFileChangeListener(fcl);
-                } catch (FileStateInvalidException ex) {
-                    assert false : ex;
-                }
-            }
+            removeListeners();
             super.removeNotify();
         }
         
@@ -381,10 +361,39 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                     files.add(file);
                 }
             }
-            if (!newVisibleFiles.equals(visibleFiles)) {
+            if (!isInitialized() || !newVisibleFiles.equals(visibleFiles)) {
                 visibleFiles = newVisibleFiles;
                 setKeys(visibleFiles);
                 ((ImportantFilesNode) getNode()).setFiles(files);
+            }
+        }
+        
+        private void attachListeners() {
+            try {
+                if (fcl == null) {
+                    fcl = new FileChangeAdapter() {
+                        public void fileDataCreated(FileEvent fe) {
+                            refreshKeys();
+                        }
+                        public void fileDeleted(FileEvent fe) {
+                            refreshKeys();
+                        }
+                    };
+                    project.getProjectDirectory().getFileSystem().addFileChangeListener(fcl);
+                }
+            } catch (FileStateInvalidException e) {
+                assert false : e;
+            }
+        }
+        
+        private void removeListeners() {
+            if (fcl != null) {
+                try {
+                    project.getProjectDirectory().getFileSystem().removeFileChangeListener(fcl);
+                } catch (FileStateInvalidException e) {
+                    assert false : e;
+                }
+                fcl = null;
             }
         }
         
