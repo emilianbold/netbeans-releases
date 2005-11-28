@@ -17,6 +17,7 @@
 
 package org.netbeans.modules.j2ee.sun.ide;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 import org.openide.modules.ModuleInstall;
 
 
@@ -34,8 +35,8 @@ public class Installer extends ModuleInstall {
     public static synchronized Object create() {
         if (facadeDF != null)
             return facadeDF;
-               
-        //register the panel that will ask username password. Global IDE level...
+        //this is our JSR88 factory lazy init, only when needed via layer.      
+        PluginProperties.configureDefaultServerInstance();
         facadeDF =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory();
         
         return facadeDF;
