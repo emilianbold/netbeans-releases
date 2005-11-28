@@ -73,12 +73,12 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
                     removeBeanInterface(businessInterfaceClass.getName());
                 }
             } else {
+                Utils.removeClass(sourceClassPath, ejb.getHome());
+                removeBeanInterface(ejb.getRemote());
                 JavaClass businessInterfaceClass = getRemoteBusinessInterfaceClass();
                 if (businessInterfaceClass != null) {
                     removeBeanInterface(businessInterfaceClass.getName());
                 }
-                removeBeanInterface(ejb.getRemote());
-                Utils.removeClass(sourceClassPath, ejb.getHome());
             }
             rollback = false;
         } finally {
