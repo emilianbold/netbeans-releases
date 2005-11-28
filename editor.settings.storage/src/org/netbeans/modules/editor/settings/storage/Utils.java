@@ -25,6 +25,7 @@ import javax.swing.text.AttributeSet;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
 
@@ -80,31 +81,9 @@ public class Utils {
         String profile,
         String fileNameExt
     ) {
+        String name = getFileName (mimeTypes, profile, fileNameExt);
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-        String folderName = Utils.getFolderName (mimeTypes, profile);
-        if (folderName == null) return null;
-        if (fileNameExt == null)
-            return fs.findResource (folderName);
-        return fs.findResource (
-            folderName + fileNameExt
-        );
-    }
-    
-    /**
-     * Crates FileObject for given mimeTypes and profile.
-     */ 
-    static String getFolderName (
-        String[] mimeTypes, 
-        String profile
-    ) {
-        StringBuffer sb = new StringBuffer ();
-        sb.append ("Editors");
-        int i, k = mimeTypes.length;
-        for (i = 0; i < k; i++)
-            sb.append ('/').append (mimeTypes [i]);
-        if (profile != null)
-            sb.append ('/').append (profile);
-        return sb.append ('/').toString ();
+        return fs.findResource (name);
     }
     
     /**
@@ -115,19 +94,10 @@ public class Utils {
         String profile,
         String fileName
     ) {
+        String name = getFileName (mimeTypes, profile, fileName);
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
         try {
-            FileObject fo = getFO (fs.getRoot (), "Editors");
-            int i, k = mimeTypes.length;
-            for (i = 0; i < k; i++)
-                fo = getFO (fo, mimeTypes [i]);
-            if (profile != null)
-                fo = getFO (fo, profile);
-            if (fileName == null)
-                return fo;
-            FileObject fo1 = fo.getFileObject (fileName);
-            if (fo1 != null) return fo1;
-            return fo.createData (fileName);
+            return FileUtil.createData (fs.getRoot (), name);
         } catch (IOException ex) {
             ErrorManager.getDefault ().notify (ex);
             return null;
@@ -142,23 +112,37 @@ public class Utils {
         String profile,
         String fileName
     ) {
+        String name = getFileName (mimeTypes, profile, fileName);
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
+        FileObject fo = fs.findResource (name);
+        if (fo == null) return;
         try {
-            FileObject fo = getFO (fs.getRoot (), "Editors");
-            int i, k = mimeTypes.length;
-            for (i = 0; i < k; i++)
-                fo = getFO (fo, mimeTypes [i]);
-            if (profile != null)
-                fo = getFO (fo, profile);
-            fo = fo.getFileObject (fileName);
-            if (fo == null) return;
             fo.delete ();
         } catch (IOException ex) {
             ErrorManager.getDefault ().notify (ex);
         }
     }
+    
+    /**
+     * Crates FileObject for given mimeTypes and profile.
+     */ 
+    static String getFileName (
+        String[] mimeTypes, 
+        String profile,
+        String fileName
+    ) {
+        StringBuffer sb = new StringBuffer ("Editors");
+        int i, k = mimeTypes.length;
+        for (i = 0; i < k; i++)
+            sb.append ('/').append (mimeTypes [i]);
+        if (profile != null)
+            sb.append ('/').append (profile);
+        if (fileName != null)
+            sb.append ('/').append (fileName);
+        return sb.toString ();
+    }
        
-    private static FileObject getFO (FileObject fo, String next) throws IOException {
+    private static FileObject createFile (FileObject fo, String next) throws IOException {
         FileObject fo1 = fo.getFileObject (next);
         if (fo1 == null) 
             return fo.createFolder (next);

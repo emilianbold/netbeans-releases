@@ -241,27 +241,30 @@ public class EditorSettingsImpl extends EditorSettings {
 	Collection /*<AttributeSet>*/ fontColors
     ) {
         // 1) translate name of profile
-	profile = getInternalFontColorProfile (profile); // loc name > name
+	String internalProfile = getInternalFontColorProfile (profile); // loc name > name
         
         if (fontColors == null) {
             // 2) remove coloring / revert to defaults
             ColoringStorage.deleteColorings
-                (new String [0], profile, ALL_LANGUAGES_FILE_NAME);
-            defaultColors.remove (profile);
+                (new String [0], internalProfile, ALL_LANGUAGES_FILE_NAME);
+            defaultColors.remove (internalProfile);
             init ();
             pcs.firePropertyChange (PROP_DEFAULT_FONT_COLORS, null, null);
             return;
         }
         
-        if (fontColors.equals (defaultColors.get (profile))) return;
+        if (fontColors.equals (defaultColors.get (internalProfile))) return;
         
         // 2) save new values to cache
-        defaultColors.put (profile, fontColors);
+        defaultColors.put (internalProfile, fontColors);
         
         // 3) save new values to disk
-        if (!profile.startsWith ("test"))
+        if (!internalProfile.startsWith ("test")) {
             ColoringStorage.saveColorings 
-                (new String [0], profile, ALL_LANGUAGES_FILE_NAME, fontColors);
+                (new String [0], internalProfile, ALL_LANGUAGES_FILE_NAME, fontColors);
+            if (fontColorProfiles.get (profile) == null)
+                fontColorProfiles.put (profile, profile);
+        }
         
         // 4) update profiles
 	pcs.firePropertyChange (PROP_DEFAULT_FONT_COLORS, null, null);
@@ -345,31 +348,34 @@ public class EditorSettingsImpl extends EditorSettings {
 	Map     fontColors
     ) {
         // 1) translate profile name
-	profile = getInternalFontColorProfile (profile);	
+	String internalProfile = getInternalFontColorProfile (profile);	
         
         if (fontColors == null) {
             // 2) remove coloring / revert to defaults
             ColoringStorage.deleteColorings
-                (new String [0], profile, HIGHLIGHTING_FILE_NAME);
-            highlightings.remove (profile);
+                (new String [0], internalProfile, HIGHLIGHTING_FILE_NAME);
+            highlightings.remove (internalProfile);
             init ();
             pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
             return;
         }
         
-        if (fontColors.equals (highlightings.get (profile))) return;
+        if (fontColors.equals (highlightings.get (internalProfile))) return;
         
         // 2) save new values to cache
-        highlightings.put (profile, fontColors);
+        highlightings.put (internalProfile, fontColors);
         
         // 3) save new values to disk
-        if (!profile.startsWith ("test"))
+        if (!internalProfile.startsWith ("test")) {
             ColoringStorage.saveColorings (
                 new String [0], 
-                profile, 
+                internalProfile, 
                 HIGHLIGHTING_FILE_NAME, 
                 fontColors.values ()
             );
+            if (fontColorProfiles.get (profile) == null)
+                fontColorProfiles.put (profile, profile);
+        }
         
 	pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
     }  
@@ -591,7 +597,6 @@ public class EditorSettingsImpl extends EditorSettings {
 	    init ();
 	String result = (String) fontColorProfiles.get (profile);
         if (result != null) return result;
-        fontColorProfiles.put (profile, profile);
         return profile;
     }
     
