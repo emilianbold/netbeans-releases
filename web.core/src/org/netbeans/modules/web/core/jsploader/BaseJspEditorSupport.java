@@ -429,11 +429,12 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         
             DataObject dataObject = s.getDataObject();
             String mimeType = dataObject.getPrimaryFile().getMIMEType();
+            instanceContent.add(getActionMap());
+            
             if (dataObject instanceof JspDataObject && mimeType.equals(JSP_MIME_TYPE) && !isXmlSyntax(dataObject)) {
                 try {
                     PaletteController pc = JSPPaletteFactory.getPalette();
                     instanceContent.add(pc);
-                    instanceContent.add(getActionMap());
                 } 
                 catch (IOException ioe) {
                     //TODO exception handling
