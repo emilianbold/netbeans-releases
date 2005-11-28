@@ -222,7 +222,7 @@ public final class MetalEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
             int wid = getIconWidth();
             int hi = getIconHeight() + 1;
             xpoints[0] = x + (wid - 4);
-            ypoints[0] = y + 1;
+            ypoints[0] = y + 2;
 
             xpoints[1] = xpoints[0];
             ypoints[1] = y + hi + 1;
