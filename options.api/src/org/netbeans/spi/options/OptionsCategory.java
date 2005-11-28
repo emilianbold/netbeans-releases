@@ -70,6 +70,9 @@ public abstract class OptionsCategory {
     /**
      * Returns {@link PanelController} for this category. PanelController 
      * creates visual component to be used inside of the Options Dialog.
+     * You should not do any time-consuming operations inside 
+     * the constructor, because it blocks initialization of OptionsDialog. 
+     * Initialization should be implemented in update method.
      *
      * @return new instance of PanelController for this options category
      */
@@ -91,10 +94,10 @@ public abstract class OptionsCategory {
         
         
         /**
-         * Component should load its data here. This method is called off-line
-         * from RequestProcessor. You should not do any time demanding computing
-         * inside the constructor, because it blocks initialization of 
-         * OptionsDialog. Initialization should be implemented in update method.
+         * Component should load its data here. You should not do any 
+         * time-consuming operations inside the constructor, because it 
+         * blocks initialization of OptionsDialog. Initialization 
+         * should be implemented in update method.
          */
 	public abstract void update ();
         
