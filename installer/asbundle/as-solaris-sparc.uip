@@ -61,7 +61,7 @@
                     <property name="fullSearch">False</property>
                 </arrayItem>
             </property>
-            <property name="JVMResolution">2</property>
+            <property name="JVMResolution">1</property>
             <property name="bundledJVMArguments">-qq -o</property>
             <property name="bundledJVMResource"/>
             <property name="bundledJVMSource"/>
