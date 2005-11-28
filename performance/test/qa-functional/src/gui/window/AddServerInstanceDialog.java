@@ -13,6 +13,7 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -42,11 +43,10 @@ public class AddServerInstanceDialog extends org.netbeans.performance.test.utili
     }
     
     public void initialize() {
-        //TODO BUNDLE = "org.netbeans.modules.db.resources.Bundle";
-        MENU = "Add Server..."; //TODO org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE, "AddNewDriver");
-        TITLE = "Add Server Instance"; //TODO org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE, "AddDriverDialogTitle");
+        MENU = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); //"Add Server..."
+        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
         
-        String path = "Servers"; //TODO org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE, "NDN_Databases") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE, "NDN_Drivers");
+        String path = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "ACSN_ServerList"); //"Servers"
         
         // show Runtime tab and select Servers
         thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), path);

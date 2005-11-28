@@ -7,18 +7,17 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.window;
 
 import gui.Utilities;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.PropertiesAction;
-
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -46,8 +45,8 @@ public class RefactorRenameDialog extends org.netbeans.performance.test.utilitie
     
     public void initialize() {
         String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_Rename");  // "Rename"
-        ACTION = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_Action") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_RenameAction"); // "Refactor|Rename..."
+        TITLE = Bundle.getStringTrimmed(BUNDLE,"LBL_Rename");  // "Rename"
+        ACTION = Bundle.getStringTrimmed(BUNDLE,"LBL_Action") + "|" + Bundle.getStringTrimmed(BUNDLE,"LBL_RenameAction"); // "Refactor|Rename..."
         testNode = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),Utilities.SOURCE_PACKAGES + "|org.gjt.sp.jedit|jEdit.java");
     }
     

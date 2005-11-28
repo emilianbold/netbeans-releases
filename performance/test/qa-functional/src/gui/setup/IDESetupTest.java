@@ -13,6 +13,7 @@
 
 package gui.setup;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
@@ -52,14 +53,14 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
      * Close Welcome. 
      */
     public void closeWelcome(){
-        new TopComponentOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title")).close();
+        new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title")).close();
     }
     
     /** 
      * Close BluePrints. 
      */
     public void closeBluePrints(){
-        new TopComponentOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.blueprints.Bundle","LBL_Tab_Title")).close();
+        new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.blueprints.Bundle","LBL_Tab_Title")).close();
     }
     
     /** 
@@ -74,9 +75,9 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
      */
     public void closeMemoryToolbar(){
         String MENU = 
-            org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
-            org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
-            org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory");
+            Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
+            Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
+            Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory");
         
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
         JMenuBarOperator menuBar = new JMenuBarOperator(mainWindow.getJMenuBar());

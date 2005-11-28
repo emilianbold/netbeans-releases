@@ -13,6 +13,7 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -44,8 +45,8 @@ public class FindInSourceEditor extends org.netbeans.performance.test.utilities.
     }
     
     public void initialize() {
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Edit") + "|" + "Find..."; //NOI18N
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "find");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Edit") + "|" + Bundle.getStringTrimmed("org.openide.actions.Bundle","Find"); //Edit|Find...
+        TITLE = Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "find");
         
         // open a java file in the editor
         editor = gui.Utilities.openJavaFile();

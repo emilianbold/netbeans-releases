@@ -50,7 +50,7 @@ public class FormInspectorNodePopupMenu extends ValidatePopupMenuOnNodes {
         EditorOperator.closeDiscardAll();
     }    
     public void prepare(){
-        String path = "[JFrame]"; // NOI18N
+        String path = "[JFrame]";
         dataObjectNode = new Node(new ComponentInspectorOperator().treeComponents(), path);
         super.prepare();
     }

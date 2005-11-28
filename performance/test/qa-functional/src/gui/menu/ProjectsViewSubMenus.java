@@ -66,12 +66,12 @@ public class ProjectsViewSubMenus extends org.netbeans.performance.test.utilitie
     }
     
     public void testProjectNodeCVSsubmenu() {
-        testedSubmenu = "CVS"; //NOI18N
+        testedSubmenu = Bundle.getStringTrimmed("org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle","CTL_MenuItem_CVSCommands_Label"); //CVS
         testNode(getProjectNode("PerformanceTestData"));
     }
     
     public void testProjectNodeNewSubmenu(){
-        testedSubmenu = "New"; //NOI18N
+        testedSubmenu = Bundle.getStringTrimmed("org.openide.actions.Bundle","NewFromTemplate"); //New
         testNode(getProjectNode("PerformanceTestData"));
     }
     

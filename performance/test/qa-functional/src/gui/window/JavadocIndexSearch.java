@@ -13,6 +13,7 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 
@@ -42,8 +43,8 @@ public class JavadocIndexSearch extends org.netbeans.performance.test.utilities.
     
     public void initialize() {
         BUNDLE = "org.netbeans.modules.javadoc.search.Bundle";
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_SEARCH_MenuItem");
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_SEARCH_WindowTitle");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"CTL_SEARCH_MenuItem");
+        TITLE = Bundle.getStringTrimmed(BUNDLE,"CTL_SEARCH_WindowTitle");
     }
     
     public void prepare() {

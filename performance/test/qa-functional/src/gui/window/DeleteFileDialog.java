@@ -7,19 +7,19 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.window;
 
 import gui.Utilities;
+
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.PropertiesAction;
-
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -46,7 +46,7 @@ public class DeleteFileDialog extends org.netbeans.performance.test.utilities.Pe
     }
     
     public void initialize() {
-        TITLE = "Confirm Object Deletion"; //NOI18N
+        TITLE = Bundle.getStringTrimmed("org.openide.explorer.Bundle","MSG_ConfirmDeleteObjectTitle"); //Confirm Object Deletion
         testNode = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),Utilities.SOURCE_PACKAGES + "|org.gjt.sp.jedit|jEdit.java");
     }
     

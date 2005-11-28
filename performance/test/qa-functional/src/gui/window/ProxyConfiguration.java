@@ -13,6 +13,7 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.WizardOperator;
 
@@ -45,10 +46,10 @@ public class ProxyConfiguration extends org.netbeans.performance.test.utilities.
     
     public void initialize() {
         BUNDLE = "org.netbeans.modules.autoupdate.Bundle";
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_Update");
-        TITLE_1 = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_Wizard");
-        BUTTON = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"BNT_Proxy");
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_ProxyDialog_Title");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"CTL_Update");
+        TITLE_1 = Bundle.getStringTrimmed(BUNDLE,"CTL_Wizard");
+        BUTTON = Bundle.getStringTrimmed(BUNDLE,"BNT_Proxy");
+        TITLE = Bundle.getStringTrimmed(BUNDLE,"CTL_ProxyDialog_Title");
         
         // open the Update Center wizard
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");

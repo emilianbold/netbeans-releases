@@ -7,12 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -44,10 +45,10 @@ public class NewDatabaseConnectionDialog extends org.netbeans.performance.test.u
     
     public void initialize() {
         BUNDLE = "org.netbeans.modules.db.resources.Bundle";
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"ConnectUsing");
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"NewConnectionDialogTitle");
+        MENU = Bundle.getStringTrimmed(BUNDLE,"ConnectUsing");
+        TITLE = Bundle.getStringTrimmed(BUNDLE,"NewConnectionDialogTitle");
         
-        String NODE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"NDN_Databases") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"NDN_Drivers") + "|" + "JDBC-ODBC Bridge"; //NOI18N impossible
+        String NODE = Bundle.getStringTrimmed(BUNDLE,"NDN_Databases") + "|" + Bundle.getStringTrimmed(BUNDLE,"NDN_Drivers") + "|" + "JDBC-ODBC Bridge"; //NOI18N impossible
         // show Runtime tab and select Databases / Drivers /JDBC-ODBC Bridge node
         thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), NODE);
         thenode.select();

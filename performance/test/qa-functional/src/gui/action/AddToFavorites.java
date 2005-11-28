@@ -13,6 +13,7 @@
 
 package gui.action;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.FavoritesOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -26,9 +27,9 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class AddToFavorites extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    protected static String ADD_TO_FAVORITES = "Tools|Add to Favorites"; //NOI18N
+    protected static String ADD_TO_FAVORITES = Bundle.getStringTrimmed("org.openide.actions.Bundle","CTL_Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle","ACT_Add"); // Tools|Add to Favorites
     
-    protected static String REMOVE_FROM_FAVORITES = "Remove from Favorites";  //NOI18N
+    protected static String REMOVE_FROM_FAVORITES = Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle","ACT_Remove"); // Remove from Favorites
     
     private String fileProject, filePackage, fileName;
     

@@ -13,10 +13,10 @@
 
 package prepare;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -71,7 +71,7 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
      * @return testuite
      */
     public static Test suite() {
-        TestSuite suite = new NbTestSuite();
+        NbTestSuite suite = new NbTestSuite();
         suite.addTest(new PrepareIDEForComplexMeasurements("closeAllDocuments"));
         suite.addTest(new PrepareIDEForComplexMeasurements("closeMemoryToolbar"));
         suite.addTest(new PrepareIDEForComplexMeasurements("openFiles"));
@@ -91,7 +91,7 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
      */
     public void closeWelcome(){
         try {
-            new TopComponentOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title")).close();
+            new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title")).close();
         }catch(Exception exc){
             test_failed = true;
             fail(exc);
@@ -103,7 +103,7 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
      */
     public void closeBluePrints(){
         try {
-            new TopComponentOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.blueprints.Bundle","LBL_Tab_Title")).close();
+            new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.blueprints.Bundle","LBL_Tab_Title")).close();
         }catch(Exception exc){
             test_failed = true;
             fail(exc);
@@ -128,9 +128,9 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
     public void closeMemoryToolbar(){
         try {
             String MENU =
-                    org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
-                    org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
-                    org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory");
+                    Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
+                    Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
+                    Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory");
             
             MainWindowOperator mainWindow = MainWindowOperator.getDefault();
             JMenuBarOperator menuBar = new JMenuBarOperator(mainWindow.getJMenuBar());

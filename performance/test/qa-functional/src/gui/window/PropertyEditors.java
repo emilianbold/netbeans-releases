@@ -7,13 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.window;
 
 import java.awt.event.KeyEvent;
+import org.netbeans.jellytools.Bundle;
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
@@ -63,10 +64,10 @@ public abstract class PropertyEditors extends org.netbeans.performance.test.util
         JemmyProperties.setCurrentTimeout(waitDialogTimeout, 3000);
 
         try{
-            propertiesWindow = new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
+            propertiesWindow = new NbDialogOperator(Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
         }catch(org.netbeans.jemmy.TimeoutExpiredException exception){
             new PropertyEditorsTestSheet();
-            propertiesWindow = new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
+            propertiesWindow = new NbDialogOperator(Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
         }
         
         JemmyProperties.setCurrentTimeout(waitDialogTimeout, findTimeout);

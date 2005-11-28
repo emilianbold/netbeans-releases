@@ -20,10 +20,6 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-import java.awt.Component;
-import java.awt.Container;
-import javax.swing.JPopupMenu;
-
 /**
  * Common test case for test of context menu invocation on various nodes in the tree views.
  * @author mmirilovic@netbeans.org

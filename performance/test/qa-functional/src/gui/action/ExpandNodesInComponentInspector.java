@@ -62,7 +62,7 @@ public class ExpandNodesInComponentInspector extends org.netbeans.performance.te
     }
     
     public void prepare(){
-        nodeToBeExpanded = new Node(new ComponentInspectorOperator().treeComponents(), "[JFrame]"); //NOI18N
+        nodeToBeExpanded = new Node(new ComponentInspectorOperator().treeComponents(), "[JFrame]");
     }
     
     public ComponentOperator open(){

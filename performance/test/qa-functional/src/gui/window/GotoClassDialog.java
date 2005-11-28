@@ -7,12 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 
@@ -41,8 +42,8 @@ public class GotoClassDialog extends org.netbeans.performance.test.utilities.Per
     }
     
     public void initialize() {
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/GoTo") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.editor.java.Bundle","NAME_JavaFastOpenAction");
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.editor.ext.java.Bundle", "JFO_title");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/GoTo") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.editor.java.Bundle","NAME_JavaFastOpenAction");
+        TITLE = Bundle.getStringTrimmed("org.netbeans.editor.ext.java.Bundle", "JFO_title");
     }
     
     public void prepare() {

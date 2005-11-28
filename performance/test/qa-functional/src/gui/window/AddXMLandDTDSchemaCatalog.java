@@ -13,6 +13,7 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -48,10 +49,10 @@ public class AddXMLandDTDSchemaCatalog extends org.netbeans.performance.test.uti
     
     public void initialize() {
         BUNDLE = "org.netbeans.modules.xml.catalog.Bundle";
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_mount");
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"PROP_Mount_Catalog");
+        MENU = Bundle.getStringTrimmed(BUNDLE,"LBL_mount");
+        TITLE = Bundle.getStringTrimmed(BUNDLE,"PROP_Mount_Catalog");
         // show Runtime tab and select XML Entity Catalogs node
-        thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"TEXT_catalog_root"));
+        thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), Bundle.getStringTrimmed(BUNDLE,"TEXT_catalog_root"));
         thenode.select();
     }
     

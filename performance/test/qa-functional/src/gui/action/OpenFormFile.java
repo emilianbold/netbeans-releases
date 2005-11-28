@@ -13,7 +13,6 @@
 
 package gui.action;
 
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;

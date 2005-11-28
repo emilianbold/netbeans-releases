@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.netbeans.jellytools.Bundle;
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -42,8 +43,8 @@ import org.netbeans.jemmy.EventTool;
  */
 public class Utilities {
 
-    public static final String SOURCE_PACKAGES = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
-    public static final String TEST_PACKAGES = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
+    public static final String SOURCE_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
+    public static final String TEST_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
     
     
     /** Creates a new instance of Utilities */
@@ -56,8 +57,8 @@ public class Utilities {
      */
     public static void workarroundMainMenuRolledUp() {
         if(System.getProperty("java.version").indexOf("1.4") != -1) {
-            String helpMenu = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Help") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle" , "About");
-            String about = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle_nb", "CTL_About_Title");
+            String helpMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Help") + "|" + Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle" , "About");
+            String about = Bundle.getStringTrimmed("org.netbeans.core.Bundle_nb", "CTL_About_Title");
             
             new ActionNoBlock(helpMenu, null).perform();
             new NbDialogOperator(about).close();

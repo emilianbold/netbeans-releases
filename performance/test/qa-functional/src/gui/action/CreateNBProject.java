@@ -13,11 +13,12 @@
 
 package gui.action;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jemmy.EventTool;
 
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.ide.ProjectSupport;
@@ -58,16 +59,16 @@ public class CreateNBProject extends org.netbeans.performance.test.utilities.Per
     }
     
     public void testCreateModuleProject(){
-        category = "NetBeans Plug-in Modules";
-        project = "Module Project";
+        category = Bundle.getStringTrimmed("org.netbeans.modules.apisupport.project.ui.wizard.Bundle","Templates/Project/APISupport"); //"NetBeans Plug-in Modules"
+        project = Bundle.getStringTrimmed("org.netbeans.modules.apisupport.project.ui.wizard.Bundle","Templates/Project/APISupport/emptyModule"); //"Module Project"
         project_type="moduleProject";
         index=1;
         doMeasurement();
     }
 
     public void testCreateModuleSuiteProject(){
-        category = "NetBeans Plug-in Modules";
-        project = "Module Suite Project";
+        category = Bundle.getStringTrimmed("org.netbeans.modules.apisupport.project.ui.wizard.Bundle","Templates/Project/APISupport"); //"NetBeans Plug-in Modules"
+        project = Bundle.getStringTrimmed("org.netbeans.modules.apisupport.project.ui.wizard.Bundle","Templates/Project/APISupport/emptySuite"); //"Module Suite Project"
         project_type="moduleSuiteProject";
         index=1;
         doMeasurement();

@@ -13,8 +13,6 @@
 
 package gui.action;
 
-import java.awt.Component;
-
 import org.netbeans.performance.test.guitracker.LoggingRepaintManager.RegionFilter;
 
 import org.netbeans.modules.editor.java.JavaKit;
@@ -30,7 +28,6 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.ComponentChooser;
 
 /**
  * Test of java completion in opened source editor.

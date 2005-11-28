@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,9 +16,6 @@ package gui.menu;
 import org.netbeans.performance.test.guitracker.ActionTracker;
         
 import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.operators.ComponentOperator;

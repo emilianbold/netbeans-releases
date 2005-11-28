@@ -7,13 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.action;
 
 import java.io.File;
+import org.netbeans.jellytools.Bundle;
 
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -102,7 +103,7 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
     
     public ComponentOperator open(){
         new DeleteAction().performPopup(nodeToBeDeleted);
-        new NbDialogOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.explorer.Bundle","MSG_ConfirmDeleteObjectTitle")).yes();
+        new NbDialogOperator(Bundle.getStringTrimmed("org.openide.explorer.Bundle","MSG_ConfirmDeleteObjectTitle")).yes();
         return null;
     }
     
@@ -133,8 +134,7 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
             
             foldersNode = new Node(projectNode, gui.Utilities.SOURCE_PACKAGES + "|folders");
             
-            new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu("File|Refresh All Files","|"); //NOI18N 
-            //new RefreshFolderAction().perform(foldersNode); // foldersNode.performPopupAction("Refresh Folder");
+            new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/File")+"|"+Bundle.getStringTrimmed("org.netbeans.modules.javacore.Bundle","LBL_RescanAction"),"|"); //File|Refresh All Files
             waitNoEvent(500);
 
             nodeToBeDeleted = new Node(projectNode, gui.Utilities.SOURCE_PACKAGES + "|folders." + folderToBeDeleted + "_delete");
@@ -151,8 +151,7 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
                 gui.Utilities.copyFile(files[i], copyFile);
             }
             
-            new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu("File|Refresh All Files","|"); //NOI18N 
-            //new RefreshFolderAction().perform(foldersNode); // foldersNode.performPopupAction("Refresh Folder");
+            new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/File")+"|"+Bundle.getStringTrimmed("org.netbeans.modules.javacore.Bundle","LBL_RescanAction"),"|"); //File|Refresh All Files
             waitNoEvent(500);
             nodeToBeDeleted.expand();
             

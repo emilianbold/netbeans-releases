@@ -13,6 +13,7 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -26,7 +27,9 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class CreateTestsDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    protected static String CREATE_JUNIT_TESTS = "Tools|Create JUnit Tests"; //NOI18N
+    protected static String CREATE_JUNIT_TESTS = Bundle.getStringTrimmed("org.openide.actions.Bundle","CTL_Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.junit.Bundle","LBL_Action_CreateTest"); //Tools|Create JUnit Tests
+    
+    protected static String DIALOG_TITLE = Bundle.getStringTrimmed("org.netbeans.modules.junit.Bundle","JUnitCfgOfCreate.Title"); //Create Tests
     
     private Node createTestsNode;
     
@@ -61,8 +64,8 @@ public class CreateTestsDialog extends org.netbeans.performance.test.utilities.P
     
     public ComponentOperator open(){
         // invoke Tools|Create JUnit Tests from the popup menu
-        createTestsNode.performPopupAction(CREATE_JUNIT_TESTS);
-        return new NbDialogOperator("Create Tests"); //NOI18N
+        createTestsNode.performPopupActionNoBlock(CREATE_JUNIT_TESTS);
+        return new NbDialogOperator(DIALOG_TITLE);
     }
 
     /** Test could be executed internaly in IDE without XTest

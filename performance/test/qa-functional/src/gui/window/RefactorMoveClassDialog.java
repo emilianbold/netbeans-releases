@@ -16,6 +16,7 @@ package gui.window;
 import gui.Utilities;
 
 import java.io.PrintStream;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -49,8 +50,8 @@ public class RefactorMoveClassDialog extends org.netbeans.performance.test.utili
     
     public void initialize() {
         String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_MoveClass");  // "Move Class"
-        ACTION = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_Action") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_MoveClassAction"); // "Refactor|Move Class..."
+        TITLE = Bundle.getStringTrimmed(BUNDLE,"LBL_MoveClass");  // "Move Class"
+        ACTION = Bundle.getStringTrimmed(BUNDLE,"LBL_Action") + "|" + Bundle.getStringTrimmed(BUNDLE,"LBL_MoveClassAction"); // "Refactor|Move Class..."
         testNode = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),Utilities.SOURCE_PACKAGES + "|org.gjt.sp.jedit|jEdit.java");
     }
     
@@ -70,11 +71,5 @@ public class RefactorMoveClassDialog extends org.netbeans.performance.test.utili
     public static void main(String[] args) {
         junit.textui.TestRunner.run(new RefactorMoveClassDialog("measureTime"));
     }
-    
-    public PrintStream getLog() {
-        return System.out;
-    }
-    
-
     
 }

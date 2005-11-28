@@ -14,21 +14,18 @@
 package gui.menu;
 
 import gui.Utilities;
-import org.netbeans.jellytools.TopComponentOperator;
 
 import org.netbeans.performance.test.guitracker.ActionTracker;
 
 import javax.swing.JMenuItem;
 
-import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 
 import org.netbeans.jemmy.drivers.MouseDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JMenuOperator;
-
-import org.netbeans.junit.NbTestSuite;
 
 /**
  * Performance test of application main menu.</p>

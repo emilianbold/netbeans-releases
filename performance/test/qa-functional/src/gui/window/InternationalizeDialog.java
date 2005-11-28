@@ -7,12 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.window;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -44,8 +45,8 @@ public class InternationalizeDialog extends org.netbeans.performance.test.utilit
     
     public void initialize() {
         BUNDLE = "org.netbeans.modules.i18n.Bundle";
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_I18nGroupActionName") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_I18nAction");
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_I18nDialogTitle");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"LBL_I18nGroupActionName") + "|" + Bundle.getStringTrimmed(BUNDLE,"CTL_I18nAction");
+        TITLE = Bundle.getStringTrimmed(BUNDLE,"CTL_I18nDialogTitle");
         // open a java file in the editor
         editor = gui.Utilities.openJavaFile();
     }
