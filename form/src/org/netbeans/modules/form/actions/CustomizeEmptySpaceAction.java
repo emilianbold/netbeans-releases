@@ -100,7 +100,7 @@ public class CustomizeEmptySpaceAction extends CookieAction {
         dd.setClosingOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
         dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizeEmptySpaceAction.class, "ACSD_EmptySpace")); // NOI18N
-        dialog.show();
+        dialog.setVisible(true);
         dialog = null;
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             Object layoutUndoMark = model.getChangeMark();

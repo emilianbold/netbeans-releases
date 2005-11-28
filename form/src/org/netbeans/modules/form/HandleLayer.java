@@ -449,7 +449,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         super.processKeyEvent(e);
     }
 
-    public boolean isFocusTraversable() {
+    public boolean isFocusable() {
         return true;
     }
 

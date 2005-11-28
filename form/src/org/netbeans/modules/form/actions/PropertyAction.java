@@ -85,7 +85,7 @@ public class PropertyAction extends AbstractAction {
                 });
             descriptor.setClosingOptions(new Object[0]);
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-            dialog.show();
+            dialog.setVisible(true);
             dialog = null;
         } catch (Exception ex) {
             ex.printStackTrace();

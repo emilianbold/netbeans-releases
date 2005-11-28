@@ -560,7 +560,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
             }
         });
         java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(dd);
-        dialog.show();
+        dialog.setVisible(true);
 
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             selectedComponent = picker.getSelectedComponent();
@@ -607,7 +607,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
             }
         });
         java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(dd);
-        dialog.show();
+        dialog.setVisible(true);
         
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             selectedComponent = propertyPicker.getSelectedComponent();

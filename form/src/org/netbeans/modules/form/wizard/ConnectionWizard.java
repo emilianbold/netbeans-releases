@@ -68,7 +68,7 @@ public class ConnectionWizard extends WizardDescriptor {
         java.awt.Dialog d = DialogDisplayer.getDefault().createDialog(this);
 
         finished = false;
-        d.show();
+        d.setVisible(true);
         finished = getValue() == FINISH_OPTION;
 
         if (finished) {

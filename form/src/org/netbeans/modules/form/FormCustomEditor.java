@@ -310,7 +310,7 @@ public class FormCustomEditor extends JPanel
                  new Object[] { editor.getProperty().getName() }));
 
         dd.setHelpCtx(new HelpCtx("gui.source.modifying.property")); // NOI18N
-        DialogDisplayer.getDefault().createDialog(dd).show();
+        DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
 
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             preCode = fcea.getPreCode();

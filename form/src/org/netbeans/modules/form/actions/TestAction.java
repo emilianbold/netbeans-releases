@@ -150,7 +150,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
                         frame.pack();
                     }
                     frame.setBounds(org.openide.util.Utilities.findCenterBounds(frame.getSize()));
-                    frame.show();
+                    frame.setVisible(true);
                 }
             });
         }
