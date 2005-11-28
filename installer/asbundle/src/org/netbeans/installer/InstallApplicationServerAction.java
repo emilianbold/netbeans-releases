@@ -113,8 +113,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         }
     }
     
-    private void init(ProductActionSupport support) 
-    throws Exception{
+    private void init(ProductActionSupport support) throws Exception {
         ProductService pservice = (ProductService)getService(ProductService.NAME);
         String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
         
@@ -128,8 +127,10 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         
         instDirPath = rootInstallDir + File.separator + UNINST_DIRECTORY_NAME;
         logEvent(this, Log.DBG,"instDirPath: "+ instDirPath);
-        imageDirPath  = nbInstallDir + File.separator
-        + resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)");
+        
+        imageDirPath  = Util.getASInstallDir();
+        logEvent(this, Log.DBG,"imageDirPath: "+ imageDirPath);
+        
 	asSetupDirPath = instDirPath + File.separator + AS_SETUP_DIR;
 	if (Util.isWindowsOS() || Util.isMacOSX()) {
 	    statefilePath = asSetupDirPath + File.separator + STATE_FILE_NAME;
@@ -180,8 +181,6 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             if (Util.isWindowsOS()) {
 		createScript(asSetupDirPath + File.separator + "as-win-install.template",
 			     INSTALL_BAT, INSTALL);
-		createScript(instDirPath + File.separator + "as-win-uninstall.template",
-			     UNINSTALL_BAT, UNINSTALL);
 	    } else if (Util.isMacOSX()) {
                 String installTemplate = asSetupDirPath + File.separator + "as-macosx-install.template";
 		boolean executable = createScript(installTemplate, INSTALL_SH, INSTALL);
@@ -191,15 +190,6 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 		    //InstallerExceptions.addErrorMsg(resolveString("$L(com.sun.installer.InstallerResources,IE_EXEC_PERM_NOT_SET)") + INSTALL_SH);
 		    logEvent(this, Log.ERROR, "Could not set execute permissions for Mac OS X install script: " + INSTALL_SH);
 		    return;
-		}
-                String uninstallTemplate = instDirPath + File.separator + "as-macosx-uninstall.template";
-		executable = createScript(uninstallTemplate, UNINSTALL_SH, UNINSTALL);
-		if (!executable) {
-		    // Install anyway but can't uninstall
-		    //InstallerExceptions.setWarnings(true);
-                    logEvent(this, Log.ERROR, "Could not set execute permissions for Mac OS X uninstall script: " + UNINSTALL_SH);
-		    //InstallerExceptions.addWarningMsg(msg);
-		    //logEvent(this, Log.DBG, msg);
 		}
 	    } else {
                 String installTemplate = instDirPath + File.separator + "as-unix-install.template";
@@ -211,23 +201,17 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 		    logEvent(this, Log.ERROR, "Could not set execute permissions for Unix install script: " + INSTALL_SH);
 		    return;
 		}
-                String uninstallTemplate = instDirPath + File.separator + "as-unix-uninstall.template";
-		executable = createScript(uninstallTemplate, UNINSTALL_SH, UNINSTALL);
-		if (!executable) {
-		    // Install anyway but can't uninstall
-		    //InstallerExceptions.setWarnings(true);
-                    logEvent(this, Log.ERROR, "Could not set execute permissions for Unix uninstall script: " + UNINSTALL_SH);
-		    //InstallerExceptions.addWarningMsg(msg);
-		    //logEvent(this, Log.DBG, msg);
-		}
 	    }
-
+            
             boolean modified = modifyStatefile(setupFile);
-
+            
             if (!modified) {
                 logEvent(this, Log.DBG, "Error occured while modifying the statefile " + setupFile.getAbsolutePath());
                 if (invalidPortFound == true) {
-                logEvent(this, Log.ERROR, "Error occured while searching for unused port.  Please make sure one from each of the 3 following port ranges is not in use:\n\t4848 - 4858\n\t8081 - 8091\n\t1043 - 1053\nClean up the partial install and rerun the installer."); 
+                    logEvent(this, Log.ERROR, "Error occured while searching for unused port."
+                    + " Please make sure one from each of the 3 following port ranges is not in"
+                    + " use:\n\t4848 - 4858\n\t8081 - 8091\n\t1043 - 1053\nClean up the partial"
+                    + " install and rerun the installer.");
                 }
 		//InstallerExceptions.setErrors(true);
                 setAppserverExitCode(AS_UNHANDLED_ERROR);
@@ -290,8 +274,8 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 		    }
 		}
 	    }
-            removeAppserverFromAddRemovePrograms();
-            cleanAppserverStartMenu();
+            //removeAppserverFromAddRemovePrograms();
+            //cleanAppserverStartMenu();
 
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
@@ -302,55 +286,16 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     }
     
     public void uninstall(ProductActionSupport support) {
-        long currtime = System.currentTimeMillis();
         logEvent(this, Log.DBG,"Uninstalling -> ");
-        statusDesc = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.uninstallWait)");
-        support.getOperationState().setStatusDescription(statusDesc);
+        //statusDesc = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.uninstallWait)");
+        //support.getOperationState().setStatusDescription(statusDesc);
         
         try {
             init(support);
             installMode = UNINSTALL;
-            String scriptName;
-            if (Util.isWindowsOS()) {
-		scriptName = UNINSTALL_BAT;
-	    } else {
-		scriptName = UNINSTALL_SH;
-	    }
-            String uninstallScriptPath = instDirPath + File.separator + scriptName;
-            if (!(new File(uninstallScriptPath).exists())) {
-		//InstallerExceptions.setErrors(true);
-		logEvent(this, Log.ERROR, "Cannot uninstall due to missing uninstall script: " + uninstallScriptPath);
-                throw new Exception("Cannot uninstall due to missing uninstall script: " + uninstallScriptPath);
-            }
-            
-            File classFile = new File(imageDirPath, "appserv_uninstall.class");
-            if (!(classFile.exists())) {
-		//InstallerExceptions.setErrors(true);
-		logEvent(this, Log.ERROR, "Cannot uninstall due to missing uninstall class: " + classFile.getAbsolutePath());
-                throw new Exception(classFile.getAbsolutePath() + " cannot be found.");
-            }
-            
-            String cmdArray[] = new String[1];
-	    if (Util.isWindowsOS()) {
-                cmdArray[0] = "\"" + uninstallScriptPath + "\"";
-	    } else {
-		cmdArray[0] = uninstallScriptPath;
-	    }
-
-            runCommand(cmdArray, support);
-            
-             //for debugging purposes, remove imageDirPath
-            boolean cleanImageDir = Boolean.getBoolean("remove.as_image");
-            logEvent(this, Log.DBG,"cleanImageDir -> " + cleanImageDir);
-            cleanImageDir = true; // Force it to clean for now
-            if (success && cleanImageDir) {
-                logEvent(this, Log.DBG,"Deleting -> " + imageDirPath);
-                Util.deleteDirectory(new File(imageDirPath));
-                logEvent(this, Log.DBG,"Deleted -> " + imageDirPath);
-            }
             
             File file;
-            //Delete files created during installation/uninstallation
+            //Delete files created during installation
             file = new File(instDirPath + File.separator + "as-install.log");
             if (file.exists()) {
                 if (file.delete()) {
@@ -359,38 +304,10 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                     logEvent(this, Log.DBG, "File: " + file + " could not be deleted.");
                 }
             }
-            file = new File(instDirPath + File.separator + "as-uninstall.log");
-            if (file.exists()) {
-                if (file.delete()) {
-                    logEvent(this, Log.DBG, "File: " + file + " deleted.");
-                } else {
-                    logEvent(this, Log.DBG, "File: " + file + " could not be deleted.");
-                }
-            }
-            if (Util.isWindowsOS()) {
-                file = new File(instDirPath + File.separator + "custom-uninstall.bat");
-                if (file.exists()) {
-                    if (file.delete()) {
-                        logEvent(this, Log.DBG, "File: " + file + " deleted.");
-                    } else {
-                        logEvent(this, Log.DBG, "File: " + file + " could not be deleted.");
-                    }
-                }
-            } else {
-                file = new File(instDirPath + File.separator + "custom-uninstall.sh");
-                if (file.exists()) {
-                    if (file.delete()) {
-                        logEvent(this, Log.DBG, "File: " + file + " deleted.");
-                    } else {
-                        logEvent(this, Log.DBG, "File: " + file + " could not be deleted.");
-                    }
-                }
-            }
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
             logEvent(this, Log.DBG, ex);
         }
-        logEvent(this, Log.DBG,"Appserver uninstallation took: (ms) " + (System.currentTimeMillis() - currtime));
     }
     
     //threads should only run in install mode until ISMP supports them
@@ -474,47 +391,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
               logEvent(this, Log.ERROR, "Couldn't set exit code. "); 
           }
     }
-
-    private void installPermanentLicense() {
-	// install the permanent app server license if app server was installed
-	if (success) {
-	    File as8License;
-   
-	    if (Util.isWindowsOS()) {
-		String installDir = (String)System.getProperties().get("installDir");
-		as8License  = new File(installDir + File.separator
-                + resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)")
-                + File.separator + "config",  AS8_LICENSE);
-	    } else {
-		String configDir = (String)System.getProperties().get("AS_INSTALL_CONFIG_DIR");
-		logEvent(this, Log.DBG,"App Server config dir: " + configDir);
-		as8License  = new File(configDir,  AS8_LICENSE);
-	    }
-	    File permLicense = new File(instDirPath, PERM_LICENSE);
-	    logEvent(this, Log.DBG,"Source File: " + permLicense.getAbsolutePath());
-	    logEvent(this, Log.DBG,"Destination File: " + as8License.getAbsolutePath());
-
-	    if (permLicense.exists()) {
-		try {
-		    if (as8License.exists()) {
-			as8License.delete();
-			logEvent(this, Log.DBG,"Deleted File: " + as8License.getName());
-		    }
-		    Util.copyFile(permLicense, as8License);
-		    logEvent(this, Log.DBG,"Copied source to dest.");
-		} catch (SecurityException secerr) {
-		    logEvent(this, Log.ERROR, "Could not delete a license file " + secerr);
-		} catch (Exception msg) { 
-		    logEvent(this, Log.ERROR, msg);
-		}
-	    } else {
-		String errmsg = "Cannot find Permanent License File: " + 
-		                 permLicense.getAbsolutePath();
-		logEvent(this, Log.ERROR, errmsg);
-		System.out.println(errmsg);
-	    }
-	}
-}
+    
     /** check whether or not the un/installation was successful*/
     private boolean isCompletedSuccessfully() {
         File file = new File(imageDirPath, "appserv_uninstall.class");
@@ -771,17 +648,22 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         return true;
     }
     
-    /**removes the Appserver entry in Add/Remove Programs panel*/
-    public void removeAppserverFromAddRemovePrograms()
-    throws ServiceException{
+    /** Removes the Appserver entry in Add/Remove Programs panel */
+    public void removeAppserverFromAddRemovePrograms() {
         if (Util.isWindowsOS()) {
             logEvent(this, Log.DBG,"Updating Add/Remove Programs ...");
-            Win32RegistryService regserv = (Win32RegistryService)getService(Win32RegistryService.NAME);
-            regserv.deleteKey(Win32RegistryService.HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall", "Sun Java System Application Server Platform Edition", false);
+            try {
+                Win32RegistryService regserv = (Win32RegistryService) getService(Win32RegistryService.NAME);
+                regserv.deleteKey(Win32RegistryService.HKEY_LOCAL_MACHINE,
+                "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+                "Sun Java System Application Server Platform Edition", false);
+            } catch (ServiceException se) {
+                se.printStackTrace();
+            }
         }
     }
     
-    /**removes the Uninstall menu item from Appserver start menu*/
+    /** Removes the Uninstall menu item from Appserver start menu */
     public void cleanAppserverStartMenu() {
         if (Util.isWindowsOS()) {
             String folder = "Sun Microsystems" + File.separator +  "J2EE 1.4 SDK";
@@ -793,7 +675,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                 logEvent(this, Log.DBG,"Attr: -> " + ds.getDesktopFolderAttributes(context, folder).toString());
                 ds.removeDesktopItem(context, folder, "Uninstall");
 		logEvent(this, Log.DBG, "remove menu item Uninstall");
-            }catch (ServiceException se){
+            } catch (ServiceException se) {
                 se.printStackTrace();
             }
         }
@@ -918,39 +800,37 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     }
     
     public void setTmpDir() {
-
-        if (tmpDir != null && tmpDir.length() > 0)
-            return;
-
+        if (tmpDir != null && tmpDir.length() > 0) {
+                return;
+        }
+        
         tmpDir = (String)System.getProperties().get("tmpDir");
         if ((tmpDir == null) || tmpDir.length() < 1) {
             tmpDir = resolveString("$D(temp)");
         }
         logEvent(this, Log.DBG,"in getTmpDir(): tmpDir -> " + tmpDir);
     }
-        
+    
     /* Returns the required bytes table information for application server.  
      * @return required bytes table for application server.
      * @see com.installshield.product.RequiredBytesTable
      */
     public RequiredBytesTable getRequiredBytes() throws ProductException {
-	
-        String imageDirPath = getProductTree().getInstallLocation(this) + File.separator
-        + resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)");
+        String asInstallDirPath = Util.getASInstallDir();
+        logEvent(this, Log.DBG,"imageDirPath -> " + asInstallDirPath);
+        
         RequiredBytesTable req = new RequiredBytesTable();
-        logEvent(this, Log.DBG,"imageDirPath -> " + imageDirPath);
-        req.addBytes(imageDirPath , getCheckSum());
-
+        req.addBytes(asInstallDirPath, getCheckSum());
+        
         setTmpDir();
-
+        
         logEvent(this, Log.DBG,"in getRequiredBytes(): tmpDir -> " + tmpDir);
         // same for all platforms, actually Solaris is biggest
         req.addBytes(tmpDir , 40000000L);
-
-        return req;            
+        
+        return req;
     }
     
-
     private static int ESTIMATED_TIME = 3500; // tenths of seconds
     public int getEstimatedTimeToInstall() {
         return ESTIMATED_TIME;

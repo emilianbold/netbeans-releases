@@ -320,7 +320,13 @@
                 <property name="logToVPD">False</property>
             </action>
             <action class="org.netbeans.installer.InstallApplicationServerAction" id="installAppServer">
-                <displayName>Install Application Server Action</displayName>
+                <displayName>InstallApplicationServerAction</displayName>
+                <active>true</active>
+                <buildCategories/>
+                <comments/>
+            </action>
+            <action class="org.netbeans.installer.PostInstallFixupAppServerAction" id="fixupAppServer">
+                <displayName>PostInstallFixupAppServerAction</displayName>
                 <active>true</active>
                 <buildCategories/>
                 <comments/>
@@ -715,7 +721,7 @@
 </section>
 <section name="Uninstaller" class="com.installshield.isje.wizard.WizardSection">
 <wizard name="Uninstall" purpose="product.uninstall" uid="6246a93305b891f78b84ba2d3a53563d">
-    <title>$L(org.netbeans.installer.Bundle, UninstallWizard.title,$L(org.netbeans.installer.Bundle,Product.displayName),$L(org.netbeans.installer.Bundle,AS.shortName))</title>
+    <title>$L(org.netbeans.installer.Bundle, UninstallWizard.title,$L(org.netbeans.installer.Bundle,Product.displayName))</title>
     <listener>com.installshield.wizard.StandardWizardListener</listener>
     <interfaceName>swing</interfaceName>
     <localeSelect>0</localeSelect>
@@ -788,7 +794,7 @@
             <property name="navigationOptions">0</property>
             <property name="htmlHelpResource"/>
             <property name="helpString"/>
-            <property name="text">$L(org.netbeans.installer.Bundle,UninstallWelcomePanel.text, $L(org.netbeans.installer.Bundle,Product.displayName), $L(org.netbeans.installer.Bundle,AS.name))</property>
+            <property name="text">$L(org.netbeans.installer.Bundle,UninstallWelcomePanel.text, $L(org.netbeans.installer.Bundle,Product.displayName))</property>
             <property name="textSource">1</property>
             <property name="fileName"/>
             <property name="fileEncoding"/>

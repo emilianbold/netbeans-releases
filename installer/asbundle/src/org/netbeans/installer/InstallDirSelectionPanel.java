@@ -48,17 +48,29 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     private JButton    nbBrowseButton;
     private JLabel     nbInputLabel;
     
+    private JTextField asInstallDirTF;
+    private JButton    asBrowseButton;
+    private JLabel     asInputLabel;
+    
     private JPanel mainPanel;
     private JPanel displayPanel;
     private JPanel inputPanel;
     private JFlowLabel infoLabel;
     
     private String installedVersion = "";
-    private String nbLabel          = null;
-
-    private boolean emptyExistingDirNB   = false;
     
-    private int AS_INSTALL_PATH_MAX_LENGTH;
+    private String nbLabel          = null;
+    private String asLabel          = null;
+    
+    private boolean emptyExistingDirNB = false;
+    private boolean emptyExistingDirAS = false;
+    
+    private static final int NB_INSTALL_DIR = 1;
+    private static final int AS_INSTALL_DIR = 2;
+    
+    private static final int AS_INSTALL_PATH_MAX_LENGTH = 48;
+    
+    private static final String BUNDLE = "$L(org.netbeans.installer.Bundle,";
     
     public void build(WizardBuilderSupport support) {
         super.build(support);
@@ -102,8 +114,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     protected void initialize() {
         super.initialize();
 	
-	AS_INSTALL_PATH_MAX_LENGTH = 48 - resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)").length() - 1;
-        
         GridBagConstraints gridBagConstraints;
         mainPanel = new JPanel();        
         mainPanel.setLayout(new BorderLayout());
@@ -113,9 +123,9 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         
         infoLabel = new JFlowLabel();	
         
-        String desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.description,"
-        + "$L(org.netbeans.installer.Bundle,Product.displayName),"
-        + "$L(org.netbeans.installer.Bundle,AS.name))");
+        String desc = resolveString(BUNDLE + "InstallLocationPanel.description,"
+        + BUNDLE + "Product.displayName),"
+        + BUNDLE + "AS.name))");
         
         infoLabel.setText(desc);        
         mainPanel.add(infoLabel, BorderLayout.NORTH);
@@ -131,11 +141,10 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             //Replace install dir
             nbInstallDir = nbInstallDir.substring(0,nbInstallDir.lastIndexOf(File.separator))
             + File.separator
-            + resolveString("$L(org.netbeans.installer.Bundle,Product.installDirMacOSX)");
+            + resolveString(BUNDLE + "Product.installDirMacOSX)");
         }
-        logEvent(this, Log.DBG, "#### nbInstallDir: " + nbInstallDir);
         
-	nbLabel = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.nbInstallDirectoryLabel)");
+	nbLabel = resolveString(BUNDLE + "InstallLocationPanel.nbInstallDirectoryLabel)");
         MnemonicString nbInputLabelMn = new MnemonicString(nbLabel);
         nbLabel = nbInputLabelMn.toString();
         nbInputLabel = new JLabel(nbLabel);
@@ -167,7 +176,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         nbInputLabel.setLabelFor(nbInstallDirTF);
         inputPanel.add(nbInstallDirTF, gridBagConstraints);
 
-        String browseButtonText = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.browseButtonLabel)");
+        String browseButtonText = resolveString(BUNDLE + "InstallLocationPanel.nbBrowseButtonLabel)");
         MnemonicString browseMn = new MnemonicString(browseButtonText);
         browseButtonText = browseMn.toString();
         nbBrowseButton = new JButton(browseButtonText);
@@ -196,6 +205,87 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         //inputPanel.add(nbListLabel, gridBagConstraints);
 
+	//----------------------------------------------------------------------
+	// SJS AS install dir components
+        
+	String asInstallDir;
+        if (Util.isAdmin()) {
+            asInstallDir = resolveString("$D(install)$J(file.separator)" + BUNDLE + "AS.defaultInstallDirectory)");
+        } else {
+            asInstallDir = resolveString("$D(home)$J(file.separator)" + BUNDLE + "AS.defaultInstallDirectory)");
+        }
+        
+        asLabel = resolveString(BUNDLE + "InstallLocationPanel.asInstallDirectoryLabel)");
+        MnemonicString asInputLabelMn = new MnemonicString(asLabel);
+        asLabel = asInputLabelMn.toString();
+
+        asInputLabel = new JLabel(asLabel);
+        if (asInputLabelMn.isMnemonicSpecified()) {
+            asInputLabel.setDisplayedMnemonic(asInputLabelMn.getMnemonicChar());
+        }
+        asInputLabel.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.insets = new Insets(0, 25, 3, 0);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.gridheight = 1;
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        inputPanel.add(asInputLabel, gridBagConstraints);
+
+        asInstallDirTF = new JTextField(asInstallDir);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.insets = new Insets(0, 25, 3, 0);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.gridheight = 1;
+        gridBagConstraints.gridwidth = 1;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        asInputLabel.setLabelFor(asInstallDirTF);
+        inputPanel.add(asInstallDirTF, gridBagConstraints);
+
+        String asBrowseButtonText = resolveString(BUNDLE + "InstallLocationPanel.asBrowseButtonLabel)");
+        MnemonicString asBrowseMn = new MnemonicString(asBrowseButtonText);
+        asBrowseButtonText = asBrowseMn.toString();
+        asBrowseButton = new JButton(asBrowseButtonText);
+        if (asBrowseMn.isMnemonicSpecified()) {
+            asBrowseButton.setMnemonic(asBrowseMn.getMnemonicChar());
+        }
+        asBrowseButton.setActionCommand("as"); 
+        asBrowseButton.addActionListener(this);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.insets = new Insets(0, 12, 3, 0);
+        gridBagConstraints.gridx = GridBagConstraints.RELATIVE;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridheight = 1;
+        gridBagConstraints.gridwidth = 1;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        inputPanel.add(asBrowseButton, gridBagConstraints);
+
+        //j2seListLabel = new JTextArea();
+        //j2seListLabel.setText("(" + defaultDirLabel + " " + j2seInstallDir + ")");	
+        //j2seListLabel.setWrapStyleWord(true);
+        //j2seListLabel.setLineWrap(true);
+        //j2seListLabel.setEditable(false);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.insets = new Insets(0, 25, 0, 0);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridheight = 1;
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        //inputPanel.add(j2seListLabel, gridBagConstraints);
+
+        //jdkBrowseButton.setBackground(getContentPane().getBackground());
+        //jdkInputLabel.setBackground(getContentPane().getBackground());
+        //j2seListLabel.setBackground(getContentPane().getBackground());
 	//----------------------------------------------------------------------
 
         mainPanel.add(inputPanel, BorderLayout.CENTER);
@@ -243,7 +333,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	}
         
 	// If there is a problem with the specified directory, then return false
-        if (!checkInstallDir(nbInstallDir, nbMsgStart)) {
+        if (!checkInstallDir(nbInstallDir, NB_INSTALL_DIR, nbMsgStart)) {
             return false;
 	}
 	try {
@@ -266,6 +356,40 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	System.getProperties().put("nbInstallDir", nbInstallDir);
 	logEvent(this, Log.DBG, "User specified nbInstallDir: " + nbInstallDir);
         
+        String asInstallDir = asInstallDirTF.getText().trim();
+        instDirFile = new File(asInstallDir);
+	// Only get the canonical path if the install dir is not an empty string.
+	// getCanonicalPath returns the directory the installer is run from if the
+	// install dir is an empty string.
+	if (asInstallDir.length() > 0) {
+	    try { // cleanup any misc chars in path such as "."
+		asInstallDir = instDirFile.getCanonicalPath();
+		instDirFile = new File(asInstallDir);
+	    } catch (IOException ioerr) {
+		logEvent(this, Log.DBG, "IOException: Could not get canonical path: " + ioerr);
+		asInstallDir = instDirFile.getAbsolutePath();
+	    }
+	}
+        asInstallDirTF.setText(asInstallDir);
+        
+        Util.setASInstallDir(asInstallDir);
+        
+ 	// Check the as directory
+        String asMsgStart = null;
+        index = asLabel.lastIndexOf(':');
+        if (index > 0) {
+            asMsgStart = asLabel.substring(0, index);
+        } else {
+            asMsgStart = asLabel;
+        }
+        if (!checkInstallDir(asInstallDir, AS_INSTALL_DIR, asMsgStart)) {
+            return false;
+	}
+        
+        if (!checkBothInstallDirs(nbInstallDir,asInstallDir)) {
+            return false;
+        }
+        
 	// Last thing to do is to create the NB directory unless the
 	// directory exists and is empty.
 	if (!emptyExistingDirNB) {
@@ -273,13 +397,20 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
                 return false;
             }
 	}
+        
+	if (!emptyExistingDirAS) {
+	    if (!createDirectory(asInstallDir, asMsgStart)) {
+                return false;
+            }
+	}
+        
 	return true;
     }
     
     /* Check the installation directory to see if it has illegal chars,
      * or if it already exits or if it's empty then create it.
      */ 
-    private boolean checkInstallDir(String dir, String msgPrefix) {
+    private boolean checkInstallDir (String dir, int installDirType, String msgPrefix) {
         String[] okString  = {resolveString("$L(com.installshield.wizard.i18n.WizardResources, ok)")};
 	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
         StringTokenizer st = new StringTokenizer(dir);
@@ -291,7 +422,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNotSpecifiedMessage)");
             showErrorMsg(dialogTitle,dialogMsg);
             return false;
-	} else if (Util.isWindowsOS() && (dir.length() > AS_INSTALL_PATH_MAX_LENGTH)) {
+	} else if (Util.isWindowsOS() && (installDirType == AS_INSTALL_DIR) && (dir.length() > AS_INSTALL_PATH_MAX_LENGTH)) {
             //Path is too long
             dialogMsg = msgPrefix + " "
             + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryTooLong," + AS_INSTALL_PATH_MAX_LENGTH 
@@ -300,7 +431,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             return false;
         } else if (st.countTokens() > 1) {
             //Check for spaces in path - it is not supported by AS installer on Linux/Solaris
-	    if (!Util.isWindowsOS()) {
+	    if (!Util.isWindowsOS() && (installDirType == AS_INSTALL_DIR)) {
 		dialogMsg = msgPrefix + " "
 		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryHasSpaceMessage)");
 		showErrorMsg(dialogTitle,dialogMsg);
@@ -349,7 +480,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
                         showErrorMsg(dialogTitle,dialogMsg);
 			return false;
 		    }
-		}else {
+		} else {
 		    try {
 			testFile.createNewFile();
 			boolean result = testFile.delete();
@@ -366,7 +497,12 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    }
 	    // We have write permissions, now see if the directory is empty
 	    boolean isEmpty = checkNonEmptyDir(dir);
-            emptyExistingDirNB = isEmpty;
+	    if (installDirType == NB_INSTALL_DIR) {
+		emptyExistingDirNB = isEmpty;
+	    }
+	    else {
+		emptyExistingDirAS = isEmpty;
+	    }
             if(!isEmpty) {
                 // Another version installed. prompt to uninstall
                 dialogMsg = msgPrefix + " "
@@ -375,6 +511,20 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
                 showErrorMsg(dialogTitle,dialogMsg);
                 return false;
             }
+        }
+        return true;
+    }
+    
+    /* Check if AS and NB installation dirs are the same or not.
+     */
+    private boolean checkBothInstallDirs(String nbDir, String asDir) {
+	String dialogTitle = resolveString(BUNDLE + "InstallLocationPanel.directoryDialogTitle)");
+        String dialogMsg = "";
+        
+        if (nbDir.equals(asDir)) {
+            dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.directoryNBASTheSame)");
+            showErrorMsg(dialogTitle,dialogMsg);
+            return false;
         }
         return true;
     }
@@ -424,8 +574,13 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             }
             String str = event.getActionCommand();
             JTextField tf = null;
-            str = nbInstallDirTF.getText();
-            tf = nbInstallDirTF;
+	    if (str.equals("nb")) {
+		str = nbInstallDirTF.getText();
+		tf = nbInstallDirTF;
+	    } else {
+		str = asInstallDirTF.getText();
+		tf = asInstallDirTF;
+	    }
             JFileChooser chooser = new JFileChooser();
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             chooser.setSelectedFile(new File(str));

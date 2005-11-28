@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,13 +27,12 @@ import java.io.File;
 
 import java.util.Properties;
 
-public class NbSummaryPanel extends TextDisplayPanel
-{
+public class NbSummaryPanel extends TextDisplayPanel {
     private int type = ProductService.PRE_INSTALL;
     
     private String nbInstallDir = "";
-    private String j2seInstallDir = "";
-    private String jreInstallDir = "";
+    
+    private static final String BUNDLE = "$L(org.netbeans.installer.Bundle,";
     
     public NbSummaryPanel() {
         setTextSource(TEXT_PROPERTY);
@@ -57,9 +56,8 @@ public class NbSummaryPanel extends TextDisplayPanel
             String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
             nbInstallDir = (String) service.getProductBeanProperty
             (productURL, Names.CORE_IDE_ID, "installLocation");
-            j2seInstallDir = (String) System.getProperties().get("j2seInstallDir");
-            jreInstallDir = (String) System.getProperties().get("jreInstallDir");
             logEvent(this, Log.DBG, "queryEnter nbInstallDir: " + nbInstallDir);
+            logEvent(this, Log.DBG, "queryEnter asInstallDir: " + Util.getASInstallDir());
             if (type == ProductService.POST_INSTALL) {
                 logEvent(this, Log.DBG, "queryEnter POST_INSTALL PANEL");
                 logEvent(this, Log.DBG, "queryEnter exitCode: " + getWizard().getExitCode());
@@ -72,25 +70,24 @@ public class NbSummaryPanel extends TextDisplayPanel
                     //Installation failed or cancelled.
                     String summaryMessage;
                     if (getWizard().getExitCode() == InstallApplicationServerAction.AS_UNHANDLED_ERROR) {
-                        summaryMessage = "$L(org.netbeans.installer.Bundle,SummaryPanel.description1)";
-                        summaryMessage += " " + "$L(org.netbeans.installer.Bundle,Product.displayName)";
-                        summaryMessage += " " + "$L(org.netbeans.installer.Bundle,SummaryPanel.description3)";
+                        summaryMessage = BUNDLE + "SummaryPanel.description1)";
+                        summaryMessage += " " + BUNDLE + "Product.displayName)";
+                        summaryMessage += " " + BUNDLE + "SummaryPanel.description3)";
                         summaryMessage += "<br><br>"
-                        + "$L(org.netbeans.installer.Bundle,Product.displayName)" + " "
-                        + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
+                        + BUNDLE + "Product.displayName)" + " "
+                        + BUNDLE + "SummaryPanel.description4)" + "<br>"
                         + nbInstallDir;
                         summaryMessage += "<br><br>"
-                        + "$L(org.netbeans.installer.Bundle, SummaryPanel.errorAS,"
-                        + "$L(org.netbeans.installer.Bundle, AS.shortName),"
-                        + nbInstallDir + File.separator
-                        + resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)") + ")";
+                        + BUNDLE + "SummaryPanel.errorAS,"
+                        + BUNDLE + "AS.shortName),"
+                        + Util.getASInstallDir();
                     } else {
                         InstallAction ia = (InstallAction) getWizardTree().getBean("install");
                         RunnableWizardBeanState state = ia.getState();
                         if (state.getState() == state.CANCELED) {
                             //User cancelled installation (install action)
                             removeAllFiles();
-                            summaryMessage = resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.cancel)");
+                            summaryMessage = BUNDLE + "SummaryPanel.cancel)";
                         } else {
                             logEvent(this, Log.DBG, "queryEnter INSTALLATION FAILED");
                             Properties summary = service.getProductSummary(
@@ -98,12 +95,12 @@ public class NbSummaryPanel extends TextDisplayPanel
                             ProductService.POST_INSTALL,
                             ProductService.HTML);
                             summaryMessage = summary.getProperty(ProductService.SUMMARY_MSG);
-                            summaryMessage += resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.errorNB)");
+                            summaryMessage += BUNDLE + "SummaryPanel.errorNB)";
                         }
                     }
                     setText(summaryMessage);
                 } else {
-                    //setText(resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.description)"));
+                    //setText(resolveString(BUNDLE + "SummaryPanel.description)"));
                     logEvent(this, Log.DBG, "queryEnter INSTALLATION SUCCESSFUL");
                     logEvent(this, Log.DBG, "queryEnter summaryPostInstallMsg:'" + getPostInstallSummaryMessage() + "'");
                     setText(getPostInstallSummaryMessage());
@@ -150,90 +147,86 @@ public class NbSummaryPanel extends TextDisplayPanel
     }
     
     private String getPostInstallSummaryMessage() {
-        String summaryMessage = "$L(org.netbeans.installer.Bundle, SummaryPanel.description1)";
-        summaryMessage += " " + "$L(org.netbeans.installer.Bundle, Product.displayName)"
-        + " " + "$L(org.netbeans.installer.Bundle, SummaryPanel.description2)";
-        summaryMessage += " " + "$L(org.netbeans.installer.Bundle, AS.shortName)";
-        summaryMessage += " " + "$L(org.netbeans.installer.Bundle, SummaryPanel.description3)";
+        String summaryMessage = BUNDLE + "SummaryPanel.description1)";
+        summaryMessage += " " + BUNDLE + "Product.displayName)"
+        + " " + BUNDLE + "SummaryPanel.description2)";
+        summaryMessage += " " + BUNDLE + "AS.shortName)";
+        summaryMessage += " " + BUNDLE + "SummaryPanel.description3)";
         
         //Location of NB
         summaryMessage += "<br><br>"
-        + "$L(org.netbeans.installer.Bundle,Product.displayName)" + " "
-        + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
+        + BUNDLE + "Product.displayName)" + " "
+        + BUNDLE + "SummaryPanel.description4)" + "<br>"
         + nbInstallDir;
         
         //Location of AS
         if (Util.isMacOSX()) {
             summaryMessage += "<br><br>"
-            + "$L(org.netbeans.installer.Bundle,AS.shortName)" + " "
-            + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
-            + nbInstallDir
-            + File.separator + resolveString("$L(org.netbeans.installer.Bundle,Product.nbLocationBelowInstallRoot)")
-            + File.separator + resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)");
+            + BUNDLE + "AS.shortName)" + " "
+            + BUNDLE + "SummaryPanel.description4)" + "<br>"
+            + Util.getASInstallDir();
         } else {
             summaryMessage += "<br><br>"
-            + "$L(org.netbeans.installer.Bundle,AS.shortName)" + " "
-            + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
-            + nbInstallDir
-            + File.separator + resolveString("$L(org.netbeans.installer.Bundle,AS.installDir)");
+            + BUNDLE + "AS.shortName)" + " "
+            + BUNDLE + "SummaryPanel.description4)" + "<br>"
+            + Util.getASInstallDir();
         }
         
         //How to run IDE
         if (Util.isWindowsOS()) {
-            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description51,netbeans.exe)";
+            summaryMessage += BUNDLE + "SummaryPanel.description51,netbeans.exe)";
         } else if (Util.isMacOSX()) {
-            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description52)";
+            summaryMessage += BUNDLE + "SummaryPanel.description52)";
         } else {
-            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description51,netbeans)";
+            summaryMessage += BUNDLE + "SummaryPanel.description51,netbeans)";
         }
         
         //How to run uninstaller
         if (Util.isWindowsOS()) {
-            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description53,uninstaller.exe)";
+            summaryMessage += BUNDLE + "SummaryPanel.description53,uninstaller.exe)";
         } else {
-            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description53,uninstaller)";
+            summaryMessage += BUNDLE + "SummaryPanel.description53,uninstaller)";
         }
         
         //Info about default AS administrator UN/PW
-        summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.adminInfo)";
+        summaryMessage += BUNDLE + "SummaryPanel.adminInfo)";
         
         return summaryMessage;
     }
     
     private String getPreInstallSummaryMessage() {
-        String summaryMessage = resolveString("$L(org.netbeans.installer.Bundle,PreviewPanel.previewInstallMessage,"
-        + "$L(org.netbeans.installer.Bundle,Product.displayName),"
-        + "$L(org.netbeans.installer.Bundle,AS.name))")
-        + "<br>" + nbInstallDir;
-        
-        summaryMessage += "<br>" + "$L(org.netbeans.installer.Bundle,PreviewPanel.previewSize)" + "<br>"
+        String summaryMessage = BUNDLE + "Product.displayName)"
+        + " " + BUNDLE + "PreviewPanel.previewInstallMessage)"
+        + "<br>" + nbInstallDir
+        + "<br><br>" + BUNDLE + "AS.name)"
+        + " " + BUNDLE + "PreviewPanel.previewInstallMessage)"
+        + "<br>" + Util.getASInstallDir()
+        + "<br><br>" 
+        + BUNDLE + "PreviewPanel.previewSize)" + "<br>"
         + getTotalSize();
         return summaryMessage;
     }
     
     private String getPostUninstallSummaryMessage() {
-        String summaryMessage = resolveString("$L(org.netbeans.installer.Bundle, PreviewPanel.previewPostUninstallMessage," 
-        + "$L(org.netbeans.installer.Bundle, Product.displayName),"
-        + "$L(org.netbeans.installer.Bundle, AS.name))");
-        
-        summaryMessage += "<br><br>"
-        + resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.descriptionPostUninstall,"
-        + "$L(org.netbeans.installer.Bundle, Product.userDir))");
+        String summaryMessage = BUNDLE + "PreviewPanel.previewPostUninstallMessage," 
+        + BUNDLE + "Product.displayName))"
+        + "<br><br>"
+        + BUNDLE + "SummaryPanel.descriptionPostUninstall,"
+        + BUNDLE + "Product.userDir))";
         if (Util.isWindowsOS()) {
             summaryMessage += " "
-            + resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.descriptionPostUninstallWindows)");
+            + BUNDLE + "SummaryPanel.descriptionPostUninstallWindows)";
         } else {
             summaryMessage += " "
-            + resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.descriptionPostUninstallUnix)");
+            + BUNDLE + "SummaryPanel.descriptionPostUninstallUnix)";
         }
         
         return summaryMessage;
     }
     
     private String getPreUninstallSummaryMessage() {
-        String summaryMessage = "$L(org.netbeans.installer.Bundle, PreviewPanel.previewPreUninstallMessage," 
-        + "$L(org.netbeans.installer.Bundle, Product.displayName),"
-        + "$L(org.netbeans.installer.Bundle, AS.name),"
+        String summaryMessage = BUNDLE + "PreviewPanel.previewPreUninstallMessage," 
+        + BUNDLE + "Product.displayName),"
         + nbInstallDir + ")";
         
         return summaryMessage;
