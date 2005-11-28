@@ -480,7 +480,6 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         typePanel.add(eagerMod, gridBagConstraints);
 
-        typeTxt.setLabelFor(implVerValue);
         org.openide.awt.Mnemonics.setLocalizedText(typeTxt, org.openide.util.NbBundle.getMessage(CustomizerVersioning.class, "LBL_ModuleType"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -496,8 +495,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
         add(typePanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void removeFriend(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFriend
         getFriendModel().removeFriend((String) friendsList.getSelectedValue());
