@@ -882,6 +882,10 @@ implements FileChangeListener, DataObject.Container {
             
             folderCreated = true;
         }
+        
+        public String toString() {
+            return "ListTask@" + Integer.toHexString(System.identityHashCode(this)) + "[" + folder + "]"; // NOI18N
+        }
     }
     
 
