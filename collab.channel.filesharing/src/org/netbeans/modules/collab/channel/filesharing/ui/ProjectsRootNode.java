@@ -14,6 +14,7 @@ package org.netbeans.modules.collab.channel.filesharing.ui;
 
 import com.sun.collablet.CollabException;
 import com.sun.collablet.Conversation;
+import java.lang.reflect.InvocationTargetException;
 
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -617,17 +618,20 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
             ls.add(
                 new PasteType() {
                     public Transferable paste() throws IOException {
-                        Node[] nue = new Node[ns.length];
+                        final Node[] nue = new Node[ns.length];
 
                         for (int i = 0; i < nue.length; i++) {
                             nue[i] = ns[i].cloneNode();
                         }
-
-                        try {
-                            createProjectNode(nue);
-                        } catch (CollabException ce) {
-                            //ignore
-                        }
+                        
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            public void run() {
+                                try {
+                                    createProjectNode(nue);
+                                } catch (CollabException ce) {
+                                }
+                            }
+                        });
 
                         return null;
                     }
@@ -737,9 +741,9 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
      *
      * @param userName
      */
-    private Node addProjectNodes(Node userNode, String projectName, Project fromProject)
+    private Node addProjectNodes(Node userNode, String projectName, final Project fromProject)
     throws IOException {
-        String userName = userNode.getName();
+        final String userName = userNode.getName();
         Children children = userNode.getChildren();
 
         if (projectName == null) {
@@ -769,15 +773,27 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
             projectNode = new ProjectNode(projectName, userNode, fromProject, null);
             Debug.out.println("ProjectsRootNode, Created project node: " + projectName);
             children.add(new Node[] { projectNode });
+            
+            final Node pNode = projectNode;
+            final String pName = projectName;
 
-            //get Actions from original project
-            if (fromProject != null) {
-                processActionsFromSharedProject(projectNode, fromProject);
-            } else {
-                SharedProject sharedProject = getContext().getSharedProjectManager().getSharedProject(
-                        userName, projectName
-                    );
-                processActions(projectNode, sharedProject);
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        //get Actions from original project
+                        if (fromProject != null) {
+                            processActionsFromSharedProject(pNode, fromProject);
+                        } else {
+                            SharedProject sharedProject = getContext().getSharedProjectManager().getSharedProject(
+                                    userName, pName);
+                            processActions(pNode, sharedProject);
+                        }                    
+                    }
+                });
+            } catch (InterruptedException ie) {
+                // ignore
+            } catch (InvocationTargetException ite) {
+                ErrorManager.getDefault().notify(ite);
             }
         }
 

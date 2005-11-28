@@ -55,7 +55,7 @@ public class ShareProjectAction extends CookieAction {
     }
 
     public boolean asynchronous() {
-        return false; // until I figure out why it doesn't work out of AWT
+        return true;
     }
 
     protected boolean enable(Node[] nodes) {
