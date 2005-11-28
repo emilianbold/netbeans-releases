@@ -68,6 +68,12 @@ public final class DefaultProjectOperationsImplementation {
     
     private static final ErrorManager ERR = ErrorManager.getDefault(); // NOI18N
     
+    //fractions how many time will be spent in some phases of the move and copy operation
+    //the rename and delete operation use a different approach:
+    private static final double NOTIFY_WORK = 0.1;
+    private static final double FIND_PROJECT_WORK = 0.1;
+    private static final int    MAX_WORK = 100;
+    
     private DefaultProjectOperationsImplementation() {
     }
     
@@ -203,22 +209,37 @@ public final class DefaultProjectOperationsImplementation {
     
     /*package private for tests*/ static void doCopyProject(ProgressHandle handle, Project project, String nueName, FileObject newTarget) throws Exception {
         try {
+            int totalWork = MAX_WORK;
+            
+            handle.start(totalWork);
+            
+            double currentWorkDone = 0;
+            
+            handle.progress((int) currentWorkDone);
+            
             ProjectOperations.notifyCopying(project);
+            
+            handle.progress((int) (currentWorkDone = totalWork * NOTIFY_WORK));
             
             FileObject target = newTarget.createFolder(nueName);
             FileObject projectDirectory = project.getProjectDirectory();
             List/*<FileObject>*/ toCopyList = Arrays.asList(projectDirectory.getChildren());
             
-            handle.start(toCopyList.size());
-            
-            int workDone = 0;
-            
+            double workPerFileAndOperation = totalWork * (1.0 - 2 * NOTIFY_WORK - FIND_PROJECT_WORK) / toCopyList.size();
+
             for (Iterator i = toCopyList.iterator(); i.hasNext(); ) {
                 FileObject toCopy = (FileObject) i.next();
                 File       toCopyFile = FileUtil.toFile(toCopy);
                 
                 doCopy(project, toCopy, target);
-                handle.progress(++workDone);
+                
+                int lastWorkDone = (int) currentWorkDone;
+                
+                currentWorkDone += workPerFileAndOperation;
+                
+                if (lastWorkDone < (int) currentWorkDone) {
+                    handle.progress((int) currentWorkDone);
+                }
             }
             
             //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
@@ -227,12 +248,17 @@ public final class DefaultProjectOperationsImplementation {
             
             assert nue != null;
             
+            handle.progress((int) (currentWorkDone += totalWork * FIND_PROJECT_WORK));
+            
             ProjectOperations.notifyCopied(project, nue, FileUtil.toFile(project.getProjectDirectory()), nueName);
+            
+            handle.progress((int) (currentWorkDone += totalWork * NOTIFY_WORK));
             
             ProjectManager.getDefault().saveProject(nue);
             
             open(nue, false);
             
+            handle.progress(totalWork);
             handle.finish();
         } catch (Exception e) {
             ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Move", new Object[]{e.getLocalizedMessage()}));
@@ -278,18 +304,29 @@ public final class DefaultProjectOperationsImplementation {
                     Project nue = null;
                     
                     try {
+                        handle.start(5);
+                        
+                        int currentWorkDone = 0;
+                        
                         FileObject projectDirectory = project.getProjectDirectory();
                         File       projectDirectoryFile = FileUtil.toFile(project.getProjectDirectory());
                         Collection operations = project.getLookup().lookup(new Lookup.Template(MoveOperationImplementation.class)).allInstances();
                         
                         close(project);
                         
+                        handle.progress(++currentWorkDone);
+                        
                         for (Iterator i = operations.iterator(); i.hasNext(); ) {
                             ((MoveOperationImplementation) i.next()).notifyMoving();
                         }
+                        
+                        handle.progress(++currentWorkDone);
+                        
                         for (Iterator i = operations.iterator(); i.hasNext(); ) {
                             ((MoveOperationImplementation) i.next()).notifyMoved(null, projectDirectoryFile, nueName);
                         }
+                        
+                        handle.progress(++currentWorkDone);
                         
                         //#64264: the non-project cache can be filled with incorrect data (gathered during the project copy phase), clear it:
                         ProjectManager.getDefault().clearNonProjectCache();
@@ -300,8 +337,9 @@ public final class DefaultProjectOperationsImplementation {
                         
                         originalOK = false;
                         
-                        Collection nueOperations = nue.getLookup().lookup(new Lookup.Template(MoveOperationImplementation.class)).allInstances();
+                        handle.progress(++currentWorkDone);
                         
+                        Collection nueOperations = nue.getLookup().lookup(new Lookup.Template(MoveOperationImplementation.class)).allInstances();
                         
                         for (Iterator i = nueOperations.iterator(); i.hasNext(); ) {
                             ((MoveOperationImplementation) i.next()).notifyMoved(project, projectDirectoryFile, nueName);
@@ -310,6 +348,10 @@ public final class DefaultProjectOperationsImplementation {
                         ProjectManager.getDefault().saveProject(nue);
                         
                         open(nue, wasMain);
+                        
+                        handle.progress(++currentWorkDone);
+                        
+                        handle.finish();
                     } catch (Exception e) {
                         if (originalOK) {
                             open(project, wasMain);
@@ -332,19 +374,39 @@ public final class DefaultProjectOperationsImplementation {
 	FileObject target = null;
         
         try {
+            int totalWork = MAX_WORK;
+            
+            handle.start(totalWork);
+            
+            double currentWorkDone = 0;
+            
+            handle.progress((int) currentWorkDone);
+            
             ProjectOperations.notifyMoving(project);
             
             close(project);
             
-            target = newTarget.createFolder(nueName);
-	    
+            handle.progress((int) (currentWorkDone = totalWork * NOTIFY_WORK));
+            
             FileObject projectDirectory = project.getProjectDirectory();
             List/*<FileObject>*/ toMoveList = Arrays.asList(projectDirectory.getChildren());
             
+            double workPerFileAndOperation = (totalWork * (1.0 - 2 * NOTIFY_WORK - FIND_PROJECT_WORK) / toMoveList.size()) / 2;
+            
+            target = newTarget.createFolder(nueName);
+	    
             for (Iterator i = toMoveList.iterator(); i.hasNext(); ) {
                 FileObject toCopy = (FileObject) i.next();
                 
                 doCopy(project, toCopy, target);
+                
+                int lastWorkDone = (int) currentWorkDone;
+                
+                currentWorkDone += workPerFileAndOperation;
+                
+                if (lastWorkDone < (int) currentWorkDone) {
+                    handle.progress((int) currentWorkDone);
+                }
             }
             
             originalOK = false;
@@ -354,6 +416,14 @@ public final class DefaultProjectOperationsImplementation {
                 File       toCopyFile = FileUtil.toFile(toCopy);
                 
                 doDelete(project, toCopy);
+                
+                int lastWorkDone = (int) currentWorkDone;
+                
+                currentWorkDone += workPerFileAndOperation;
+                
+                if (lastWorkDone < (int) currentWorkDone) {
+                    handle.progress((int) currentWorkDone);
+                }
             }
             
             if (projectDirectory.getChildren().length == 0) {
@@ -364,13 +434,20 @@ public final class DefaultProjectOperationsImplementation {
             ProjectManager.getDefault().clearNonProjectCache();
             Project nue = ProjectManager.getDefault().findProject(target);
             
+            handle.progress((int) (currentWorkDone += totalWork * FIND_PROJECT_WORK));
+            
             assert nue != null;
             
             ProjectOperations.notifyMoved(project, nue, FileUtil.toFile(project.getProjectDirectory()), nueName);
             
+            handle.progress((int) (currentWorkDone += totalWork * NOTIFY_WORK));
+            
             ProjectManager.getDefault().saveProject(nue);
             
             open(nue, wasMain);
+            
+            handle.progress(totalWork);
+            handle.finish();
         } catch (Exception e) {
             if (originalOK) {
                 open(project, wasMain);
