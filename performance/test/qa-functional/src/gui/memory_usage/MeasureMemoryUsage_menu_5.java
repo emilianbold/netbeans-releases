@@ -37,8 +37,6 @@ public class MeasureMemoryUsage_menu_5 {
 
         suite.addTest(new FormInspectorNodePopupMenu("testFormNodePopupMenuInspector", "Form Inspector node popup"));
         
-        suite.addTest(new ToolsOptionsNodePopupMenu("testOptionsNodePopupMenu", "Tools-Options node popup"));
-        
         return suite;
     }
     

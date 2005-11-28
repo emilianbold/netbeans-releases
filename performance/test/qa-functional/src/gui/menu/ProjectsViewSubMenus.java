@@ -15,6 +15,7 @@ package gui.menu;
 
 import org.netbeans.performance.test.guitracker.ActionTracker;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
