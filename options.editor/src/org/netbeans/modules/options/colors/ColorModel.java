@@ -390,7 +390,10 @@ public class ColorModel {
             editorPane.addCaretListener (new CaretListener () {
                 public void caretUpdate (CaretEvent e) {
                     int position = e.getDot ();
-                    SyntaxSupport ss = Utilities.getSyntaxSupport (Utilities.getEditorUI (editorPane).getComponent ());
+                    EditorUI editorUI = Utilities.getEditorUI (editorPane);
+                    if (editorUI == null) return;
+                    SyntaxSupport ss = Utilities.getSyntaxSupport 
+                        (editorUI.getComponent ());
                     if (!(ss instanceof ExtSyntaxSupport)) return;
                     try {
                         TokenItem tokenItem = ((ExtSyntaxSupport) ss).
