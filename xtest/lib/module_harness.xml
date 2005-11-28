@@ -81,6 +81,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="init" depends="prepare-xtest">        
     
+        <antcall target="version"/>
         <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
                  classpath="${xtest.home}/lib/xtest.jar"/>                 
                  
