@@ -267,7 +267,10 @@ public class EditorSettingsImpl extends EditorSettings {
         }
         
         // 4) update profiles
-	pcs.firePropertyChange (PROP_DEFAULT_FONT_COLORS, null, null);
+        if (internalProfile.startsWith ("test"))
+            pcs.firePropertyChange (internalProfile, null, null);
+        else
+            pcs.firePropertyChange (PROP_DEFAULT_FONT_COLORS, null, null);
     }
     
     // Map (String (profile) > Map (String (category) > AttributeSet)).
@@ -377,7 +380,10 @@ public class EditorSettingsImpl extends EditorSettings {
                 fontColorProfiles.put (profile, profile);
         }
         
-	pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
+        if (internalProfile.startsWith ("test"))
+            pcs.firePropertyChange (internalProfile, null, null);
+        else
+            pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
     }  
     
     
