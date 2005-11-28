@@ -342,10 +342,27 @@ public final class HtmlRenderer {
                 }
 
                 double chWidth = wid / chars.length;
-                int estCharsOver = new Double((wid - w) / chWidth).intValue();
+                int estCharsToPaint = new Double(w / chWidth).intValue();
+                if( estCharsToPaint > chars.length )
+                    estCharsToPaint = chars.length;
+                //let's correct the estimate now
+                while( estCharsToPaint > 3 ) {
+                    if( estCharsToPaint < chars.length )
+                        Arrays.fill(chars, estCharsToPaint - 3, estCharsToPaint, '.'); //NOI18N
+                    int  newWidth;
+                    if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                        // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
+                        newWidth = fm.stringWidth(new String(chars, 0, estCharsToPaint));
+                    } else {
+                        newWidth = (int)fm.getStringBounds(chars, 0, estCharsToPaint, g).getWidth();
+                    }
+                    if( newWidth <= w )
+                        break;
+                    estCharsToPaint--;
+                }
 
                 if (style == STYLE_TRUNCATE) {
-                    int length = chars.length - estCharsOver;
+                    int length = estCharsToPaint;
 
                     if (length <= 0) {
                         return 0;
@@ -353,7 +370,6 @@ public final class HtmlRenderer {
 
                     if (paint) {
                         if (length > 3) {
-                            Arrays.fill(chars, length - 3, length, '.'); //NOI18N
                             g.drawChars(chars, 0, length, x, y);
                         } else {
                             Shape shape = g.getClip();
