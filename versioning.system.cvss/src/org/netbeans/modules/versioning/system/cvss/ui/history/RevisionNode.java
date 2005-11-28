@@ -14,14 +14,23 @@
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import org.openide.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.cookies.*;
 import org.openide.nodes.*;
+import org.openide.text.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
+import org.netbeans.lib.cvsclient.command.CommandException;
+import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
+import org.netbeans.modules.versioning.system.cvss.VersionsCache;
+import org.netbeans.modules.versioning.system.cvss.IllegalCommandException;
+import org.netbeans.modules.versioning.system.cvss.NotVersionedException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -31,8 +40,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.awt.event.ActionEvent;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 /**
  * Visible in the Search History Diff view.
@@ -94,6 +106,23 @@ class RevisionNode extends AbstractNode {
         }
     }
     
+    public Node.Cookie getCookie(Class clazz) {
+        
+        if (ViewCookie.class.equals(clazz)) {
+            File file = revision.getLogInfoHeader().getFile();
+
+            String mime = null;
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                mime = fo.getMIMEType();
+            }
+            ViewEnv env = new ViewEnv(file, revision.getNumber().trim(), mime);
+            return new ViewCookieImpl(env);
+        } else {
+            return super.getCookie(clazz);
+        }
+    }
+    
     private void initProperties() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();
@@ -106,6 +135,63 @@ class RevisionNode extends AbstractNode {
         setSheet(sheet);        
     }
 
+    /**
+     * OpenSupport that is able to open an input stream.
+     * Encoding, coloring, ..., let editor kit takes care
+     */
+    private class ViewCookieImpl extends CloneableEditorSupport implements ViewCookie {
+
+        ViewCookieImpl(Env env) {
+            super(env);
+        }
+                                
+        protected String messageName() {
+            return revision.getLogInfoHeader().getFile().getName() + " " + getName();
+        }
+        
+        protected String messageSave() {
+            return revision.getLogInfoHeader().getFile().getName() + " " + getName();
+        }
+        
+        protected java.lang.String messageToolTip() {
+            return revision.getLogInfoHeader().getFile().getName() + " " + getName();
+        }
+
+        protected java.lang.String messageOpening() {
+            return  NbBundle.getMessage(RevisionNode.class, "CTL_Action_Opening", revision.getLogInfoHeader().getFile().getName() + " " + getName());
+        }
+        
+        protected java.lang.String messageOpened() {
+            return "";
+        }
+
+        //#20646 associate the entry node with editor top component
+        protected CloneableEditor createCloneableEditor() {
+            CloneableEditor editor = super.createCloneableEditor();
+            editor.setActivatedNodes(new Node[] {RevisionNode.this});
+            return editor;
+        }
+
+        private Object writeReplace() {
+            return null;
+        }
+                
+    }    
+        
+    private class ViewEnv extends FileEnvironment {
+
+        /** Serial Version UID */
+        private static final long serialVersionUID = 1L;
+        
+        ViewEnv (File file, String revision, String mime) {
+            super(file, revision, mime);
+        }
+
+        public org.openide.windows.CloneableOpenSupport findCloneableOpenSupport() {
+            return (ViewCookieImpl) RevisionNode.this.getCookie(ViewCookie.class);
+        }
+    }
+    
     private abstract class CommitNodeProperty extends PropertySupport.ReadOnly {
 
         protected CommitNodeProperty(String name, Class type, String displayName, String shortDescription) {

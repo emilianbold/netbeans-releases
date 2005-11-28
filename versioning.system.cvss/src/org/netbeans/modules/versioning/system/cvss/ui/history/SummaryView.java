@@ -13,8 +13,12 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
+import java.io.*;
+import org.netbeans.lib.cvsclient.command.*;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
+import org.netbeans.lib.cvsclient.connection.*;
+import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
@@ -28,7 +32,9 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.openide.ErrorManager;
+import org.openide.cookies.ViewCookie;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -256,6 +262,19 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                         rollback(selection[0]);
                     }
                 }));
+                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View", drev.getRevision().getNumber())) {
+                    {
+                        setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof SearchHistoryPanel.DispRevision);
+                    }
+                    public void actionPerformed(ActionEvent e) {
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            public void run() {
+                                view(selection[0]);
+                            }
+                        });
+                    }
+                }));
+                
             }
 
             Project prj = Utils.getProject(drev.getRevision().getLogInfoHeader().getFile());
@@ -332,6 +351,18 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
     }
 
+
+    private void view(int idx) {
+        Object o = dispResults.get(idx);
+        if (o instanceof SearchHistoryPanel.DispRevision) {
+            SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
+            String revision = drev.getRevision().getNumber().trim();
+            ViewCookie view = (ViewCookie) new RevisionNode(drev).getCookie(ViewCookie.class);
+            if (view != null) {
+                view.view();
+            }
+        }
+    }    
     private void diffPrevious(int idx) {
         Object o = dispResults.get(idx);
         if (o instanceof SearchHistoryPanel.DispRevision) {
