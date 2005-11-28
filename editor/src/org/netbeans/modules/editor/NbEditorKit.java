@@ -86,6 +86,9 @@ public class NbEditorKit extends ExtKit {
     /** Name of the action for generating of code folding popup menu*/
     public static final String generateFoldPopupAction = "generate-fold-popup"; // NOI18N
 
+    private static final NbUndoAction nbUndoActionDef = new NbUndoAction();
+    private static final NbRedoAction nbRedoActionDef = new NbRedoAction();
+    
     static {
         contentTypeTable = new HashMap();
         contentTypeTable.put("org.netbeans.modules.properties.syntax.PropertiesKit", "text/x-properties"); // NOI18N
@@ -143,8 +146,8 @@ public class NbEditorKit extends ExtKit {
         Action[] nbEditorActions = new Action[] {
                                        new NbBuildPopupMenuAction(),
                                        new NbStopMacroRecordingAction(),
-                                       new NbUndoAction(),
-                                       new NbRedoAction(),
+                                       nbUndoActionDef,
+                                       nbRedoActionDef,
                                        new NbBuildToolTipAction(),
                                        new NbToggleLineNumbersAction(),
                                        new ToggleToolbarAction(),
