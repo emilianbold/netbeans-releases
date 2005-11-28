@@ -89,30 +89,35 @@ class LayoutFeeder implements LayoutConstants {
         this.dragger = dragger;
         this.addingIntervals = addingIntervals;
 
-        LayoutDragger.PositionDef[] positions = dragger.getPositions();
         for (int dim=0; dim < DIM_COUNT; dim++) {
             dimension = dim;
             if (dragger.isResizing()) {
+                LayoutInterval adding = addingIntervals[dim];
                 if (dragger.isResizing(dim)) {
-                    originalPositions1[dim] = findOutCurrentPosition(
-                            addingIntervals[dim], dim, dragger.getResizingEdge(dim)^1);
-                    newPositions[dim] = dragger.getPositions()[dim];
+                    IncludeDesc pos = findOutCurrentPosition(
+                            adding, dim, dragger.getResizingEdge(dim)^1);
+                    LayoutDragger.PositionDef newPos = dragger.getPositions()[dim];
+                    if ((newPos == null || !newPos.snapped) && !pos.snapped()) {
+                        pos.alignment = LayoutInterval.getEffectiveAlignment(adding);
+                    }
+                    originalPositions1[dim] = pos;
+                    newPositions[dim] = newPos;
                     becomeResizing[dim] = checkResizing(); // if to make the interval resizing
                 }
                 else { // this dimension has not been resized
                     int alignment = DEFAULT;
-                    IncludeDesc pos1 = findOutCurrentPosition(addingIntervals[dim], dim, alignment);
+                    IncludeDesc pos1 = findOutCurrentPosition(adding, dim, alignment);
                     originalPositions1[dim] = pos1;
                     alignment = pos1.alignment;
                     if (alignment == LEADING || alignment == TRAILING) {
-                        IncludeDesc pos2 = findOutCurrentPosition(addingIntervals[dim], dim, alignment^1);
+                        IncludeDesc pos2 = findOutCurrentPosition(adding, dim, alignment^1);
                         if (pos2.snapped()) {
                             originalPositions2[dim] = pos2;
                         } // don't remember second position if not snapped, one is enough
                     }
                 }
-                originalLPositionsFixed[dim] = isFixedRelativePosition(addingIntervals[dim], LEADING);
-                originalTPositionsFixed[dim] = isFixedRelativePosition(addingIntervals[dim], TRAILING);
+                originalLPositionsFixed[dim] = isFixedRelativePosition(adding, LEADING);
+                originalTPositionsFixed[dim] = isFixedRelativePosition(adding, TRAILING);
             }
             else newPositions[dim] = dragger.getPositions()[dim];
         }
@@ -2630,8 +2635,8 @@ class LayoutFeeder implements LayoutConstants {
                 }
             }
 
-            if (endIndex > startIndex + 1
-                || (endIndex == startIndex+1 && !startGap && !endGap))
+            if ((endIndex > startIndex + 1 || (endIndex == startIndex+1 && !startGap && !endGap))
+                && ((ext1 != null && !iDesc1.newSubGroup) || (ext2 !=null && !iDesc2.newSubGroup)))
             {   // there is a significant part of the common sequence to be parallelized
                 LayoutInterval parGroup;
                 if (startIndex == 0 && endIndex == commonGroup.getSubIntervalCount()-1) {
