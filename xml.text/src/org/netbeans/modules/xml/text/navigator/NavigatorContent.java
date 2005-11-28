@@ -46,6 +46,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
@@ -60,8 +61,11 @@ import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.EditorCookie.Observable;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -75,9 +79,11 @@ import org.openide.windows.TopComponent;
  * @author Marek Fukala
  * @version 1.0
  */
-public class NavigatorContent extends JPanel   {
+public class NavigatorContent extends JPanel implements PropertyChangeListener  {
     
+    private static final boolean DEBUG = false;
     private static NavigatorContent navigatorContentInstance = null;
+    
     
     public static synchronized NavigatorContent getDefault() {
         if(navigatorContentInstance == null)
@@ -99,6 +105,8 @@ public class NavigatorContent extends JPanel   {
     private DataObject peerDO = null;
     
     private WeakHashMap uiCache = new WeakHashMap();
+    
+    private boolean editorOpened = false;
     
     private NavigatorContent() {
         setLayout(new BorderLayout());
@@ -122,14 +130,17 @@ public class NavigatorContent extends JPanel   {
             ErrorManager.getDefault().log(ErrorManager.WARNING, "The DataObject " + d.getName() + "(class=" + d.getClass().getName() + ") has no EditorCookie!?");
         } else {
             try {
+                if(DEBUG) System.out.println("[xml navigator] navigating to DATAOBJECT " + d.hashCode());
                 //test if the document is opened in editor
                 BaseDocument bdoc = (BaseDocument)ec.openDocument();
                 //create & show UI
                 if(bdoc != null) {
                     //there is something we can navigate in
-                    navigate(bdoc);
+                    navigate(d, bdoc);
                     //remember the peer dataobject to be able the call EditorCookie.close() when closing navigator
                     this.peerDO = d;
+                    //check if the editor for the DO has an opened pane
+                    editorOpened = ec.getOpenedPanes() != null && ec.getOpenedPanes().length > 0;
                 }
                 
             }catch(UserQuestionException uqe) {
@@ -141,21 +152,32 @@ public class NavigatorContent extends JPanel   {
         }
     }
     
-    public void navigate(final BaseDocument bdoc) {
+    public void navigate(final DataObject documentDO, final BaseDocument bdoc) {
+        if(DEBUG) System.out.println("[xml navigator] navigating to DOCUMENT " + bdoc.hashCode());
         //called from AWT thread
         showScanningPanel();
         
         //try to find the UI in the UIcache
         final JPanel cachedPanel;
-        DataObject documentDO = NbEditorUtilities.getDataObject(bdoc);
-        if(documentDO != null) {
-            WeakReference panelWR = (WeakReference)uiCache.get(documentDO);
-            if(panelWR != null) {
-                cachedPanel = (JPanel)panelWR.get();
+        WeakReference panelWR = (WeakReference)uiCache.get(documentDO);
+        if(panelWR != null) {
+            NavigatorContentPanel cp = (NavigatorContentPanel)panelWR.get();
+            if(cp != null) {
+                if(DEBUG) System.out.println("panel is cached");
+                //test if the document associated with the panel is the same we got now
+                cachedPanel = bdoc == cp.getDocument() ? cp : null;
+                if(cachedPanel == null) {
+                    if(DEBUG) System.out.println("but the document is different - creating a new UI...");
+                    if(DEBUG) System.out.println("the cached document : " + cp.getDocument());
+                    
+                    //remove the old mapping from the cache
+                    uiCache.remove(documentDO);
+                }
             } else
                 cachedPanel = null;
         } else
             cachedPanel = null;
+        
         //get the model and create the new UI on background
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -183,8 +205,13 @@ public class NavigatorContent extends JPanel   {
                                     DataObject documentDO = NbEditorUtilities.getDataObject(bdoc);
                                     if(documentDO != null)
                                         uiCache.put(documentDO, new WeakReference(panel));
+                                    if(DEBUG) System.out.println("[xml navigator] panel created");
+                                    
+                                    //start to listen to the document property changes - we need to get know when the document is being closed
+                                    ((EditorCookie.Observable)documentDO.getCookie(EditorCookie.class)).addPropertyChangeListener(NavigatorContent.this);
                                 } else {
                                     panel = cachedPanel;
+                                    if(DEBUG) System.out.println("[xml navigator] panel gotten from cache");
                                 }
                                 
                                 //paint the navigator UI
@@ -224,7 +251,16 @@ public class NavigatorContent extends JPanel   {
             EditorCookie ec = (EditorCookie)peerDO.getCookie(EditorCookie.class);
             if(ec != null) {
                 JEditorPane panes[] = ec.getOpenedPanes();
-                if(panes == null || panes.length == 0) ec.close();
+                //call EC.close() if there isn't any pane and the editor was opened
+                if((panes == null || panes.length == 0)) {
+                    ((EditorCookie.Observable)ec).removePropertyChangeListener(this);
+                    
+                    if(editorOpened) {
+                        ec.close();
+                        if(DEBUG) System.out.println("document instance for dataobject " + dobj.hashCode() + " closed.");
+                    }
+                }
+                editorOpened = false;
             }
         }
     }
@@ -259,14 +295,45 @@ public class NavigatorContent extends JPanel   {
         repaint();
     }
     
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName() == EditorCookie.Observable.PROP_DOCUMENT) {
+            if(evt.getNewValue() == null) {
+                final DataObject dobj = ((DataEditorSupport)evt.getSource()).getDataObject();
+                if(dobj != null) {
+                    editorOpened = false;
+                    //document is being closed
+                    if(DEBUG) System.out.println("document has been closed for DO: " + dobj.hashCode());
+                    
+                    //remove the property change listener from the DataObject's EditorSupport
+                    EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+                    if(ec != null)
+                        ((EditorCookie.Observable)ec).removePropertyChangeListener(this);
+                    
+                    //and navigate the document again (must be called asynchronously
+                    //otherwise the ClonableEditorSupport locks itself (new call to CES from CES.propertyChange))
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            navigate(dobj);
+                        }
+                    });
+                }
+            } else {
+                //a new pane created
+                editorOpened = true;
+            }
+        }
+    }
+    
     private class NavigatorContentPanel extends JPanel implements FiltersManager.FilterChangeListener {
         
         private JTree tree;
         private FiltersManager filters;
+        private Document doc;
         
         public NavigatorContentPanel(DocumentModel dm) {
-            setLayout(new BorderLayout());
+            this.doc = dm.getDocument();
             
+            setLayout(new BorderLayout());
             //create the JTree pane
             tree = new PatchedJTree();
             TreeModel model = createTreeModel(dm);
@@ -345,6 +412,10 @@ public class NavigatorContent extends JPanel   {
                 if(node.getChildCount() > 0)
                     tree.expandPath(new TreePath(new TreeNode[]{rootNode, node}));
             }
+        }
+        
+        public Document getDocument() {
+            return this.doc;
         }
         
         private void openAndFocusElement(final TreeNodeAdapter selected, final boolean selectLineOnly) {
