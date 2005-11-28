@@ -319,6 +319,10 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
             g.setClip(clip);
         }
     }
+    
+    protected int getCaptionYAdjustment() {
+        return 1;
+    }
 
     private static class WinXPPainter implements TabPainter {
 
