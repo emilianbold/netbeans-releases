@@ -27,13 +27,15 @@ public final class Utils {
     // outside this package.  I suppose this premise could change though.
     static final String SERVER_ID_AS81 = "J2EE"; // NOI18N
     static final String SERVER_ID_AS90 = "JavaEE5"; // NOI18N
-
+    static final String SERVER_ID_WS70 = "SUNWebserver7"; // NOI18N
+    
     /**
      * Check that current target server is Sun AppServer.
      */
     public static boolean isSunServer(String serverId) {
         boolean result = false;
-        if(SERVER_ID_AS81.equals(serverId) || SERVER_ID_AS90.equals(serverId)) {
+        if(SERVER_ID_AS81.equals(serverId) || SERVER_ID_AS90.equals(serverId)
+            || SERVER_ID_WS70.equals(serverId)) {  
             result = true;
         }
         return result;
