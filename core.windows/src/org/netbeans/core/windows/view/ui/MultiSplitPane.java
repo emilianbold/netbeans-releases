@@ -70,7 +70,9 @@ public class MultiSplitPane extends JPanel
         addMouseListener( this );
         
         //get default divider size from SplitPane's UI
-        this.dividerSize = ((Integer)UIManager.get("SplitPane.dividerSize")).intValue();
+        dividerSize = UIManager.getInt("SplitPane.dividerSize"); //NOI18N
+        if( 0 == dividerSize )
+            dividerSize = 7;
     }
     
     /**
