@@ -106,7 +106,7 @@ public class FastOpenInfoParser {
             InputStream is = new ByteArrayInputStream(buffer,0,readed);
             _is.close();
             
-            if(isXMLDocument(fo)) {
+            if(isXMLSyntax(fo)) {
                 //XML document - detect encoding acc. to fisrt 4 bytes or xml prolog
                 enc = EncodingUtil.detectEncoding(is);
             } else {
@@ -116,8 +116,7 @@ public class FastOpenInfoParser {
             }
             
             if(debug) System.out.println("[fast open parser] detected " + enc + " encoding.");
-            
-            return enc == null ? null : new JspParserAPI.JspOpenInfo(false, enc);
+            return enc == null ? null : new JspParserAPI.JspOpenInfo(isXMLSyntax(fo), enc);
             
         } catch(IOException e) {
             //do not handle
@@ -141,6 +140,11 @@ public class FastOpenInfoParser {
         return parseJspText(buffer, readed);
     }
     
+    private static boolean isXMLSyntax(FileObject fo) {
+        String ext = fo.getExt();
+        if(ext != null && ("jspx".equalsIgnoreCase(ext) || "tagx".equalsIgnoreCase(ext))) return true;
+        else return false;
+    }
     
     //JSP encoding parser
     private static final String PAGE = "page";
@@ -339,10 +343,7 @@ public class FastOpenInfoParser {
         return true;
     }
     
-    private boolean isXMLDocument(FileObject fo) {
-        return "jspx".equals(fo.getExt().toLowerCase());
-    }
-    
+
     static final String JSP_PROPERTY_GROUP = "jsp-property-group";
     static final String PAGE_ENCODING = "page-encoding";
     static final String IS_XML = "is-xml";
