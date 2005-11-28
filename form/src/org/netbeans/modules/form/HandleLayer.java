@@ -1979,7 +1979,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                         || (targetContainer == null && isTopComponent()))) {
                     if (!isTopComponent()) {
                         doLayout(showingComponents[i]);
-                        oldPaintFeedback(g, gg);
+                        oldPaintFeedback(g, gg, i);
                     }
                 }
                 else { // non-visual area
@@ -2060,7 +2060,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         void oldMove(Point p) {
         }
 
-        void oldPaintFeedback(Graphics2D g, Graphics gg) {
+        void oldPaintFeedback(Graphics2D g, Graphics gg, int index) {
         }
 
         // layout model undo/redo ---
@@ -2214,11 +2214,11 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             oldDragger.drag(p, targetContainer);
         }
 
-        void oldPaintFeedback(Graphics2D g, Graphics gg) {
+        void oldPaintFeedback(Graphics2D g, Graphics gg, int index) {
             oldDragger.paintDragFeedback(g);
 
             // don't paint if component dragged from old layout (may have strange size)
-            Component comp = showingComponents[0];
+            Component comp = showingComponents[index];
             paintDraggedComponent(comp, gg);
         }
     }
@@ -2438,10 +2438,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             oldDragger.drag(p, targetContainer);
         }
 
-        void oldPaintFeedback(Graphics2D g, Graphics gg) {
-            for (int i=0; i<showingComponents.length; i++) {
-                paintDraggedComponent(showingComponents[i], gg);
-            }
+        void oldPaintFeedback(Graphics2D g, Graphics gg, int index) {
+            paintDraggedComponent(showingComponents[index], gg);
             oldDragger.paintDragFeedback(g);
         }
     }
@@ -2635,7 +2633,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                                                    posInCont, posInComp);
         }
 
-        void oldPaintFeedback(Graphics2D g, Graphics gg) {
+        void oldPaintFeedback(Graphics2D g, Graphics gg, int index) {
             LayoutSupportManager laysup = targetContainer.getLayoutSupport();
             Container cont = (Container) formDesigner.getComponent(targetContainer);
             Container contDel = targetContainer.getContainerDelegate(cont);
