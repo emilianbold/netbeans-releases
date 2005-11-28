@@ -12,49 +12,51 @@
  */
 
 package org.netbeans.modules.form.project;
+
 import java.io.InputStream;
 import java.net.URL;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 
 /**
- * A special classloader capable to combine system classpath (IDE modules) and
- * user project classpath into one. Classes loaded by this classloader can link
- * with module classes running in the IDE and access resources on project
- * classpath at the same time.
+ * A class loader loading user classes from given project (execution classpath
+ * is used) with special care given to resources. When finding a resource, the
+ * the project's sources are tried first (before execution classpath) to allow
+ * components added to a form in this project to access resources without need
+ * to build the project first. Even if built, the resources in sources take
+ * precedence as they are likely more up-to-date.
  *
  * @author Tomas Pavek
  */
 
-final class FormClassLoader extends ClassLoader {
+class ProjectClassLoader extends ClassLoader {
 
-    private ClassLoader systemClassLoader;
-    private ClassLoader projectClassLoader;
+    private ClassLoader projectClassLoaderDelegate;
+    private ClassPath sources;
 
-    FormClassLoader(ClassLoader projectClassLoader) {
-        this.systemClassLoader = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
-        this.projectClassLoader = projectClassLoader;
+    private ProjectClassLoader(ClassLoader projectClassLoaderDelegate, ClassPath sources) {
+        this.projectClassLoaderDelegate = projectClassLoaderDelegate;
+        this.sources = sources;
     }
 
-    ClassLoader getProjectClassLoader() {
-        return projectClassLoader;
+    static ClassLoader getUpToDateClassLoader(FileObject fileInProject, ClassLoader clSoFar) {
+        ClassLoader existingCL = clSoFar instanceof ProjectClassLoader ?
+                ((ProjectClassLoader)clSoFar).projectClassLoaderDelegate : clSoFar;
+        ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
+        ClassLoader actualCL = classPath != null ? classPath.getClassLoader(true) : null;
+        if (actualCL == existingCL)
+            return clSoFar;
+        if (actualCL == null)
+            return null;
+        return new ProjectClassLoader(actualCL, ClassPath.getClassPath(fileInProject, ClassPath.SOURCE));
     }
 
     protected Class findClass(String name) throws ClassNotFoundException {
-        int type = ClassPathUtils.getClassLoadingType(name);
-        if (type == ClassPathUtils.UNSPECIFIED_CLASS) {
-            if (projectClassLoader == null)
-                throw new ClassNotFoundException(ClassPathUtils.getBundleString("MSG_NullClassPath")); // NOI18N
-            return projectClassLoader.loadClass(name);
-        }
-        if (type == ClassPathUtils.SYSTEM_CLASS)
-            return systemClassLoader.loadClass(name);
-        // otherwise type == ClassPathUtils.SYSTEM_CLASS_WITH_PROJECT
-
         Class c = null;
         String filename = name.replace('.', '/').concat(".class"); // NOI18N
-        URL url = systemClassLoader.getResource(filename);
-        if (url == null && projectClassLoader != null)
-            url = projectClassLoader.getResource(filename);
+        URL url = projectClassLoaderDelegate.getResource(filename);
         if (url != null) {
             try {
                 InputStream is = url.openStream();
@@ -86,14 +88,18 @@ final class FormClassLoader extends ClassLoader {
         }
         if (c == null)
             throw new ClassNotFoundException();
-
         return c;
     }
 
-    public URL getResource(String name) {
-        URL url = projectClassLoader != null ? projectClassLoader.getResource(name) : null;
-        if (url == null)
-            url = systemClassLoader.getResource(name);
-        return url;
+    protected URL findResource(String name) {
+        FileObject fo = sources.findResource(name);
+        if (fo != null) {
+            try {
+                return fo.getURL();
+            } catch (FileStateInvalidException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+        return projectClassLoaderDelegate.getResource(name);
     }
 }

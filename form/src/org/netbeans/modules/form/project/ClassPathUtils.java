@@ -47,8 +47,11 @@ public class ClassPathUtils {
     static final int SYSTEM_CLASS = 1; // class to be loaded by IDE system classloader (e.g. from a module)
     static final int SYSTEM_CLASS_WITH_PROJECT = 2; // class to be loaded from a module by classloader including also project classpath
 
-    /** Loads class from project classpath. Project is specified by arbitrary
-     * file contained in the project.
+    /**
+     * Loads a class with a context of a project in mind (specified by arbitrary
+     * file contained in the project). Typically the class is loaded from the
+     * project's execution classpath unless it is a basic JDK class, or a class
+     * registred as a support (system) class.
      */
     public static Class loadClass(String name, FileObject fileInProject)
         throws ClassNotFoundException
@@ -69,10 +72,11 @@ public class ClassPathUtils {
     private static FormClassLoader getFormClassLoader(FileObject fileInProject) {
         Project p = FileOwnerQuery.getOwner(fileInProject);
         FormClassLoader fcl = (FormClassLoader) loaders.get(p);
-        ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
-        ClassLoader projectClassLoader = classPath != null ? classPath.getClassLoader(true) : null;
-        if (fcl == null || fcl.getProjectClassLoader() != projectClassLoader) {
-            fcl = new FormClassLoader(projectClassLoader);
+        ClassLoader existingProjectCL = fcl != null ? fcl.getProjectClassLoader() : null;
+        ClassLoader newProjectCL = ProjectClassLoader.getUpToDateClassLoader(
+                                     fileInProject, existingProjectCL);
+        if (fcl == null || newProjectCL != existingProjectCL) {
+            fcl = new FormClassLoader(newProjectCL);
             loaders.put(p, fcl);
         }
         return fcl;
@@ -402,6 +406,7 @@ public class ClassPathUtils {
                     folder.addFileChangeListener(new FileChangeAdapter() {
                         public void fileDataCreated(FileEvent ev) {
                             patternsSystem = null;
+                            loaders.clear();
                         }
                         public void fileDeleted(FileEvent ev) {
                             patternsSystem = null;
@@ -409,6 +414,7 @@ public class ClassPathUtils {
                                 patternSystemFolder.removeFileChangeListener(this);
                                 patternSystemFolder = null;
                             }
+                            loaders.clear();
                         }
                     });
                     patternSystemFolder = folder;
@@ -424,6 +430,7 @@ public class ClassPathUtils {
                     folder.addFileChangeListener(new FileChangeAdapter() {
                         public void fileDataCreated(FileEvent ev) {
                             patternsSystemWithProject = null;
+                            loaders.clear();
                         }
                         public void fileDeleted(FileEvent ev) {
                             patternsSystemWithProject = null;
@@ -431,6 +438,7 @@ public class ClassPathUtils {
                                 patternSystemWithProjectFolder.removeFileChangeListener(this);
                                 patternSystemWithProjectFolder = null;
                             }
+                            loaders.clear();
                         }
                     });
                     patternSystemWithProjectFolder = folder;
