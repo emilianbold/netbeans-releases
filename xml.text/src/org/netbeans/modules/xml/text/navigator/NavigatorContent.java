@@ -19,6 +19,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -30,6 +31,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.WeakHashMap;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -49,9 +51,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtEditorUI;
@@ -361,6 +365,18 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
                 }
             };
             tree.addMouseListener(ml);
+            
+            final TreeSelectionModel selectionModel = new DefaultTreeSelectionModel();
+            selectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+            tree.setSelectionModel(selectionModel);
+            tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "open"); // NOI18N
+            tree.getActionMap().put("open", new AbstractAction() { // NOI18N
+                public void actionPerformed(ActionEvent e) {
+                    TreePath selPath = selectionModel.getLeadSelectionPath();
+                    TreeNodeAdapter tna = (TreeNodeAdapter)selPath.getLastPathComponent();
+                    openAndFocusElement(tna, false);
+                }
+            });
             
             JScrollPane treeView = new JScrollPane(tree);
             treeView.setBorder(BorderFactory.createEmptyBorder());
