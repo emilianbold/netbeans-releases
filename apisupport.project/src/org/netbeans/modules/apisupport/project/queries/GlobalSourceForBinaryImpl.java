@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project.queries;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -140,11 +141,23 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                     if (entryFO != null) {
                         candidates.add(entryFO);
                     }
-                } // dirs are currently resolved by o.n.m.apisupport.project.queries.SourceForBinaryImpl
+                } else {
+                    // Does not resolve nbjunit and similar from ZIPped
+                    // sources. Not a big issue since the default distributed
+                    // sources do not contain them anyway.
+                    String relPath = resolveSpecialNBSrcPath(binaryRoot);
+                    if (relPath == null) {
+                        continue;
+                    }
+                    URL url = new URL(roots[i], relPath);
+                    FileObject dir = URLMapper.findFileObject(url);
+                    if (dir != null) {
+                        candidates.add(dir);
+                    } // others dirs are currently resolved by o.n.m.apisupport.project.queries.SourceForBinaryImpl
+                }
             }
             return new SourceForBinaryQuery.Result() {
                 public FileObject[] getRoots() {
-//                    return new FileObject[0];
                     return (FileObject[]) candidates.toArray(new FileObject[candidates.size()]);
                 }
                 public void addChangeListener(ChangeListener l) {}
@@ -153,6 +166,23 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         } catch (IOException ex) {
             throw new AssertionError(ex);
         }
+    }
+    
+    private String resolveSpecialNBSrcPath(URL binaryRoot) throws MalformedURLException {
+        String binaryRootS = binaryRoot.toExternalForm();
+        String result = null;
+        if (binaryRootS.startsWith("jar:file:")) { // NOI18N
+            if (binaryRootS.endsWith("/testtools/modules/ext/nbjunit.jar!/")) { // NOI18N
+                result = "xtest/nbjunit/src/"; // NOI18N
+            } else if (binaryRootS.endsWith("/testtools/modules/ext/nbjunit-ide.jar!/")) { // NOI18N
+                result = "xtest/nbjunit/src/"; // NOI18N
+            } else if (binaryRootS.endsWith("/testtools/modules/ext/insanelib.jar!/")) { // NOI18N
+                result = "performance/insanelib/src/"; // NOI18N
+            } else {
+                result = null;
+            }
+        }
+        return result;
     }
     
     public static final class NetBeansSourcesParser {

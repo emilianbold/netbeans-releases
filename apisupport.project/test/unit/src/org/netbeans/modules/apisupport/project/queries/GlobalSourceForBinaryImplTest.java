@@ -25,6 +25,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 /**
@@ -81,6 +82,20 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
         NbPlatform.getDefaultPlatform().addSourceRoot(Util.urlForJar(nbSrcZip));
         URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"));
         SourceForBinaryQuery.findSourceRoots(loadersURL).getRoots();
+    }
+    
+    public void testResolveSpecialNBSrcPaths() throws Exception {
+        assertResolved("testtools/modules/ext/nbjunit.jar", "xtest/nbjunit/src");
+        assertResolved("testtools/modules/ext/nbjunit-ide.jar", "xtest/nbjunit/src");
+        assertResolved("testtools/modules/ext/insanelib.jar", "performance/insanelib/src");
+    }
+    
+    private void assertResolved(String jarInNBBuild, String dirInNBSrc) {
+        File jarFile = new File(file("nbbuild/netbeans"), jarInNBBuild);
+        assertEquals("right result for " + jarFile.getAbsolutePath(),
+                Collections.singletonList(FileUtil.toFileObject((file(dirInNBSrc)))),
+                Arrays.asList(SourceForBinaryQuery.findSourceRoots(Util.urlForJar(jarFile)).getRoots()));
+        
     }
     
     private File generateNbSrcZip(String topLevelEntry) throws IOException {
