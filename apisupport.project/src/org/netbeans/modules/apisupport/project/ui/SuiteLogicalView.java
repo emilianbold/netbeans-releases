@@ -154,6 +154,11 @@ public final class SuiteLogicalView implements LogicalViewProvider {
     /** Represent <em>Modules</em> node in the Suite Logical View. */
     static final class ModulesNode extends AbstractNode implements Runnable {
         
+        public static final String SUITE_MODULES_ICON_PATH =
+                "org/netbeans/modules/apisupport/project/suite/resources/suiteModules.gif"; // NOI18N
+        public static final String SUITE_MODULES_OPENED_ICON_PATH =
+                "org/netbeans/modules/apisupport/project/suite/resources/suiteModulesOpened.gif"; // NOI18N
+        
         private RequestProcessor.Task task;
         private SuiteProject suite;
         
@@ -182,6 +187,14 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         public void run() {
             setChildren(createSuiteComponentNodes(suite));
+        }
+        
+        public Image getIcon(int type) {
+            return Utilities.loadImage(SUITE_MODULES_ICON_PATH);
+        }
+        
+        public Image getOpenedIcon(int type) {
+            return Utilities.loadImage(SUITE_MODULES_OPENED_ICON_PATH);
         }
         
     }
