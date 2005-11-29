@@ -320,19 +320,19 @@ public class ReflectionHelper {
         try {
             if ("java.lang.String".equals(parameterClassName))
                 parameterClass = String.class;
-            else if ("int".equals(parameterClassName))
+            else if ("int".equals(parameterClassName) || "java.lang.Integer".equals(parameterClassName)) //NOI18N
                 parameterClass = Integer.class;
-            else if ("long".equals(parameterClassName))
+            else if ("long".equals(parameterClassName) || "java.lang.Long".equals(parameterClassName)) //NOI18N
                 parameterClass = Long.class;
-            else if ("byte".equals(parameterClassName))
+            else if ("byte".equals(parameterClassName) || "java.lang.Byte".equals(parameterClassName)) //NOI18N
                 parameterClass = Byte.class;
-            else if ("float".equals(parameterClassName))
+            else if ("float".equals(parameterClassName) || "java.lang.Float".equals(parameterClassName)) //NOI18N
                 parameterClass = Float.class;
-            else if ("double".equals(parameterClassName))
+            else if ("double".equals(parameterClassName) || "java.lang.Double".equals(parameterClassName)) //NOI18N
                 parameterClass = Double.class;  
-            else if ("boolean".equals(parameterClassName))
+            else if ("boolean".equals(parameterClassName) || "java.lang.Boolean".equals(parameterClassName)) //NOI18N
                 parameterClass = Boolean.class;   
-            else if ("char".equals(parameterClassName))
+            else if ("char".equals(parameterClassName) || "java.lang.Character".equals(parameterClassName)) //NOI18N
                 parameterClass = Character.class;
             else
                 parameterClass = Class.forName(inPackageName + "." + parameterClassName,true,urlClassLoader);
@@ -473,6 +473,8 @@ public class ReflectionHelper {
                         newClasses[i]=int[].class;
                     else if (Long[].class==paramClasses[i])
                         newClasses[i]=long[].class;
+                    else if (Byte[].class==paramClasses[i])
+                        newClasses[i]=byte[].class;
                     else if (Float[].class==paramClasses[i])
                         newClasses[i]=float[].class;
                     else if (Double[].class==paramClasses[i])

@@ -856,6 +856,8 @@ public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener
             } else if(currentType.equals(byte.class.getName()) ||
             currentType.equals(Byte.class.getName())) {
                 value  = new Byte("0");
+            } else if("byte[]".equals(currentType)) {
+                value  = new Byte[]{};               
             } else if(currentType.equals(boolean.class.getName()) ||
             currentType.equals(Boolean.class.getName())) {
                 value = new Boolean(false);
