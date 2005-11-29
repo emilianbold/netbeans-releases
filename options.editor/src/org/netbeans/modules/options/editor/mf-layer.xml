@@ -712,6 +712,12 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Processes.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-progress-module-ProgressListAction.instance"/>
                 </file>
+                <file name="Customize.shadow">
+                    <attr name="originalFile" stringvalue="Actions/View/org-openide-actions-CustomizeAction.instance"/>
+                </file>
+                <file name="CustomizeBreakpoint.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-LineBreakpointCustomizeAction.instance"/>
+                </file>
             </folder>
         </folder>
     </folder>
