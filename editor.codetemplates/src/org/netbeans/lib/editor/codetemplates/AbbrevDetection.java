@@ -73,8 +73,6 @@ PropertyChangeListener, KeyListener {
     /** Document for which this abbreviation detection was constructed. */
     private Document doc;
     
-    private Class kitClass;
-
     /**
      * Offset after the last typed character of the collected abbreviation.
      */
@@ -98,10 +96,6 @@ PropertyChangeListener, KeyListener {
             doc.addDocumentListener(this);
         }
 
-        kitClass = (doc instanceof BaseDocument)
-            ? ((BaseDocument)doc).getKitClass()
-            : org.netbeans.editor.BaseKit.class;
-
         Settings.addSettingsChangeListener(this);
         
         // Load the settings
@@ -112,6 +106,11 @@ PropertyChangeListener, KeyListener {
     }
 
     public void settingsChange(SettingsChangeEvent evt) {
+        Document d = doc;
+        Class kitClass = (d instanceof BaseDocument)
+            ? ((BaseDocument)d).getKitClass()
+            : org.netbeans.editor.BaseKit.class;
+
         expandAcceptor = SettingsUtil.getAcceptor(kitClass, SettingsNames.ABBREV_EXPAND_ACCEPTOR, AcceptorFactory.FALSE);
         resetAcceptor = SettingsUtil.getAcceptor(kitClass, SettingsNames.ABBREV_RESET_ACCEPTOR, AcceptorFactory.TRUE);
     }
@@ -153,6 +152,8 @@ PropertyChangeListener, KeyListener {
             if (doc != null) {
                 doc.addDocumentListener(this);
             }
+            
+            settingsChange(null);
         }
     }
     
