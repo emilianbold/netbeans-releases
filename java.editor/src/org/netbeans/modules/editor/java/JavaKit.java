@@ -263,9 +263,10 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             char insertedChar = str.charAt(0);
             if (insertedChar == '\"' || insertedChar == '\''){
                 boolean inserted = BracketCompletion.completeQuote(doc, dotPos, caret, insertedChar);
-                super.insertString(doc, dotPos, caret, str, overwrite);
                 if (inserted){
                     caret.setDot(dotPos+1);
+                }else{
+                    super.insertString(doc, dotPos, caret, str, overwrite);                    
                 }
             } else {
                 super.insertString(doc, dotPos, caret, str, overwrite);
@@ -297,11 +298,12 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                                     caretPosition, 
                                     caret, insertedChar);
                         }
-                        if (str != null && str.length() > 0) {
-                            doc.insertString(p0, str, null);
-                        }
                         if (inserted){
                             caret.setDot(caretPosition+1);
+                        } else {
+                            if (str != null && str.length() > 0) {
+                                doc.insertString(p0, str, null);
+                            }
                         }
                     } catch (BadLocationException e) {
                         e.printStackTrace();

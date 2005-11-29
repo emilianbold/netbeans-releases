@@ -585,12 +585,22 @@ class BracketCompletion {
         }
     }
 
-    if (eol && insideString){
-        return false; // do not complete
+    if (insideString){
+        if (eol){
+            return false; // do not complete
+        } else {
+            //#69524
+            char chr = doc.getChars(dotPos,1)[0];
+            if (chr == bracket){
+                doc.insertString(dotPos, "" + bracket , null); //NOI18N
+                doc.remove(dotPos, 1);
+                return true;
+            }
+        }
     }
     
     if ((completablePosition && !insideString) || eol){
-        doc.insertString(dotPos, "" + bracket , null);
+        doc.insertString(dotPos, "" + bracket + bracket , null); //NOI18N
         return true;
     }
     

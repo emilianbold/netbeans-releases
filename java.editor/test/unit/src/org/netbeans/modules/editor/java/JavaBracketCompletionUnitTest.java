@@ -302,6 +302,16 @@ public class JavaBracketCompletionUnitTest extends JavaBaseDocumentUnitTestCase 
         );
     }
     
+    public void testQuoteEaten() throws Exception {
+        setLoadDocumentText (
+            "|"
+        );
+        typeQuoteChar('"');
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote Eaten", 
+            "\"\"|"
+        );
+    }    
     
     // ------- Private methods -------------
     
@@ -315,9 +325,10 @@ public class JavaBracketCompletionUnitTest extends JavaBaseDocumentUnitTestCase 
         int pos = getCaretOffset();
         Caret caret = getCaret();
         boolean inserted = BracketCompletion.completeQuote(getDocument(), pos, caret, ch);        
-        getDocument ().insertString(pos, String.valueOf(ch), null);
         if (inserted){
             caret.setDot(pos+1);
+        }else{
+            getDocument ().insertString(pos, String.valueOf(ch), null);
         }
     }
     
