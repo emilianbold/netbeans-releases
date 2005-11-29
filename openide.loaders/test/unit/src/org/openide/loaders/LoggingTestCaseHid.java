@@ -79,7 +79,10 @@ public abstract class LoggingTestCaseHid extends NbTestCase {
             IOException ne = new IOException (iex.getMessage () + " Log:\n" + ErrManager.messages);
             ne.setStackTrace (iex.getStackTrace ());
             throw ne;	    
-	}
+	} finally {
+            // do not write to log files anymore
+            ErrManager.clear(getName(), System.err);
+        }
     }
     
     /** Allows subclasses to register content for the lookup. Can be used in 
