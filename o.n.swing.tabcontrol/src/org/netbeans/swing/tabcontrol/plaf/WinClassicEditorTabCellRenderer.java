@@ -61,6 +61,12 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
     protected int getCaptionYAdjustment() {
         return 0;
     }
+
+    public Dimension getPadding() {
+        Dimension d = super.getPadding();
+        d.width = isShowCloseButton() && !Boolean.getBoolean("nb.tabs.suppressCloseButton") ? 28 : 14;
+        return d;
+    }
     
     private static final Insets INSETS = new Insets(0, 2, 0, 10);
 

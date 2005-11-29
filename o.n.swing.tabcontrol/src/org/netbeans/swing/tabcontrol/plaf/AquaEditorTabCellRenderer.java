@@ -53,6 +53,12 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return -1;
     }
 
+    public Dimension getPadding() {
+        Dimension d = super.getPadding();
+        d.width = isShowCloseButton() && !Boolean.getBoolean("nb.tabs.suppressCloseButton") ? 23 : 13;
+        return d;
+    }
+
     private static class AquaTabPainter implements TabPainter {
         private static Insets insets = new Insets(TOP_INSET, LEFT_INSET,
                                                   BOTTOM_INSET, RIGHT_INSET);

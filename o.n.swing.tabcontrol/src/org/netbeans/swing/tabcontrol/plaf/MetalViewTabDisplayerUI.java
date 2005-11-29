@@ -142,9 +142,8 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 
                 tempRect.y = !showPin ? 0 : ((displayer.getHeight() / 2) -
                     (pinButton.getPreferredSize().height / 2));
-                int pinWidth = showPin ? 0 : pinButton.getPreferredSize().width;
-                txtWidth = (width - 2 * TXT_X_PAD) - pinWidth;
-                space4Icon = pinWidth + 5;
+                txtWidth = (width - 2 * TXT_X_PAD) - space4Pin;
+                space4Icon = space4Pin + 5;
             }
             txtWidth = (int)HtmlRenderer.renderString(text, g, x + TXT_X_PAD, height - 
                     fm.getDescent() - 4, txtWidth, height, getTxtFont(),

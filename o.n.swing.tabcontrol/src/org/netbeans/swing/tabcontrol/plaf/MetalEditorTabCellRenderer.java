@@ -45,6 +45,12 @@ class MetalEditorTabCellRenderer extends AbstractTabCellRenderer {
         return 0;
     }
 
+    public Dimension getPadding() {
+        Dimension d = super.getPadding();
+        d.width = isShowCloseButton() && !Boolean.getBoolean("nb.tabs.suppressCloseButton") ? 34 : 24;
+        return d;
+    }
+
     private static class MetalTabPainter implements TabPainter {
         public Insets getBorderInsets(Component c) {
             MetalEditorTabCellRenderer mtr = (MetalEditorTabCellRenderer) c;
