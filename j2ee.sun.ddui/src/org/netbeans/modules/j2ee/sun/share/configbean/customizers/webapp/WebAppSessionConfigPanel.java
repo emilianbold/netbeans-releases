@@ -68,11 +68,11 @@ public class WebAppSessionConfigPanel extends JPanel implements TableModelListen
 	private static final TextMapping [] persistenceTypes = {
 		new TextMapping("", ""), // NOI18N
 		new TextMapping("memory", webappBundle.getString("MEMORY_PERSISTENCE_TYPE")),	// NOI18N
-		new TextMapping("file", webappBundle.getString("FILE_PERSISTENCE_TYPE")),		// NOI18N
-//		new TextMapping("ha", webappBundle.getString("HA_PERSISTENCE_TYPE")),			// NOI18N
-//		new TextMapping("custom", webappBundle.getString("CUSTOM_PERSISTENCE_TYPE")),	// NOI18N
-//		new TextMapping("mmap", webappBundle.getString("MMAP_PERSISTENCE_TYPE")),		// NOI18N
-//		new TextMapping("s1ws60", webappBundle.getString("S1WS60_PERSISTENCE_TYPE")),		// NOI18N
+		new TextMapping("file", webappBundle.getString("FILE_PERSISTENCE_TYPE")),	// NOI18N
+		new TextMapping("ha", webappBundle.getString("HA_PERSISTENCE_TYPE")),		// NOI18N
+		new TextMapping("mmap", webappBundle.getString("MMAP_PERSISTENCE_TYPE")),	// NOI18N
+		new TextMapping("s1ws60", webappBundle.getString("S1WS60_PERSISTENCE_TYPE")),	// NOI18N
+		new TextMapping("custom", webappBundle.getString("CUSTOM_PERSISTENCE_TYPE")),	// NOI18N
 	};
 	
 	private WebAppRootCustomizer masterPanel;
