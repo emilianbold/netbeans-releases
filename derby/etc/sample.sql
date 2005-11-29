@@ -1,4 +1,4 @@
--- Script to create the Derby sample database. Run with :
+-- Script to create the Derby sample database. Run in the db/external directory using:
 -- 
 -- java -cp $DERBY_HOME/lib/derbytools.jar:$DERBY_HOME/lib/derby.jar org.apache.derby.tools.ij ../derby/etc/sample.sql
 
