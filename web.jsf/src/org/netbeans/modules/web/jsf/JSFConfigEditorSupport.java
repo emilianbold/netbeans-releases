@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.web.jsf;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -20,6 +22,7 @@ import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node.Cookie;
@@ -42,6 +45,10 @@ public class JSFConfigEditorSupport extends DataEditorSupport
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws java.io.IOException {
             JSFConfigDataObject obj = (JSFConfigDataObject) getDataObject ();
+            // invoke parsing before save
+            restartTimer();
+            obj.parsingDocument();
+            
             if (obj.isDocumentValid()) {
                 saveDocument();
             }else {
@@ -69,12 +76,37 @@ public class JSFConfigEditorSupport extends DataEditorSupport
     private RequestProcessor.Task parsingDocumentTask;
     /** Delay for automatic parsing - in miliseconds */
     private static final int AUTO_PARSING_DELAY = 2000;
-    private DocumentListener docListener = null;
     
     public JSFConfigEditorSupport(JSFConfigDataObject dobj) {
         super(dobj,new XmlEnv(dobj));
         dataObject = dobj;
-        setMIMEType("text/x-jsf+xml");
+        setMIMEType("text/x-jsf+xml");  //NOI18N
+        
+        //initialize the listeners on the document
+        initialize();
+    }
+    
+    
+    private void initialize() {
+        // Create DocumentListener
+        final DocumentListener docListener = new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) { change(e); }
+                public void changedUpdate(DocumentEvent e) { }
+                public void removeUpdate(DocumentEvent e) { change(e); }
+            
+                private void change(DocumentEvent e) {
+                    if (!dataObject.isNodeDirty()) restartTimer();
+                }
+            };
+        // the listener add only when the document is move to memory
+        addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())
+                        && isDocumentLoaded() && getDocument() != null) {
+                    getDocument().addDocumentListener(docListener);
+                }
+            }
+        });
     }
     
     /*
@@ -184,20 +216,6 @@ public class JSFConfigEditorSupport extends DataEditorSupport
             return false;
         }
         addSaveCookie();
-        
-        if (docListener == null){
-            // attach document listener
-            docListener = new DocumentListener() {
-                public void insertUpdate(DocumentEvent e) { change(e); }
-                public void changedUpdate(DocumentEvent e) { }
-                public void removeUpdate(DocumentEvent e) { change(e); }
-            
-                private void change(DocumentEvent e) {
-                    if (!dataObject.isNodeDirty()) restartTimer();
-                }
-            };
-            getDocument().addDocumentListener(docListener);
-        }
         return true;
     }
 

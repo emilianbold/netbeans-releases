@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.web.struts;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -42,6 +44,9 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws java.io.IOException {
             StrutsConfigDataObject obj = (StrutsConfigDataObject) getDataObject ();
+            // invoke parsing before save
+            restartTimer();
+            obj.parsingDocument();
             if (obj.isDocumentValid()) {
                 saveDocument();
             }else {
@@ -61,12 +66,36 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     private RequestProcessor.Task parsingDocumentTask;
     /** Delay for automatic parsing - in miliseconds */
     private static final int AUTO_PARSING_DELAY = 2000;
-    private DocumentListener docListener = null;
     
     public StrutsConfigEditorSupport(StrutsConfigDataObject dobj) {
         super(dobj,new XmlEnv(dobj));
         setMIMEType("text/x-struts+xml");                           //NOI18N
         dataObject = dobj;
+        //initialize the listeners on the document
+        initialize();
+    }
+    
+    private void initialize() {
+        // Create DocumentListener
+        final DocumentListener docListener = new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) { change(e); }
+                public void changedUpdate(DocumentEvent e) { }
+                public void removeUpdate(DocumentEvent e) { change(e); }
+            
+                private void change(DocumentEvent e) {
+                    if (!dataObject.isNodeDirty()) restartTimer();
+                }
+            };
+            
+        // the listener add only when the document is move to memory
+        addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())
+                        && isDocumentLoaded() && getDocument() != null) {
+                    getDocument().addDocumentListener(docListener);
+                }
+            }
+        });
     }
     
     /*
@@ -175,19 +204,6 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
 
         addSaveCookie();
 
-        if (docListener == null){
-            // attach document listener
-            docListener = new DocumentListener() {
-                public void insertUpdate(DocumentEvent e) { change(e); }
-                public void changedUpdate(DocumentEvent e) { }
-                public void removeUpdate(DocumentEvent e) { change(e); }
-            
-                private void change(DocumentEvent e) {
-                    if (!dataObject.isNodeDirty()) restartTimer();
-                }
-            };
-            getDocument().addDocumentListener(docListener);
-        }
         return true;
     }
 
