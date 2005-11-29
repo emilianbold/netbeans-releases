@@ -113,7 +113,7 @@ public final class DerbySupport {
         if (drivers.length == 0) {
             throw new IllegalStateException("derby driver not found"); // NOI18N
         }
-        DatabaseConnection con = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:1527/sample", "public", "APP", null, false);
+        DatabaseConnection con = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:1527/sample", "app", "APP", "app", true); // NOI18N
         ConnectionManager.getDefault().addConnection(con);
         return con;
     }
