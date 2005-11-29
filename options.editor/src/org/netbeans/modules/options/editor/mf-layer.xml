@@ -706,6 +706,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="All DTD actions.shadow">
                     <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-core-actions-CollectDTDAction.instance"/>
                 </file>
+                <file name="Open Recent Project.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RecentProjects.instance"/>
+                </file>
             </folder>
         </folder>
     </folder>
