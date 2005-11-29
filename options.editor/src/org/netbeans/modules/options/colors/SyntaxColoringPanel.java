@@ -255,64 +255,8 @@ PropertyChangeListener {
             DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
             if (dd.getValue () == DialogDescriptor.OK_OPTION) {
                 f = (Font) pe.getValue ();
-                String fontName = f.getName ();
-                Integer fontSize = new Integer (f.getSize ());
-                Boolean bold = Boolean.valueOf (f.isBold ());
-                Boolean italic = Boolean.valueOf (f.isItalic ());
-                if (fontName.equals (
-                    getDefault (currentLanguage, category, StyleConstants.FontFamily)
-                ))
-                    fontName = null;
-                if (fontSize.equals (
-                    getDefault (currentLanguage, category, StyleConstants.FontSize)
-                ))
-                    fontSize = null;
-                if (bold.equals (getDefault (currentLanguage, category, StyleConstants.Bold))
-                )
-                    bold = null;
-                else
-                if (bold.equals (Boolean.FALSE) &&
-                    getDefault (currentLanguage, category, StyleConstants.Bold) == null
-                )
-                    bold = null;
-                if (italic.equals (getDefault (currentLanguage, category, StyleConstants.Italic))
-                )
-                    italic = null;
-                else
-                if (italic.equals (Boolean.FALSE) &&
-                    getDefault (currentLanguage, category, StyleConstants.Italic) == null
-                )
-                    italic = null;
-                SimpleAttributeSet c = new SimpleAttributeSet (category);
-                if (fontName != null)
-                    c.addAttribute (
-                        StyleConstants.FontFamily,
-                        fontName
-                    );
-                else
-                    c.removeAttribute (StyleConstants.FontFamily);
-                if (fontSize != null)
-                    c.addAttribute (
-                        StyleConstants.FontSize,
-                        fontSize
-                    );
-                else
-                    c.removeAttribute (StyleConstants.FontSize);
-                if (bold != null)
-                    c.addAttribute (
-                        StyleConstants.Bold,
-                        bold
-                    );
-                else
-                    c.removeAttribute (StyleConstants.Bold);
-                if (italic != null)
-                    c.addAttribute (
-                        StyleConstants.Italic,
-                        italic
-                    );
-                else
-                    c.removeAttribute (StyleConstants.Italic);
-                replaceCurrrentCategory (c);
+                category = modifyFont (category, f);
+                replaceCurrrentCategory (category);
                 setToBeSaved (currentProfile, currentLanguage);
                 refreshUI (); // refresh font viewer
             }
@@ -770,8 +714,8 @@ PropertyChangeListener {
                 return getValue (ColorModel.ALL_LANGUAGES, defaultAS, key);
         }
         
-        if (key == StyleConstants.FontFamily) return "Monospaced";    // NOI18N
-        if (key == StyleConstants.FontSize) return getDefaultFontSize ();
+//        if (key == StyleConstants.FontFamily) return "Monospaced";    // NOI18N
+//        if (key == StyleConstants.FontSize) return getDefaultFontSize ();
         return null;
     }
     
@@ -788,6 +732,71 @@ PropertyChangeListener {
         int style = bold.booleanValue () ? Font.BOLD : Font.PLAIN;
         if (italic.booleanValue ()) style += Font.ITALIC;
         return new Font (name, style, size.intValue ());
+    }
+    
+    private AttributeSet modifyFont (AttributeSet category, Font f) {
+        String fontName = f.getName ();
+        Integer fontSize = new Integer (f.getSize ());
+        Boolean bold = Boolean.valueOf (f.isBold ());
+        Boolean italic = Boolean.valueOf (f.isItalic ());
+        boolean isDefault = "default".equals (
+            category.getAttribute (StyleConstants.NameAttribute)
+        );
+        if (fontName.equals (
+            getDefault (currentLanguage, category, StyleConstants.FontFamily)
+        ) && !isDefault)
+            fontName = null;
+        if (fontSize.equals (
+            getDefault (currentLanguage, category, StyleConstants.FontSize)
+        ) && !isDefault)
+            fontSize = null;
+        if (bold.equals (getDefault (currentLanguage, category, StyleConstants.Bold))
+        )
+            bold = null;
+        else
+        if (bold.equals (Boolean.FALSE) &&
+            getDefault (currentLanguage, category, StyleConstants.Bold) == null
+        )
+            bold = null;
+        if (italic.equals (getDefault (currentLanguage, category, StyleConstants.Italic))
+        )
+            italic = null;
+        else
+        if (italic.equals (Boolean.FALSE) &&
+            getDefault (currentLanguage, category, StyleConstants.Italic) == null
+        )
+            italic = null;
+        SimpleAttributeSet c = new SimpleAttributeSet (category);
+        if (fontName != null)
+            c.addAttribute (
+                StyleConstants.FontFamily,
+                fontName
+            );
+        else
+            c.removeAttribute (StyleConstants.FontFamily);
+        if (fontSize != null)
+            c.addAttribute (
+                StyleConstants.FontSize,
+                fontSize
+            );
+        else
+            c.removeAttribute (StyleConstants.FontSize);
+        if (bold != null)
+            c.addAttribute (
+                StyleConstants.Bold,
+                bold
+            );
+        else
+            c.removeAttribute (StyleConstants.Bold);
+        if (italic != null)
+            c.addAttribute (
+                StyleConstants.Italic,
+                italic
+            );
+        else
+            c.removeAttribute (StyleConstants.Italic);
+        
+        return c;
     }
     
     private String fontToString (AttributeSet category) {
