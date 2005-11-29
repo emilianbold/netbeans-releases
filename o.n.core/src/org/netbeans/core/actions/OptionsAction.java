@@ -97,9 +97,11 @@ public class OptionsAction extends CallableSystemAction {
                     JButton closeButton = new JButton(NbBundle.getMessage(OptionsAction.class, "CTL_close_button"));
                     closeButton.setMnemonic(NbBundle.getMessage(OptionsAction.class, "CTL_close_button_mnemonic").charAt(0));
                     closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OptionsAction.class, "ACSD_close_button"));
+                    String title = (String) OptionsAction.this.getValue 
+                        ("optionsDialogTitle");
                     DialogDescriptor dd = new DialogDescriptor(
                         InitPanel.getDefault(optionPanel),
-                        optionPanel.getName(),
+                        title == null ? optionPanel.getName() : title,
                         false,
                         new Object[] {closeButton},
                         closeButton,

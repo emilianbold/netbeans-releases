@@ -242,6 +242,7 @@ public class OptionsWindowAction extends AbstractAction {
                     CallableSystemAction a = (CallableSystemAction) 
                         SystemAction.findObject (clz, true);
                     a.putValue ("additionalActionName", loc ("CTL_Modern"));
+                    a.putValue ("optionsDialogTitle", loc ("CTL_Classic_Title"));
                     a.putValue (
                         "additionalActionListener", 
                         new OpenOptionsListener ()
