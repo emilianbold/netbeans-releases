@@ -100,6 +100,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jLabelJ2EE, gridBagConstraints);
+        jLabelJ2EE.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACSD_CustomizerRun_jLabelJ2EE"));
 
         jTextFieldJ2EE.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
