@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
 import org.netbeans.util.Util;
 import org.openide.ErrorManager;
@@ -343,6 +344,7 @@ public final class AutoUpgrade {
         SimpleAttributeSet a2 = (SimpleAttributeSet) m2.get (n2);
         if (a2 == null || a1 == null) return;
         a1.addAttributes (a2);
+        a1.addAttribute (StyleConstants.NameAttribute, n1);
     }
     
     private static List getFiles (
