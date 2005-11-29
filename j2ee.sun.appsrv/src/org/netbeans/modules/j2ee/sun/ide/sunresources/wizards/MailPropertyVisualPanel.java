@@ -40,7 +40,6 @@ public class MailPropertyVisualPanel extends javax.swing.JPanel implements Wizar
     private final MailPropertyPanel panel;
     private FieldGroup generalGroup;
     private FieldGroup propertiesGroup;
-    private boolean inProcessingTableChange = false;
     private PropertiesTableModel tableModel;
     private ResourceConfigHelper helper;
     private javax.swing.table.TableColumn propNameColumn;
@@ -199,15 +198,8 @@ public class MailPropertyVisualPanel extends javax.swing.JPanel implements Wizar
     }//GEN-LAST:event_removeButtonActionPerformed
     
     public void tableChanged(TableModelEvent evt) {
-        if (!inProcessingTableChange) {
-            setPropTableCellEditor();
-            inProcessingTableChange = true;
-            this.panel.fireChangeEvent();
-        }
-        /*else {
-           inProcessingTableChange = false;
-        }*/
-        
+        setPropTableCellEditor();
+        this.panel.fireChangeEvent();
     }
 
     public void setPropTableCellEditor() {

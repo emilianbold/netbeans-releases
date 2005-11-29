@@ -66,15 +66,16 @@ public class MailPropertyPanel implements WizardDescriptor.FinishPanel{
         if (component == null) {
             component = new MailPropertyVisualPanel(this);
         }
-        component.refreshFields();
         return component;
     }
     
-    public void setInitialFocus(){
-        if(component != null) {
+    public void refreshFields(){
+        if(component != null){
+            component.refreshFields();
             component.setInitialFocus();
-        }
+        }    
     }
+    
      
     public FieldGroup getFieldGroup(String groupName) {
         return FieldGroupHelper.getFieldGroup(wiz, groupName);
@@ -90,7 +91,7 @@ public class MailPropertyPanel implements WizardDescriptor.FinishPanel{
         for (int i = 0; i < vec.size(); i++) {
             NameValuePair pair = (NameValuePair)vec.elementAt(i);
             if (pair.getParamName() == null || pair.getParamValue() == null ||
-            pair.getParamName().length() == 0 || pair.getParamValue().length() == 0)
+                pair.getParamName().length() == 0 || pair.getParamValue().length() == 0)
                 return false;
         }
         return true;

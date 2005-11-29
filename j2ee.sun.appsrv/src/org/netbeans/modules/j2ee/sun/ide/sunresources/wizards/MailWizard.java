@@ -151,7 +151,7 @@ public final class MailWizard implements WizardDescriptor.InstantiatingIterator,
             throw new java.util.NoSuchElementException();
         
         if (index == 0){
-            ((MailPropertyPanel) panels[1]).setInitialFocus();
+            ((MailPropertyPanel) panels[1]).refreshFields();
         }
         index ++;
     }
