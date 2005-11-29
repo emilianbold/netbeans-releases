@@ -163,6 +163,8 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
                 ev.consume();
                 return true;
             }
+            
+            skipNextTyped = true;
 
             Component comp = ev.getComponent();
             if (!(comp instanceof JComponent) ||
@@ -170,7 +172,6 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
                     // not context api aware, don't pass subsequent events
                 processShortcut(ev);
                 // ignore processShortcut result, consume everything while in ctx
-                skipNextTyped = true;
                 return true; 
             }
         }
