@@ -1332,7 +1332,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     
     
     <exec os="Linux SunOS Solaris " dir="." executable="diff" failonerror="no" timeout="60000" >
-      <arg value="-u" />
+      <arg value="-U"/>
+      <arg value="15"/>
       <arg value="${check.public.packages.template}" />
       <arg value="${check.public.packages.generated}" />
     </exec>
@@ -1380,7 +1381,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     
     
     <exec os="Linux SunOS Solaris " dir="." executable="diff" failonerror="no" timeout="60000" >
-      <arg value="-u" />
+      <arg value="-U"/>
+      <arg value="15"/>
       <arg value="${check.friend.packages.template}" />
       <arg value="${check.friend.packages.generated}" />
     </exec>
@@ -1428,7 +1430,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     
     
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
-      <arg value="-u" />
+      <arg value="-U"/>
+      <arg value="15"/>
       <arg value="${check.shared.packages.template}" />
       <arg value="${check.shared.packages.generated}" />
     </exec>
@@ -1475,7 +1478,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     
     
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
-      <arg value="-u" />
+      <arg value="-U"/>
+      <arg value="15"/>
       <arg value="${check.external.libraries.template}" />
       <arg value="${check.external.libraries.generated}" />
     </exec>
@@ -1522,7 +1526,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     
     
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
-      <arg value="-u" />
+      <arg value="-U"/>
+      <arg value="15"/>
       <arg value="${check.modules.template}" />
       <arg value="${check.modules.generated}" />
     </exec>
@@ -1593,7 +1598,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     
     
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
-      <arg value="-u" />
+      <arg value="-U"/>
+      <arg value="15"/>
       <arg value="${check.dependencies.template}" />
       <arg value="${check.dependencies.generated}" />
     </exec>
@@ -1660,7 +1666,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
   <target name="check-files-layout" depends="generate-files-layout" >
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
-      <arg value="-u" />
+      <arg value="-U"/>
+      <arg value="15"/>
       <arg value="${check.files.layout.template}" />
       <arg value="${check.files.layout.generated}" />
     </exec>
