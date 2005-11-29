@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,6 +20,7 @@ import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.BooleanStateAction;
@@ -81,6 +82,9 @@ public final class DefaultAWTBridge extends org.netbeans.modules.openide.util.AW
                     col.addAll(Arrays.asList(convertComponents(toRet[i])));
                     atLeastOne = true;
                 } else {
+                    if (toRet[i] == null) {
+                        toRet[i] = new JSeparator();
+                    }
                     col.add(toRet[i]);
                 }
             }

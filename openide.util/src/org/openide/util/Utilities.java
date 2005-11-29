@@ -10,43 +10,68 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util;
 
-import javax.swing.JSeparator;
-import org.netbeans.modules.openide.util.AWTBridge;
-import org.openide.ErrorManager;
-import org.openide.util.actions.Presenter;
-
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
-import java.lang.reflect.*;
-
-import java.net.*;
-
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.BreakIterator;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-
+import java.util.Locale;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import java.util.Vector;
 import javax.swing.Action;
-import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
-
-
+import org.netbeans.modules.openide.util.AWTBridge;
+import org.openide.ErrorManager;
+import org.openide.util.actions.Presenter;
 
 /** Otherwise uncategorized useful static methods.
 *
@@ -2604,10 +2629,6 @@ widthcheck:  {
                 }
                 Component[] comps = AWTBridge.getDefault().convertComponents(item);
                 for (int v = 0; v < comps.length;v++) {
-                    Component comp = comps[v];
-                    if (comp == null) {
-                        comp = new JSeparator();
-                    }
                     if (comps[v] instanceof JSeparator && menu.getComponentCount() > 0 && menu.getComponent(menu.getComponentCount() - 1) instanceof JSeparator) {
 //                                System.out.println("ignorring separator");
                         //TODO improve condition.
