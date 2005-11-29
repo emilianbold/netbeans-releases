@@ -776,11 +776,10 @@ class LayoutFeeder implements LayoutConstants {
                                   && iDesc1.neighbor == iDesc2.neighbor);
 
         LayoutInterval parent = iDesc1.parent;
-        LayoutInterval seq;
-        int index;
+        LayoutInterval seq = null;
+        int index = 0;
         if (parent.isSequential()) {
             if (iDesc1.newSubGroup) {
-                seq = new LayoutInterval(SEQUENTIAL);
                 LayoutRegion space = addingSpace;
                 if (dimension == VERTICAL) { // count in a margin in vertical direction
                     // [because analyzeAdding uses it - maybe we should get rid of it completely]
@@ -790,10 +789,12 @@ class LayoutFeeder implements LayoutConstants {
                 }
                 LayoutInterval subgroup = extractParallelSequence(
                         parent, space, false, iDesc1.alignment); // dimension == VERTICAL
-                parent = subgroup;
-                index = 0;
+                if (subgroup != null) { // just for robustness - null only if something got screwed up
+                    seq = new LayoutInterval(SEQUENTIAL);
+                    parent = subgroup;
+                }
             }
-            else {
+            if (seq == null) {
                 seq = parent;
                 parent = seq.getParent();
                 index = iDesc1.index;
@@ -813,7 +814,6 @@ class LayoutFeeder implements LayoutConstants {
             else {
                 seq = new LayoutInterval(SEQUENTIAL);
                 seq.setAlignment(iDesc1.alignment);
-                index = 0;
             }
         }
 
@@ -2458,7 +2458,6 @@ class LayoutFeeder implements LayoutConstants {
             }
         }
 
-        best.index = index;
         best.snappedNextTo = nextTo;
         if (nextTo != null)
             best.fixedPosition = true;
@@ -2472,7 +2471,10 @@ class LayoutFeeder implements LayoutConstants {
             {   // subGroup goes next to a separating gap - which is likely superflous
                 // (the extracted parallel sequence in subGroup has its own gap)
                 layoutModel.removeInterval(separatingGap);
+                if (index >= gapIdx && index > 0)
+                    index--;
             }
+            int subIdx = index;
             if (subsubGroup != null && subsubGroup.getSubIntervalCount() > 0) {
                 LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
                 seq.setAlignment(best.alignment);
@@ -2480,15 +2482,17 @@ class LayoutFeeder implements LayoutConstants {
                 layoutModel.addInterval(seq, subGroup, -1);
                 // [should run optimizeGaps on subsubGroup?]
                 best.parent = seq;
-                best.index = extractAlign == LEADING ? 0 : seq.getSubIntervalCount();
+                index = extractAlign == LEADING ? 0 : seq.getSubIntervalCount();
             }
             else {
                 best.newSubGroup = true;
             }
-            operations.addContent(subGroup, commonSeq, index);
+            operations.addContent(subGroup, commonSeq, subIdx);
 
             updateMovedOriginalNeighbor();
         }
+
+        best.index = index;
     }
 
     private static boolean compatibleInclusions(IncludeDesc iDesc1, IncludeDesc iDesc2, int dimension) {
