@@ -44,6 +44,12 @@
             <property name="launcherUIDisplayTime">0</property>
             <property name="showConsole">False</property>
         </extendedProperty>
+        <extendedProperty name="macosxppk" type="com.installshield.wizard.platform.macosx.extras.MacOSXLauncherExtra">
+            <property name="fileName">uninstaller</property>
+            <property name="jvmNotFoundMessage">No Java Development Kit(JDK) was found on this system.</property>
+            <property name="launcherUIDisplayTime">0</property>
+            <property name="showConsole">False</property>
+        </extendedProperty>
         <extendedProperty name="solaris.launcher.extra.sparc" type="com.installshield.wizard.platform.solaris.extra.SolarisLauncherExtraSparc">
             <property name="fileName">uninstaller</property>
             <property name="jvmNotFoundMessage">No Java Development Kit(JDK) was found on this system.</property>
@@ -145,6 +151,25 @@
             </property>
             <property name="JVMResolution">1</property>
             <property name="bundledJVMArguments">-qq -o</property>
+            <property name="bundledJVMResource"/>
+            <property name="bundledJVMSource"/>
+            <property name="timeout">120</property>
+            <property name="useCurrentJVM">True</property>
+        </extendedProperty>
+        <extendedProperty name="macosxppk" type="com.installshield.wizard.platform.macosx.extras.MacOSXJVMResolutionExtra">
+            <property array="True" length="0" name="JVMFileResources" type="string"/>
+            <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+                <arrayItem type="com.installshield.util.jvm.JVMFile">
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk142macosx.jvm</property>
+                    <property name="fullSearch">False</property>
+                </arrayItem>
+                <arrayItem type="com.installshield.util.jvm.JVMFile">
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk15macosx.jvm</property>
+                    <property name="fullSearch">False</property>
+                </arrayItem>
+            </property>
+            <property name="JVMResolution">1</property>
+            <property name="bundledJVMArguments"/>
             <property name="bundledJVMResource"/>
             <property name="bundledJVMSource"/>
             <property name="timeout">120</property>
@@ -729,7 +754,7 @@
     <property name="outputDirectory">build</property>
     <property array="True" length="3" name="support" type="com.installshield.isje.build.BuildConfigurationSupport">
         <arrayItem type="com.installshield.isje.wizard.PlatformSupport">
-            <property array="True" length="4" name="builders" type="com.installshield.isje.build.ExtendedWizardBuilder">
+            <property array="True" length="5" name="builders" type="com.installshield.isje.build.ExtendedWizardBuilder">
                 <arrayItem type="com.ibm.wizard.platform.linux.LinuxBuilder">
                     <property name="rpmIntegrationEnabled">False</property>
                 </arrayItem>
@@ -738,6 +763,7 @@
                     <property name="pkgIntegrationEnabled">False</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.wizard.platform.win32.Win32Builder"/>
+                <arrayItem type="com.installshield.wizard.platform.macosx.MacOSXPlatformPackBuilder"/>
             </property>
         </arrayItem>
         <arrayItem type="com.installshield.isje.build.LanguageSupport">
@@ -751,7 +777,7 @@
             </property>
         </arrayItem>
         <arrayItem type="com.installshield.isje.build.DistributionSupport">
-            <property array="True" length="4" name="distributions" type="com.installshield.isje.build.Distribution">
+            <property array="True" length="5" name="distributions" type="com.installshield.isje.build.Distribution">
                 <arrayItem type="com.ibm.wizard.platform.linux.LinuxLauncherDistribution">
                     <property name="comments"/>
                     <property name="enabled">True</property>
@@ -854,6 +880,31 @@
                     <property name="showConsole">False</property>
                     <property name="JVMNotFoundMessage">No Java Development Kit(JDK) was found on this system.</property>
                     <property name="javaArguments">%IF_EXISTS%(&quot;INIT_JAVA_HEAP&quot;, &quot;@INIT_JAVA_HEAP@20m&quot;) %IF_EXISTS%(&quot;MAX_JAVA_HEAP&quot;, &quot;@MAX_JAVA_HEAP@60m&quot;)</property>
+                </arrayItem>
+                <arrayItem type="com.installshield.wizard.platform.macosx.extras.MacOSXLauncherDistribution">
+                    <property name="comments"/>
+                    <property name="enabled">True</property>
+                    <property name="fileName">setupMac.command</property>
+                    <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+                        <arrayItem type="com.installshield.util.jvm.JVMFile">
+                            <property name="fileName">$A(basedir)/../lib/resources/jdk142macosx.jvm</property>
+                            <property name="fullSearch">False</property>
+                        </arrayItem>
+                        <arrayItem type="com.installshield.util.jvm.JVMFile">
+                            <property name="fileName">$A(basedir)/../lib/resources/jdk15macosx.jvm</property>
+                            <property name="fullSearch">False</property>
+                        </arrayItem>
+                    </property>
+                    <property name="bundledJVMSource"/>
+                    <property array="True" length="0" name="embeddedJARs" type="string"/>
+                    <property array="True" length="0" name="additionalClassPaths" type="string"/>
+                    <property name="embedArchive">True</property>
+                    <property name="launcherUIDisplayTime">0</property>
+                    <property name="javaArguments">%IF_EXISTS%(&quot;INIT_JAVA_HEAP&quot;, &quot;@INIT_JAVA_HEAP@20m&quot;) %IF_EXISTS%(&quot;MAX_JAVA_HEAP&quot;, &quot;@MAX_JAVA_HEAP@60m&quot;)</property>
+                    <property name="wizardArguments"/>
+                    <property array="True" length="0" name="systemProperties" type="string"/>
+                    <property name="showConsole">False</property>
+                    <property name="JVMNotFoundMessage">No Java Development Kit(JDK) was found on this system.</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.wizard.platform.win32.Win32LauncherDistribution">
                     <property name="comments"/>

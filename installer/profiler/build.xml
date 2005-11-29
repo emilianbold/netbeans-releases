@@ -107,12 +107,14 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-win32" depends="init, compile, xsl-win32">
     <build-installer input.ismp.project="${ismp.project}-win32"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-mac.jar"/>
     <delete file="${ismp.project}-win32.uip"/>
   </target>
 
   <target name="build-win32-ml" depends="init, compile, xsl-win32, xsl-win32-ml">
     <build-installer input.ismp.project="${ismp.project}-win32-ml"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-mac-ml.jar"/>
     <delete file="${ismp.project}-win32.uip"/>
     <delete file="${ismp.project}-win32-ml.uip"/>
   </target>

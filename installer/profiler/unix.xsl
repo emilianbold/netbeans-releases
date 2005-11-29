@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     </xsl:copy>      
   </xsl:template>
 
-  <!-- Turn off system (GTK) LookAndFeel on Unix because the wizard looks really bad -->
+  <!-- Turn off system (GTK) LookAndFeel on Unix because the wizard looks really bad. Use Metal LookAndFeel on Linux/Solaris. -->
   <xsl:template match="section[@name='Installer']/wizard[@name='Install']/interface[@name='swing']/property[@name='useSystemLookAndFeel']">
     <property name="useSystemLookAndFeel">False</property>  
   </xsl:template>
@@ -28,9 +28,12 @@ Microsystems, Inc. All Rights Reserved.
     <property name="useSystemLookAndFeel">False</property>  
   </xsl:template>
   
-  <!-- turn off generation of Win32 installer -->
+  <!-- Turn off generation of Win32 and Mac installer -->
   <xsl:template match="section/buildConfiguration/property/arrayItem/property/arrayItem[@type='com.installshield.wizard.platform.win32.Win32LauncherDistribution']/property[@name='enabled']">
     <property name="enabled">False</property>  
   </xsl:template>
-  
+  <xsl:template match="section/buildConfiguration/property/arrayItem/property/arrayItem[@type='com.installshield.wizard.platform.macosx.extras.MacOSXLauncherDistribution']/property[@name='enabled']">
+    <property name="enabled">False</property>
+  </xsl:template>
+ 
 </xsl:stylesheet>

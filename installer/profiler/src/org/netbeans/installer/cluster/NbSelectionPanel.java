@@ -40,10 +40,11 @@ import org.netbeans.installer.Util;
  * List shows all found IDE installations.
  * Note: It is used by Profiler installer only now.
  */
-public class NbSelectionPanel extends DirectoryChooserPanel 
-{    
+public class NbSelectionPanel extends DirectoryChooserPanel {    
+    
     private String nbHome;
-    private static String BUNDLE = "$L(org.netbeans.installer.cluster.Bundle,";
+    
+    private static final String BUNDLE = "$L(org.netbeans.installer.cluster.Bundle,";
     
     public void build(WizardBuilderSupport support) {
         super.build(support);
@@ -104,7 +105,7 @@ public class NbSelectionPanel extends DirectoryChooserPanel
     public boolean queryExit(WizardBeanEvent event) {
         nbHome = getDestination();
         logEvent(this, Log.DBG, "nbHome: " + nbHome);
-        if (!validateNbDir(nbHome)) {
+        if (!validateNbDir()) {
             return false;
         }
         return validateDestination();
@@ -130,17 +131,121 @@ public class NbSelectionPanel extends DirectoryChooserPanel
         return new File(nbHome, resolveString(BUNDLE + "Product.clusterDir)")).getPath();
     }
 
-    /** Checks if there is NB cluster dir in selected NB installation directory
+    /** Checks if there is NB cluster dir in selected NB installation directory.
+     * If it fails at specific test try to check subdir on Mac OS X.
      */
-    private boolean validateNbDir (String nbHomeDir) {
+    private boolean validateNbDir () {
+        logEvent(this, Log.DBG,"Enter validateNbDir nbHome: " + nbHome);
         //Find nb cluster dir
-        if ("".equals(nbHomeDir)) {
+        if ("".equals(nbHome)) {
             //Empty string
             showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
             resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
             return false;
         }
-        File dir = new File(nbHomeDir);
+        File dir = new File(nbHome);
+        //isDirectory() returns true only if given dir exists and is directory
+        if (!dir.isDirectory()) {
+            //Entered dir does not exist
+            showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
+            resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
+            return false;
+        }
+        File [] files = dir.listFiles(new PlatformClusterFilter());
+        for (int i = 0; i < files.length; i++) {
+            logEvent(this,Log.DBG,"validateNbDir files[" + i + "]: " + files[i].getPath());
+        }
+        if (files.length == 0) {
+            //NB Cluster dir not found
+            if (Util.isMacOSX() && nbHome.endsWith(".app")) {
+                return validateNbDirMacOSX();
+            } else {
+                showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
+                resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
+                return false;
+            }
+        }
+
+        String minVersion = resolveString(BUNDLE + "NetBeans.platformMinClusterDirVersion)");
+        String maxVersion = resolveString(BUNDLE + "NetBeans.platformMaxClusterDirVersion)");
+        String basePlatformName = resolveString(BUNDLE + "NetBeans.platformClusterDirBase)");
+        String minClusterDir = basePlatformName + minVersion;
+        String maxClusterDir = basePlatformName + maxVersion;
+
+        if ((minClusterDir.length() > 0) && (maxClusterDir.length() > 0)) {
+            if (minClusterDir.compareTo(files[0].getName()) > 0) {
+                showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
+                resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
+                return false;
+            }
+            if (maxClusterDir.compareTo(files[0].getName()) < 0) {
+                showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
+                resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
+                return false;
+            }
+        } else if ((minClusterDir.length() > 0) && (maxClusterDir.length() == 0)) {
+            if (minClusterDir.compareTo(files[0].getName()) > 0) {
+                showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
+                resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
+                return false;
+            }
+        } else if ((minClusterDir.length() == 0) && (maxClusterDir.length() > 0)) {
+            if (maxClusterDir.compareTo(files[0].getName()) < 0) {
+                showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
+                resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
+                return false;
+            }
+        }
+
+        if (!files[0].isDirectory()) {
+            showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
+            resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
+            return false;
+        }
+        if (!files[0].canWrite()) {
+            showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
+            resolveString(BUNDLE + "NetBeansDirChooser.cannotWriteNbDir)"));
+            return false;
+        }
+        //Platform cluster dir check passed
+        //Check ide cluster dir
+        //Get string after base name like ie. strip base name from "platform5"
+        //to get "5".
+        String version = files[0].getName().substring(basePlatformName.length(),files[0].getName().length());
+        
+        String baseIdeName = resolveString(BUNDLE + "NetBeans.ideClusterDirBase)");
+        String ideClusterDir = baseIdeName + version;
+        
+        File f = new File(nbHome, ideClusterDir);
+        if (!f.isDirectory()) {
+            showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
+            resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
+            return false;
+        }
+        if (!f.canWrite()) {
+            showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
+            resolveString(BUNDLE + "NetBeansDirChooser.cannotWriteNbDir)"));
+            return false;
+        }
+        return true;
+    }
+    
+    /** Checks if there is NB cluster dir in selected NB installation directory
+     * on Mac OS X.
+     */
+    private boolean validateNbDirMacOSX () {
+        //Find nb cluster dir
+        nbHome = nbHome + resolveString(BUNDLE + "NetBeans.nbSubDir)");
+        
+        logEvent(this, Log.DBG,"Enter validateNbDirMacOSX nbHome: " + nbHome);
+        
+        if ("".equals(nbHome)) {
+            //Empty string
+            showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
+            resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
+            return false;
+        }
+        File dir = new File(nbHome);
         //isDirectory() returns true only if given dir exists and is directory
         if (!dir.isDirectory()) {
             //Entered dir does not exist
@@ -209,7 +314,7 @@ public class NbSelectionPanel extends DirectoryChooserPanel
         String baseIdeName = resolveString(BUNDLE + "NetBeans.ideClusterDirBase)");
         String ideClusterDir = baseIdeName + version;
 
-        File f = new File(nbHomeDir, ideClusterDir);
+        File f = new File(nbHome, ideClusterDir);
         if (!f.isDirectory()) {
             showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
             resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
