@@ -707,6 +707,22 @@ public class BaseOptions extends OptionSupport {
             file.loadSettings(false);
             defaultKeyBindingsMap = new HashMap(file.getAllProperties());
         }
+        
+        //#68762 - Basic keybinding broken for old editor kits
+        if (!usingNewOptions){
+            Object obj = super.getSettingValue(SettingsNames.KEY_BINDING_LIST);
+            boolean setSettings = true;
+            if (obj instanceof List){
+                List list = (List)obj;
+                setSettings = list.isEmpty();
+            }
+            if (setSettings){
+                super.setSettingValue(SettingsNames.KEY_BINDING_LIST,
+                        new ArrayList(defaultKeyBindingsMap.values()),
+                        KEY_BINDING_LIST_PROP);        
+            }
+            
+        }
     }
     
     private List getKBList(){
