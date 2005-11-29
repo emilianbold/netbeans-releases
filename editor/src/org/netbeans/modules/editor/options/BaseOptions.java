@@ -978,7 +978,7 @@ public class BaseOptions extends OptionSupport {
     
     /** Sets new coloring map to initializer map and if saveToXML is true,
      *  then new settings will be saved to XML file. */
-    public void setColoringMap(Map coloringMap, boolean saveToXML){
+    public void setColoringMap(final Map coloringMap, boolean saveToXML){
         Map diffMap = null;
         if (coloringMap != null) {
             if (inReadExternal) {
@@ -1006,7 +1006,12 @@ public class BaseOptions extends OptionSupport {
             }
             
             coloringMap.remove(null); // remove kit class
-            SettingsUtil.setColoringMap( getKitClass(), coloringMap, false );
+            
+            Settings.update(new Runnable() {
+                public void run() {
+                    SettingsUtil.setColoringMap( getKitClass(), coloringMap, false );
+                }
+            });
             
             coloringMapInitializer = SettingsUtil.getColoringMapInitializer(
             getKitClass(), coloringMap, false,
