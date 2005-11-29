@@ -151,9 +151,11 @@ public class JSFConfigUtilities {
         if (dd != null){
             try{
                 WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-                InitParam param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "com.sun.faces.validateXml"); //NOI18N
+                InitParam param = null;
+                if (webApp != null)
+                    param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "com.sun.faces.validateXml"); //NOI18N
                 if (param != null)
-                    value =   "true".equals(param.getParamValue().trim());
+                    value =   "true".equals(param.getParamValue().trim()); //NOI18N
             } catch (java.io.IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -166,7 +168,9 @@ public class JSFConfigUtilities {
         if (dd != null){
             try{
                 WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-                InitParam param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "com.sun.faces.verifyObjects"); //NOI18N
+                InitParam param = null;
+                if (webApp != null)
+                    param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "com.sun.faces.verifyObjects"); //NOI18N
                 if (param != null)
                     value = "true".equals(param.getParamValue().trim());
             } catch (java.io.IOException e) {
@@ -183,7 +187,8 @@ public class JSFConfigUtilities {
         InitParam param = null;
         try{
             WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-            param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "javax.faces.CONFIG_FILES"); //NOI18N
+            if (webApp != null)
+                param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "javax.faces.CONFIG_FILES"); //NOI18N
         } catch (java.io.IOException e) {
           ErrorManager.getDefault().notify(e);  
         }
