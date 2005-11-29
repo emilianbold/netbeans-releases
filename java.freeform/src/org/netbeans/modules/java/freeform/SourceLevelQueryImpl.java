@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -25,6 +26,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex.Action;
 import org.w3c.dom.Element;
 
 /**
@@ -49,7 +51,17 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntP
         this.helper.addAntProjectListener(this);
     }
     
-    public synchronized String getSourceLevel(FileObject file) {
+    public String getSourceLevel(final FileObject file) {
+        //#60638: the getSourceLevelImpl method takes read access on ProjectManager.mutex
+        //taking the read access before the private lock to prevent deadlocks.
+        return (String) ProjectManager.mutex().readAccess(new Action() {
+            public Object run() {
+                return getSourceLevelImpl(file);
+            }
+        });
+    }
+    
+    private synchronized String getSourceLevelImpl(FileObject file) {
         // Check for cached value.
         Iterator it = sourceLevels.entrySet().iterator();
         while (it.hasNext()) {
