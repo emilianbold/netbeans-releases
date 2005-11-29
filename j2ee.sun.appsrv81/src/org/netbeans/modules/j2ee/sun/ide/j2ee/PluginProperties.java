@@ -592,7 +592,6 @@ public class PluginProperties  {
                     ///  Util.showInformation(e.getLocalizedMessage(), NbBundle.getMessage(RegisterServerAction.class, "LBL_RegServerFailed"));
                 }
             }
-            RunTimeDDCatalog.getRunTimeDDCatalog().refresh();
             RegisterPointbase.getDefault().register(platformRoot);
         }
             
