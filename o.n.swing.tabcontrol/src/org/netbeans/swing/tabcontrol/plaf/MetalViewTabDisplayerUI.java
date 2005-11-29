@@ -274,7 +274,7 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         if (controller.isClosePressed() == index) {
             return "org/netbeans/swing/tabcontrol/resources/met-bigclose-pressed.gif";
         }
-        return isFocused(index) ?
+        return controller.isMouseInCloseButton() == index ?
                 "org/netbeans/swing/tabcontrol/resources/met-bigclose-focus.gif" :
                 "org/netbeans/swing/tabcontrol/resources/met-bigclose-normal.gif";
     }
