@@ -225,7 +225,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                         invalid(null);
                         progress(NbBundle.getMessage(CheckoutWizard.class, "BK2011"));
                         SocketFactory factory = SocketFactory.getDefault();
-                        if (proxyDescriptor != null && proxyDescriptor.isEffective()) {
+                        if (proxyDescriptor != null && proxyDescriptor.isEffective() && proxyDescriptor.needsProxy(root.getHostName())) {
                             ConnectivitySettings connectivitySettings = ClientRuntime.toConnectivitySettings(proxyDescriptor);
                             factory = new ClientSocketFactory(connectivitySettings);
                         }
