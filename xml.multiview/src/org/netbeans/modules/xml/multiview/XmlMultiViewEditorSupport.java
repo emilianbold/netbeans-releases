@@ -196,14 +196,14 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     protected CloneableTopComponent createCloneableTopComponent() {
         MultiViewDescription[] descs = getMultiViewDescriptions();
 
-        CloneableTopComponent mvtc =
+        final CloneableTopComponent mvtc =
                 MultiViewFactory.createCloneableMultiView(descs, descs[0], new MyCloseHandler(dObj));
 
         //#68896 hack - make the EditorCookie.Observable.getOpenedPanes() working
         //create a dummy Pane and set it to the TC
         mvtc.putClientProperty(PROP_PANE, new Pane() {
             public JEditorPane getEditorPane() { return new JEditorPane();}
-            public CloneableTopComponent getComponent() { return null; }
+            public CloneableTopComponent getComponent() { return mvtc; }
             public void updateName() {}
             public void ensureVisible() {}
         });
