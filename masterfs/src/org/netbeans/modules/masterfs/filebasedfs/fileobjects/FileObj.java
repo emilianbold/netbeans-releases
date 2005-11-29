@@ -25,11 +25,10 @@ import java.util.Enumeration;
 import org.netbeans.modules.masterfs.filebasedfs.Statistics;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
-import org.openide.ErrorManager;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Enumerations;
-import org.openide.util.NbBundle;
 
 /**
  * @author rm111737
@@ -109,6 +108,8 @@ final class FileObj extends BaseFileObj {
                 fex = (FileNotFoundException)new FileNotFoundException(e.getLocalizedMessage()).initCause(e);
             } else if (!f.getParentFile().exists()) {
                 fex = (FileNotFoundException)new FileNotFoundException(e.getLocalizedMessage()).initCause(e);
+            } else if ((new FileInfo(f)).isUnixSpecialFile()) {
+                fex = (FileNotFoundException) new FileNotFoundException(e.toString()).initCause(e);
             } else {
                 fex = (FileNotFoundException) new FileNotFoundException(e.toString()).initCause(e);
             }                        
