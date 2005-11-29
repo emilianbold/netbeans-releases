@@ -134,10 +134,13 @@ public final class PasteAction extends CallbackSystemAction {
                 // XXX Hack to get paste types from action 'performer',
                 // which in fact doesn't perform the paste.
                 // Look at ExplorerActions.OwnPaste#getValue method.
-                Object[] arr = (Object[]) ac.getValue("delegates"); // NOI18N
-
-                if ((arr != null) && (arr.length > 0) && arr [0] instanceof PasteType) {
-                    t = (PasteType) arr[0];
+                Object obj = ac.getValue("delegates"); // NOI18N
+                
+                if (obj instanceof PasteType []) {
+                    PasteType [] arr = (PasteType []) obj;
+                    if (arr.length > 0) {
+                        t = arr [0];
+                    }
                 } else {
                     ac.actionPerformed(ev);
 
