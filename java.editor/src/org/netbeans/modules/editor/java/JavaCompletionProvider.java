@@ -233,7 +233,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 doc = new MyJavaDoc(ui);
                 doc.setItem(item);
                 this.url = getURL(item);
-                Resource res = item instanceof Element ? ((Element)item).getResource() : null;
+                Resource res = (item instanceof Element && ((Element)item).isValid()) ? ((Element)item).getResource() : null;
                 if (res != null && res.getName().endsWith(".java")) //NOI18N
                     goToSource = new AbstractAction() {
                         public void actionPerformed(ActionEvent e) {
