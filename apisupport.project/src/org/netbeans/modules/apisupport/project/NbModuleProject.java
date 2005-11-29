@@ -109,6 +109,9 @@ public final class NbModuleProject implements Project {
     private LocalizedBundleInfo bundleInfo;
     
     private boolean manifestChanged;
+
+    /** See issue #69440 for more details. */
+    private boolean runInAtomicAction;
     
     NbModuleProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -396,7 +399,7 @@ public final class NbModuleProject implements Project {
         }
 
         public void configurationXmlChanged(AntProjectEvent ev) {
-            if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
+            if (!runInAtomicAction && ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
                 reset();
             }
         }
@@ -909,6 +912,13 @@ public final class NbModuleProject implements Project {
      */
     public LocalizedBundleInfo getBundleInfo() {
         return bundleInfo;
+    }
+    
+    
+    /** See issue #69440 for more details. */
+    public void setRunInAtomicAction(boolean runInAtomicAction) {
+        assert ProjectManager.mutex().isWriteAccess();
+        this.runInAtomicAction = runInAtomicAction;
     }
     
     private final class Info implements ProjectInformation, PropertyChangeListener {

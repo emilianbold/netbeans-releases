@@ -184,40 +184,45 @@ public final class SuiteUtils {
         try {
             subModule.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
-                    // remove both suite properties files
-                    FileObject subModuleDir = subModule.getProjectDirectory();
-                    FileObject fo = subModuleDir.getFileObject(
-                            "nbproject/suite.properties"); // NOI18N
-                    if (fo != null) {
-                        fo.delete();
-                    }
-                    fo = subModuleDir.getFileObject(
-                            "nbproject/private/suite-private.properties"); // NOI18N
-                    if (fo != null) {
-                        fo.delete();
-                    }
-                    
-                    // copy suite's platform.properties to the module (needed by standalone module)
-                    FileObject plafPropsFO = suiteProps.getProject().getProjectDirectory().
-                            getFileObject("nbproject/platform.properties"); // NOI18N
-                    FileObject subModuleNbProject = subModuleDir.getFileObject("nbproject"); // NOI18N
-                    if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
-                        FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
-                    }
-                    EditableProperties props = subModule.getHelper().getProperties(PRIVATE_PLATFORM_PROPERTIES);
-                    if (props.getProperty("user.properties.file") == null) { // NOI18N
-                        String nbuser = System.getProperty("netbeans.user"); // NOI18N
-                        if (nbuser != null) {
-                            props.setProperty("user.properties.file", new File(nbuser, "build.properties").getAbsolutePath()); // NOI18N
-                            subModule.getHelper().putProperties(PRIVATE_PLATFORM_PROPERTIES, props);
-                        } else {
-                            Util.err.log("netbeans.user system property is not defined. Skipping " + PRIVATE_PLATFORM_PROPERTIES + " creation."); // NOI18N
+                    subModule.setRunInAtomicAction(true);
+                    try {
+                        // remove both suite properties files
+                        FileObject subModuleDir = subModule.getProjectDirectory();
+                        FileObject fo = subModuleDir.getFileObject(
+                                "nbproject/suite.properties"); // NOI18N
+                        if (fo != null) {
+                            fo.delete();
                         }
+                        fo = subModuleDir.getFileObject(
+                                "nbproject/private/suite-private.properties"); // NOI18N
+                        if (fo != null) {
+                            fo.delete();
+                        }
+                        
+                        // copy suite's platform.properties to the module (needed by standalone module)
+                        FileObject plafPropsFO = suiteProps.getProject().getProjectDirectory().
+                                getFileObject("nbproject/platform.properties"); // NOI18N
+                        FileObject subModuleNbProject = subModuleDir.getFileObject("nbproject"); // NOI18N
+                        if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
+                            FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
+                        }
+                        EditableProperties props = subModule.getHelper().getProperties(PRIVATE_PLATFORM_PROPERTIES);
+                        if (props.getProperty("user.properties.file") == null) { // NOI18N
+                            String nbuser = System.getProperty("netbeans.user"); // NOI18N
+                            if (nbuser != null) {
+                                props.setProperty("user.properties.file", new File(nbuser, "build.properties").getAbsolutePath()); // NOI18N
+                                subModule.getHelper().putProperties(PRIVATE_PLATFORM_PROPERTIES, props);
+                            } else {
+                                Util.err.log("netbeans.user system property is not defined. Skipping " + PRIVATE_PLATFORM_PROPERTIES + " creation."); // NOI18N
+                            }
+                        }
+                        
+                        SuiteUtils.setNbModuleType(subModule, NbModuleTypeProvider.STANDALONE);
+                        // save subModule
+                        ProjectManager.getDefault().saveProject(subModule);
+                    } finally {
+                        subModule.setRunInAtomicAction(false);
                     }
-                    
-                    SuiteUtils.setNbModuleType(subModule, NbModuleTypeProvider.STANDALONE);
-                    // save subModule
-                    ProjectManager.getDefault().saveProject(subModule);
                 }
             });
             
