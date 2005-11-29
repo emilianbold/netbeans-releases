@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,20 +16,23 @@ package org.netbeans.modules.project.ui.actions;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectChooserAccessory;
 import org.netbeans.modules.project.ui.ProjectTab;
-import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
@@ -48,6 +51,23 @@ public class OpenProject extends BasicAction {
     public void actionPerformed( ActionEvent evt ) {
         JFileChooser chooser = ProjectChooserAccessory.createProjectChooser( true ); // Create the jFileChooser
         chooser.setMultiSelectionEnabled( true );
+        
+        // Check to see if the current selection matches a file/folder owned by a non-open project;
+        // if so, use that as the starting directory, as a convenience in case that is what should be opened.
+        Iterator it = Utilities.actionsGlobalContext().lookup(new Lookup.Template(DataObject.class)).allInstances().iterator();
+        while (it.hasNext()) {
+            // XXX may also want to check lookup for FileObject
+            DataObject d = (DataObject) it.next();
+            Project selected = FileOwnerQuery.getOwner(d.getPrimaryFile());
+            if (selected != null && !OpenProjectList.getDefault().isOpen(selected)) {
+                File dir = FileUtil.toFile(selected.getProjectDirectory());
+                if (dir != null) {
+                    chooser.setCurrentDirectory(dir.getParentFile());
+                    chooser.setSelectedFiles(new File[] {dir});
+                    break;
+                }
+            }
+        }
         
         OpenProjectListSettings opls = OpenProjectListSettings.getInstance();
         
