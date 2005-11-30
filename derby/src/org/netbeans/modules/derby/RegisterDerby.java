@@ -228,7 +228,8 @@ public class RegisterDerby implements DatabaseRuntime {
 
             JDBCDriver jdbcDriver = getRegisteredDerbyDriver();
             DatabaseConnection cinfo = DatabaseConnection.create(jdbcDriver, url, user, 
-                    "APP", setupAuthentication ? password : null, setupAuthentication); // NOI18N
+                    setupAuthentication ? user.toUpperCase() : "APP", // NOI18N
+                    setupAuthentication ? password : null, setupAuthentication);
 
             ConnectionManager cm = ConnectionManager.getDefault();
             cm.addConnection(cinfo);
