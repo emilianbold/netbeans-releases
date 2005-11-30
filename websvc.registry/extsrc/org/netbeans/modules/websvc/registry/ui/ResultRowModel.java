@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.websvc.registry.ui;
 
+import com.sun.xml.rpc.processor.model.java.JavaArrayType;
+import java.lang.reflect.Array;
 import org.netbeans.swing.outline.RowModel;
 import org.openide.ErrorManager;
 
@@ -60,9 +62,13 @@ public class ResultRowModel implements RowModel {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)inNode;
         if(null == node.getUserObject()) return null;
         NodeData data = (NodeData)node.getUserObject();
+
         switch(column) {
        //     case 0: return data.getResultType().getRealName();
             case 0: {
+                if (data.getNodeType() instanceof JavaArrayType) {
+                    return "[]";
+                }
                 Object val = data.getNodeValue();
                 if (val instanceof java.util.Calendar)
                     return java.text.DateFormat.getDateTimeInstance().format(((java.util.Calendar)val).getTime());
