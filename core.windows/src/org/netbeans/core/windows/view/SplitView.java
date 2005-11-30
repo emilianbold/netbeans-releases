@@ -44,6 +44,8 @@ public class SplitView extends ViewElement {
     
     private MultiSplitPane splitPane;
     
+    private boolean isDirty = false;
+    
     public SplitView(Controller controller, double resizeWeight, 
                         int orientation, List splitWeights, List children) {
         super(controller, resizeWeight);
@@ -82,6 +84,7 @@ public class SplitView extends ViewElement {
             if( null != splitPane ) {
                 splitPane.removeViewElementAt( index );
             }
+            isDirty = true; //force invalidation of splitpane
         }
     }
     
@@ -91,6 +94,8 @@ public class SplitView extends ViewElement {
         
         assert children.size() == splitWeights.size();
         
+        isDirty = true; //force invalidation of splitpane
+        
         if( null != splitPane ) {
             updateSplitPane();
         }
@@ -99,7 +104,8 @@ public class SplitView extends ViewElement {
     public boolean updateAWTHierarchy(Dimension availableSpace) {
         boolean res = false;
         
-        if( !availableSpace.equals( getSplitPane().getSize() ) ) { 
+        if( !availableSpace.equals( getSplitPane().getSize() ) || isDirty ) { 
+            isDirty = false;
             getSplitPane().setSize( availableSpace );
             getSplitPane().invalidate();
             res = true;
