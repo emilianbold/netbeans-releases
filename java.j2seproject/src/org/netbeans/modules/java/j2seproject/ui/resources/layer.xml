@@ -60,4 +60,9 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-j2seproject-ui-FoldersList.settings" url="foldersList.settings"/>
     </folder>
 
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="CopyLibs.xml" url="CopyLibs.xml"/>
+        </folder>
+    </folder>
 </filesystem>

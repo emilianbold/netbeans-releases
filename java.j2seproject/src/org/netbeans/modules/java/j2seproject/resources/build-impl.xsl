@@ -135,7 +135,7 @@ is divided into following sections:
                 <condition property="manifest.available+main.class+mkdist.available">
                     <and>
                         <istrue value="${{manifest.available+main.class}}"/>
-                        <available classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs"/>
+                        <isset property="libs.CopyLibs.classpath"/>
                     </and>
                 </condition>
                 <xsl:call-template name="createRootAvailableTest">
@@ -651,7 +651,7 @@ is divided into following sections:
                         <globmapper from="*" to="lib/*"/>
                     </chainedmapper>
                 </pathconvert>        
-                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs"/>
+                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
                 <copylibs manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
                     <fileset dir="${{build.classes.dir}}"/>
                     <manifest>

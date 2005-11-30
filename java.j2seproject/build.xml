@@ -16,13 +16,14 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="-jar-ant">
 	<ant dir="copylibstask" target="jar" inheritall="false" />
-	<copy file="copylibstask/dist/org-netbeans-modules-java-j2seproject-copylibstask.jar" todir="${cluster}/ant/lib/" />
+	<mkdir dir="${cluster}/ant/extra/"/>
+	<copy file="copylibstask/dist/org-netbeans-modules-java-j2seproject-copylibstask.jar" todir="${cluster}/ant/extra/" />
     </target>    
 				
     <target name="netbeans-extra" depends="-jar-ant"/>
 
     <target name="clean" depends="projectized-common.clean">
         <ant dir="copylibstask" target="clean" inheritall="false" />
-        <delete file="${cluster}/ant/lib/org-netbeans-modules-java-j2seproject-copylibstask.jar"/>
+        <delete file="${cluster}/ant/extra/org-netbeans-modules-java-j2seproject-copylibstask.jar"/>
     </target>
 </project>
