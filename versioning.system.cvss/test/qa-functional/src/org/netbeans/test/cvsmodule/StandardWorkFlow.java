@@ -9,6 +9,7 @@
 package org.netbeans.test.cvsmodule;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import javax.swing.ListModel;
 import javax.swing.table.TableModel;
@@ -23,6 +24,7 @@ import org.netbeans.jellytools.modules.javacvs.BranchOperator;
 import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.CommitOperator;
+import org.netbeans.jellytools.modules.javacvs.DiffOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.ProxyConfigurationOperator;
 import org.netbeans.jellytools.modules.javacvs.SearchHistoryOperator;
@@ -32,11 +34,11 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.DialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
@@ -77,6 +79,8 @@ public class StandardWorkFlow extends JellyTestCase {
         suite.addTest(new StandardWorkFlow("testCreateBranchForProject"));
         suite.addTest(new StandardWorkFlow("testSwitchProjectToBranch"));
         suite.addTest(new StandardWorkFlow("testDiffFile"));
+        suite.addTest(new StandardWorkFlow("testExportDiffPatch"));
+        suite.addTest(new StandardWorkFlow("testResolveConflicts"));
         suite.addTest(new StandardWorkFlow("testRevertModifications"));
         suite.addTest(new StandardWorkFlow("testShowAnnotations"));
         suite.addTest(new StandardWorkFlow("testSearchHistory"));
@@ -459,15 +463,135 @@ public class StandardWorkFlow extends JellyTestCase {
         Thread.sleep(1000);
         cvss.stop();
         
-        Node nodeClass = new Node(new SourcePackagesNode("ForImport"), "forimport|Main.java");
+        Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
         nodeIDE = (org.openide.nodes.Node) nodeClass.getOpenideNode();
         color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong color for modified file", TestKit.MODIFIED_COLOR, color);
-        //
+        
+        //verify next button
+        DiffOperator diffOp = new DiffOperator("Main.java");
+        TimeoutExpiredException afee = null;
+        diffOp.next();
+        diffOp.next();
+        try {
+            diffOp.next();
+        } catch (TimeoutExpiredException e) {
+            afee = e;
+        }
+        assertNotNull("TimeoutExpiredException was expected.", afee);
+        
+        //verify previous button
+        afee = null;
+        diffOp.previous();
+        diffOp.previous();
+        try {
+            diffOp.previous();
+        } catch (TimeoutExpiredException e) {
+            afee = e;
+        }
+        assertNotNull("TimeoutExpiredException was expected.", afee);
+        
+        //refresh button
+        oo = OutputOperator.invoke();
+        oto = oo.getOutputTab(sessionCVSroot);
+        oto.clear();
+        in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "diff/refresh.in");
+        cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
+        diffOp.refresh();
+        oto.waitText("Refreshing CVS Status finished");
+        cvss.stop();
+        Thread.sleep(1000);
+        
+        //update button
+        oo = OutputOperator.invoke();
+        oto = oo.getOutputTab(sessionCVSroot);
+        oto.clear();
+        in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "diff/refresh.in");
+        cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
+        diffOp.update();
+        oto.waitText("Updating Sources finished");
+        cvss.stop();
+        Thread.sleep(1000);
+        
+        //commit button
+        CommitOperator co = diffOp.commit();
+        JTableOperator table = co.tabFiles();
+        assertEquals("There should be only one file!", 1, table.getRowCount());
+        assertEquals("There should be Main.java file only!", "Main.java", table.getValueAt(0, 0));
+        co.cancel();
         
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
         eo.closeAllDocuments();
         TestKit.deleteRecursively(cacheFolder);
+    }
+    
+    public void testExportDiffPatch() throws Exception {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
+        PseudoCvsServer cvss, cvss2, cvss3;
+        InputStream in, in2, in3;
+        OutputOperator oo;
+        OutputTabOperator oto;
+        org.openide.nodes.Node nodeIDE;
+        String color, CVSroot;
+        
+        Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
+        //nodeClass.select();
+        nodeClass.performMenuActionNoBlock("CVS|Export \"Main.java\" Diff Patch...");
+        NbDialogOperator dialog = new NbDialogOperator("Export Diff Patch");
+        JTextFieldOperator tf = new JTextFieldOperator(dialog, 0);
+        String patchFile = "/tmp/patch" + System.currentTimeMillis(); 
+        File file = new File(patchFile);
+        file.createNewFile();
+        tf.setText(file.getCanonicalFile().toString());
+        JButtonOperator btnExport = new JButtonOperator(dialog, "export");
+        oo = OutputOperator.invoke();
+        oto = oo.getOutputTab(sessionCVSroot);
+        oto.clear();
+        in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "diff/export_diff.in");
+        cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
+        btnExport.push();
+        oto.waitText("Diff Patch finished");
+        cvss.stop();
+        Thread.sleep(1000);
+        //test file existence
+        assertTrue("Diff Patch file wasn't created!", file.isFile());
+        //assertTrue("File length shouldn't be 0!", file.length() > 0);
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+    }
+    
+    public void testResolveConflicts() throws Exception {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
+        PseudoCvsServer cvss, cvss2, cvss3;
+        InputStream in, in2, in3;
+        OutputOperator oo;
+        OutputTabOperator oto;
+        org.openide.nodes.Node nodeIDE;
+        String color, CVSroot;
+        
+        Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
+        oo = OutputOperator.invoke();
+        oto = oo.getOutputTab(sessionCVSroot);
+        oto.clear();
+        in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "diff/create_conflict.in");
+        cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
+        nodeClass.performPopupAction("CVS|Update");
+        oto.waitText("cvs server: conflicts found in Main.java");
+        oto.waitText("Updating \"Main.java\" finished");
+        Thread.sleep(1000);
+        cvss.stop();
+        
+        nodeIDE = (org.openide.nodes.Node) nodeClass.getOpenideNode();
+        color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+        assertEquals("Wrong color for file in conflict", TestKit.CONFLICT_COLOR, color);
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
     
     public void testCreateBranchForProject() throws Exception {
