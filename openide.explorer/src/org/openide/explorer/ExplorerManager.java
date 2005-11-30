@@ -876,6 +876,11 @@ bigloop:
             }
 
             newSel.removeAll(remove);
+            for( Iterator i=newSel.iterator(); i.hasNext(); ) {
+                Node n = (Node)i.next();
+                if( !isUnderRoot( n ) )
+                    i.remove();
+            }
 
             Node[] selNodes = (Node[]) newSel.toArray(new Node[newSel.size()]);
             setSelectedNodes0(selNodes);
