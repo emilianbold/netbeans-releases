@@ -30,6 +30,10 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -48,17 +52,19 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private String srcFolder;
     private String classpath;
     
+    private WizardDescriptor wizardDescriptor;
+    
     /** Creates new form WebLocations */
-    public WebLocationsPanel() {
+    public WebLocationsPanel(WizardDescriptor wizardDescriptor) {
         initComponents();
-        
+        this.wizardDescriptor = wizardDescriptor;
         jComboBoxJ2eeLevel.addItem(NbBundle.getMessage(WebLocationsPanel.class, "TXT_J2EESpecLevel_0"));
         jComboBoxJ2eeLevel.addItem(NbBundle.getMessage(WebLocationsPanel.class, "TXT_J2EESpecLevel_1"));
         jComboBoxJ2eeLevel.setSelectedIndex(0);
     }
     
     public WebLocationsPanel(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
-        this();
+        this(null);
         this.projectHelper = projectHelper;
         setFolders(Util.getProjectLocation(projectHelper, projectEvaluator), FileUtil.toFile(projectHelper.getProjectDirectory()));
         
@@ -202,7 +208,7 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     }//GEN-END:initComponents
 
     private void jButtonWebActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonWebActionPerformed
-        JFileChooser chooser = createChooser(getWebPagesLocation().getAbsolutePath());
+        JFileChooser chooser = createChooser(getWebPagesLocation(), wizardDescriptor);
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             setWebPages(chooser.getSelectedFile());
         }
@@ -219,12 +225,36 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JTextField jTextFieldWeb;
     // End of variables declaration//GEN-END:variables
     
-    private static JFileChooser createChooser(String path) {
+    private static JFileChooser createChooser(File webPagesLoc, WizardDescriptor wizardDescriptor) {
+	String path = webPagesLoc.getAbsolutePath();
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, new File(path));
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
         
+        if (path.length() > 0 && webPagesLoc.exists()) {
+            chooser.setSelectedFile(webPagesLoc);
+        } else {
+	    if (wizardDescriptor != null) {
+		// honor the contract in issue 58987
+		File currentDirectory = null;
+		FileObject existingSourcesFO = Templates.getExistingSourcesFolder(wizardDescriptor);
+		if (existingSourcesFO != null) {
+		    File existingSourcesFile = FileUtil.toFile(existingSourcesFO);
+		    if (existingSourcesFile != null && existingSourcesFile.isDirectory()) {
+			currentDirectory = existingSourcesFile;
+		    }
+		}
+		if (currentDirectory != null) {
+		    chooser.setCurrentDirectory(currentDirectory);
+		} else {
+		    chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+		}
+	    } else {
+		chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+	    }
+        }
+	
         return chooser;
     }
 

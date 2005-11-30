@@ -49,7 +49,7 @@ public class WebLocationsWizardPanel implements WizardDescriptor.Panel {
 
     public Component getComponent() {
         if (component == null) {
-            component = new WebLocationsPanel();
+            component = new WebLocationsPanel(wizardDescriptor);
         }
         return component;
     }
