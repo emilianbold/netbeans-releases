@@ -557,7 +557,7 @@ Microsystems, Inc. All Rights Reserved.
         category='private'
         type='import'
         group='property'>
-        Crates button with given string in bottom left corner of Options Dialog.
+        Crates button with given string in bottom left corner of Advanced Options Dialog.
    </api>
    <api name='org.netbeans.core.actions.OptionsAction.additionalActionListener' 
         category='private'
@@ -1061,10 +1061,24 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-read">
   <p>
-   <api name="OptionsDialogSPILayers" group="layer" type="export" category="devel" url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
-   For registration of custom top level options panels.
-   <api name="AdvancedPanelSPILayers" group="layer" type="export" category="devel" url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/AdvancedOption.html"/>
-   For registration of custom panels to Miscellaneous Panel.
+   <api name="OptionsDialogSPILayers" 
+        group="layer" 
+        type="export" 
+        category="devel" 
+        url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html">
+        Use OptionsDialog folder for registration of custom top level options panels. Register 
+        your implementation of OptionsCategory there (*.instance file). Standard
+        file systems sorting mechanism is used.
+   </api>
+   <api name="AdvancedPanelSPILayers" 
+        group="layer" 
+        type="export" 
+        category="devel" 
+        url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/AdvancedOption.html">
+        Use OptionsDialog/Advanced folder for registration of custom panels to Miscellaneous Panel. Register 
+        your implementation of AdvancedCategory there (*.instance file). Standard
+        file systems sorting mechanism is used.
+   </api>
   </p>
  </answer>
 
