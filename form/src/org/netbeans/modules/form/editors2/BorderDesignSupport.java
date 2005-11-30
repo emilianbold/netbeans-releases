@@ -20,6 +20,7 @@ import java.lang.reflect.*;
 
 import org.openide.nodes.*;
 import org.netbeans.modules.form.*;
+import org.openide.ErrorManager;
 
 /**
  * A support class holding metadata for borders (javax.swing.border.Border),
@@ -76,6 +77,15 @@ public class BorderDesignSupport implements FormDesignValue
 
     // --------------------------
 
+    public FormDesignValue copy(FormModel formModel) {
+        try {
+            return new BorderDesignSupport(this);    
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        return null;
+    }
+    
     public Border getBorder() {
         if (borderNeedsUpdate)
             updateBorder();

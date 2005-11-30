@@ -376,6 +376,9 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
             return name;
         }
         
+        public FormDesignValue copy(FormModel formModel) {
+            return new IconEditor.NbImageIcon(this);   
+        }
     }
     
     

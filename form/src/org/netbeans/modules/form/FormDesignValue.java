@@ -59,6 +59,16 @@ public interface FormDesignValue extends java.io.Serializable {
      */
     public String getDescription();
 
+    /**
+     * Returns a new FormDesignValue instance which should, as appropriate, 
+     * correspond to the target form editor. 
+     *
+     * @param targetFormModel the FormModel from the target form editor
+     * @return the new FormDesignValue instance or null if it's impossible to copy 
+     *         the particular subtype between two different form editor instances.
+     */
+    public FormDesignValue copy(FormModel targetFormModel);
+    
     //
     // In the future, some methods for handling persistence
     // will be probably added here.

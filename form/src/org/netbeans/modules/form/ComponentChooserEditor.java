@@ -281,6 +281,10 @@ public class ComponentChooserEditor implements PropertyEditor,
             component = metacomp;
         }
 
+        public FormDesignValue copy(FormModel formModel) {
+            return null;
+        }
+        
         public boolean equals(Object obj) {
             boolean equal;
             

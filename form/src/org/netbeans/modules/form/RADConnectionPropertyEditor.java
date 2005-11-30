@@ -289,6 +289,16 @@ public class RADConnectionPropertyEditor
             type = TYPE_CODE;
         }
 
+        public FormDesignValue copy(FormModel formModel) {
+            switch(type) {
+                case TYPE_CODE:
+                    return new RADConnectionDesignValue(userCode);
+                case TYPE_VALUE:    
+                    return new RADConnectionDesignValue(requiredTypeName, value);            
+            }
+            return null;
+        }
+        
         String getName() {
             if (needsInit)
                 initialize();

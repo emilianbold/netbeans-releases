@@ -455,7 +455,7 @@ public class FormUtils
                 oos.close();
 
                 ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                return new OIS(bais, bean.getClass().getClassLoader(), formModel).readObject();
+                return new OIS(bais, bean.getClass().getClassLoader(), formModel).readObject();                
             }
             catch (Exception ex) {
                 ErrorManager em = ErrorManager.getDefault();
@@ -549,17 +549,17 @@ public class FormUtils
 
             try {
                 // get and clone property value
-                Object propertyValue = snProp.getValue();
+                Object propertyValue = snProp.getValue();                
                 if (!(propertyValue instanceof FormDesignValue)) {
-                    try { // clone common property value
-                        FormModel formModel = (sfProp == null) ? null : sfProp.getPropertyContext().getFormModel();
+                    try { // clone common property value                        
+                        FormModel formModel = (sfProp == null) ? null : sfProp.getPropertyContext().getFormModel();                        
                         propertyValue = FormUtils.cloneObject(propertyValue, formModel);
                     }
                     catch (CloneNotSupportedException ex) {} // ignore, don't report
                 }
-                else { // handle FormDesignValue
-                    Object val = copyFormDesignValue((FormDesignValue)
-                                                     propertyValue);
+                else { // handle FormDesignValue                    
+                    FormModel formModel = (tfProp == null) ? null : tfProp.getPropertyContext().getFormModel();                        
+                    Object val = ((FormDesignValue)propertyValue).copy(formModel);
                     if (val != null)
                         propertyValue = val;
                     else if ((mode & PASS_DESIGN_VALUES) == 0)
@@ -642,27 +642,29 @@ public class FormUtils
         }
     }
 
-    static Object copyFormDesignValue(FormDesignValue value) {
-        if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
-            RADConnectionPropertyEditor.RADConnectionDesignValue radValue =
-                (RADConnectionPropertyEditor.RADConnectionDesignValue) value;
-            if (radValue.userCode != null)
-                return new RADConnectionPropertyEditor.RADConnectionDesignValue(
-                             radValue.userCode);
-            else if (radValue.value != null)
-                return new RADConnectionPropertyEditor.RADConnectionDesignValue(
-                             radValue.requiredTypeName, radValue.value);
-        }
-        else if (value instanceof BorderDesignSupport) {
-            try {
-                return new BorderDesignSupport((BorderDesignSupport)value);
-            }
-            catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
-        } else if (value instanceof IconEditor.NbImageIcon) {
-            return new IconEditor.NbImageIcon((IconEditor.NbImageIcon)value);
-        }
+    static Object copyFormDesignValue(FormDesignValue value, FormModel formModel) {
+//        if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
+//            RADConnectionPropertyEditor.RADConnectionDesignValue radValue =
+//                (RADConnectionPropertyEditor.RADConnectionDesignValue) value;
+//            if (radValue.userCode != null)
+//                return new RADConnectionPropertyEditor.RADConnectionDesignValue(
+//                             radValue.userCode);
+//            else if (radValue.value != null)
+//                return new RADConnectionPropertyEditor.RADConnectionDesignValue(
+//                             radValue.requiredTypeName, radValue.value);
+//        }
+//        else if (value instanceof BorderDesignSupport) {
+//            try {
+//                return ;
+//            }
+//            catch (Exception ex) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//            }
+//        } else if (value instanceof IconEditor.NbImageIcon) {
+//            return 
+//        } else if (value instanceof CloneableFormDesignValue) {
+//            return ((CloneableFormDesignValue)value).copyFormDesignValue();                                   
+//        }            
 
         return null;
     }

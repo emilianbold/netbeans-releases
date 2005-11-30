@@ -14,8 +14,9 @@
 
 package org.netbeans.modules.i18n.form;
 
-
 import org.netbeans.modules.form.FormDesignValue;
+import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.java.JavaI18nString;
 import org.openide.loaders.DataObject;
@@ -31,8 +32,8 @@ import org.openide.loaders.DataObject;
  */
 public class FormI18nString extends JavaI18nString implements FormDesignValue {
 
-    String bundleName;
-
+    String bundleName;   
+    
     /** Creates new <code>FormI18nString</code>. */
     public FormI18nString(I18nSupport i18nSupport) {
         super(i18nSupport);
@@ -41,24 +42,47 @@ public class FormI18nString extends JavaI18nString implements FormDesignValue {
     /** Cretaes new <code>FormI18nString</code> from <code>JavaI18nString</code>. 
      * @param source source which is created new <code>FormI18nString</code> from. */
     public FormI18nString(JavaI18nString source) {
-        super(createNewSupport(source.getSupport()));
-
-        key = source.getKey();
-        value = source.getValue();
-        comment = source.getComment();
-        
-        arguments = source.getArguments();
-        replaceFormat = source.getReplaceFormat();
+        this(createNewSupport(source.getSupport()), 
+             source.getKey(),
+             source.getValue(),
+             source.getComment(), 
+             source.getArguments(), 
+             source.getReplaceFormat());
     }
 
+    private FormI18nString(I18nSupport i18nSupport, String key, String value, String commment, String[] arguments, String replaceFormat) {
+        super(i18nSupport);
+
+        this.key = key;
+        this.value = value;
+        this.comment = comment;
+        
+        this.arguments = arguments;
+        this.replaceFormat = replaceFormat;
+    }
+
+    public FormDesignValue copy(FormModel formModel) {        
+        I18nSupport newSupport = createNewSupport(FormEditor.getFormDataObject(formModel), 
+                                                  support.getResourceHolder().getResource());
+        return new FormI18nString(newSupport, 
+                                  this.getKey(),
+                                  this.getValue(),
+                                  this.getComment(), 
+                                  this.getArguments(), 
+                                  this.getReplaceFormat());        
+    }
+    
     private static I18nSupport createNewSupport(I18nSupport support) {
-        I18nSupport newSupport = new FormI18nSupport.Factory().createI18nSupport(support.getSourceDataObject());
-        DataObject resource = support.getResourceHolder().getResource();
+        return createNewSupport(support.getSourceDataObject(), support.getResourceHolder().getResource());        
+    }     
+
+    private static I18nSupport createNewSupport(DataObject sourceDataObject, DataObject resource) {
+        I18nSupport newSupport = new FormI18nSupport.Factory().createI18nSupport(sourceDataObject);                
         if(resource != null) {
             newSupport.getResourceHolder().setResource(resource);            
         }                
-        return newSupport;
-    } 
+        return newSupport;        
+    }
     
     /**
      * Implements <code>FormDesignValue</code> interface. Gets design value. 
