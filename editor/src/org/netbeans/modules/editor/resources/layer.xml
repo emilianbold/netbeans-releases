@@ -179,6 +179,9 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="text">
             <folder name="base">
+                <folder name="Defaults">
+                    <file name="keybindings.xml" url="NetBeans-keybindings.xml"/>
+                </folder>
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="Separator0.instance">

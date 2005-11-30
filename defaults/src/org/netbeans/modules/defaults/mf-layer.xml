@@ -813,9 +813,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="text">
             <folder name="base">
-                <folder name="Defaults">
-                    <file name="keybindings.xml" url="NetBeans-keybindings.xml"/>
-                </folder>
                 <folder name="Eclipse">
                     <folder name="Defaults">
                         <file name="keybindings.xml" url="Eclipse-keybindings.xml">
