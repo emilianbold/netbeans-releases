@@ -31,6 +31,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Iterator;
 
 /**
  * Revert modifications action.
@@ -144,13 +147,20 @@ public class GetCleanAction extends AbstractSystemAction {
                 backup(file);
                 try {
                     CvsVersioningSystem.ignoreFilesystemEvents(true);
-                    FileObject fo = FileUtil.toFileObject(cleanFile);
-                    FileObject target = FileUtil.toFileObject(file);
+                    FileObject target;
+                    if (file.exists() == false) {
+                        File dir = file.getParentFile();
+                        mkfolders(dir);
+                        FileObject folder = FileUtil.toFileObject(dir);
+                        target = folder.createData(file.getName());
+                    } else {
+                        target = FileUtil.toFileObject(file);
+                    }
                     InputStream in = null;
                     OutputStream out = null;
                     FileLock lock = null;
                     try {
-                        in = fo.getInputStream();
+                        in = new FileInputStream(cleanFile);
                         lock = target.lock();
                         out = target.getOutputStream(lock);
                         copyStream(in, out);
@@ -192,6 +202,31 @@ public class GetCleanAction extends AbstractSystemAction {
             } else {
                 ErrorManager.getDefault().notify(e);
             }
+        }
+    }
+
+    /** Like mkdirs but but using openide filesystems (firing events) */
+    private static void mkfolders(File file) throws IOException {
+        if (file.isDirectory()) return;
+
+        File parent = file.getParentFile();
+        ArrayList dirs = new ArrayList();
+        
+        dirs.add(file);
+        String path = file.getName();
+        while (parent.isDirectory() == false) {
+            dirs.add(0, parent);
+            path = parent.getName() + "/" + path;  // NOI18N
+            parent = parent.getParentFile();
+        }
+
+        FileObject fo = FileUtil.toFileObject(parent);
+        FileUtil.createFolder(fo, path);
+
+        Iterator it = dirs.iterator();
+        while (it.hasNext()) {
+            File next = (File) it.next();
+            CvsVersioningSystem.getInstance().getStatusCache().refresh(next, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         }
     }
 
