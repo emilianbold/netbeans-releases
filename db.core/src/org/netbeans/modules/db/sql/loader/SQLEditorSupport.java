@@ -23,9 +23,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.Enumeration;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
@@ -33,6 +36,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.sql.execute.ui.SQLResultPanelModel;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -58,6 +62,7 @@ import org.netbeans.modules.db.sql.execute.SQLExecuteHelper;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Mutex;
+import org.openide.windows.TopComponent;
 
 /** 
  * Editor support for SQL data objects. There can be two "kinds" of SQL editors: one for normal
@@ -73,11 +78,12 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
     private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(SQLEditorSupport.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
     
+    private static final String EDITOR_CONTAINER = "sqlEditorContainer"; // NOI18N
+    
     private static final String MIME_TYPE = "text/x-sql"; // NOI18N
     
     private String encoding;
     
-    private SQLResultPanel resultComponent;
     private SQLExecutionResults executionResults;
     
     /**
@@ -89,12 +95,6 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
      * The task representing the execution of statements.
      */
     private Task task;
-    
-    private JPanel container = null;
-    
-    private JSplitPane splitter = null;
-    
-    private boolean executed = false;
     
     /** 
      * SaveCookie for this support instance. The cookie is adding/removing 
@@ -176,19 +176,13 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
         }
     }
     
-    protected Component wrapEditorComponent(Component editor) {
-        container = new JPanel(new BorderLayout());
-        container.add(editor, BorderLayout.CENTER);
-        return container;
-    }
-    
     protected void notifyClosed() {
         super.notifyClosed();
-        rp.post(new Runnable() {
-            public void run() {
+        //rp.post(new Runnable() {
+            //public void run() {
                 closeExecutionResult();
-            }
-        });
+            //}
+        //});
         if (isConsole() && getDataObject().isValid()) {
             try {
                 getDataObject().delete();
@@ -213,6 +207,13 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
         } catch (FileStateInvalidException e) {
             return false;
         }
+    }
+    
+    protected Component wrapEditorComponent(Component editor) {
+        JPanel container = new JPanel(new BorderLayout());
+        container.setName(EDITOR_CONTAINER); // NOI18N
+        container.add(editor, BorderLayout.CENTER);
+        return container;
     }
     
     /**
@@ -278,7 +279,6 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
                     handle.start();
                     handle.switchToIndeterminate();
                     
-                    // TODO: is it OK to remove the text from the status bar?
                     StatusDisplayer.getDefault().setStatusText(""); // NOI18N
 
                     if (LOG) {
@@ -288,45 +288,41 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
                     
                     executionResults = null;
 
+                    String error = null;
+                    SQLResultPanelModel model = null;
                     try {
                         executionResults = SQLExecuteHelper.execute(new String[] { sql }, conn);
-                        // TODO: use the status bar or not?
+                        model = new SQLResultPanelModel(executionResults);
                         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfully"));
-                        getResultComponent().setExecutionResult(executionResults);
                     } catch (SQLException e) {
-                        showExecuteError(e.getMessage());
+                        error = e.getMessage();
                     } catch (IOException e) {
-                        showExecuteError(e.getMessage());
+                        error = e.getMessage();
                     } finally {
                         handle.finish();
+                    }
+                    
+                    if (error != null) {
+                        showExecuteError(error);
+                        return;
+                    }
+                    
+                    if (model != null) {
+                        setResultModelToEditors(model);
                     }
                 }
             });
         }
     }
     
-    private SQLResultPanel getResultComponent() {
-        synchronized (rp) {
-            if (resultComponent == null) {
-                createResultComponent();
-            }
-        }
-        return resultComponent;
-    }
-    
-    private void createResultComponent() {
-        Mutex.EVENT.writeAccess(new Mutex.Action() {
-            public Object run() {
-                Component editor = container.getComponent(0);
-                resultComponent = new SQLResultPanel();
-                splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editor, resultComponent);
-                splitter.setBorder(null);
-                container.removeAll();
-                container.add(splitter);
-                splitter.setDividerLocation(250);
-                splitter.setDividerSize(7);
-                ((CloneableEditor)allEditors.getComponents().nextElement()).requestFocusInWindow();
-                return null;
+    private void setResultModelToEditors(final SQLResultPanelModel model) {
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
+                Enumeration editors = allEditors.getComponents();
+                while (editors.hasMoreElements()) {
+                    SQLCloneableEditor editor = (SQLCloneableEditor)editors.nextElement();
+                    editor.getResultComponent().setModel(model);
+                }
             }
         });
     }
@@ -340,22 +336,26 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
     }
     
     private void closeExecutionResult() {
-        assert rp.isRequestProcessorThread();
+        setResultModelToEditors(null);
         
-        if (executionResults != null) {
-            try {
-                executionResults.close();
-            } catch (SQLException e) {
-                // probably broken connection
-                ErrorManager.getDefault().notify(e);
+        Runnable run = new Runnable() {
+            public void run() {
+                if (executionResults != null) {
+                    try {
+                        executionResults.close();
+                    } catch (SQLException e) {
+                        // probably broken connection
+                        ErrorManager.getDefault().notify(e);
+                    }
+                    executionResults = null;
+                }
             }
-            executionResults = null;
-            
-            try {
-                getResultComponent().setExecutionResult(null);
-            } catch (Exception e) {
-                // ignore it, should never occur
-            }
+        };
+        
+        if (rp.isRequestProcessorThread()) {
+            run.run();
+        } else {
+            rp.post(run);
         }
     }
 
@@ -420,6 +420,10 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
 
     static class SQLCloneableEditor extends CloneableEditor {
         
+        private JPanel container;
+        private JSplitPane splitter;
+        private SQLResultPanel resultComponent;
+        
         public SQLCloneableEditor() {
             super(null);
         }
@@ -427,7 +431,53 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
         public SQLCloneableEditor(SQLEditorSupport support) {
             super(support);
         }
+        
+        public SQLResultPanel getResultComponent() {
+            assert SwingUtilities.isEventDispatchThread();
+            if (resultComponent == null) {
+                createResultComponent();
+            }
+            return resultComponent;
+        }
 
+        private void createResultComponent() {
+            JPanel container = findContainer(this);
+            Component editor = container.getComponent(0);
+            resultComponent = new SQLResultPanel();
+            splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editor, resultComponent);
+            splitter.setBorder(null);
+            container.removeAll();
+            container.add(splitter);
+            splitter.setDividerLocation(250);
+            splitter.setDividerSize(7);
+            if (equals(TopComponent.getRegistry().getActivated())) {
+                // setting back the focus lost when removing the editor from the CloneableEditor
+                requestFocusInWindow();
+            }
+        }
+        
+        /**
+         * Finds the container component added by SQLEditorSupport.wrapEditorComponent.
+         * Not very nice, but avoids the API change in #69466.
+         */
+        private JPanel findContainer(Component parent) {
+            if (!(parent instanceof JComponent)) {
+                return null;
+            }
+            Component[] components = ((JComponent)parent).getComponents();
+            for (int i = 0; i < components.length; i++) {
+                Component component = components[i];
+                if (component instanceof JPanel && EDITOR_CONTAINER.equals(component.getName())) {
+                    return (JPanel)component;
+                }
+                JPanel container = findContainer(component);
+                if (container != null) {
+                    return container;
+                }
+            }
+            return null;
+        }
+        
         protected void componentDeactivated() {
             if (((SQLEditorSupport)cloneableEditorSupport()).isConsole()) {
                 try {

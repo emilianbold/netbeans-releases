@@ -14,6 +14,7 @@
 package org.netbeans.modules.db.sql.execute.ui;
 
 import java.awt.CardLayout;
+import java.awt.KeyboardFocusManager;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -24,6 +25,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.db.sql.execute.NullValue;
+import org.netbeans.modules.db.sql.execute.ui.ResultSetTableModel.Empty;
 import org.openide.util.Lookup;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
@@ -36,67 +38,49 @@ import org.openide.util.datatransfer.ExClipboard;
  */
 public class SQLResultPanel extends javax.swing.JPanel {
     
-    private String cardName;
+    private static final String CARD_RESULT_SET = "resultSet"; // NOI18N
+    private static final String CARD_ROW_COUNT = "rowCount"; // NOI18N
+    
     private SQLExecutionResults executionResults;
-    private ResultSetTableModel currentModel;
+    private String currentCardName;
     
     public SQLResultPanel() {
         initComponents();
     }
     
-    /**
-     * Sets the SQL execution result to be displayed. This method will usually be
-     * called from a RequestProcessor.
-     * 
-     * @param executionResult the execution result; may be null, in which
-     *        case the result panel will be cleared
-     */
-    public void setExecutionResult(SQLExecutionResults executionResults) throws SQLException, IOException {
-        // TODO: the result may be empty -> create new card with a "no results" label
-        
-        this.executionResults = executionResults;
-        
+    public void setModel(SQLResultPanelModel model) {
+        ResultSetTableModel resultSetModel = null;
         String cardName = null;
-        if (executionResults != null && executionResults.getResults().length > 0) {
-            SQLExecutionResult result = executionResults.getResults()[0];
-            if (result.getResultSet() != null) {
-                currentModel = new ResultSetTableModel(result.getResultSet());
-                cardName = "resultSet"; // NOI18N
+        
+        if (model != null) {
+            if (model.getResultSetModel() != null) {
+                resultSetModel = model.getResultSetModel();
+                cardName = CARD_RESULT_SET; // NOI18N
+            } else if (model.getAffectedRows() != null) {
+                resultSetModel = new ResultSetTableModel.Empty();
+                rowCountLabel.setText(NbBundle.getMessage(SQLResultPanel.class, "LBL_AffectedRows", model.getAffectedRows()));
+                cardName = CARD_ROW_COUNT; // NOI18N
             } else {
-                int rowCount = result.getRowCount();
-                Object rowCountObj = null;
-                if (rowCount >= 0) {
-                    rowCountObj = new Integer(rowCount);
-                } else {
-                    rowCountObj = NbBundle.getMessage(SQLResultPanel.class, "LBL_AffectedRowsUnknown");
-                }
-                String format = NbBundle.getMessage(SQLResultPanel.class, "LBL_AffectedRows");
-                String affectedRows = MessageFormat.format(format, new Object[] { rowCountObj });
-                
-                currentModel = new ResultSetTableModel.Empty();
-                rowCountLabel.setText(affectedRows);
-                cardName = "rowCount"; // NOI18N
+                resultSetModel = new ResultSetTableModel.Empty();
+                cardName = CARD_RESULT_SET; // NOI18N
             }
         } else {
-            currentModel = new ResultSetTableModel.Empty();
-            cardName = "resultSet"; // NOI18N
+            resultSetModel = new ResultSetTableModel.Empty();
+            cardName = CARD_RESULT_SET; // NOI18N
         }
         
+        assert resultSetModel != null;
         assert cardName != null;
+        
+        resultTable.setModel(resultSetModel);
         showCard(cardName);
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                resultTable.setModel(currentModel);
-            }
-        });
     }
     
     private void showCard(String cardName) {
-        if (!cardName.equals(this.cardName)) {
+        if (!cardName.equals(currentCardName)) {
             ((CardLayout)getLayout()).show(this, cardName); // NOI18N
         }
-        this.cardName = cardName;
+        currentCardName = cardName;
     }
     
     private void setClipboard(String contents) {
