@@ -95,7 +95,7 @@ public class OptionsPanel extends JPanel {
     private Color                   iconViewBorder = new Color (127, 157, 185);
     private ControllerListener      coltrollerListener = new ControllerListener ();
     
-    private final boolean           isMac = true; //UIManager.getLookAndFeel().getID().equals("Aqua");
+    private final boolean           isMac = UIManager.getLookAndFeel().getID().equals("Aqua");
     private final Color             selectedMac = new Color(221, 221, 221);
     private final Color             selectedBMac = new Color(183, 183, 183);
     private final Color             borderMac = new Color(141, 141, 141);
