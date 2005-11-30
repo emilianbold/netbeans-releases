@@ -174,6 +174,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
         String cmd = java.text.MessageFormat.format(diffCmd,
             new Object[] { f1.getAbsolutePath(), f2.getAbsolutePath() });
         try {
+            ErrorManager.getDefault().log("#69616 CDP: executing: " + cmd); // NOI18N
             Process p = Runtime.getRuntime().exec(cmd);
             Reader stdout = new InputStreamReader(p.getInputStream());
             char[] buffer = new char[BUFF_LENGTH];
