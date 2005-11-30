@@ -173,6 +173,7 @@
       Binding = {
         COLUMN = ColumnName;
       };
+      Supported = true;
     };
 
     CreateViewCommand = {
@@ -873,6 +874,10 @@
       Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ {column.notnull}not null][ default {default.value}] check ({check.condition})";
     };
 
+    RemoveColumnCommand = {
+      Supported = false;
+    };
+
   };
 
 //  ********************************************************************************
@@ -963,6 +968,10 @@
     SizelessTypes = (BIGINT,DATE,DOUBLE,INTEGER,"LONG VARCHAR",REAL,SMALLINT,TIME,TIMESTAMP);
     DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
     CharacterTypes = (BLOB,CLOB,CHAR,VARCHAR);
+
+    RemoveColumnCommand = {
+      Supported = false;
+    };
 
   };
 

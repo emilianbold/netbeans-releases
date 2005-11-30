@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
+import java.util.Map;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 
@@ -58,8 +59,11 @@ public class ColumnNode extends LeafNode {
         if (getCookie(ViewColumnNodeInfo.class) != null)
             return false;
         
-        //WORKAROUND: IBM DB2 doesn't support delete column command
-        String drv = getInfo().getDriver().toLowerCase();
-        return !drv.startsWith("com.ibm.db2.jdbc");
+        Map removeColumnProps = (Map)getInfo().getSpecification().getProperties().get(Specification.REMOVE_COLUMN);
+        String supported = (String)removeColumnProps.get("Supported"); // NOI18N
+        if (supported != null) {
+            return Boolean.valueOf(supported).booleanValue();
+        }
+        return true;
     }
 }
