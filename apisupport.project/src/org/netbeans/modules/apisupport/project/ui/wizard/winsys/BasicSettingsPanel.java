@@ -33,6 +33,19 @@ import org.openide.util.NbBundle;
 final class BasicSettingsPanel extends BasicWizardIterator.Panel {
     
     private NewTCIterator.DataModel data;
+    private static final String[] DEFAULT_MODES = 
+            new String[] {
+                "editor", //NOI18N
+                "explorer",//NOI18N
+                "commonpalette",//NOI18N
+                "output",//NOI18N
+                "debugger",//NOI18N
+                "properties",//NOI18N
+                "navigator",//NOI18N
+                "bottomSlidingSide",//NOI18N
+                "leftSlidingSide",//NOI18N
+                "rightSlidingSide"//NOI18N
+            };
     /**
      * Creates new form BasicSettingsPanel
      */
@@ -80,27 +93,21 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         try {
             FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(data.getProject());
             FileObject foRoot = fs.getRoot().getFileObject("Windows2/Modes"); //NOI18N
-            FileObject[] fos = foRoot.getChildren();
-            Collection col = new ArrayList();
-            for (int i=0; i < fos.length; i++) {
-                if (fos[i].isData() && "wsmode".equals(fos[i].getExt())) { //NOI18N
-                    col.add(fos[i].getName());
+            if (foRoot != null) {
+                FileObject[] fos = foRoot.getChildren();
+                Collection col = new ArrayList();
+                for (int i=0; i < fos.length; i++) {
+                    if (fos[i].isData() && "wsmode".equals(fos[i].getExt())) { //NOI18N
+                        col.add(fos[i].getName());
+                    }
                 }
+                modes = (String[])col.toArray(new String[col.size()]);
+            } else {
+                modes = DEFAULT_MODES;
             }
-            modes = (String[])col.toArray(new String[col.size()]);
         } catch (IOException exc) {
-            modes = new String[] {
-                "editor", //NOI18N
-                "explorer",//NOI18N
-                "commonpalette",//NOI18N
-                "output",//NOI18N
-                "debugger",//NOI18N
-                "properties",//NOI18N
-                "navigator",//NOI18N
-                "bottomSlidingSide",//NOI18N
-                "leftSlidingSide",//NOI18N
-                "rightSlidingSide"//NOI18N
-            };
+            modes = DEFAULT_MODES;
+
         }
         
         comMode.setModel(new DefaultComboBoxModel(modes));
