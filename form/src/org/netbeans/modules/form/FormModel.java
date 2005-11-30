@@ -419,19 +419,17 @@ public class FormModel
         UndoableEdit ue = null;
         boolean autoUndo = true;
         try {
-            if (fromModel) {
-                if (layoutModel != null) {
-                    layoutStartMark = layoutModel.getChangeMark();
-                    ue = layoutModel.getUndoableEdit();
-                    layoutModel.removeComponent(metacomp.getId(), true);
-                }
+            if (fromModel && (layoutModel != null)) {
+                layoutStartMark = layoutModel.getChangeMark();
+                ue = layoutModel.getUndoableEdit();
+                layoutModel.removeComponent(metacomp.getId(), true);
                 removeLayoutComponentsRecursively(metacomp);
             }
 
-            removeComponentImpl(metacomp, fromModel);
             // [TODO need effective multi-component remove from LayoutModel (start in ComponentInspector.DeleteActionPerformer)]
             autoUndo = false;
         } finally {
+            removeComponentImpl(metacomp, fromModel);
             if (layoutStartMark != null && !layoutStartMark.equals(layoutModel.getChangeMark())) {
                 addUndoableEdit(ue); // is added to a compound edit
             }

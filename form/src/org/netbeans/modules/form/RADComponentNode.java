@@ -281,7 +281,6 @@ public class RADComponentNode extends FormNode
                 }
             }
         }
-        component.setNodeReference(null);
         if (EventQueue.isDispatchThread()) {
             component.getFormModel().removeComponent(component, true);
         } else {
@@ -291,7 +290,7 @@ public class RADComponentNode extends FormNode
                 }
             });
         }
-
+        component.setNodeReference(null);
         super.destroy();
     }
 
