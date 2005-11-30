@@ -11,6 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide;
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.junit.NbTestSuite;
 
 import java.awt.Component;
@@ -102,6 +103,7 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
                 assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
                 mp.wait ();
             }
+            waitWhileSetValidDone ();
         }
         assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
         assertEquals ("The lazy validation failed on Next.", mp.validateMsg, mp.failedMsg);
@@ -116,10 +118,8 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
                 assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
                 mp.wait ();
             }
+            waitWhileSetValidDone ();
         }
-        RequestProcessor.getDefault ().post (new Runnable () {
-            public void run () {}
-        }).waitFinished ();
         assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
         assertNull ("Validation on Next passes", mp.failedMsg);
         assertNotNull ("Now we switched to another panel", panels[1].component);
@@ -135,10 +135,8 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
                 assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
                 mfp.wait ();
             }
+            waitWhileSetValidDone ();
         }
-        RequestProcessor.getDefault ().post (new Runnable () {
-            public void run () {}
-        }).waitFinished ();
         assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
         assertEquals ("The lazy validation failed on Finish.", mfp.validateMsg, mfp.failedMsg);
         assertNull ("The validation failed, still no initialiaation", panels[2].component);
@@ -152,10 +150,8 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
                 assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
                 mfp.wait ();
             }
+            waitWhileSetValidDone ();
         }
-        RequestProcessor.getDefault ().post (new Runnable () {
-            public void run () {}
-        }, 100).waitFinished ();
         assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
         assertNull ("Validation on Finish passes", mfp.failedMsg);        
         assertNull ("Finish was clicked, no initialization either", panels[2].component);
@@ -237,4 +233,18 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
         }
         return "UNKNOWN OPTION: " + val;
     }
+
+    private void waitWhileSetValidDone () {
+        try {
+            SwingUtilities.invokeAndWait (new Runnable () {
+                public void run () {
+                }
+            });
+        } catch (InterruptedException ex) {
+            fail (ex.getMessage ());
+        } catch (InvocationTargetException ex) {
+            fail (ex.getMessage ());
+        }
+    }
+
 }
