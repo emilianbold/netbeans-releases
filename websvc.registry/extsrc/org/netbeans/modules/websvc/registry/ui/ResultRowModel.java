@@ -62,7 +62,12 @@ public class ResultRowModel implements RowModel {
         NodeData data = (NodeData)node.getUserObject();
         switch(column) {
        //     case 0: return data.getResultType().getRealName();
-            case 0: return data.getNodeValue();
+            case 0: {
+                Object val = data.getNodeValue();
+                if (val instanceof java.util.Calendar)
+                    return java.text.DateFormat.getDateTimeInstance().format(((java.util.Calendar)val).getTime());
+                return val;
+            }
             default: return "";
         }
         

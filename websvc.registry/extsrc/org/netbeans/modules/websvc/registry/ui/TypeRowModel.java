@@ -73,7 +73,12 @@ public class TypeRowModel implements RowModel {
         switch(column) {
        //     case 0: return data.getParameterType().getRealName();
             case 0: return data.getParameterName();
-            case 1: return data.getParameterValue();
+            case 1: {
+                Object val = data.getParameterValue();
+                if (val instanceof java.util.Calendar)
+                    return java.text.DateFormat.getDateTimeInstance().format(((java.util.Calendar)val).getTime());
+                return val;
+            }
             default: return "";
         }
         
