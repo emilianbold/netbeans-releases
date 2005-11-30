@@ -20,11 +20,11 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.ErrorManager;
@@ -42,7 +42,7 @@ import org.openide.util.NbBundle;
 final class SelectProjectPanel extends BasicWizardIterator.Panel {
     
     private NewProjectIterator.DataModel data;
-    private final ComboWrapper EMPTY = new ComboWrapper(NbBundle.getMessage(getClass(), "MSG_No_Projects"));
+    private final Object EMPTY = getMessage("MSG_No_Projects");
     
     /** Creates new form SelectProjectPanel */
     public SelectProjectPanel(WizardDescriptor setting, NewProjectIterator.DataModel data) {
@@ -57,6 +57,7 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
                 checkValidity();
             }
         });
+        comProject.setRenderer(UIUtil.createProjectRenderer());
     }
     
     private static String getMessage(String key) {
@@ -127,9 +128,8 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
                 try {
                     Project p = ProjectManager.getDefault().findProject(fo);
                     DefaultComboBoxModel model = (DefaultComboBoxModel)comProject.getModel();
-                    ComboWrapper wrapper = new ComboWrapper(p);
-                    model.addElement(wrapper);
-                    model.setSelectedItem(wrapper);
+                    model.addElement(p);
+                    model.setSelectedItem(p);
                     if (EMPTY == model.getElementAt(0)) {
                         model.removeElement(EMPTY);
                     }
@@ -140,8 +140,7 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
         }
     }//GEN-LAST:event_btnProjectActionPerformed
     protected void storeToDataModel() {
-        ComboWrapper wrapper = (ComboWrapper)comProject.getSelectedItem();
-        data.setTemplate(wrapper.getProject());
+        data.setTemplate((Project) comProject.getSelectedItem());
     }
     
     protected void readFromDataModel() {
@@ -155,7 +154,7 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
             for (int i = 0; i < prjs.length; i++) {
                 if (prjs[i] != data.getProject()) {
                     // ignore the currently active project..
-                    model.addElement(new ComboWrapper(prjs[i]));
+                    model.addElement(prjs[i]);
                 }
             }
         }
@@ -167,12 +166,12 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
     
     
     private void checkValidity() {
-        ComboWrapper sel = (ComboWrapper)comProject.getModel().getSelectedItem();
+        Object sel = comProject.getModel().getSelectedItem();
         if (sel == EMPTY) {
             setErrorMessage(getMessage("MSG_NoProjectSelected"));
             return;
         }
-        Sources srcs = ProjectUtils.getSources(sel.getProject()); // #63247: don't use lookup directly
+        Sources srcs = ProjectUtils.getSources((Project) sel); // #63247: don't use lookup directly
         if (srcs.getSourceGroups(Sources.TYPE_GENERIC).length > 1) {
             setErrorMessage(getMessage("MSG_NoExternalRoots"));
             return;
@@ -200,29 +199,5 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
     private javax.swing.JLabel lblProject;
     private javax.swing.JPanel pnlHeightAdjuster;
     // End of variables declaration//GEN-END:variables
-    
-    private class ComboWrapper {
-        private Project proj;
-        private String text;
-        ComboWrapper(String text) {
-            this.text = text;
-        }
-        
-        ComboWrapper(Project project) {
-            proj = project;
-        }
-        
-        public Project getProject() {
-            return proj;
-        }
-        
-        public String toString() {
-            if (text != null) {
-                return text;
-            }
-            ProjectInformation inf = ProjectUtils.getInformation(proj);
-            return inf.getDisplayName();
-        }
-    }
     
 }

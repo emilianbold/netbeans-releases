@@ -30,17 +30,22 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.KeyStroke;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -405,6 +410,25 @@ public final class UIUtil {
             }
         }
         return suiteComponent;
+    }
+
+    /**
+     * Appropriately renders {@link Project}s. For others instances delegates
+     * to {@link DefaultListCellRenderer}.
+     */
+    public static ListCellRenderer createProjectRenderer() {
+        return new DefaultListCellRenderer() {
+            public Component getListCellRendererComponent(
+                    JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (!(value instanceof Project)) {
+                    return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                }
+                ProjectInformation pi = ProjectUtils.getInformation((Project) value);
+                JLabel c = (JLabel) super.getListCellRendererComponent(list, pi.getDisplayName(), index, isSelected, cellHasFocus);
+                c.setIcon(pi.getIcon());
+                return this;
+            }
+        };
     }
     
     /**
