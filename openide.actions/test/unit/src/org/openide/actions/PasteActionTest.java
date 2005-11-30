@@ -7,13 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.actions;
 
 
+import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -22,12 +23,18 @@ import junit.textui.TestRunner;
 
 import org.netbeans.junit.*;
 import org.openide.actions.*;
+import org.openide.actions.ActionsInfraHid.UsefulThings;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 
 /** Test behaviour of PasteAction intogether with clonning.
  */
 public class PasteActionTest extends AbstractCallbackActionTestHidden {
+    static {
+            ActionsInfraHid.UT.setActivated (null);
+    }
+    
     public PasteActionTest(String name) {
         super(name);
     }
@@ -104,6 +111,38 @@ public class PasteActionTest extends AbstractCallbackActionTestHidden {
         action.putValue ("delegates", arr);
         assertTrue ("Now we have delegates again, thus we are disabled", !clone.isEnabled ());
         listener.assertCnt ("One change delivered", 1);
+    }
+    
+    public void testDelegatesAsArrayOfAction () throws Exception {
+        OurAction[] arr = {
+            new OurAction ()
+        };
+        action.putValue ("delegates", arr);
+        //arr[0].setEnabled (true);
+        
+        TopComponent tc = new TopComponent();
+        tc.getActionMap ().put(javax.swing.text.DefaultEditorKit.pasteAction, action);
+        ActionsInfraHid.UT.setActivated (tc);
+        global.actionPerformed (new ActionEvent (this, 0, "waitFinished"));
+        
+        arr[0].assertCnt ("Performed on delegate", 1);
+        action.assertCnt ("Not performed on action", 0);
+    }
+    
+    public void testDelegatesAsArrayOfPasteType () throws Exception {
+        OurPasteType [] arr = {
+            new OurPasteType ()
+        };
+        action.putValue ("delegates", arr);
+        //arr[0].setEnabled (true);
+        
+        TopComponent tc = new TopComponent();
+        tc.getActionMap ().put(javax.swing.text.DefaultEditorKit.pasteAction, action);
+        ActionsInfraHid.UT.setActivated (tc);
+        global.actionPerformed (new ActionEvent (this, 0, "waitFinished"));
+        
+        action.assertCnt ("Not performed on action", 0);
+        arr[0].assertCnt ("Performed on delegate", 1);
     }
     
     public void testDelegatesAsMoreActions () throws Exception {

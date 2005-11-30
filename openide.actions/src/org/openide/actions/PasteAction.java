@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.actions;
@@ -140,6 +140,11 @@ public final class PasteAction extends CallbackSystemAction {
                     PasteType [] arr = (PasteType []) obj;
                     if (arr.length > 0) {
                         t = arr [0];
+                    }
+                } else if (obj instanceof Action []) {
+                    Action [] arr = (Action []) obj;
+                    if (arr.length > 0) {
+                        arr [0].actionPerformed (ev);
                     }
                 } else {
                     ac.actionPerformed(ev);
