@@ -254,22 +254,27 @@ public class UpdateExecutor extends ExecutorSupport implements FileChangeListene
     }
 
     public void fileFolderCreated(FileEvent fe) {
+        if (CvsVersioningSystem.ignoringFilesystemEvents()) return;
         onFileChanged(FileUtil.toFile(fe.getFile()));
     }
 
     public void fileDataCreated(FileEvent fe) {
+        if (CvsVersioningSystem.ignoringFilesystemEvents()) return;
         onFileChanged(FileUtil.toFile(fe.getFile()));
     }
 
     public void fileChanged(FileEvent fe) {
+        if (CvsVersioningSystem.ignoringFilesystemEvents()) return;
         onFileChanged(FileUtil.toFile(fe.getFile()));
     }
 
     public void fileDeleted(FileEvent fe) {
+        if (CvsVersioningSystem.ignoringFilesystemEvents()) return;
         onFileChanged(FileUtil.toFile(fe.getFile()));
     }
 
     public void fileRenamed(FileRenameEvent fe) {
+        if (CvsVersioningSystem.ignoringFilesystemEvents()) return;
         onFileChanged(FileUtil.toFile(fe.getFile()));
         String oldExtension = fe.getExt();
         if (oldExtension.length() > 0) oldExtension = "." + oldExtension; // NOI18N

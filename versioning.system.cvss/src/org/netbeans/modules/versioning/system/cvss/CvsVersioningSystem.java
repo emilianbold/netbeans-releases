@@ -604,6 +604,15 @@ public class CvsVersioningSystem {
         FilesystemHandler.ignoreEvents(ignore);
     }
 
+    /**
+     * Should we ignore incoming filesystem events now?
+     * 
+     * @return true to ignore FS events, false otherwise
+     */ 
+    public static boolean ignoringFilesystemEvents() {
+        return FilesystemHandler.ignoringEvents();
+    }
+    
     void shutdown() {
         filesystemHandler.shutdown();
         FileStatusProvider.getInstance().shutdown();

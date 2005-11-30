@@ -67,6 +67,13 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
         }
     }
 
+    /**
+     * @return true if filesystem events are ignored in current thread, false otherwise
+     */ 
+    static boolean ignoringEvents() {
+        return ignoredThread == Thread.currentThread();
+    }
+    
     // FileChangeListener implementation ---------------------------
     
     public void fileFolderCreated(FileEvent fe) {
