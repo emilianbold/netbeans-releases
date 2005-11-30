@@ -2188,6 +2188,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     if (targetContainer != originalCont) {
                         for (int i=0; i < movingComponents.length; i++) {
                             getFormModel().removeComponent(movingComponents[i], false);
+                        }
+                        // Issue 69410 (don't mix remove/add chnages)
+                        for (int i=0; i < movingComponents.length; i++) {
                             getFormModel().addComponent(movingComponents[i], targetContainer);
                         }
                     }

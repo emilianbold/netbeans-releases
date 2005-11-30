@@ -456,7 +456,30 @@ public class LayoutModel implements LayoutConstants {
         addInterval(region.getInterval(HORIZONTAL), lCont.getLayoutRoot(HORIZONTAL), -1);
         addInterval(region.getInterval(VERTICAL), lCont.getLayoutRoot(VERTICAL), -1);
     }
-    
+
+    public LayoutInterval[] createIntervalsFromBounds(LayoutRegion space, LayoutComponent[] components, LayoutRegion[] bounds) {
+        Map idToBounds = new HashMap();
+        for (int i=0; i<components.length; i++) {
+            for (int dim=0; dim<DIM_COUNT; dim++) {
+                LayoutInterval interval = components[i].getLayoutInterval(dim);
+                setIntervalSize(interval, interval.getMinimumSize(), bounds[i].size(dim), interval.getMaximumSize());
+            }
+            Rectangle compBounds = new Rectangle(
+                bounds[i].positions[HORIZONTAL][LEADING]-space.positions[HORIZONTAL][LEADING],
+                bounds[i].positions[VERTICAL][LEADING]-space.positions[VERTICAL][LEADING],
+                bounds[i].size(HORIZONTAL),
+                bounds[i].size(VERTICAL));
+            idToBounds.put(components[i].getId(), compBounds);
+        }
+        RegionInfo region = new RegionInfo(idToBounds);
+        region.calculateIntervals();
+        LayoutInterval[] result = new LayoutInterval[DIM_COUNT];
+        for (int dim=0; dim<DIM_COUNT; dim++) {
+            result[dim] = region.getInterval(dim);
+        }
+        return result;
+    }
+
     private class RegionInfo {
         private LayoutInterval horizontal = null;
         private LayoutInterval vertical = null;

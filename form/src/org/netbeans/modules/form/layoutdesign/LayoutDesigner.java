@@ -550,21 +550,30 @@ public class LayoutDesigner implements LayoutConstants {
                     LayoutRegion origSpace = null;
                     for (int dim=0; dim < DIM_COUNT; dim++) {
                         if (components.length > 1) {
-                            if (origSpace == null) {
-                                origSpace = new LayoutRegion();
-                                // Calculate original space
-                                for (int i=0; i < components.length; i++) {
-                                    origSpace.expand(components[i].getLayoutInterval(0).getCurrentSpace());
+                            if (newComponent) {
+                                // Moving several components from old layout
+                                for (int i=0; i<components.length; i++) {
+                                    layoutModel.addComponent(components[i], targetContainer, -1);
                                 }
+                                addingInts = layoutModel.createIntervalsFromBounds(dragger.getMovingSpace(), components, dragger.getMovingBounds());
+                                break;
+                            } else {
+                                if (origSpace == null) {
+                                    origSpace = new LayoutRegion();
+                                    // Calculate original space
+                                    for (int i=0; i < components.length; i++) {
+                                        origSpace.expand(components[i].getLayoutInterval(0).getCurrentSpace());
+                                    }
+                                }
+                                LayoutInterval[] children = new LayoutInterval[components.length];
+                                for (int i=0; i<components.length; i++) {
+                                    children[i] = components[i].getLayoutInterval(dim);
+                                }
+                                LayoutInterval parent = LayoutInterval.getCommonParent(children);
+                                // Restriction of the layout model of the common parent
+                                // in the original layout (this also removes the original intervals)
+                                addingInts[dim] = restrictedCopy(parent, components, origSpace, dim, null);
                             }
-                            LayoutInterval[] children = new LayoutInterval[components.length];
-                            for (int i=0; i<components.length; i++) {
-                                children[i] = components[i].getLayoutInterval(dim);
-                            }
-                            LayoutInterval parent = LayoutInterval.getCommonParent(children);
-                            // Restriction of the layout model of the common parent
-                            // in the original layout (this also removes the original intervals)
-                            addingInts[dim] = restrictedCopy(parent, components, origSpace, dim, null);
                         } else {
                             addingInts[dim] = components[0].getLayoutInterval(dim);
                             if (newComponent) { // Ensure correct size when the component comes from old layout
