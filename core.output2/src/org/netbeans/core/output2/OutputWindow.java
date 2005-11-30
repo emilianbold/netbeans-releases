@@ -263,9 +263,11 @@ public class OutputWindow extends AbstractOutputWindow {
                 setHtmlDisplayName("<html>" + newName); //NOI18N
             } else {
                 setDisplayName(newName);
+                setHtmlDisplayName(null);
             }
         } else {
             setDisplayName(winName);
+            setHtmlDisplayName(null);
         }
     }
 

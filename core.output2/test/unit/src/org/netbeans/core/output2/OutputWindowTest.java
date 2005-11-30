@@ -101,12 +101,12 @@ public class OutputWindowTest extends TestCase {
         io.getOut().flush();
         
         assertTrue ("Tab name should be html but is " + win.getDisplayName(), 
-            win.getDisplayName().indexOf("<") >= 0);
+            win.getHtmlDisplayName() != null && win.getHtmlDisplayName().indexOf("<") >= 0);
 
         io.getOut().close();
         sleep();
         sleep();
-        assertFalse ("Tab name should not be html", win.getDisplayName().indexOf("<") >= 0);
+        assertFalse ("Tab name should not be html", win.getHtmlDisplayName() != null && win.getHtmlDisplayName().indexOf("<") >= 0);
         
         final OutputTab tab = (OutputTab) win.getSelectedTab();
         
@@ -119,19 +119,19 @@ public class OutputWindowTest extends TestCase {
         });
         sleep();
         sleep();
-        assertFalse ("Tab name should not be html", win.getDisplayName().indexOf("<") >= 0);
+        assertFalse ("Tab name should not be html", win.getHtmlDisplayName() != null && win.getHtmlDisplayName().indexOf("<") >= 0);
         
         io.getOut().reset();
         sleep();
         io.getOut().println("And here is some more text");
         sleep();
         
-        assertTrue ("Tab name should be html", win.getDisplayName().indexOf("<") >= 0);
+        assertTrue ("Tab name should be html", win.getHtmlDisplayName() != null && win.getHtmlDisplayName().indexOf("<") >= 0);
 
         io.getOut().close();
         sleep();
         sleep();
-        assertFalse ("Tab name should not be html", win.getDisplayName().indexOf("<") >= 0);
+        assertFalse ("Tab name should not be html", win.getHtmlDisplayName() != null && win.getHtmlDisplayName().indexOf("<") >= 0);
         
     }
 

@@ -25,11 +25,12 @@ import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
 import junit.framework.TestCase;
+import org.netbeans.junit.NbTestCase;
 
 /**
  * @author Tim Boudreau
  */
-public class OutputDocumentTest extends TestCase {
+public class OutputDocumentTest extends NbTestCase {
     
     public OutputDocumentTest(String testName) {
         super(testName);
@@ -40,7 +41,7 @@ public class OutputDocumentTest extends TestCase {
 
         OutWriter ow = new OutWriter ();
         OutputDocument doc = new OutputDocument (ow);
-        ODListener od = new ODListener();
+        final ODListener od = new ODListener();
         doc.addDocumentListener(od);
         String first = "This is the first string";
         String second = "This is the second string, ain't it?";
@@ -50,13 +51,15 @@ public class OutputDocumentTest extends TestCase {
         ow.println (second);
         ow.println (third);
         ow.flush();
-    
-        // Make sure we process EQ events (since AbstractLines.fire uses Mutex.EVENT):
-        EventQueue.invokeAndWait(new Runnable() {
-            public void run() {}
-        });
-        
+//    
+//        // Make sure we process EQ events (since AbstractLines.fire uses Mutex.EVENT):
+//        EventQueue.invokeAndWait(new Runnable() {
+//            public void run() {
+//                
+//            }
+//        });
         od.assertChanged();
+        
     }
     
     public void testDocumentEvents() throws Exception {
@@ -71,11 +74,11 @@ public class OutputDocumentTest extends TestCase {
             ow.println("This is string " + i);
         }
         
-        SwingUtilities.invokeAndWait (new Runnable() {
-            public void run(){
-                System.currentTimeMillis();
-            }
-        });
+//        SwingUtilities.invokeAndWait (new Runnable() {
+//            public void run(){
+//                System.currentTimeMillis();
+//            }
+//        });
         Thread.currentThread().sleep(1500);
         
         DocumentEvent de = od.getEvent();
@@ -579,13 +582,13 @@ public class OutputDocumentTest extends TestCase {
         ow.println (s);
         ow.flush();
         
-        //Wait for async event firing from output document
-        SwingUtilities.invokeAndWait (new Runnable() {
-            public void run() {
-                System.currentTimeMillis();
-            }
-        });
-        Thread.currentThread().sleep (1000);
+//        //Wait for async event firing from output document
+//        SwingUtilities.invokeAndWait (new Runnable() {
+//            public void run() {
+//                System.currentTimeMillis();
+//            }
+//        });
+//        Thread.currentThread().sleep (1000);
         
         int styLen = styled.getLength();
         int docLen = doc.getLength();
@@ -609,18 +612,18 @@ public class OutputDocumentTest extends TestCase {
                 ow.println (s);
                 ow.flush();
 
-                //Wait for async event firing from output document
-                SwingUtilities.invokeAndWait (new Runnable() {
-                    public void run() {
-                        System.currentTimeMillis();
-                    }
-                });
-                SwingUtilities.invokeAndWait (new Runnable() {
-                    public void run() {
-                        System.currentTimeMillis();
-                    }
-                });
-                Thread.currentThread().sleep (500);
+//                //Wait for async event firing from output document
+//                SwingUtilities.invokeAndWait (new Runnable() {
+//                    public void run() {
+//                        System.currentTimeMillis();
+//                    }
+//                });
+//                SwingUtilities.invokeAndWait (new Runnable() {
+//                    public void run() {
+//                        System.currentTimeMillis();
+//                    }
+//                });
+//                Thread.currentThread().sleep (500);
 
                 styLen = styled.getLength();
                 docLen = doc.getLength();
@@ -719,6 +722,10 @@ public class OutputDocumentTest extends TestCase {
         "I'm sure there's an explanation for all of this.  I just don't know" +
         "what it is"
     };
+
+    protected boolean runInEQ() {
+        return true;
+    }
     
     /*
     public void testMultithreadedWrites() throws Exception {
