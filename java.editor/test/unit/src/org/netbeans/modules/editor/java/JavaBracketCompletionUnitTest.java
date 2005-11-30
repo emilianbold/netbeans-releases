@@ -121,7 +121,7 @@ public class JavaBracketCompletionUnitTest extends JavaBaseDocumentUnitTestCase 
     }
 
     
-    // ------- Tests for completion of quote -------------    
+    // ------- Tests for completion of quote (") -------------    
     public void testSimpleQuoteInEmptyDoc () throws Exception {
         setLoadDocumentText (
             "|"
@@ -302,6 +302,7 @@ public class JavaBracketCompletionUnitTest extends JavaBaseDocumentUnitTestCase 
         );
     }
     
+    /** issue #69524 */
     public void testQuoteEaten() throws Exception {
         setLoadDocumentText (
             "|"
@@ -310,6 +311,201 @@ public class JavaBracketCompletionUnitTest extends JavaBaseDocumentUnitTestCase 
         typeQuoteChar('"');
         assertDocumentTextAndCaret ("Quote Eaten", 
             "\"\"|"
+        );
+    }    
+
+    
+    // ------- Tests for completion of single quote (') -------------        
+    
+    public void testSingleQuoteInEmptyDoc () throws Exception {
+        setLoadDocumentText (
+            "|"
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote In Empty Doc", 
+            "'|'"
+        );
+    }
+
+    public void testSingleQuoteAtBeginingOfDoc () throws Exception {
+        setLoadDocumentText (
+            "|  "
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote At Begining Of Doc", 
+            "'|'  "
+        );
+    }
+
+    public void testSingleQuoteAtEndOfDoc () throws Exception {
+        setLoadDocumentText (
+            "  |"
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote At End Of Doc", 
+            "  '|'"
+        );
+    }
+    
+    public void testSingleQuoteInWhiteSpaceArea () throws Exception {
+        setLoadDocumentText (
+            "  |  "
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote In White Space Area", 
+            "  '|'  "
+        );
+    }
+    
+    public void testSingleQuoteAtEOL () throws Exception {
+        setLoadDocumentText (
+            "  |\n"
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote At EOL", 
+            "  '|'\n"
+        );
+    }
+    
+    public void testSingleQuoteWithUnterminatedCharLiteral () throws Exception {
+        setLoadDocumentText (
+            "  '| \n"
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote With Unterminated Char Literal", 
+            "  ''| \n"
+        );
+    }
+    
+    public void testSingleQuoteAtEOLWithUnterminatedCharLiteral () throws Exception {
+        setLoadDocumentText (
+            "  ' |\n"
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote At EOL With Unterminated Char Literal", 
+            "  ' '|\n"
+        );
+    }
+
+    public void testSingleQuoteInsideCharLiteral () throws Exception {
+        setLoadDocumentText (
+            "  '| ' "
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote Inside Char Literal", 
+            "  ''| ' "
+        );
+    }
+
+    public void testSingleQuoteInsideEmptyParentheses () throws Exception {
+        setLoadDocumentText (
+            " System.out.println(|) "
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote Inside Empty Parentheses", 
+            " System.out.println('|') "
+        );
+    }
+
+    public void testSingleQuoteInsideNonEmptyParentheses () throws Exception {
+        setLoadDocumentText (
+            " System.out.println(|some text) "
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote Inside Non Empty Parentheses", 
+            " System.out.println('|some text) "
+        );
+    }
+    
+    public void testSingleQuoteInsideNonEmptyParenthesesBeforeClosingParentheses () throws Exception {
+        setLoadDocumentText (
+            " System.out.println(i+|) "
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote Inside Non Empty Parentheses Before Closing Parentheses", 
+            " System.out.println(i+'|') "
+        );
+    }
+    
+    public void testSingleQuoteInsideNonEmptyParenthesesBeforeClosingParenthesesAndUnterminatedCharLiteral () throws Exception {
+        setLoadDocumentText (
+            " System.out.println(' |); "
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote Inside Non Empty Parentheses Before Closing Parentheses And Unterminated Char Literal", 
+            " System.out.println(' '|); "
+        );
+    }
+
+    public void testSingleQuoteBeforePlus () throws Exception {
+        setLoadDocumentText (
+            " System.out.println(|+\"string literal\"); "
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote Before Plus", 
+            " System.out.println('|'+\"string literal\"); "
+        );
+    }
+
+    public void testSingleQuoteBeforeComma () throws Exception {
+        setLoadDocumentText (
+            "String s[] = new String[]{|,\"two\"};"
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote Before Comma", 
+            "String s[] = new String[]{'|',\"two\"};"
+        );
+    }
+
+    public void testSingleQuoteBeforeBrace () throws Exception {
+        setLoadDocumentText (
+            "String s[] = new String[]{\"one\",|};"
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote Before Brace", 
+            "String s[] = new String[]{\"one\",'|'};"
+        );
+    }
+
+    public void testSingleQuoteBeforeSemicolon() throws Exception {
+        setLoadDocumentText (
+            "String s = \"\" + |;"
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote Before Semicolon", 
+            "String s = \"\" + '|';"
+        );
+    }
+
+    public void testsingleQuoteBeforeSemicolonWithWhitespace() throws Exception {
+        setLoadDocumentText (
+            "String s = \"\" +| ;"
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote Before Semicolon With Whitespace", 
+            "String s = \"\" +'|' ;"
+        );
+    }
+
+    public void testSingleQuoteAfterEscapeSequence() throws Exception {
+        setLoadDocumentText (
+            "\\|"
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote Before Semicolon With Whitespace", 
+            "\\'|"
+        );
+    }
+    
+    /** issue #69524 */
+    public void testSingleQuoteEaten() throws Exception {
+        setLoadDocumentText (
+            "|"
+        );
+        typeQuoteChar('\'');
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote Eaten", 
+            "''|"
         );
     }    
     

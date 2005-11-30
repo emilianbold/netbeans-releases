@@ -572,7 +572,9 @@ class BracketCompletion {
     int lastNonWhite = Utilities.getRowLastNonWhite(doc, dotPos);
     // eol - true if the caret is at the end of line (ignoring whitespaces)
     boolean eol = lastNonWhite < dotPos; 
-    boolean insideString = token == JavaTokenContext.STRING_LITERAL;
+    boolean insideString = 
+            token == JavaTokenContext.STRING_LITERAL ||
+            token == JavaTokenContext.CHAR_LITERAL;
     
     if (!insideString){
         // check if the caret is at the very end of the line and there
@@ -580,7 +582,9 @@ class BracketCompletion {
         if (token == JavaTokenContext.WHITESPACE && eol){
             if (dotPos-1 > 0){
                 token = syntax.getTokenID(dotPos-1);
-                insideString = token == JavaTokenContext.STRING_LITERAL;
+                insideString = 
+                    token == JavaTokenContext.STRING_LITERAL ||
+                    token == JavaTokenContext.CHAR_LITERAL;
             }
         }
     }
