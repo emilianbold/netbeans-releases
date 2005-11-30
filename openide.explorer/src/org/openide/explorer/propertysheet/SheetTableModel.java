@@ -209,20 +209,21 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
                 if (column == 0) {
                     result = p.getShortDescription();
                 } else {
-                    //IZ 44152, Debugger can produce > 512K strings, so add 
-                    //some special handling for very long strings
-                    if (p.getValueType() == String.class) {
-                        String s = (String) p.getValue();
-
-                        if ((s != null) && (s.length() > 2048)) {
-                            return "";
-                        } else {
-                            return s;
-                        }
-                    }
-
-                    PropertyEditor ped = PropUtils.getPropertyEditor(p);
-                    result = ped.getAsText();
+                     PropertyEditor ped = PropUtils.getPropertyEditor (p);
+                     if (ped != null) {
+                         result = ped.getAsText();
+                     } else {
+                         //IZ 44152, Debugger can produce > 512K strings, so add
+                         //some special handling for very long strings
+                         if (p.getValueType() == String.class) {
+                             String s = (String) p.getValue();
+                             if (s != null && s.length() > 2048) {
+                                 return "";
+                             } else {
+                                 return s;
+                             }
+                         }
+                     }
                 }
             } catch (Exception e) {
                 //Suppress the exception, this is a tooltip
