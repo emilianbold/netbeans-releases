@@ -45,6 +45,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.project.ui.*;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 
 /**
  *
@@ -620,12 +621,32 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     }//GEN-LAST:event_jButtonPrjLocationActionPerformed
 
     private void jButtonSrcLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSrcLocationActionPerformed
-        JFileChooser chooser = FileChooser.createDirectoryChooser(
-                "ImportLocationVisual.Sources", moduleLocationTextField.getText()); //NOI18N
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File projectDir = chooser.getSelectedFile();
-            moduleLocationTextField.setText( projectDir.getAbsolutePath());
-        }            
+        JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+        if (moduleLocationTextField.getText().length() > 0 && getProjectLocation().exists()) {
+            chooser.setSelectedFile(getProjectLocation());
+        } else {
+            // honor the contract in issue 58987
+            File currentDirectory = null;
+            FileObject existingSourcesFO = Templates.getExistingSourcesFolder(wizardDescriptor);
+            if (existingSourcesFO != null) {
+                File existingSourcesFile = FileUtil.toFile(existingSourcesFO);
+                if (existingSourcesFile != null && existingSourcesFile.isDirectory()) {
+                    currentDirectory = existingSourcesFile;
+                }
+            }
+            if (currentDirectory != null) {
+                chooser.setCurrentDirectory(currentDirectory);
+            } else {
+                chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+            }
+        }
+        
+        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            File projectDir = FileUtil.normalizeFile(chooser.getSelectedFile());
+            moduleLocationTextField.setText(projectDir.getAbsolutePath());
+        }
     }//GEN-LAST:event_jButtonSrcLocationActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -787,6 +808,14 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         warningPlaceHolderPanel.add(warningPanel, java.awt.BorderLayout.CENTER);
     }
     
+    public File getProjectLocation() {
+        return getAsFile(moduleLocationTextField.getText());
+    }
+    
+    private File getAsFile(String filename) {
+        return FileUtil.normalizeFile(new File(filename));
+    }
+
     private static class ServerIDAdapter implements Comparable {
         private String serverID;
         
