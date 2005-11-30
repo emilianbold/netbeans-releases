@@ -148,18 +148,21 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
             ZipInputStream str = new ZipInputStream(source);
             ZipEntry entry;
             while ((entry = str.getNextEntry()) != null) {
-                // XXX what about directory entries? should be skipped!
-                FileObject fo = FileUtil.createData(projectRoot, entry.getName());
-                FileLock lock = fo.lock();
-                try {
-                    OutputStream out = fo.getOutputStream(lock);
+                if (entry.isDirectory()) {
+                    FileObject fo = FileUtil.createFolder(projectRoot, entry.getName());
+                } else {
+                    FileObject fo = FileUtil.createData(projectRoot, entry.getName());
+                    FileLock lock = fo.lock();
                     try {
-                        FileUtil.copy(str, out);
+                        OutputStream out = fo.getOutputStream(lock);
+                        try {
+                            FileUtil.copy(str, out);
+                        } finally {
+                            out.close();
+                        }
                     } finally {
-                        out.close();
+                        lock.releaseLock();
                     }
-                } finally {
-                    lock.releaseLock();
                 }
             }
         } finally {

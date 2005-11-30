@@ -306,6 +306,7 @@ final class NewProjectIterator extends BasicWizardIterator {
             if (fos[i].isData() && !fos[i].isVirtual() && sharab == SharabilityQuery.SHARABLE) {
                 accepted.add(fos[i]);
             } else if (fos[i].isFolder() && sharab != SharabilityQuery.NOT_SHARABLE) {
+                accepted.add(fos[i]);
                 collectFiles(fos[i], accepted, sharab);
             }
         }
@@ -319,15 +320,21 @@ final class NewProjectIterator extends BasicWizardIterator {
             Iterator it = files.iterator();
             while (it.hasNext()) {
                 FileObject fo = (FileObject)it.next();
-                ZipEntry entry = new ZipEntry(FileUtil.getRelativePath(root, fo));
+                String path = FileUtil.getRelativePath(root, fo);
+                if (fo.isFolder() && !path.endsWith("/")) {
+                    path = path + "/";
+                }
+                ZipEntry entry = new ZipEntry(path);
                 str.putNextEntry(entry);
-                InputStream in = null;
-                try {
-                    in = fo.getInputStream();
-                    FileUtil.copy(in, str);
-                } finally {
-                    if (in != null) {
-                        in.close();
+                if (fo.isData()) {
+                    InputStream in = null;
+                    try {
+                        in = fo.getInputStream();
+                        FileUtil.copy(in, str);
+                    } finally {
+                        if (in != null) {
+                            in.close();
+                        }
                     }
                 }
                 str.closeEntry();
