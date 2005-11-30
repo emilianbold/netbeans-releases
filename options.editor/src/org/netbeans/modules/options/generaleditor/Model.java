@@ -62,8 +62,7 @@ public class Model {
         if (javaOptions == null)
             javaOptions = getOptions ("text/x-java");
         if (javaOptions == null) return;
-        if (javaFoldingMap == null)
-            javaFoldingMap = javaOptions.getCodeFoldingProps ();
+        Map javaFoldingMap = javaOptions.getCodeFoldingProps ();
 
         javaFoldingMap.put (
             SettingsNames.CODE_FOLDING_ENABLE,
@@ -203,19 +202,15 @@ public class Model {
     
     // private helper methods ..................................................
     
-    private Map javaFoldingMap;
-    
     private boolean getFoldingParameter (
         String parameterName, 
         boolean defaultValue
     ) {
-        if (javaFoldingMap == null) {
-            BaseOptions options = getOptions ("text/x-java");
-            if (options == null)
-                options = getOptions ("text/plain");
-            if (options == null) return defaultValue;
-            javaFoldingMap = options.getCodeFoldingProps ();
-        }
+        BaseOptions options = getOptions ("text/x-java");
+        if (options == null)
+            options = getOptions ("text/plain");
+        if (options == null) return defaultValue;
+        Map javaFoldingMap = options.getCodeFoldingProps ();
         Boolean b = (Boolean) javaFoldingMap.get (parameterName);
         if (b != null) return b.booleanValue ();
         return defaultValue;
