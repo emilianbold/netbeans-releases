@@ -55,25 +55,25 @@ public class FormUtils
     /** Table defining categories of properties. It overrides original Swing
      * definition from beaninfo (which is often inadequate). */
     private static Object[][] propertyCategories = {
-        { java.awt.Component.class, CLASS_AND_SUBCLASSES,
+        { "java.awt.Component", CLASS_AND_SUBCLASSES,
                 "locale", PROP_HIDDEN,
                 "locationOnScreen", PROP_HIDDEN,
                 "showing", PROP_HIDDEN },
-        { java.awt.Component.class, CLASS_AND_SWING_SUBCLASSES,
+        { "java.awt.Component", CLASS_AND_SWING_SUBCLASSES,
                 "accessibleContext", PROP_HIDDEN,
                 "components", PROP_HIDDEN,
                 "containerListeners", PROP_HIDDEN,
                 "focusTraversalPolicySet", PROP_HIDDEN,
                 "focusCycleRootAncestor", PROP_HIDDEN,
                 "focusOwner", PROP_HIDDEN },
-        { java.awt.Container.class, CLASS_AND_SUBCLASSES,
+        { "java.awt.Container", CLASS_AND_SUBCLASSES,
                 "componentCount", PROP_HIDDEN,
                 "layout", PROP_HIDDEN },
-        { javax.swing.JComponent.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JComponent", CLASS_AND_SUBCLASSES,
                 "debugGraphicsOptions", PROP_EXPERT,
                 "preferredSize", PROP_NORMAL,
                 "actionMap", PROP_HIDDEN },
-        { javax.swing.JComponent.class, CLASS_AND_SWING_SUBCLASSES,
+        { "javax.swing.JComponent", CLASS_AND_SWING_SUBCLASSES,
                 "graphics", PROP_HIDDEN,
                 "height", PROP_HIDDEN,
                 "inputMap", PROP_HIDDEN,
@@ -97,7 +97,7 @@ public class FormUtils
                 "managingFocus", PROP_HIDDEN,
                 "optimizedDrawingEnabled", PROP_HIDDEN,
                 "paintingTile", PROP_HIDDEN },
-        { java.awt.Window.class, CLASS_AND_SWING_SUBCLASSES,
+        { "java.awt.Window", CLASS_AND_SWING_SUBCLASSES,
                 "focusCycleRootAncestor", PROP_HIDDEN,
                 "focusOwner", PROP_HIDDEN,
                 "active", PROP_HIDDEN,
@@ -117,7 +117,7 @@ public class FormUtils
                 "toolkit", PROP_HIDDEN,
                 "focusableWindow", PROP_HIDDEN,
                 "locationRelativeTo", PROP_HIDDEN },
-        { javax.swing.text.JTextComponent.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.text.JTextComponent", CLASS_AND_SUBCLASSES,
                 "document", PROP_PREFERRED,
                 "text", PROP_PREFERRED,
                 "editable", PROP_PREFERRED,
@@ -125,34 +125,34 @@ public class FormUtils
                 "selectedTextColor", PROP_NORMAL,
                 "selectionColor", PROP_NORMAL,
                 "caretColor", PROP_NORMAL },
-        { javax.swing.text.JTextComponent.class, CLASS_AND_SWING_SUBCLASSES,
+        { "javax.swing.text.JTextComponent", CLASS_AND_SWING_SUBCLASSES,
                 "actions", PROP_HIDDEN,
                 "caretListeners", PROP_HIDDEN,
                 "inputMethodRequests", PROP_HIDDEN },
-        { javax.swing.JTextField.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JTextField", CLASS_AND_SUBCLASSES,
                 "columns", PROP_PREFERRED },
-        { javax.swing.JTextField.class, CLASS_AND_SWING_SUBCLASSES,
+        { "javax.swing.JTextField", CLASS_AND_SWING_SUBCLASSES,
                 "horizontalVisibility", PROP_HIDDEN },
-        { javax.swing.JFormattedTextField.class, CLASS_EXACTLY,
+        { "javax.swing.JFormattedTextField", CLASS_EXACTLY,
                 "formatter", PROP_HIDDEN },
-        { javax.swing.JPasswordField.class, CLASS_EXACTLY,
+        { "javax.swing.JPasswordField", CLASS_EXACTLY,
                 "password", PROP_HIDDEN },
-        { javax.swing.JTextArea.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JTextArea", CLASS_AND_SUBCLASSES,
                 "columns", PROP_PREFERRED,
                 "rows", PROP_PREFERRED,
                 "lineWrap", PROP_PREFERRED,
                 "wrapStyleWord", PROP_PREFERRED },
-        { javax.swing.JEditorPane.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JEditorPane", CLASS_AND_SUBCLASSES,
                 "border", PROP_PREFERRED,
                 "font", PROP_PREFERRED },
-        { javax.swing.JEditorPane.class, CLASS_AND_SWING_SUBCLASSES,
+        { "javax.swing.JEditorPane", CLASS_AND_SWING_SUBCLASSES,
                 "hyperlinkListeners", PROP_HIDDEN },
-        { javax.swing.JTextPane.class, CLASS_EXACTLY,
+        { "javax.swing.JTextPane", CLASS_EXACTLY,
                 "characterAttributes", PROP_HIDDEN,
                 "paragraphAttributes", PROP_HIDDEN },
-        { javax.swing.JTree.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JTree", CLASS_AND_SUBCLASSES,
                 "border", PROP_PREFERRED },
-        { javax.swing.JTree.class, CLASS_EXACTLY,
+        { "javax.swing.JTree", CLASS_EXACTLY,
                 "editing", PROP_HIDDEN,
                 "editingPath", PROP_HIDDEN,
                 "selectionCount", PROP_HIDDEN,
@@ -164,79 +164,79 @@ public class FormUtils
                 "treeExpansionListeners", PROP_HIDDEN,
                 "treeSelectionListeners", PROP_HIDDEN,
                 "treeWillExpandListeners", PROP_HIDDEN },
-        { javax.swing.AbstractButton.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.AbstractButton", CLASS_AND_SUBCLASSES,
                 "mnemonic", PROP_PREFERRED,
                 "action", PROP_PREFERRED },
-        { javax.swing.AbstractButton.class, CLASS_AND_SWING_SUBCLASSES,
+        { "javax.swing.AbstractButton", CLASS_AND_SWING_SUBCLASSES,
                 "selectedObjects", PROP_HIDDEN },
-        { javax.swing.JToggleButton.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JToggleButton", CLASS_AND_SUBCLASSES,
                 "icon", PROP_PREFERRED,
                 "selected", PROP_PREFERRED,
                 "buttonGroup", PROP_PREFERRED },
-        { javax.swing.JButton.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JButton", CLASS_AND_SUBCLASSES,
                 "icon", PROP_PREFERRED,
                 "defaultButton", PROP_HIDDEN },
-        { javax.swing.JCheckBox.class, CLASS_EXACTLY,
+        { "javax.swing.JCheckBox", CLASS_EXACTLY,
                 "icon", PROP_NORMAL },
-        { javax.swing.JRadioButton.class, CLASS_EXACTLY,
+        { "javax.swing.JRadioButton", CLASS_EXACTLY,
                 "icon", PROP_NORMAL },
-        { javax.swing.JMenuItem.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JMenuItem", CLASS_AND_SUBCLASSES,
                 "icon", PROP_PREFERRED },
-        { javax.swing.JMenuItem.class, CLASS_AND_SWING_SUBCLASSES,
+        { "javax.swing.JMenuItem", CLASS_AND_SWING_SUBCLASSES,
                 "menuDragMouseListeners", PROP_HIDDEN,
                 "menuKeyListeners", PROP_HIDDEN },
-        { javax.swing.JCheckBoxMenuItem.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JCheckBoxMenuItem", CLASS_AND_SUBCLASSES,
                 "selected", PROP_PREFERRED,
                 "buttonGroup", PROP_PREFERRED,
                 "icon", PROP_NORMAL },
-        { javax.swing.JRadioButtonMenuItem.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JRadioButtonMenuItem", CLASS_AND_SUBCLASSES,
                 "selected", PROP_PREFERRED,
                 "buttonGroup", PROP_PREFERRED,
                 "icon", PROP_NORMAL },
-        { javax.swing.JTabbedPane.class, CLASS_EXACTLY,
+        { "javax.swing.JTabbedPane", CLASS_EXACTLY,
                 "selectedComponent", PROP_EXPERT },
-        { javax.swing.JSplitPane.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JSplitPane", CLASS_AND_SUBCLASSES,
                 "dividerLocation", PROP_PREFERRED,
                 "dividerSize", PROP_PREFERRED,
                 "orientation", PROP_PREFERRED,
                 "resizeWeight", PROP_PREFERRED },
-        { javax.swing.JSplitPane.class, CLASS_EXACTLY,
+        { "javax.swing.JSplitPane", CLASS_EXACTLY,
                 "leftComponent", PROP_HIDDEN,
                 "rightComponent", PROP_HIDDEN,
                 "topComponent", PROP_HIDDEN,
                 "bottomComponent", PROP_HIDDEN },
-        { javax.swing.JSlider.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JSlider", CLASS_AND_SUBCLASSES,
                 "majorTickSpacing", PROP_PREFERRED,
                 "minorTickSpacing", PROP_PREFERRED,
                 "paintLabels", PROP_PREFERRED,
                 "paintTicks", PROP_PREFERRED,
                 "paintTrack", PROP_PREFERRED,
                 "snapToTicks", PROP_PREFERRED },
-        { javax.swing.JLabel.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JLabel", CLASS_AND_SUBCLASSES,
                 "horizontalAlignment", PROP_PREFERRED,
                 "verticalAlignment", PROP_PREFERRED,
                 "displayedMnemonic", PROP_PREFERRED,
                 "labelFor", PROP_PREFERRED },
-        { javax.swing.JList.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JList", CLASS_AND_SUBCLASSES,
                 "model", PROP_PREFERRED,
                 "border", PROP_PREFERRED,
                 "selectionMode", PROP_PREFERRED },
-        { javax.swing.JComboBox.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JComboBox", CLASS_AND_SUBCLASSES,
                 "model", PROP_PREFERRED },
-        { javax.swing.JComboBox.class, CLASS_EXACTLY,
+        { "javax.swing.JComboBox", CLASS_EXACTLY,
                 "popupVisible", PROP_HIDDEN,
                 "popupMenuListeners", PROP_HIDDEN,
                 "selectedObjects", PROP_HIDDEN },
-        { javax.swing.Scrollable.class, CLASS_AND_SWING_SUBCLASSES,
+        { "javax.swing.Scrollable", CLASS_AND_SWING_SUBCLASSES,
                 "preferredScrollableViewportSize", PROP_HIDDEN,
                 "scrollableTracksViewportWidth", PROP_HIDDEN,
                 "scrollableTracksViewportHeight", PROP_HIDDEN },
-        { javax.swing.JScrollBar.class, CLASS_EXACTLY,
+        { "javax.swing.JScrollBar", CLASS_EXACTLY,
                 "adjustmentListeners", PROP_HIDDEN },
-        { javax.swing.JTable.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JTable", CLASS_AND_SUBCLASSES,
                 "model", PROP_PREFERRED,
                 "border", PROP_PREFERRED },
-        { javax.swing.JTable.class, CLASS_EXACTLY,
+        { "javax.swing.JTable", CLASS_EXACTLY,
                 "editing", PROP_HIDDEN,
                 "editorComponent", PROP_HIDDEN,
                 "selectedColumn", PROP_HIDDEN,
@@ -245,12 +245,12 @@ public class FormUtils
                 "selectedRow", PROP_HIDDEN,
                 "selectedRowCount", PROP_HIDDEN,
                 "selectedRows", PROP_HIDDEN },
-        { javax.swing.JSeparator.class, CLASS_EXACTLY,
+        { "javax.swing.JSeparator", CLASS_EXACTLY,
                 "font", PROP_NORMAL },
-        { javax.swing.JInternalFrame.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JInternalFrame", CLASS_AND_SUBCLASSES,
                 "defaultCloseOperation", PROP_PREFERRED,
                 "visible", PROP_NORMAL },
-        { javax.swing.JInternalFrame.class, CLASS_EXACTLY,
+        { "javax.swing.JInternalFrame", CLASS_EXACTLY,
                 "menuBar", PROP_HIDDEN,
                 "JMenuBar", PROP_HIDDEN,
                 "desktopPane", PROP_HIDDEN,
@@ -258,41 +258,41 @@ public class FormUtils
                 "mostRecentFocusOwner", PROP_HIDDEN,
                 "warningString", PROP_HIDDEN,
                 "closed", PROP_HIDDEN },
-        { javax.swing.JMenu.class, CLASS_EXACTLY,
+        { "javax.swing.JMenu", CLASS_EXACTLY,
                 "accelerator", PROP_HIDDEN,
                 "tearOff", PROP_HIDDEN,
                 "menuComponents", PROP_HIDDEN,
                 "menuListeners", PROP_HIDDEN,
                 "popupMenu", PROP_HIDDEN,
                 "topLevelMenu", PROP_HIDDEN },
-        { javax.swing.JPopupMenu.class, CLASS_AND_SWING_SUBCLASSES,
+        { "javax.swing.JPopupMenu", CLASS_AND_SWING_SUBCLASSES,
                 "popupMenuListeners", PROP_HIDDEN },
-        { java.awt.Frame.class, CLASS_AND_SWING_SUBCLASSES,
+        { "java.awt.Frame", CLASS_AND_SWING_SUBCLASSES,
                 "cursorType", PROP_HIDDEN,
                 "menuBar", PROP_HIDDEN },
-        { javax.swing.JFrame.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JFrame", CLASS_AND_SUBCLASSES,
                 "title", PROP_PREFERRED },
-        { javax.swing.JFrame.class, CLASS_EXACTLY,
+        { "javax.swing.JFrame", CLASS_EXACTLY,
                 "menuBar", PROP_HIDDEN,
                 "layout", PROP_HIDDEN },
-        { javax.swing.JDialog.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JDialog", CLASS_AND_SUBCLASSES,
                 "title", PROP_PREFERRED },
-        { javax.swing.JDialog.class, CLASS_EXACTLY,
+        { "javax.swing.JDialog", CLASS_EXACTLY,
                 "layout", PROP_HIDDEN },
-        { javax.swing.MenuElement.class, CLASS_AND_SWING_SUBCLASSES,
+        { "javax.swing.MenuElement", CLASS_AND_SWING_SUBCLASSES,
                 "component", PROP_HIDDEN,
                 "subElements", PROP_HIDDEN },
-        { javax.swing.JMenuBar.class, CLASS_EXACTLY,
+        { "javax.swing.JMenuBar", CLASS_EXACTLY,
                 "helpMenu", PROP_HIDDEN,
                 "menuCount", PROP_HIDDEN,
                 "selected", PROP_HIDDEN },
-        { javax.swing.JSpinner.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JSpinner", CLASS_AND_SUBCLASSES,
                 "model", PROP_PREFERRED },
-        { java.applet.Applet.class, CLASS_AND_SUBCLASSES,
+        { "java.applet.Applet", CLASS_AND_SUBCLASSES,
                 "appletContext", PROP_HIDDEN,
                 "codeBase", PROP_HIDDEN,
                 "documentBase", PROP_HIDDEN },
-        { javax.swing.JFileChooser.class, CLASS_EXACTLY,
+        { "javax.swing.JFileChooser", CLASS_EXACTLY,
                 "acceptAllFileFilter", PROP_HIDDEN,
                 "choosableFileFilters", PROP_HIDDEN }
     };
@@ -300,32 +300,32 @@ public class FormUtils
     /** Table with explicit changes to propeties accessibility. E.g. some
      * properties needs to be restricted to "detached write". */
     private static Object[][] propertiesAccess = {
-        { javax.swing.JFrame.class, CLASS_AND_SUBCLASSES,
+        { "javax.swing.JFrame", CLASS_AND_SUBCLASSES,
               "defaultCloseOperation", new Integer(FormProperty.DETACHED_WRITE) }
     };
     
     /** Table defining order of dependent properties. */
     private static Object[][] propertyOrder = {
-        { javax.swing.text.JTextComponent.class,
+        { "javax.swing.text.JTextComponent",
             "document", "text" },
-        { javax.swing.JSpinner.class,
+        { "javax.swing.JSpinner",
             "model", "editor" },
-        { javax.swing.AbstractButton.class,
+        { "javax.swing.AbstractButton",
             "action", "actionCommand",
             "action", "enabled",
             "action", "mnemonic",
             "action", "icon",
             "action", "text",
             "action", "toolTipText" },
-        { javax.swing.JMenuItem.class,
+        { "javax.swing.JMenuItem",
             "action", "accelerator" },
-        { javax.swing.JList.class,
+        { "javax.swing.JList",
             "model", "selectedIndex",
             "model", "selectedValues" },
-        { javax.swing.JComboBox.class,
+        { "javax.swing.JComboBox",
             "model", "selectedIndex",
             "model", "selectedItem" },
-        { java.awt.TextComponent.class,
+        { "java.awt.TextComponent",
             "text", "selectionStart",
             "text", "selectionEnd" }
     };
@@ -792,32 +792,6 @@ public class FormUtils
         }
 
         return collectPropertiesClsf(beanClass, propertyCategories, reClsf);
-/*        for (int i=0; i < propertyCategories.length; i++) {
-            Object[] clsf = propertyCategories[i];
-            Class refClass = (Class)clsf[0];
-            Object subclasses = clsf[1];
-
-            if (refClass.equals(beanClass)
-                ||
-                (subclasses == CLASS_AND_SUBCLASSES
-                         && refClass.isAssignableFrom(beanClass))
-                ||
-                (subclasses == CLASS_AND_SWING_SUBCLASSES
-                         && refClass.isAssignableFrom(beanClass)
-                         && beanClass.getName().startsWith("javax.swing."))) {
-                if (reClsf == null)
-                    reClsf = new ArrayList(8);
-                for (int j=2; j < clsf.length; j++)
-                    reClsf.add(clsf[j]);
-            }
-        }
-
-        if (reClsf != null) {
-            Object[] clsfArray = new Object[reClsf.size()];
-            reClsf.toArray(clsfArray);
-            return clsfArray;
-        }
-        return null; */
     }
 
     /** Returns type of property (PROP_PREFERRED, PROP_NORMAL, PROP_EXPERT or
@@ -864,18 +838,21 @@ public class FormUtils
                                                   Object[][] table,
                                                   java.util.List list)
     {
+        // Set of names of super classes of the bean and interfaces implemented by the bean.
+        Set superClasses = superClasses(beanClass);
+
         for (int i=0; i < table.length; i++) {
             Object[] clsf = table[i];
-            Class refClass = (Class)clsf[0];
+            String refClass = (String)clsf[0];
             Object subclasses = clsf[1];
 
-            if (refClass.equals(beanClass)
+            if (refClass.equals(beanClass.getName())
                 ||
                 (subclasses == CLASS_AND_SUBCLASSES
-                         && refClass.isAssignableFrom(beanClass))
+                         && superClasses.contains(refClass))
                 ||
                 (subclasses == CLASS_AND_SWING_SUBCLASSES
-                         && refClass.isAssignableFrom(beanClass)
+                         && superClasses.contains(refClass)
                          && beanClass.getName().startsWith("javax.swing."))) { // NOI18N
                 if (list == null)
                     list = new ArrayList(8);
@@ -976,12 +953,15 @@ public class FormUtils
     }
     
     private static Object[] collectPropertiesOrder(Class beanClass, Object[][] table) {
+        // Set of names of super classes of the bean and interfaces implemented by the bean.
+        Set superClasses = superClasses(beanClass);
+
         java.util.List list = new LinkedList();
         for (int i=0; i < table.length; i++) {
             Object[] order = table[i];
-            Class refClass = (Class)order[0];
+            String refClass = (String)order[0];
 
-            if (refClass.isAssignableFrom(beanClass)) {
+            if (superClasses.contains(refClass)) {
                 for (int j=1; j<order.length; j++) {
                     list.add(order[j]);
                 }
@@ -1107,5 +1087,18 @@ public class FormUtils
         }
         return (comp == topDesigned);
     }
-
+    
+    private static Set superClasses(Class beanClass) {
+        Set superClasses = new HashSet();
+        Class[] infaces = beanClass.getInterfaces();
+        for (int i=0; i<infaces.length; i++) {
+            superClasses.add(infaces[i].getName());
+        }
+        Class superClass = beanClass;
+        do {
+            superClasses.add(superClass.getName());
+        } while ((superClass = superClass.getSuperclass()) != null);
+        return superClasses;
+    }
+    
 }
