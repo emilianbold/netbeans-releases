@@ -15,7 +15,7 @@ package org.netbeans.modules.options.generaleditor;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -25,7 +25,7 @@ import org.openide.util.Lookup;
  *
  * @author Jan Jancura
  */
-public final class GeneralEditorPanelController extends PanelController {
+public final class GeneralEditorPanelController extends OptionsPanelController {
 
     private GeneralEditorPanel generalEditorPanel = new GeneralEditorPanel ();
     

@@ -16,7 +16,7 @@ package org.netbeans.modules.options.editor;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
 
@@ -48,7 +48,7 @@ public final class Editor extends OptionsCategory {
         return loc ("CTL_Editor_Description");
     }
 
-    public PanelController create () {
+    public OptionsPanelController create () {
         return new EditorPanelController ();
     }
 }

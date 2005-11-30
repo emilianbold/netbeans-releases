@@ -58,7 +58,7 @@ import javax.swing.text.Document;
 
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -190,7 +190,7 @@ ChangeListener, ActionListener {
         updatePreview ();
         if (changed != model.isChanged ())
             firePropertyChange (
-                PanelController.PROP_CHANGED,
+                OptionsPanelController.PROP_CHANGED,
                 Boolean.valueOf (changed),
                 Boolean.valueOf (model.isChanged ())
             );
@@ -202,7 +202,7 @@ ChangeListener, ActionListener {
         updatePreview ();
         if (changed != model.isChanged ())
             firePropertyChange (
-                PanelController.PROP_CHANGED,
+                OptionsPanelController.PROP_CHANGED,
                 Boolean.valueOf (changed),
                 Boolean.valueOf (model.isChanged ())
             );

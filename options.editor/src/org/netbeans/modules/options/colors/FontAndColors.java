@@ -15,7 +15,7 @@ package org.netbeans.modules.options.colors;
 
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
 
@@ -48,7 +48,7 @@ public class FontAndColors extends OptionsCategory {
         return loc ("CTL_Font_And_Color_Options_Description");
     }
 
-    public PanelController create () {
+    public OptionsPanelController create () {
         return new FontAndColorsPanelController ();
     }
 }

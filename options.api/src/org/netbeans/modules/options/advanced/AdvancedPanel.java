@@ -25,7 +25,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import org.netbeans.modules.options.ui.TabbedPanel;
-import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -54,7 +54,7 @@ public final class AdvancedPanel extends JPanel {
         tabbedPanel.setBorder (null);
         tabbedPanel.addActionListener (new ActionListener () {
             public void actionPerformed (ActionEvent e) {
-                firePropertyChange (PanelController.PROP_HELP_CTX, null, null);
+                firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);
             }
         });
         JScrollPane scrollPane = new JScrollPane (tabbedPanel);

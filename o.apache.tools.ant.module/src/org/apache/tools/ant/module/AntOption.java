@@ -17,7 +17,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
 
@@ -42,7 +42,7 @@ public final class AntOption extends AdvancedOption {
         return loc ("Ant_Tooltip");
     }
 
-    public PanelController create () {
+    public OptionsPanelController create () {
         return new AntPanelController ();
     }
 }

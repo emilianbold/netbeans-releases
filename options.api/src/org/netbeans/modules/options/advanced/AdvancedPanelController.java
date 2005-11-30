@@ -15,7 +15,7 @@ package org.netbeans.modules.options.advanced;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -25,7 +25,7 @@ import org.openide.util.Lookup;
  *
  * @author Jan Jancura
  */
-public final class AdvancedPanelController extends PanelController {
+public final class AdvancedPanelController extends OptionsPanelController {
 
     private AdvancedPanel advancedPanel = new AdvancedPanel ();
 

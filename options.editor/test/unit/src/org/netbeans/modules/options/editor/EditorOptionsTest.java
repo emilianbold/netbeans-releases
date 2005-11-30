@@ -20,7 +20,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -73,7 +73,7 @@ public class EditorOptionsTest extends NbTestCase {
         Iterator it = getCategories ().iterator ();
         while (it.hasNext ()) {
             OptionsCategory oc = (OptionsCategory) it.next ();
-            PanelController pc = oc.create ();
+            OptionsPanelController pc = oc.create ();
             controllers.add (pc);
             lookups.add (pc.getLookup ());
         }
@@ -81,7 +81,7 @@ public class EditorOptionsTest extends NbTestCase {
             ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
         it = controllers.iterator ();
         while (it.hasNext ()) {
-            PanelController pc = (PanelController) it.next ();
+            OptionsPanelController pc = (OptionsPanelController) it.next ();
             JComponent c = pc.getComponent (masterLookup);
             pc.update ();
             pc.applyChanges ();
@@ -94,7 +94,7 @@ public class EditorOptionsTest extends NbTestCase {
         Iterator it = getCategories ().iterator ();
         while (it.hasNext ()) {
             OptionsCategory oc = (OptionsCategory) it.next ();
-            PanelController pc = oc.create ();
+            OptionsPanelController pc = oc.create ();
             controllers.add (pc);
             lookups.add (pc.getLookup ());
         }
@@ -102,7 +102,7 @@ public class EditorOptionsTest extends NbTestCase {
             ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
         it = controllers.iterator ();
         while (it.hasNext ()) {
-            PanelController pc = (PanelController) it.next ();
+            OptionsPanelController pc = (OptionsPanelController) it.next ();
             JComponent c = pc.getComponent (masterLookup);
             pc.update ();
             pc.cancel ();
@@ -115,7 +115,7 @@ public class EditorOptionsTest extends NbTestCase {
         Iterator it = getCategories ().iterator ();
         while (it.hasNext ()) {
             OptionsCategory oc = (OptionsCategory) it.next ();
-            PanelController pc = oc.create ();
+            OptionsPanelController pc = oc.create ();
             controllers.add (pc);
             lookups.add (pc.getLookup ());
         }
@@ -123,7 +123,7 @@ public class EditorOptionsTest extends NbTestCase {
             ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
         it = controllers.iterator ();
         while (it.hasNext ()) {
-            PanelController pc = (PanelController) it.next ();
+            OptionsPanelController pc = (OptionsPanelController) it.next ();
             JComponent c = pc.getComponent (masterLookup);
             pc.applyChanges ();
         }
@@ -137,7 +137,7 @@ public class EditorOptionsTest extends NbTestCase {
         Iterator it = getCategories ().iterator ();
         while (it.hasNext ()) {
             OptionsCategory oc = (OptionsCategory) it.next ();
-            PanelController pc = oc.create ();
+            OptionsPanelController pc = oc.create ();
             controllers.add (pc);
             lookups.add (pc.getLookup ());
         }
@@ -147,7 +147,7 @@ public class EditorOptionsTest extends NbTestCase {
         // 2) create panels & call cancel on all PanelControllers
         it = controllers.iterator ();
         while (it.hasNext ()) {
-            PanelController pc = (PanelController) it.next ();
+            OptionsPanelController pc = (OptionsPanelController) it.next ();
             JComponent c = pc.getComponent (masterLookup);
             pc.cancel ();
         }
@@ -161,7 +161,7 @@ public class EditorOptionsTest extends NbTestCase {
         Iterator it = getCategories ().iterator ();
         while (it.hasNext ()) {
             OptionsCategory oc = (OptionsCategory) it.next ();
-            PanelController pc = oc.create ();
+            OptionsPanelController pc = oc.create ();
             controllers.add (pc);
             lookups.add (pc.getLookup ());
         }
@@ -171,7 +171,7 @@ public class EditorOptionsTest extends NbTestCase {
         // 2) create panels & call cancel on all PanelControllers
         it = controllers.iterator ();
         while (it.hasNext ()) {
-            PanelController pc = (PanelController) it.next ();
+            OptionsPanelController pc = (OptionsPanelController) it.next ();
             assertFalse ("isChanged should be false if there is no change! (controller = " + pc + ")", pc.isChanged ());
             assertTrue ("isvalid should be true if there is no change! (controller = " + pc + ")", pc.isValid ());
             JComponent c = pc.getComponent (masterLookup);
@@ -196,7 +196,7 @@ public class EditorOptionsTest extends NbTestCase {
         
         it = controllers.iterator ();
         while (it.hasNext ()) {
-            PanelController pc = (PanelController) it.next ();
+            OptionsPanelController pc = (OptionsPanelController) it.next ();
             JComponent c = pc.getComponent (masterLookup);
             pc.update ();
             assertFalse ("isChanged should be false if there is no change! (controller = " + pc + ")", pc.isChanged ());

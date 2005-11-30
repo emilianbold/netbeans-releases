@@ -55,7 +55,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import org.netbeans.modules.options.ui.LoweredBorder;
 import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -120,7 +120,7 @@ public class OptionsPanel extends JPanel {
         for (i = 0; i < k; i++) {
             OptionsCategory category = (OptionsCategory) optionCategories.
                 get (i);
-            PanelController controller = category.create ();
+            OptionsPanelController controller = category.create ();
             lookups.add (controller.getLookup ());
             categoryToController.put (category, controller);
             controller.addPropertyChangeListener (coltrollerListener);
@@ -131,7 +131,7 @@ public class OptionsPanel extends JPanel {
         for (i = 0; i < k; i++) {
             OptionsCategory category = (OptionsCategory) optionCategories.
                 get (i);
-            PanelController controller = (PanelController) 
+            OptionsPanelController controller = (OptionsPanelController) 
                 categoryToController.get (category);
             JComponent component = controller.getComponent (masterLookup);
             categoryToPanel.put (category, component);
@@ -226,7 +226,7 @@ public class OptionsPanel extends JPanel {
         
         if (k < 1) return;
         OptionsCategory category = (OptionsCategory) optionCategories.get (0);
-        PanelController controller = (PanelController) 
+        OptionsPanelController controller = (OptionsPanelController) 
             categoryToController.get (category);
         try {
             controller.update ();
@@ -243,7 +243,7 @@ public class OptionsPanel extends JPanel {
                 while (it.hasNext ())
                     try {
                         OptionsCategory category = (OptionsCategory) it.next ();
-                        ((PanelController) categoryToController.get (category)).
+                        ((OptionsPanelController) categoryToController.get (category)).
                             update ();
                         updatedCategories.add (category);
                         if (getCurrentIndex () == i)
@@ -292,13 +292,13 @@ public class OptionsPanel extends JPanel {
                     buttons [i].requestFocus ();
             }
         });
-        firePropertyChange ("buran" + PanelController.PROP_HELP_CTX, null, null);
+        firePropertyChange ("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
     }
     
     HelpCtx getHelpCtx () {
         OptionsCategory category = (OptionsCategory) 
             optionCategories.get (getCurrentIndex ());
-        PanelController controller = (PanelController) categoryToController.
+        OptionsPanelController controller = (OptionsPanelController) categoryToController.
             get (category);
         return controller.getHelpCtx ();
     }
@@ -307,7 +307,7 @@ public class OptionsPanel extends JPanel {
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
             try {
-                ((PanelController) it.next ()).update ();
+                ((OptionsPanelController) it.next ()).update ();
             } catch (Throwable t) {
                 ErrorManager.getDefault ().notify (t);
             }
@@ -316,26 +316,26 @@ public class OptionsPanel extends JPanel {
     void save () {
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            ((PanelController) it.next ()).applyChanges ();
+            ((OptionsPanelController) it.next ()).applyChanges ();
     }
     
     void cancel () {
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            ((PanelController) it.next ()).cancel ();
+            ((OptionsPanelController) it.next ()).cancel ();
     }
     
     boolean dataValid () {
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            if (!((PanelController) it.next ()).isValid ()) return false;
+            if (!((OptionsPanelController) it.next ()).isValid ()) return false;
         return true;
     }
     
     boolean isChanged () {
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            if (((PanelController) it.next ()).isChanged ()) return true;
+            if (((OptionsPanelController) it.next ()).isChanged ()) return true;
         return false;
     }
     

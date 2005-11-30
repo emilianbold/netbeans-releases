@@ -28,7 +28,7 @@ import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.netbeans.spi.options.OptionsPanelController;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -157,12 +157,12 @@ public class OptionsWindowAction extends AbstractAction {
         
         public void propertyChange (PropertyChangeEvent ev) {
             if (ev.getPropertyName ().equals (
-                "buran" + PanelController.PROP_HELP_CTX)               //NOI18N
+                "buran" + OptionsPanelController.PROP_HELP_CTX)               //NOI18N
             )
                 descriptor.setHelpCtx (optionsPanel.getHelpCtx ());
             else
             if (ev.getPropertyName ().equals (
-                "buran" + PanelController.PROP_VALID)                  //NOI18N
+                "buran" + OptionsPanelController.PROP_VALID)                  //NOI18N
             )
                 bOK.setEnabled (optionsPanel.dataValid ());
         }

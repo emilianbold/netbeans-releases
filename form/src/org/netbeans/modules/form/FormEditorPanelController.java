@@ -15,7 +15,7 @@ package org.netbeans.modules.form;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -25,7 +25,7 @@ import org.openide.util.Lookup;
  *
  * @author Jan Jancura
  */
-public final class FormEditorPanelController extends PanelController {
+public final class FormEditorPanelController extends OptionsPanelController {
 
     private FormEditorCustomizer customizer = new FormEditorCustomizer ();
     private boolean initialized = false;

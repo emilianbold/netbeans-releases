@@ -62,5 +62,5 @@ public abstract class AdvancedOption {
      * @return new instance of PanelController for this advanced options 
      *         category
      */
-    public abstract OptionsCategory.PanelController create ();
+    public abstract OptionsPanelController create ();
 }

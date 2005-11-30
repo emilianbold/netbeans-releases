@@ -14,7 +14,7 @@
 package org.netbeans.modules.form;
 
 import org.netbeans.spi.options.AdvancedOption;
-import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
 /**
@@ -38,7 +38,7 @@ public final class FormEditorOptions extends AdvancedOption {
         return loc ("Form_Editor_Tooltip"); // NOI18N
     }
 
-    public PanelController create () {
+    public OptionsPanelController create () {
         return new FormEditorPanelController ();
     }
 }

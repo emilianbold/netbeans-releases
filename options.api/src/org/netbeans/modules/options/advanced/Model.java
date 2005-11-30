@@ -26,7 +26,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.options.ui.TabbedPanelModel;
 import org.netbeans.spi.options.AdvancedOption;
-import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -60,7 +60,7 @@ public final class Model extends TabbedPanelModel {
         JComponent panel = (JComponent) categoryToPanel.get (category);
         if (panel != null) return panel;
         AdvancedOption option = (AdvancedOption) categoryToOption.get (category);
-        PanelController controller = option.create ();
+        OptionsPanelController controller = option.create ();
         categoryToController.put (category, controller);
         panel = controller.getComponent (masterLookup);
         categoryToPanel.put (category, panel);
@@ -84,25 +84,25 @@ public final class Model extends TabbedPanelModel {
     void update () {
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            ((PanelController) it.next ()).update ();
+            ((OptionsPanelController) it.next ()).update ();
     }
     
     void applyChanges () {
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            ((PanelController) it.next ()).applyChanges ();
+            ((OptionsPanelController) it.next ()).applyChanges ();
     }
     
     void cancel () {
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            ((PanelController) it.next ()).cancel ();
+            ((OptionsPanelController) it.next ()).cancel ();
     }
     
     boolean isValid () {
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            if (!((PanelController) it.next ()).isValid ())
+            if (!((OptionsPanelController) it.next ()).isValid ())
                 return false;
         return true;
     }
@@ -110,7 +110,7 @@ public final class Model extends TabbedPanelModel {
     boolean isChanged () {
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            if (((PanelController) it.next ()).isChanged ())
+            if (((OptionsPanelController) it.next ()).isChanged ())
                 return true;
         return false;
     }
@@ -119,7 +119,7 @@ public final class Model extends TabbedPanelModel {
         List lookups = new ArrayList ();
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            lookups.add (((PanelController) it.next ()).getLookup ());
+            lookups.add (((OptionsPanelController) it.next ()).getLookup ());
         return new ProxyLookup 
             ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
     }
@@ -129,7 +129,7 @@ public final class Model extends TabbedPanelModel {
         while (it.hasNext ()) {
             String category = (String) it.next ();
             if (panel == categoryToPanel.get (category)) {
-                PanelController controller = (PanelController) 
+                OptionsPanelController controller = (OptionsPanelController) 
                     categoryToController.get (category);
                 return controller.getHelpCtx ();
             }

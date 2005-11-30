@@ -17,6 +17,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.netbeans.spi.options.OptionsCategory;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
 
@@ -48,7 +49,7 @@ public final class Indentation extends OptionsCategory {
         return loc ("CTL_Indentation_Description");
     }
 
-    public PanelController create () {
+    public OptionsPanelController create () {
         return new IndentationPanelController ();
     }
 }

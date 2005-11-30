@@ -14,6 +14,7 @@
 package org.netbeans.modules.options.advanced;
 
 import org.netbeans.spi.options.OptionsCategory;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
 
@@ -45,7 +46,7 @@ public final class Advanced extends OptionsCategory {
         return loc ("CTL_Advanced_Options_Description");
     }
 
-    public PanelController create () {
+    public OptionsPanelController create () {
         return new AdvancedPanelController ();
     }
 }
