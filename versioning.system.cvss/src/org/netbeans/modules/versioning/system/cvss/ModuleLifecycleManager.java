@@ -23,6 +23,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.w3c.dom.*;
 import org.xml.sax.*;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
@@ -55,6 +56,7 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
     
     public void restored() {
         disableOldModules();
+        if (Utils.isIdeRunning()) CvsVersioningSystem.getInstance();    // trigger badging
     }
 
     private void disableOldModules() {

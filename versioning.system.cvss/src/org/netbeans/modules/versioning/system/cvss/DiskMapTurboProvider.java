@@ -36,7 +36,8 @@ class DiskMapTurboProvider implements TurboProvider {
     private int     cachedStoreSerial = -1;
     private Map     cachedValues;
     
-    private static final int STATUS_VALUABLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_VERSIONED_UPTODATE;
+    private static final int STATUS_VALUABLE = FileInformation.STATUS_MANAGED & 
+            ~FileInformation.STATUS_VERSIONED_UPTODATE & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
 
     DiskMapTurboProvider() {
         initCacheStore();

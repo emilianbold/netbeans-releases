@@ -29,6 +29,7 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.project.*;
 import org.netbeans.lib.cvsclient.admin.Entry;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.*;
 import java.awt.Window;
@@ -447,6 +448,29 @@ public class Utils {
                 if (b == null) return null;
             }
         }
+    }
+
+    /**
+     * @return true if the IDE is normally running or false if it is starting up or shutting down
+     */ 
+    public static boolean isIdeRunning() {
+        final boolean [] visible = new boolean[1];
+        Runnable runnable = new Runnable() {
+            public void run() {
+                Frame frame = WindowManager.getDefault().getMainWindow();
+                visible[0] = frame != null && frame.isVisible();
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        return visible[0];
     }
 
     /**
