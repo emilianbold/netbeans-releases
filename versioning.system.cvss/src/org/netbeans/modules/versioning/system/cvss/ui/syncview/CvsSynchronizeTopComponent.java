@@ -127,6 +127,7 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
                 setName(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_Title_ContentBranch", contentTitle, branchTitle, age));
             }
         }
+        setToolTipText(getName());
     }
 
     String getContentTitle() {
