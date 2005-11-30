@@ -20,6 +20,7 @@ import javax.swing.ImageIcon;
 
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.java.JavaCompletionQuery;
+import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.JavaPackage;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.java.JMIUtils;
@@ -149,6 +150,9 @@ public class AttrSupports extends Object {
          */
         private List completionResults(int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
             JMIUtils jmiutils = JMIUtils.get(sup.getDocument());
+            JspJavaSyntaxSupport jspJavaSup = new JspJavaSyntaxSupport(sup.getDocument(), sup);
+            JavaClass context = jspJavaSup.getJavaClass(0);
+            
             jmiutils.beginTrans(false); //set proper classpath to javamodel
             try {
                 String pkgName = "";    // NOI18N
@@ -166,7 +170,7 @@ public class AttrSupports extends Object {
                 List res = new ArrayList();
                 res.addAll(jmiutils.findPackages(valuePart, false, false, true)); // Find all possible packages // NOI18N
                 if (pkg != null)
-                    res.addAll(jmiutils.findClasses(pkg, clsNamePart, false, true, true, /*JavaClass context*/ null, true, false));
+                    res.addAll(jmiutils.findClasses(pkg, clsNamePart, false, true, true, context, true, false));
                 
                 //set substitute offset
                 Iterator i = res.iterator();
