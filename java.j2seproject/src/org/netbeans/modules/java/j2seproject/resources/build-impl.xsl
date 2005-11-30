@@ -132,6 +132,12 @@ is divided into following sections:
                         </not>
                     </and>
                 </condition>
+                <condition property="manifest.available+main.class+mkdist.available">
+                    <and>
+                        <istrue value="${{manifest.available+main.class}}"/>
+                        <available classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs"/>
+                    </and>
+                </condition>
                 <xsl:call-template name="createRootAvailableTest">
                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                     <xsl:with-param name="propName">have.tests</xsl:with-param>
@@ -420,7 +426,7 @@ is divided into following sections:
                     </jar>
                 </presetdef>
             </target>
-
+            
             <target name="init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-java,-init-presetdef-jar</xsl:attribute>
             </target>
@@ -610,6 +616,7 @@ is divided into following sections:
             <target name="-do-jar-with-mainclass">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">manifest.available+main.class</xsl:attribute>
+                <xsl:attribute name="unless">manifest.available+main.class+mkdist.available</xsl:attribute>
                 <j2seproject1:jar manifest="${{manifest.file}}">
                     <j2seproject1:manifest>
                         <j2seproject1:attribute name="Main-Class" value="${{main.class}}"/>
@@ -627,6 +634,38 @@ is divided into following sections:
                         <xsl:otherwise>java</xsl:otherwise>
                     </xsl:choose> -cp ${run.classpath.with.dist.jar} ${main.class}</echo>
             </target>
+            
+            <target name="-do-jar-with-libraries">
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
+                <xsl:attribute name="if">manifest.available+main.class+mkdist.available</xsl:attribute>
+                
+                <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
+                <pathconvert property="run.classpath.without.build.classes.dir">
+                    <path path="${{run.classpath}}"/>
+                    <map from="${{build.classes.dir.resolved}}" to=""/>
+                </pathconvert>        
+                <pathconvert property="jar.classpath" pathsep=" ">
+                    <path path="${{run.classpath.without.build.classes.dir}}"/>
+                    <chainedmapper>
+                        <flattenmapper/>
+                        <globmapper from="*" to="lib/*"/>
+                    </chainedmapper>
+                </pathconvert>        
+                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs"/>
+                <copylibs manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
+                    <fileset dir="${{build.classes.dir}}"/>
+                    <manifest>
+                        <attribute name="Main-Class" value="${{main.class}}"/>
+                        <attribute name="Class-Path" value="${{jar.classpath}}"/>
+                    </manifest>
+                </copylibs>                                
+                <echo>To run this application from the command line without Ant, try:</echo>
+                <property name="dist.jar.resolved" location="${{dist.jar}}"/>
+                <echo><xsl:choose>
+                        <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
+                        <xsl:otherwise>java</xsl:otherwise>
+                    </xsl:choose> -jar ${dist.jar.resolved}</echo>                
+            </target>
 
             <target name="-post-jar">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
@@ -634,7 +673,7 @@ is divided into following sections:
             </target>
 
             <target name="jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-post-jar</xsl:attribute>
                 <xsl:attribute name="description">Build JAR.</xsl:attribute>
             </target>
 

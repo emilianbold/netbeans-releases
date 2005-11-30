@@ -13,4 +13,16 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="java/j2seproject">
     <import file="../../nbbuild/templates/projectized.xml"/>
+    
+    <target name="-jar-ant">
+	<ant dir="copylibstask" target="jar" inheritall="false" />
+	<copy file="copylibstask/dist/org-netbeans-modules-java-j2seproject-copylibstask.jar" todir="${cluster}/ant/lib/" />
+    </target>    
+				
+    <target name="netbeans-extra" depends="-jar-ant"/>
+
+    <target name="clean" depends="projectized-common.clean">
+        <ant dir="copylibstask" target="clean" inheritall="false" />
+        <delete file="${cluster}/ant/lib/org-netbeans-modules-java-j2seproject-copylibstask.jar"/>
+    </target>
 </project>
