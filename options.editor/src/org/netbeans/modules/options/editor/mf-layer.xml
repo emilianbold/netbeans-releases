@@ -89,8 +89,11 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Branch.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchAction.instance"/>
                 </file>
-                <file name="Branches.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchesMenu.instance"/>
+                <file name="SwitchBranch.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-SwitchBranchAction.instance"/>
+                </file>
+                <file name="MergeBranch.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-MergeBranchAction.instance"/>
                 </file>
                 <file name="CheckOut.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-checkout-CheckoutAction.instance"/>
