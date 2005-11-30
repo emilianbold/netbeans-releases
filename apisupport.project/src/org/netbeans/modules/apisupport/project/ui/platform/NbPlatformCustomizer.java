@@ -13,7 +13,9 @@
 
 package org.netbeans.modules.apisupport.project.ui.platform;
 
+import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.Window;
 import java.text.MessageFormat;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -71,6 +73,16 @@ public final class NbPlatformCustomizer extends JPanel {
     private  NbPlatformCustomizer() {
         initComponents();
         initAccessibility();
+        initTabs();
+        platformsList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                refreshPlatform();
+            }
+        });
+        refreshPlatform();
+    }
+    
+    private void initTabs() {
         if (platformsList.getModel().getSize() > 0) {
             platformsList.setSelectedIndex(0);
             sourcesTab = new NbPlatformCustomizerSources();
@@ -79,13 +91,11 @@ public final class NbPlatformCustomizer extends JPanel {
             detailPane.addTab(getMessage("CTL_ModulesTab"), modulesTab); // NOI18N
             detailPane.addTab(getMessage("CTL_SourcesTab"), sourcesTab); // NOI18N
             detailPane.addTab(getMessage("CTL_JavadocTab"), javadocTab); // NOI18N)
-        }
-        platformsList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                refreshPlatform();
+            Container window = this.getTopLevelAncestor();
+            if (window != null && window instanceof Window) {
+                ((Window) window).pack();
             }
-        });
-        refreshPlatform();
+        }
     }
     
     private void refreshPlatform() {
@@ -98,9 +108,14 @@ public final class NbPlatformCustomizer extends JPanel {
         plfFolderValue.setText(plaf.getDestDir().getAbsolutePath());
         boolean isValid = plaf.isValid();
         if (isValid) {
-            modulesTab.setPlatform(plaf);
-            sourcesTab.setPlatform(plaf);
-            javadocTab.setPlatform(plaf);
+            if (sourcesTab == null) {
+                initTabs();
+            }
+            if (sourcesTab != null) {
+                modulesTab.setPlatform(plaf);
+                sourcesTab.setPlatform(plaf);
+                javadocTab.setPlatform(plaf);
+            }
         } else {
             modulesTab.reset();
             detailPane.setSelectedIndex(0);

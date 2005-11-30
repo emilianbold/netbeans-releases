@@ -154,7 +154,9 @@ public final class PlatformComponentFactory {
         
         public NbPlatformListModel() {
             nbPlafs = getSortedPlatforms();
-            selectedPlaf = nbPlafs[0];
+            if (nbPlafs.length > 0) {
+                selectedPlaf = nbPlafs[0];
+            }
         }
         
         public int getSize() {

@@ -79,7 +79,7 @@ public final class NbPlatform {
     public static Set/*<NbPlatform>*/ getPlatforms() {
         if (platforms == null) {
             platforms = new HashSet();
-            Map/*<String,String>*/ p = PropertyUtils.sequentialPropertyEvaluator(PropertyUtils.globalPropertyProvider(), new PropertyProvider[0]).getProperties();
+            Map/*<String,String>*/ p = PropertyUtils.sequentialPropertyEvaluator(PropertyUtils.globalPropertyProvider (), new PropertyProvider[0]).getProperties();
             boolean foundDefault = false;
             Iterator keys = p.keySet().iterator();
             while (keys.hasNext()) {
@@ -125,6 +125,8 @@ public final class NbPlatform {
         // Semi-arbitrary harness component.
         File suiteXml = InstalledFileLocator.getDefault().locate("suite.xml", "org.netbeans.modules.apisupport.harness", false); // NOI18N
         if (suiteXml == null) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot resolve default platform. " + // NOI18N
+                    "Probably either \"org.netbeans.modules.apisupport.harness\" module is missing or is corrupted."); // NOI18N
             return null;
         }
         File loc = suiteXml.getParentFile().getParentFile();

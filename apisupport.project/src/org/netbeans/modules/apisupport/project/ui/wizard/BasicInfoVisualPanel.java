@@ -186,9 +186,11 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             setErrorMessage(getMessage("MSG_LocationCannotBeEmpty"));
         } else if (suiteModule.isSelected() && moduleSuiteValue.getSelectedItem() == null) {
             setErrorMessage(getMessage("MSG_ChooseRegularSuite"));
-        } else if (standAloneModule.isSelected() && !((NbPlatform) platformValue.getSelectedItem()).isValid()) {
+        } else if (standAloneModule.isSelected() && 
+                (platformValue.getSelectedItem() == null || !((NbPlatform) platformValue.getSelectedItem()).isValid())) {
             setErrorMessage(getMessage("MSG_ChosenPlatformIsInvalid"));
-        } else if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE && !((NbPlatform) suitePlatformValue.getSelectedItem()).isValid()) {
+        } else if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE && 
+                (suitePlatformValue.getSelectedItem() == null || !((NbPlatform) suitePlatformValue.getSelectedItem()).isValid())) {
             setErrorMessage(getMessage("MSG_ChosenPlatformIsInvalid"));
         } else if (getFolder().exists()) {
             setErrorMessage(getMessage("MSG_ProjectFolderExists"));
@@ -261,9 +263,9 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         data.setNetBeansOrg(isNetBeansOrgFolder());
         data.setStandalone(standAloneModule.isSelected());
         data.setSuiteRoot((String) moduleSuiteValue.getSelectedItem());
-        if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
+        if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE && suitePlatformValue.getSelectedItem() != null) {
             data.setPlatformID(((NbPlatform) suitePlatformValue.getSelectedItem()).getID());
-        } else {
+        } else if (platformValue.getSelectedItem() != null) {
             data.setPlatformID(((NbPlatform) platformValue.getSelectedItem()).getID());
         }
     }
@@ -353,6 +355,9 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     }
     
     private void initPlatformCombos() {
+        if (platformValue.getItemCount() <= 0) {
+            return;
+        }
         boolean set = false;
         String idToSelect = ModuleUISettings.getDefault().getLastUsedPlatformID();
         for (int i = 0; i < platformValue.getItemCount(); i++) {
@@ -365,8 +370,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         }
         if (!set) {
             NbPlatform defPlaf = NbPlatform.getDefaultPlatform();
-            platformValue.setSelectedItem(defPlaf);
-            suitePlatformValue.setSelectedItem(defPlaf);
+            platformValue.setSelectedItem(defPlaf == null ? platformValue.getItemAt(0) : defPlaf);
+            suitePlatformValue.setSelectedItem(defPlaf == null ? suitePlatformValue.getItemAt(0) : defPlaf);
         }
     }
     
@@ -697,6 +702,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         NbPlatformCustomizer.showCustomizer();
         platformCombo.setModel(new PlatformComponentFactory.NbPlatformListModel()); // refresh
         platformCombo.requestFocus();
+        updateAndCheck();
     }
     
     private void platformChosen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformChosen
