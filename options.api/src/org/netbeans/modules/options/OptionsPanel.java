@@ -21,6 +21,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.BorderLayout;
 import java.awt.KeyboardFocusManager;
@@ -41,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.FocusManager;
 
 import javax.swing.ImageIcon;
@@ -50,10 +53,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import org.netbeans.modules.options.ui.LoweredBorder;
+import org.netbeans.modules.options.ui.VariableBorder;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.ErrorManager;
@@ -89,6 +94,12 @@ public class OptionsPanel extends JPanel {
     private Color                   highlightedB = new Color (152, 180, 226);
     private Color                   iconViewBorder = new Color (127, 157, 185);
     private ControllerListener      coltrollerListener = new ControllerListener ();
+    
+    private final boolean           isMac = true; //UIManager.getLookAndFeel().getID().equals("Aqua");
+    private final Color             selectedMac = new Color(221, 221, 221);
+    private final Color             selectedBMac = new Color(183, 183, 183);
+    private final Color             borderMac = new Color(141, 141, 141);
+    private final Font              labelFontMac = new Font("Lucida Grande", 0, 10);    
     
     
     private static String loc (String key) {
@@ -170,12 +181,16 @@ public class OptionsPanel extends JPanel {
 
         // icon view
         pCategories = new JPanel (new BorderLayout ());
-        JPanel pCategories2 = new JPanel (new GridLayout (
-            optionCategories.size (),
-            1, 0, 0
-        ));
+        JPanel pCategories2 = new JPanel (new GridBagLayout());
         pCategories.add ("North", pCategories2);
-        pCategories.setBorder (new LineBorder (iconViewBorder)); 
+        if(isMac) {
+            pCategories.setBorder(new CompoundBorder (
+                    new VariableBorder(null, null, borderMac, null),
+                    BorderFactory.createEmptyBorder(0, 4, 0, 4)
+                ));
+        } else {
+            pCategories.setBorder(new LineBorder (iconViewBorder));
+        }
         pCategories.setBackground (Color.white);
         pCategories2.setBackground (Color.white);
         pCategories2.setBorder (null);
@@ -186,7 +201,8 @@ public class OptionsPanel extends JPanel {
         InputMap inputMap = getInputMap 
             (JComponent.WHEN_IN_FOCUSED_WINDOW);
         inputMap.put (
-            KeyStroke.getKeyStroke (KeyEvent.VK_UP, 0), 
+            isMac ? KeyStroke.getKeyStroke (KeyEvent.VK_LEFT, 0) : 
+                    KeyStroke.getKeyStroke (KeyEvent.VK_UP, 0), 
             "UP"
         );
         getActionMap ().put ("UP", new UpAction ());
@@ -196,10 +212,24 @@ public class OptionsPanel extends JPanel {
         );
         getActionMap ().put ("SPACE", new SelectCurrentAction ());
         inputMap.put (
-            KeyStroke.getKeyStroke (KeyEvent.VK_DOWN, 0), 
+            isMac ? KeyStroke.getKeyStroke (KeyEvent.VK_RIGHT, 0) :
+                    KeyStroke.getKeyStroke (KeyEvent.VK_DOWN, 0), 
             "DOWN"
         );
         getActionMap ().put ("DOWN", new DownAction ());
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        if (isMac) {
+            gbc.fill = GridBagConstraints.VERTICAL;
+            gbc.weightx = 0.0;
+            gbc.weighty = 1.0;
+        } else {
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1.0;
+            gbc.weighty = 0.0;
+        }
+        
         for (i = 0; i < k; i++) {
             final OptionsCategory category = (OptionsCategory) 
                 optionCategories.get (i);
@@ -210,19 +240,61 @@ public class OptionsPanel extends JPanel {
                 (mnemonic, KeyEvent.ALT_MASK);
             inputMap.put (keyStroke, b);
             getActionMap ().put (b, new SelectAction (i));
-            pCategories2.add (b);
+            
+            if (isMac) {
+                gbc.gridx = i;
+                gbc.gridy = 0;
+            } else {
+                gbc.gridx = 0;
+                gbc.gridy = i;
+            }
+            
+            pCategories2.add (b, gbc);
         }
         
+        /* i don't know a better workaround */
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        if (isMac) {
+            gbc.gridx = gbc.gridx + 1;
+            gbc.gridy = 0;
+        } else {
+            gbc.gridx = 0;
+            gbc.gridy = gbc.gridy + 1;
+        }
+        pCategories2.add (new javax.swing.JLabel(""), gbc);
+        
+        
         // layout
-        FormLayout layout = new FormLayout(
-            "p, 5dlu, p:g", // cols
-            "p, 5dlu, p:g");      // rows
+        FormLayout layout;
+        if (isMac) {
+            layout = new FormLayout(
+                "p:g", // cols
+                "p, 5dlu, p:g");      // rows
+        } else {
+            layout = new FormLayout(
+                "p, 5dlu, p:g", // cols
+                "p, 5dlu, p:g");      // rows
+        }
         PanelBuilder builder = new PanelBuilder (layout, this);
-        builder.setDefaultDialogBorder ();
+        if (isMac) {
+            pOptions.setBorder(new CompoundBorder (
+                    new VariableBorder(null, null, borderMac, null),
+                    BorderFactory.createEmptyBorder(0, 20, 5, 20)
+                    ));
+        } else {
+            builder.setDefaultDialogBorder ();
+        }
         CellConstraints cc = new CellConstraints ();
-        builder.add (    pCategories, cc.xywh  (1, 1, 1, 3));
-        builder.add (    pTitle,       cc.xy    (3, 1));
-        builder.add (    pOptions,     cc.xy    (3, 3, "f,f"));
+        if (isMac) {
+            builder.add (    pCategories, cc.xy  (1, 1));
+            builder.add (    pOptions,     cc.xy    (1, 3, "f,f"));
+        } else {
+            builder.add (    pCategories, cc.xywh  (1, 1, 1, 3));
+            builder.add (    pTitle,       cc.xy    (3, 1));
+            builder.add (    pOptions,     cc.xy    (3, 3, "f,f"));
+        }
         
         if (k < 1) return;
         OptionsCategory category = (OptionsCategory) optionCategories.get (0);
@@ -411,6 +483,12 @@ public class OptionsPanel extends JPanel {
             setFocusable (true);
             setFocusTraversalKeysEnabled (true);
             setForeground (Color.black);
+            
+            if (isMac) {
+                setFont(labelFontMac);
+                setIconTextGap(2);
+            }
+            
             if (index == currentCategory)
                 setSelected ();
             else
@@ -428,30 +506,50 @@ public class OptionsPanel extends JPanel {
         }
         
         void setNormal () {
-            setBorder (new EmptyBorder (2, 4, 2, 4));
+            if (isMac) {
+                setBorder (new EmptyBorder (5, 6, 3, 6));
+            } else {
+                setBorder (new EmptyBorder (2, 4, 2, 4));
+            }
             setBackground (Color.white);
         }
         
         void setSelected () {
-            setBorder (new CompoundBorder (
-                new CompoundBorder (
-                    new LineBorder (Color.white),
-                    new LineBorder (selectedB)
-                ),
-                new EmptyBorder (0, 2, 0, 2)
-            ));
-            setBackground (selected);
+            if (isMac) {
+                setBorder(new CompoundBorder (
+                        new VariableBorder(null, selectedBMac, null, selectedBMac),
+                        BorderFactory.createEmptyBorder(5, 5, 3, 5)
+                        ));
+                setBackground (selectedMac);
+            } else {
+                setBorder (new CompoundBorder (
+                    new CompoundBorder (
+                        new LineBorder (Color.white),
+                        new LineBorder (selectedB)
+                    ),
+                    new EmptyBorder (0, 2, 0, 2)
+                ));
+                setBackground (selected);
+            }
         }
         
         void setHighlighted () {
-            setBorder (new CompoundBorder (
-                new CompoundBorder (
-                    new LineBorder (Color.white),
-                    new LineBorder (highlightedB)
-                ),
-                new EmptyBorder (0, 2, 0, 2)
-            ));
-            setBackground (highlighted);
+            if (isMac) {
+                setBorder(new CompoundBorder (
+                        new VariableBorder(null, selectedBMac, null, selectedBMac),
+                        BorderFactory.createEmptyBorder(5, 5, 3, 5)
+                        ));
+                setBackground (selectedMac);
+            } else {
+                setBorder (new CompoundBorder (
+                    new CompoundBorder (
+                        new LineBorder (Color.white),
+                        new LineBorder (highlightedB)
+                    ),
+                    new EmptyBorder (0, 2, 0, 2)
+                ));
+                setBackground (highlighted);
+            }
         }
         
         public void mouseClicked (MouseEvent e) {
@@ -460,19 +558,20 @@ public class OptionsPanel extends JPanel {
         }
 
         public void mousePressed (MouseEvent e) {
-            setSelected ();
+            if (!isMac)
+                setSelected ();
         }
 
         public void mouseReleased (MouseEvent e) {
         }
 
         public void mouseEntered (MouseEvent e) {
-            if (index != currentCategory)
+            if (index != currentCategory && !isMac)
                 setHighlighted ();
         }
 
         public void mouseExited (MouseEvent e) {
-            if (index != currentCategory)
+            if (index != currentCategory && !isMac)
                 setNormal ();
         }
     }
