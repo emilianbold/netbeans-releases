@@ -642,33 +642,6 @@ public class FormUtils
         }
     }
 
-    static Object copyFormDesignValue(FormDesignValue value, FormModel formModel) {
-//        if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
-//            RADConnectionPropertyEditor.RADConnectionDesignValue radValue =
-//                (RADConnectionPropertyEditor.RADConnectionDesignValue) value;
-//            if (radValue.userCode != null)
-//                return new RADConnectionPropertyEditor.RADConnectionDesignValue(
-//                             radValue.userCode);
-//            else if (radValue.value != null)
-//                return new RADConnectionPropertyEditor.RADConnectionDesignValue(
-//                             radValue.requiredTypeName, radValue.value);
-//        }
-//        else if (value instanceof BorderDesignSupport) {
-//            try {
-//                return ;
-//            }
-//            catch (Exception ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//            }
-//        } else if (value instanceof IconEditor.NbImageIcon) {
-//            return 
-//        } else if (value instanceof CloneableFormDesignValue) {
-//            return ((CloneableFormDesignValue)value).copyFormDesignValue();                                   
-//        }            
-
-        return null;
-    }
-
     // ---------
 
     public static boolean isContainer(Class beanClass) {
