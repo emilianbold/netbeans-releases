@@ -49,7 +49,11 @@ public class FormI18nMnemonic extends FormI18nString {
      * @see org.netbeans.modules.form.FormDesignValue#getDesignValue(RADComponent radComponent)
      */
     public Object getDesignValue() {
-        return new Character( ((String)super.getDesignValue()).charAt(0) );
+        Object designValue = super.getDesignValue();
+        if(designValue != FormDesignValue.IGNORED_VALUE)
+            return new Character(((String)designValue).charAt(0));
+        else
+            return designValue;        
     }
     
     /** The string to replace a property in source code. 
