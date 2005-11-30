@@ -475,6 +475,8 @@ public class ReflectionHelper {
                         newClasses[i]=long[].class;
                     else if (Byte[].class==paramClasses[i])
                         newClasses[i]=byte[].class;
+                    else if (Short[].class==paramClasses[i])
+                        newClasses[i]=short[].class;                    
                     else if (Float[].class==paramClasses[i])
                         newClasses[i]=float[].class;
                     else if (Double[].class==paramClasses[i])
@@ -694,6 +696,12 @@ public class ReflectionHelper {
             result = new byte[val.length];
             for (int j=0;j<val.length;j++) {
                 ((byte[])result)[j] = val[j].byteValue();
+            }
+        } else if (arrayObject instanceof Short[]) {
+            Short[] val = (Short[])arrayObject;
+            result = new short[val.length];
+            for (int j=0;j<val.length;j++) {
+                ((short[])result)[j] = val[j].shortValue();
             }
         } else if (arrayObject instanceof Float[]) {
             Float[] val = (Float[])arrayObject;
