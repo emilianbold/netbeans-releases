@@ -42,6 +42,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
@@ -57,7 +58,7 @@ import junit.textui.TestRunner;
  * Tests shortcuts folder to ensure it handles wildcard keystrokes correctly. 
  */
 public class ShortcutsFolderTest extends LoggingTestCaseHid {
-    
+    private ErrorManager err;
     private Keymap keymap;
     
     /** Constructor required by JUnit.
@@ -75,10 +76,12 @@ public class ShortcutsFolderTest extends LoggingTestCaseHid {
         
         assertNotNull("There is a keymap", keymap);
         ShortcutsFolder.initShortcuts ();
+        
+        err = ErrorManager.getDefault().getInstance("TEST-" + getName());
     }
     
     public void testApplyChangeToFactoryActionIssue49597 () throws Exception {
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
+        final FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
         final FileObject shortcuts = fs.getRoot ().getFileObject ("Shortcuts");
         FileObject inst = FileUtil.createData (fs.getRoot (), "/Actions/Tools/TestAction.instance");
         TestAction action = new TestAction ();
@@ -94,14 +97,27 @@ public class ShortcutsFolderTest extends LoggingTestCaseHid {
         
         final KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_F9, KeyEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 
-        FileObject inst2 = FileUtil.createData (fs.getRoot (), "/Shortcuts/CA-F9.shadow");
-        inst2.setAttribute ("originalFile", "/Actions/Tools/TestAction.instance");
+        class R implements FileSystem.AtomicAction {
+            FileObject inst2;
+            
+            public void run() throws IOException {
+                inst2 = FileUtil.createData (fs.getRoot (), "/Shortcuts/CA-F9.shadow");
+                inst2.setAttribute ("originalFile", "/Actions/Tools/TestAction.instance");
+            }
+        }
+        R run = new R();
+        fs.runAtomicAction(run);
 
         ShortcutsFolder.waitFinished ();
+        err.log("ShortcutsFolder.waitFinished");
 
         FileObject[] arr = shortcuts.getChildren ();
+        err.log("children are here");
+        
         assertEquals ("One element is there", 1, arr.length);
         org.openide.loaders.DataObject obj = org.openide.loaders.DataObject.find (arr[0]);
+        err.log("Object is here" + obj);
+        
         assertEquals ("It is DataShadow", org.openide.loaders.DataShadow.class, obj.getClass ());
 
         Object a = keymap.getAction (stroke);
