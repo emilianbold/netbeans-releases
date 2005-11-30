@@ -636,7 +636,7 @@ public class CvsVersioningSystem {
     public static GlobalOptions createGlobalOptions() {
         GlobalOptions globalOptions = new GlobalOptions();
         if (System.getProperty("cvsClientLog") == null) {    // NOI18N
-            int gzipLevel = 3;
+            int gzipLevel = 4;
             String level = System.getProperty("netbeans.experimental.cvs.io.compressionLevel"); // NOI18N
             if (level != null) {
                 try {
