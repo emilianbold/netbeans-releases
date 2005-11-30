@@ -169,7 +169,13 @@ class SharedXMLSupport {
                 // get all naemspaces for the parser
                 input=ShareableInputSource.create(createInputSource());
                 String[] schemaLocations=getSchemaLocations(input);
-                ((ShareableInputSource)input).reset();
+                try {
+                    ((ShareableInputSource)input).reset();
+                }catch(IOException e) {
+                    //mark invalidated - we overlapped the buffer size. Ok, recreate the InputSource
+                    //no need to use the shareable - it is read only once
+                    input=createInputSource();
+                }
                 if (schemaLocations!=null && schemaLocations.length>0) {
                     boolean first=true;
                     StringBuffer sb = new StringBuffer();
