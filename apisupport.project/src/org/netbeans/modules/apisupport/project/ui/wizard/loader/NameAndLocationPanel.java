@@ -46,8 +46,9 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         
         DocumentListener dListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                checkValidity();
-                updateData();
+                if (checkValidity()) {
+                    updateData();
+                }
             }
         };
         txtPrefix.getDocument().addDocumentListener(dListener);
@@ -93,30 +94,31 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         return getMessage("LBL_NameLocation_Title");
     }
     
-    private void checkValidity() {
+    private boolean checkValidity() {
         if (txtPrefix.getText().trim().length() == 0) {
             setErrorMessage(getMessage("ERR_Name_Prefix_Empty"));
-            return;
+            return false;
         }
         if (!Utilities.isJavaIdentifier(txtPrefix.getText().trim())) {
             setErrorMessage(getMessage("ERR_Name_Prefix_Invalid"));
-            return;
+            return false;
         }
         String path = txtIcon.getText().trim();
         if (path.length() != 0) {
             File fil = new File(path);
             if (!fil.exists()) {
                 setErrorMessage(NbBundle.getMessage(getClass(), "ERR_Icon_Invalid"));
-                return;
+                return false;
             }
         }
         String packageName = comPackageName.getEditor().getItem().toString().trim();
         
         if (packageName.length() == 0 || !UIUtil.isValidPackageName(packageName)) { //NOI18N
             setErrorMessage(NbBundle.getMessage(getClass(), "ERR_Package_Invalid"));
-            return;
+            return false;
         }
         setErrorMessage(null);
+        return true;
     }
     
     protected HelpCtx getHelp() {
