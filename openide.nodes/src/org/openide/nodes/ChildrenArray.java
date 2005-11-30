@@ -12,6 +12,7 @@
  */
 package org.openide.nodes;
 
+import java.lang.ref.Reference;
 import java.util.*;
 
 
@@ -29,6 +30,8 @@ final class ChildrenArray extends NodeAdapter {
 
     /** mapping from the (Children.Info, Collection (Node)) */
     private Map map;
+    /** the reference that points to us */
+    private Reference ref;
 
     /** Creates new ChildrenArray */
     public ChildrenArray() {
@@ -41,7 +44,12 @@ final class ChildrenArray extends NodeAdapter {
     /** When finalized notify the children.
     */
     protected void finalize() {
-        children.finalizedChildrenArray(this);
+        children.finalizedChildrenArray(ref);
+    }
+    
+    /** Now points to me */
+    final void pointedBy(Reference ref) {
+        this.ref = ref;
     }
 
     /** Getter method to receive a set of computed nodes.

@@ -40,8 +40,6 @@ implements PropertyChangeListener, ChangeListener {
     private PropertyChangeListener listener;
     /** logging, if needed */
     private ErrorManager err;
-    /** this is true between addNotify and removeNotify */
-    private boolean active;
     /** true if the refrersh is done after DataFilter change */
     private boolean refresh;        
     /**  we wait for this task finished in getNodes(true) */
@@ -152,10 +150,9 @@ implements PropertyChangeListener, ChangeListener {
     public Node[] getNodes(boolean optimalResult) {
         if (optimalResult) {
             if (checkChildrenMutex()) {
-                active = true;
                 FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
                 RequestProcessor.Task task = refreshChildren();
-		task.schedule(0);
+                task.schedule(0);
                 task.waitFinished();
             } else {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
@@ -189,33 +186,40 @@ implements PropertyChangeListener, ChangeListener {
     /** Initializes the children.
     */
     protected void addNotify () {
+        if (err != null) {
+            err.log("addNotify begin");
+        }
         // add as a listener for changes on nodes
         folder.addPropertyChangeListener (listener);
         // add listener to the filter
         if ( filter instanceof ChangeableDataFilter ) {
             ((ChangeableDataFilter)filter).addChangeListener( this );
         }
-        // 
-        active = true;
         // start the refresh task to compute the children
         refreshChildren().schedule(0);
+        if (err != null) {
+            err.log("addNotify end");
+        }
     }
 
     /** Deinitializes the children.
     */
     protected void removeNotify () {
+        if (err != null) {
+            err.log("removeNotify begin");
+        }
         // removes the listener
         folder.removePropertyChangeListener (listener);
         // remove listener from filter
         if ( filter instanceof ChangeableDataFilter ) {
             ((ChangeableDataFilter)filter).removeChangeListener( this );
         }
-        //
-        active = false;
-        // we don't call the setKeys directly here because
-        // there can be a task spawned by refreshChildren - so
-        // we want to clear the children after that task is finished
-        refreshChildren().schedule(0);
+        
+        // we need to clear the children now
+        setKeys(Collections.EMPTY_LIST);
+        if (err != null) {
+            err.log("removeNotify end");
+        }
     }
 
     /** Display name */
@@ -243,10 +247,6 @@ implements PropertyChangeListener, ChangeListener {
 
             FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
             
-            if (! active) {
-                setKeys (java.util.Collections.EMPTY_SET);
-                return;
-            }
             ch = folder.getChildren();
             if (err != null) {
                 err.log("Children computed");
@@ -264,7 +264,7 @@ implements PropertyChangeListener, ChangeListener {
                 }
             }
             
-            if (!active) {
+            if (!isInitialized()) {
                 clear();
             }
         }

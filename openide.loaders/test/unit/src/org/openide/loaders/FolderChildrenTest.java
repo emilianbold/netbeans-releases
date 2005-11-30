@@ -28,7 +28,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 
 
-public class FolderChildrenTest extends NbTestCase {
+public class FolderChildrenTest extends LoggingTestCaseHid {
     public FolderChildrenTest() {
         super("");
     }
@@ -44,14 +44,14 @@ public class FolderChildrenTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-	super.setUp();
-	clearWorkDir();
+        super.setUp();
+        clearWorkDir();
         setSystemProp("netbeans.security.nocheck","true");
-	
-	FileObject[] arr = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren();
-	for (int i = 0; i < arr.length; i++) {
-	    arr[i].delete();
-	}
+        
+        FileObject[] arr = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren();
+        for (int i = 0; i < arr.length; i++) {
+            arr[i].delete();
+        }
     }
     
     public void testSimulateADeadlockThatWillBeFixedByIssue49459 () throws Exception {
@@ -122,10 +122,10 @@ public class FolderChildrenTest extends NbTestCase {
         n.delete ();
         
         Node[] last = node.getChildren ().getNodes (true);
-        assertEquals ("Again they are two", 2, arr.length);
+        assertEquals ("Again they are two", 2, last.length);
         
-        assertTrue ("First one is the same", last[0] == arr[0]);
-        assertTrue ("Second one is the same", last[1] == arr[1]);
+        assertEquals ("First one is the same", last[0], arr[0]);
+        assertEquals ("Second one is the same", last[1], arr[1]);
         
     }
     

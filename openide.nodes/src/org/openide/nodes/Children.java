@@ -623,18 +623,18 @@ public abstract class Children extends Object {
                         }
                     };
         }
+        
+        array.pointedBy(this.array);
     }
 
     /** Finalized.
     */
-    final void finalizedChildrenArray(Object caller) {
+    final void finalizedChildrenArray(Reference caller) {
         // usually in removeNotify setKeys is called => better require write access
         try {
             PR.enterWriteAccess();
 
-            Object value = array.get();
-
-            if ((value == null) || (value == caller)) {
+            if (array == caller) {
                 // really finalized and not reconstructed
                 removeNotify();
             }
@@ -723,7 +723,6 @@ public abstract class Children extends Object {
             LOG_GET_ARRAY.log("       values: " + entries); // NOI18N
             LOG_GET_ARRAY.log("       holder: " + holder); // NOI18N
         }
-
         if (holder == null) {
             //      debug.append ("Set1: " + entries); // NOI18N
             //      printStackTrace();
