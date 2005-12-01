@@ -24,6 +24,7 @@ import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.util.TaskListener;
@@ -291,21 +292,28 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
     public void fileInfoGenerated(FileInfoEvent e) {
         assert !terminated;
         FileInfoContainer fic = e.getInfoContainer();
+        if (fic.getFile() == null) {
+            // this probably indicates a bug in the library but is usually harmless, log it just for reference
+            ErrorManager.getDefault().log(ErrorManager.WARNING, Utils.getStackTrace());
+            return;
+        }
         if (fic instanceof DefaultFileInfoContainer) {
+            DefaultFileInfoContainer dfic = ((DefaultFileInfoContainer) fic);
+            dfic.setFile(FileUtil.normalizeFile(dfic.getFile()));
             // filter out duplicate events, see org.netbeans.lib.cvsclient.response.UpdatedResponse.process()
             // ? file.txt, U file.txt and C file.txt can all be fired for a single file in any order 
             for (Iterator i = toRefresh.iterator(); i.hasNext();) {
                 FileInfoContainer existing = (FileInfoContainer) i.next();
                 if (existing.getFile().equals(fic.getFile())) {
                     String existingType = ((DefaultFileInfoContainer) existing).getType();
-                    String newType = ((DefaultFileInfoContainer) fic).getType();
+                    String newType = dfic.getType();
                     if (importance(newType) <= importance(existingType)) return;
                     i.remove();
                     break;
                 }
             }
         }
-        toRefresh.add(e.getInfoContainer());
+        toRefresh.add(fic);
     }
 
     private int importance(String type) {
