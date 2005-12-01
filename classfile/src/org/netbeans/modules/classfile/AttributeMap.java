@@ -51,7 +51,10 @@ public final class AttributeMap {
         int count = in.readUnsignedShort();
         Map map = new HashMap(count + 1, (float)1.0);
         for (int i = 0; i < count; i++) {
-	    CPUTF8Info entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
+	    Object o = pool.get(in.readUnsignedShort());
+            if (!(o instanceof CPUTF8Info))
+                throw new InvalidClassFormatException();
+	    CPUTF8Info entry = (CPUTF8Info)o;
 	    String name = entry.getName();
 	    int len = in.readInt();
 	    if (!includeCode && name.equals("Code")) {

@@ -62,7 +62,10 @@ public final class Code {
       throws IOException {
         int count = in.readUnsignedShort();
         for (int i = 0; i < count; i++) {
-            CPUTF8Info entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
+            Object o = pool.get(in.readUnsignedShort());
+            if (!(o instanceof CPUTF8Info))
+                throw new InvalidClassFormatException();
+            CPUTF8Info entry = (CPUTF8Info)o;
             int len = in.readInt();
             String name = entry.getName();
             if (name.equals("LineNumberTable")) //NOI18N

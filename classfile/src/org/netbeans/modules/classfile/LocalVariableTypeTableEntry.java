@@ -57,13 +57,19 @@ public final class LocalVariableTypeTableEntry {
 
     private void loadLocalVariableEntry(DataInputStream in, ConstantPool pool) 
       throws IOException {
-          startPC = in.readUnsignedShort();
-          length = in.readUnsignedShort();
-          CPUTF8Info entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
-          name = entry.getName();
-          entry = (CPUTF8Info)pool.get(in.readUnsignedShort());
-          signature = entry.getName();
-          index = in.readUnsignedShort();
+        startPC = in.readUnsignedShort();
+        length = in.readUnsignedShort();
+        Object o = pool.get(in.readUnsignedShort());
+        if (!(o instanceof CPUTF8Info))
+            throw new InvalidClassFormatException();
+        CPUTF8Info entry = (CPUTF8Info)o;
+        name = entry.getName();
+        o = pool.get(in.readUnsignedShort());
+        if (!(o instanceof CPUTF8Info))
+            throw new InvalidClassFormatException();
+        entry = (CPUTF8Info)o;
+        signature = entry.getName();
+        index = in.readUnsignedShort();
     }
 
     /**
