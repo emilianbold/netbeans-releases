@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.ejbcore;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import javax.jmi.reflect.JmiException;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.jmi.javamodel.JavaModelPackage;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
@@ -278,6 +279,8 @@ public class Utils {
             }
         } catch (IOException ioe) {
             Utils.notifyError(ioe);
+        } catch (JmiException jmie) {
+            ErrorManager.getDefault().notify(jmie);
         }
     }
     
