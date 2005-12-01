@@ -1242,7 +1242,8 @@ public class MetaComponentCreator {
             new Object[] { classSource.getClassName(),
                            ClassPathUtils.getClassSourceDescription(classSource) });
         em.annotate(ex, msg);
-        em.notify(ErrorManager.USER, ex);
+        em.notify(ErrorManager.USER, ex); // Issue 65116 - don't show the exception to the user
+        em.notify(ErrorManager.INFORMATIONAL, ex); // Make sure the exception is in the console and log file
     }
 
     private boolean initComponentInstance(RADComponent metacomp,
