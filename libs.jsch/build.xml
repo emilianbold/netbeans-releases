@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${cluster}/modules/ext"/>
         <copy todir="${cluster}/modules/ext">
             <fileset dir="../external">
-                <include name="jsch-0.1.23.jar"/>
+                <include name="jsch-0.1.24.jar"/>
             </fileset>
         </copy>
     </target>
