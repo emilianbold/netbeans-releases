@@ -95,10 +95,10 @@ public final class MetalLFCustoms extends LFCustoms {
                     
 
             // progress component related
-            "nbProgressBar.Foreground", new Color(49, 106, 197),
-            "nbProgressBar.Background", Color.WHITE,
-            "nbProgressBar.popupDynaText.foreground", new Color(141, 136, 122),
-            "nbProgressBar.popupText.background", new Color(249, 249, 249),        
+//            "nbProgressBar.Foreground", new Color(49, 106, 197),
+//            "nbProgressBar.Background", Color.WHITE,
+            "nbProgressBar.popupDynaText.foreground", new Color(115, 115, 115),
+//            "nbProgressBar.popupText.background", new Color(231, 249, 249),        
             "nbProgressBar.popupText.foreground", UIManager.getColor("TextField.foreground"),
             "nbProgressBar.popupText.selectBackground", UIManager.getColor("List.selectionBackground"),
             "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),                    
