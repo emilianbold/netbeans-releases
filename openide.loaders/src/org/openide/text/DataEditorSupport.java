@@ -52,6 +52,12 @@ import org.openide.windows.CloneableOpenSupport;
  * @author Jaroslav Tulach
  */
 public class DataEditorSupport extends CloneableEditorSupport {
+    /** error manager for CloneableEditorSupport logging and error reporting */
+    static final ErrorManager ERR = ErrorManager.getDefault().getInstance("org.openide.text.DataEditorSupport"); // NOI18N
+
+    /** will we log using the manager or not? */
+    static final boolean ERR_LOG = ERR.isLoggable(ERR.INFORMATIONAL);
+    
     /** Which data object we are associated with */
     private final DataObject obj;
     /** listener to asociated node's events */
@@ -399,6 +405,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
 //                lockAgain = true;
 // =====
                 if(fileLock.isValid()) {
+                    ERR.log("changeFile releaseLock: " + fileLock + " for " + fileObject); // NOI18N
                     fileLock.releaseLock ();
                     lockAgain = true;
                 } else {
@@ -411,11 +418,13 @@ public class DataEditorSupport extends CloneableEditorSupport {
             }
 
             fileObject = newFile;
+            ERR.log("changeFile: " + newFile + " for " + fileObject); // NOI18N
             fileObject.addFileChangeListener (new EnvListener (this));
 
             if (lockAgain) { // refresh lock
                 try {
                     fileLock = takeLock ();
+                    ERR.log("changeFile takeLock: " + fileLock + " for " + fileObject); // NOI18N
                 } catch (IOException e) {
                     ErrorManager.getDefault ().notify (
                 	    ErrorManager.INFORMATIONAL, e);
@@ -465,9 +474,11 @@ public class DataEditorSupport extends CloneableEditorSupport {
         * @exception IOException if an I/O error occures
         */
         public OutputStream outputStream() throws IOException {
+            ERR.log("outputStream: " + fileLock + " for " + fileObject); // NOI18N
             if (fileLock == null || !fileLock.isValid()) {
                 fileLock = takeLock ();
             }
+            ERR.log("outputStream after takeLock: " + fileLock + " for " + fileObject); // NOI18N
             try {
                 return getFileImpl ().getOutputStream (fileLock);
             } catch (IOException fse) {
@@ -476,6 +487,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 if (fileLock == null || !fileLock.isValid()) {
                     fileLock = takeLock ();
                 }
+                ERR.log("ugly workaround for #40552: " + fileLock + " for " + fileObject); // NOI18N
                 return getFileImpl ().getOutputStream (fileLock);
             }	    
         }
@@ -513,6 +525,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             if (fileLock == null || !fileLock.isValid()) {
                 fileLock = takeLock ();
             }
+            ERR.log("markModified: " + fileLock + " for " + fileObject); // NOI18N
             
             if (!getFileImpl().canWrite()) {
                 if(fileLock != null && fileLock.isValid()) {
@@ -529,8 +542,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
         * unmodified.
         */
         public void unmarkModified() {
+            ERR.log("unmarkModified: " + fileLock + " for " + fileObject); // NOI18N
             if (fileLock != null && fileLock.isValid()) {
                 fileLock.releaseLock();
+                ERR.log("releaseLock: " + fileLock + " for " + fileObject); // NOI18N
             }
             
             this.getDataObject ().setModified (false);
@@ -541,6 +556,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         * @param time of the change
         */
         final void fileChanged (boolean expected, long time) {
+            ERR.log("fileChanged: " + expected + " for " + fileObject); // NOI18N
             if (expected) {
                 // newValue = null means do not ask user whether to reload
                 firePropertyChange (PROP_TIME, null, null);

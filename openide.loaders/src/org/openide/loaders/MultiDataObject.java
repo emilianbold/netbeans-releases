@@ -962,13 +962,18 @@ public class MultiDataObject extends DataObject {
             if (newFile.equals (file)) {
                 return;
             }
-
+            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                ERR.notify(ErrorManager.INFORMATIONAL, new Exception("changeFile: " + newFile + " for " + this + " of " + getDataObject()));  // NOI18N
+            }
             newFile.setImportant (isImportant ());
             this.file = newFile;
             
             // release lock for old file
             FileLock l = lock == null ? null : (FileLock)lock.get ();
             if (l != null && l.isValid ()) {
+                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    ERR.log("releasing old lock: " + this + " was: " + l);
+                }
                 l.releaseLock ();
             }
             lock = null;
@@ -1050,6 +1055,9 @@ public class MultiDataObject extends DataObject {
             if (l == null || !l.isValid ()){
                 l = getFile ().lock ();
                 lock = new WeakReference (l);
+            }
+            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                ERR.log("takeLock: " + this + " is: " + l);
             }
             return l;
         }

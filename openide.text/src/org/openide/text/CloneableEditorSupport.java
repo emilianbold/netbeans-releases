@@ -95,10 +95,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private static final ThreadLocal LOCAL_LOAD_TASK = new ThreadLocal();
 
     /** error manager for CloneableEditorSupport logging and error reporting */
-    static final ErrorManager ERR = ErrorManager.getDefault().getInstance("org.openide.text.CloneableEditorSupport"); // NOI18N
+    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance("org.openide.text.CloneableEditorSupport"); // NOI18N
 
     /** will we log using the manager or not? */
-    static final boolean ERR_LOG = ERR.isLoggable(ERR.INFORMATIONAL);
+    private static final boolean ERR_LOG = ERR.isLoggable(ERR.INFORMATIONAL);
 
     /** Flag saying if the CloneableEditorSupport handles already the UserQuestionException*/
     private boolean inUserQuestionExceptionHandler;
@@ -1058,7 +1058,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 try {
                     safe.waitForResult();
                 } catch (InterruptedException ex) {
-                    ERR.notify(ex);
+                    ERR.notify(ErrorManager.INFORMATIONAL, ex);
                     return false;
                 }
             }
@@ -2152,7 +2152,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     final void setAlreadyModified(boolean alreadyModified) {
         if (ERR_LOG) {
-            ERR.notify(new Exception("Setting to modified: " + alreadyModified));
+            ERR.notify(ErrorManager.INFORMATIONAL, new Exception("Setting to modified: " + alreadyModified));
         }
 
         this.alreadyModified = alreadyModified;
@@ -2581,7 +2581,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             this.saveTime = saveTime;
             this.delegate = delegate;
             if (ERR.isLoggable(ERR.INFORMATIONAL)) {
-                ERR.notify(new Exception("new BeforeModificationEdit(" + saveTime +")")); // NOI18N
+                ERR.notify(ErrorManager.INFORMATIONAL, new Exception("new BeforeModificationEdit(" + saveTime +")")); // NOI18N
             }
         }
 
