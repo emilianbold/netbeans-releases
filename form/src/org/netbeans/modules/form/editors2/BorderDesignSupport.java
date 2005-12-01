@@ -61,25 +61,29 @@ public class BorderDesignSupport implements FormDesignValue
         setBorder(border);
     }
 
-    public BorderDesignSupport(BorderDesignSupport borderDesignSupport)
+    public BorderDesignSupport(BorderDesignSupport borderDesignSupport, FormPropertyContext propertyContext)
         throws Exception
     {
         this(borderDesignSupport.getBorderClass());
         createProperties();
+        setPropertyContext(propertyContext);        
+        int copyMode = FormUtils.CHANGED_ONLY | FormUtils.DISABLE_CHANGE_FIRING;
+        if (borderDesignSupport.propertyContext.getFormModel() == propertyContext.getFormModel()) {
+            // the new BorderDesignSupport is used in the same form,
+            // so it can share design values
+            copyMode |= FormUtils.PASS_DESIGN_VALUES;
+        }
+            
         FormUtils.copyProperties(borderDesignSupport.getProperties(),
                                  this.properties,
-                                 FormUtils.CHANGED_ONLY
-                                   | FormUtils.DISABLE_CHANGE_FIRING
-                                   | FormUtils.PASS_DESIGN_VALUES);
-        // assuming that the new BorderDesignSupport is used in the same form,
-        // so it can share design values
+                                 copyMode);
     }
 
     // --------------------------
 
     public FormDesignValue copy(FormModel formModel) {
         try {
-            return new BorderDesignSupport(this);    
+            return new BorderDesignSupport(this, BorderEditor.createFormPropertyContext(formModel));    
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }

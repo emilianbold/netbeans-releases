@@ -76,9 +76,13 @@ public final class BorderEditor extends PropertyEditorSupport
 
     // FormAwareEditor implementation
     public void setFormModel(FormModel model) {
-        propertyContext = new FormPropertyContext.DefaultImpl(model);
+        propertyContext = createFormPropertyContext(model);
     }
 
+    public static FormPropertyContext createFormPropertyContext(FormModel model) {
+        return new FormPropertyContext.DefaultImpl(model);
+    }
+    
     // ------------------
     // main methods
 
@@ -274,13 +278,12 @@ public final class BorderEditor extends PropertyEditorSupport
                     && borderSupport.getBorderClass() == nodeBDS.getBorderClass())
                 {
                     try {
-                        nodeBDS = new BorderDesignSupport(borderSupport);
+                        nodeBDS = new BorderDesignSupport(borderSupport, propertyContext);
                     }
                     catch (Exception ex) {
                         ex.printStackTrace();
                         continue;
                     }
-                    nodeBDS.setPropertyContext(propertyContext);
                     borderNode = new BorderNode(nodeBDS, paletteItem.getNode());
                     selectNode = borderNode;
                 }
