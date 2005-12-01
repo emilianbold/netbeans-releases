@@ -16,6 +16,7 @@ package org.netbeans.core.windows.view.ui.slides;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -119,7 +120,7 @@ public final class SlideBarContainer extends AbstractModeContainer {
     private static Border computeBorder(String orientation) {
         int bottom = 0, left = 0, right = 0, top = 0;
         if (Constants.LEFT.equals(orientation)) {
-            top = 1; left = 1; bottom = 1; right = 1; 
+            top = 1; left = 1; bottom = 1; right = 2; 
         }
         if (Constants.BOTTOM.equals(orientation)) {
             top = 2; left = 1; bottom = 1; right = 1; 
@@ -190,6 +191,11 @@ public final class SlideBarContainer extends AbstractModeContainer {
             if (modeContainer.getTopComponents().length == 0) {
                 // have minimum size, to avoid gridbag layout to place the empty component at [0,0] location.
                 // clashes with the dnd
+                Border b = getBorder();
+                if( null != b ) {
+                    Insets insets = b.getBorderInsets( this );
+                    return new Dimension( Math.max(1, insets.left+insets.right), Math.max(1, insets.top+insets.bottom) );
+                }
                 return new Dimension(1,1);
             }
             Dimension retValue;
