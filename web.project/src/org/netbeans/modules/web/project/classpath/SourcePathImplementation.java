@@ -14,6 +14,7 @@
 package org.netbeans.modules.web.project.classpath;
 
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.web.project.SourceRoots;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.ErrorManager;
 
 /**
  * Implementation of a single classpath that is derived from one Ant property.
@@ -77,12 +79,19 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                 }
                 // adds build/generated/wsclient to resources to be available for code completion
                 if (projectHelper!=null) {
-                    EditableProperties props = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    String wsClientDir = projectHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.BUILD_DIR) + "/generated/wsclient/"; //NOI18N
                     try {
-                        URL url = new URL(wsClientDir);
-                        if (url!=null) result.add(ClassPathSupport.createResource(url));
+                        String buildDir = projectHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.BUILD_DIR);
+                        if (buildDir!=null) {
+                            File f =  new File (new File (projectHelper.resolveFile(buildDir),"generated"),"wsclient");
+                            URL url = f.toURI().toURL();
+                            if (!f.exists()) {  //NOI18N
+                                assert !url.toExternalForm().endsWith("/");  //NOI18N
+                                url = new URL (url.toExternalForm()+'/');   //NOI18N
+                            }
+                            result.add(ClassPathSupport.createResource(url));
+                        }
                     } catch (MalformedURLException ex) {
+                        ErrorManager.getDefault ().notify (ex);
                     }
                 }
                 this.resources = Collections.unmodifiableList(result);
