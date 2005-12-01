@@ -134,13 +134,17 @@ public class Node {
     /** Getter for TreePath of node.
      * @return TreePath of node */
     public TreePath getTreePath() {
-        return(treePath);
+        if(tree().getRowForPath(treePath) < 0) {
+            // node was removed or re-created
+            treePath = tree().findPath(convertPath(treePath));
+        }
+        return treePath;
     }
     
     /** getter for node text
      * @return Streing node text */
     public String getText() {
-        return(treePath.getLastPathComponent().toString());
+        return getTreePath().getLastPathComponent().toString();
     }
     
     private static String convertPath(TreePath path) {
@@ -157,13 +161,13 @@ public class Node {
     /** getter for node path
      * @return String node path */
     public String getPath() {
-        return convertPath(treePath);
+        return convertPath(getTreePath());
     }
     
     /** getter for path of parent node
      * @return String path of parent node */
     public String getParentPath() {
-        return convertPath(treePath.getParentPath());
+        return convertPath(getTreePath().getParentPath());
     }
     
     /** Returns Object instance which represents org.openide.nodes.Node
@@ -177,7 +181,7 @@ public class Node {
     /** calls popup menu on node
      * @return JPopupMenuOperator */
     public JPopupMenuOperator callPopup() {
-        return new JPopupMenuOperator(treeOperator.callPopupOnPath(treePath));
+        return new JPopupMenuOperator(treeOperator.callPopupOnPath(getTreePath()));
     }
     
     /** performs action on node through main menu
@@ -237,14 +241,14 @@ public class Node {
     /** tests if node is leaf
      * @return boolean true when node does not have children */
     public boolean isLeaf() {
-        return tree().getChildCount(treePath)<1;
+        return tree().getChildCount(getTreePath())<1;
     }
     
     /** returns list of names of children
      * @return String[] list of names of children */
     public String[] getChildren() {
-        tree().expandPath(treePath);
-        Object o[]=tree().getChildren(treePath.getLastPathComponent());
+        tree().expandPath(getTreePath());
+        Object o[]=tree().getChildren(getTreePath().getLastPathComponent());
         if (o==null) return new String[0];
         String s[]=new String[o.length];
         for (int i=0; i<o.length; i++)
@@ -262,6 +266,7 @@ public class Node {
      * during verification.
      * @return boolean true when node is still present */
     public boolean isPresent() {
+        // do not use getTreePath() in this method
         tree().expandPath(treePath.getParentPath());
         return tree().getRowForPath(treePath)>=0;
     }
@@ -381,38 +386,38 @@ public class Node {
     
     /** Expands current node to see children */
     public void expand() {
-        treeOperator.expandPath(treePath);
+        treeOperator.expandPath(getTreePath());
         waitExpanded();
     }
     
     /** Collapse current node to hide children */
     public void collapse() {
-        treeOperator.collapsePath(treePath);
+        treeOperator.collapsePath(getTreePath());
         waitCollapsed();
     }
     
     /** Waits for node to be expanded */
     public void waitExpanded() {
-        treeOperator.waitExpanded(treePath);
+        treeOperator.waitExpanded(getTreePath());
     }
     
     /** Waits for node to be collapsed */
     public void waitCollapsed() {
-        treeOperator.waitCollapsed(treePath);
+        treeOperator.waitCollapsed(getTreePath());
     }
     
     /** Informs if current node is expanded
      * @return boolean true when node is expanded
      */
     public boolean isExpanded() {
-        return treeOperator.isExpanded(treePath);
+        return treeOperator.isExpanded(getTreePath());
     }
     
     /** Informs if current node is collapsed
      * @return boolean true when node is collapsed
      */
     public boolean isCollapsed() {
-        return treeOperator.isCollapsed(treePath);
+        return treeOperator.isCollapsed(getTreePath());
     }
     
 /*    protected Action[] getActions() {
