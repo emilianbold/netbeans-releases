@@ -28,7 +28,7 @@ import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OptionsViewAction;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.ComponentChooser;
-
+import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Timeouts;
@@ -39,7 +39,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.StringComparator;
 
 /**
  * Provides access to the Options window and it's subcomponents.
@@ -78,22 +78,9 @@ public class OptionsOperator extends NbDialogOperator {
      * Waits for the Options window opened
      */
     public OptionsOperator() {
-        super(getTitleToFind());
-        setComparator(oldComparator);
-        setDefaultStringComparator(oldComparator);
+        super(waitJDialog(optionsSubchooser));
     }
     
-    private static StringComparator oldComparator;
-
-    /** Method to set exactly matching comparator to be used in constructor.
-     * @return "Options" - title of window to be found
-     */
-    private static String getTitleToFind() {
-        oldComparator = Operator.getDefaultStringComparator();
-        DefaultStringComparator comparator = new DefaultStringComparator(true, true);
-        setDefaultStringComparator(comparator);
-        return Bundle.getString("org.netbeans.core.Bundle", "UI/Services"); 
-    }
     /**
      * Invoces Options window by the menu operation.
      * @return OptionsOperator instance
@@ -340,6 +327,9 @@ public class OptionsOperator extends NbDialogOperator {
     
     private Component sourceInternal;
     
+    /** Returns component.
+     * @return component.
+     */
     public Component getSource() {
         if(sourceInternal == null) {
             sourceInternal = super.getSource();
@@ -415,4 +405,25 @@ public class OptionsOperator extends NbDialogOperator {
         btHelp();
         treeTable().verify();
     }
+    
+    /** SubChooser to determine Options or Advanced Options dialog.
+     * Used in constructor.
+     */
+    private static final ComponentChooser optionsSubchooser = new ComponentChooser() {
+        public boolean checkComponent(Component comp) {
+            return null != new ComponentSearcher((Container)comp).findComponent(new ComponentChooser() {
+                public boolean checkComponent(Component comp) {
+                    return comp.getClass().getName().endsWith("OptionsPanel"); //NOI18N
+                }
+
+                public String getDescription() {
+                    return "org.netbeans.core.actions.OptionsAction$OptionsPanel or "+ // NOI18N
+                           "org.netbeans.modules.options.OptionsPanel"; // NOI18N
+                }
+            });
+        }
+        public String getDescription() {
+            return "Options";  // NOI18N
+        }
+    };
 }
