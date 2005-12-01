@@ -101,9 +101,9 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
     * <a href="http://openide.netbeans.org/proposals/actions/design.html#callback">ActionMap proposal</a>
     * has been developed.
     * <P>
-    * So if you are providing a <a href="@org-openide-windows@/org/openide/windows/TopComponent.html>TopComponent</a>
+    * So if you are providing a <a href="@org-openide-windows@/org/openide/windows/TopComponent.html">TopComponent</a>
     * and want to provide
-    * your own handling of <a href="@org-openide-actions@/org/openide/actions/CopyAction.html>CopyAction</a> use following code:
+    * your own handling of <a href="@org-openide-actions@/org/openide/actions/CopyAction.html">CopyAction</a> use following code:
     * <PRE>
     * TopComponent tc = ...;
     * javax.swing.Action yourCopyAction = ...; // the action to invoke instead of Copy
