@@ -398,7 +398,11 @@ class AbstractVariable implements ObjectVariable, Customizer { // Customized for
     public String getType () {
         if (genericType != null) return genericType;
         if (getInnerValue () == null) return "";
-        return this.getInnerValue().type().name ();
+        try {
+            return this.getInnerValue().type().name ();
+        } catch (VMDisconnectedException vmdex) {
+            return ""; // The session is gone.
+        }
     }
     
     public boolean equals (Object o) {
