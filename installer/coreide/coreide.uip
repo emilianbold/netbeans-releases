@@ -553,7 +553,16 @@
 <wizardTree>
     <wizardRoot>
         <comments/>
-        <wizardBean class="org.netbeans.installer.SetSystemPropertiesAction" id="bean5">
+        <wizardBean class="org.netbeans.installer.CustomizeUIAction" id="beanCustomizeUIAction">
+            <property name="displayName">Customize UI Action</property>
+            <property name="active">True</property>
+            <property name="buildCategories"/>
+            <property name="comments"/>
+            <property name="conditionOperator">AND</property>
+            <property name="conditionSet"/>
+            <property name="bidirectional">True</property>
+        </wizardBean>
+        <wizardBean class="org.netbeans.installer.SetSystemPropertiesAction" id="beanSetSystemPropertiesAction">
             <property name="displayName">Set System Properties Action</property>
             <property name="active">True</property>
             <property name="buildCategories"/>
@@ -885,6 +894,15 @@
 <wizardTree>
     <wizardRoot>
         <comments/>
+        <wizardBean class="org.netbeans.installer.CustomizeUIAction" id="beanCustomizeUIActionU">
+            <property name="displayName">Customize UI Action</property>
+            <property name="active">True</property>
+            <property name="buildCategories"/>
+            <property name="comments"/>
+            <property name="conditionOperator">AND</property>
+            <property name="conditionSet"/>
+            <property name="bidirectional">True</property>
+        </wizardBean>
         <wizardBean class="com.installshield.product.wizardbeans.UninstallWelcomePanel" id="welcome">
             <property name="displayName">Welcome Panel</property>
             <property name="active">True</property>
