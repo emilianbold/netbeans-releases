@@ -75,6 +75,15 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="text">
             <folder name="xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.resources.Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="XML-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                
                 <folder name="DocumentModel">
                     <file name="org-netbeans-modules-xml-text-structure-XMLDocumentModelProvider.instance"/>
                 </folder>
@@ -117,7 +126,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
 
                 <file name="Settings.settings" url="XMLEditor-options.xml"/>
-                <file name="fontsColors.xml" url="XML_fontsColors.xml"/>
 
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.XMLKit"/>
@@ -148,6 +156,14 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="application">
             <folder name="xml-dtd">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.resources.Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="DTD-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
                 <folder name="Popup">
 
                     <attr name="org-openide-actions-PasteAction.instance/org-netbeans-modules-xml-core-actions-CollectDTDAction.instance" boolvalue="true"/>
@@ -167,12 +183,22 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
 
                 <file name="Settings.settings" url="DTDEditor-options.xml"/>
-                <file name="fontsColors.xml" url="DTD_fontsColors.xml"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.text.syntax.DTDKit"/>
                 </file>
             </folder> <!-- xml-dtd -->
         </folder> <!-- application -->
     </folder> <!-- Editors -->
+    
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="application">
+                <file name="xml-dtd" url="DTDExample"/>
+            </folder>
+            <folder name="text">
+                <file name="xml" url="XMLExample"/>
+            </folder>
+        </folder>
+    </folder>
 
 </filesystem>

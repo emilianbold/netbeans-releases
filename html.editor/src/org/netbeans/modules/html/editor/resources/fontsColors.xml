@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<fontscolors>
+    <fontcolor name="html-argument" foreColor="ff007c00" default="identifier"/>
+    <fontcolor name="html-block-comment" foreColor="gray" default="comment"/>
+    <fontcolor name="html-character" foreColor="ffb20000" default="char"/>
+    <fontcolor name="html-error" foreColor="black" bgColor="pink" default="error"/>
+    <fontcolor name="html-operator" foreColor="ff007c00" default="operator"/>
+    <fontcolor name="html-sgml-comment" foreColor="gray" default="comment"/>
+    <fontcolor name="html-sgml-declaration" foreColor="ffbf9221" default="default"/>
+    <fontcolor name="html-tag" foreColor="blue" default="default"/>
+    <fontcolor name="html-text" default="default"/>
+    <fontcolor name="html-value" foreColor="ff99006b" default="default"/>
+    <fontcolor name="html-ws" default="whitespace"/>
+</fontscolors>

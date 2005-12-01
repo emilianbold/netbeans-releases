@@ -1,0 +1,7 @@
+/** Block comment. */
+public class JavaExample {
+    
+    @Deprecated public String method (int param) {
+        return "String " + '-' + 1.2);
+    }// line comment
+}

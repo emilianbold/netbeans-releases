@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+
+<fontscolors>
+    <fontcolor name="jsp-el-EOL" default="default"/>
+    <fontcolor name="jsp-el-char-literal" foreColor="ff006f00" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-el-el-delimiter" foreColor="black" bgColor="fffdf2c4" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-el-errors" foreColor="black" bgColor="pink" default="default"/>
+    <fontcolor name="jsp-el-identifier" foreColor="black" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-el-keywords" foreColor="ff000099" bgColor="fffdf2c4" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-el-layer-method" bgColor="fffdf2c4" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-el-numeric-literals" foreColor="ff780000" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-el-operators" foreColor="black" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-el-string" foreColor="ff99006b" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-el-tag-lib-prefix" foreColor="blue" bgColor="fffdf2c4" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-el-whitespace" foreColor="black" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-error" foreColor="red" default="default"/>
+    <fontcolor name="jsp-format-text" default="default"/>
+    <fontcolor name="jsp-html-argument" foreColor="ff007c00" default="default"/>
+    <fontcolor name="jsp-html-block-comment" foreColor="gray" default="default"/>
+    <fontcolor name="jsp-html-character" foreColor="ffb20000" default="default"/>
+    <fontcolor name="jsp-html-error" foreColor="black" bgColor="pink" default="default"/>
+    <fontcolor name="jsp-html-operator" foreColor="ff007c00" default="default"/>
+    <fontcolor name="jsp-html-sgml-comment" foreColor="gray" default="default"/>
+    <fontcolor name="jsp-html-sgml-declaration" foreColor="ffbf9221" default="default"/>
+    <fontcolor name="jsp-html-tag" foreColor="blue" default="default"/>
+    <fontcolor name="jsp-html-text" default="default"/>
+    <fontcolor name="jsp-html-value" foreColor="ff99006b" default="default"/>
+    <fontcolor name="jsp-html-ws" default="default"/>
+    <fontcolor name="jsp-java-annotation" foreColor="ff006f00" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-java-block-comment" foreColor="ff737373" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-java-char-literal" foreColor="ff006f00" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-java-errors" foreColor="black" bgColor="pink" default="default"/>
+    <fontcolor name="jsp-java-identifier" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-java-keywords" foreColor="ff000099" bgColor="fffdf2c4" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-java-layer-method" bgColor="fffdf2c4" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-java-line-comment" foreColor="ff737373" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-java-numeric-literals" foreColor="ff780000" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-java-operators" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-java-string-literal" foreColor="ff99006b" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-java-whitespace" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="jsp-jsptag-attribute-name" foreColor="ff007c00" bgColor="ffeff0eb" default="default"/>
+    <fontcolor name="jsp-jsptag-attribute-value" foreColor="ff99006b" bgColor="ffeff0eb" default="default"/>
+    <fontcolor name="jsp-jsptag-comment" foreColor="gray" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-jsptag-error" foreColor="black" bgColor="pink" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-jsptag-scriptlet-delimiter" foreColor="black" bgColor="fffdf2c4" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-jsptag-symbol" foreColor="black" bgColor="ffeff0eb" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-jsptag-tag-directive" foreColor="blue" bgColor="ffeff0eb" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-jsptag-text" default="default"/>
+    <fontcolor name="jsp-jsptag-whitespace" foreColor="black" bgColor="ffeff0eb" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-xml-EOL" foreColor="black" default="default"/>
+    <fontcolor name="jsp-xml-attribute" foreColor="ff007c00" default="default"/>
+    <fontcolor name="jsp-xml-cdata-section" foreColor="ff7c6200" default="default"/>
+    <fontcolor name="jsp-xml-comment" foreColor="ff006666" default="default"/>
+    <fontcolor name="jsp-xml-doctype" foreColor="ff00007c" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-xml-error" foreColor="black" bgColor="pink" default="default"/>
+    <fontcolor name="jsp-xml-operator" foreColor="ff007c00" default="default"/>
+    <fontcolor name="jsp-xml-pi-content" foreColor="ff00007c" default="default"/>
+    <fontcolor name="jsp-xml-pi-end" foreColor="ff00007c" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-xml-pi-start" foreColor="ff00007c" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-xml-pi-target" foreColor="ff00007c" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-xml-ref" foreColor="ffb20000" default="default"/>
+    <fontcolor name="jsp-xml-tag" foreColor="blue" default="default"/>
+    <fontcolor name="jsp-xml-text" foreColor="black" default="default"/>
+    <fontcolor name="jsp-xml-value" foreColor="ff99006b" default="default"/>
+    <fontcolor name="jsp-xml-ws" foreColor="black" default="default"/>
+</fontscolors>

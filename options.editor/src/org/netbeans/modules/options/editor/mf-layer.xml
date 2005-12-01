@@ -48,18 +48,6 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="Keymaps.instance/Advanced.instance" boolvalue="true" />
         <folder name="PreviewExamples">
             <file name="Defaults" url="../colors/AllLanguagesExample"/>
-            <folder name="application">
-                <file name="xml-dtd" url="../colors/DTDExample"/>
-            </folder>
-            <folder name="text">
-                <file name="css" url="../colors/CSSExample"/>
-                <file name="html" url="../colors/HTMLExample"/>
-                <file name="x-jsp" url="../colors/JSPExample"/>
-                <file name="x-java" url="../colors/JavaExample"/>
-                <file name="plain" url="../colors/PlainTextExample"/>
-                <file name="x-properties" url="../colors/PropertiesExample"/>
-                <file name="xml" url="../colors/XMLExample"/>
-            </folder>
         </folder>
         <folder name="Actions">
             <folder name="Build">

@@ -18,6 +18,14 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-properties">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.properties.syntax.Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.properties.syntax.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
                 <file name="Settings.settings" url="PropertiesOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.properties.syntax.PropertiesKit"/>
@@ -32,6 +40,14 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.properties.syntax.EditorSettingsCopy.getLayerInstance"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.properties.TableViewSettings"/>
             </file>
+        </folder>
+    </folder>
+    
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-properties" url="PropertiesExample"/>
+            </folder>
         </folder>
     </folder>
 </filesystem>

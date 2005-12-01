@@ -75,6 +75,15 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="html">
+                
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
             
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
@@ -116,5 +125,11 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="html" url="HTMLExample"/>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

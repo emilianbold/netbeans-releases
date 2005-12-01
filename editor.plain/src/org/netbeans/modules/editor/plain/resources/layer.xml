@@ -18,10 +18,25 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="plain">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.plain.resources.Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.plain.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
                 <file name="Settings.settings" url="PlainOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.plain.PlainKit"/>
                 </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="plain" url="PlainTextExample"/>
             </folder>
         </folder>
     </folder>

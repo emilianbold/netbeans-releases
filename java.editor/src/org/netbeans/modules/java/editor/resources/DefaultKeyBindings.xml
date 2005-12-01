@@ -22,4 +22,5 @@
     <bind actionName="make-setter" key="O-U$S"/>
     <bind actionName="select-element-next" key="OS-S"/>
     <bind actionName="select-element-previous" key="OS-A"/>
+    <bind actionName="javadoc-show-action" key="CS-SPACE"/> 
 </bindings>

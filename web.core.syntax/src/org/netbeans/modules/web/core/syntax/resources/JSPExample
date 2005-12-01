@@ -1,0 +1,12 @@
+<%@page contentType="text/html"%>
+
+<% boolean b = true; request.getMehod (); // Java code
+%>
+<html>
+    <jsp:setProperty name="test" property="JSP" />
+    <%-- HTML --%>
+    <c:if test="${param.sayHello}">
+        <!-- Let's welcome the user ${param.name} -->
+        Hello ${param.name}!
+    </c:if>
+</html>

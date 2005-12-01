@@ -829,14 +829,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
             <folder name="css">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="NetBeans-CSS-fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
                 <folder name="CityLights">
                     <folder name="Defaults">
                         <file name="coloring.xml" url="CityLights-CSS-fontsColors.xml">
@@ -846,14 +838,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
             <folder name="x-properties">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="NetBeans-Properties-fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
                 <folder name="CityLights">
                     <folder name="Defaults">
                         <file name="coloring.xml" url="CityLights-Properties-fontsColors.xml">
@@ -863,14 +847,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
             <folder name="html">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="NetBeans-HTML-fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
                 <folder name="CityLights">
                     <folder name="Defaults">
                         <file name="coloring.xml" url="CityLights-HTML-fontsColors.xml">
@@ -880,14 +856,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
             <folder name="plain">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="NetBeans-plain-fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
                 <folder name="CityLights">
                     <folder name="Defaults">
                         <file name="coloring.xml" url="CityLights-plain-fontsColors.xml">
@@ -897,14 +865,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
             <folder name="x-java">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="NetBeans-Java-fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
                 <folder name="CityLights">
                     <folder name="Defaults">
                         <file name="coloring.xml" url="CityLights-Java-fontsColors.xml">
@@ -914,14 +874,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
             <folder name="x-jsp">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="NetBeans-JSP-fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
                 <folder name="CityLights">
                     <folder name="Defaults">
                         <file name="coloring.xml" url="CityLights-JSP-fontsColors.xml">
@@ -931,14 +883,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
             <folder name="xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="NetBeans-XML-fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
                 <folder name="CityLights">
                     <folder name="Defaults">
                         <file name="coloring.xml" url="CityLights-XML-fontsColors.xml">
@@ -950,14 +894,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="application">
             <folder name="xml-dtd">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                <folder name="NetBeans">
-                    <folder name="Defaults">
-                        <file name="coloring.xml" url="NetBeans-DTD-fontsColors.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
                 <folder name="CityLights">
                     <folder name="Defaults">
                         <file name="coloring.xml" url="CityLights-DTD-fontsColors.xml">

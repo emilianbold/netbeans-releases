@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<fontscolors>
+    <fontcolor name="properties-line-comment" default="comment"/>
+    <fontcolor name="properties-equal-sign" default="operator"/>
+    <fontcolor name="properties-value" foreColor="magenta" default="default"/>
+    <fontcolor name="properties-text" default="default"/>
+    <fontcolor name="properties-key" foreColor="blue" default="identifier">
+        <font style="bold"/>
+    </fontcolor>
+</fontscolors>

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<fontscolors>
+    <fontcolor name="dtd-comment" foreColor="ff006666" default="comment"/>
+    <fontcolor name="dtd-eol" foreColor="black" default="whitespace"/>
+    <fontcolor name="dtd-error" foreColor="black" bgColor="pink" default="error"/>
+    <fontcolor name="dtd-keyword" foreColor="ff00007c" default="keyword">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="dtd-plain" foreColor="black" default="default"/>
+    <fontcolor name="dtd-ref" foreColor="blue" default="default"/>
+    <fontcolor name="dtd-string" foreColor="ff99006b" default="string"/>
+    <fontcolor name="dtd-symbol" foreColor="black" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="dtd-target" foreColor="ffb20000" default="default">
+        <font style="bold"/>
+    </fontcolor>
+</fontscolors>

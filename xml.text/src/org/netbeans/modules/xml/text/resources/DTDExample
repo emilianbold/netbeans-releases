@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+ <!-- Comment -->
+  <!ATTLIST Toolbar
+    name CDATA #REQUIRED
+    visible (true | false) #IMPLIED
+  >
+error

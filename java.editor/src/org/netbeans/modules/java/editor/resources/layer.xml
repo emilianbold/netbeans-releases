@@ -80,6 +80,15 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
+            
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.resources.Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
 
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance"/>
@@ -182,9 +191,13 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-java-editor-codetemplates-JavaCodeTemplateProcessor$Factory.instance"/>
                 </folder>
             </folder>
-
         </folder>
-
     </folder>
-
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-java" url="JavaExample"/>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
