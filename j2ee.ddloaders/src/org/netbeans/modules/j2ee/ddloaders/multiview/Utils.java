@@ -19,6 +19,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.MultipartId;
 import org.netbeans.jmi.javamodel.Type;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Parameter;
@@ -271,6 +272,13 @@ public class Utils {
             method.setModifiers(modifiers);
             if (remote) {
                 JMIUtils.addException(method, RemoteException.class.getName());
+            }
+            for (Iterator it = prototype.getExceptionNames().iterator(); it.hasNext();) {
+                MultipartId mpId= (MultipartId) it.next();
+                String exceptionName = mpId.getName();
+                if (!"RemoteException".equals(exceptionName) && !"java.rmi.RemoteException".equals(exceptionName)) {
+                    JMIUtils.addException(method, exceptionName);
+                }
             }
             getContents(interfaceClass).add(method);
             rollback = false;

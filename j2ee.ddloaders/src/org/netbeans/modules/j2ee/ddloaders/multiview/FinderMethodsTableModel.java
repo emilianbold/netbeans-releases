@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.common.ui.nodes.QueryCustomizer;
 import org.netbeans.jmi.javamodel.Method;
@@ -42,6 +43,7 @@ public class FinderMethodsTableModel extends QueryMethodsTableModel {
         boolean returnsCollection = helper.returnsCollection();
         QueryCustomizer customizer = new QueryCustomizer();
         Method method = helper.getPrototypeMethod();
+        JMIUtils.addException(method, "javax.ejb.FinderException");
         Query aQuery = (Query) queries.getFinderMethod(row).clone();
         boolean result = customizer.showFinderCustomizer(method, aQuery, returnsCollection,
                 hasLocal, hasRemote, hasLocalMethod, hasRemoteMethod);
