@@ -138,8 +138,9 @@ public final class OpenProjectList {
                 }          
             }
         }
-        if ( needNotify ) {            
-            for( Iterator it = INSTANCE.openProjects.iterator(); it.hasNext(); ) {
+        if ( needNotify ) {
+            //#68738: a project may open other projects in its ProjectOpenedHook:
+            for( Iterator it = new ArrayList(INSTANCE.openProjects).iterator(); it.hasNext(); ) {
                 Project p = (Project)it.next();
                 notifyOpened(p);             
             }
