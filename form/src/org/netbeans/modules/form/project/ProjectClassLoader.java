@@ -63,8 +63,8 @@ class ProjectClassLoader extends ClassLoader {
                 byte[] data = null;
                 int first;
                 while ((first = is.read()) != -1) {
-                    int length = is.available();
-                    byte[] b = new byte[length + 1];
+                    int length = is.available()+1;
+                    byte[] b = new byte[length];
                     b[0] = (byte) first;
                     int count = 1;
                     while (count < length) {
