@@ -450,7 +450,9 @@ class TCGroupParser {
         }
 
         private void appendTcId (TCGroupConfig tcGroupCfg, StringBuffer buff) {
-            buff.append(" <tc-id id=\"").append(tcGroupCfg.tc_id).append("\"/>\n"); // NOI18N
+            buff.append(" <tc-id id=\"").append(
+                    PersistenceManager.escapeTcId4XmlContent(tcGroupCfg.tc_id)).
+                    append("\"/>\n"); // NOI18N
         }
         
         private void appendOpenCloseBehavior (TCGroupConfig tcGroupCfg, StringBuffer buff) {

@@ -497,6 +497,7 @@ final class PersistenceHandler implements PersistenceObserver {
         for (int i = 0; i < tcs.length; i++) {
             if (pm.isTopComponentPersistent(tcs[i])) {
                 String tc_id = WindowManager.getDefault().findTopComponentID(tcs[i]);
+                tc_id = PersistenceManager.escapeTcId4XmlContent(tc_id);
                 tcIdList.add(tc_id);
             }
         }

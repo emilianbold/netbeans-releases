@@ -134,6 +134,7 @@ class TCRefParser {
         Debug.log(TCRefParser.class, s);
     }
     
+    
     private final class PropertyHandler extends DefaultHandler {
         
         /** tcRef manager configuration data */
@@ -454,7 +455,8 @@ class TCRefParser {
         private void appendTcId (TCRefConfig tcRefCfg, StringBuffer buff) {
             buff.append("    <tc-id"); // NOI18N
             buff.append(" id=\""); // NOI18N
-            buff.append(tcRefCfg.tc_id);
+
+            buff.append(PersistenceManager.escapeTcId4XmlContent(tcRefCfg.tc_id));
             buff.append("\""); // NOI18N
             buff.append(" />\n"); // NOI18N
         }

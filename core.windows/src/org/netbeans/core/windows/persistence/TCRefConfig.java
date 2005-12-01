@@ -56,4 +56,8 @@ public class TCRefConfig {
         return hash;
     }
     
+    public String toString () {
+        return "TCRefConfig: tc_id=" + tc_id + ", opened=" + opened;
+    }
+    
 }

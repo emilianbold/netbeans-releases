@@ -1236,5 +1236,16 @@ public final class PersistenceManager implements PropertyChangeListener {
         }
         return null;
     }
+    
+    /** 
+     * #69505 - handle chars like & and ' in names of top components
+     */
+    public static String escapeTcId4XmlContent (String tcName) {
+        if (tcName.indexOf('&') != -1 || tcName.indexOf('\'') != -1) {
+            tcName = tcName.replaceAll("&", "&amp;");
+            tcName = tcName.replaceAll("'", "&apos;");
+        }
+        return tcName;
+    }
 
 }

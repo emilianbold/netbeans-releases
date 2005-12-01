@@ -1584,7 +1584,8 @@ class ModeParser {
         
         private void appendActiveTC (ModeConfig mc, StringBuffer buff) {
             if ((mc.selectedTopComponentID != null) && !"".equals(mc.selectedTopComponentID)) {
-                buff.append("    <active-tc id=\"").append(mc.selectedTopComponentID).append("\"/>\n"); // NOI18N
+                String tcName = PersistenceManager.escapeTcId4XmlContent(mc.selectedTopComponentID);
+                buff.append("    <active-tc id=\"").append(tcName).append("\"/>\n"); // NOI18N
             }
         }
         

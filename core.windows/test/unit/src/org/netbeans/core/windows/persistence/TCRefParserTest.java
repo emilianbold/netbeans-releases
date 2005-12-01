@@ -132,6 +132,28 @@ public class TCRefParserTest extends NbTestCase {
         System.out.println("TCRefParserTest.testSaveTCRef01 FINISH");
     }
     
+    /** Test of saving with ugly nasty special characters like & and '
+     */
+    public void testSaveTCRef02 () throws Exception {
+        System.out.println("");
+        System.out.println("TCRefParserTest.testSaveTCRef02 START");
+        
+        TCRefParser tcRefParser = createRefParser("data/valid/Windows/Modes/mode00","tcref02&'");
+        
+        TCRefConfig tcRefCfg1 = tcRefParser.load();
+        
+        tcRefParser.save(tcRefCfg1);
+        
+        TCRefConfig tcRefCfg2 = tcRefParser.load();
+System.out.println("tcrefcfg1: " + tcRefCfg1);        
+System.out.println("tcrefcfg2: " + tcRefCfg2);        
+        //Compare data
+        assertTrue("Compare configuration data",tcRefCfg1.equals(tcRefCfg2));
+        
+        System.out.println("TCRefParserTest.testSaveTCRef02 FINISH");
+    }
+    
+    
     ////////////////////////////////
     //Testing INCORRECT data
     ////////////////////////////////
