@@ -60,13 +60,19 @@ final class FormClassLoader extends ClassLoader {
                 InputStream is = url.openStream();
                 byte[] data = null;
                 int first;
+                int available = is.available();
                 while ((first = is.read()) != -1) {
-                    int length = is.available()+1;
+                    int length = is.available();
+                    if (length != available) { // Workaround for issue 4401122
+                        length++;
+                    }
                     byte[] b = new byte[length];
                     b[0] = (byte) first;
                     int count = 1;
                     while (count < length) {
-                        count += is.read(b, count, length - count);
+                        int read = is.read(b, count, length - count);
+                        assert (read != -1);
+                        count += read;
                     }
                     if (data == null) {
                         data = b;
