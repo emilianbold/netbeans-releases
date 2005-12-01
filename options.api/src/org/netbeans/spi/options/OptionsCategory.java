@@ -14,6 +14,7 @@
 package org.netbeans.spi.options;
 
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Method;
 import javax.swing.JComponent;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -78,13 +79,36 @@ public abstract class OptionsCategory {
      */
     public abstract OptionsPanelController create ();
     
+    private OptionsCategory.PanelController createOldImpl () {
+        return null;
+    }
+    
+    private OptionsPanelController createNewImpl () {
+        Class clazz = OptionsCategory.class;
+        Method[] methods = clazz.getDeclaredMethods();
+        
+        for (int cntr = 0; cntr < methods.length; cntr++) {
+            Method m = methods[cntr];
+            
+            if ("create".equals(m.getName()) && m.getReturnType() == PanelController.class) {
+                try {
+                    return (PanelController) m.invoke(this, new Object[0]);
+                } catch (Exception e) {
+                    org.openide.ErrorManager.getDefault().notify(e);
+                }
+            }
+        }
+        
+        return null;
+    }
+    
     
     /**
      * Temporary patch.
      * @deprecated  This class will not be a part of NB50! Use top 
      *              OptionsPanelController instead.
      */
-    public static abstract class PanelController extends OptionsPanelController {
+    static abstract class PanelController extends OptionsPanelController {
 
         /**
          * @deprecated  This class will not be a part of NB50! Use top 
@@ -104,6 +128,8 @@ public abstract class OptionsCategory {
          */
         public static final String PROP_HELP_CTX = "helpCtx";
 
+        public PanelController() {}
+        
         /**
          * @deprecated  This class will not be a part of NB50! Use top 
          *              OptionsPanelController instead.

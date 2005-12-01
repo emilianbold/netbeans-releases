@@ -13,6 +13,8 @@
 
 package org.netbeans.spi.options;
 
+import java.lang.reflect.Method;
+
 
 /**
  * Implementation of this class represents one category (like "Ant" 
@@ -63,4 +65,28 @@ public abstract class AdvancedOption {
      *         category
      */
     public abstract OptionsPanelController create ();
+
+    private OptionsCategory.PanelController createOldImpl () {
+        return null;
+    }
+    
+    private OptionsPanelController createNewImpl () {
+        Class clazz = OptionsCategory.class;
+        Method[] methods = clazz.getDeclaredMethods();
+        
+        for (int cntr = 0; cntr < methods.length; cntr++) {
+            Method m = methods[cntr];
+            
+            if ("create".equals(m.getName()) && m.getReturnType() == OptionsCategory.PanelController.class) {
+                try {
+                    return (OptionsCategory.PanelController) m.invoke(this, new Object[0]);
+                } catch (Exception e) {
+                    org.openide.ErrorManager.getDefault().notify(e);
+                }
+            }
+        }
+        
+        return null;
+    }
+    
 }
