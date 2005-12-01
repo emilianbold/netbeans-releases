@@ -2,3 +2,5 @@ html/**/src/**/Bundle*.properties
 html/**/src/**/resources/**/*.html
 html/src/org/netbeans/modules/html/TemplateHelp.html
 html/src/org/netbeans/modules/html/templates/html.html
+html/src/org/netbeans/modules/html/XhtmlTemplateHelp.html
+html/src/org/netbeans/modules/html/templates/xhtml.html 
