@@ -50,6 +50,15 @@ public final class NamingFactory {
         return NamingFactory.registerInstanceOfFileNaming(parentFn, file);
     }
     
+    public static void checkCaseSensitivity(final FileNaming childName, final File f) {
+        if (!childName.getFile().getName().equals(f.getName())) {
+            boolean isCaseSensitive = !new File(f,"a").equals(new File(f,"A"));//NOI18N
+            if (!isCaseSensitive) {
+                    NamingFactory.rename(childName,f.getName());
+            }
+        }                        
+    }
+    
     public static synchronized boolean rename (FileNaming fNaming, String newName) {        
         boolean retVal = false;
         remove(fNaming, null);

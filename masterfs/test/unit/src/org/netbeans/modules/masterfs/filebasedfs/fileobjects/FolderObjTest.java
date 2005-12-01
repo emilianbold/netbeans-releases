@@ -26,6 +26,7 @@ import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -35,6 +36,8 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 /**
  * FolderObjTest.java
@@ -51,6 +54,117 @@ public class FolderObjTest extends NbTestCase {
     protected void setUp() throws Exception {
         clearWorkDir();
         testFile = getWorkDir();        
+    }
+
+    public void testCaseInsensitivity() throws Exception {
+        if (!Utilities.isWindows()) return;
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(getWorkDir());
+        assertNotNull(fs);
+        final FileObject root = fs.findFileObject(getWorkDir());
+        assertNotNull(root);
+        
+        File testa = new File(getWorkDir(), "a");
+        File testA = new File(getWorkDir(), "A");
+        
+        if (testA.exists()) {
+            assertTrue(testA.delete());
+        }
+        if (!testa.exists()) {
+            assertTrue(testa.createNewFile());
+        }
+
+        //FileBasedFileSystem's case sensitivity depends on platform. This is different behaviour
+        // than originally provided by AbstractFileSystem.
+        FileObject A = root.getFileObject("A");
+        assertNotNull(A);
+        assertNotNull(root.getFileObject("a"));
+        assertSame(root.getFileObject("A"), root.getFileObject("a"));
+        assertSame(URLMapper.findFileObject(testa.toURI().toURL()), 
+                URLMapper.findFileObject(testA.toURI().toURL()));
+        
+        //but 
+        root.getChildren();
+        assertEquals("A",root.getFileObject("A").getName());
+        assertEquals("A",root.getFileObject("a").getName());        
+        BaseFileObj bobj = (BaseFileObj)root.getFileObject("a");
+        NamingFactory.checkCaseSensitivity(bobj.getFileName(),testa);
+        assertEquals("a",root.getFileObject("a").getName());                
+        assertEquals("a",root.getFileObject("A").getName());                        
+    }
+    
+    private class TestListener extends FileChangeAdapter {
+        private List fileObjects;
+        TestListener(List fileObjects) {
+            this.fileObjects = fileObjects;
+        }
+        public void fileFolderCreated(FileEvent fe) {
+            assertTrue(fileObjects.remove(fe.getFile())); 
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            assertTrue(fileObjects.remove(fe.getFile())); 
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            assertTrue(fileObjects.remove(fe.getFile())); 
+        }        
+    }
+    
+    public void testSimulatesRefactoringRename() throws Exception {
+        if (!Utilities.isWindows()) return;
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(getWorkDir());
+        assertNotNull(fs);
+        final FileObject root = fs.findFileObject(getWorkDir());
+        assertNotNull(root);
+        FileObject main = root.createData("Main.java");
+        FileUtil.createData(root,"subpackage/newclass.java");
+        final List fileObjects = new ArrayList();
+        final TestListener tl = new TestListener(fileObjects);
+        fs.addFileChangeListener(tl);
+        try {
+            fs.runAtomicAction(new FileSystem.AtomicAction(){
+                public void run() throws IOException {
+                    FileObject subpackage = root.getFileObject("subpackage");
+                    FileObject newclass = subpackage.getFileObject("newclass.java");
+                    FileObject subpackage1 = root.createFolder("subpackage1");
+                    fileObjects.add(subpackage1);
+                    FileObject newclass1 = subpackage1.createData("newclass.java");
+                    fileObjects.add(newclass1);
+                    subpackage.delete();
+                    fileObjects.add(subpackage);
+                    fileObjects.add(newclass);
+                }
+            });
+        } finally {
+            fs.removeFileChangeListener(tl);
+        }
+        assertTrue(fileObjects.isEmpty());
+        assertNotNull(root.getFileObject("Main.java"));
+        assertNotNull(root.getFileObject("subpackage1"));
+        assertNotNull(root.getFileObject("subpackage1/newclass.java"));
+        assertNull(root.getFileObject("subpackage"));
+        fs.addFileChangeListener(tl);
+        try {
+            fs.runAtomicAction(new FileSystem.AtomicAction(){
+                public void run() throws IOException {
+                    FileObject subpackage1 = root.getFileObject("subpackage1");
+                    FileObject newclass = root.getFileObject("subpackage1/newclass.java");
+                    FileObject Subpackage = root.createFolder("Subpackage");
+                    fileObjects.add(Subpackage);
+                    FileObject newclass1 = Subpackage.createData("newclass.java");
+                    fileObjects.add(newclass1);
+                    subpackage1.delete();
+                    fileObjects.add(subpackage1);
+                    fileObjects.add(newclass);
+                }
+            });
+        } finally {
+            fs.removeFileChangeListener(tl);
+        }
+        assertTrue(fileObjects.isEmpty());
+        assertNotNull(root.getFileObject("Main.java"));
+        assertNotNull(root.getFileObject("Subpackage/newclass.java"));
+        assertNull(root.getFileObject("subpackage1"));
     }
     
     public void testRename() throws Exception {

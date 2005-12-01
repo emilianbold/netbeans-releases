@@ -27,6 +27,7 @@ import org.openide.util.Mutex;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 
 /**
  * @author rm111737
@@ -137,6 +138,7 @@ public final class FolderObj extends BaseFileObj {
             }
 
             final FileNaming childName = this.getChildrenCache().getChild(folder2Create.getName(), true);
+            NamingFactory.checkCaseSensitivity(childName, folder2Create);                        
             assert childName != null;
         } finally {
             mutexPrivileged.exitWriteAccess();
@@ -175,6 +177,7 @@ public final class FolderObj extends BaseFileObj {
             }
 
             final FileNaming childName = getChildrenCache().getChild(f.getName(), true);
+            NamingFactory.checkCaseSensitivity(childName, f);                        
             assert childName != null;
 
         } finally {
@@ -193,7 +196,7 @@ public final class FolderObj extends BaseFileObj {
 
         return retVal;
     }
-    
+
     public final void delete(final FileLock lock) throws IOException {
         final LinkedList all = new LinkedList();
 

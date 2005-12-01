@@ -16,6 +16,7 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 import java.lang.ref.WeakReference;
 import org.netbeans.junit.NbTestCase;
 import java.io.File;
+import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +62,46 @@ public class FileNameTest extends NbTestCase {
         n3 = null;
     }
 
+    public void test69450() throws Exception {
+        File fA = new File(getWorkDir(),"A");
+        if (fA.exists()) {
+            assertTrue(fA.delete());
+        }        
+        File fa = new File(getWorkDir(),"a");
+        if (!fa.exists()) {
+            assertTrue(fa.createNewFile());
+        }        
+        boolean isCaseSensitive = !fa.equals(fA);                
+        FileNaming na = NamingFactory.fromFile(fa);        
+        assertEquals(fa.getName(),NamingFactory.fromFile(fa).getName());        
+        if (isCaseSensitive) {
+            assertFalse(!fa.getName().equals(NamingFactory.fromFile(fA).getName()));
+            assertFalse(!NamingFactory.fromFile(fa).equals(NamingFactory.fromFile(fA)));
+            assertNotSame(NamingFactory.fromFile(fa),NamingFactory.fromFile(fA));            
+            assertTrue(fa.delete());
+            assertTrue(fA.createNewFile());
+            assertFalse(fA.getName().equals(na.getName()));
+            assertFalse(na.equals(NamingFactory.fromFile(fA)));
+            assertFalse(fA.getName().equals(na.getName()));            
+        } else {
+            assertSame(na,NamingFactory.fromFile(fA));            
+            assertEquals(fa.getName(),na.getName());            
+            assertEquals(fa.getName(),NamingFactory.fromFile(fA).getName());
+            assertEquals(NamingFactory.fromFile(fa),NamingFactory.fromFile(fA));
+            assertSame(NamingFactory.fromFile(fa),NamingFactory.fromFile(fA));            
+            //#69450            
+            assertTrue(fa.delete());
+            assertTrue(fA.createNewFile());
+            assertFalse(fA.getName().equals(na.getName()));
+            assertEquals(na,NamingFactory.fromFile(fA));
+            assertSame(na, NamingFactory.fromFile(fA));
+            assertFalse(fA.getName() + " / " + na.getName(),fA.getName().equals(na.getName()));
+            NamingFactory.checkCaseSensitivity(na,fA);
+            assertTrue(fA.getName() + " / " + na.getName(),fA.getName().equals(na.getName()));
+            
+        }
+    }
+    
     /**
      * Test of equals method, of class org.netbeans.modules.masterfs.pathtree.PathItem.
      */
