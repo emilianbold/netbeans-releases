@@ -52,20 +52,6 @@ public final class Method extends Field {
         super(in, pool, cls, includeCode);
     }
 
-    /**
-     * (Private implementation method) FIXME
-     *
-    final boolean loadAttribute(String name, int len, 
-      DataInputStream in, ConstantPool pool) throws IOException {
-	else if (name.equals("RuntimeVisibleParameterAnnotations")) { //NOI18N
-	    return false; //FIXME
-	}
-	else if (name.equals("RuntimeInvisibleParameterAnnotations")) { //NOI18N
-	    return false; //FIXME
-	}
-        return false;
-    }
-    */
     /** 
      * Get the bytecodes of this method.  This method returns null if
      * the method is abstract, or if the ClassFile instance was created
