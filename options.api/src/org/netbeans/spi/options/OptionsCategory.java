@@ -84,7 +84,7 @@ public abstract class OptionsCategory {
     }
     
     private OptionsPanelController createNewImpl () {
-        Class clazz = OptionsCategory.class;
+        Class clazz = getClass();
         Method[] methods = clazz.getDeclaredMethods();
         
         for (int cntr = 0; cntr < methods.length; cntr++) {
@@ -93,8 +93,10 @@ public abstract class OptionsCategory {
             if ("create".equals(m.getName()) && m.getReturnType() == PanelController.class) {
                 try {
                     return (PanelController) m.invoke(this, new Object[0]);
+                } catch (RuntimeException e) {
+                    throw e;
                 } catch (Exception e) {
-                    org.openide.ErrorManager.getDefault().notify(e);
+                    throw new RuntimeException(e);
                 }
             }
         }

@@ -71,7 +71,7 @@ public abstract class AdvancedOption {
     }
     
     private OptionsPanelController createNewImpl () {
-        Class clazz = OptionsCategory.class;
+        Class clazz = getClass();
         Method[] methods = clazz.getDeclaredMethods();
         
         for (int cntr = 0; cntr < methods.length; cntr++) {
@@ -80,8 +80,10 @@ public abstract class AdvancedOption {
             if ("create".equals(m.getName()) && m.getReturnType() == OptionsCategory.PanelController.class) {
                 try {
                     return (OptionsCategory.PanelController) m.invoke(this, new Object[0]);
+                } catch (RuntimeException e) {
+                    throw e;
                 } catch (Exception e) {
-                    org.openide.ErrorManager.getDefault().notify(e);
+                    throw new RuntimeException(e);
                 }
             }
         }
