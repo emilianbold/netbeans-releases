@@ -158,7 +158,7 @@ public class ConfigureProfiler {
             if (jvmOptions != null) {
                 for (int i = 0; i < jvmOptions.length; i++) {
                     Element jvmOptionsElement = domainScriptDocument.createElement("jvm-options");
-                    Text tt = domainScriptDocument.createTextNode(jvmOptions[i]);
+                    Text tt = domainScriptDocument.createTextNode(formatJvmOption(jvmOptions[i]));
                     jvmOptionsElement.appendChild(tt);
                     profilerElement.appendChild(jvmOptionsElement);
                 }
@@ -182,6 +182,17 @@ public class ConfigureProfiler {
         return saveDomainScriptFile(domainScriptDocument, domainScriptFilePath);
     }
     
+    // Converts -agentpath:"C:\Program Files\lib\profileragent.dll=\"C:\Program Files\lib\"",5140
+    // to -agentpath:C:\Program Files\lib\profileragent.dll="C:\Program Files\lib",5140
+    private static String formatJvmOption(String jvmOption) {
+        if (jvmOption.indexOf("\\\"") != -1) {
+            String modifiedOption = jvmOption.replaceAll("\\\\\"", "#"); // replace every \" by #
+            modifiedOption = modifiedOption.replaceAll("\\\"", ""); // delete all "
+            modifiedOption = modifiedOption.replaceAll("#", "\""); // replace every # by "
+            return modifiedOption;
+        }
+        return jvmOption;
+     }    
     // creates Document instance from domain.xml
     private static Document loadDomainScriptFile(String domainScriptFilePath) {
         
