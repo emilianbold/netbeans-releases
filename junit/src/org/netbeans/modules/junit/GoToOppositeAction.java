@@ -255,8 +255,7 @@ public final class GoToOppositeAction extends NodeAction {
     /**
      */
     public String getName() {
-        assert EventQueue.isDispatchThread();
-
+        
         Node[] nodes;
         FileObject selectedFO;
         FileObject selectedFORoot;
