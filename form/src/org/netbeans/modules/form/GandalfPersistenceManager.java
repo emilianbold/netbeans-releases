@@ -216,8 +216,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                          List nonfatalErrors)
         throws PersistenceException
     {
-        this.formFile = formFile;
-
+        this.formFile = formFile;                
+        
         boolean underTest = ((javaFile == null) || (javaFile.equals(formFile)));
                 
         if (formModel == null) {
@@ -403,6 +403,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (expressions != null)
             expressions.clear();
         containerDependentProperties = null;
+        connectedProperties = null; 
 
         this.formModel = formModel;
         this.nonfatalErrors = nonfatalErrors;
@@ -419,7 +420,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if(connectedProperties != null) {  
            connectedProperties.setValues();          
-           connectedProperties = null;
+           connectedProperties = null;    
         }        
                 
         if ((newLayout) && (!underTest)) { // for sure update project classpath with layout extensions library
@@ -759,7 +760,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         layoutSupport.prepareLayoutDelegate(true, true);
                 }
                 catch (Exception ex) {
-                    layoutEx = ex;
+                        layoutEx = ex;
                 }
                 catch (LinkageError ex) {
                     layoutEx = ex;
