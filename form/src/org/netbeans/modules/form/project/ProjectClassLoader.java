@@ -54,6 +54,13 @@ class ProjectClassLoader extends ClassLoader {
     }
 
     protected Class findClass(String name) throws ClassNotFoundException {
+        if (name.startsWith("org.apache.commons.logging.")) { // NOI18N HACK: Issue 50642
+            try {
+                return Thread.currentThread().getContextClassLoader().loadClass(name);
+            } catch (ClassNotFoundException cnfex) {
+                // The logging classes are not in the IDE, we can use ProjectClassLoader
+            }
+        }
         Class c = null;
         String filename = name.replace('.', '/').concat(".class"); // NOI18N
         URL url = projectClassLoaderDelegate.getResource(filename);
@@ -62,13 +69,19 @@ class ProjectClassLoader extends ClassLoader {
                 InputStream is = url.openStream();
                 byte[] data = null;
                 int first;
+                int available = is.available();
                 while ((first = is.read()) != -1) {
-                    int length = is.available()+1;
+                    int length = is.available();
+                    if (length != available) { // Workaround for issue 4401122
+                        length++;
+                    }
                     byte[] b = new byte[length];
                     b[0] = (byte) first;
                     int count = 1;
                     while (count < length) {
-                        count += is.read(b, count, length - count);
+                        int read = is.read(b, count, length - count);
+                        assert (read != -1);
+                        count += read;
                     }
                     if (data == null) {
                         data = b;
