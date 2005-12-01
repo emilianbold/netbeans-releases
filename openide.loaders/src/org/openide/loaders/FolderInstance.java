@@ -861,6 +861,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
             if (DataObject.PROP_COOKIE.equals(ev.getPropertyName ())) {
                 if (s instanceof DataObject) {
                     DataObject source = (DataObject)s;
+                    err.log("PROP_COOKIE: " + source); // NOI18N
 
                     InstanceCookie ic = acceptDataObject (source);
                     
@@ -871,6 +872,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
                     }
                 
                     if (hi != null) {
+                        err.log("previous instance: " + hi + " new instance " + ic); // NOI18N
                         /* Recreate if the new instance cookie is null or differs
                          * from the previous one.
                          * When the default implementation of acceptDataObject is

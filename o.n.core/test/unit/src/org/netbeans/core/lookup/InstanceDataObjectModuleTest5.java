@@ -72,7 +72,7 @@ public class InstanceDataObjectModuleTest5 extends InstanceDataObjectModuleTestH
             assertTrue("SomeAction<1> instance not found after module reload",
                 !existsSomeAction(c1));
             assertTrue("SomeAction<2> instance found after module reload",
-                existsSomeAction(c2));
+                existsSomeAction(c2));fail("Ok");
         } finally {
             ERR.log("Disabling");
             twiddle(m2, TWIDDLE_DISABLE);

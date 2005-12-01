@@ -13,6 +13,7 @@
 
 package org.netbeans.core.lookup;
 
+import org.netbeans.core.LoaderPoolNode;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 
@@ -60,17 +61,23 @@ public class InstanceDataObjectModuleTest4 extends InstanceDataObjectModuleTestH
             assertEquals("Correct loader", l1, c1.getClassLoader());
             assertTrue("SomeAction<1> instance found after module installation",
                 existsSomeAction(c1));
+            ERR.log("Before reload");
             twiddle(m1, TWIDDLE_RELOAD);
+            ERR.log("After reload");
             // Sleeping for a few seconds here does *not* help.
             ClassLoader l2 = m1.getClassLoader();
             assertTrue("ClassLoader really changed", l1 != l2);
             Class c2 = l2.loadClass("test1.SomeAction");
             assertTrue("Class really changed", c1 != c2);
+            
+            LoaderPoolNode.waitFinished();
+            ERR.log("After waitFinished");
             assertTrue("SomeAction<1> instance not found after module reload",
                 !existsSomeAction(c1));
             assertTrue("SomeAction<2> instance found after module reload",
                 existsSomeAction(c2));
         } finally {
+            ERR.log("Before disable");
             twiddle(m1, TWIDDLE_DISABLE);
         }
     }
@@ -88,18 +95,24 @@ public class InstanceDataObjectModuleTest4 extends InstanceDataObjectModuleTestH
             assertEquals("Correct loader", l1, c1.getClassLoader());
             assertTrue("SomeAction<1> instance found after module installation",
                 existsSomeAction(c1));
+            
+            ERR.log("Before reload");
             twiddle(m2, TWIDDLE_RELOAD);
+            ERR.log("After reload");
             ClassLoader l2 = m2.getClassLoader();
             assertTrue("ClassLoader really changed", l1 != l2);
             Class c2 = l2.loadClass("test2.SomeAction");
             assertTrue("Class really changed", c1 != c2);
-            // Make sure the changes take effect?
-            Thread.sleep(2000);
+            // Make sure the changes take effect
+            LoaderPoolNode.waitFinished();
+            ERR.log("After waitFinished");
+            
             assertTrue("SomeAction<1> instance not found after module reload",
                 !existsSomeAction(c1));
             assertTrue("SomeAction<2> instance found after module reload",
                 existsSomeAction(c2));
         } finally {
+            ERR.log("Finally disable");
             twiddle(m2, TWIDDLE_DISABLE);
         }
     }
