@@ -36,6 +36,7 @@ import javax.swing.Action;
 import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.modules.ant.freeform.ui.ProjectNodeWrapper;
 import org.netbeans.modules.ant.freeform.ui.UnboundTargetAlert;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -475,35 +476,7 @@ public final class Actions implements ActionProvider {
         actions.add(SystemAction.get(FindAction.class));
         
         // honor #57874 contract, see #58624:
-        try {
-            Repository repository  = Repository.getDefault();
-            FileSystem sfs = repository.getDefaultFileSystem();
-            FileObject fo = sfs.findResource("Projects/Actions");  // NOI18N
-            
-            if (fo != null) {
-                DataObject dobj = DataObject.find(fo);
-                FolderLookup actionRegistry = new FolderLookup((DataFolder) dobj);
-                Lookup.Template query = new Lookup.Template(Object.class);
-                Lookup lookup = actionRegistry.getLookup();
-                Iterator it = lookup.lookup(query).allInstances().iterator();
-                
-                if (it.hasNext()) {
-                    actions.add(null);
-                }
-                
-                while (it.hasNext()) {
-                    Object next = it.next();
-                    if (next instanceof Action) {
-                        actions.add(next);
-                    } else if (next instanceof JSeparator) {
-                        actions.add(null);
-                    }
-                }
-            }
-        } catch (DataObjectNotFoundException ex) {
-            // data folder for exitinf fileobject expected
-            ErrorManager.getDefault().notify(ex);
-        }
+        actions.add(ProjectNodeWrapper.GENERIC_PROJECTS_ACTIONS_MARKER);
         
         actions.add(null);
         actions.add(SystemAction.get(ToolsAction.class));
