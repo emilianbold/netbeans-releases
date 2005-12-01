@@ -26,7 +26,6 @@ import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
-import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -102,14 +101,13 @@ public class CvsVersioningSystem {
     }
 
     private void cleanup() {
-        final boolean ideRunning = Utils.isIdeRunning();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 // HACK: FileStatusProvider cannot do it itself
                 if (FileStatusProvider.getInstance() != null) {
                     // must be called BEFORE cache is cleaned up
                     fileStatusCache.addVersioningListener(FileStatusProvider.getInstance());
-                    FileStatusProvider.getInstance().init(ideRunning);
+                    FileStatusProvider.getInstance().init();
                 }
                 MetadataAttic.cleanUp();
                 // must be called AFTER the filestatusprovider is attached

@@ -171,8 +171,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         refreshModifiedFiles();
     }
 
-    void init(boolean ideRunning) {
-        if (ideRunning) refreshModifiedFiles();
+    void init() {
         CvsModuleConfig.getDefault().addPropertyChangeListener(this);        
     }
 
