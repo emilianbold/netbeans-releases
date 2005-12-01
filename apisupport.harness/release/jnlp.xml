@@ -17,6 +17,7 @@ Microsystems, Inc. All Rights Reserved.
         <available file="master.jnlp" property="master.jnlp.exists"/>
     </target>
     <target name="jnlp-init-generate-master" depends="-check-for-master.jnlp" unless="master.jnlp.exists">
+        <!-- XXX ought to try to avoid generating a fixed codebase at this time (WAR build replaces it though) -->
         <echo file="master.jnlp"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+" codebase="$$$$codebase">
   <information>
@@ -30,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
 $${jnlp.resources}
   </resources>
   <resources os="Mac OS X"> 
-      <property name="netbeans.user" value="${user.home}/Library/Application Support/$${app.name}"/>
+      <property name="netbeans.user" value="$${user.home}/Library/Application Support/$${app.name}"/>
   </resources>
   <application-desc>
     <argument>--branding</argument>
@@ -255,6 +256,7 @@ $${jnlp.resources}
         <property name="run.javaws" value="javaws"/>
         <property name="run.args" value=""/>
         <exec executable="${run.javaws}">
+            <!-- XXX 1.5+: <arg value="-wait"/> -->
             <arg file="${build.jnlp.local.dir}/master.jnlp"/>
             <env key="JAVAWS_VM_ARGS" value="${run.args}"/>
         </exec>
