@@ -795,6 +795,66 @@ public class XMLDocumentModelTest extends NbTestCase {
         assertEquals(0, rootTag.getElementCount());
         
      }
+    
+     public void testDoTwoModificationsOnVariousPlaces() throws DocumentModelException, BadLocationException, InterruptedException {
+        //initialize documents used in tests
+        initDoc1();
+        //set the document content
+        DocumentModel model = DocumentModel.getDocumentModel(doc);
+        DocumentElement root = model.getRootElement();
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        DocumentElement rootTag = root.getElement(1); //get root
+        DocumentElement aTag = rootTag.getElement(0); //a tag
+        DocumentElement bTag= rootTag.getElement(1); //b tag
+        
+        //listen to model
+        final Vector modelChanges = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementRemoved(DocumentElement de) {
+                modelChanges.add(de);
+            }
+        });
+        
+        //listen to element
+        final Vector aChanges = new Vector();
+        aTag.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void elementRemoved(DocumentElementEvent e) {
+                aChanges.add(e.getChangedChild());
+            }
+        });
+        
+        final Vector bChanges = new Vector();
+        bTag.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void elementRemoved(DocumentElementEvent e) {
+                bChanges.add(e.getChangedChild());
+            }
+        });
+        
+        doc.insertString(30,"<tag1></tag1>", null);
+        doc.insertString(41+"<tag1></tag1>".length(),"<tag2></tag2>", null);
+        Thread.sleep(MODEL_TIMEOUT * 2); //wait for the model update (started after 500ms)
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        //check events
+        assertEquals(2, modelChanges.size());
+        
+        assertEquals(1, aChanges.size());
+        assertEquals(1, bChanges.size());
+        
+        DocumentElement tag1 = aTag.getElement(0);
+        assertNotNull(tag1);
+        assertEquals("tag1",tag1.getName());
+        
+        DocumentElement tag2 = bTag.getElement(0);
+        assertNotNull(tag2);
+        assertEquals("tag2",tag2.getName());
+        
+     }
      
      
     private void initDoc1() throws BadLocationException {
