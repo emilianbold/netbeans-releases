@@ -609,22 +609,28 @@ public abstract class Children extends Object {
     }
 
     /** Registration of ChildrenArray.
-    * @param array use weak or hard references
+    * @param chArr the associated ChildrenArray
     * @param weak use weak or hard reference
     */
-    final void registerChildrenArray(final ChildrenArray array, boolean weak) {
+    final void registerChildrenArray(final ChildrenArray chArr, boolean weak) {
+        if (IS_LOG_GET_ARRAY) {
+            LOG_GET_ARRAY.log("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
+        }
         if (weak) {
-            this.array = new WeakReference(array);
+            this.array = new WeakReference(chArr);
         } else {
             // hold the children hard
-            this.array = new WeakReference(array) {
+            this.array = new WeakReference(chArr) {
                         public Object get() {
-                            return array;
+                            return chArr;
                         }
                     };
         }
         
-        array.pointedBy(this.array);
+        chArr.pointedBy(this.array);
+        if (IS_LOG_GET_ARRAY) {
+            LOG_GET_ARRAY.log("pointed by: " + chArr + " to: " + this.array); // NOI18N
+        }
     }
 
     /** Finalized.
@@ -634,6 +640,9 @@ public abstract class Children extends Object {
         try {
             PR.enterWriteAccess();
 
+            if (IS_LOG_GET_ARRAY) {
+                LOG_GET_ARRAY.log("previous array: " + array + " caller: " + caller);
+            }
             if (array == caller) {
                 // really finalized and not reconstructed
                 removeNotify();

@@ -148,10 +148,12 @@ implements PropertyChangeListener, ChangeListener {
     }
   
     public Node[] getNodes(boolean optimalResult) {
+        Node[] res;
         if (optimalResult) {
             if (checkChildrenMutex()) {
                 FolderList.find(folder.getPrimaryFile(), true).waitProcessingFinished();
                 RequestProcessor.Task task = refreshChildren();
+                res = getNodes();
                 task.schedule(0);
                 task.waitFinished();
             } else {
@@ -160,7 +162,7 @@ implements PropertyChangeListener, ChangeListener {
                 );
             }
         }
-        Node[] res = getNodes();
+        res = getNodes();
         postClearTask();         // we can clean the references to data objects now
                                  // they are no longer needed
         return res;
