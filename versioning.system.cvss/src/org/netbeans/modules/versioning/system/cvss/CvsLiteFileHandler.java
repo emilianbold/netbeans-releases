@@ -21,6 +21,7 @@ import org.openide.filesystems.FileLock;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.FileOutputStream;
 
 /**
  * Cvs client library FileHandler that performs
@@ -46,7 +47,12 @@ class CvsLiteFileHandler extends DefaultFileHandler {
             FileObject fo = FileUtil.toFileObject(parent);
             try {
                 FilesystemHandler.ignoreEvents(true);
-                fo.createData(file.getName());
+                try {
+                    fo.createData(file.getName());
+                } catch (IOException e) {
+                    // #69639: Try File I/O instead
+                    return file.createNewFile();
+                }
             } finally {
                 FilesystemHandler.ignoreEvents(false);
             }
@@ -56,6 +62,10 @@ class CvsLiteFileHandler extends DefaultFileHandler {
 
     protected OutputStream createOutputStream(File file) throws IOException {
         FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) {
+            // #69639: Try File I/O instead
+            return new FileOutputStream(file);
+        }
         FileLock lock = fo.lock();
         OutputStream stream = fo.getOutputStream(lock);
         return new LockedOutputStream(lock, stream);
@@ -65,7 +75,9 @@ class CvsLiteFileHandler extends DefaultFileHandler {
         File fileToDelete = new File(pathname);
         FileObject fo = FileUtil.toFileObject(fileToDelete);
         if (fo == null) {
-            throw new IOException("Can not locate file to delete: " + pathname); // NOI18N
+            // #69639: Try File I/O instead
+            fileToDelete.delete();
+            return;
         }
         try {
             FilesystemHandler.ignoreEvents(true);
@@ -79,7 +91,9 @@ class CvsLiteFileHandler extends DefaultFileHandler {
         File sourceFile = new File(pathname);
         FileObject fo = FileUtil.toFileObject(sourceFile);
         if (fo == null) {
-            throw new IOException("Can not locate file to rename: " + pathname); // NOI18N
+            // #69639: Try File I/O instead
+            sourceFile.renameTo(new File(sourceFile.getParentFile(), newName));
+            return;
         }
         FileLock lock = null;
         try {
