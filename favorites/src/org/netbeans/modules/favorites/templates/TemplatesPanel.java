@@ -45,6 +45,7 @@ import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Index;
@@ -470,10 +471,15 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                    );
 
             DataObject dobj = getDOFromNode (originalNode);
-            DataFolder folder = dobj instanceof DataFolder ? (DataFolder) dobj : dobj.getFolder ();
-            if (folder != null) {
-                content.add (new DataFolder.Index (folder, this));
+            
+            // #69623: IllegalArgumentException when call getFolder() on an unvalid DataObject
+            if (dobj.isValid ()) {
+                DataFolder folder = dobj instanceof DataFolder ? (DataFolder) dobj : dobj.getFolder ();
+                if (folder != null) {
+                    content.add (new DataFolder.Index (folder, this));
+                }
             }
+            
             content.add (this);
         }
         public Action [] getActions (boolean context) {
