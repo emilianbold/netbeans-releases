@@ -18,9 +18,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
@@ -54,6 +56,16 @@ final class NewProjectIterator extends BasicWizardIterator {
     
     private static final long serialVersionUID = 1L;
     private NewProjectIterator.DataModel data;
+    
+    public static String[] MODULES = {
+        "org.openide.filesystems", // NOI18N
+        "org.openide.loaders", // NOI18N
+        "org.openide.dialogs", // NOI18N
+        "org.openide.util", // NOI18N
+        "org.netbeans.modules.projectuiapi", // NOI18N
+        "org.netbeans.modules.projectapi", // NOI18N
+        "org.openide.awt" // NOI18N
+    };
     
     public static NewProjectIterator createIterator() {
         return new NewProjectIterator();
@@ -166,65 +178,18 @@ final class NewProjectIterator extends BasicWizardIterator {
         // 2. update project dependencies
         ProjectXMLManager manager = new ProjectXMLManager(project.getHelper());
         try {
-            SortedSet set = manager.getDirectDependencies(project.getPlatform(false));
-            if (set != null) {
-                Iterator it = set.iterator();
-                boolean filesystems = false;
-                boolean loaders = false;
-                boolean dialogs = false;
-                boolean util = false;
-                boolean projectui = false;
-                boolean projectapi = false;
-                boolean awt = false;
-                //---------------------------------------
-                //!!!! when updating deps here, do update the validating code in NameAndLocationPanel as well.
-                //---------------------------------------
-                while (it.hasNext()) {
-                    ModuleDependency dep = (ModuleDependency)it.next();
-                    if ("org.openide.filesystems".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        filesystems = true;
-                    }
-                    if ("org.openide.loaders".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        loaders = true;
-                    }
-                    if ("org.openide.dialogs".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        dialogs = true;
-                    }
-                    if ("org.openide.util".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        util = true;
-                    }
-                    if ("org.netbeans.modules.projectuiapi".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        projectui = true;
-                    }
-                    if ("org.netbeans.modules.projectapi".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        projectapi = true;
-                    }
-                    if ("org.openide.awt".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        // awt is here because of org.openide.awt.Mnemonics
-                        awt = true;
-                    }
+            SortedSet/*<ModuleDependency>*/ currentDeps = manager.getDirectDependencies(project.getPlatform(false));
+            Set cnbsToAdd = new HashSet(Arrays.asList(NewProjectIterator.MODULES));
+            for (Iterator it = currentDeps.iterator(); it.hasNext();) {
+                ModuleDependency dep = (ModuleDependency) it.next();
+                cnbsToAdd.remove(dep.getModuleEntry().getCodeNameBase());
+                if (cnbsToAdd.size() == 0) {
+                    break;
                 }
-                if (!filesystems) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.filesystems", -1, null, true)); //NOI18N
-                }
-                if (!loaders) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.loaders", -1, null, true)); //NOI18N
-                }
-                if (!dialogs) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.dialogs", -1, null, true)); //NOI18N
-                }
-                if (!util) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.util", -1, null, true)); //NOI18N
-                }
-                if (!projectui) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.netbeans.modules.projectuiapi", -1, null, true)); //NOI18N
-                }
-                if (!projectapi) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.netbeans.modules.projectapi", -1, null, true)); //NOI18N
-                }
-                if (!awt) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.awt", -1, null, true)); //NOI18N
-                }
+            }
+            for (Iterator it = cnbsToAdd.iterator(); it.hasNext();) {
+                String cnb = (String) it.next();
+                fileChanges.add(fileChanges.addModuleDependency(cnb, -1, null, true));
             }
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);

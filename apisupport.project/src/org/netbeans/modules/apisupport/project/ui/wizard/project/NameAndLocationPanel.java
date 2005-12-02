@@ -14,9 +14,9 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
 import java.awt.Color;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import javax.swing.JComboBox;
+import java.util.HashSet;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -147,14 +147,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             return false;
         }
         ModuleEntry[] entries = platform.getModules();
-        Collection modules = new ArrayList();
-        modules.add("org.openide.filesystems"); //NOI18N
-        modules.add("org.openide.loaders"); //NOI18N
-        modules.add("org.openide.dialogs"); //NOI18N
-        modules.add("org.openide.util"); //NOI18N
-        modules.add("org.netbeans.modules.projectuiapi"); //NOI18N
-        modules.add("org.netbeans.modules.projectapi"); //NOI18N
-        modules.add("org.openide.awt"); //NOI18N
+        Collection modules = new HashSet(Arrays.asList(NewProjectIterator.MODULES));
         
         for (int i = 0; i < entries.length; i++) {
             modules.remove(entries[i].getCodeNameBase());
