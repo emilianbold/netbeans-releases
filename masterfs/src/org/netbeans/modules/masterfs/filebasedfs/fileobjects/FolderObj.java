@@ -129,12 +129,9 @@ public final class FolderObj extends BaseFileObj {
 
         try {
             folder2Create = BaseFileObj.getFile(getFileName().getFile(), name, null);
-            if (folder2Create.exists()) {
+            boolean isSupported = new FileInfo(folder2Create).isSupportedFile();                                    
+            if (!isSupported || folder2Create.exists() || !folder2Create.mkdirs()) {
                 FSException.io("EXC_CannotCreateFolder", name, getPath());// NOI18N   
-            }
-
-            if (!folder2Create.mkdirs()) {
-                FSException.io("EXC_CannotCreateFolder", getNameExt(), getPath());// NOI18N   
             }
 
             final FileNaming childName = this.getChildrenCache().getChild(folder2Create.getName(), true);
@@ -166,18 +163,17 @@ public final class FolderObj extends BaseFileObj {
         mutexPrivileged.enterWriteAccess();
 
         FileObj retVal;
-        File f;
+        File file2Create;
         try {
-            f = BaseFileObj.getFile(getFileName().getFile(), name, ext);
-            boolean isError = f.createNewFile() ? false : true;
-            isError = isError ? true : !f.exists();
+            file2Create = BaseFileObj.getFile(getFileName().getFile(), name, ext);
+            boolean isSupported = new FileInfo(file2Create).isSupportedFile();                        
 
-            if (isError) {
-                FSException.io("EXC_CannotCreateData", f.getName(), getPath());// NOI18N
+            if (!isSupported || file2Create.exists() || !file2Create.createNewFile()) {
+                FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
             }
 
-            final FileNaming childName = getChildrenCache().getChild(f.getName(), true);
-            NamingFactory.checkCaseSensitivity(childName, f);                        
+            final FileNaming childName = getChildrenCache().getChild(file2Create.getName(), true);
+            NamingFactory.checkCaseSensitivity(childName, file2Create);                        
             assert childName != null;
 
         } finally {
@@ -187,8 +183,8 @@ public final class FolderObj extends BaseFileObj {
         final FileBasedFileSystem localFileBasedFileSystem = getLocalFileSystem();
         retVal = null;
         if (localFileBasedFileSystem != null) {
-            assert f.exists() && !f.isDirectory() : f.getAbsolutePath();            
-            retVal = (FileObj) localFileBasedFileSystem.findFileObject(f);
+            assert file2Create.exists() && !file2Create.isDirectory() : file2Create.getAbsolutePath();            
+            retVal = (FileObj) localFileBasedFileSystem.findFileObject(file2Create);
         }
 
         assert retVal != null;

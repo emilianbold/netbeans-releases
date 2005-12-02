@@ -39,7 +39,7 @@ public final class FileBasedFileSystem extends FileSystem {
     public static void reinitForTests() {
         //FileBasedFileSystem.allInstances = new HashMap();
     }
-
+    
     public static FileBasedFileSystem getInstance(final File file) {
         FileBasedFileSystem retVal;
         final FileInfo fInfo = new FileInfo(file);
@@ -57,6 +57,12 @@ public final class FileBasedFileSystem extends FileSystem {
         }
         return retVal;
     }
+    
+    public static final FileObject getFileObject(final File file) {
+        FileBasedFileSystem fs = getInstance(file);
+        return (fs != null) ? fs.findFileObject(file) : null;
+    }
+    
 
     static Collection getInstances() {
         synchronized (FileBasedFileSystem.allInstances) {

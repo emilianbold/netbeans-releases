@@ -141,12 +141,16 @@ public final class FileInfo {
 
     public boolean isConvertibleToFileObject() {
         if (isConvertibleToFileObject == -1) {
-            isConvertibleToFileObject = (exists() && !getFile().getName().equals(".nbattrs") &&
-                    !WriteLockUtils.hasActiveLockFileSigns(getFile().getAbsolutePath()) && 
-                    (getFile().getParent() != null || !isWindowsFloppy())) ?  1 : 0;
+            isConvertibleToFileObject = (exists() && isSupportedFile()) ?  1 : 0;
         }
         
         return (isConvertibleToFileObject == 1) ? true : false;
+    }
+
+    public boolean isSupportedFile() {
+        return (!getFile().getName().equals(".nbattrs") &&
+                !WriteLockUtils.hasActiveLockFileSigns(getFile().getAbsolutePath()) && 
+                (getFile().getParent() != null || !isWindowsFloppy())) ;
     }
 
 

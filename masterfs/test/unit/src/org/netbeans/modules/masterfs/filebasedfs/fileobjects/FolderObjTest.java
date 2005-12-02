@@ -56,12 +56,32 @@ public class FolderObjTest extends NbTestCase {
         testFile = getWorkDir();        
     }
 
+    public void testCreateNbAttrs() throws IOException  {
+        final FileObject testRoot = FileBasedFileSystem.getFileObject(getWorkDir());
+        assertNotNull(testRoot);        
+        try {            
+            testRoot.createData(".nbattrs");
+            fail();
+        } catch (IOException ex) {}        
+    }
+    
+    public void testCreateWriteLock() throws IOException  {
+        final FileObject testRoot = FileBasedFileSystem.getFileObject(getWorkDir());
+        assertNotNull(testRoot);        
+        File file2lock = new File(getWorkDir(),"aa.txt");
+        File associatedLock = WriteLockUtils.getAssociatedLockFile(file2lock);//NOI18N
+        
+        try {            
+            testRoot.createData(associatedLock.getName());
+            fail();
+        } catch (IOException ex) {}        
+    }
+    
+    
     public void testCaseInsensitivity() throws Exception {
         if (!Utilities.isWindows()) return;
-        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(getWorkDir());
-        assertNotNull(fs);
-        final FileObject root = fs.findFileObject(getWorkDir());
-        assertNotNull(root);
+        final FileObject testRoot = FileBasedFileSystem.getFileObject(getWorkDir());
+        assertNotNull(testRoot);
         
         File testa = new File(getWorkDir(), "a");
         File testA = new File(getWorkDir(), "A");
@@ -75,21 +95,21 @@ public class FolderObjTest extends NbTestCase {
 
         //FileBasedFileSystem's case sensitivity depends on platform. This is different behaviour
         // than originally provided by AbstractFileSystem.
-        FileObject A = root.getFileObject("A");
+        FileObject A = testRoot.getFileObject("A");
         assertNotNull(A);
-        assertNotNull(root.getFileObject("a"));
-        assertSame(root.getFileObject("A"), root.getFileObject("a"));
+        assertNotNull(testRoot.getFileObject("a"));
+        assertSame(testRoot.getFileObject("A"), testRoot.getFileObject("a"));
         assertSame(URLMapper.findFileObject(testa.toURI().toURL()), 
                 URLMapper.findFileObject(testA.toURI().toURL()));
         
         //but 
-        root.getChildren();
-        assertEquals("A",root.getFileObject("A").getName());
-        assertEquals("A",root.getFileObject("a").getName());        
-        BaseFileObj bobj = (BaseFileObj)root.getFileObject("a");
+        testRoot.getChildren();
+        assertEquals("A",testRoot.getFileObject("A").getName());
+        assertEquals("A",testRoot.getFileObject("a").getName());        
+        BaseFileObj bobj = (BaseFileObj)testRoot.getFileObject("a");
         NamingFactory.checkCaseSensitivity(bobj.getFileName(),testa);
-        assertEquals("a",root.getFileObject("a").getName());                
-        assertEquals("a",root.getFileObject("A").getName());                        
+        assertEquals("a",testRoot.getFileObject("a").getName());                
+        assertEquals("a",testRoot.getFileObject("A").getName());                        
     }
     
     private class TestListener extends FileChangeAdapter {
