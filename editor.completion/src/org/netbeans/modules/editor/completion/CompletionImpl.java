@@ -42,6 +42,7 @@ import org.netbeans.editor.Registry;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.spi.editor.completion.*;
+import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -1250,10 +1251,15 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     }
     
     private static void refreshResultSets(List resultSets, boolean beforeQuery) {
-        int size = resultSets.size();
-        for (int i = 0; i < size; i++) {
-            CompletionResultSetImpl result = (CompletionResultSetImpl)resultSets.get(i);
-            result.getTask().refresh(beforeQuery ? null : result.getResultSet());
+        try {
+            int size = resultSets.size();
+            for (int i = 0; i < size; i++) {
+                CompletionResultSetImpl result = (CompletionResultSetImpl)resultSets.get(i);
+                result.getTask().refresh(beforeQuery ? null : result.getResultSet());
+                
+            }
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
         }
     }
     
