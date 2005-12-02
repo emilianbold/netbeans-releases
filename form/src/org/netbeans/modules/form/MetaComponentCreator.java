@@ -29,6 +29,7 @@ import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutdesign.*;
+import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
@@ -203,25 +204,34 @@ public class MetaComponentCreator {
     LayoutComponent getPrecreatedLayoutComponent() {
         if (preMetaComp != null) {
             if (preLayoutComp == null) {
-                boolean isContainer = shouldBeLayoutContainer(preMetaComp);
-                
                 Dimension initialSize = prepareDefaultLayoutSize(
-                        (Component)preMetaComp.getBeanInstance(), preMetaComp instanceof RADVisualContainer);
-                
+                        (Component)preMetaComp.getBeanInstance(),
+                        preMetaComp instanceof RADVisualContainer);
+                boolean isLayoutContainer = shouldBeLayoutContainer(preMetaComp);
+                if (isLayoutContainer) {
+                    RADVisualContainer metacont = (RADVisualContainer)preMetaComp;
+                    Container cont = metacont.getContainerDelegate(metacont.getBeanInstance());
+                    if (initialSize == null) {
+                        initialSize = cont.getPreferredSize();
+                    }
+                    Insets insets = cont.getInsets();
+                    initialSize.width -= insets.left + insets.right;
+                    initialSize.height -= insets.top + insets.bottom;
+                }
+                preLayoutComp = initialSize == null ?
+                    new LayoutComponent(preMetaComp.getId(), isLayoutContainer) :
+                    new LayoutComponent(preMetaComp.getId(), isLayoutContainer,
+                                        initialSize.width, initialSize.height);
+                // test code logging
                 LayoutDesigner ld = FormEditor.getFormDesigner(formModel).getLayoutDesigner();
                 if ((ld != null) && ld.logTestCode()) {
                     if (initialSize == null) {
-                        ld.testCode.add("lc = new LayoutComponent(\"" + preMetaComp.getId() + "\", " + isContainer + ");"); //NOI18N
+                        ld.testCode.add("lc = new LayoutComponent(\"" + preMetaComp.getId() + "\", " + isLayoutContainer + ");"); //NOI18N
                     } else {
-                        ld.testCode.add("lc = new LayoutComponent(\"" + preMetaComp.getId() + "\", " + isContainer + ", " + //NOI18N 
+                        ld.testCode.add("lc = new LayoutComponent(\"" + preMetaComp.getId() + "\", " + isLayoutContainer + ", " + //NOI18N 
                                                                     initialSize.width + ", " + initialSize.height + ");"); //NOI18N
                     } 
                 }
-                
-                preLayoutComp = initialSize == null ?
-                    new LayoutComponent(preMetaComp.getId(), isContainer) :
-                    new LayoutComponent(preMetaComp.getId(), isContainer,
-                                        initialSize.width, initialSize.height);
             }
             return preLayoutComp;
         }
@@ -764,8 +774,9 @@ public class MetaComponentCreator {
 		newMetaCont.setOldLayoutSupport(true);
                 LayoutSupportManager laysup = newMetaCont.getLayoutSupport();
                 knownLayout = laysup.prepareLayoutDelegate(false, false);
-                // general containers should use the new layout support when created
-                if ((!knownLayout || !laysup.isDedicated()) && formModel.isFreeDesignDefaultLayout()) {
+                if ((knownLayout && !laysup.isDedicated() && formModel.isFreeDesignDefaultLayout())
+                    || (!knownLayout && SwingLayoutBuilder.isRelevantContainer(laysup.getPrimaryContainerDelegate())))
+                {   // general containers should use the new layout support when created
                     newMetaCont.setOldLayoutSupport(false);
                     FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
                     knownLayout = true;

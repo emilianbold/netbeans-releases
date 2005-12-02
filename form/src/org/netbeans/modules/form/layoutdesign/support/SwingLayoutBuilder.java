@@ -140,6 +140,11 @@ public class SwingLayoutBuilder {
         container.doLayout();
     }
 
+    public static boolean isRelevantContainer(Container cont) {
+        return cont.getLayout() != null
+               && cont.getLayout().getClass().getName().equals("org.jdesktop.layout.GroupLayout"); // NOI18N
+    }
+
     // -----
 
     private GroupLayout.Group composeGroup(GroupLayout layout, LayoutInterval interval,

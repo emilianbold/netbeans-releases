@@ -31,6 +31,7 @@ import org.netbeans.modules.form.layoutsupport.delegates.*;
 import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.layoutdesign.LayoutModel;
 import org.netbeans.modules.form.layoutdesign.LayoutComponent;
+import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.javacore.api.JavaModel;
@@ -765,13 +766,31 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 catch (LinkageError ex) {
                     layoutEx = ex;
                 }
-            } else if (layoutNode == null) { // Issue 63394: Bean form that is container
+            } else if (layoutNode == null) { // Issue 63394, 68753: Bean form that is container
                 try {
                     layoutInitialized = layoutSupport.prepareLayoutDelegate(false, true);
+                    if (!layoutInitialized) { // not known to the old support
+                                              // (but we are sure the container instance is empty)
+                        java.awt.Container cont = layoutSupport.getPrimaryContainerDelegate();
+                        if (SwingLayoutBuilder.isRelevantContainer(cont)) {
+                            // acknowledged by SwingLayoutBuilder - this is new layout
+                            visualContainer.setOldLayoutSupport(false);
+                            formModel.setFreeDesignDefaultLayout(true);
+                            java.awt.Dimension prefSize = cont.getPreferredSize();
+                            java.awt.Insets insets = cont.getInsets();
+                            int w = prefSize != null ? prefSize.width - insets.left - insets.right : 100;
+                            int h = prefSize != null ? prefSize.height - insets.top - insets.bottom : 100;
+                            formModel.getLayoutModel().addRootComponent(
+                                new LayoutComponent(visualContainer.getId(), true, w, h));
+                            layoutSupport = null;
+                            newLayout = true;
+                            layoutInitialized = true;
+                        }
+                    }
                 } catch (Exception ex) {
                     layoutEx = ex;
                 }
-            } 
+            }
 
             if (!layoutInitialized) {
                 if (layoutEx != null) { // no LayoutSupportDelegate found
