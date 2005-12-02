@@ -690,6 +690,8 @@ final class RendererFactory {
 
                 if (text == null) {
                     text = ""; // NOI18N
+                } else {
+                    text = makeDisplayble( text, getFont() );
                 }
 
                 if (htmlValueUsed) {
