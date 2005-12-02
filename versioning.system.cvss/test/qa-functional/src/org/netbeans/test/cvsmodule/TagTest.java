@@ -90,6 +90,7 @@ public class TagTest extends JellyTestCase {
     public void testCheckOutProject() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        OutputOperator oo = OutputOperator.invoke();
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         //JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
@@ -145,10 +146,10 @@ public class TagTest extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
         
-        OutputOperator oo = OutputOperator.invoke();
+        
         //System.out.println(CVSroot);
         //sessionCVSroot = CVSroot;
-        OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Checking out finished");
         cvss.stop();
@@ -204,8 +205,8 @@ public class TagTest extends JellyTestCase {
         JButtonOperator btnTag = new JButtonOperator(to, "Tag");
         btnTag.push();
         
-        OutputOperator oo = OutputOperator.invoke();
-        OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        //OutputOperator oo = OutputOperator.invoke();
+        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
         oto.waitText("Tagging \"Main.java\"... finished");
         cvss.stop();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
@@ -235,8 +236,8 @@ public class TagTest extends JellyTestCase {
         JButtonOperator btnTag = new JButtonOperator(to, "Tag");
         btnTag.push();
         
-        OutputOperator oo = OutputOperator.invoke();
-        OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        //OutputOperator oo = OutputOperator.invoke();
+        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
         oto.waitText("cvs server: Main.java is locally modified");
         oto.waitText("correct the above errors first!");
         cvss.stop();

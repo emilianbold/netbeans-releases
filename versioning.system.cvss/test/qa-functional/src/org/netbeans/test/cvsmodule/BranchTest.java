@@ -95,6 +95,7 @@ public class BranchTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         String CVSroot;
+        OutputOperator oo = OutputOperator.invoke();
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         //JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
@@ -149,10 +150,7 @@ public class BranchTest extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
         
-        OutputOperator oo = OutputOperator.invoke();
-        //System.out.println(CVSroot);
-        //sessionCVSroot = CVSroot;
-        OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot);
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Checking out finished");
         Thread.sleep(1000);

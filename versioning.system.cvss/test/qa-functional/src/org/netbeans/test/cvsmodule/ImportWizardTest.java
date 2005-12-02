@@ -464,6 +464,7 @@ public class ImportWizardTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         String CVSroot;
         PseudoCvsServer cvss;
+        OutputOperator oo = OutputOperator.invoke();
         TestKit.unversionProject(file, projectName);
         
         ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(projectName));
@@ -514,9 +515,9 @@ public class ImportWizardTest extends JellyTestCase {
         //crso.setCVSRoot(CVSroot);/
         folderToImportOper.finish();
         
-        OutputOperator oo = OutputOperator.invoke();
+        
         //System.out.println(CVSroot);
-        OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Importing finished");
         cvss.stop();

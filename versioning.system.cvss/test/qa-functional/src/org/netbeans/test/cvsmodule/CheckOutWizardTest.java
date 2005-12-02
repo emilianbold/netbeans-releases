@@ -884,7 +884,8 @@ public class CheckOutWizardTest extends JellyTestCase {
     public void testCheckWizardFinish() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
-        String storeCVSroot;
+        String sessionCVSroot;
+        OutputOperator oo = OutputOperator.invoke();
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         
@@ -907,7 +908,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         cvss.ignoreProbe();
         String CVSroot = cvss.getCvsRoot();
         crso.setCVSRoot(CVSroot);
-        storeCVSroot = CVSroot;
+        sessionCVSroot = CVSroot;
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         crso.next();
               
@@ -943,9 +944,9 @@ public class CheckOutWizardTest extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
         
-        OutputOperator oo = OutputOperator.invoke();
+        
         //System.out.println(CVSroot);
-        OutputTabOperator oto = oo.getOutputTab(storeCVSroot);
+        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Checking out finished");
         cvss.stop();

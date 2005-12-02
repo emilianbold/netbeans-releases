@@ -8,8 +8,9 @@
  */
 package org.netbeans.test.cvsmodule;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
+import java.io.FileReader;
 import java.io.InputStream;
 import javax.swing.ListModel;
 import javax.swing.table.TableModel;
@@ -108,6 +109,7 @@ public class StandardWorkFlow extends JellyTestCase {
     public void testCheckOutProject() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        OutputOperator oo = OutputOperator.invoke();
         CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
         CVSRootStepOperator crso = new CVSRootStepOperator();
         //JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
@@ -164,10 +166,9 @@ public class StandardWorkFlow extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         cwo.finish();
         
-        OutputOperator oo = OutputOperator.invoke();
         //System.out.println(CVSroot);
         
-        OutputTabOperator oto = oo.getOutputTab(sessionCVSroot);
+        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Checking out finished");
         cvss.stop();
@@ -184,7 +185,7 @@ public class StandardWorkFlow extends JellyTestCase {
     public void testIgnoreUnignoreFile() throws Exception{
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         VersioningOperator vo;
-        OutputOperator oo;
+        //OutputOperator oo;
         OutputTabOperator oto;
         InputStream in;
         PseudoCvsServer cvss;
@@ -199,9 +200,10 @@ public class StandardWorkFlow extends JellyTestCase {
         assertEquals("Wrong color for new file", TestKit.NEW_COLOR, color);
         
         //show changes stream for pseudocvsserver
-        oo = OutputOperator.invoke();
+        //oo = OutputOperator.invoke();
         //System.out.println(sessionCVSroot);
-        oto = oo.getOutputTab(sessionCVSroot);
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_for_file");
         cvss = new PseudoCvsServer(in);
@@ -220,8 +222,8 @@ public class StandardWorkFlow extends JellyTestCase {
         cvss.stop();
         
         //ignore java file
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
+        oto = new OutputTabOperator(sessionCVSroot); 
         oto.clear();
         nodeClass.performPopupAction("CVS|Ignore");
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_for_file");
@@ -241,8 +243,8 @@ public class StandardWorkFlow extends JellyTestCase {
         assertEquals("Wrong color for new file", TestKit.IGNORED_COLOR, color);
         
         //unignore java file
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
+        //oto = oo.getOutputTab(sessionCVSroot);
         oto.clear();
         nodeClass.performPopupAction("CVS|Unignore");
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_for_file");
@@ -266,7 +268,7 @@ public class StandardWorkFlow extends JellyTestCase {
     public void testIgnoreUnignoreGuiForm() throws Exception{
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         VersioningOperator vo;
-        OutputOperator oo;
+        //OutputOperator oo;
         OutputTabOperator oto;
         InputStream in;
         PseudoCvsServer cvss;
@@ -283,9 +285,10 @@ public class StandardWorkFlow extends JellyTestCase {
         assertEquals("Wrong color for new file", TestKit.NEW_COLOR, color);
         
         //show changes stream for pseudocvsserver
-        oo = OutputOperator.invoke();
+        //oo = OutputOperator.invoke();
         //System.out.println(sessionCVSroot);
-        oto = oo.getOutputTab(sessionCVSroot);
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_for_jframe");
         cvss = new PseudoCvsServer(in);
@@ -313,8 +316,9 @@ public class StandardWorkFlow extends JellyTestCase {
         assertEquals("Wrong files in view", 2, result);
         
         //ignore java file
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
+        //oto = oo.getOutputTab(sessionCVSroot);
+        oto = new OutputTabOperator(sessionCVSroot); 
         oto.clear();
         nodeFrame.performPopupAction("CVS|Ignore");
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_for_jframe");
@@ -334,8 +338,9 @@ public class StandardWorkFlow extends JellyTestCase {
         assertEquals("Wrong color for new file", TestKit.IGNORED_COLOR, color);
         
         //unignore java file
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
+        //oto = oo.getOutputTab(sessionCVSroot);
+        oto = new OutputTabOperator(sessionCVSroot); 
         oto.clear();
         nodeFrame.performPopupAction("CVS|Unignore");
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_changes_for_jframe");
@@ -363,13 +368,16 @@ public class StandardWorkFlow extends JellyTestCase {
         CommitOperator co;
         String CVSroot, color;
         JTableOperator table;
-        OutputOperator oo;
+        //OutputOperator oo;
         OutputTabOperator oto;
         VersioningOperator vo;
         String[] expected;
         String[] actual;
         String allCVSRoots;
         org.openide.nodes.Node nodeIDE;
+        
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         
         Node packNode = new Node(new SourcePackagesNode("ForImport"), "xx");
         //
@@ -399,8 +407,8 @@ public class StandardWorkFlow extends JellyTestCase {
         assertEquals("Wrong records displayed in dialog", 3, result);
         co.setCommitMessage("Initial commit message");
         
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
+        
         //oto.clear();
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "commit_invoke.in");
         cvss = new PseudoCvsServer(in);
@@ -439,10 +447,13 @@ public class StandardWorkFlow extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss;
         InputStream in;
-        OutputOperator oo;
+        //OutputOperator oo;
         OutputTabOperator oto;
         org.openide.nodes.Node nodeIDE;
         String color;
+        
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         
         Node node = new Node(new SourcePackagesNode(projectName), pathToMain);
         node.performPopupAction("Open");
@@ -457,8 +468,8 @@ public class StandardWorkFlow extends JellyTestCase {
         new Thread(cvss).start();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
         node.performPopupAction("CVS|Diff...");
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
+       
         oto.waitText("Diffing \"Main.java\" finished");
         Thread.sleep(1000);
         cvss.stop();
@@ -492,8 +503,9 @@ public class StandardWorkFlow extends JellyTestCase {
         assertNotNull("TimeoutExpiredException was expected.", afee);
         
         //refresh button
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
+        //oto = oo.getOutputTab(sessionCVSroot);
+        oto = new OutputTabOperator(sessionCVSroot); 
         oto.clear();
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "diff/refresh.in");
         cvss = new PseudoCvsServer(in);
@@ -505,8 +517,9 @@ public class StandardWorkFlow extends JellyTestCase {
         Thread.sleep(1000);
         
         //update button
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
+        //oto = oo.getOutputTab(sessionCVSroot);
+        oto = new OutputTabOperator(sessionCVSroot); 
         oto.clear();
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "diff/refresh.in");
         cvss = new PseudoCvsServer(in);
@@ -533,23 +546,27 @@ public class StandardWorkFlow extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss, cvss2, cvss3;
         InputStream in, in2, in3;
-        OutputOperator oo;
+        //OutputOperator oo;
         OutputTabOperator oto;
         org.openide.nodes.Node nodeIDE;
         String color, CVSroot;
+        
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         
         Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
         //nodeClass.select();
         nodeClass.performMenuActionNoBlock("CVS|Export \"Main.java\" Diff Patch...");
         NbDialogOperator dialog = new NbDialogOperator("Export Diff Patch");
         JTextFieldOperator tf = new JTextFieldOperator(dialog, 0);
-        String patchFile = "/tmp/patch" + System.currentTimeMillis(); 
+        String patchFile = "/tmp/patch" + System.currentTimeMillis() + ".patch"; 
         File file = new File(patchFile);
-        file.createNewFile();
+        //file.createNewFile();
         tf.setText(file.getCanonicalFile().toString());
         JButtonOperator btnExport = new JButtonOperator(dialog, "export");
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
+        
+        oto = new OutputTabOperator(sessionCVSroot); 
         oto.clear();
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "diff/export_diff.in");
         cvss = new PseudoCvsServer(in);
@@ -561,7 +578,16 @@ public class StandardWorkFlow extends JellyTestCase {
         Thread.sleep(1000);
         //test file existence
         assertTrue("Diff Patch file wasn't created!", file.isFile());
-        //assertTrue("File length shouldn't be 0!", file.length() > 0);
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String line = br.readLine();
+        boolean generated = false;
+        if (line != null) {
+            generated = line.indexOf("# This patch file was generated by NetBeans IDE") != -1 ? true : false;
+        }
+            
+        br.close();
+        System.out.println("Line: " + line);
+        assertTrue("Diff Patch file is empty!", generated);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
     
@@ -569,25 +595,29 @@ public class StandardWorkFlow extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss, cvss2, cvss3;
         InputStream in, in2, in3;
-        OutputOperator oo;
+        //OutputOperator oo;
         OutputTabOperator oto;
         org.openide.nodes.Node nodeIDE;
         String color, CVSroot;
         
-        Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
+        
+        Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "diff/create_conflict.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
-        nodeClass.performPopupAction("CVS|Update");
+        nodeClass.performPopupActionNoBlock("CVS|Update");
+        NbDialogOperator dialog = new NbDialogOperator("Warning");
+        dialog.ok();
         oto.waitText("cvs server: conflicts found in Main.java");
         oto.waitText("Updating \"Main.java\" finished");
         Thread.sleep(1000);
         cvss.stop();
         
+        nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
         nodeIDE = (org.openide.nodes.Node) nodeClass.getOpenideNode();
         color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong color for file in conflict", TestKit.CONFLICT_COLOR, color);
@@ -598,10 +628,13 @@ public class StandardWorkFlow extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss, cvss2, cvss3;
         InputStream in, in2, in3;
-        OutputOperator oo;
+        //OutputOperator oo;
         OutputTabOperator oto;
         org.openide.nodes.Node nodeIDE;
         String color, CVSroot;
+        
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);        
         
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         
@@ -622,8 +655,7 @@ public class StandardWorkFlow extends JellyTestCase {
         bo.checkTagBeforeBranching(false);
         bo.branch();
         
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
         oto.waitText("Branching \"ForImport [Main]\" finished");
         Thread.sleep(1000);
         
@@ -635,10 +667,13 @@ public class StandardWorkFlow extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss;
         InputStream in;
-        OutputOperator oo;
+        //OutputOperator oo;
         OutputTabOperator oto;
         org.openide.nodes.Node nodeIDE;
         String color, cvsRoot;
+        
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         
@@ -654,8 +689,7 @@ public class StandardWorkFlow extends JellyTestCase {
         sbo.setBranch("MyNewBranch");
         sbo.pushSwitch();
         
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
         oto.waitText(" to Branch finished");
         Thread.sleep(1000);
         
@@ -668,15 +702,16 @@ public class StandardWorkFlow extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss;
         InputStream in;
-        OutputOperator oo;
+        //OutputOperator oo;
         OutputTabOperator oto;
         org.openide.nodes.Node nodeIDE;
         String color, cvsRoot;
         
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
-        //oto.clear();
-        
+        //oo = OutputOperator.invoke();
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto.clear();
+      
         //delete RevsionCache folder. It can contain checked out revisions
         TestKit.deleteRecursively(cacheFolder);
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "revert_modifications.in");
@@ -702,15 +737,16 @@ public class StandardWorkFlow extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss, cvss2;
         InputStream in, in2;
-        OutputOperator oo;
+        //OutputOperator oo;
         OutputTabOperator oto;
         org.openide.nodes.Node nodeIDE;
         String color, cvsRoot;
         
         TestKit.deleteRecursively(cacheFolder);
         
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "show_annotation.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
@@ -732,15 +768,16 @@ public class StandardWorkFlow extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss, cvss2;
         InputStream in, in2;
-        OutputOperator oo;
+        //OutputOperator oo;
         OutputTabOperator oto;
         org.openide.nodes.Node nodeIDE;
         String color, cvsRoot;
         
         TestKit.deleteRecursively(cacheFolder);
         
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "search_history.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
@@ -776,7 +813,7 @@ public class StandardWorkFlow extends JellyTestCase {
     public void testVersioningButtons() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         VersioningOperator vo;
-        OutputOperator oo;
+        //OutputOperator oo;
         OutputTabOperator oto;
         InputStream in;
         PseudoCvsServer cvss;
@@ -785,12 +822,13 @@ public class StandardWorkFlow extends JellyTestCase {
         org.openide.nodes.Node nodeIDE;
         String color;
        
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        
         //perform Show Changes action on Main.java file
-        Node nodeMain = new Node(new SourcePackagesNode(projectName), "forimport|Main.java");
-        oo = OutputOperator.invoke();
+        Node nodeMain = new Node(new SourcePackagesNode(projectName), pathToMain);
+        //oo = OutputOperator.invoke();
         //System.out.println(sessionCVSroot);
-        oto = oo.getOutputTab(sessionCVSroot);
-        oto.clear();
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "versioning/show_changes_main.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
@@ -809,8 +847,9 @@ public class StandardWorkFlow extends JellyTestCase {
         //System.out.println("Show Changes is ok");
         
         //push refresh button
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
+        //oto = oo.getOutputTab(sessionCVSroot);
+        oto = new OutputTabOperator(sessionCVSroot); 
         oto.clear();
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "versioning/refresh_main.in");
         cvss = new PseudoCvsServer(in);
@@ -826,8 +865,8 @@ public class StandardWorkFlow extends JellyTestCase {
         cvss.stop();
         
         //push Update all
-        oo = OutputOperator.invoke();
-        oto = oo.getOutputTab(sessionCVSroot);
+        //oo = OutputOperator.invoke();
+        oto = new OutputTabOperator(sessionCVSroot); 
         oto.clear();
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "versioning/refresh_main.in");
         cvss = new PseudoCvsServer(in);
