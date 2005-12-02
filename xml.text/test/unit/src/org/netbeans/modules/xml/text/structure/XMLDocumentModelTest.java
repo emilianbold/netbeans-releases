@@ -856,6 +856,47 @@ public class XMLDocumentModelTest extends NbTestCase {
         
      }
      
+      public void testRemoveDocumentContentPartToTheEndOfTheFile() throws DocumentModelException, BadLocationException, InterruptedException {
+        //initialize documents used in tests
+        initDoc1();
+        //set the document content
+        DocumentModel model = DocumentModel.getDocumentModel(doc);
+        DocumentElement root = model.getRootElement();
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        //listen to model
+        final Vector modelChanges = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementRemoved(DocumentElement de) {
+                System.out.println("removed " + de);
+                modelChanges.add(de);
+            }
+        });
+        
+        //listen to element
+        final Vector elementChanges = new Vector();
+        root.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void elementRemoved(DocumentElementEvent e) {
+                System.out.println("removed " + e.getChangedChild());
+                elementChanges.add(e.getChangedChild());
+            }
+        });
+        
+        doc.remove(21, doc.getLength() - 21);
+        Thread.sleep(MODEL_TIMEOUT * 2); //wait for the model update (started after 500ms)
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        //check events
+        assertEquals(1, elementChanges.size()); //<root> should be removed
+        assertEquals(5, modelChanges.size()); //ROOT, A,B,C, text should be removed
+
+        assertEquals(1, root.getElementCount()); //has only <?xml...?> element
+        
+     }
      
     private void initDoc1() throws BadLocationException {
         /*
