@@ -81,7 +81,7 @@ public class MakeJNLPTest extends NbTestCase {
             files[1] = fx;
         }
         
-        assertEquals("The JAR file is org-my-module.jar", "org-my-module.jar", files[0]);
+        assertEquals("The JAR file is s0.jar", "s0.jar", files[0]);
         assertEquals("The JNLP file is org-my-module.jnlp", "org-my-module.jnlp", files[1]);
         
         File jnlp = new File(output, "org-my-module.jnlp");
@@ -100,7 +100,7 @@ public class MakeJNLPTest extends NbTestCase {
         assertEquals("By default the dest directory is $$codebase: ", "$$codebase", base);
 
         CHECK_SIGNED: {
-            File jar = new File(output, "org-my-module.jar");
+            File jar = new File(output, files[0]);
             JarFile signed = new JarFile(jar);
             Enumeration it = signed.entries();
             while (it.hasMoreElements()) {
@@ -153,7 +153,7 @@ public class MakeJNLPTest extends NbTestCase {
             files[1] = fx;
         }
         
-        assertEquals("The JAR file is org-my-module.jar", "org-my-module.jar", files[0]);
+        assertEquals("The JAR file is s0.jar", "s0.jar", files[0]);
         assertEquals("The JNLP file is org-my-module.jnlp", "org-my-module.jnlp", files[1]);
         
         File jnlp = new File(output, "org-my-module.jnlp");
@@ -194,9 +194,8 @@ public class MakeJNLPTest extends NbTestCase {
 
         java.util.Arrays.sort(files);
         
-        assertEquals("The JAR file is aaa-my-module.jar", "aaa-my-module.jar", files[1]);
-        assertEquals("The JNLP file is aaa-my-module.jnlp", "aaa-my-module.jnlp", files[2]);
-        assertEquals("The ext JAR file is there", ext.getName(), files[0]);
+        assertEquals("The JNLP file is aaa-my-module.jnlp", "aaa-my-module.jnlp", files[0]);
+        assertEquals("The ext JAR file is there", ext.getName(), files[2]);
         
         File jnlp = new File(output, "aaa-my-module.jnlp");
         String res = ModuleDependenciesTest.readFile (jnlp);
@@ -266,7 +265,7 @@ public class MakeJNLPTest extends NbTestCase {
         File extJnlp = new File(output, extJnlpName);
         
         
-        assertTrue("The JAR file is aaa-my-module.jar", new File (output, "aaa-my-module.jar").exists());
+        assertTrue("The JAR file is s0.jar", new File (output, "s0.jar").exists());
         assertTrue("The JNLP file is aaa-my-module.jnlp", jnlp.exists());
         assertTrue("The ext JAR file is there", ext.canRead());
         assertTrue("The ext jnlp file is there", extJnlp.canRead());
@@ -330,7 +329,7 @@ public class MakeJNLPTest extends NbTestCase {
             files[1] = fx;
         }
         
-        assertEquals("The JAR file is org-my-module.jar", "org-my-module.jar", files[0]);
+        assertEquals("The JAR file is s0.jar", "s0.jar", files[0]);
         assertEquals("The JNLP file is org-my-module.jnlp", "org-my-module.jnlp", files[1]);
         
         File jnlp = new File(output, "org-my-module.jnlp");
@@ -495,13 +494,14 @@ public class MakeJNLPTest extends NbTestCase {
         if (prefix == null) {
             prefix = "modules";
         }
-        
+        String ss = prefix.substring(prefix.length()-1, prefix.length());
+                
         File dir = new File(this.getWorkDir(), prefix);
         dir.mkdirs();
         
         int i = 0;
         for (;;) {
-            File f = new File (dir, i++ + ".jar");
+            File f = new File (dir, ss + i++ + ".jar");
             if (!f.exists ()) return f;
         }
     }
