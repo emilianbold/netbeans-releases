@@ -328,11 +328,17 @@ public class JPDAStart extends Task implements Runnable {
         Project project, 
         Path bootclasspath
     ) {
-        if (bootclasspath == null)
-            return JavaPlatform.getDefault ().getSourceFolders ();
+        if (bootclasspath == null) {
             // if current platform is default one, bootclasspath is set to null
-        else
+            JavaPlatform jp = JavaPlatform.getDefault();
+            if (jp != null) {
+                return jp.getSourceFolders ();
+            } else {
+                return ClassPathSupport.createClassPath(java.util.Collections.EMPTY_LIST);
+            }
+        } else {
             return convertToSourcePath (project, bootclasspath);
+        }
     }
     
     private static ClassPath convertToClassPath (Project project, Path path) {
