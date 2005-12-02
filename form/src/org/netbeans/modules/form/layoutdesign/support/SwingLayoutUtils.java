@@ -44,7 +44,6 @@ public class SwingLayoutUtils {
                 "javax.swing.JCheckBox", // NOI18N
                 "javax.swing.JRadioButton", // NOI18N
                 "javax.swing.JList", // NOI18N
-                "javax.swing.JToolBar" // NOI18N
             })
         );
     }
@@ -61,7 +60,6 @@ public class SwingLayoutUtils {
                 "javax.swing.JComboBox", // NOI18N
                 "javax.swing.JTextField", // NOI18N
                 "javax.swing.JTextArea", // NOI18N
-                "javax.swing.JPanel", // NOI18N
                 "javax.swing.JTabbedPane", // NOI18N
                 "javax.swing.JScrollPane", // NOI18N
                 "javax.swing.JSplitPane", // NOI18N
