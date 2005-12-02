@@ -35,16 +35,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
     private NewTCIterator.DataModel data;
     private static final String[] DEFAULT_MODES = 
             new String[] {
-                "editor", //NOI18N
-                "explorer",//NOI18N
-                "commonpalette",//NOI18N
-                "output",//NOI18N
-                "debugger",//NOI18N
-                "properties",//NOI18N
-                "navigator",//NOI18N
-                "bottomSlidingSide",//NOI18N
-                "leftSlidingSide",//NOI18N
-                "rightSlidingSide"//NOI18N
+                "editor" //NOI18N
             };
     /**
      * Creates new form BasicSettingsPanel
