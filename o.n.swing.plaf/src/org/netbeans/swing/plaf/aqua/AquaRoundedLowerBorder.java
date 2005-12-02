@@ -66,7 +66,7 @@ public class AquaRoundedLowerBorder implements Border {
         g.drawLine(x, y, x, y+h-halfArc);
         g.drawLine(x+w-1, y, x+w-1, y+h-halfArc);
 
-        g.drawArc (x, y+h-ARCSIZE, ARCSIZE, ARCSIZE, 180, 90);
+        g.drawArc (x, y+h-(ARCSIZE+1), ARCSIZE, ARCSIZE, 180, 90);
         g.drawArc (x+w-(ARCSIZE+1), y+h-(ARCSIZE+1), ARCSIZE, ARCSIZE, 270, 90);
 
         g.drawLine (x+(ARCSIZE/2)-3, y+h-1, x+w-(ARCSIZE/2), y+h-1);
