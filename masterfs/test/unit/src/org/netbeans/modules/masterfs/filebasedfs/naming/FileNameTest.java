@@ -75,8 +75,8 @@ public class FileNameTest extends NbTestCase {
         FileNaming na = NamingFactory.fromFile(fa);        
         assertEquals(fa.getName(),NamingFactory.fromFile(fa).getName());        
         if (isCaseSensitive) {
-            assertFalse(!fa.getName().equals(NamingFactory.fromFile(fA).getName()));
-            assertFalse(!NamingFactory.fromFile(fa).equals(NamingFactory.fromFile(fA)));
+            assertFalse(fa.getName().equals(NamingFactory.fromFile(fA).getName()));
+            assertFalse(NamingFactory.fromFile(fa).equals(NamingFactory.fromFile(fA)));
             assertNotSame(NamingFactory.fromFile(fa),NamingFactory.fromFile(fA));            
             assertTrue(fa.delete());
             assertTrue(fA.createNewFile());
