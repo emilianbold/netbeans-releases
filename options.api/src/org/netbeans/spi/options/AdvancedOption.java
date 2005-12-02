@@ -66,6 +66,7 @@ public abstract class AdvancedOption {
      */
     public abstract OptionsPanelController create ();
 
+    //compatibility hack, see core/options/build.xml for more details:
     private OptionsCategory.PanelController createOldImpl () {
         return null;
     }
