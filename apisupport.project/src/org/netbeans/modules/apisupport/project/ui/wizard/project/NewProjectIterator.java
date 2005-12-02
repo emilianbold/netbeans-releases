@@ -176,6 +176,9 @@ final class NewProjectIterator extends BasicWizardIterator {
                 boolean projectui = false;
                 boolean projectapi = false;
                 boolean awt = false;
+                //---------------------------------------
+                //!!!! when updating deps here, do update the validating code in NameAndLocationPanel as well.
+                //---------------------------------------
                 while (it.hasNext()) {
                     ModuleDependency dep = (ModuleDependency)it.next();
                     if ("org.openide.filesystems".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N

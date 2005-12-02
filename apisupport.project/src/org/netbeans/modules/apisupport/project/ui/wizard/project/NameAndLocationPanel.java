@@ -14,6 +14,8 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Collection;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
@@ -24,6 +26,8 @@ import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -56,8 +60,9 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         
         DocumentListener dListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                checkValidity();
-                updateData();
+                if (checkValidity()) {
+                    updateData();
+                }
             }
         };
         txtName.getDocument().addDocumentListener(dListener);
@@ -110,25 +115,55 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         return getMessage("LBL_NameLocation_Title");
     }
     
-    private void checkValidity() {
+    private boolean checkValidity() {
+        if (!checkPlatformValidity()) {
+            return false;
+        }
         if (txtName.getText().trim().length() == 0) {
             setErrorMessage(getMessage("ERR_Name_Prefix_Empty"));
-            return;
+            return false;
         }
         if (!Utilities.isJavaIdentifier(txtName.getText().trim())) {
             setErrorMessage(getMessage("ERR_Name_Prefix_Invalid"));
-            return;
+            return false;
         }
         String packageName = comPackageName.getEditor().getItem().toString().trim();
         if (packageName.length() == 0 || !UIUtil.isValidPackageName(packageName)) {
             setErrorMessage(getMessage("ERR_Package_Invalid"));
-            return;
+            return false;
         }
         if (!Util.isValidSFSPath(getCategoryPath())) {
             setErrorMessage(getMessage("ERR_Category_Invalid"));
-            return;
+            return false;
         }
         setErrorMessage(null);
+        return true;
+    }
+    
+    private boolean checkPlatformValidity() {
+        NbPlatform platform = data.getProject().getPlatform(false);
+        if (platform == null) {
+            setErrorMessage(getMessage("ERR_No_Platform"));
+            return false;
+        }
+        ModuleEntry[] entries = platform.getModules();
+        Collection modules = new ArrayList();
+        modules.add("org.openide.filesystems"); //NOI18N
+        modules.add("org.openide.loaders"); //NOI18N
+        modules.add("org.openide.dialogs"); //NOI18N
+        modules.add("org.openide.util"); //NOI18N
+        modules.add("org.netbeans.modules.projectuiapi"); //NOI18N
+        modules.add("org.netbeans.modules.projectapi"); //NOI18N
+        modules.add("org.openide.awt"); //NOI18N
+        
+        for (int i = 0; i < entries.length; i++) {
+            modules.remove(entries[i].getCodeNameBase());
+        }
+        if (modules.size() > 0) {
+            setErrorMessage(getMessage("ERR_Missing_Modules"));
+            return false;
+        }
+        return true;
     }
     
     private void loadCombo() {
