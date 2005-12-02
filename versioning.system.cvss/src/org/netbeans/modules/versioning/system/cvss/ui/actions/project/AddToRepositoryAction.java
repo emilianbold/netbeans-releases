@@ -343,6 +343,10 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
             this.folder = folder;
         }
 
+        public HelpCtx getHelp() {
+            return new HelpCtx(ImportStep.class);
+        }
+
         protected JComponent createComponent() {
             importPanel = new ImportPanel();
             importPanel.moduleTextField.setText(module);

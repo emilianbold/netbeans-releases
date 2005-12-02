@@ -19,6 +19,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.cvsclient.connection.*;
@@ -91,6 +92,10 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         initialCvsRoot = root;
     }
 
+    public HelpCtx getHelp() {
+        return new HelpCtx(RepositoryStep.class);
+    }
+    
     /**
      * Preselected cvs root (first in list).
      */

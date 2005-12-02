@@ -16,6 +16,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.wizards;
 import org.openide.*;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ModuleSelector;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector;
@@ -197,6 +198,10 @@ public final class CheckoutWizard implements ChangeListener{
             modulePanel.tagButton.addActionListener(this);
             modulePanel.workButton.addActionListener(this);
             return modulePanel;
+        }
+
+        public HelpCtx getHelp() {
+            return new HelpCtx(ModuleStep.class);
         }
 
         protected void validateBeforeNext() {
