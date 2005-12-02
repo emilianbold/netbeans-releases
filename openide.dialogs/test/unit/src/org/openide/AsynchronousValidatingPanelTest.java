@@ -104,8 +104,8 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
                 mp.wait ();
             }
             waitWhileSetValidDone ();
+            assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
         }
-        assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
         assertEquals ("The lazy validation failed on Next.", mp.validateMsg, mp.failedMsg);
         assertNull ("The lazy validation failed, still no initialiaation", panels[1].component);
         assertNull ("The lazy validation failed, still no initialiaation", panels[2].component);
@@ -119,8 +119,8 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
                 mp.wait ();
             }
             waitWhileSetValidDone ();
+            assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
         }
-        assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
         assertNull ("Validation on Next passes", mp.failedMsg);
         assertNotNull ("Now we switched to another panel", panels[1].component);
         assertNull ("The lazy validation failed, still no initialiaation", panels[2].component);
@@ -136,8 +136,8 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
                 mfp.wait ();
             }
             waitWhileSetValidDone ();
+            assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
         }
-        assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
         assertEquals ("The lazy validation failed on Finish.", mfp.validateMsg, mfp.failedMsg);
         assertNull ("The validation failed, still no initialiaation", panels[2].component);
         assertEquals ("State has not changed", state, wd.getValue ());
@@ -151,8 +151,8 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
                 mfp.wait ();
             }
             waitWhileSetValidDone ();
+            assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
         }
-        assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
         assertNull ("Validation on Finish passes", mfp.failedMsg);        
         assertNull ("Finish was clicked, no initialization either", panels[2].component);
         assertEquals ("The state is finish", WizardDescriptor.FINISH_OPTION, wd.getValue ());
