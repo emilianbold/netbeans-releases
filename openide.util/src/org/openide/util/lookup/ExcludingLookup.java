@@ -295,28 +295,29 @@ BIG:
 
         public void resultChanged(org.openide.util.LookupEvent ev) {
             if (ev.getSource() == result) {
-                LookupListener[] arr;
+                collectFires(null);
+            }
+        }
 
-                synchronized (this) {
-                    if (listeners == null) {
-                        return;
-                    }
+        protected void collectFires(Collection evAndListeners) {
+            LookupListener[] arr;
 
-                    if (listeners instanceof LookupListener) {
-                        arr = new LookupListener[] { (LookupListener) listeners };
-                    } else {
-                        ArrayList l = (ArrayList) listeners;
-                        arr = (LookupListener[]) l.toArray(new LookupListener[l.size()]);
-                    }
+            synchronized (this) {
+                if (listeners == null) {
+                    return;
                 }
 
-                final LookupListener[] ll = arr;
-                final org.openide.util.LookupEvent newev = new org.openide.util.LookupEvent(this);
-
-                for (int i = 0; i < ll.length; i++) {
-                    ll[i].resultChanged(newev);
+                if (listeners instanceof LookupListener) {
+                    arr = new LookupListener[] { (LookupListener) listeners };
+                } else {
+                    ArrayList l = (ArrayList) listeners;
+                    arr = (LookupListener[]) l.toArray(new LookupListener[l.size()]);
                 }
             }
+
+            final LookupListener[] ll = arr;
+            final org.openide.util.LookupEvent newev = new org.openide.util.LookupEvent(this);
+            AbstractLookup.notifyListeners(ll, newev, evAndListeners);
         }
     }
 }

@@ -423,11 +423,22 @@ public class AbstractLookup extends Lookup implements Serializable {
             return;
         }
 
-        Iterator it = allAffectedResults.iterator();
+        ArrayList evAndListeners = new ArrayList();
+        {
+            Iterator it = allAffectedResults.iterator();
+            while(it.hasNext()) {
+                AbstractLookup.R result = (AbstractLookup.R) it.next();
+                result.collectFires(evAndListeners);
+            }
+        }
 
-        while (it.hasNext()) {
-            AbstractLookup.R result = (AbstractLookup.R) it.next();
-            result.fireStateChanged();
+        {
+            Iterator it = evAndListeners.iterator();
+            while (it.hasNext()) {
+                LookupEvent ev = (LookupEvent)it.next();
+                LookupListener l = (LookupListener)it.next();
+                l.resultChanged(ev);
+            }
         }
     }
 
@@ -438,12 +449,22 @@ public class AbstractLookup extends Lookup implements Serializable {
      *        objects on even positions and the listeners on odd positions
      * @param ev the event to fire
      */
-    static void notifyListeners(final Object[] listeners, final LookupEvent ev) {
+    static void notifyListeners(Object[] listeners, LookupEvent ev, Collection evAndListeners) {
         for (int i = listeners.length - 1; i >= 0; i -= 2) {
             LookupListener ll = (LookupListener) listeners[i];
 
             try {
-                ll.resultChanged(ev);
+                if (evAndListeners != null) {
+                    if (ll instanceof WaitableResult) {
+                        WaitableResult wr = (WaitableResult)ll;
+                        wr.collectFires(evAndListeners);
+                    } else {
+                        evAndListeners.add(ev);
+                        evAndListeners.add(ll);
+                    }
+                } else {
+                    ll.resultChanged(ev);
+                }
             } catch (RuntimeException e) {
                 // Such as e.g. occurred in #32040. Do not halt other things.
                 e.printStackTrace();
@@ -822,11 +843,10 @@ public class AbstractLookup extends Lookup implements Serializable {
 
         /** Delete all cached values, the template changed.
          */
-        public void fireStateChanged() {
+        protected  void collectFires(Collection evAndListeners) {
             Object[] previousItems = getItemsCache();
-
             clearCaches();
-
+            
             if (previousItems != null) {
                 Object[] newArray = allItemsWithoutBeforeLookup().toArray();
 
@@ -853,10 +873,7 @@ public class AbstractLookup extends Lookup implements Serializable {
 
             final LookupListener[] ll = arr;
             final LookupEvent ev = new LookupEvent(this);
-
-            for (int i = 0; i < ll.length; i++) {
-                ll[i].resultChanged(ev);
-            }
+            notifyListeners(ll, ev, evAndListeners);
         }
 
         public Collection allInstances() {

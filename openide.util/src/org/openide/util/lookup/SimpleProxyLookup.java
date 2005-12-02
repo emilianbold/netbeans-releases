@@ -12,10 +12,11 @@
  */
 package org.openide.util.lookup;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.WeakListeners;
 
 import java.util.*;
 
@@ -62,16 +63,20 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
 
         if (toCheck != null) {
             // update
-            Iterator it = toCheck;
-
-            while (it.hasNext()) {
+            ArrayList evAndListeners = new ArrayList();
+            for (Iterator it = toCheck; it.hasNext(); ) {
                 java.lang.ref.Reference ref = (java.lang.ref.Reference) it.next();
                 ProxyResult p = (ProxyResult) ref.get();
 
-                // [pnejedly] BUG #42271 in WeakSet. Remove when fixed.
-                if ((p != null) && p.updateLookup(l)) {
-                    p.resultChanged(null);
+                if (p.updateLookup(l)) {
+                    p.collectFires(evAndListeners);
                 }
+            }
+            
+            for (Iterator it = evAndListeners.iterator(); it.hasNext(); ) {
+                LookupEvent ev = (LookupEvent)it.next();
+                LookupListener ll = (LookupListener)it.next();
+                ll.resultChanged(ev);
             }
         }
 
@@ -161,7 +166,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
             synchronized (this) {
                 if (removedListener == lastListener) {
                     delegate = res;
-                    lastListener = (LookupListener) WeakListeners.create(LookupListener.class, this, delegate);
+                    lastListener = new WeakResult(this, delegate);
                     delegate.addLookupListener(lastListener);
                 }
             }
@@ -229,6 +234,10 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
          *
          */
         public void resultChanged(LookupEvent anEvent) {
+            collectFires(null);
+        } 
+        
+        protected void collectFires(Collection evAndListeners) {
             javax.swing.event.EventListenerList l = this.listeners;
 
             if (l == null) {
@@ -242,8 +251,67 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
             }
 
             LookupEvent ev = new LookupEvent(this);
-            AbstractLookup.notifyListeners(listeners, ev);
+            AbstractLookup.notifyListeners(listeners, ev, evAndListeners);
         }
     }
      // end of ProxyResult
+    private final class WeakResult extends WaitableResult implements LookupListener {
+        private Lookup.Result source;
+        private Reference result;
+        
+        public WeakResult(ProxyResult r, Lookup.Result s) {
+            this.result = new WeakReference(r);
+            this.source = s;
+        }
+        
+        protected void beforeLookup(Lookup.Template t) {
+            ProxyResult r = (ProxyResult)result.get();
+            if (r != null) {
+                r.beforeLookup(t);
+            } else {
+                source.removeLookupListener(this);
+            }
+        }
+
+        protected void collectFires(Collection evAndListeners) {
+            ProxyResult r = (ProxyResult)result.get();
+            if (r != null) {
+                r.collectFires(evAndListeners);
+            } else {
+                source.removeLookupListener(this);
+            }
+        }
+
+        public void addLookupListener(LookupListener l) {
+            assert false;
+        }
+
+        public void removeLookupListener(LookupListener l) {
+            assert false;
+        }
+
+        public Collection allInstances() {
+            assert false;
+            return null;
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            ProxyResult r = (ProxyResult)result.get();
+            if (r != null) {
+                r.resultChanged(ev);
+            } else {
+                source.removeLookupListener(this);
+            }
+        }
+
+        public Collection allItems() {
+            assert false;
+            return null;
+        }
+
+        public Set allClasses() {
+            assert false;
+            return null;
+        }
+    } // end of WeakResult
 }

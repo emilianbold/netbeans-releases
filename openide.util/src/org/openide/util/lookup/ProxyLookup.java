@@ -143,11 +143,21 @@ public class ProxyLookup extends Lookup {
         }
 
         // this cannot be done from the synchronized block
+        ArrayList evAndListeners = new ArrayList();
         for (int i = 0; i < arr.length; i++) {
             R r = (R) arr[i].get();
 
             if (r != null) {
-                r.resultChanged(null);
+                r.collectFires(evAndListeners);
+            }
+        }
+        
+        {
+            Iterator it = evAndListeners.iterator();
+            while (it.hasNext()) {
+                LookupEvent ev = (LookupEvent)it.next();
+                LookupListener l = (LookupListener)it.next();
+                l.resultChanged(ev);
             }
         }
     }
@@ -454,6 +464,10 @@ public class ProxyLookup extends Lookup {
         /** When the result changes, fire the event.
          */
         public void resultChanged(LookupEvent ev) {
+            collectFires(null);
+        }
+        
+        protected void collectFires(Collection evAndListeners) {
             // clear cached instances
             Collection oldItems;
             Collection oldInstances;
@@ -504,8 +518,8 @@ public class ProxyLookup extends Lookup {
             assert cache != null;
 
             if (modified) {
-                ev = new LookupEvent(this);
-                AbstractLookup.notifyListeners(listeners.getListenerList(), ev);
+                LookupEvent ev = new LookupEvent(this);
+                AbstractLookup.notifyListeners(listeners.getListenerList(), ev, evAndListeners);
             }
         }
 

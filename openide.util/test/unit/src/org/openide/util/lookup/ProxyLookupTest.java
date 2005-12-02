@@ -13,6 +13,7 @@
 
 package org.openide.util.lookup;
 
+import java.io.Serializable;
 import org.openide.util.*;
 
 import java.lang.ref.WeakReference;
@@ -206,5 +207,95 @@ implements AbstractLookupBaseHid.Impl {
                 1, r3.allInstances().size());
     }
     
+    public void testListeningAndQueryingByTwoListenersInstancesSetLookups() {
+        doListeningAndQueryingByTwoListenersSetLookups(0, 1);
+    }
+    public void testListeningAndQueryingByTwoListenersClassesSetLookups() {
+        doListeningAndQueryingByTwoListenersSetLookups(1, 1);        
+    }
+    public void testListeningAndQueryingByTwoListenersItemsSetLookups() {
+        doListeningAndQueryingByTwoListenersSetLookups(2, 1);
+    }
+    
+    public void testListeningAndQueryingByTwoListenersInstancesSetLookups2() {
+        doListeningAndQueryingByTwoListenersSetLookups(0, 2);
+    }
+    public void testListeningAndQueryingByTwoListenersClassesSetLookups2() {
+        doListeningAndQueryingByTwoListenersSetLookups(1, 2);        
+    }
+    public void testListeningAndQueryingByTwoListenersItemsSetLookups2() {
+        doListeningAndQueryingByTwoListenersSetLookups(2, 2);
+    }
+    public void testListeningAndQueryingByTwoListenersInstancesSetLookups22() {
+        doListeningAndQueryingByTwoListenersSetLookups(0, 22);
+    }
+    public void testListeningAndQueryingByTwoListenersClassesSetLookups22() {
+        doListeningAndQueryingByTwoListenersSetLookups(1, 22);        
+    }
+    public void testListeningAndQueryingByTwoListenersItemsSetLookups22() {
+        doListeningAndQueryingByTwoListenersSetLookups(2, 22);
+    }
+    
+    private void doListeningAndQueryingByTwoListenersSetLookups(final int type, int depth) {
+        ProxyLookup orig = new ProxyLookup();
+        ProxyLookup on = orig;
+        
+        while (--depth > 0) {
+            on = new ProxyLookup(new Lookup[] { on });
+        }
+        
+        
+        final ProxyLookup lookup = on;
+        
+        class L implements LookupListener {
+            Lookup.Result integer = lookup.lookup(new Lookup.Template(Integer.class));
+            Lookup.Result number = lookup.lookup(new Lookup.Template(Number.class));
+            Lookup.Result serial = lookup.lookup(new Lookup.Template(Serializable.class));
+            
+            {
+                integer.addLookupListener(this);
+                number.addLookupListener(this);
+                serial.addLookupListener(this);
+            }
+            
+            int round;
+            
+            public void resultChanged(LookupEvent ev) {
+                Collection c1 = get(type, integer);
+                Collection c2 = get(type, number);
+                Collection c3 = get(type, serial);
+                
+                assertEquals("round " + round + " c1 vs. c2", c1, c2);
+                assertEquals("round " + round + " c1 vs. c3", c1, c3);
+                assertEquals("round " + round + " c2 vs. c3", c2, c3);
+                
+                round++;
+            }            
+
+            private Collection get(int type, Lookup.Result res) {
+                Collection c;
+                switch(type) {
+                    case 0: c = res.allInstances(); break;
+                    case 1: c = res.allClasses(); break;
+                    case 2: c = res.allItems(); break;
+                    default: c = null; fail("Type: " + type); break;
+                }
+                
+                assertNotNull(c);
+                return new ArrayList(c);
+            }
+        }
+        
+        L listener = new L();
+        listener.resultChanged(null);
+        ArrayList arr = new ArrayList();
+        for(int i = 0; i < 100; i++) {
+            arr.add(new Integer(i));
+            
+            orig.setLookups(new Lookup[] { Lookups.fixed(arr.toArray()) });
+        }
+        
+        assertEquals("3x100+1 checks", 301, listener.round);
+    }
     
 }

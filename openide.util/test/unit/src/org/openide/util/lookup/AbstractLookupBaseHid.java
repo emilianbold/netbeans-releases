@@ -1270,7 +1270,67 @@ public class AbstractLookupBaseHid extends NbTestCase {
             }
         }
     }
+
+    public void testListeningAndQueryingByTwoListenersInstances() {
+        doListeningAndQueryingByTwoListeners(0);
+    }
+    public void testListeningAndQueryingByTwoListenersClasses() {
+        doListeningAndQueryingByTwoListeners(1);        
+    }
+    public void testListeningAndQueryingByTwoListenersItems() {
+        doListeningAndQueryingByTwoListeners(2);
+    }
     
+    
+    private void doListeningAndQueryingByTwoListeners(final int type) {
+        class L implements LookupListener {
+            Lookup.Result integer = lookup.lookup(new Template(Integer.class));
+            Lookup.Result number = lookup.lookup(new Template(Number.class));
+            Lookup.Result serial = lookup.lookup(new Template(Serializable.class));
+            
+            {
+                integer.addLookupListener(this);
+                number.addLookupListener(this);
+                serial.addLookupListener(this);
+            }
+            
+            int round;
+            
+            public void resultChanged(LookupEvent ev) {
+                Collection c1 = get(type, integer);
+                Collection c2 = get(type, number);
+                Collection c3 = get(type, serial);
+                
+                assertEquals("round " + round + " c1 vs. c2", c1, c2);
+                assertEquals("round " + round + " c1 vs. c3", c1, c3);
+                assertEquals("round " + round + " c2 vs. c3", c2, c3);
+                
+                round++;
+            }            
+
+            private Collection get(int type, Lookup.Result res) {
+                Collection c;
+                switch(type) {
+                    case 0: c = res.allInstances(); break;
+                    case 1: c = res.allClasses(); break;
+                    case 2: c = res.allItems(); break;
+                    default: c = null; fail("Type: " + type); break;
+                }
+                
+                assertNotNull(c);
+                return new ArrayList(c);
+            }
+        }
+        
+        L listener = new L();
+        listener.resultChanged(null);
+        
+        for(int i = 0; i < 100; i++) {
+            ic.add(new Integer(i));
+        }
+        
+        assertEquals("3x100+1 checks", 301, listener.round);
+    }
     
     public void testChangeOfNodeDoesNotFireChangeInActionMap() {
         ActionMap am = new ActionMap();

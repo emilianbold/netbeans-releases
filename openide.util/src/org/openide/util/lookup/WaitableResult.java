@@ -12,6 +12,7 @@
  */
 package org.openide.util.lookup;
 
+import java.util.Collection;
 import org.openide.util.Lookup;
 
 
@@ -23,4 +24,11 @@ abstract class WaitableResult extends Lookup.Result {
     /** Used by proxy results to synchronize before lookup.
      */
     protected abstract void beforeLookup(Lookup.Template t);
+    
+    /** Needed to group notification of outside the package listeners
+     * after all AbstractLookup and ProxyLookups have been updated.
+     * @param evAndListeners LookupEvent, LookupListener, LookupEvent, LookupListener, etc.
+     */
+    protected abstract void collectFires(Collection evAndListeners);
+     
 }
