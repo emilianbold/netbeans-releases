@@ -491,7 +491,8 @@ public class Node {
                     return isPresent() ? null : Boolean.TRUE;
                 }
                 public String getDescription() {
-                    return("Wait node "+getPath()+" not present.");
+                    // do not use getPath() or getTreePath() here
+                    return("Wait node "+convertPath(treePath)+" not present.");
                 }
             }).waitAction(null);
         } catch (InterruptedException e) {
