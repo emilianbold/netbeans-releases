@@ -512,7 +512,7 @@ public class CvsVersioningSystem {
      * 
      * @param file file to ignore
      */ 
-    public void setIgnored(File file) throws IOException {
+    private void setIgnored(File file) throws IOException {
         if (file.exists()) {
             addToCvsIgnore(file);
         }
@@ -554,7 +554,7 @@ public class CvsVersioningSystem {
         try {
             r = new BufferedReader(new FileReader(cvsIgnore));
             while ((s = r.readLine()) != null) {
-                entries.add(s);
+                entries.add(s.trim());
             }
         } finally {
             if (r != null) try { r.close(); } catch (IOException e) {}
