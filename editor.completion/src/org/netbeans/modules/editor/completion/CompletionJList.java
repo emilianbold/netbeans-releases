@@ -113,16 +113,17 @@ public class CompletionJList extends JList {
     
 
     public void up() {
-        if (getModel().getSize() > 0) {
-            setSelectedIndex(Math.max(getSelectedIndex() - 1, 0));
+        int size = getModel().getSize();
+        if (size > 0) {
+            setSelectedIndex((getSelectedIndex() - 1 + size) % size);
             ensureIndexIsVisible(getSelectedIndex());
         }
     }
 
     public void down() {
-        int lastInd = getModel().getSize() - 1;
-        if (lastInd >= 0) {
-            setSelectedIndex(Math.min(getSelectedIndex() + 1, lastInd));
+        int size = getModel().getSize();
+        if (size > 0) {
+            setSelectedIndex((getSelectedIndex() + 1) % size);
             ensureIndexIsVisible(getSelectedIndex());
         }
     }
