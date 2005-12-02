@@ -37,8 +37,7 @@ final class OutputUtils {
      */
     static void openCallstackFrame(Node node,
                                    String frameInfo) {
-        Node reportNode = getRootNode(node);
-        Report report = ((ReportNode) reportNode).report;
+        Report report = getTestsuiteNode(node).getReport();
         ClassPath srcClassPath = getSrcClassPath(report.antScript);
 
         final int[] lineNumStorage = new int[1];
@@ -48,13 +47,11 @@ final class OutputUtils {
         
     /**
      */
-    private static Node getRootNode(Node node) {
-        Node parentNode = node.getParentNode();
-        while (parentNode != null) {
-            node = parentNode;
-            parentNode = node.getParentNode();
+    private static TestsuiteNode getTestsuiteNode(Node node) {
+        while (!(node instanceof TestsuiteNode)) {
+            node = node.getParentNode();
         }
-        return node;
+        return (TestsuiteNode) node;
     }
     
     /**

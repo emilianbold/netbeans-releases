@@ -32,7 +32,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Marian Petras
  */
-public class ResultWindow extends TopComponent {
+public final class ResultWindow extends TopComponent {
     
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "junit-test-results";              //NOI18N
@@ -80,64 +80,8 @@ public class ResultWindow extends TopComponent {
     /** */
     private TopComponent view;
     /** */
-    private ResultDisplayHandler viewHandler;
-    /** */
-    private java.util.Map methodsMap;
+    private java.util.Map topCompMethodsMap;
     
-    
-    
-    /** */
-    //private final JTabbedPane tabbedPanel;
-    
-    private final String indent = "   ";
-    private final String[] indents = new String[] {
-        "",
-        "   ",
-        "      ",
-        "         ",
-        "            ",
-        "               " };
-    private int callLevel = 0;
-    private void logStart(final String msg) {
-        StringBuffer buf = buildIndent();
-        buf.append(msg);
-        buf.append(" (0x");
-        buf.append(Integer.toHexString(System.identityHashCode(this)));
-        buf.append(") - START");
-        System.out.println(buf.toString());
-        callLevel++;
-    }
-    private void logEnd(final String msg) {
-        callLevel--;
-        StringBuffer buf = buildIndent();
-        buf.append(msg);
-        buf.append(" (0x");
-        buf.append(Integer.toHexString(System.identityHashCode(this)));
-        buf.append(") - END");
-        System.out.println(buf.toString());
-    }
-    private void log(final String msg) {
-        StringBuffer buf = buildIndent();
-        buf.append("- ");
-        buf.append(msg);
-        buf.append(" (0x");
-        buf.append(Integer.toHexString(System.identityHashCode(this)));
-        buf.append(')');
-        System.out.println(buf.toString());
-    }
-    private StringBuffer buildIndent() {
-        StringBuffer buf = new StringBuffer(150);
-        if (callLevel < indents.length) {
-            buf.append(indents[callLevel]);
-        } else {
-            buf.append(indents[indents.length - 1]);
-            final int count = callLevel - (indents.length - 1);
-            for (int i = 0; i < count; i++) {
-                buf.append(indent);
-            }
-        }
-        return buf;
-    }
     
     /** Creates a new instance of ResultWindow */
     public ResultWindow() {
@@ -164,7 +108,9 @@ public class ResultWindow extends TopComponent {
     protected void componentOpened() {
         assert EventQueue.isDispatchThread();
         
-        forwardMessage("componentOpened");                              //NOI18N
+        if (view != null) {
+            forwardMessage(view, "componentOpened");                    //NOI18N
+        }
         super.componentOpened();
     }
     
@@ -173,8 +119,9 @@ public class ResultWindow extends TopComponent {
     protected void componentClosed() {
         assert EventQueue.isDispatchThread();
         
-        closeAllViews();
-        forwardMessage("componentClosed");                              //NOI18N
+        if (view != null) {
+            forwardMessage(view, "componentClosed");                    //NOI18N
+        }
         super.componentClosed();
     }
     
@@ -183,7 +130,9 @@ public class ResultWindow extends TopComponent {
     protected void componentActivated() {
         assert EventQueue.isDispatchThread();
         
-        forwardMessage("componentActivated");                           //NOI18N
+        if (view != null) {
+            forwardMessage(view, "componentActivated");                 //NOI18N
+        }
         super.componentActivated();
     }
     
@@ -192,7 +141,9 @@ public class ResultWindow extends TopComponent {
     protected void componentDeactivated() {
         assert EventQueue.isDispatchThread();
         
-        forwardMessage("componentDeactivated");                         //NOI18N
+        if (view != null) {
+            forwardMessage(view, "componentDeactivated");               //NOI18N
+        }
         super.componentDeactivated();
     }
     
@@ -201,7 +152,9 @@ public class ResultWindow extends TopComponent {
     protected void componentShowing() {
         assert EventQueue.isDispatchThread();
         
-        forwardMessage("componentShowing");                             //NOI18N
+        if (view != null) {
+            forwardMessage(view, "componentShowing");                   //NOI18N
+        }
         super.componentShowing();
     }
     
@@ -210,109 +163,45 @@ public class ResultWindow extends TopComponent {
     protected void componentHidden() {
         assert EventQueue.isDispatchThread();
         
-        forwardMessage("componentHidden");                              //NOI18N
+        if (view != null) {
+            forwardMessage(view, "componentHidden");                    //NOI18N
+        }
         super.componentHidden();
     }
     
     /**
      */
-    private void forwardMessage(String messageName) {
-        if (methodsMap != null) {
-            Method method = (Method) methodsMap.get(messageName);
-            if (method != null) {
-                try {
-                    method.invoke(view, null);
-                } catch (InvocationTargetException invocationExc) {
-                    ErrorManager.getDefault().notify(invocationExc);
-                } catch (Exception ex) {
-                    methodsMap.remove(messageName);
-                    ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
-                }
-            }
-        }
-    }
-    
-    /**
-     */
-    void displayTestRunning(boolean promote) {
-        display(new ReportDisplay(null), promote);
-    }
-    
-    /**
-     */
-    void displayReport(final int index, final Report report, boolean promote) {
-        display(new ReportDisplay(report), promote);
-    }
-    
-    /**
-     */
-    private void display(ReportDisplay reportDisplay, boolean promote) {
-        assert EventQueue.isDispatchThread();
+    private void forwardMessage(TopComponent tc, String messageName) {
+        ensureMethodsPrepared();
         
-        if (viewHandler == null) {
-            
-            viewHandler = new ResultDisplayHandler();
-            view = viewHandler.createReportDisplay();
-            
+        Method method = (Method) topCompMethodsMap.get(messageName);
+        if (method != null) {
             try {
-                prepareMethods();
-            } catch (SecurityException ex) {
+                method.invoke(tc, null);
+            } catch (InvocationTargetException invocationExc) {
+                ErrorManager.getDefault().notify(invocationExc);
+            } catch (Exception ex) {
+                topCompMethodsMap.remove(messageName);
                 ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
             }
-
-            if (isOpened()) {
-                forwardMessage("componentOpened");                      //NOI18N
-                if (isShowing()) {
-                    forwardMessage("componentShowing");                 //NOI18N
-                    if (WindowManager.getDefault().getRegistry().getActivated()
-                            == this) {
-                        forwardMessage("componentActivated");           //NOI18N
-                    }
-                }
-            }
-            add(view);
-        }
-
-        reportDisplay.run();
-        
-        if (promote) {
-            open();
-            requestVisible();
-            requestActive();
         }
     }
     
     /**
-     *
      */
-    final class ReportDisplay implements Runnable {
-        
-        private final Report report;
-        
-        ReportDisplay(Report report) {
-            this.report = report;
+    private void ensureMethodsPrepared() {
+        if (topCompMethodsMap == null) {
+            prepareMethods();
         }
-        
-        public void run() {
-            assert EventQueue.isDispatchThread();
-            
-            if (report == null) {
-                viewHandler.displayMsg(
-                        NbBundle.getMessage(getClass(), "LBL_Running"));//NOI18N
-            } else {
-                viewHandler.displayReport(report);
-            }
-        }
-        
     }
     
     /**
      */
     private void prepareMethods() throws SecurityException {
-        assert methodsMap == null;
+        assert topCompMethodsMap == null;
         assert view != null;
         
-        methodsMap = new java.util.HashMap(8);
+        topCompMethodsMap = new java.util.HashMap(8);
         
         final String[] methodNames = new String[] {
             "componentOpened",                                          //NOI18N
@@ -331,7 +220,7 @@ public class ResultWindow extends TopComponent {
             try {
                 String methodName = methodNames[i];
                 Method m = viewClass.getDeclaredMethod(methodName, noParams);
-                methodsMap.put(methodName, m);
+                topCompMethodsMap.put(methodName, m);
                 methods.add(m);
             } catch (NoSuchMethodException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
@@ -348,29 +237,45 @@ public class ResultWindow extends TopComponent {
     
     /**
      */
-    void removeView(final int index) {
-        //tabbedPanel.remove(index);
+    void addDisplayComponent(TopComponent displayComp) {
+        assert EventQueue.isDispatchThread();
+        
+        removeAll();
+        addView(displayComp);
     }
     
     /**
      */
-    int getViewsCount() {
-        //return tabbedPanel.getTabCount();
-        return 1;
+    private void addView(final TopComponent view) {
+        assert EventQueue.isDispatchThread();
+        
+        this.view = view;
+        if (isOpened()) {
+            forwardMessage(view, "componentOpened");                    //NOI18N
+            if (isShowing()) {
+                forwardMessage(view, "componentShowing");               //NOI18N
+                if (isActivated()) {
+                    forwardMessage(view, "componentActivated");         //NOI18N
+                }
+            }
+        }
+        add(view);
     }
     
     /**
      */
-    private void closeView(final int index) {
-        //PENDING
+    private boolean isActivated() {
+        return TopComponent.getRegistry().getActivated() == this;
     }
     
     /**
      */
-    private void closeAllViews() {
-        //logStart("closeAllViews()");
-        //tabbedPanel.removeAll();
-        //logEnd("closeAllViews()");
+    void promote() {
+        assert EventQueue.isDispatchThread();
+        
+        open();
+        requestVisible();
+        requestActive();
     }
     
     /**

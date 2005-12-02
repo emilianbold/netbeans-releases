@@ -13,30 +13,22 @@
 
 package org.netbeans.modules.junit.output;
 
-import java.awt.EventQueue;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.modules.junit.output.ResultDisplayHandler.DisplayContents;
-import org.netbeans.modules.junit.output.ResultDisplayHandler.ToggleViewAction;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -63,20 +55,27 @@ final class ResultDisplayHandler {
     /** */
     private ResultPanelTree treePanel;
     /** */
-    private ResultPanelOutput outputPanel;
+    private ResultPanelOutput outputListener;
     /** */
-    private DisplayContents display;
-    /** */
-    private Collection/*<ChangeListener>*/ changeListeners;
+    private TopComponent displayComp;
     
     
-    /** Creates a new instance of ResultView */
+    /** Creates a new instance of ResultDisplayHandler */
     ResultDisplayHandler() {
     }
     
     /**
      */
-    TopComponent createReportDisplay() {
+    TopComponent getDisplayComponent() {
+        if (displayComp == null) {
+            displayComp = createDisplayComp();
+        }
+        return displayComp;
+    }
+    
+    /**
+     */
+    private TopComponent createDisplayComp() {
         AbstractResultViewDesc descTree
                 = new ResultTreeViewDesc(ID_TREE,
                                          "LBL_resultTreeView");         //NOI18N
@@ -95,6 +94,22 @@ final class ResultDisplayHandler {
         outputViewHandle = viewHandles[1];
         
         return tc;
+    }
+    
+    /**
+     */
+    void displayShown() {
+        //
+        //PENDING
+        //
+    }
+    
+    /**
+     */
+    void displayHidden() {
+        //
+        //PENDING
+        //
     }
     
     /**
@@ -141,106 +156,136 @@ final class ResultDisplayHandler {
         
     }
     
+    //------------------ DISPLAYING OUTPUT ----------------------//
+
+    static final Object[] EMPTY_QUEUE = new Object[0];
+    private final Object queueLock = new Object();
+    private volatile Object[] outputQueue;
+    private volatile int outputQueueSize = 0;
+    private int outputQueueAvailSpace;
+    
     /**
      */
-    void displayMsg(String msg) {
-        assert EventQueue.isDispatchThread();
-        
-        setDisplay(new DisplayContents(msg, null));
-        
-        //if (handler != null) {
-        //    handler.requestActive(treeViewHandle);
-        //}
-}
+    Object getOutputQueueLock() {
+        return queueLock;
+    }
+    
+    /**
+     */
+    void setOutputListener(ResultPanelOutput outputPanel) {
+        synchronized (queueLock) {
+            this.outputListener = outputPanel;
+        }
+    }
+    
+    /**
+     */
+    void displayOutput(final String text, final boolean error) {
+
+        /* Called from the AntLogger's thread */
+
+        synchronized (queueLock) {
+            if (outputQueue == null) {
+                outputQueue = new Object[40];
+                outputQueueAvailSpace = outputQueue.length - 1;
+                outputQueueSize = 0;
+            }
+            final int itemSpace = error ? 2 : 1;
+            if ((outputQueueAvailSpace -= itemSpace) < 0) {
+                int newCapacity = (outputQueue.length < 640)
+                                  ? outputQueue.length * 2
+                                  : (outputQueue.length * 3) / 2;
+                Object[] oldQueue = outputQueue;
+                outputQueue = new Object[newCapacity];
+                System.arraycopy(oldQueue, 0, outputQueue, 0, outputQueueSize);
+                
+                outputQueueAvailSpace += outputQueue.length - oldQueue.length;
+            }
+            if (error) {
+                outputQueue[outputQueueSize++] = Boolean.TRUE;
+            }
+            outputQueue[outputQueueSize++] = text;
+            
+            if (outputListener != null) {
+                outputListener.outputAvailable();
+            }
+        }
+    }
+    
+    /**
+     */
+    Object[] consumeOutput() {
+        synchronized (queueLock) {
+            if (outputQueueSize == 0) {
+                return EMPTY_QUEUE;
+            }
+            Object[] passedQueue = outputQueue;
+            outputQueue = null;
+            outputQueueSize = 0;
+            return passedQueue;
+        }
+    }
+    
+    //-----------------------------------------------------------//
+    //------------------- DISPLAYING TREE -----------------------//
+    
+    private List reports;
+    private String message;
+
+    // PENDING - synchronization
     
     /**
      */
     void displayReport(final Report report) {
-        assert EventQueue.isDispatchThread();
         
-        setDisplay(new DisplayContents(null, report));
+        /* Called from the AntLogger's thread */
         
-        //if (handler != null) {
-        //    handler.requestActive(treeViewHandle);
-        //}
-    }
-    
-    /**
-     */
-    private void fireChange() {
-        if (changeListeners != null) {
-            ChangeEvent e = new ChangeEvent(this);
-            for (Iterator i = changeListeners.iterator(); i.hasNext(); ) {
-                ((ChangeListener) i.next()).stateChanged(e);
+        if (treePanel == null) {
+            if (reports == null) {
+                reports = new ArrayList(10);
             }
-        }
-    }
-    
-    /**
-     */
-    void addChangeListener(ChangeListener l) {
-        String listenerName;
-        if (l == null) {
-            listenerName = "<null>";
+            reports.add(report);
         } else {
-            listenerName = l.getClass().getName();
-            int lastDotIndex = listenerName.lastIndexOf('.');
-            if (lastDotIndex != -1) {
-                listenerName = listenerName.substring(lastDotIndex + 1);
-            }
-        }
-        if (l != null) {
-            if (changeListeners == null) {
-                changeListeners = new ArrayList(2);
-            }
-            changeListeners.add(l);
+            treePanel.displayReport(report);
         }
     }
     
     /**
      */
-    void removeChangeListener(ChangeListener l) {
-        if ((l != null)
-                && (changeListeners != null)
-                && changeListeners.remove(l)
-                && changeListeners.isEmpty()) {
-            changeListeners = null;
+    void displayMessage(final String msg) {
+
+        /* Called from the AntLogger's thread */
+
+        if (treePanel == null) {
+            message = msg;
+        } else {
+            treePanel.displayMsg(msg);
         }
     }
     
     /**
      */
-    DisplayContents getDisplay() {
-        assert EventQueue.isDispatchThread();
+    void setTreePanel(final ResultPanelTree treePanel) {
         
-        return display;
+        // called from EventDispatch thread
+        
+        if (this.treePanel != null) {
+            return;
+        }
+        
+        this.treePanel = treePanel;
+        
+        if (message != null) {
+            treePanel.displayMsg(message);
+            message = null;
+        }
+        if (reports != null) {
+            treePanel.displayReports(reports);
+            reports = null;
+        }
     }
-    
-    /**
-     */
-    private void setDisplay(DisplayContents display) {
-        this.display = display;
-        fireChange();
-    }
-    
-    
-    /**
-     *
-     */
-    static final class DisplayContents {
-       private String msg;
-       private Report report;
-       private DisplayContents(String msg, Report report) {
-           this.msg = msg;
-           this.report = report;
-       }
-       String getMessage() {
-           return msg;
-       }
-       Report getReport() {
-           return report;
-       }
-    }
+
+    //-----------------------------------------------------------//
     
     /**
      * Partial implementation of a class describing single view of the multiview

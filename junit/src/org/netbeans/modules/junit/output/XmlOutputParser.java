@@ -207,7 +207,7 @@ final class XmlOutputParser extends DefaultHandler {
                 assert qName.equals("testcase");
                 
                 assert testcase != null;
-                report.reportTestcase(testcase);
+                report.reportTest(testcase);
                 testcase = null;
                 state = STATE_TESTSUITE;
                 break;                                          //</editor-fold>

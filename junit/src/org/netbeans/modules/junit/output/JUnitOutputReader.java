@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
@@ -44,9 +43,20 @@ final class JUnitOutputReader {
                                     = {"build.test.unit.results.dir",   //NOI18N
                                        "build.test.results.dir"};       //NOI18N
     private static final int MAX_REPORT_FILE_SIZE = 1 << 19;    //512 kBytes
+    /** */
+    private static final int UPDATE_DELAY = 300;    //milliseconds
+    
+    /** */
+    private boolean testTargetStarted = false;
+    /** */
+    private boolean testTaskStarted = false;
+    /** */
+    private boolean reportStarted = false;
     
     /** */
     private final AntSession session;
+    /** */
+    private final int sessionType;
     /** */
     private final File antScript;
     /** */
@@ -56,9 +66,6 @@ final class JUnitOutputReader {
     private RegexpUtils regexp = RegexpUtils.getInstance();
     
     /** */
-    private List/*<String>*/ outputBuffer;
-    
-    /** */
     private Report topReport;
     /** */
     private Report report;
@@ -66,6 +73,8 @@ final class JUnitOutputReader {
     private Report.Testcase testcase;
     /** */
     private Report.Trouble trouble;
+    /** */
+    private String suiteName;
     
     /** */
     private List/*<String>*/ callstackBuffer;
@@ -80,29 +89,31 @@ final class JUnitOutputReader {
      * If <code>true</code>, standard output is being read,
      * if <code>false</code>, standard error output is being read.
      */
-    private boolean readingStdOut;
+    private boolean readingOutputReport;
     /** */
     private boolean lastHeaderBrief;
     /** */
     private boolean waitingForIssueStatus;
-
+    /** */
+    private final Manager manager = Manager.getInstance();
+    
+    
     /** Creates a new instance of JUnitOutputReader */
     JUnitOutputReader(final AntSession session,
+                      final int sessionType,
                       final long timeOfSessionStart) {
         this.session = session;
-        antScript = session.getOriginatingScript();
+        this.sessionType = sessionType;
+        this.antScript = session.getOriginatingScript();
         this.timeOfSessionStart = timeOfSessionStart;
     }
     
     /**
      */
-    boolean messageLogged(final AntEvent event) {
-        boolean testsuiteStarted = false;
-        
+    void messageLogged(final AntEvent event) {
         final String msg = event.getMessage();
-        
         if (msg == null) {
-            return testsuiteStarted;
+            return;
         }
         
         //<editor-fold defaultstate="collapsed" desc="if (waitingForIssueStatus) ...">
@@ -115,9 +126,9 @@ final class JUnitOutputReader {
             
                 trouble = (testcase.trouble = new Report.Trouble(error));
                 waitingForIssueStatus = false;
-                return testsuiteStarted;
+                return;
             } else {
-                report.reportTestcase(testcase);
+                report.reportTest(testcase);
                 waitingForIssueStatus = false;
             }
         }//</editor-fold>
@@ -127,19 +138,17 @@ final class JUnitOutputReader {
             if (msg.equals("</testsuite>")) {                           //NOI18N
                 closePreviousReport();
             }
-            return testsuiteStarted;
+            return;
         }//</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="if (outputBuffer != null) ...">
-        if (outputBuffer != null) {
+        //<editor-fold defaultstate="collapsed" desc="if (readingOutputReport) ...">
+        if (readingOutputReport) {
             if (msg.startsWith(RegexpUtils.OUTPUT_DELIMITER_PREFIX)) {
                 Matcher matcher = regexp.getOutputDelimPattern().matcher(msg);
                 if (matcher.matches() && (matcher.group(1) == null)) {
-                    flushOutput();
-                    return testsuiteStarted;
+                    readingOutputReport = false;
                 }
             }
-            outputBuffer.add(msg);
-            return testsuiteStarted;
+            return;
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="if (trouble != null) ...">
         if (trouble != null) {
@@ -153,8 +162,8 @@ final class JUnitOutputReader {
                         trouble.message = exceptionMsg;
                     }
                 }
-                return testsuiteStarted;   //ignore other texts until
-                                           //we get exception class name
+                return;     //ignore other texts until
+                            //we get exception class name
             }
             String trimmed = RegexpUtils.specialTrim(msg);
             if (trimmed.length() == 0) {
@@ -165,11 +174,11 @@ final class JUnitOutputReader {
                                             new String[callstackBuffer.size()]);
                     callstackBuffer = null;
                 }
-                report.reportTestcase(testcase);
+                report.reportTest(testcase);
 
                 trouble = null;
                 testcase = null;
-                return testsuiteStarted;
+                return;
             }
             if (trimmed.startsWith(RegexpUtils.CALLSTACK_LINE_PREFIX)) {
                 matcher = regexp.getCallstackLinePattern().matcher(msg);
@@ -180,21 +189,21 @@ final class JUnitOutputReader {
                     callstackBuffer.add(
                             trimmed.substring(
                                    RegexpUtils.CALLSTACK_LINE_PREFIX.length()));
-                    return testsuiteStarted;
+                    return;
                 }
             }
             if ((callstackBuffer == null) && (trouble.message != null)) {
                 trouble.message = trouble.message + '\n' + msg;
             }
             /* else: just ignore the text */
-            return testsuiteStarted;
+            return;
         }//</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="TESTCASE_PREFIX">
         if (msg.startsWith(RegexpUtils.TESTCASE_PREFIX)) {
 
             if (report == null) {
-                return testsuiteStarted;
+                return;
             }
             
             String header = msg.substring(RegexpUtils.TESTCASE_PREFIX.length());
@@ -213,35 +222,37 @@ final class JUnitOutputReader {
         else if (msg.startsWith(RegexpUtils.OUTPUT_DELIMITER_PREFIX)) {
 
             if (report == null) {
-                return testsuiteStarted;
+                return;
             }
             
             Matcher matcher = regexp.getOutputDelimPattern().matcher(msg);
             if (matcher.matches()) {
-                outputBuffer = new ArrayList/*<String>*/(8);
-                
-                String delimTypeStr = matcher.group(1);
-                assert delimTypeStr.equals(RegexpUtils.STDOUT_LABEL)
-                       || delimTypeStr.equals(RegexpUtils.STDERR_LABEL);
-                readingStdOut = delimTypeStr.equals(RegexpUtils.STDOUT_LABEL);
+                readingOutputReport = true;
             }
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="XML_DECL_PREFIX">
         else if (msg.startsWith(RegexpUtils.XML_DECL_PREFIX)) {
             Matcher matcher = regexp.getXmlDeclPattern().matcher(msg.trim());
             if (matcher.matches()) {
+                closePreviousReport();
+                
+                report = new Report(null);
+                report.antScript = antScript;
+                
                 xmlOutputBuffer = new StringBuffer(4096);
                 xmlOutputBuffer.append(msg);
+                
+                suiteStarted();
             }
-            
-            testsuiteStarted = true;
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="TESTSUITE_PREFIX">
         else if (msg.startsWith(RegexpUtils.TESTSUITE_PREFIX)) {
-            String suiteName = msg.substring(RegexpUtils.TESTSUITE_PREFIX
+            suiteName = msg.substring(RegexpUtils.TESTSUITE_PREFIX
                                              .length());
             if (regexp.getFullJavaIdPattern().matcher(suiteName).matches()){
                 closePreviousReport();
+                checkReportStarted();
+                
                 report = new Report(suiteName);
                 report.antScript = antScript;
                 
@@ -260,15 +271,15 @@ final class JUnitOutputReader {
                         }
                     }
                 }
+                
+                suiteStarted();
             }
-            
-            testsuiteStarted = true;
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="TESTSUITE_STATS_PREFIX">
         else if (msg.startsWith(RegexpUtils.TESTSUITE_STATS_PREFIX)) {
 
             if (report == null) {
-                return testsuiteStarted;
+                return;
             }
             
             Matcher matcher = regexp.getSuiteStatsPattern().matcher(msg);
@@ -287,8 +298,51 @@ final class JUnitOutputReader {
                 }
             }
         }//</editor-fold>
+        //<editor-fold defaultstate="collapsed" desc="Test ... FAILED">
+        else if ((suiteName != null)
+                && msg.startsWith("Test ")                              //NOI18N
+                && msg.endsWith(" FAILED")                              //NOI18N
+                && msg.equals("Test " + suiteName + " FAILED")) {       //NOI18N
+            suiteName = null;
+            //PENDING - stop the timer (if any)?
+            //PENDING - perform immediate update (if necessary)?
+        }
+        //</editor-fold>
+        //<editor-fold defaultstate="collapsed" desc="output">
+        else {
+            displayOutput(msg,
+                          event.getLogLevel() == AntEvent.LOG_WARN);
+        }
+        //</editor-fold>
+    }
+    
+    /**
+     */
+    void testTargetStarted() {
+        checkTestTargetStarted();
+    }
+    
+    /**
+     */
+    void testTaskStarted() {
+        checkTestTaskStarted();
+    }
+    
+    /**
+     */
+    void buildFinished(final AntEvent event) {
+        finishReport(event.getException());
+        Manager.getInstance().sessionFinished(session,
+                                              sessionType,
+                                              testTaskStarted == false);
+    }
+    
+    /**
+     */
+    private void suiteStarted() {
+        assert report != null;
         
-        return testsuiteStarted;
+        Manager.getInstance().displayReport(session, report);
     }
     
     /**
@@ -297,10 +351,11 @@ final class JUnitOutputReader {
         if (waitingForIssueStatus) {
             assert testcase != null;
             
-            report.reportTestcase(testcase);
+            report.reportTest(testcase);
         }
         closePreviousReport();
         
+        //<editor-fold defaultstate="collapsed" desc="disabled code">
         //PENDING:
         /*
         int errStatus = ResultWindow.ERR_STATUS_OK;
@@ -327,12 +382,47 @@ final class JUnitOutputReader {
             }
         });
          */
+        //</editor-fold>
+    }
+    
+    //------------------ UPDATE OF DISPLAY -------------------
+    
+    /**
+     */
+    private void displayOutput(final String text, final boolean error) {
+        checkReportStarted();
+        
+        Manager.getInstance().displayOutput(session, text, error);
+    }
+    
+    //--------------------------------------------------------
+    
+    /**
+     */
+    private void checkTestTargetStarted() {
+        if (!testTargetStarted) {
+            testTargetStarted = true;
+            Manager.getInstance().targetStarted(session, sessionType);
+        }
     }
     
     /**
      */
-    Report getReport() {
-        return topReport;
+    private void checkTestTaskStarted() {
+        if (!testTaskStarted) {
+            testTargetStarted = true;
+            testTaskStarted = true;
+            Manager.getInstance().testStarted(session, sessionType);
+        }
+    }
+    
+    /** */
+    private void checkReportStarted() {
+        checkTestTaskStarted();
+        if (!reportStarted) {
+            reportStarted = true;
+            Manager.getInstance().reportStarted(session);
+        }
     }
     
     /**
@@ -381,41 +471,16 @@ final class JUnitOutputReader {
     }
     
     /**
-     * Flushes the output buffer to the report's permanent storage
-     * and then nulls the output buffer.
-     */
-    private void flushOutput() {
-        assert report != null;
-        assert outputBuffer != null;
-        
-        String output[];
-        if (outputBuffer.size() != 0) {
-            output = (String[])
-                     outputBuffer.toArray(new String[outputBuffer.size()]);
-        } else {
-            output = null;
-        }
-        
-        if (readingStdOut) {
-            report.outputStd = output;
-        } else {
-            report.outputErr = output;
-        }
-        
-        outputBuffer = null;
-    }
-    
-    /**
      */
     private void closePreviousReport() {
-        
         if (xmlOutputBuffer != null) {
             try {
                 String xmlOutput = xmlOutputBuffer.toString();
                 xmlOutputBuffer = null;     //allow GC before parsing XML
-                report = XmlOutputParser.parseXmlOutput(
+                Report xmlReport;
+                xmlReport = XmlOutputParser.parseXmlOutput(
                                                 new StringReader(xmlOutput));
-                report.antScript = antScript;
+                report.update(xmlReport);
             } catch (SAXException ex) {
                 /* initialization of the parser failed, ignore the output */
             } catch (IOException ex) {
@@ -436,11 +501,12 @@ final class JUnitOutputReader {
                 final long fileSize = reportFile.length();
                 if ((fileSize > 0l) && (fileSize <= MAX_REPORT_FILE_SIZE)) {
                     try {
-                        report = XmlOutputParser.parseXmlOutput(
+                        Report fileReport;
+                        fileReport = XmlOutputParser.parseXmlOutput(
                                 new InputStreamReader(
                                         new FileInputStream(reportFile),
                                         "UTF-8"));                      //NOI18N
-                        report.antScript = antScript;
+                        report.update(fileReport);
                     } catch (UnsupportedCharsetException ex) {
                         assert false;
                     } catch (SAXException ex) {
@@ -463,18 +529,15 @@ final class JUnitOutputReader {
                 }
             }
         }
+        if (report != null) {
+            report.close();
+        }
         
         callstackBuffer = null;
         xmlOutputBuffer = null;
-        outputBuffer = null;
+        readingOutputReport = false;
         testcase = null;
         trouble = null;
-        
-        if (topReport == null) {
-            topReport = report;         //may be null
-        } else {
-            topReport.appendReport(report);
-        }
         report = null;
     }
     

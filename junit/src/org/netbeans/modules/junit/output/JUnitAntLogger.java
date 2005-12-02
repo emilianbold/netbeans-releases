@@ -32,7 +32,8 @@ public final class JUnitAntLogger extends AntLogger {
     
     /** levels of interest for logging (info, warning, error, ...) */
     private static final int[] LEVELS_OF_INTEREST = {
-        AntEvent.LOG_INFO
+        AntEvent.LOG_INFO,
+        AntEvent.LOG_WARN      //test failures
     };
     
     /** */
@@ -119,19 +120,13 @@ public final class JUnitAntLogger extends AntLogger {
     /**
      */
     public void messageLogged(final AntEvent event) {
-        final AntSession session = event.getSession();
-        if (getOutputReader(session, true).messageLogged(event)) {
-            Manager.getInstance().reportStarted(session,
-                                                getSessionType(session));
-        }
+        getOutputReader(event.getSession()).messageLogged(event);
     }
     
     /**
      */
     public void taskStarted(final AntEvent event) {
-        final AntSession session = event.getSession();
-        Manager.getInstance().taskStarted(session,
-                                          getSessionType(session));
+        getOutputReader(event.getSession()).testTaskStarted();
     }
     
     /**
@@ -140,23 +135,11 @@ public final class JUnitAntLogger extends AntLogger {
         final AntSession session = event.getSession();
         final AntSessionInfo sessionInfo = getSessionInfo(session);
         final int sessionType = sessionInfo.sessionType;
-        if ((sessionType == AntSessionInfo.SESSION_TYPE_UNKNOWN)
-                || (sessionType == AntSessionInfo.SESSION_TYPE_OTHER)) {
-            return;
+
+        if ((sessionType != AntSessionInfo.SESSION_TYPE_UNKNOWN)
+                && (sessionType != AntSessionInfo.SESSION_TYPE_OTHER)) {
+            getOutputReader(event.getSession()).buildFinished(event);
         }
-        
-        final JUnitOutputReader reader = getOutputReader(session, false);
-        
-        Report report;
-        if (reader != null) {
-            reader.finishReport(event.getException());
-            report = reader.getReport();
-        } else {
-            report = null;
-        }
-        
-        //PENDING: status - may be shown in the output window
-        Manager.getInstance().sessionFinished(session, report);
         
         session.putCustomData(this, null);          //forget AntSessionInfo
     }
@@ -172,6 +155,9 @@ public final class JUnitAntLogger extends AntLogger {
             sessionType = detectSessionType(session);
             if (sessionType != AntSessionInfo.SESSION_TYPE_UNKNOWN) {
                 sessionInfo.sessionType = sessionType;
+                if (sessionType != AntSessionInfo.SESSION_TYPE_OTHER) {
+                    getOutputReader(session).testTargetStarted();
+                }
             }
         }
         return sessionType;
@@ -183,13 +169,13 @@ public final class JUnitAntLogger extends AntLogger {
      * @param  session  session to return a reader for
      * @return  output reader for the session
      */
-    private JUnitOutputReader getOutputReader(final AntSession session,
-                                              final boolean create) {
+    private JUnitOutputReader getOutputReader(final AntSession session) {
         final AntSessionInfo sessionInfo = getSessionInfo(session);
         JUnitOutputReader outputReader = sessionInfo.outputReader;
-        if ((outputReader == null) && create) {
+        if (outputReader == null) {
             outputReader = new JUnitOutputReader(
                                         session,
+                                        getSessionType(session),
                                         sessionInfo.getTimeOfSessionStart());
             sessionInfo.outputReader = outputReader;
         }

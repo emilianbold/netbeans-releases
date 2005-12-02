@@ -15,16 +15,11 @@ package org.netbeans.modules.junit.output;
 
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 import javax.accessibility.AccessibleContext;
-import javax.swing.JScrollBar;
 import javax.swing.JTree;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 import org.openide.awt.HtmlRenderer;
-import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -98,31 +93,22 @@ final class ResultTreeView extends BeanTreeView implements Runnable {
     
     /**
      */
-    void expandNodes(ReportNode rootNode) {
-        Report report = ((ReportNode) rootNode).report;
-        if (report == null) {
-            return;
-        }
-
+    void expandNodes(RootNode rootNode) {
         final boolean wasScrollsOnExpand = tree.getScrollsOnExpand();
         
         tree.setScrollsOnExpand(false);
         try {
-            if (report.failures + report.errors <= 5) {
-                expandAll();
-            } else {
-                expandNode(rootNode);
+            expandNode(rootNode);
 
-                final Node[] childNodes = rootNode.getChildren().getNodes(true);
-                for (int i = 0; i < childNodes.length; i++) {
-                    if (childNodes[i].getClass() != TestcaseNode.class) {
-                        /* It is a TestMethodNode - do not expand it. */
-                        continue;
-                    }
-                    TestcaseNode testClassNode = (TestcaseNode) childNodes[i];
-                    if (testClassNode.group.containsFailed()) {
-                        expandNode(testClassNode);
-                    }
+            final Node[] childNodes = rootNode.getChildren().getNodes(true);
+            for (int i = 0; i < childNodes.length; i++) {
+                //if (childNodes[i].getClass() != TestsuiteNode.class) {
+                //    /* It is a TestMethodNode - do not expand it. */
+                //    continue;
+                //}
+                TestsuiteNode testsuiteNode = (TestsuiteNode) childNodes[i];
+                if (testsuiteNode.getReport().containsFailed()) {
+                    expandNode(testsuiteNode);
                 }
             }
         } finally {
