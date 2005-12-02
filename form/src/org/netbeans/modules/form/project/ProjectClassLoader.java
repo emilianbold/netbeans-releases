@@ -35,10 +35,12 @@ class ProjectClassLoader extends ClassLoader {
 
     private ClassLoader projectClassLoaderDelegate;
     private ClassPath sources;
+    private ClassLoader systemClassLoader;
 
     private ProjectClassLoader(ClassLoader projectClassLoaderDelegate, ClassPath sources) {
         this.projectClassLoaderDelegate = projectClassLoaderDelegate;
         this.sources = sources;
+        this.systemClassLoader = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
     }
 
     static ClassLoader getUpToDateClassLoader(FileObject fileInProject, ClassLoader clSoFar) {
@@ -98,6 +100,11 @@ class ProjectClassLoader extends ClassLoader {
             catch (Exception ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
+        }
+        else if (ClassPathUtils.getClassLoadingType(name) == ClassPathUtils.SYSTEM_CLASS) {
+            // fallback to system classloader for indirectly loaded classes
+            // e.g. if a bean uses GroupLayout then supply it automatically
+            c = systemClassLoader.loadClass(name);
         }
         if (c == null)
             throw new ClassNotFoundException();
