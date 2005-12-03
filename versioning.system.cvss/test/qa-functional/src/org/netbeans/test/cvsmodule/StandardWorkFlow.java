@@ -86,6 +86,8 @@ public class StandardWorkFlow extends JellyTestCase {
         suite.addTest(new StandardWorkFlow("testShowAnnotations"));
         suite.addTest(new StandardWorkFlow("testSearchHistory"));
         suite.addTest(new StandardWorkFlow("testVersioningButtons"));
+        suite.addTest(new StandardWorkFlow("testRemoveFileGetBack"));
+        suite.addTest(new StandardWorkFlow("testRemoveFileCommit"));
         suite.addTest(new StandardWorkFlow("removeAllData"));
         return suite;
      }
@@ -887,6 +889,140 @@ public class StandardWorkFlow extends JellyTestCase {
         JButtonOperator btnOk = new JButtonOperator(dialog, "OK");
         btnOk.push();
         
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+    }
+    
+    public void testRemoveFileGetBack() throws Exception {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
+        PseudoCvsServer cvss, cvss2, cvss3;
+        InputStream in, in2, in3;
+        //OutputOperator oo;
+        OutputTabOperator oto;
+        org.openide.nodes.Node nodeIDE;
+        String color, CVSroot;
+        VersioningOperator vo;
+        JTableOperator table;
+        
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        
+        TestKit.deleteRecursively(cacheFolder);
+        Node nodeMain = new Node(new SourcePackagesNode(projectName), pathToMain);
+        in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "versioning/refresh_main.in");
+        cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        CVSroot = cvss.getCvsRoot();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
+        nodeMain.performPopupAction("CVS|Show Changes");
+        Thread.sleep(1000);
+        vo = VersioningOperator.invoke();
+        cvss.stop();
+        
+        nodeMain.performPopupActionNoBlock("Delete");
+        NbDialogOperator dialog = new NbDialogOperator("Confirm Object Deletion");
+        dialog.yes();
+        Thread.sleep(1000);
+        table = vo.tabFiles();
+        assertEquals("Files should have been [Locally Deleted]", "Locally Deleted", table.getValueAt(0, 1).toString());       
+        //node should disappear
+        TimeoutExpiredException tee = null;
+        try {
+            nodeMain = new Node(new SourcePackagesNode(projectName), pathToMain);
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+        }
+        assertNotNull(tee);
+        
+        in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "revert_modifications.in");
+        cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
+        
+        //revert delete - get back the file.
+        new Thread(new Runnable() {
+            public void run() {
+                VersioningOperator vo = VersioningOperator.invoke();
+                vo.performPopup("Main.java", "Revert Delete");
+            }    
+        }).start();
+        dialog = new NbDialogOperator("Confirm overwrite");
+        dialog.yes();
+        oto.waitText("Reverting finished");
+        Thread.sleep(1000);
+        cvss.stop();
+        //node should be back
+        nodeMain = new Node(new SourcePackagesNode(projectName), pathToMain);
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+    }
+    
+    public void testRemoveFileCommit() throws Exception {
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
+        PseudoCvsServer cvss, cvss2, cvss3;
+        InputStream in, in2, in3;
+        //OutputOperator oo;
+        OutputTabOperator oto;
+        org.openide.nodes.Node nodeIDE;
+        String color, CVSroot;
+        VersioningOperator vo;
+        JTableOperator table;
+        
+        oto = new OutputTabOperator(sessionCVSroot); 
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        
+        TestKit.deleteRecursively(cacheFolder);
+        Node nodeMain = new Node(new SourcePackagesNode(projectName), pathToMain);
+        in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "versioning/refresh_main.in");
+        cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        CVSroot = cvss.getCvsRoot();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
+        nodeMain.performPopupAction("CVS|Show Changes");
+        Thread.sleep(1000);
+        vo = VersioningOperator.invoke();
+        cvss.stop();
+        
+        //delete file again and commit deletion
+        nodeMain = new Node(new SourcePackagesNode(projectName), pathToMain);
+        nodeMain.performPopupActionNoBlock("Delete");
+        NbDialogOperator dialog = new NbDialogOperator("Confirm Object Deletion");
+        dialog.yes();
+        Thread.sleep(1000);
+        table = vo.tabFiles();
+        assertEquals("Files should have been [Locally Deleted]", "Locally Deleted", table.getValueAt(0, 1).toString());       
+        
+        TimeoutExpiredException tee = null;
+        try {
+            nodeMain = new Node(new SourcePackagesNode(projectName), pathToMain);
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+        }
+        assertNotNull(tee);
+        
+        
+        in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "commit_locally_deleted_main.in");
+        cvss = new PseudoCvsServer(in);
+        new Thread(cvss).start();
+        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
+        
+        //revert delete - get back the file.
+        CommitOperator co = vo.commit();
+        table = co.tabFiles();
+        assertEquals("There should be one file only", 1, table.getRowCount());
+        assertEquals("There should Main.java file", "Main.java", table.getValueAt(0, 0));
+        assertEquals("File Main.java should be [Locally Deleted]", "Locally Deleted", table.getValueAt(0, 1));
+        co.commit();
+ 
+        Thread.sleep(1000);
+        cvss.stop();
+        oto.waitText("Committing finished");
+        
+        tee = null;
+        try {
+            nodeMain = new Node(new SourcePackagesNode(projectName), pathToMain);
+        } catch (Exception e) {
+            tee = (TimeoutExpiredException) e;
+        }
+        assertNotNull(tee);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
     
