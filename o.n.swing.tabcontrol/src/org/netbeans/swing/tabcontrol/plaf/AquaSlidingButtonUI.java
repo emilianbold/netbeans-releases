@@ -63,11 +63,6 @@ public class AquaSlidingButtonUI extends SlidingButtonUI {
         super.installUI(c);
         c.setFont (UIManager.getFont("Tree.font"));
     }
-
-
-    protected void installBorder(AbstractButton b) {
-        b.setBorder(BorderFactory.createEmptyBorder(5,2,2,2));    
-    }
     
    private ChicletWrapper chic = new ChicletWrapper();
    protected void paintBackground(Graphics2D graph, AbstractButton b) {
@@ -102,16 +97,22 @@ public class AquaSlidingButtonUI extends SlidingButtonUI {
     public Dimension getPreferredSize(JComponent c) {
         SlidingButton slide = (SlidingButton) c;
 	Dimension d = new Dimension(super.getPreferredSize(c));
+        Insets i = c.getInsets();
         int orientation = slide.getOrientation();
-
-        if (orientation == SlideBarDataModel.SOUTH) {        
-            d.width += 11;
-            d.height += 7;
+        
+        if (orientation == SlideBarDataModel.SOUTH) {
+            if (i.top + i.bottom < 5)
+                d.height += 5;
+            if (i.left + i.right < 7)
+                d.width += 7;
         }
         else {
-            d.width += 7;
-            d.height += 11;
+            if (i.top + i.bottom < 7)
+                d.height += 7;
+            if (i.left + i.right < 5)
+                d.width += 5;
         }
+
 	return d;
     }
 }
