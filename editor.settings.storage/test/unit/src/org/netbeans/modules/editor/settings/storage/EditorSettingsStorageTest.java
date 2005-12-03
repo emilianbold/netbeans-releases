@@ -16,15 +16,13 @@ package org.netbeans.modules.editor.settings.storage;
 import java.awt.Color;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
-import org.netbeans.modules.editor.settings.storage.api.FontColorSettings;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -33,11 +31,8 @@ import org.openide.util.LookupListener;
  * 
  *  @author Martin Roskanin
  */
-public class EditorSettingsStorageTest extends NbTestCase {
+public class EditorSettingsStorageTest extends EditorSettingsStorageTestBase {
 
-    private final int resultChangedCount[] = new int[1];
-    private static final int WAIT_TIME_FIRING = 1500;    
-    
     public EditorSettingsStorageTest(String testName) {
         super(testName);
     }
@@ -49,7 +44,9 @@ public class EditorSettingsStorageTest extends NbTestCase {
                 getWorkDir(),
             new URL[] {
                 getClass().getClassLoader().getResource(
-                        "org/netbeans/modules/defaults/mf-layer.xml")
+                        "org/netbeans/modules/defaults/mf-layer.xml"),
+                getClass().getClassLoader().getResource(
+                        "org/netbeans/modules/java/editor/resources/layer.xml"),
             },
             new Object[] {},
             getClass().getClassLoader()
@@ -64,22 +61,16 @@ public class EditorSettingsStorageTest extends NbTestCase {
     public void testSettingChange() throws IOException{
         EditorSettings editorSettings = EditorSettings.getDefault ();
         
+        // gather original color
         MimeLookup mimelookup = MimeLookup.getMimeLookup("text/x-java");
         FontColorSettings fcs = (FontColorSettings) mimelookup.lookup(FontColorSettings.class);
         AttributeSet set = fcs.getTokenFontColors("java-keywords");
         assertTrue(set != null);
         
-        FontColorSettings fcsStorage = 
-                (FontColorSettings) mimelookup.lookup(FontColorSettings.class);
-        set = fcsStorage.getTokenFontColors("java-keywords");
-        assertTrue(set != null);
-
-        set = fcs.getTokenFontColors("java-keywords");
-        assertTrue(set != null);
         String name = (String) set.getAttribute(StyleConstants.NameAttribute);
         Color color = (Color) set.getAttribute(StyleConstants.Background);
         
-        List colors = new ArrayList();
+        // change the color
         SimpleAttributeSet a = new SimpleAttributeSet();
         a.addAttribute (
             StyleConstants.NameAttribute, 
@@ -87,20 +78,18 @@ public class EditorSettingsStorageTest extends NbTestCase {
         );
         Color setColor = (color != Color.RED) ? Color.RED : Color.GREEN;
         a.addAttribute(StyleConstants.Background, setColor);
-                    
         assertTrue(color != setColor);
-        colors.add(a);
-        fcsStorage.setAllFontColors (
-            editorSettings.getCurrentFontColorProfile (),
-            colors
-        );
+        setSetting("text/x-java", "java-keywords", a);
         
-        set = fcsStorage.getTokenFontColors("java-keywords");
+        // gather modified color
+        fcs = (FontColorSettings) mimelookup.lookup(FontColorSettings.class);
+        set = fcs.getTokenFontColors("java-keywords");
         assertTrue(set != null);
         name = (String) set.getAttribute(StyleConstants.NameAttribute);
         color = (Color) set.getAttribute(StyleConstants.Background);
-        assertTrue(color == setColor);
         
+        // check the setted in color is also available in lookup
+        assertTrue(color == setColor);
     }
     
     public void testSettingChangeFiring() throws IOException{
@@ -118,7 +107,6 @@ public class EditorSettingsStorageTest extends NbTestCase {
         resultChangedCount[0] = 0;
         result.addLookupListener(listener);
         
-        
         // perform setting change
         AttributeSet oldSet = getSetting("text/x-java", "java-keywords");
         Color color = (Color) oldSet.getAttribute(StyleConstants.Foreground);
@@ -130,51 +118,13 @@ public class EditorSettingsStorageTest extends NbTestCase {
         
         Color setColor = (color != Color.RED) ? Color.RED : Color.GREEN;
         a.addAttribute(StyleConstants.Foreground, setColor);
-        setSetting("text/x-java", "java-keywords", a);
+        setSetting("text/x-java", "java-keywords", a, true);
         
         checkResultChange(1);
         
         result.removeLookupListener(listener);
         resultChangedCount[0] = 0;
-        
-
-    }
-
-    
-    private AttributeSet getSetting(String mime, String settingName){
-        MimeLookup mimelookup = MimeLookup.getMimeLookup(mime);
-        FontColorSettings fcs = (FontColorSettings) mimelookup.lookup(FontColorSettings.class);
-        return fcs.getTokenFontColors(settingName);
     }
     
-    private void setSetting(String mime, String settingName, AttributeSet set){
-        EditorSettings editorSettings = EditorSettings.getDefault ();
-        MimeLookup mimelookup = MimeLookup.getMimeLookup(mime);
-        FontColorSettings fcs = (FontColorSettings) mimelookup.lookup(FontColorSettings.class);
-       
-        FontColorSettings fcsStorage = 
-                (FontColorSettings) mimelookup.lookup(FontColorSettings.class);
-
-        List colors = new ArrayList();
-        colors.add(set);
-        fcsStorage.setAllFontColors (
-            editorSettings.getCurrentFontColorProfile (),
-            colors
-        );
-        
-        // test setting was really set
-        assertTrue(set.equals(getSetting(mime, settingName)));
-        
-    }
-    
-    private void checkResultChange(final int count) throws IOException{
-        // wait for firing event
-        SettingsStorageTestUtils.waitMaxMilisForValue(WAIT_TIME_FIRING, new SettingsStorageTestUtils.ValueResolver(){
-            public Object getValue(){
-                return Boolean.FALSE;
-            }
-        }, Boolean.TRUE);
-        assertTrue(("resultChangedCount is:"+resultChangedCount[0]+" instead of "+count), resultChangedCount[0] == count);
-    }
 
 }

@@ -33,6 +33,8 @@ import java.awt.Toolkit;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.editor.settings.KeyBindingSettings;
 
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
@@ -52,8 +54,6 @@ import org.netbeans.modules.editor.FormatterIndentEngine;
 import org.netbeans.modules.editor.IndentEngineFormatter;
 import org.netbeans.modules.editor.SimpleIndentEngine;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
-import org.netbeans.modules.editor.settings.storage.api.FontColorSettings;
-import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettings;
 
 import org.openide.options.SystemOption;
 //import org.openide.util.HelpCtx;
@@ -231,7 +231,6 @@ public class BaseOptions extends OptionSupport {
                 BaseKit kit = BaseKit.getKit(kitClass);
                 String name = kit.getContentType();
                 usingNewOptions = es.getMimeTypes().contains(name);
-                //System.out.println("Using new options dialog for mimetype:"+name);
             }
         }
     }
@@ -890,8 +889,6 @@ public class BaseOptions extends OptionSupport {
                 (Color) as.getAttribute (EditorStyleConstants.WaveUnderlineColor)
             );
             m.put (category, c);
-//	    if (category.equals ("java-block-comment"))
-//		System.out.println("  java-block-comment " + as.getAttribute (StyleConstants.Foreground));
         }
         m.put(null, getKitClass().getName() ); // add kit class                               
         setColoringMap (m);
@@ -928,6 +925,13 @@ public class BaseOptions extends OptionSupport {
             Collection inst = result.allInstances();
             lookupListener = new LookupListener(){
                 public void resultChanged(LookupEvent ev){
+                    Lookup.Result result = ((Lookup.Result)ev.getSource());
+                    // refresh keyBindingsSettings
+                    Collection newInstances = result.allInstances();
+                    if (newInstances.size() > 0){
+                        keyBindingsSettings = (KeyBindingSettings)newInstances.iterator().next();
+                    }
+                    
                     updateKeybindingsFromNewOptionsDialogAttributes();
                 }
             };
@@ -947,6 +951,13 @@ public class BaseOptions extends OptionSupport {
             Collection inst = result.allInstances();
             lookupListener = new LookupListener(){
                 public void resultChanged(LookupEvent ev){
+                    Lookup.Result result = ((Lookup.Result)ev.getSource());
+                    // refresh fontColorSettings
+                    Collection newInstances = result.allInstances();
+                    if (newInstances.size() > 0){
+                        fontColorSettings = (FontColorSettings)newInstances.iterator().next();
+                    }
+                    
                     updateColoringsFromNewOptionsDialogAttributes();
                 }
             };

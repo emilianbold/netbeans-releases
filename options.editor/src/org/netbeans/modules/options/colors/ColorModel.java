@@ -62,7 +62,7 @@ import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
-import org.netbeans.modules.editor.settings.storage.api.FontColorSettings;
+import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
 import org.netbeans.modules.options.OptionsPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -246,7 +246,7 @@ public class ColorModel {
             return editorSettings.getDefaultFontColors (profile);
 
         String mimeType = getMimeType (language);
-	FontColorSettings fcs = EditorSettings.getDefault ().
+	FontColorSettingsFactory fcs = EditorSettings.getDefault ().
             getFontColorSettings (new String[] {mimeType});
         return fcs.getAllFontColors (profile);
     }
@@ -259,7 +259,7 @@ public class ColorModel {
             return editorSettings.getDefaultFontColorDefaults (profile);
 
         String mimeType = getMimeType (language);
-	FontColorSettings fcs = EditorSettings.getDefault ().
+	FontColorSettingsFactory fcs = EditorSettings.getDefault ().
             getFontColorSettings (new String[] {mimeType});
         return fcs.getAllFontColorDefaults (profile);
     }
@@ -283,7 +283,7 @@ public class ColorModel {
                 System.out.println("ColorModelImpl.setCategories - unknown language " + language);
             return;
         }
-	FontColorSettings fcs = EditorSettings.getDefault ().
+	FontColorSettingsFactory fcs = EditorSettings.getDefault ().
             getFontColorSettings (new String[] {mimeType});
 	fcs.setAllFontColors (
             profile,
@@ -305,7 +305,7 @@ public class ColorModel {
         
         static final String         PROP_CURRENT_ELEMENT = "currentAElement";
         private JEditorPane         editorPane;
-        private FontColorSettings   fontColorSettings;
+        private FontColorSettingsFactory   fontColorSettings;
         
         
         Preview (

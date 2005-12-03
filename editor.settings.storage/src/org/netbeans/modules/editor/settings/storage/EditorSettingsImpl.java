@@ -32,8 +32,8 @@ import java.util.Set;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
-import org.netbeans.modules.editor.settings.storage.api.FontColorSettings;
-import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettings;
+import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
+import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettingsFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -615,32 +615,32 @@ public class EditorSettingsImpl extends EditorSettings {
         return profile;
     }
     
-    private Map keyBindings = new HashMap ();
+    private Map keyBindingsMap = new HashMap ();
     
-    public KeyBindingSettings getKeyBindingSettings (String[] mimeTypes) {
+    public KeyBindingSettingsFactory getKeyBindingSettings (String[] mimeTypes) {
         List key = Arrays.asList (mimeTypes);
-        WeakReference reference = (WeakReference) keyBindings.get (key);
+        WeakReference reference = (WeakReference) keyBindingsMap.get (key);
         KeyBindingSettingsImpl result = null;
         if (reference != null) 
             result = (KeyBindingSettingsImpl) reference.get ();
         if (result == null) {
             result = new KeyBindingSettingsImpl (mimeTypes);
-            keyBindings.put (key, new WeakReference (result));
+            keyBindingsMap.put (key, new WeakReference (result));
         }
         return result;
     }
     
-    private Map fontColors = new HashMap ();
+    private Map fontColorsMap = new HashMap ();
     
-    public FontColorSettings getFontColorSettings (String[] mimeTypes) {
+    public FontColorSettingsFactory getFontColorSettings (String[] mimeTypes) {
         List key = Arrays.asList (mimeTypes);
-        WeakReference reference = (WeakReference) fontColors.get (key);
-        FontColorSettings result = null;
+        WeakReference reference = (WeakReference) fontColorsMap.get (key);
+        FontColorSettingsFactory result = null;
         if (reference != null) 
-            result = (FontColorSettings) reference.get ();
+            result = (FontColorSettingsFactory) reference.get ();
         if (result == null) {
             result = new FontColorSettingsImpl (mimeTypes);
-            fontColors.put (key, new WeakReference (result));
+            fontColorsMap.put (key, new WeakReference (result));
         }
         return result;
     }

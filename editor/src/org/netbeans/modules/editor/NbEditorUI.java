@@ -38,6 +38,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
@@ -47,8 +48,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
-import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
-import org.netbeans.modules.editor.settings.storage.api.FontColorSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup.Result;
@@ -84,7 +83,6 @@ public class NbEditorUI extends ExtEditorUI {
     private boolean attached = false;
     private ChangeListener listener;
     private FontColorSettings fontColorSettings;    
-    private FontColorSettings bfontColorSettings;    
     private LookupListener weakLookupListener;    
     private Lookup.Result result;
     private LookupListener lookupListener;    
@@ -170,7 +168,7 @@ public class NbEditorUI extends ExtEditorUI {
                         LookupListener.class, lookupListener, result);
   
                 result.addLookupListener(weakLookupListener);
-                                if (inst.size() > 0){
+                if (inst.size() > 0){
                     fontColorSettings = (FontColorSettings)inst.iterator().next();
                 }
             }
@@ -179,15 +177,10 @@ public class NbEditorUI extends ExtEditorUI {
     }
 
     
-    private EditorSettings getEditorSettings(){
-        return EditorSettings.getDefault ();
-    }
-    
     protected Map createColoringMap(){
         FontColorSettings fcs = getFontColorSettings();
-        EditorSettings es = getEditorSettings();
         String mimeType = getDocumentContentType();
-        if (fcs == null || es == null || mimeType == null){
+        if (fcs == null || mimeType == null){
             return super.createColoringMap();
         }
         synchronized (Settings.class){
@@ -197,57 +190,51 @@ public class NbEditorUI extends ExtEditorUI {
             }
             cm = new HashMap();
             cm.putAll(super.createColoringMap());
-            String scheme = es.getCurrentFontColorProfile ();
-            Collection col = fcs.getAllFontColors(scheme);
+            Collection col = cm.keySet();
             Iterator it = col.iterator();
-            AttributeSet defaults = fcs.getTokenFontColors(SettingsNames.DEFAULT_COLORING); //NOI18N
+            
             while (it.hasNext()){
-                AttributeSet as = (AttributeSet) it.next();
-                String name = (String)as.getAttribute(StyleConstants.NameAttribute);
-                if (name == null) {
+
+                Object nameObj = it.next();
+                if (!(nameObj instanceof String)) {
                     continue;
                 }
                 
-                as = fcs.getTokenFontColors(name);
+                String name = (String) nameObj;
                 
-                Color back = (Color)as.getAttribute(StyleConstants.Background);
-                if (back == null){
-                    back = (Color) defaults.getAttribute(StyleConstants.Background);
-                }
-                
-                Color fore = (Color)as.getAttribute(StyleConstants.Foreground);
-                if (fore == null){
-                    fore = (Color) defaults.getAttribute(StyleConstants.Foreground);
-                }
-                
-                Color underline = (Color)as.getAttribute(StyleConstants.Underline);
-                if (underline == null){
-                    underline = (Color) defaults.getAttribute(StyleConstants.Underline);
+                AttributeSet as = fcs.getTokenFontColors(name);
+                if (as == null){
+                    as = fcs.getFontColors(name);
+                    if (as == null){
+                        continue;
+                    }
                 }
 
-                Color strike = (Color)as.getAttribute(StyleConstants.StrikeThrough);
-                if (strike == null){
-                    strike = (Color) defaults.getAttribute(StyleConstants.StrikeThrough);
-                }
-                
-                Color wave = (Color)as.getAttribute(EditorStyleConstants.WaveUnderlineColor);
-                if (wave == null){
-                    wave = (Color) defaults.getAttribute(EditorStyleConstants.WaveUnderlineColor);
-                }
-                
                 Font font = as.getAttribute (StyleConstants.FontFamily) != null ?
                     toFont (as) : null;
+
+                if (name.equals ("default")) { //NOI18N
+                    if (font == null) {
+                        continue;		
+                    }
+                    if (as.getAttribute (StyleConstants.Foreground) == null) {
+                        continue;		
+                    }
+                    if (as.getAttribute (StyleConstants.Background) == null) {
+                        continue;		
+                    }
+                }
                 
                 Coloring coloring = new Coloring (
                     font,
                     Coloring.FONT_MODE_DEFAULT,
-                    fore,
-                    back,
-                    underline,
-                    strike,
-                    wave
+                    (Color) as.getAttribute (StyleConstants.Foreground),
+                    (Color) as.getAttribute (StyleConstants.Background),
+                    (Color) as.getAttribute (StyleConstants.Underline),
+                    (Color) as.getAttribute (StyleConstants.StrikeThrough),
+                    (Color) as.getAttribute (EditorStyleConstants.WaveUnderlineColor)
                 );
-
+                
                 cm.put(name, coloring);
             }
             mime2Coloring.put(mimeType, cm);
@@ -739,6 +726,12 @@ public class NbEditorUI extends ExtEditorUI {
         public void resultChanged(LookupEvent ev) {
             synchronized (Settings.class){
                 mime2Coloring.remove(mimeType);
+                Lookup.Result result = ((Lookup.Result)ev.getSource());
+                // refresh fontColorSettings
+                Collection newInstances = result.allInstances();
+                if (newInstances.size() > 0){
+                    fontColorSettings = (FontColorSettings)newInstances.iterator().next();
+                }
             }
             settingsChangeImpl(null);
         }

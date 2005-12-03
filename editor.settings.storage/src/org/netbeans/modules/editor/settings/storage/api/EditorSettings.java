@@ -172,7 +172,7 @@ public abstract class EditorSettings {
      *
      * @return FontColorSettings for given mimetypes
      */
-    public abstract FontColorSettings getFontColorSettings (String[] mimeTypes);
+    public abstract FontColorSettingsFactory getFontColorSettings (String[] mimeTypes);
     
     
     // KeyMaps .................................................................
@@ -186,7 +186,7 @@ public abstract class EditorSettings {
      *
      * @return KeyBindingSettings for given mimetypes
      */
-    public abstract KeyBindingSettings getKeyBindingSettings (String[] mimeTypes);
+    public abstract KeyBindingSettingsFactory getKeyBindingSettings (String[] mimeTypes);
     
     /**
      * Returns set of keymap profiles.
