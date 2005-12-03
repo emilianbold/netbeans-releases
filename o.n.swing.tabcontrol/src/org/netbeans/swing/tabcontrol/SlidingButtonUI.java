@@ -95,10 +95,6 @@ public class SlidingButtonUI extends BasicToggleButtonUI {
         FontMetrics fm = g.getFontMetrics();
         Insets i = c.getInsets();
         Rectangle viewRect = new Rectangle(size);
-//        viewRect.x += i.left;
-//        viewRect.y += i.top;
-//        viewRect.width -= (i.right + viewRect.x);
-//        viewRect.height -= (i.bottom + viewRect.y);
         Rectangle iconRect = new Rectangle();
         Rectangle textRect = new Rectangle();
         Font f = c.getFont();
@@ -222,19 +218,17 @@ public class SlidingButtonUI extends BasicToggleButtonUI {
     }
 
     public Dimension getPreferredSize(JComponent c) {
+        SlidingButton b = (SlidingButton) c;
         Dimension prefSize = super.getPreferredSize(c);
-        SlidingButton button = (SlidingButton) c;
-        int orientation = button.getOrientation();
+        int orientation = b.getOrientation();
         
-        if (orientation != SlideBarDataModel.SOUTH) {
-            // flip dimensions
-            int helper = prefSize.width;
-            prefSize.width = prefSize.height;
-            prefSize.height = helper;
+        if (orientation == SlideBarDataModel.SOUTH) {
+            return prefSize;
         }
-        
-        return prefSize;
-    }    
+        else {
+            return new Dimension(prefSize.height, prefSize.width);
+        }
+    }
 
     public Dimension getMaximumSize(JComponent c) {
         return getPreferredSize(c);
