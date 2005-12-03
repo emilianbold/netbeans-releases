@@ -26,6 +26,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
@@ -94,37 +95,49 @@ final class AddModulePanel extends JPanel {
             }
         });
         // Make basic navigation commands from the list work from the text field.
-        String[] listNavCommands = {
-            "selectPreviousRow", // NOI18N
-            "selectNextRow", // NOI18N
-            "selectFirstRow", // NOI18N
-            "selectLastRow", // NOI18N
-            "scrollUp", // NOI18N
-            "scrollDown", // NOI18N
+        String[][] listNavCommands = {
+            { "selectPreviousRow", "selectPreviousRow" }, // NOI18N
+            { "selectNextRow", "selectNextRow" }, // NOI18N
+            { "selectFirstRow", "selectFirstRow" }, // NOI18N
+            { "selectLastRow", "selectLastRow" }, // NOI18N
+            { "scrollUp", "scrollUp" }, // NOI18N
+            { "scrollDown", "scrollDown" }, // NOI18N
         };
-        InputMap listBindings = moduleList.getInputMap();
-        KeyStroke[] listBindingKeys = listBindings.allKeys();
-        ActionMap listActions = moduleList.getActionMap();
-        InputMap textBindings = filterValue.getInputMap();
-        ActionMap textActions = filterValue.getActionMap();
-        for (int i = 0; i < listNavCommands.length; i++) {
-            String command = listNavCommands[i];
-            final Action orig = listActions.get(command);
+        String[][] areaNavCommands = {
+            { "selection-page-up", "page-up" },// NOI18N
+            { "selection-page-down", "page-down" },// NOI18N
+            { "selection-up", "caret-up" },// NOI18N
+            { "selection-down", "caret-down" },// NOI18N
+        };
+        exchangeCommands(listNavCommands, moduleList, filterValue);
+        exchangeCommands(areaNavCommands, descValue, filterValue);
+    }
+    
+    private static void exchangeCommands(String[][] commandsToExchange,
+            final JComponent target, final JComponent source) {
+        InputMap targetBindings = target.getInputMap();
+        KeyStroke[] targetBindingKeys = targetBindings.allKeys();
+        ActionMap targetActions = target.getActionMap();
+        InputMap sourceBindings = source.getInputMap();
+        ActionMap sourceActions = source.getActionMap();
+        for (int i = 0; i < commandsToExchange.length; i++) {
+            String commandFrom = commandsToExchange[i][0];
+            String commandTo = commandsToExchange[i][1];
+            final Action orig = targetActions.get(commandTo);
             if (orig == null) {
                 continue;
             }
-            textActions.put(command, new AbstractAction() {
+            sourceActions.put(commandTo, new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
-                    orig.actionPerformed(new ActionEvent(moduleList, e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers()));
+                    orig.actionPerformed(new ActionEvent(target, e.getID(), e.getActionCommand(), e.getWhen(), e.getModifiers()));
                 }
             });
-            for (int j = 0; j < listBindingKeys.length; j++) {
-                if (listBindings.get(listBindingKeys[j]).equals(command)) {
-                    textBindings.put(listBindingKeys[j], command);
+            for (int j = 0; j < targetBindingKeys.length; j++) {
+                if (targetBindings.get(targetBindingKeys[j]).equals(commandFrom)) {
+                    sourceBindings.put(targetBindingKeys[j], commandTo);
                 }
             }
         }
-        // XXX would be nice to also bind S-PageDown etc. to scroll the Description area
     }
     
     private void fillUpUniverseModules() {
