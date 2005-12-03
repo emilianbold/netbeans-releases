@@ -78,6 +78,8 @@ import com.sun.jdo.api.persistence.model.mapping.impl.MappingRelationshipElement
  */
 public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.DConfigBean {
 
+    public static final String CMP_MAPPINGS_CHANGED = "CmpMappingsChanged"; //NOI18N
+    
     private static final String ABSOLUTE_XPATH_ROOT = "/ejb-jar/"; // NOI18N
     private static final String SECURITY_ROLE_R_XPATH =
         "assembly-descriptor/security-role"; // NOI18N
@@ -518,8 +520,10 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 
 		if (newMCEs != null) {
 			Iterator iterator = newMCEs.iterator();
-			while (iterator.hasNext())
+			while (iterator.hasNext()) {
 				addMappingListener((MappingClassElement)iterator.next());
+			}
+			getPCS().firePropertyChange(CMP_MAPPINGS_CHANGED, null, newMCEs);
 		}
 	}
 
