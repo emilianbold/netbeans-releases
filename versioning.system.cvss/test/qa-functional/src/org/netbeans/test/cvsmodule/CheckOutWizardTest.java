@@ -769,7 +769,18 @@ public class CheckOutWizardTest extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         
         BrowseTagsOperator browseTags = moduleCheck.browseBranch();
+        
         browseTags.selectTag("MyBranch_root"); 
+        
+        try {
+            JButtonOperator btnOk = new JButtonOperator(browseTags, "OK");
+            JButtonOperator btnHelp = new JButtonOperator(browseTags, "Help");
+            JButtonOperator btnCancel = new JButtonOperator(browseTags, "Cancel");
+        } catch(TimeoutExpiredException e) {
+            throw e;
+        }
+        //
+        
         browseTags.ok();
         assertEquals("Branch was not found", "MyBranch_root", moduleCheck.getBranch());
         cvss.stop();
@@ -832,26 +843,6 @@ public class CheckOutWizardTest extends JellyTestCase {
             JButtonOperator btnHelp = new JButtonOperator(browseCVSModule, "Help");
             JButtonOperator btnOk = new JButtonOperator(browseCVSModule, "Ok");
             btnOk.push();
-        } catch(TimeoutExpiredException e) {
-            throw e;
-        }
-        //
-        BrowseTagsOperator browseTags = moduleCheck.browseBranch();
-        //Head node
-        browseTags.selectPath("Head");
-        //Tags node
-        browseTags.selectPath("Tags");
-        //Branches node
-        browseTags.selectPath("Branches");
-        //
-        
-        //
-        //Ok button
-        try {
-            JButtonOperator btnOk = new JButtonOperator(browseTags, "OK");
-            JButtonOperator btnHelp = new JButtonOperator(browseTags, "Help");
-            JButtonOperator btnCancel = new JButtonOperator(browseTags, "Cancel");
-            btnCancel.push();
         } catch(TimeoutExpiredException e) {
             throw e;
         }
