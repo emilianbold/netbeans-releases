@@ -1288,6 +1288,7 @@
     DatabaseProductName = "MySQL";
     TypeMap = {
       java.sql.Types.BIGINT = BIGINT;
+      java.sql.Types.OTHER = BIT; // not true for MySQL prior to 5.0
       java.sql.Types.BLOB = BLOB;  //JDBC 2.0 A type representing an SQL Binary Large Object
       java.sql.Types.CHAR = CHAR;
 //      java.sql.Types.CLOB = TEXT;  //JDBC 2.0 A type representing an SQL Character Large Object

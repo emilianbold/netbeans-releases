@@ -461,6 +461,7 @@ public class Specification implements DatabaseSpecification {
         case java.sql.Types.LONGVARBINARY: typestr = "LONGVARBINARY"; break; // NOI18N
         case java.sql.Types.LONGVARCHAR: typestr = "LONGVARCHAR"; break; // NOI18N
         case java.sql.Types.NUMERIC: typestr = "NUMERIC"; break; // NOI18N
+        case java.sql.Types.OTHER: typestr = "OTHER"; break; // NOI18N        
         case java.sql.Types.REAL: typestr = "REAL"; break; // NOI18N
         case java.sql.Types.REF: typestr = "REF"; break; // NOI18N
         case java.sql.Types.SMALLINT: typestr = "SMALLINT"; break; // NOI18N
@@ -498,6 +499,7 @@ public class Specification implements DatabaseSpecification {
         if (type.equals("java.sql.Types.LONGVARBINARY")) return java.sql.Types.LONGVARBINARY; // NOI18N
         if (type.equals("java.sql.Types.LONGVARCHAR")) return java.sql.Types.LONGVARCHAR; // NOI18N
         if (type.equals("java.sql.Types.NUMERIC")) return java.sql.Types.NUMERIC; // NOI18N
+        if (type.equals("java.sql.Types.OTHER")) return java.sql.Types.OTHER; // NOI18N
         if (type.equals("java.sql.Types.REAL")) return java.sql.Types.REAL; // NOI18N
         if (type.equals("java.sql.Types.REF")) return java.sql.Types.REF; // NOI18N
         if (type.equals("java.sql.Types.SMALLINT")) return java.sql.Types.SMALLINT; // NOI18N
