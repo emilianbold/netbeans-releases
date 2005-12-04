@@ -40,7 +40,6 @@ public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperat
                 // refreshChildren() acquires Children.MUTEX write access
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        System.out.println("changed");
                         try {
                             refreshChildren();
                         } catch (DatabaseException ex) {
