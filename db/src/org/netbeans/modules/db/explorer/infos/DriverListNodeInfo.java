@@ -30,28 +30,25 @@ import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.openide.ErrorManager;
 
 public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperations {
+    
     static final long serialVersionUID =-7948529055260667590L;
     
-    public DriverListNodeInfo() {
-        super();
-        JDBCDriverListener listener = new JDBCDriverListener() {
-            public void driversChanged() {
-                // fix for the deadlock in issue 69050: refresh in another thread
-                // refreshChildren() acquires Children.MUTEX write access
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        try {
-                            refreshChildren();
-                        } catch (DatabaseException ex) {
-                            ErrorManager.getDefault().notify(ex);
-                        }
+    private JDBCDriverListener listener = new JDBCDriverListener() {
+        public void driversChanged() {
+            // fix for the deadlock in issue 69050: refresh in another thread
+            // refreshChildren() acquires Children.MUTEX write access
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        refreshChildren();
+                    } catch (DatabaseException ex) {
+                        ErrorManager.getDefault().notify(ex);
                     }
-                });
-            }
-        };
-        JDBCDriverManager.getDefault().addDriverListener(listener);
-    }
-
+                }
+            });
+        }
+    };
+    
     protected void initChildren(Vector children) throws DatabaseException {
         JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers();
         boolean win = Utilities.isWindows();
@@ -94,4 +91,8 @@ public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperat
         chld.createSubnode(ninfo, true);
     }
     
+    public void setNode(DatabaseNode node) {
+        super.setNode(node);
+        JDBCDriverManager.getDefault().addDriverListener(listener);
+    }
 }
