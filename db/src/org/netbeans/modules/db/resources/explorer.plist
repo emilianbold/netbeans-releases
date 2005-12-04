@@ -169,7 +169,12 @@
 				name = "RemoveConnection";
 				class = org.openide.actions.DeleteAction;
 				system = YES;
-			}
+			},
+                        {
+                                name = "Properties";
+                                class = org.openide.actions.PropertiesAction;
+                                system = YES;
+                        }
 		);
 		properties = (
 			{
@@ -1065,7 +1070,12 @@
 				class = org.openide.actions.DeleteAction;
 				perm = "write";
 				system = YES;
-			}
+			},
+                        {
+                                name = "Properties";
+                                class = org.openide.actions.PropertiesAction;
+                                system = YES;
+                        }
 		);
 		properties = (
 			{
@@ -1136,7 +1146,12 @@
 				class = org.openide.actions.DeleteAction;
 				perm = "write";
 				system = YES;
-			}
+			},
+                        {
+                                name = "Properties";
+                                class = org.openide.actions.PropertiesAction;
+                                system = YES;
+                        }
 		);
 		properties = (
 			{
@@ -1229,7 +1244,12 @@
 				class = org.openide.actions.DeleteAction;
 				perm = "write";
 				system = YES;
-			}
+			},
+                        {
+                                name = "Properties";
+                                class = org.openide.actions.PropertiesAction;
+                                system = YES;
+                        }
 		);
 		properties = (
 			{
@@ -1330,7 +1350,12 @@
 				class = org.openide.actions.DeleteAction;
 				perm = "write";
 				system = YES;
-			}
+			},
+                        {
+                                name = "Properties";
+                                class = org.openide.actions.PropertiesAction;
+                                system = YES;
+                        }
 		);
 		properties = (
 			{
@@ -1407,7 +1432,12 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
-			}
+			},
+                        {
+                                name = "Properties";
+                                class = org.openide.actions.PropertiesAction;
+                                system = YES;
+                        }
 		);
 		properties = (
 			{
@@ -1541,7 +1571,12 @@
 				node = ilist;
 				system = YES;
 				perm = "write";
-			}
+			},
+                        {
+                                name = "Properties";
+                                class = org.openide.actions.PropertiesAction;
+                                system = YES;
+                        }
 		);
 		properties = (
                         {
@@ -1573,7 +1608,12 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
-			}
+			},
+                        {
+                                name = "Properties";
+                                class = org.openide.actions.PropertiesAction;
+                                system = YES;
+                        }
 		);
 		properties = (
 			{
@@ -1761,7 +1801,12 @@
 				class = org.openide.actions.DeleteAction;
 				perm = "write";
 				system = YES;
-			}
+			},
+                        {
+                                name = "Properties";
+                                class = org.openide.actions.PropertiesAction;
+                                system = YES;
+                        }
 		);
 		properties = (
 			{
@@ -1793,7 +1838,12 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
-			}
+			},
+                        {
+                                name = "Properties";
+                                class = org.openide.actions.PropertiesAction;
+                                system = YES;
+                        }
 		);
 		properties = (
 			{
@@ -1889,7 +1939,12 @@
 				name = "RemoveProcedure";
 				class = org.openide.actions.DeleteAction;
 				system = YES;
-			}
+			},
+                        {
+                                name = "Properties";
+                                class = org.openide.actions.PropertiesAction;
+                                system = YES;
+                        }
 		);
 		properties = (
 			{
@@ -1945,7 +2000,12 @@
 				node = procedurelist;
 				system = YES;
 				perm = "write";
-			}
+			},
+                        {
+                                name = "Properties";
+                                class = org.openide.actions.PropertiesAction;
+                                system = YES;
+                        }
 		);
 		properties = (
 			{
