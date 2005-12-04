@@ -38,6 +38,7 @@ import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.openide.nodes.Children;
 
 public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public static final String SPECIFICATION_FACTORY = "specfactory"; //NOI18N
@@ -337,20 +338,24 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         
         // create sub-tree (by infos)
         try {
-            Node[] subTreeNodes = new Node[charr.size()];
-
+            final Node[] subTreeNodes = new Node[charr.size()];
+            
             // current sub-tree
-            DatabaseNodeChildren children = (DatabaseNodeChildren) getNode().getChildren();
-
-            // remove current sub-tree
-            children.remove(children.getNodes());
-
+            final DatabaseNodeChildren children = (DatabaseNodeChildren) getNode().getChildren();
+            
             // build refreshed sub-tree
             for(int i = 0; i < charr.size(); i++)
                 subTreeNodes[i] = children.createNode((DatabaseNodeInfo) charr.elementAt(i));
-            
-            // add built sub-tree
-            children.add(subTreeNodes);
+
+            Children.MUTEX.postWriteRequest(new Runnable() {
+                public void run() {
+                    // remove current sub-tree
+                    children.remove(children.getNodes());
+
+                    // add built sub-tree
+                    children.add(subTreeNodes);
+                }
+            });
         } catch (ClassCastException ex) {
             //PENDING
         } catch (Exception ex) {

@@ -58,14 +58,14 @@ public class DatabaseNodeChildren extends Children.Array {
     private PropertyChangeListener listener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent event) {
             if (event.getPropertyName().equals("finished")) { //NOI18N
-//                Mutex.EVENT.writeAccess(new Runnable() {
-//                    public void run() {
-                remove(getNodes()); //remove wait node
-                nodes = getCh(); // change children ...
-                refresh(); // ... and refresh them
+                MUTEX.writeAccess(new Runnable() {
+                    public void run() {
+                        remove(getNodes()); //remove wait node
+                        nodes = getCh(); // change children ...
+                        refresh(); // ... and refresh them
+                    }
+                });
                 removeListener();
-//                    }
-//                });
             }
         }
     };
