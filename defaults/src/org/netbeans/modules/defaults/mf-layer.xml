@@ -642,6 +642,9 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
         <folder name="Eclipse">
+            <file name="F1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-javahelp-HelpAction.instance"/>
+            </file>
             <file name="CS-F.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-ReplaceAction.instance"/>
             </file>
