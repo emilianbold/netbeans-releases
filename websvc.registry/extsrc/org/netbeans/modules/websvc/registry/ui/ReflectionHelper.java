@@ -334,6 +334,8 @@ public class ReflectionHelper {
                 parameterClass = Boolean.class;   
             else if ("char".equals(parameterClassName) || "java.lang.Character".equals(parameterClassName)) //NOI18N
                 parameterClass = Character.class;
+            else if ("java.util.Calendar".equals(parameterClassName)) //NOI18N
+                parameterClass = java.util.Calendar.class;
             else
                 parameterClass = Class.forName(inPackageName + "." + parameterClassName,true,urlClassLoader);
         } catch(ClassNotFoundException cnfe) {
