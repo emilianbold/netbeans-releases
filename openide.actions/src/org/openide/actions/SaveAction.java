@@ -42,7 +42,8 @@ public class SaveAction extends CookieAction {
 
     protected void performAction(final Node[] activatedNodes) {
         SaveCookie sc = (SaveCookie) activatedNodes[0].getCookie(SaveCookie.class);
-        assert sc != null : "SaveCookie found for " + activatedNodes[0];
+        assert sc != null : "SaveCookie must found for " + activatedNodes[0] + ". " +
+                "See the issue 68285 for details of override getCookie() method.";
         
         // avoid NPE if disabled assertions
         if (sc == null) return ;
