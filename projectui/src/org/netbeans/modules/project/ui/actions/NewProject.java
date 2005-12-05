@@ -106,6 +106,9 @@ public class NewProject extends BasicAction {
             }
             final boolean setFirstMainFinal = setFirstMain; 
             
+            //#69618: the non-project cache may contain a project folder listed in newObjects:
+            ProjectManager.getDefault().clearNonProjectCache();
+                                    
             SwingUtilities.invokeLater( new Runnable() {
             
                 public void run() {
