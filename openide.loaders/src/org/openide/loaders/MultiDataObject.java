@@ -57,8 +57,8 @@ public class MultiDataObject extends DataObject {
     /** lock used in firePropFilesAfterFinishing */
     private static final Object delayedPropFilesLock = new Object();
     /** logging of operations in multidataobject */
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(MultiDataObject.class.getName());
-    private static final boolean LOG = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+    static final ErrorManager ERR = ErrorManager.getDefault().getInstance(MultiDataObject.class.getName());
+    static final boolean LOG = ERR.isLoggable(ErrorManager.INFORMATIONAL);
     
     /** getPrimaryEntry() is intended to have all inetligence for copy/move/... */
     private Entry primary;
@@ -571,7 +571,9 @@ public class MultiDataObject extends DataObject {
         List backup = saveEntries();
 
         try {
+            if (LOG) ERR.log("moving primary entry: " + getPrimaryEntry()); // NOI18N
             getPrimaryEntry ().changeFile (getPrimaryEntry ().move (df.getPrimaryFile (), suffix));
+            if (LOG) ERR.log("               moved: " + getPrimaryEntry().getFile()); // NOI18N
 
             HashMap add = null;
 
@@ -584,7 +586,9 @@ public class MultiDataObject extends DataObject {
             
             while (it.hasNext ()) {
                 Map.Entry e = (Map.Entry)it.next ();
+                if (LOG) ERR.log("moving entry :" + e); // NOI18N
                 FileObject fo = ((Entry)e.getValue ()).move (df.getPrimaryFile (), suffix);
+                if (LOG) ERR.log("  moved to   :" + fo); // NOI18N
                 if (fo == null) {
                     // remove the entry
                     toRemove.add(e.getKey());
