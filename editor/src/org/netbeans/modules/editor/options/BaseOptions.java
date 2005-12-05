@@ -33,6 +33,7 @@ import java.awt.Toolkit;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 
@@ -53,7 +54,6 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.FormatterIndentEngine;
 import org.netbeans.modules.editor.IndentEngineFormatter;
 import org.netbeans.modules.editor.SimpleIndentEngine;
-import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 
 import org.openide.options.SystemOption;
 //import org.openide.util.HelpCtx;
@@ -226,11 +226,15 @@ public class BaseOptions extends OptionSupport {
         
         kitClass2Options.put(kitClass, this);
         if (!BASE.equals(typeName)){
-            EditorSettings es = getEditorSettings();
-            if (es!=null){
-                BaseKit kit = BaseKit.getKit(kitClass);
-                String name = kit.getContentType();
-                usingNewOptions = es.getMimeTypes().contains(name);
+            BaseKit kit = BaseKit.getKit(kitClass);
+            String name = kit.getContentType();
+            FontColorSettings fcs = getFontColorSettings();
+            usingNewOptions = false;
+            if (fcs != null){
+                AttributeSet as = fcs.getTokenFontColors(FontColorNames.DEFAULT_COLORING);
+                if (as !=null){
+                    usingNewOptions = true;
+                }
             }
         }
     }
@@ -242,10 +246,6 @@ public class BaseOptions extends OptionSupport {
     protected String getContentType(){
         BaseKit kit = BaseKit.getKit(getKitClass());
         return kit.getContentType();
-    }
-    
-    private EditorSettings getEditorSettings(){
-        return EditorSettings.getDefault ();
     }
     
     public static BaseOptions getOptions(Class kitClass) {
@@ -892,29 +892,22 @@ public class BaseOptions extends OptionSupport {
         }
         m.put(null, getKitClass().getName() ); // add kit class                               
         setColoringMap (m);
-        
-        Collection other = getEditorSettings().getHighlightings(getEditorSettings().getCurrentFontColorProfile()).values ();
-        if (other != null){
-            Iterator i = other.iterator();
-            while (i.hasNext()){
-                AttributeSet set = (AttributeSet) i.next();
-                String name = (String) set.getAttribute(StyleConstants.NameAttribute);
-                Color color = (Color)set.getAttribute(StyleConstants.Foreground);
-                if (SettingsNames.CARET_COLOR_INSERT_MODE.equals(name)){
-                    Color current  = getCaretColorInsertMode();
-                    if (!current.equals(color) && color!=null){
-                        setCaretColorInsertMode(color);
-                        setCaretColorOverwriteMode(color);
-                    }
-                } else if (SettingsNames.TEXT_LIMIT_LINE_COLOR.equals(name)){
-                    Color current  = getTextLimitLineColor();
-                    if (!current.equals(color) && color!=null){
-                        setTextLimitLineColor(color);
-                    }
-                }
-            }
+
+        // set other colorings like text limit line, caret
+        AttributeSet set = (AttributeSet) fcs.getFontColors(SettingsNames.CARET_COLOR_INSERT_MODE);
+        Color color = (Color)set.getAttribute(StyleConstants.Foreground);
+        Color current  = getCaretColorInsertMode();
+        if (!current.equals(color) && color!=null){
+            setCaretColorInsertMode(color);
+            setCaretColorOverwriteMode(color);
         }
-        
+
+        set = (AttributeSet) fcs.getFontColors(SettingsNames.TEXT_LIMIT_LINE_COLOR);
+        color = (Color)set.getAttribute(StyleConstants.Foreground);
+        current  = getTextLimitLineColor();
+        if (!current.equals(color) && color!=null){
+            setTextLimitLineColor(color);
+        }
     }
 
     private synchronized KeyBindingSettings getKeybindingSettings(){
