@@ -25,6 +25,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.BorderLayout;
+import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
@@ -353,7 +354,11 @@ public class OptionsPanel extends JPanel {
             label.setHorizontalAlignment (label.CENTER);
             pOptions.add ("Center", label);
         }
-        lTitle.setIcon (new ImageIcon (Utilities.loadImage (category.getIconBase () + ".png")));
+        Image image = Utilities.loadImage (category.getIconBase () + ".png");
+        if (image == null)
+            image = Utilities.loadImage (category.getIconBase () + ".gif");
+        if (image != null)
+            lTitle.setIcon (new ImageIcon (image));
         lTitle.setText (category.getTitle ());
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {

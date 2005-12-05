@@ -106,10 +106,12 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-usecases">
-  <p>
-    1) Client would like to install new panel to Options Dialog.
-    2) Client would like to install new panel to Advanced panel.
-  </p>
+    <usecase id="register-top-level-options-panel" name="Register top level Options Panel">
+    <p>Client can install new panel to Options Dialog - see JavaDoc for OptionsCategory class.</p>
+    </usecase>
+    <usecase id="register-panel-to-advanced-options" name="Register panel to Advanced Options Panel">
+    <p>Client can install new panel to Advanced Options Panel - see JavaDoc for AdvancedOption class.</p>
+    </usecase>
  </answer>
 
 

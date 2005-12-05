@@ -45,7 +45,7 @@ import org.openide.util.Lookup;
 public abstract class OptionsCategory {
     
     /**
-     * Returns base name of 32x32 icon used in list on the left side of 
+     * Returns base name of 32x32 icon (gif, png) used in list on the left side of 
      * Options Dialog. See AbstractNode.setIconBase method for more info.
      *
      * @return base name of 32x32 icon
