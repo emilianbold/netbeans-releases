@@ -133,6 +133,10 @@ public class DatabaseNodeChildren extends Children.Array {
         ts.add(createWaitNode());
         return ts;
     }
+    
+    public boolean getChildrenInitialized() {
+        return isInitialized();
+    }
 
     /* Creates and returns the instance of the node
     * representing the status 'WAIT' of the node.

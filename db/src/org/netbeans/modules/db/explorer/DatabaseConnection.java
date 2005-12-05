@@ -770,11 +770,19 @@ public class DatabaseConnection implements DBConnection {
         // the CNIs found in RootNode.getInstance().getInfo are different than
         // the ones the ConnectionNodes in the Databases tree listen to
         
+        DatabaseNodeChildren rootNodeChildren = (DatabaseNodeChildren)RootNode.getInstance().getChildren();
+        
+        // XXX A crude hack to avoid initializing the connection nodes if they haven't been initialized yet
+        // we need to get rid of these info classes...
+        if (!rootNodeChildren.getChildrenInitialized()) {
+            return null;
+        }
+        
         Node[] nodes;
         String waitNode = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("WaitNode"); // NOI18N
         
         for (;;) {
-            nodes = RootNode.getInstance().getChildren().getNodes();
+            nodes = rootNodeChildren.getNodes();
             if (nodes.length == 1 && waitNode.equals(nodes[0].getName())) {
                 try {
                     Thread.sleep(60);
