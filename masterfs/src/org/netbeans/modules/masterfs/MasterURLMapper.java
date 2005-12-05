@@ -56,7 +56,7 @@ public final class MasterURLMapper extends URLMapper {
 
         retVal = hfs.findResource(filePath);
         if (!(retVal instanceof MasterFileObject)) return null;
-        
+        if (!retVal.isValid()) return null;
         return new FileObject[]{retVal};
     }
 
