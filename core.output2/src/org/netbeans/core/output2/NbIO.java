@@ -197,7 +197,6 @@ class NbIO implements InputOutput {
         if (in != null) {
             in.eof();
             in.reuse();
-            setInputVisible(true);
         }
         post (this, IOEvent.CMD_RESET, true);
     }
