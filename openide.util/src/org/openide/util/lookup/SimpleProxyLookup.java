@@ -68,7 +68,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
                 java.lang.ref.Reference ref = (java.lang.ref.Reference) it.next();
                 ProxyResult p = (ProxyResult) ref.get();
 
-                if (p.updateLookup(l)) {
+                if (p != null && p.updateLookup(l)) {
                     p.collectFires(evAndListeners);
                 }
             }
