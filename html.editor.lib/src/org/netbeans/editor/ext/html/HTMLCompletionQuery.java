@@ -266,11 +266,8 @@ else System.err.println( "Inside token " + item.getTokenID() );
                     List possible = tag.getAttributeList( prefix ); // All attribs of given tag
                     Collection existing = tagElem.getAttributes(); // Attribs already used
                     
-                    String wordAtCursor = "";
-                    try{
-                        wordAtCursor = Utilities.getWord(doc,Utilities.getWordStart(doc,offset));
-                    } catch( BadLocationException e ) {
-                    }
+                    String wordAtCursor = item.getImage();
+                    
                     // #BUGFIX 25261 because of being at the end of document the
                     // wordAtCursor must be checked for null to prevent NPE
                     // below
@@ -284,7 +281,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
                         String aName = attr.getName();
                         if( aName.equals( prefix )
                         || (!existing.contains( aName.toUpperCase()) && !existing.contains( aName.toLowerCase()))
-                        || wordAtCursor.equals( aName ))
+                        || (wordAtCursor.equals( aName ) && prefix.length() > 0))
                             l.add( attr );
                     }
                     l = translateAttribs( offset-len, len, l, tag );
