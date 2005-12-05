@@ -72,14 +72,14 @@ public final class ProjectCustomizer {
                                                  String preselectedCategory,
                                                  ActionListener okOptionListener,
                                                  HelpCtx helpCtx ) {
-        CustomizerPane innerPane = (CustomizerPane) createCustomizerPane( categories, componentProvider, preselectedCategory );
+        CustomizerPane innerPane = createCustomizerPane(categories, componentProvider, preselectedCategory);
         Dialog dialog = CustomizerDialog.createDialog( okOptionListener, innerPane, helpCtx, categories );
         return dialog;
     }
     
     /** Creates standard innerPane for customizer dialog.
      */
-    private static JPanel createCustomizerPane( Category[] categories,
+    private static CustomizerPane createCustomizerPane( Category[] categories,
                                                 CategoryComponentProvider componentProvider,
                                                 String preselectedCategory ) {
         
@@ -88,7 +88,7 @@ public final class ProjectCustomizer {
         
         CategoryModel categoryModel = new CategoryModel( categories );
         JPanel categoryView = new CategoryView( categoryModel );
-        JPanel customizerPane = new CustomizerPane( categoryView, categoryModel, componentProvider );
+        CustomizerPane customizerPane = new CustomizerPane( categoryView, categoryModel, componentProvider );
         
         if ( preselectedCategory == null ) {
             preselectedCategory = categories[0].getName();
