@@ -14,6 +14,8 @@
 
 package org.netbeans.core.windows;
 
+import java.util.Iterator;
+import java.util.Set;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -67,7 +69,6 @@ final class RecentViewList implements PropertyChangeListener {
     
     public void propertyChange(PropertyChangeEvent evt) {
         if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
-            
             TopComponent tc = (TopComponent) evt.getNewValue();
             if (tc != null) {
                 //Update list
@@ -81,6 +82,8 @@ final class RecentViewList implements PropertyChangeListener {
                     WeakReference wr = new WeakReference(tc);
                     tcWeakList.add(0,wr);
                 }
+                // #69486: ensure all components are listed
+                fillList(TopComponent.getRegistry().getOpened());
             }
         }
     }
@@ -111,6 +114,26 @@ final class RecentViewList implements PropertyChangeListener {
             }
         }
         return null;
+    }
+
+    /** Fills list of weak references with TCs that are in given
+     * input list but are not yet contained in list of weak references.
+     */ 
+    private void fillList(Set openedTCs) {
+        TopComponent curTC;
+        WeakReference wr;
+        for (Iterator it = openedTCs.iterator(); it.hasNext();) {
+            curTC = (TopComponent) it.next();
+            if (find(curTC) == null) {
+                if (tcWeakList.size() > 1) {
+                    wr = new WeakReference(curTC);
+                    tcWeakList.add(1,wr);
+                } else {
+                    wr = new WeakReference(curTC);
+                    tcWeakList.add(wr);
+                }
+            }
+        }
     }
     
 }
