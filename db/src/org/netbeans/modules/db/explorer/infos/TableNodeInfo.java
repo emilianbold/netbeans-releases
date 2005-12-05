@@ -199,7 +199,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
                         }
                     });
                     // add into refreshed sub-tree
-                    subTreeNodes[charr.size()+1] = childrenNodes[i];
+                    subTreeNodes[charr.size()] = childrenNodes[i];
                 } else
                 // is it node Foreign keys or column? 
                 if ((childrenNodes[i]).getCookie(ForeignKeyListNodeInfo.class) != null) {
@@ -215,7 +215,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
                         }
                     });
                     // add into refreshed sub-tree
-                    subTreeNodes[charr.size()] = childrenNodes[i];
+                    subTreeNodes[charr.size()+1] = childrenNodes[i];
                 }
 
             // remove current sub-tree
