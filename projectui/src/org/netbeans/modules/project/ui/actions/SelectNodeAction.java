@@ -73,12 +73,12 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
      *
      */
     public SelectNodeAction( Icon icon, String name ) {
-        super( icon, null, new Class[] { DataObject.class } );
+        super( icon, null, new Class[] { DataObject.class, FileObject.class } );
         this.setDisplayName( name );
     }
     
     private SelectNodeAction(String command, ProjectActionPerformer performer, String namePattern, Icon icon, Lookup lookup) {
-        super( icon, lookup, new Class[] { Project.class, DataObject.class } );
+        super( icon, lookup, new Class[] { Project.class, DataObject.class, FileObject.class } );
         this.command = command;
         this.performer = performer;
         this.namePattern = namePattern;
