@@ -10,8 +10,10 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.actions;
 
+import java.io.IOException;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
@@ -19,9 +21,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-
-import java.io.IOException;
-
 
 /** Save a single object.
 * @see SaveCookie
@@ -42,8 +41,8 @@ public class SaveAction extends CookieAction {
 
     protected void performAction(final Node[] activatedNodes) {
         SaveCookie sc = (SaveCookie) activatedNodes[0].getCookie(SaveCookie.class);
-        assert sc != null : "SaveCookie must found for " + activatedNodes[0] + ". " +
-                "See the issue 68285 for details of override getCookie() method.";
+        assert sc != null : "SaveCookie must be present on " + activatedNodes[0] + ". " +
+                "See http://www.netbeans.org/issues/show_bug.cgi?id=68285 for details on overriding " + activatedNodes[0].getClass().getName() + ".getCookie correctly.";
         
         // avoid NPE if disabled assertions
         if (sc == null) return ;
