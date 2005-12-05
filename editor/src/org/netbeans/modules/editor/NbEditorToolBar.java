@@ -143,6 +143,9 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                     JButton button = (JButton)evt.getSource();
                     button.setContentAreaFilled(false);
                     button.setBorderPainted(false);
+                    
+                    //fix of issue #69642. Focus shouldn't stay in toolbar
+                    SwingUtilities.invokeLater(returnFocusRunnable); 
                 }
             }
             
