@@ -13,11 +13,7 @@
 
 package org.netbeans.modules.diff.cmdline;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -33,6 +29,9 @@ import org.openide.ErrorManager;
 
 /**
  * The parser of an external diff utility compatible with Unix diff output.
+ *
+ * <p>The implementtaion is interruptible by Thread.interrupt().
+ * On interrupt it kills external program and throws InterruptedIOException,
  *
  * @author  Martin Entlicher
  */
@@ -157,10 +156,13 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
             return null;
         }
     }
-    
+
+    /**
+     * Executes (possibly broken) external program.
+     */
     private Difference[] createDiff(File f1, File f2) throws IOException {
-        StringBuffer firstText = new StringBuffer();
-        StringBuffer secondText = new StringBuffer();
+        final StringBuffer firstText = new StringBuffer();
+        final StringBuffer secondText = new StringBuffer();
         if (pattern == null) {
             try {
                 pattern = Pattern.compile(DIFF_REGEXP);
@@ -171,65 +173,67 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
             //firstText = new StringBuffer();
             //secondText = new StringBuffer();
         }
-        String cmd = java.text.MessageFormat.format(diffCmd,
+        final String cmd = java.text.MessageFormat.format(diffCmd,
             new Object[] { f1.getAbsolutePath(), f2.getAbsolutePath() });
-        try {
-            ErrorManager.getDefault().log("#69616 CDP: executing: " + cmd); // NOI18N
-            Process p = Runtime.getRuntime().exec(cmd);
-            Reader stdout = new InputStreamReader(p.getInputStream());
-            char[] buffer = new char[BUFF_LENGTH];
-            StringBuffer outBuffer = new StringBuffer();
-            int length;
-            List differences = new ArrayList();
-            while ((length = stdout.read(buffer)) > 0) {
-                for (int i = 0; i < length; i++) {
-                    if (buffer[i] == '\n') {
-                        //stdoutNextLine(outBuffer.toString(), differences);
-                        outputLine(outBuffer.toString(), pattern, differences,
-                                   firstText, secondText);
-                        outBuffer.delete(0, outBuffer.length());
-                    } else {
-                        if (buffer[i] != 13) {
-                            outBuffer.append(buffer[i]);
+
+        final Process p[] = new Process[1];
+        final Object[] ret = new Object[1];
+        Runnable cancellableProcessWrapper = new Runnable() {
+            public void run() {
+                try {
+                    ErrorManager.getDefault().log("#69616 CDP: executing: " + cmd); // NOI18N
+                    synchronized(p) {
+                        p[0] = Runtime.getRuntime().exec(cmd);
+                    }
+                    Reader stdout = new InputStreamReader(p[0].getInputStream());
+                    char[] buffer = new char[BUFF_LENGTH];
+                    StringBuffer outBuffer = new StringBuffer();
+                    int length;
+                    List differences = new ArrayList();
+                    while ((length = stdout.read(buffer)) > 0) {
+                        for (int i = 0; i < length; i++) {
+                            if (buffer[i] == '\n') {
+                                //stdoutNextLine(outBuffer.toString(), differences);
+                                outputLine(outBuffer.toString(), pattern, differences,
+                                           firstText, secondText);
+                                outBuffer.delete(0, outBuffer.length());
+                            } else {
+                                if (buffer[i] != 13) {
+                                    outBuffer.append(buffer[i]);
+                                }
+                            }
                         }
                     }
+                    if (outBuffer.length() > 0) outputLine(outBuffer.toString(), pattern, differences,
+                                                           firstText, secondText);
+                    setTextOnLastDifference(differences, firstText, secondText);
+                    ret[0] =  (Difference[]) differences.toArray(new Difference[differences.size()]);
+                } catch (IOException ioex) {
+                    ret[0] = (IOException) ErrorManager.getDefault().annotate(ioex,
+                            NbBundle.getMessage(CmdlineDiffProvider.class, "runtimeError", cmd));
                 }
             }
-            if (outBuffer.length() > 0) outputLine(outBuffer.toString(), pattern, differences,
-                                                   firstText, secondText);
-            setTextOnLastDifference(differences, firstText, secondText);
-            return (Difference[]) differences.toArray(new Difference[differences.size()]);
-        } catch (IOException ioex) {
-            throw (IOException) ErrorManager.getDefault().annotate(ioex,
-                    NbBundle.getMessage(CmdlineDiffProvider.class, "runtimeError", cmd));
+        };
+
+        Thread t = new Thread(cancellableProcessWrapper, "Diff.exec()"); // NOI18N
+        t.start();
+        try {
+            t.join();
+            synchronized(ret) {
+                if (ret[0] instanceof IOException) {
+                    throw (IOException) ret[0];
+                }
+                return (Difference[]) ret[0];
+            }
+        } catch (InterruptedException e) {
+            synchronized(p[0]) {
+                p[0].destroy();
+            }
+            throw new InterruptedIOException();
         }
+
     }
 
-    /*
-    private static String[] matchToStringArray(RE pattern, String line) {
-        ArrayList v = new ArrayList(5);
-        if (!pattern.match(line)) {
-            return new String[0];
-        }
-        for(int i = 1; i < pattern.getParenCount(); i++){
-            int subStart = pattern.getParenStart(i);
-            int subEnd = pattern.getParenEnd(i);
-            if (subStart >= 0 && subEnd > subStart)
-                v.add(line.substring(subStart, subEnd));
-        }
-        int count = v.size();
-        if (count <= 0) count = 1;
-        String[] sa = new String[count];
-        v.toArray(sa);
-        return sa;
-    }
-
-    private void stdoutNextLine(String line, List differences) {
-        String[] sa = matchToStringArray(pattern, line);
-        if (sa != null && sa.length > 0) outputData(sa, differences);
-    }
-     */
-    
     public static void setTextOnLastDifference(List differences,
         StringBuffer firstText, StringBuffer secondText) {
         if (differences.size() > 0) {

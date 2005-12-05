@@ -21,6 +21,8 @@ import java.beans.PropertyEditorManager;
 import java.io.FileNotFoundException;
 import java.io.Reader;
 import java.io.IOException;
+import java.io.InterruptedIOException;
+
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 
@@ -40,6 +42,8 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.*;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 import org.openide.ErrorManager;
 
 import javax.swing.*;
@@ -59,6 +63,16 @@ public class DiffPresenter extends javax.swing.JPanel {
     private DiffProvider defaultProvider;
     private DiffVisualizer defaultVisualizer;
     private JComponent progressPanel;
+
+    /**
+     * Interruptible (to be able to drop streams of deadlocked
+     * external program) request processor.
+     */
+    private final RequestProcessor diffRP = new RequestProcessor("Diff", 1, true);
+
+    private RequestProcessor.Task computationTask = diffRP.post(    // NOI28N
+            new Runnable(){public void run(){}}
+    );
 
     /**
      * Creates <i>just computing diff</i> presenter. The mode
@@ -242,16 +256,12 @@ public class DiffPresenter extends javax.swing.JPanel {
 
     /** Set the diff provider and update the view. */
     public void setProvider(DiffProvider p) {
-        try {
-            showDiff((DiffProvider) p, defaultVisualizer);
+        asyncDiff((DiffProvider) p, defaultVisualizer);
 
-            this.defaultProvider = (DiffProvider) p;
-            //propSupport.firePropertyChange(PROP_PROVIDER, null, p);
-            // Set the defaults for the future:
-            setDefaultDiffService(p, "Services/DiffProviders"); // NOI18N
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
-        }
+        this.defaultProvider = (DiffProvider) p;
+        //propSupport.firePropertyChange(PROP_PROVIDER, null, p);
+        // Set the defaults for the future:
+        setDefaultDiffService(p, "Services/DiffProviders"); // NOI18N
     }
     
     public DiffVisualizer getVisualizer() {
@@ -260,17 +270,12 @@ public class DiffPresenter extends javax.swing.JPanel {
     
     /** Set the diff visualizer and update the view. */
     public void setVisualizer(DiffVisualizer v) {
+        asyncDiff(defaultProvider, (DiffVisualizer) v);
 
-        try {
-            showDiff(defaultProvider, (DiffVisualizer) v);
-
-            this.defaultVisualizer = (DiffVisualizer) v;
-            //propSupport.firePropertyChange(PROP_PROVIDER, null, p);
-            // Set the defaults for the future:
-            setDefaultDiffService(v, "Services/DiffVisualizers"); // NOI18N
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
-        }
+        this.defaultVisualizer = (DiffVisualizer) v;
+        //propSupport.firePropertyChange(PROP_PROVIDER, null, p);
+        // Set the defaults for the future:
+        setDefaultDiffService(v, "Services/DiffVisualizers"); // NOI18N
     }
     
     private static void setDefaultDiffService(Object ds, String folder) {
@@ -298,13 +303,6 @@ public class DiffPresenter extends javax.swing.JPanel {
         }
     }
 
-    private void showDiff() {
-        try {
-            showDiff(defaultProvider, defaultVisualizer);
-        } catch (IOException ioex) {
-            org.openide.ErrorManager.getDefault().notify(ioex);
-        }
-    }
     
     /*
     public void addProvidersChangeListener(PropertyChangeListener l) {
@@ -323,37 +321,79 @@ public class DiffPresenter extends javax.swing.JPanel {
         propSupport.removePropertyChangeListener(PROP_VISUALIZER, l);
     }
      */
-    
-    private synchronized void showDiff(final DiffProvider p, final DiffVisualizer v) throws IOException {
-        if (v == null) return ;
+
+    /**
+     * Asynchronously computes and shows diff.
+     */
+    private synchronized void asyncDiff(final DiffProvider p, final DiffVisualizer v) {
+        if (v == null) {
+            return;
+        }
+
         Difference[] diffs;
         if (p != null) {
             diffs = diffInfo.getInitialDifferences();
             if (diffs == null) {
-                diffs = p.computeDiff(diffInfo.createFirstReader(),
-                                      diffInfo.createSecondReader());
+                JPanel panel = new JPanel();
+                panel.setLayout(new BorderLayout());
+                String message = NbBundle.getMessage(DiffPresenter.class, "BK0001");
+                JLabel label = new JLabel(message);
+                label.setHorizontalAlignment(JLabel.CENTER);
+                panel.add(label, BorderLayout.CENTER);
+                setVisualizer(panel);
             }
         } else {
             diffs = diffInfo.getDifferences();
         }
-        if (diffs == null) return ;
-        if (!java.awt.EventQueue.isDispatchThread()) {
-            final Difference[] fdiffs = diffs;
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    try {
-                        viewVisualizer(v, fdiffs);
-                    } catch (IOException ioex) {
-                        org.openide.ErrorManager.getDefault().notify(ioex);
+
+        final Difference[] fdiffs = diffs;
+        Runnable computation = new Runnable() {
+            public void run() {
+                try {
+                    Difference[] adiffs = fdiffs;
+                    String message = NbBundle.getMessage(DiffPresenter.class, "BK0001");
+                    ProgressHandle ph = ProgressHandleFactory.createHandle(message);
+                    if (adiffs == null) {
+                        try {
+                            ph.start();
+                            adiffs = p.computeDiff(
+                                    diffInfo.createFirstReader(),
+                                    diffInfo.createSecondReader()
+                            );
+                        } finally {
+                            ph.finish();
+                        }
                     }
+
+                    if (adiffs == null) {
+                        return;
+                    }
+
+                    final Difference[] fadiffs = adiffs;
+                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            try {
+                                viewVisualizer(v, fadiffs);
+                            } catch (IOException ioex) {
+                                ErrorManager.getDefault().notify(ErrorManager.USER, ioex);
+                            }
+                        }
+                    });
+
+                } catch (InterruptedIOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.USER, ex);
                 }
-            });
-        } else {
-            viewVisualizer(v, diffs);
-        }
+            }
+        };
+
+        computationTask.cancel();
+        computationTask = diffRP.post(computation);
     }
     
     private void viewVisualizer(DiffVisualizer v, Difference[] diffs) throws IOException {
+        assert SwingUtilities.isEventDispatchThread();
         Component c = v.createView(diffs, diffInfo.getName1(), diffInfo.getTitle1(),
             diffInfo.createFirstReader(), diffInfo.getName2(), diffInfo.getTitle2(),
             diffInfo.createSecondReader(), diffInfo.getMimeType());

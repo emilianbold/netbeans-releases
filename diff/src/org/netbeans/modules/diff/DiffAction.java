@@ -26,6 +26,7 @@ import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
 
@@ -34,6 +35,8 @@ import org.openide.windows.TopComponent;
 
 import org.netbeans.api.diff.*;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -120,8 +123,15 @@ public class DiffAction extends NodeAction {
      * Shows the diff between two FileObject objects.
      * This is expected not to be called in AWT thread.
      */
-    public static void performAction(FileObject fo1, FileObject fo2) {
-        performAction(fo1, fo2, null);
+    public static void performAction(final FileObject fo1, final FileObject fo2) {
+        String name = NbBundle.getMessage(DiffAction.class, "BK0001");
+        ProgressHandle ph = ProgressHandleFactory.createHandle(name);
+        try {
+            ph.start();
+            performAction(fo1, fo2, null);
+        } finally {
+            ph.finish();
+        }
     }
     /**
      * Shows the diff between two FileObject objects.
