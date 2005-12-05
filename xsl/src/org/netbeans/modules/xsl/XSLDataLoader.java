@@ -12,15 +12,11 @@
  */
 package org.netbeans.modules.xsl;
 
-import java.io.*;
 
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
-import org.openide.actions.*;
-import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.xml.core.XMLDataLoader;
-import org.netbeans.modules.xml.core.actions.CollectXMLAction;
 
 /**
  * XSL object loader. It is mime type based.
@@ -46,30 +42,9 @@ public final class XSLDataLoader extends UniFileLoader {
         setExtensions (ext);
     }
     
-    /**
-     * Lazy init actions.
-     */
-    protected SystemAction[] defaultActions () {    
-        return new SystemAction[] {
-            SystemAction.get (EditAction.class),
-            SystemAction.get (FileSystemAction.class),
-            null,
-            SystemAction.get (CollectXMLAction.class),
-            null,
-            SystemAction.get (CutAction.class),
-            SystemAction.get (CopyAction.class),
-            SystemAction.get (PasteAction.class),
-            null,
-            SystemAction.get (DeleteAction.class),
-            SystemAction.get (RenameAction.class),
-            null,
-            SystemAction.get (SaveAsTemplateAction.class),
-            null,
-            SystemAction.get (ToolsAction.class),
-            SystemAction.get (PropertiesAction.class),
-        };
+    protected String actionsContext() {
+        return "Loaders/application/xslt+xml/Actions/"; // NOI18N
     }
-    
     
     /**
      * Lazy init name.
