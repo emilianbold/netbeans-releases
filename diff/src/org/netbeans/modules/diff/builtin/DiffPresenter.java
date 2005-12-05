@@ -40,6 +40,7 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.*;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.util.NbBundle;
+import org.openide.ErrorManager;
 
 import javax.swing.*;
 
@@ -238,14 +239,19 @@ public class DiffPresenter extends javax.swing.JPanel {
     public DiffProvider getProvider() {
         return defaultProvider;
     }
-    
+
     /** Set the diff provider and update the view. */
     public void setProvider(DiffProvider p) {
-        this.defaultProvider = (DiffProvider) p;
-        //propSupport.firePropertyChange(PROP_PROVIDER, null, p);
-        showDiff();
-        // Set the defaults for the future:
-        setDefaultDiffService(p, "Services/DiffProviders");
+        try {
+            showDiff((DiffProvider) p, defaultVisualizer);
+
+            this.defaultProvider = (DiffProvider) p;
+            //propSupport.firePropertyChange(PROP_PROVIDER, null, p);
+            // Set the defaults for the future:
+            setDefaultDiffService(p, "Services/DiffProviders"); // NOI18N
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
+        }
     }
     
     public DiffVisualizer getVisualizer() {
@@ -254,11 +260,17 @@ public class DiffPresenter extends javax.swing.JPanel {
     
     /** Set the diff visualizer and update the view. */
     public void setVisualizer(DiffVisualizer v) {
-        this.defaultVisualizer = (DiffVisualizer) v;
-        //propSupport.firePropertyChange(PROP_VISUALIZER, null, v);
-        showDiff();
-        // Set the defaults for the future:
-        setDefaultDiffService(v, "Services/DiffVisualizers");
+
+        try {
+            showDiff(defaultProvider, (DiffVisualizer) v);
+
+            this.defaultVisualizer = (DiffVisualizer) v;
+            //propSupport.firePropertyChange(PROP_PROVIDER, null, p);
+            // Set the defaults for the future:
+            setDefaultDiffService(v, "Services/DiffVisualizers"); // NOI18N
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
+        }
     }
     
     private static void setDefaultDiffService(Object ds, String folder) {
