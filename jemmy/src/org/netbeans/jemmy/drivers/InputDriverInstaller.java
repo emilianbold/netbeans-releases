@@ -47,6 +47,7 @@ import org.netbeans.jemmy.operators.TextFieldOperator;
 public class InputDriverInstaller {
     Timeout robotAutoDelay;
     boolean useEventDrivers;
+    boolean smooth = false;
 
     /**
      * Constructs an InputDriverInstaller object. 
@@ -68,6 +69,17 @@ public class InputDriverInstaller {
 	     JemmyProperties.getCurrentTimeouts().
 	     create("EventDispatcher.RobotAutoDelay"));
     }
+    /**
+     * Constructs an InputDriverInstaller object. Takes autodelay time
+     * from JemmyProperties' timeouts.
+     * @param useEventDrivers Tells whether to use event drivers, otherwise robot drivers.
+     * @param smooth whether to move mouse smoothly.
+     */
+    public InputDriverInstaller(boolean useEventDrivers, boolean smooth) {
+	this(useEventDrivers);
+        this.smooth = smooth;
+    }
+
     /**
      * Constructs an InputDriverInstaller object. Uses event drivers.
      * @param robotAutoDelay Time for <code>Robot.setAutoDelay(long)</code> method.
@@ -129,7 +141,7 @@ public class InputDriverInstaller {
 	    }
 	} else {
 	    LightDriver keyR = new KeyRobotDriver(robotAutoDelay);
-	    LightDriver mouseR = new MouseRobotDriver(robotAutoDelay);
+	    LightDriver mouseR = new MouseRobotDriver(robotAutoDelay, smooth);
 	    DriverManager.removeDriver(DriverManager.KEY_DRIVER_ID,
 				       keyR.getSupported());
 	    DriverManager.removeDriver(DriverManager.MOUSE_DRIVER_ID,

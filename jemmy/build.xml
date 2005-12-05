@@ -120,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compiletest" depends="compile">
     <mkdir dir="${build.test.classes.dir}"/>
     <javac srcdir="${test.src.dir}" destdir="${build.test.classes.dir}" 
-    excludes="**/JUnit*.java" excludesfile="${java.version.excludes}" debug="on" source="1.4">
+    excludes="**/JUnit*.java;**/junit/*" excludesfile="${java.version.excludes}" debug="on" source="1.4">
       <classpath>
         <pathelement location="${build.classes.dir}"/>
         <pathelement path="${java.class.path}"/>

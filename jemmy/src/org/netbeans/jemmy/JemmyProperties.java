@@ -68,6 +68,13 @@ public class JemmyProperties {
      */
     public static int SHORTCUT_MODEL_MASK = 4;
 
+    /**
+     * The robot using model mask.
+     * @see #getCurrentDispatchingModel()
+     * @see #setCurrentDispatchingModel(int)
+     */
+    public static int SMOOTH_ROBOT_MODEL_MASK = 8;
+
     private static final int DEFAULT_DRAG_AND_DROP_STEP_LENGTH = 100;
     private static Stack propStack = null;
 
@@ -487,6 +494,15 @@ public class JemmyProperties {
      * @param shortcut Notifies that event shorcutting should be used.
      */
     public void initDispatchingModel(boolean queue, boolean robot, boolean shortcut) {
+    initDispatchingModel(queue, robot, shortcut, false);    
+    }
+    /**
+     * Initializes dispatching model.
+     * @param queue Notifies that event queue dispatching should be used.
+     * @param robot Notifies that robot dispatching should be used.
+     * @param shortcut Notifies that event shorcutting should be used.
+     */
+    public void initDispatchingModel(boolean queue, boolean robot, boolean shortcut, boolean smooth) {
 	int model = getDefaultDispatchingModel();
 	getOutput().print("Reproduce user actions ");
 	if(queue) {
@@ -503,6 +519,11 @@ public class JemmyProperties {
 	} else {
 	    model = model - (model & ROBOT_MODEL_MASK);
 	    getOutput().print("event dispatching");
+	}
+	if(smooth) {
+	    model = model | SMOOTH_ROBOT_MODEL_MASK;
+	} else {
+	    model = model - (model & SMOOTH_ROBOT_MODEL_MASK);
 	}
 	getOutput().printLine(" to reproduce user actions");
 	if(shortcut) {
@@ -538,6 +559,7 @@ public class JemmyProperties {
     public void initDispatchingModel() {
 	boolean qmask = ((getDefaultDispatchingModel() & QUEUE_MODEL_MASK) != 0);
 	boolean rmask = ((getDefaultDispatchingModel() & ROBOT_MODEL_MASK) != 0);
+	boolean srmask = ((getDefaultDispatchingModel() & SMOOTH_ROBOT_MODEL_MASK) != 0);
 	boolean smask = ((getDefaultDispatchingModel() & SHORTCUT_MODEL_MASK) != 0);
 	if( System.getProperty("jemmy.queue_dispatching") != null &&
 	   !System.getProperty("jemmy.queue_dispatching").equals("")) {
@@ -547,11 +569,15 @@ public class JemmyProperties {
 	   !System.getProperty("jemmy.robot_dispatching").equals("")) {
 	    rmask = System.getProperty("jemmy.robot_dispatching").equals("on");
 	}
+	if( System.getProperty("jemmy.smooth_robot_dispatching") != null &&
+	   !System.getProperty("jemmy.smooth_robot_dispatching").equals("")) {
+	    srmask = System.getProperty("jemmy.smooth_robot_dispatching").equals("on");
+	}
 	if( System.getProperty("jemmy.shortcut_events") != null &&
 	   !System.getProperty("jemmy.shortcut_events").equals("")) {
 	    smask = System.getProperty("jemmy.shortcut_events").equals("on");
 	}
-	initDispatchingModel(qmask, rmask, smask);
+	initDispatchingModel(qmask, rmask, smask, srmask);
     }
 
     /**
@@ -746,7 +772,7 @@ public class JemmyProperties {
      * @see #ROBOT_MODEL_MASK
      */
     public int setDispatchingModel(int model) {
-	new InputDriverInstaller((model & ROBOT_MODEL_MASK) == 0).install();
+	new InputDriverInstaller((model & ROBOT_MODEL_MASK) == 0, (model & SMOOTH_ROBOT_MODEL_MASK) != 0).install();
 	getDriverInstaller(model).install();
 	return(((Integer)setProperty("dispatching.model", new Integer(model))).intValue());
     }

@@ -60,4 +60,23 @@ public class KeyRobotDriver extends RobotDriver implements KeyDriver {
 	pushKey(oper, keyCode, modifiers, pushTime);
     }
 
+    /**
+     * Presses a key.
+     * @param oper Operator to press a key on.
+     * @param keyCode Key code (<code>KeyEventVK_*</code> field.
+     * @param modifiers a combination of <code>InputEvent.*_MASK</code> fields.
+     */
+    public void pressKey(ComponentOperator oper, int keyCode, int modifiers) {
+        pressKey(keyCode, modifiers);
+    }
+
+    /**
+     * Releases a key.
+     * @param oper Operator to release a key on.
+     * @param keyCode Key code (<code>KeyEventVK_*</code> field.
+     * @param modifiers a combination of <code>InputEvent.*_MASK</code> fields.
+     */
+    public void releaseKey(ComponentOperator oper, int keyCode, int modifiers) {
+        releaseKey(keyCode, modifiers);
+    }
 }

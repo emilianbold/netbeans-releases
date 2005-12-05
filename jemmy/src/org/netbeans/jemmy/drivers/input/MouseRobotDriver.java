@@ -1,20 +1,20 @@
 /*
  * Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License Version
  * 1.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is available at http://www.sun.com/
- * 
+ *
  * The Original Code is the Jemmy library.
  * The Initial Developer of the Original Code is Alexandre Iline.
  * All Rights Reserved.
- * 
+ *
  * Contributor(s): Alexandre Iline.
- * 
+ *
  * $Id$ $Revision$ $Date$
- * 
+ *
  */
-
+ 
 package org.netbeans.jemmy.drivers.input;
 
 import java.awt.Component;
@@ -34,13 +34,23 @@ import org.netbeans.jemmy.operators.Operator;
  * @author Alexandre Iline(alexandre.iline@sun.com)
  */
 public class MouseRobotDriver extends RobotDriver implements MouseDriver {
-
+        
     /**
      * Constructs a MouseRobotDriver object.
      * @param autoDelay Time for <code>Robot.setAutoDelay(long)</code> method.
      */
     public MouseRobotDriver(Timeout autoDelay) {
-	super(autoDelay);
+        super(autoDelay);
+    }
+    
+    /**
+     * Constructs a MouseRobotDriver object.
+     * @param autoDelay Time for <code>Robot.setAutoDelay(long)</code> method.
+     * @param supported an array of supported class names
+     * @param smooth - whether to move mouse smooth from one ppoint to another.
+     */
+    public MouseRobotDriver(Timeout autoDelay, boolean smooth) {
+        super(autoDelay, smooth);
     }
 
     /**
@@ -49,77 +59,56 @@ public class MouseRobotDriver extends RobotDriver implements MouseDriver {
      * @param supported an array of supported class names
      */
     public MouseRobotDriver(Timeout autoDelay, String[] supported) {
-	super(autoDelay, supported);
+        super(autoDelay, supported);
     }
-
+    
+    /**
+     * Constructs a MouseRobotDriver object.
+     * @param autoDelay Time for <code>Robot.setAutoDelay(long)</code> method.
+     * @param supported an array of supported class names
+     * @param smooth - whether to move mouse smooth from one ppoint to another.
+     */
+    public MouseRobotDriver(Timeout autoDelay, String[] supported, boolean smooth) {
+        super(autoDelay, supported, smooth);
+    }
+    
     public void pressMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers) {
-	pressModifiers(oper, modifiers);
-	makeAnOperation("mousePress", 
-			new Object[] {new Integer(mouseButton)}, 
-			new Class[] {Integer.TYPE});
+        pressMouse(mouseButton, modifiers);
     }
-
+    
     public void releaseMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers) {
-	makeAnOperation("mouseRelease", 
-			new Object[] {new Integer(mouseButton)}, 
-			new Class[] {Integer.TYPE});
-	releaseModifiers(oper, modifiers);
+        releaseMouse(mouseButton, modifiers);
     }
-
+    
     public void moveMouse(ComponentOperator oper, int x, int y) {
-	makeAnOperation("mouseMove", 
-			new Object[] {new Integer(getAbsoluteX(oper, x)), 
-				      new Integer(getAbsoluteY(oper, y))}, 
-			new Class[] {Integer.TYPE, Integer.TYPE});
+        moveMouse(getAbsoluteX(oper, x), getAbsoluteY(oper, y));
     }
-
-    public void clickMouse(ComponentOperator oper, int x, int y, int clickCount, int mouseButton, 
-			   int modifiers, Timeout mouseClick) {
-	pressModifiers(oper, modifiers);
-	moveMouse(oper, x, y);
-	makeAnOperation("mousePress", 
-			new Object[] {new Integer(mouseButton)}, 
-			new Class[] {Integer.TYPE});
-	for(int i = 1; i < clickCount; i++) {
-	    makeAnOperation("mouseRelease", 
-			    new Object[] {new Integer(mouseButton)}, 
-			    new Class[] {Integer.TYPE});
-	    makeAnOperation("mousePress", 
-			    new Object[] {new Integer(mouseButton)}, 
-			    new Class[] {Integer.TYPE});
-	}
-	mouseClick.sleep();
-	makeAnOperation("mouseRelease", 
-			new Object[] {new Integer(mouseButton)}, 
-			new Class[] {Integer.TYPE});
-	releaseModifiers(oper, modifiers);
+    
+    public void clickMouse(ComponentOperator oper, int x, int y, int clickCount, int mouseButton,
+            int modifiers, Timeout mouseClick) {
+        clickMouse(getAbsoluteX(oper, x), getAbsoluteY(oper, y), clickCount, mouseButton, modifiers, mouseClick);
     }
-
+    
     public void dragMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers) {
-	moveMouse(oper, x, y);
+        moveMouse(getAbsoluteX(oper, x), getAbsoluteY(oper, y));
     }
-
-    public void dragNDrop(ComponentOperator oper, int start_x, int start_y, int end_x, int end_y, 
-			  int mouseButton, int modifiers, Timeout before, Timeout after) {
-	moveMouse(oper, start_x, start_y);
-	pressMouse(oper, start_x, start_y, mouseButton, modifiers);
-	before.sleep();
-	moveMouse(oper, end_x, end_y);
-	after.sleep();
-	releaseMouse(oper, end_x, end_y, mouseButton, modifiers);
+    
+    public void dragNDrop(ComponentOperator oper, int start_x, int start_y, int end_x, int end_y,
+            int mouseButton, int modifiers, Timeout before, Timeout after) {
+        dragNDrop(getAbsoluteX(oper, start_x), getAbsoluteY(oper, start_y), getAbsoluteX(oper, end_x), getAbsoluteY(oper, end_y), mouseButton, modifiers, before, after);
     }
-
+    
     public void enterMouse(ComponentOperator oper) {
-	moveMouse(oper, oper.getCenterXForClick(), oper.getCenterYForClick());
+        moveMouse(oper, oper.getCenterXForClick(), oper.getCenterYForClick());
     }
-
+    
     public void exitMouse(ComponentOperator oper) {
-	//better not go anywhere
-	//exit will be executed during the next
-	//mouse move anyway.
-	//	moveMouse(oper, -1, -1);
+        //better not go anywhere
+        //exit will be executed during the next
+        //mouse move anyway.
+        //	moveMouse(oper, -1, -1);
     }
-
+    
     /**
      * Returns absolute x coordinate for relative x coordinate.
      * @param oper an operator
@@ -127,16 +116,16 @@ public class MouseRobotDriver extends RobotDriver implements MouseDriver {
      * @return an absolute x coordinate.
      */
     protected int getAbsoluteX(ComponentOperator oper, int x) {
-	return(oper.getSource().getLocationOnScreen().x + x);
+        return(oper.getSource().getLocationOnScreen().x + x);
     }
-
-   /**
+    
+    /**
      * Returns absolute y coordinate for relative y coordinate.
      * @param oper an operator
      * @param y a relative y coordinate.
      * @return an absolute y coordinate.
      */
     protected int getAbsoluteY(ComponentOperator oper, int y) {
-	return(oper.getSource().getLocationOnScreen().y + y);
+        return(oper.getSource().getLocationOnScreen().y + y);
     }
 }

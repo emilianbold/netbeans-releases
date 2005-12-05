@@ -93,7 +93,7 @@ public class DefaultJMenuDriver extends LightSupportiveDriver implements MenuDri
         smartMove(lastItem, oper);
 	if(depth > chooser.getDepth() - 1) {
             if(oper instanceof JMenuOperator &&
-               menuBar != null && isMenuBarSelected(menuBar)) {
+               menuBar != null && getSelectedElement(menuBar) != null) {
                 //mDriver.enterMouse(oper);
             } else {
                 DriverManager.getButtonDriver(oper).push(oper);
@@ -101,7 +101,7 @@ public class DefaultJMenuDriver extends LightSupportiveDriver implements MenuDri
 	    return(oper.getSource());
 	}
 	if(pressMouse && !((JMenuOperator)oper).isPopupMenuVisible() &&
-           !(menuBar != null && isMenuBarSelected(menuBar))) {
+           !(menuBar != null && getSelectedElement(menuBar) != null)) {
 	    DriverManager.getButtonDriver(oper).push(oper);
 	}
 	oper.getTimeouts().sleep("JMenuOperator.WaitBeforePopupTimeout");
@@ -200,15 +200,15 @@ public class DefaultJMenuDriver extends LightSupportiveDriver implements MenuDri
 	}
     }
 
-    private boolean isMenuBarSelected(JMenuBar bar) {
+    public static Object getSelectedElement(JMenuBar bar) {
         MenuElement[] subElements = bar.getSubElements();
         for(int i = 0; i < subElements.length; i++) {
             if(subElements[i] instanceof JMenu &&
                ((JMenu)subElements[i]).isPopupMenuVisible()) {
-                return(true);
+                return(subElements[i]);
             }
         }
-        return(false);
+        return(null);
     }
 
     private class JMenuItemWaiter implements Waitable {
