@@ -239,7 +239,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 else 
                     return;
             }
-            if (!starting) {
+            if (!starting && state != STATE_STARTING) {
                 return ; // We're already running
             }
             try {
