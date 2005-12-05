@@ -27,6 +27,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyVetoException;
 
+import org.openide.cookies.SaveCookie;
+
 import org.xml.sax.*;
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
@@ -72,40 +74,61 @@ public class TransformPerformer {
     /** Represent transformation output window. */
     private InputOutputReporter cookieObserver = null;
     private Node[] nodes;
-
+    
     // instance freshness state
     private volatile boolean stalled = false;
     private volatile boolean active = true;
-
+    
     public TransformPerformer(Node[] nodes) {
         this.nodes = nodes;
     }
-
+    
+    /** If the Data Object is modified, then is saved.
+     *  Fix for issue #61608
+     */
+    private void saveBeforeTransformation  (DataObject dObject){
+        if (dObject.isModified()){
+            SaveCookie save;
+            save = (SaveCookie)dObject.getCookie(SaveCookie.class);
+            if (save != null) {
+                try {
+                    save.save();
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+        }
+    }
+    
     /**
      * Entry point called from transform action.
      * There is a fresh instance per call.
      */
     public void perform() {
-
+        
         if (stalled) throw new IllegalStateException();
-
+        
         try {
             if ( nodes.length == 2 ) {
-
+                
                 // automatically detect if one of selected nodes is transformation
                 // in such case suppose that user want to it to transform second file
-
+                
                 DataObject do1 = (DataObject) nodes[0].getCookie(DataObject.class);
                 boolean xslt1 = TransformUtil.isXSLTransformation(do1);
                 DataObject do2 = (DataObject) nodes[1].getCookie(DataObject.class);
                 boolean xslt2 = TransformUtil.isXSLTransformation(do2);
-
+                
+                // fix for issue #61608
+                saveBeforeTransformation(do1);
+                saveBeforeTransformation(do2);
+                
                 if ( Util.THIS.isLoggable() ) /* then */ {
                     Util.THIS.debug("TransformAction.performAction:");
                     Util.THIS.debug("    do1 [" + xslt1 + "] = " + do1);
                     Util.THIS.debug("    do2 [" + xslt2 + "] = " + do2);
                 }
-
+                
                 if ( xslt1 != xslt2 ) {
                     TransformableCookie transformable;
                     DataObject xmlDO;
@@ -126,7 +149,7 @@ public class TransformPerformer {
                     SinglePerformer performer = new SinglePerformer(transformable1, do1, xslt1);
                     performer.setLastInBatch(false);
                     performer.perform();
-
+                    
                     TransformableCookie transformable2 = (TransformableCookie) nodes[1].getCookie(TransformableCookie.class);
                     performer = new SinglePerformer(transformable2, do2, xslt2);
                     performer.perform();
@@ -134,6 +157,8 @@ public class TransformPerformer {
             } else { // nodes.length != 2
                 for ( int i = 0; i < nodes.length; i++ ) {
                     DataObject dataObject = (DataObject) nodes[i].getCookie(DataObject.class);
+                    // fix for issue #61608
+                    saveBeforeTransformation(dataObject);
                     TransformableCookie transformable = null;
                     boolean xslt = TransformUtil.isXSLTransformation(dataObject);
                     if ( xslt == false ) {
@@ -148,14 +173,14 @@ public class TransformPerformer {
             stalled = true;
         }
     }
-
+    
     /**
      * Is still running
      */
     public boolean isActive() {
         return active;
     }
-
+    
     /**
      * Always return an instance. Shareable by all children nested performers.
      */
@@ -198,16 +223,16 @@ public class TransformPerformer {
         
         private TransformPanel.Data data;
         private boolean last = true;
-
+        
         // was window closed by
         private boolean workaround31850 = true;
-
-
+        
+        
         public AbstractPerformer(TransformableCookie transformable) {
             this.transformableCookie = transformable;
         }
-
-
+        
+        
         /**
          * It shows a dialog and let user selct his options. Then it performs them.
          */
@@ -220,7 +245,7 @@ public class TransformPerformer {
                 
                 NotifyDescriptor nd = new NotifyDescriptor.Message(exc.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
-
+                
                 if (isLastInBatch()) {
                     active = false;
                 }
@@ -239,13 +264,13 @@ public class TransformPerformer {
             transformPanel = new TransformPanel(xmlDO, xmlStylesheetName, xslDO);
             
             dialogDescriptor = new DialogDescriptor(transformPanel,
-            Util.THIS.getString("NAME_transform_panel_title"), true,
-            DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
-            DialogDescriptor.BOTTOM_ALIGN,
-            new HelpCtx(TransformAction.class), null);
+                    Util.THIS.getString("NAME_transform_panel_title"), true,
+                    DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
+                    DialogDescriptor.BOTTOM_ALIGN,
+                    new HelpCtx(TransformAction.class), null);
             dialogDescriptor.setClosingOptions(new Object[] { DialogDescriptor.CANCEL_OPTION });
             dialogDescriptor.setButtonListener(this);
-
+            
             dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
             dialog.addWindowListener(this);  // #31850 workaround
             dialog.show();
@@ -260,7 +285,7 @@ public class TransformPerformer {
                 Util.THIS.debug("    baseFileObject = " + baseFO);
                 Util.THIS.debug("    data = " + data);
             }
-
+            
             try {
                 xmlSource = TransformUtil.createSource(baseURL, data.getInput()); // throws IOException, MalformedURLException, FileStateInvalidException, ParserConfigurationException, SAXException
             } catch (IOException ex) {
@@ -290,7 +315,7 @@ public class TransformPerformer {
                     ErrorManager.getDefault().annotate(ex, Util.THIS.getString("MSG_resultError"));
                     throw ex;
                 }
-
+                
                 if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("    resultFO = " + resultFO);
             }
         }
@@ -320,7 +345,7 @@ public class TransformPerformer {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             }
         }
-
+        
         /**
          * Inicializes a servet and then provokes it by opening browser poiting to it.
          * External XSLT processor is called from the servlet.
@@ -329,7 +354,7 @@ public class TransformPerformer {
             TransformServlet.prepare(transformableCookie, xmlSource, xslSource);
             showURL(TransformServlet.getServletURL());
         }
-
+        
         /**
          * External XSLT processor is called from this method.
          */
@@ -337,7 +362,7 @@ public class TransformPerformer {
             OutputStream outputStream = null;
             FileLock fileLock = null;
             try {
-                fileLock = resultFO.lock();               
+                fileLock = resultFO.lock();
                 outputStream = resultFO.getOutputStream(fileLock);
                 
                 Result outputResult = new StreamResult(outputStream); // throws IOException, FileStateInvalidException
@@ -395,21 +420,21 @@ public class TransformPerformer {
                 Util.THIS.debug("[TransformPerformer::AbstractPerformer] actionPerformed: " + e);
                 Util.THIS.debug("    ActionEvent.getSource(): " + e.getSource());
             }
-
+            
             workaround31850 = false;
             if ( DialogDescriptor.OK_OPTION.equals(e.getSource()) ) {
                 try {
                     prepareData(); // throws IOException(, FileStateInvalidException, MalformedURLException), ParserConfigurationException, SAXException
                     
                     if ( ( data.getOutput() != null ) &&
-                    ( resultFO == null ) ) {
+                            ( resultFO == null ) ) {
                         return;
                     }
-
+                    
                     dialog.dispose();
                     storeData();
                     async();
-
+                    
                 } catch (Exception exc) { // IOException, ParserConfigurationException, SAXException
                     // during prepareData(), previewOutput() and fileOutput()
                     if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(exc);
@@ -426,7 +451,7 @@ public class TransformPerformer {
                 active = false;
             }
         }
-
+        
         // WindowAdapter  #31850 workaround
         public void windowClosed(WindowEvent e) {
             super.windowClosed(e);
@@ -434,7 +459,7 @@ public class TransformPerformer {
                 active = false;
             }
         }
-
+        
         /**
          * Perform the transformatin itself asynchronously ... (#29614)
          */
@@ -453,10 +478,10 @@ public class TransformPerformer {
                     } catch (Exception exc) { // IOException, ParserConfigurationException, SAXException
                         // during prepareData(), previewOutput() and fileOutput()
                         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(exc);
-
+                        
                         //                     NotifyDescriptor nd = new NotifyDescriptor.Message (exc.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
                         //                     TopManager.getDefault().notify (nd);
-
+                        
                         ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
                     } finally {
                         if (isLastInBatch()) {
@@ -471,8 +496,8 @@ public class TransformPerformer {
                 }
             });
         }
-
-
+        
+        
         /**
          * If possible it finds "file:" URL if <code>fileObject</code> is on LocalFileSystem.
          * @return URL of <code>fileObject</code>.
@@ -488,11 +513,11 @@ public class TransformPerformer {
             }
             return fileURL;
         }
-
+        
         public final void setLastInBatch(boolean last) {
             this.last = last;
         }
-
+        
         /**
          * Return if caller uses more perfomers and this one is the last one.
          */
