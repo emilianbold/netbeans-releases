@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,16 +18,15 @@ package org.netbeans.modules.project.ant;
 // XXX testMultipleListenersOnSameFile
 // XXX testSameListenerOnMultipleFiles
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.api.project.TestUtil;
-import org.openide.filesystems.FileObject;
-import java.util.ArrayList;
-import java.util.List;
-import org.openide.filesystems.FileUtil;
 import java.io.File;
-import java.util.Collections;
-
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.project.TestUtil;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Test {@link FileChangeSupport}.
@@ -124,6 +123,24 @@ public class FileChangeSupportTest extends NbTestCase {
         dirF.delete();
         scratch.getFileSystem().refresh(false);
         assertEquals("and then a file deletion event", Collections.singletonList("D:" + fileF), l.check());
+    }
+    
+    public void test66444() throws Exception {
+        File fileF = new File(scratchPath + SEP + "dir" + SEP + "file2");
+        L l = new L();
+        FileChangeSupport.DEFAULT.addListener(l, fileF);
+        File dirF = new File(scratchPath + SEP + "dir");
+        
+        for (int cntr = 0; cntr < 50; cntr++) {
+            dirF.mkdir();
+            new FileOutputStream(fileF).close();
+            scratch.getFileSystem().refresh(false);
+            assertEquals("got file creation event, count=" + cntr, Collections.singletonList("C:" + fileF), l.check());
+            fileF.delete();
+            dirF.delete();
+            scratch.getFileSystem().refresh(false);
+            assertEquals("and then a file deletion event, count=" + cntr, Collections.singletonList("D:" + fileF), l.check());
+        }
     }
     
     private static final class L implements FileChangeSupportListener {
