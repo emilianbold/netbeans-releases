@@ -26,6 +26,7 @@ import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 
 import java.text.MessageFormat;
 import java.io.File;
@@ -141,8 +142,9 @@ public abstract class AbstractSystemAction extends NodeAction {
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         } else if (objectCount == 1) {
             if (projectsOnly) {
+                String dispName = ProjectUtils.getInformation((Project) activatedNodes[0].getLookup().lookup(Project.class)).getDisplayName();
                 return NbBundle.getMessage(this.getClass(), baseName + "_Context",  // NOI18N
-                                                activatedNodes[0].getDisplayName());
+                                                dispName);
             }
             String name;
             FileObject fo = (FileObject) activatedNodes[0].getLookup().lookup(FileObject.class);
@@ -204,7 +206,7 @@ public abstract class AbstractSystemAction extends NodeAction {
             return null;
         } else if (objectCount == 1) {
             if (projectsOnly) {
-                return activatedNodes[0].getDisplayName();
+                return ProjectUtils.getInformation((Project) activatedNodes[0].getLookup().lookup(Project.class)).getDisplayName();
             }
             FileObject fo = (FileObject) activatedNodes[0].getLookup().lookup(FileObject.class);
             if (fo != null) {
