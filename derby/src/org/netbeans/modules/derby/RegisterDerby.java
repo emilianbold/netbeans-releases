@@ -43,6 +43,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -191,6 +192,9 @@ public class RegisterDerby implements DatabaseRuntime {
                 }
                 catch (Exception e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    String message = NbBundle.getMessage(RegisterDerby.class, "ERR_CreateDatabase", e.getMessage());
+                    NotifyDescriptor d  = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
                 }
             }
         });
