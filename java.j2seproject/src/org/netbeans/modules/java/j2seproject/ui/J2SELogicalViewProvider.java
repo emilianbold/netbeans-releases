@@ -54,10 +54,12 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
+import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -643,6 +645,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         
         private static final Object LIBRARIES = "Libs"; //NOI18N
         private static final Object TEST_LIBRARIES = "TestLibs"; //NOI18N
+        private static final String WSDL_FOLDER=J2SEProjectWebServicesClientSupport.WSDL_FOLDER;
         
         private final Project project;
         private final PropertyEvaluator evaluator;
@@ -651,6 +654,8 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         private final SourceRoots testSources;
             
         private final WsdlCreationListener wsdlListener;
+        private final MetaInfListener metaInfListener;
+        private FileObject wsdlFolder;
                 
         public LogicalViewChildren(J2SEProject project, PropertyEvaluator evaluator, UpdateHelper helper, ReferenceHelper resolver) {
             this.project = project;
@@ -658,16 +663,24 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             this.helper = helper;
             this.resolver = resolver;
             this.testSources = project.getTestSourceRoots();
+            this.metaInfListener = new MetaInfListener();
             this.wsdlListener = new WsdlCreationListener();
         }
         
         protected void addNotify() {
             super.addNotify();
             getSources().addChangeListener(this);
-            project.getProjectDirectory().addFileChangeListener(wsdlListener);
+            
+            AntProjectHelper projectHelper = helper.getAntProjectHelper();
+            String prop = evaluator.getProperty("meta.inf.dir"); //NOI18N
+            FileObject metaInf = projectHelper.resolveFileObject(prop);
+            if (metaInf!=null) metaInf.addFileChangeListener(metaInfListener);
+            prop = evaluator.getProperty("src.dir"); //NOI18N
+            FileObject srcDir = projectHelper.resolveFileObject(prop);
+            if (srcDir!=null) srcDir.addFileChangeListener(metaInfListener);
+            
             //XXX: Not very nice, the wsdlFolder should be hold by this class because it listens on it            
             WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-            FileObject wsdlFolder = null;
             try {
                 if (wsClientSupportImpl != null) {
                     wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
@@ -684,19 +697,19 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             getSources().removeChangeListener(this);
-            project.getProjectDirectory().removeFileChangeListener(wsdlListener);
-            WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-            FileObject wsdlFolder = null;
-            try {
-                if (wsClientSupportImpl != null) {
-                    wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
-                }
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
+            
+            AntProjectHelper projectHelper = helper.getAntProjectHelper();
+            String prop = evaluator.getProperty("meta.inf.dir"); //NOI18N
+            FileObject metaInf = projectHelper.resolveFileObject(prop);
+            if (metaInf!=null) metaInf.addFileChangeListener(metaInfListener);
+            prop = evaluator.getProperty("src.dir"); //NOI18N
+            FileObject srcDir = projectHelper.resolveFileObject(prop);
+            if (srcDir!=null) srcDir.removeFileChangeListener(metaInfListener);
+
             if (wsdlFolder != null) {
                 wsdlFolder.removeFileChangeListener(wsdlListener);
             }
+
             super.removeNotify();
         }
         
@@ -750,9 +763,19 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
                 if (clientView != null) {
                     WebServicesClientSupport wss = WebServicesClientSupport.getWebServicesClientSupport(clientRoot);
                     if (wss!=null) {
-                        List clients = wss.getServiceClients();
-                        if ((clients != null) && (clients.size() > 0)) {
-                            result = new Node[] {clientView.createWebServiceClientView(wss.getWsdlFolder())};
+                        FileObject wsdlFolder = wss.getWsdlFolder();
+                        if (wsdlFolder!=null) {
+                            FileObject[] children = wsdlFolder.getChildren();
+                            boolean foundWsdl = false;
+                            for (int i=0;i<children.length;i++) {
+                                if (children[i].getExt().equalsIgnoreCase(WSDL_FOLDER)) { //NOI18N
+                                    foundWsdl=true;
+                                    break;
+                                }
+                            }
+                            if (foundWsdl) {
+                                result = new Node[] {clientView.createWebServiceClientView(wsdlFolder)};
+                            }
                         }
                     }
                 }
@@ -803,7 +826,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             }
             
             result.add(KEY_SERVICE_REFS);
-            
+
             return result;
         }
         
@@ -841,31 +864,55 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         }
         
         private final class WsdlCreationListener extends FileChangeAdapter {
-            public void fileFolderCreated (FileEvent fe) {
-                WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-                if (wsClientSupportImpl != null) {
-                    FileObject wsdlFolder = null;
-                    try {
-                        wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
-                    } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    }
-                    if (wsdlFolder != null) {
-                        wsdlFolder.addFileChangeListener(wsdlListener);
-                    }
-                }
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        refreshKey(KEY_SERVICE_REFS);
-                    }
-                });
-            }
+            
             public void fileDataCreated (FileEvent fe) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        refreshKey(KEY_SERVICE_REFS);
-                    }
-                });
+                if (WSDL_FOLDER.equalsIgnoreCase(fe.getFile().getExt())) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            refreshKey(KEY_SERVICE_REFS);
+                        }
+                    });
+                }
+            }
+            
+            public void fileDeleted (FileEvent fe) {
+                if (WSDL_FOLDER.equalsIgnoreCase(fe.getFile().getExt())) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            refreshKey(KEY_SERVICE_REFS);
+                        }
+                    });
+                } else if (fe.getFile().isFolder() && WSDL_FOLDER.equals(fe.getFile().getName())) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            refreshKey(KEY_SERVICE_REFS);
+                        }
+                    });
+                }
+            }
+        }
+        
+        private final class MetaInfListener extends FileChangeAdapter {
+            
+            public void fileFolderCreated (FileEvent fe) {
+                if (fe.getFile().isFolder() && WSDL_FOLDER.equals(fe.getFile().getName())) {
+                    fe.getFile().addFileChangeListener(wsdlListener);
+                } else if (fe.getFile().isFolder() && "META-INF".equals(fe.getFile().getName())) { //NOI18N
+                    fe.getFile().addFileChangeListener(metaInfListener);
+                }
+            }
+
+            public void fileDeleted (FileEvent fe) {
+                if (fe.getFile().isFolder() && WSDL_FOLDER.equals(fe.getFile().getName())) {
+                    fe.getFile().removeFileChangeListener(wsdlListener);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            refreshKey(KEY_SERVICE_REFS);
+                        }
+                    });
+                } else if (fe.getFile().isFolder() && "META-INF".equals(fe.getFile().getName())) { //NOI18N
+                    fe.getFile().removeFileChangeListener(metaInfListener);
+                }
             }
         }
     }
