@@ -16,6 +16,7 @@ package org.netbeans.spi.project.ui;
 /**
  * Ability for a project to provide a GUI customizer.
  * @see org.netbeans.api.project.Project#getLookup
+ * @see org.netbeans.spi.project.ui.support.ProjectCustomizer
  * @author Jesse Glick
  */
 public interface CustomizerProvider {
