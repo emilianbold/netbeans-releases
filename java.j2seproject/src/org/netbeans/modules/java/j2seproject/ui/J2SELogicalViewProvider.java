@@ -673,11 +673,15 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             
             AntProjectHelper projectHelper = helper.getAntProjectHelper();
             String prop = evaluator.getProperty("meta.inf.dir"); //NOI18N
-            FileObject metaInf = projectHelper.resolveFileObject(prop);
-            if (metaInf!=null) metaInf.addFileChangeListener(metaInfListener);
+            if (prop!=null) {
+                FileObject metaInf = projectHelper.resolveFileObject(prop);
+                if (metaInf!=null) metaInf.addFileChangeListener(metaInfListener);
+            }
             prop = evaluator.getProperty("src.dir"); //NOI18N
-            FileObject srcDir = projectHelper.resolveFileObject(prop);
-            if (srcDir!=null) srcDir.addFileChangeListener(metaInfListener);
+            if (prop!=null) {
+                FileObject srcDir = projectHelper.resolveFileObject(prop);
+                if (srcDir!=null) srcDir.addFileChangeListener(metaInfListener);
+            }
             
             //XXX: Not very nice, the wsdlFolder should be hold by this class because it listens on it            
             WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
@@ -700,12 +704,15 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             
             AntProjectHelper projectHelper = helper.getAntProjectHelper();
             String prop = evaluator.getProperty("meta.inf.dir"); //NOI18N
-            FileObject metaInf = projectHelper.resolveFileObject(prop);
-            if (metaInf!=null) metaInf.addFileChangeListener(metaInfListener);
+            if (prop!=null) {
+                FileObject metaInf = projectHelper.resolveFileObject(prop);
+                if (metaInf!=null) metaInf.addFileChangeListener(metaInfListener);
+            }
             prop = evaluator.getProperty("src.dir"); //NOI18N
-            FileObject srcDir = projectHelper.resolveFileObject(prop);
-            if (srcDir!=null) srcDir.removeFileChangeListener(metaInfListener);
-
+            if (prop!=null) {
+                FileObject srcDir = projectHelper.resolveFileObject(prop);
+                if (srcDir!=null) srcDir.removeFileChangeListener(metaInfListener);
+            }
             if (wsdlFolder != null) {
                 wsdlFolder.removeFileChangeListener(wsdlListener);
             }
