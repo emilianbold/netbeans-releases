@@ -46,7 +46,7 @@ public abstract class OptionsCategory {
     
     /**
      * Returns base name of 32x32 icon used in list on the left side of 
-     * Options Dialog.
+     * Options Dialog. See AbstractNode.setIconBase method for more info.
      *
      * @return base name of 32x32 icon
      */
@@ -69,7 +69,7 @@ public abstract class OptionsCategory {
     public abstract String getTitle ();
     
     /**
-     * Returns {@link PanelController} for this category. PanelController 
+     * Returns new {@link PanelController} for this category. PanelController 
      * creates visual component to be used inside of the Options Dialog.
      * You should not do any time-consuming operations inside 
      * the constructor, because it blocks initialization of OptionsDialog. 

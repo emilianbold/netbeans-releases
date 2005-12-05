@@ -32,6 +32,9 @@ public abstract class OptionsPanelController {
      * time-consuming operations inside the constructor, because it 
      * blocks initialization of OptionsDialog. Initialization 
      * should be implemented in update method.
+     * This method is called after {@link #getComponent} method.
+     * Update method can be called more than one time for the same instance 
+     * of JComponent obtained from {@link #getComponent} call.
      */
     public abstract void update ();
 
@@ -48,7 +51,7 @@ public abstract class OptionsPanelController {
     public abstract void cancel ();
 
     /**
-     * Should returns <code>true</code> if some option value in this 
+     * Should return <code>true</code> if some option value in this 
      * category is valid.
      * 
      * 
@@ -58,7 +61,7 @@ public abstract class OptionsPanelController {
     public abstract boolean isValid ();
 
     /**
-     * Should returns <code>true</code> if some option value in this 
+     * Should return <code>true</code> if some option value in this 
      * category has been changed.
      * 
      * 
@@ -70,7 +73,7 @@ public abstract class OptionsPanelController {
     /**
      * Each option category can provide some lookup. Options Dialog master
      * lookup is composed from these individual lookups. Master lookup
-     * can be obtained from {@link #getComponent} call. This lookup is design
+     * can be obtained from {@link #getComponent} call. This lookup is designed
      * to support communication anong individual panels in one Options
      * Dialog.
      * 
@@ -83,8 +86,11 @@ public abstract class OptionsPanelController {
 
     /**
      * Returns visual component representing this options category.
+     * This method is called before {@link #update} method.
      * 
-     * 
+     * @param masterLookup master lookup composed from lookups provided by 
+     *        individual OptionsPanelControllers 
+     *        - {@link OptionsPanelController.getLookup}
      * @return visual component representing this options category
      */
     public abstract JComponent getComponent (Lookup masterLookup);
