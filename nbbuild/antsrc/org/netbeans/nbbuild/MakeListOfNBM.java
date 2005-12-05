@@ -101,10 +101,13 @@ public class MakeListOfNBM extends Task {
 
         fs.createInclude().setName("config" + File.separator + "Modules" + File.separator + track.getTrackingFileName()); //NOI18N
         
+        // get directory scanner for "default" files
         DirectoryScanner ds = fs.getDirectoryScanner( this.getProject() );
         ds.scan();
         
+        // check if we need also localized and branded files
         String lmnl = this.getProject().getProperty("locmakenbm.locales"); // NOI18N
+        String lmnb = this.getProject().getProperty("locmakenbm.brands"); // NOI18N
         
         if ((!(lmnl == null)) && (!(lmnl.trim().equals("")))) { // NOI18N
             // property locmakenbm.locales is set, let's update the included fileset for locales
@@ -118,16 +121,35 @@ public class MakeListOfNBM extends Task {
                 lmnLocales[j] = s;
                 log("  lmnLocales[j] == "+lmnLocales[j], Project.MSG_DEBUG); // NOI18N
             }
+
+            // handle brandings   
+            String[] lmnBrands = null;
+            if ((!(lmnb == null)) && (!(lmnb.trim().equals("")))) { // NOI18N
+                tokenizer = new StringTokenizer( lmnb, ", ") ; //NOI18N
+                cntTok = tokenizer.countTokens();
+                lmnBrands = new String[cntTok];
+                for (int j=0; j < cntTok; j++) {
+                    String s = tokenizer.nextToken();
+                    lmnBrands[j] = s;
+                    log("  lmnBrands[j] == "+lmnBrands[j], Project.MSG_DEBUG); // NOI18N
+                }
+            }
+
             // update fileset for localized/branded files
         
             String[] englishFiles = ds.getIncludedFiles();
             int sepPos, extPos;
             String dirName, fname, filename, fext, newinc, ei_codename;
             String moduleJar = null;
+            boolean skipLocaleDir = false;
             for (int k=0; k < englishFiles.length; k++) {
                 // skip records for already localized/branded files
                 if ((englishFiles[k].lastIndexOf("/locale/") >= 0) || // NOI18N
-                     (englishFiles[k].lastIndexOf(File.separator+"locale"+File.separator) >= 0)) continue; // NOI18N
+                     (englishFiles[k].lastIndexOf(File.separator+"locale"+File.separator) >= 0)) {  // NOI18N
+                    skipLocaleDir=true;
+                } else {
+                    skipLocaleDir=false;
+                }
                 log("Examining file " + englishFiles[k], Project.MSG_DEBUG);
                 sepPos = englishFiles[k].lastIndexOf(File.separator);
                 if (sepPos < 0) {
@@ -146,9 +168,26 @@ public class MakeListOfNBM extends Task {
                     fext = filename.substring(extPos);
                 }
                 for (int j=0; j < lmnLocales.length; j++) {
-                    newinc = dirName + File.separator + "locale" + File.separator + fname + "_"+lmnLocales[j]+"*" + fext; //NOI18N
+                    // localized files
+                    if (skipLocaleDir) {
+                    	newinc = dirName + File.separator + fname + "_"+lmnLocales[j]+"*" + fext; //NOI18N
+                    } else {
+                        newinc = dirName + File.separator + "locale" + File.separator + fname + "_"+lmnLocales[j]+"*" + fext; //NOI18N
+                    }
                     log("  adding include mask \""+newinc+"\"", Project.MSG_DEBUG);
                     fs.setIncludes( newinc );
+                    // localized & branded files
+                    if (!(lmnBrands == null)) {
+                    	for (int i=0; i < lmnBrands.length; i++) {
+                    	    if (skipLocaleDir) {
+                    	        newinc = dirName + File.separator + fname + "_"+lmnBrands[i]+"_"+lmnLocales[j]+"*" + fext; //NOI18N
+                            } else {
+                    	        newinc = dirName + File.separator + "locale" + File.separator + fname + "_"+lmnBrands[i]+"_"+lmnLocales[j]+"*" + fext; //NOI18N
+                    	    }
+                            log("  adding include mask \""+newinc+"\"", Project.MSG_DEBUG);
+                            fs.setIncludes( newinc );
+                    	}
+                    }
                 }
             }
             // update directory scanner
