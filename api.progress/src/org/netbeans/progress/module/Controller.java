@@ -152,13 +152,14 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
             // need to add to queue immediately in the current thread
             eventQueue.addAll(events);
             dispatchRunning = true;
-            // trigger ui update as fast as possible.
-            if (SwingUtilities.isEventDispatchThread()) {
-                run();
-            } else {
-                SwingUtilities.invokeLater(this);
-            }
         }
+        // trigger ui update as fast as possible.
+        if (SwingUtilities.isEventDispatchThread()) {
+           run();
+        } else {
+           SwingUtilities.invokeLater(this);
+        }
+        
     }
     
     void postEvent(final ProgressEvent event) {

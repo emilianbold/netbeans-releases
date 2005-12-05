@@ -145,7 +145,7 @@ public final class ProgressHandle {
      * @since 1.5
      */
     public void setDisplayName(String newDisplayName) {
-        internal.updateDisplayName(newDisplayName);
+        internal.requestDisplayNameChange(newDisplayName);
     }
     
     /**
