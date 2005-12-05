@@ -101,14 +101,18 @@ public class DerbyOptions extends SystemOption {
      */
     public void setLocation(String location) {
         synchronized (getLock()) {
-            stopDerbyServer();
+            if (!isReadExternal()) {
+                stopDerbyServer();
+            }
             if (location != null && location.length() <= 0) {
                 location = getDefaultInstallLocation();
                 if (location == null) {
                     location = ""; // NOI18N
                 }
             }
-            registerDrivers(location);
+            if (!isReadExternal()) {
+                registerDrivers(location);
+            }
             putProperty(PROP_DERBY_LOCATION, location, true);
         }
     }
@@ -127,7 +131,9 @@ public class DerbyOptions extends SystemOption {
     
     public void setSystemHome(String derbySystemHome) {
         synchronized (getLock()) {
-            stopDerbyServer();
+            if (!isReadExternal()) {
+                stopDerbyServer();
+            }
             putProperty(PROP_DERBY_SYSTEM_HOME, derbySystemHome, true);
         }
     }
