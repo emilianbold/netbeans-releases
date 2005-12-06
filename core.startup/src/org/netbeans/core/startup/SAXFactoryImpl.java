@@ -49,6 +49,8 @@ public class SAXFactoryImpl extends SAXParserFactory {
         } finally {
            Thread.currentThread().setContextClassLoader(orig);            
         }
+        DOMFactoryImpl.install();
+        SAXFactoryImpl.install();
     }
     
     public boolean getFeature(java.lang.String name) throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {

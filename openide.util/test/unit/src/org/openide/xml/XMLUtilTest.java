@@ -18,6 +18,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URL;
+import java.net.URLClassLoader;
 import javax.xml.parsers.DocumentBuilderFactory;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
@@ -339,5 +341,4 @@ public class XMLUtilTest extends NbTestCase {
         String data2 = baos.toString().replaceAll("\r\n", "\n");
         assertEquals("identity replacement should not mess up significant whitespace", data, data2);
     }
-    
 }

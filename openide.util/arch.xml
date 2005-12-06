@@ -415,8 +415,12 @@ org.my.netbeans.extramodule.ExtraTip
  <answer id="exec-introspection">
   <p>
    <a href="@TOP@/org/openide/util/Utilities.html">Utilities</a> provide wrapper
-   for java beans introspection.
-  </p>
+   for java beans introspection. <api category="private" group="java" name="ParserFactory" type="import" >
+       The <a href="@TOP@/org/openide/xml/XMLUtil.html">XMLUtil</a> class is loading
+       a class from <code>core/core.jar</code> to initialize the correct parser factory.
+       This is a fix for <a href="http://www.netbeans.org/issues/show_bug.cgi?id=68942">issue 68942</a>.
+   </api>
+   </p>
  </answer>
 
 

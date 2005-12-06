@@ -48,6 +48,9 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
         } finally {
            Thread.currentThread().setContextClassLoader(orig);            
         }
+        
+        DOMFactoryImpl.install();
+        SAXFactoryImpl.install();
     }
     
     public java.lang.Object getAttribute(java.lang.String name) throws java.lang.IllegalArgumentException {

@@ -31,6 +31,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.openide.ErrorManager;
+import org.openide.util.Lookup;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -375,8 +376,22 @@ public final class XMLUtil extends Object {
             }
         }
         // XXX should try to use org.w3c.dom.ls.LSSerializer if it exists...
+        // XXX #66563 workaround
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(XMLUtil.class.getClassLoader()); // XXX #66563 workaround
+        ClassLoader global = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader target = XMLUtil.class.getClassLoader();
+        if (global == null) {
+            global = target;
+        }
+        try {
+            Class clazz = global.loadClass("org.netbeans.core.startup.SAXFactoryImpl");
+            if (clazz != null) target = clazz.getClassLoader();
+        } catch (Exception e) {
+            //Ignore...
+            //ErrorManager.getDefault().notify(e);
+        } 
+        Thread.currentThread().setContextClassLoader(target);
+        
         try {
             Transformer t = TransformerFactory.newInstance().newTransformer(
                     new StreamSource(new StringReader(IDENTITY_XSLT_WITH_INDENT)));
