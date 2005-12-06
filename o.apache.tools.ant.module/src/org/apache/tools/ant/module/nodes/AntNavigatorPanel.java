@@ -29,6 +29,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -40,7 +41,11 @@ public final class AntNavigatorPanel implements NavigatorPanel {
     private Lookup.Result selection;
     private final LookupListener selectionListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
-            display(selection.allInstances());
+            Mutex.EVENT.readAccess(new Runnable() { // #69355: safest to run in EQ
+                public void run() {
+                    display(selection.allInstances());
+                }
+            });
         }
     };
     private JComponent panel;
