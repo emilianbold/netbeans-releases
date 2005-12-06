@@ -260,7 +260,25 @@ public class VersioningOperator extends TopComponentOperator {
     public void performPopup(String filename, String popupPath) {
         performPopup(tabFiles().findCellRow(filename), popupPath);
     }
+
+    /** Performs popup menu on specified row and no block further execution.
+     * @param row row number to be selected (starts from 0)
+     * @param popupPath popup menu path
+     */
+    public void performPopupNoBlock(int row, String popupPath) {
+        tabFiles().selectCell(row, 0);
+        JPopupMenuOperator popup = new JPopupMenuOperator(tabFiles().callPopupOnCell(row, 0));
+        popup.pushMenuNoBlock(popupPath);
+    }
     
+    /** Performs popup menu on specified file and no block further execution.
+     * @param filename name of file to be selected
+     * @param popupPath popup menu path
+     */
+    public void performPopupNoBlock(String filename, String popupPath) {
+        performPopupNoBlock(tabFiles().findCellRow(filename), popupPath);
+    }
+
     //*****************************************
     // High-level functionality definition part
     //*****************************************
