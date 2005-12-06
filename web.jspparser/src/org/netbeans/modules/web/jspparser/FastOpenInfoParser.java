@@ -18,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
@@ -369,6 +370,9 @@ public class FastOpenInfoParser {
             public void endElement(String uri, String localname, String qname) throws SAXException {
                 String tagName = qname.toLowerCase();
                 if(JSP_PROPERTY_GROUP.equals(tagName)) inJspPropertyGroup = false;
+            }
+            public InputSource resolveEntity (String publicId, String systemId) {
+                return new InputSource(new StringReader("")); //prevent the parser to use catalog entity resolver
             }
         }
         parser.parse(src, new Handler());
