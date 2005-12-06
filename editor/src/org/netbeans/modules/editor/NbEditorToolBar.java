@@ -143,9 +143,6 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                     JButton button = (JButton)evt.getSource();
                     button.setContentAreaFilled(false);
                     button.setBorderPainted(false);
-                    
-                    //fix of issue #69642. Focus shouldn't stay in toolbar
-                    SwingUtilities.invokeLater(returnFocusRunnable); 
                 }
             }
             
@@ -584,6 +581,8 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         if (button instanceof JButton) {
             button.addMouseListener(sharedMouseListener);
         }
+        //fix of issue #69642. Focus shouldn't stay in toolbar
+        button.setFocusable(false);
     }
 
     /** Merge together the base and mime folders.
