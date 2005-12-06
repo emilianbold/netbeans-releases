@@ -12,11 +12,13 @@
  */
 package org.openide;
 
+import java.lang.reflect.InvocationTargetException;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -175,6 +177,8 @@ public class WizardDescriptor extends DialogDescriptor {
 
     /** Reference to default image */
     private static WeakReference defaultImage;
+    
+    private static ErrorManager err = ErrorManager.getDefault ().getInstance (WizardDescriptor.class.getName ());
 
     /** real buttons to be placed instead of the options */
     private final JButton nextButton = new JButton();
@@ -254,11 +258,13 @@ public class WizardDescriptor extends DialogDescriptor {
     private Map properties;
     ResourceBundle bundle = NbBundle.getBundle(WizardDescriptor.class);
 
-    /** Request processor that is used for background validation and 
-     * supports Thread.interrupted(). There can be more parael invokations
+    /** Request processor that is used for asynchronous jobs (background validation, 
+     * asynchronous instantiation i.e.) and supports Thread.interrupted().
+     * It's package-private to accessible for unit tests.
      */
-    private static final RequestProcessor BACKGROUND_VALIDATION_RP = 
-        new RequestProcessor("Wizard Background Validation", 16, true); // NOI18N
+    static final RequestProcessor ASYNCHRONOUS_JOBS_RP = 
+        new RequestProcessor("wizard-descriptor-asynchronous-jobs", 1, true); // NOI18N
+    
     private RequestProcessor.Task backgroundValidationTask;
 
     {
@@ -861,7 +867,7 @@ public class WizardDescriptor extends DialogDescriptor {
             buffer.append(" provides itself as the result of getComponent().\n"); // NOI18N
             buffer.append("This hurts performance and can cause a clash when Component.isValid() is overridden.\n"); // NOI18N
             buffer.append("Please use a separate component class, see details at http://performance.netbeans.org/howto/dialogs/wizard-panels.html."); // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, buffer.toString());
+            err.log(ErrorManager.WARNING, buffer.toString());
         }
     }
     */
@@ -1098,6 +1104,8 @@ public class WizardDescriptor extends DialogDescriptor {
 
         Runnable validationPeformer = new Runnable() {
             public void run() {
+                
+                err.log (ErrorManager.INFORMATIONAL, "validationPeformer entry."); // NOI18N
                 ValidatingPanel v = (ValidatingPanel) panel;
 
                 try {
@@ -1107,11 +1115,14 @@ public class WizardDescriptor extends DialogDescriptor {
                     // validation succesfull
                     if (SwingUtilities.isEventDispatchThread ()) {
                         setValid(true);
+                        err.log (ErrorManager.INFORMATIONAL, "Runs onValidPerformer directly in EDT."); // NOI18N
                         onValidPerformer.run();
                     } else {
+                        err.log (ErrorManager.INFORMATIONAL, "invokeLater onValidPerformer."); // NOI18N
                         SwingUtilities.invokeLater (new Runnable () {
                             public void run () {
                                 setValid(true);
+                                err.log (ErrorManager.INFORMATIONAL, "Runs onValidPerformer from invokeLater."); // NOI18N
                                 onValidPerformer.run();
                             } 
                         });
@@ -1140,10 +1151,13 @@ public class WizardDescriptor extends DialogDescriptor {
             AsynchronousValidatingPanel p = (AsynchronousValidatingPanel) panel;
             setValid(false);  // disable Next> Finish buttons
             p.prepareValidation();
-            backgroundValidationTask = BACKGROUND_VALIDATION_RP.post(validationPeformer);
+            err.log (ErrorManager.INFORMATIONAL, "Do ASYNCHRONOUS_JOBS_RP.post(validationPeformer)."); // NOI18N
+            backgroundValidationTask = ASYNCHRONOUS_JOBS_RP.post(validationPeformer);
         } else if (panel instanceof ValidatingPanel) {
+            err.log (ErrorManager.INFORMATIONAL, "Runs validationPeformer."); // NOI18N
             validationPeformer.run();
         } else {
+            err.log (ErrorManager.INFORMATIONAL, "Runs onValidPerformer."); // NOI18N
             onValidPerformer.run();
         }
 
@@ -1175,11 +1189,11 @@ public class WizardDescriptor extends DialogDescriptor {
         panels.current().storeSettings(settings);
 
         if (panels instanceof InstantiatingIterator) {
-            // PENDING: disable all buttons to indicate that instantiate runs
-            // PENDING:  write something to errorMessage (e.g. Wait to finishing.)
             showWaitCursor();
 
             try {
+                assert ! (panels instanceof AsynchronousInstantiatingIterator) || ! SwingUtilities.isEventDispatchThread () : "Cannot invoked within EDT if AsynchronousInstantiatingIterator!";
+                err.log (ErrorManager.INFORMATIONAL, "Calls instantiate() on iterator: " + panels.getClass ().getName ());
                 newObjects = ((InstantiatingIterator) panels).instantiate();
             } finally {
 
@@ -1461,6 +1475,26 @@ public class WizardDescriptor extends DialogDescriptor {
          */
         public void uninitialize(WizardDescriptor wizard);
     }
+    
+    /**
+     * Iterator for a wizard that needs to somehow instantiate new objects outside ATW queue.
+     * (This interface can replace
+     * <a href="@OPENIDE/LOADERS@/org/openide/loaders/TemplateWizard.Iterator.html"><code>TemplateWizard.Iterator</code></a>
+     * in a template's declaration.)
+     * @since org.openide/1 6.5
+     */
+    public interface AsynchronousInstantiatingIterator extends InstantiatingIterator {
+
+        /**
+         * Is called in separate thread when the Finish button
+         * are clicked and allows implement asynchronous
+         * instantating of newly created objects.
+         *
+         * @throws WizardValidationException when validation fails
+         */
+        public Set /*<Object>*/ instantiate () throws IOException;
+
+    }
 
     /** Special iterator that works on an array of <code>Panel</code>s.
     */
@@ -1581,10 +1615,12 @@ public class WizardDescriptor extends DialogDescriptor {
                 wizardPanel.setErrorMessage(" ", null); //NOI18N
             }
 
+            err.log (ErrorManager.INFORMATIONAL, "actionPerformed entry. Source: " + ev.getSource ()); // NOI18N
             if (ev.getSource() == nextButton) {
                 final Dimension previousSize = panels.current().getComponent().getSize();
                 Runnable onValidPerformer = new Runnable() {
                     public void run() {
+                        err.log (ErrorManager.INFORMATIONAL, "onValidPerformer on next button entry."); // NOI18N
                         panels.nextPanel();
 
                         try {
@@ -1600,11 +1636,12 @@ public class WizardDescriptor extends DialogDescriptor {
                             } else {
                                 // this should be used (it checks for exception
                                 // annotations and severity)
-                                ErrorManager.getDefault().notify(ise);
+                                err.notify(ise);
                             }
 
                             updateState();
                         }
+                        err.log (ErrorManager.INFORMATIONAL, "onValidPerformer on next button exit."); // NOI18N
                     }
                 };
                 lazyValidate(panels.current(), onValidPerformer);
@@ -1620,33 +1657,65 @@ public class WizardDescriptor extends DialogDescriptor {
             if (ev.getSource() == finishButton) {
                 Runnable onValidPerformer = new Runnable() {
                     public void run() {
-                        // do instantiate
-                        try {
-                            callInstantiate();
-                        } catch (IOException ioe) {
-                            // notify to log
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                        err.log (ErrorManager.INFORMATIONAL, "onValidPerformer on finish button entry."); // NOI18N
+                        
+                        // disable all buttons to indicate that instantiate runs
+                        cancelButton.setEnabled (false);
+                        previousButton.setEnabled (false);
+                        nextButton.setEnabled (false);
+                        finishButton.setEnabled (false);
+                        
+                        // write something to errorMessage (e.g. Wait to finishing.)
+                        if (wizardPanel != null) wizardPanel.setErrorMessage (NbBundle.getMessage (WizardDescriptor.class, "MSG_WizardDescriptor_FinishInProgress"), Boolean.TRUE); // NOI18N
+                        
+                        Runnable performFinish = new Runnable () {
+                            public void run () {
+                                err.log (ErrorManager.INFORMATIONAL, "performFinish entry."); // NOI18N
+                                // do instantiate
+                                try {
+                                    callInstantiate();
+                                } catch (IOException ioe) {
+                                    // notify to log
+                                    err.notify(ErrorManager.INFORMATIONAL, ioe);
 
-                            setValueWithoutPCH(NEXT_OPTION);
-                            updateStateWithFeedback();
+                                    setValueWithoutPCH(NEXT_OPTION);
+                                    updateStateWithFeedback();
 
-                            // notify user by the wizard's status line
-                            putProperty(PROP_ERROR_MESSAGE, ioe.getLocalizedMessage());
+                                    // notify user by the wizard's status line
+                                    putProperty(PROP_ERROR_MESSAGE, ioe.getLocalizedMessage());
 
-                            // if validation failed => cannot move to next panel
-                            return;
+                                    // if validation failed => cannot move to next panel
+                                    return;
+                                }
+                                Object oldValue = getValue();
+                                setValueWithoutPCH(OK_OPTION);
+
+                                resetWizard();
+
+                                firePropertyChange(PROP_VALUE, oldValue, OK_OPTION);
+                                
+                                SwingUtilities.invokeLater (new Runnable () {
+                                    public void run () {
+                                        // all is OK
+                                        // close wizrad
+                                        finishOption.fireActionPerformed();
+
+                                    }
+                                });
+                                err.log (ErrorManager.INFORMATIONAL, "performFinish exit."); // NOI18N
+                            }
+                        };
+                        
+                        if (panels instanceof AsynchronousInstantiatingIterator) {
+                            err.log (ErrorManager.INFORMATIONAL, "Do ASYNCHRONOUS_JOBS_RP.post(performFinish)."); // NOI18N
+                            ASYNCHRONOUS_JOBS_RP.post (performFinish);
+                        } else {
+                            err.log (ErrorManager.INFORMATIONAL, "Run performFinish."); // NOI18N
+                            performFinish.run ();
                         }
-
-                        // all is OK
-                        // close wizrad
-                        finishOption.fireActionPerformed();
-
-                        Object oldValue = getValue();
-                        setValueWithoutPCH(OK_OPTION);
-
-                        resetWizard();
-
-                        firePropertyChange(PROP_VALUE, oldValue, OK_OPTION);
+                        
+                        err.log (ErrorManager.INFORMATIONAL, "onValidPerformer on finish button exit."); // NOI18N
+                        
                     }
                 };
                 lazyValidate(panels.current(), onValidPerformer);

@@ -7,12 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide;
 
 
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.junit.*;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -30,6 +31,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.*;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor.Task;
 
 /** Testing functional implementation calling the methods to interface <code>WizardDescriptor.InstantiatingIterator</code>
  * from WizardDescriptor.
@@ -46,25 +48,24 @@ public class InstantiatingIteratorTest extends NbTestCase {
         System.exit (0);
     }
     
-    private WizardDescriptor wd;
-    private String exceptedValue;
+    protected WizardDescriptor wd;
+    protected String exceptedValue;
     private Iterator iterator;
-    private int attachedInIterator = 0;
-    private int attachedInPanel = 0;
-    private boolean checkOrder = false;
-    private boolean shouldThrowException = false;
-    private boolean checkAWTQueue = false;
-    private Set/*<ChangeListener>*/ changeListenersInIterator = new HashSet ();
-    private Set/*<ChangeListener>*/ changeListenersInPanel = new HashSet ();
+    protected int attachedInIterator = 0;
+    protected int attachedInPanel = 0;
+    protected boolean checkOrder = false;
+    protected boolean shouldThrowException = false;
+    protected Set/*<ChangeListener>*/ changeListenersInIterator = new HashSet ();
+    protected Set/*<ChangeListener>*/ changeListenersInPanel = new HashSet ();
+    protected boolean checkIfInAWT;
 
-    protected final void setUp () {
+    protected void setUp () {
         iterator = new Iterator ();
         wd = new WizardDescriptor (iterator);
         wd.addPropertyChangeListener(new Listener ());
         java.awt.Dialog d = DialogDisplayer.getDefault ().createDialog (wd);
         checkOrder = false;
         shouldThrowException = false;
-        checkAWTQueue = false;
         //d.show();
     }
     
@@ -79,7 +80,7 @@ public class InstantiatingIteratorTest extends NbTestCase {
         assertEquals ("Still only one listener is attached after Next.", 1, changeListenersInIterator.size ());
         wd.doPreviousClick ();
         assertEquals ("Still only one listener is attached after Previous.", 1, changeListenersInIterator.size ());
-        wd.doFinishClick ();
+        finishWizard (wd);
         assertEquals ("No one listener is attached after Finish.", 0, changeListenersInIterator.size ());
         assertEquals ("No one listener is attached in WD.Panel after Finish.", 0, changeListenersInPanel.size ());
     }
@@ -92,56 +93,62 @@ public class InstantiatingIteratorTest extends NbTestCase {
     }
     
     public void testInitializeIterator () throws Exception {
-        assertTrue ("InstantiatingIterator was initialized.", iterator.initialized.booleanValue ());
-        assertNull ("InstantiatingIterator wasn't instantiated.", iterator.result);
+        assertTrue ("InstantiatingIterator was initialized.", getInitialized ().booleanValue ());
+        assertNull ("InstantiatingIterator wasn't instantiated.", getResult ());
     }
 
     public void testUninitializeIterator () throws Exception {
-        assertTrue ("InstantiatingIterator was initialized at start.", iterator.initialized.booleanValue ());
+        assertTrue ("InstantiatingIterator was initialized at start.", getInitialized ().booleanValue ());
         wd.doCancelClick ();
-        assertFalse ("InstantiatingIterator was uninitialized after cancel.", iterator.initialized.booleanValue ());
-        assertNull ("InstantiatingIterator wasn't instantiated.", iterator.result);
+        assertFalse ("InstantiatingIterator was uninitialized after cancel.", getInitialized ().booleanValue ());
+        assertNull ("InstantiatingIterator wasn't instantiated.", getResult ());
     }
 
     public void testFinishAndUninitializeIterator () throws Exception {
-        assertTrue ("InstantiatingIterator was initialized at start.", iterator.initialized.booleanValue ());
+        assertTrue ("InstantiatingIterator was initialized at start.", getInitialized ().booleanValue ());
         wd.doNextClick ();
-        assertTrue ("InstantiatingIterator wasn't uninitialized after next.", iterator.initialized.booleanValue ());
-        wd.doFinishClick ();
-        assertFalse ("InstantiatingIterator wasn uninitialized after finish.", iterator.initialized.booleanValue ());
-        assertNotNull ("InstantiatingIterator was instantiated.", iterator.result);
+        assertTrue ("InstantiatingIterator wasn't uninitialized after next.", getInitialized ().booleanValue ());
+        finishWizard (wd);
+        assertFalse ("InstantiatingIterator wasn uninitialized after finish.", getInitialized ().booleanValue ());
+        assertNotNull ("InstantiatingIterator was instantiated.", getResult ());
     }
 
     public void testUninitializeIteratorAndCalledCurrent () throws Exception {
-        assertTrue ("InstantiatingIterator was initialized at start.", iterator.initialized.booleanValue ());
+        assertTrue ("InstantiatingIterator was initialized at start.", getInitialized ().booleanValue ());
         wd.doNextClick ();
-        assertTrue ("InstantiatingIterator wasn't uninitialized after next.", iterator.initialized.booleanValue ());
-        wd.doFinishClick ();
-        assertFalse ("InstantiatingIterator wasn uninitialized after finish.", iterator.initialized.booleanValue ());
-        assertNotNull ("InstantiatingIterator was instantiated.", iterator.result);
+        assertTrue ("InstantiatingIterator wasn't uninitialized after next.", getInitialized ().booleanValue ());
+        finishWizard (wd);
+        assertFalse ("InstantiatingIterator was uninitialized after finish.", getInitialized ().booleanValue ());
+        assertNotNull ("InstantiatingIterator was instantiated.", getResult ());
     }
 
     public void testOrderStoreSettingAndInstantiate () throws Exception {
         checkOrder = true;
         wd.doNextClick ();
-        wd.doFinishClick ();
-        assertNotNull ("InstantiatingIterator was instantiated.", iterator.result);
+        finishWizard (wd);
+        assertNotNull ("InstantiatingIterator was instantiated.", getResult ());
     }
 
     public void testGetInstantiatedObjects () throws Exception {
         wd.doNextClick ();
-        wd.doFinishClick ();
-        assertNotNull ("InstantiatingIterator was instantiated.", iterator.result);
+        finishWizard (wd);
+        assertNotNull ("InstantiatingIterator was instantiated.", getResult ());
         Set newObjects = wd.getInstantiatedObjects ();
-        assertEquals ("WD returns same objects as InstantiatingIterator instantiated.", iterator.result, newObjects);
+        assertEquals ("WD returns same objects as InstantiatingIterator instantiated.", getResult (), newObjects);
         
     }
     
-    public void testInstantiateOutsideAWTQueue () {
-        checkAWTQueue = true;
+    public void testInstantiateInAWTQueueOrNot () {
+        checkIfInAWT = true;
 
         wd.doNextClick ();
-        wd.doFinishClick ();
+        finishWizard (wd);
+        try {
+            Set newObjects = wd.getInstantiatedObjects ();
+        } catch (IllegalStateException ise) {
+            fail ("IllegalStateException was caught because WD.instantiate() called outside AWT queue.");
+        }
+        assertNotNull ("InstantiatingIterator was correctly instantiated.", getResult ());
     }
     
     public void testFinishOptionWhenInstantiateFails () throws Exception {
@@ -149,12 +156,16 @@ public class InstantiatingIteratorTest extends NbTestCase {
 
         wd.doNextClick ();
         Object state = wd.getValue();
-        wd.doFinishClick ();
+        finishWizard (wd);
         
-        assertNull ("InstantiatingIterator was not correctly instantiated.", iterator.result);
-//        Set newObjects = wd.getInstantiatedObjects ();
-//        assertEquals ("WD returns no object.", Collections.EMPTY_SET, newObjects);
-        assertSame ("The state is same as before instantiate()", state, wd.getValue ());
+        assertNull ("InstantiatingIterator was not correctly instantiated.", getResult ());
+        try {
+            Set newObjects = wd.getInstantiatedObjects ();
+            fail ("No IllegalStateException was caught. Should be thrown when invoked getInstantiatedObjects() on unfinished wizard.");
+        } catch (IllegalStateException ise) {
+            // correct behavior
+        }
+        assertEquals ("The state is same as before instantiate()", state, wd.getValue ());
     }
     
     public class Panel implements WizardDescriptor.FinishablePanel {
@@ -194,7 +205,7 @@ public class InstantiatingIteratorTest extends NbTestCase {
         
         public void storeSettings(Object settings) {
             if (checkOrder) {
-                assertNull ("WD.P.storeSettings() called before WD.I.instantiate()", iterator.result);
+                assertNull ("WD.P.storeSettings() called before WD.I.instantiate()", getResult ());
                 // bugfix #45093, remember storeSettings could be called multiple times
                 // do check order only when the first time
                 checkOrder = false;
@@ -212,13 +223,21 @@ public class InstantiatingIteratorTest extends NbTestCase {
         
     }
     
+    protected Boolean getInitialized () {
+        return iterator.initialized;
+    }
+    
+    protected Set getResult () {
+        return iterator.result;
+    }
+    
     public class Iterator implements WizardDescriptor.InstantiatingIterator {
         int index = 0;
         WizardDescriptor.Panel panels[] = new WizardDescriptor.Panel[2];
         java.util.Set helpSet;
         
-        public Boolean initialized = null;
-        Set result = null;
+        private Boolean initialized = null;
+        private Set result = null;
         
         public WizardDescriptor.Panel current () {
             assertTrue ("WD.current() called on initialized iterator.", initialized != null && initialized.booleanValue ());
@@ -248,8 +267,10 @@ public class InstantiatingIteratorTest extends NbTestCase {
             changeListenersInIterator.remove (l);
         }
         public java.util.Set instantiate () throws IOException {
-            if (checkAWTQueue && SwingUtilities.isEventDispatchThread ()) {
-                throw new IOException ("Don't call from AWT queue.");
+            if (checkIfInAWT) {
+                if (! SwingUtilities.isEventDispatchThread ()) {
+                    throw new IOException ("Must run in AWT queue.");
+                }
             }
             if (shouldThrowException) {
                 throw new IOException ("Test throw IOException during instantiate().");
@@ -302,5 +323,12 @@ public class InstantiatingIteratorTest extends NbTestCase {
             if (b.getString ("CTL_CANCEL").equals (butt.getText ())) return "CANCEL_OPTION";
         }
         return "UNKNOWN OPTION: " + val;
+    }
+    
+    public static void finishWizard (WizardDescriptor wd) {
+        wd.doFinishClick ();
+        WizardDescriptor.ASYNCHRONOUS_JOBS_RP.post (new Runnable () {
+            public void run () {}
+        }).waitFinished ();
     }
 }

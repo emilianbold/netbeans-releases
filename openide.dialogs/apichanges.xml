@@ -17,6 +17,23 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="dialogs">Dialogs API</apidef>
 </apidefs>
 <changes>
+    <change id="WizardDescriptor.AsynchronousInstantiatingIterator">
+           <api name="dialogs"/>
+           <summary>Interface <code>AsynchronousInstantiatingIterator</code> added</summary>
+           <version major="6" minor="5"/>
+           <date day="6" month="12" year="2005"/>
+           <author login="jrechtacek"/>
+           <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible" deprecation="no" deletion="no" modification="no"/>
+           <description>
+             The <code>AsynchronousInstantiatingIterator</code> allows to implement
+             asynchronous instantating of newly created objects. Wizard's framework
+             esures that the method <code>AsynchronousInstantiatingIterator.instantiate()</code>
+             will be called ouside of an event queue.
+           </description>
+           <class package="org.openide" name="WizardDescriptor"/>
+           <issue number="62161"/>
+    </change>
+
     <change id="AsynchronousValidatingPanel">
            <api name="dialogs"/>
            <summary>Interface <code>AsynchronousValidationgPanel</code> added</summary>
