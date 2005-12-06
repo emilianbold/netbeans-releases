@@ -46,6 +46,7 @@ public class IMCollabManager extends CollabManager {
     // Class fields
     ////////////////////////////////////////////////////////////////////////////
     private static final String PROXY_SESSION_FACTORY_CLASS = "org.netbeans.lib.collab.xmpp.ProxySessionProvider"; // NOI18N
+    private static final String LIB_KEEPALIVE = "org.netbeans.lib.collab.xmpp.session.keepaliveinterval";
     private static final String HTTPS_KEEPALIVE = "org.netbeans.lib.collab.https.keepalive";
     private static final String SOCKS_KEEPALIVE = "org.netbeans.lib.collab.socks.keepalive";
     private static final String DEFAULT_KEEPALIVE = "30"; // 30 seconds
@@ -54,6 +55,9 @@ public class IMCollabManager extends CollabManager {
     // Instance fields
     ////////////////////////////////////////////////////////////////////////////
     static {
+        if (System.getProperty(LIB_KEEPALIVE) == null)
+		System.setProperty(LIB_KEEPALIVE, "30");
+		
         // temp, to enable IM client log
         if (Debug.isEnabled()) {
             try {
