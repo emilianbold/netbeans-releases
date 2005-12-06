@@ -112,11 +112,6 @@ final class NewLibraryDescriptor extends BasicWizardIterator {
                     getLibraryDisplayName().trim().length() != 0;
         }
         
-        public boolean isValidPackageName() {
-            return getPackageName() != null && 
-                    getPackageName().trim().length() != 0 && UIUtil.isValidPackageName(getPackageName() );
-        }
-        
         boolean libraryAlreadyExists() {
             FileSystem layerFs = null;
             LayerUtils.LayerHandle handle  = LayerUtils.layerForProject(getProject());

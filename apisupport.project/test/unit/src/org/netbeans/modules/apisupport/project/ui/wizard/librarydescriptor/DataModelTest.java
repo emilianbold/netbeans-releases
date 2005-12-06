@@ -51,7 +51,6 @@ public class DataModelTest extends LayerTestBase {
         
         assertFalse(data.isValidLibraryDisplayName());
         assertFalse(data.isValidLibraryName());
-        assertFalse(data.isValidPackageName());
         
         data.setLibraryName("");
         assertFalse(data.isValidLibraryName());
@@ -59,20 +58,12 @@ public class DataModelTest extends LayerTestBase {
         data.setLibraryDisplayName("");
         assertFalse(data.isValidLibraryDisplayName());
         
-        data.setPackageName("");
-        assertFalse(data.isValidPackageName());
-        
-        data.setPackageName(".org.example.module1");
-        assertFalse(data.isValidPackageName());
-                        
         data.setLibraryName("mylibrary");
         assertTrue(data.isValidLibraryName());
 
         data.setLibraryDisplayName("mylibrary is great");
         assertTrue(data.isValidLibraryDisplayName());
         
-        data.setPackageName("org.example.module1");
-        assertTrue(data.isValidPackageName());                        
         
         assertFalse(data.libraryAlreadyExists());
         LayerUtils.LayerHandle h = LayerUtils.layerForProject(data.getProject());

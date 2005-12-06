@@ -54,17 +54,11 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             }
         };
         libraryNameVale.getDocument().addDocumentListener(dListener);
-        libraryDisplayNameValue.getDocument().addDocumentListener(dListener);
-        
-        if (packageNameValue.getEditor().getEditorComponent() instanceof JTextField) {
-            JTextField txt = (JTextField)packageNameValue.getEditor().getEditorComponent();
-            txt.getDocument().addDocumentListener(dListener);
-        }
+        libraryDisplayNameValue.getDocument().addDocumentListener(dListener);        
     }
     
     protected void storeToDataModel() {
         NewLibraryDescriptor.DataModel _temp = getTemporaryDataModel();        
-        data.setPackageName(_temp.getPackageName());
         data.setLibraryName(_temp.getLibraryName());
         data.setLibraryDisplayName(_temp.getLibraryDisplayName());        
         data.setCreatedModifiedFiles(_temp.getCreatedModifiedFiles());        
@@ -72,10 +66,9 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     
     private NewLibraryDescriptor.DataModel getTemporaryDataModel() {
         NewLibraryDescriptor.DataModel _temp = data.cloneMe(getSettings());        
-        _temp.setPackageName(packageNameValue.getEditor().getItem().toString());
         _temp.setLibraryName(libraryNameVale.getText());
         _temp.setLibraryDisplayName(libraryDisplayNameValue.getText());        
-        if (_temp.isValidLibraryDisplayName() && _temp.isValidLibraryName() && _temp.isValidPackageName()) {
+        if (_temp.isValidLibraryDisplayName() && _temp.isValidLibraryName()) {
             CreatedModifiedFiles files = CreatedModifiedFilesProvider.createInstance(_temp);
             _temp.setCreatedModifiedFiles(files);
         }                
@@ -99,9 +92,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     protected void readFromDataModel() {
         libraryNameVale.setText(this.data.getLibrary().getName());
         libraryDisplayNameValue.setText(this.data.getLibrary().getDisplayName());
-        if (data.getPackageName() != null) {
-            packageNameValue.setSelectedItem(data.getPackageName());
-        }
         checkValidity(getTemporaryDataModel());
     }
     
@@ -117,10 +107,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         } else if (!_data.isValidLibraryDisplayName()) {
             setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_EmptyDescName")); // NOI18N
             return false;
-        } else if (!_data.isValidPackageName()) { //NOI18N
-            setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_Package_Invalid")); // NOI18N
-            return false;
-        } else if (_data.libraryAlreadyExists()) {
+        }else if (_data.libraryAlreadyExists()) {
             setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,
                     "ERR_LibraryExists", _data.getLibraryName()));
             return false;
@@ -153,8 +140,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         libraryDisplayNameValue = new javax.swing.JTextField();
         projectName = new javax.swing.JLabel();
         projectNameValue = new JTextField(ProjectUtils.getInformation(this.data.getProject()).getDisplayName());
-        packageName = new javax.swing.JLabel();
-        packageNameValue = UIUtil.createPackageComboBox(data.getSourceRootGroup());
         createdFiles = new javax.swing.JLabel();
         modifiedFiles = new javax.swing.JLabel();
         createdFilesValueS = new javax.swing.JScrollPane();
@@ -215,28 +200,10 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 6, 0);
         add(projectNameValue, gridBagConstraints);
 
-        packageName.setLabelFor(packageNameValue);
-        org.openide.awt.Mnemonics.setLocalizedText(packageName, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/librarydescriptor/Bundle").getString("LBL_PackageName"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(packageName, gridBagConstraints);
-
-        packageNameValue.setEditable(true);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        add(packageNameValue, gridBagConstraints);
-
         createdFiles.setLabelFor(createdFilesValue);
         org.openide.awt.Mnemonics.setLocalizedText(createdFiles, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/librarydescriptor/Bundle").getString("LBL_CreatedFiles"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 12);
@@ -246,7 +213,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(modifiedFiles, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/librarydescriptor/Bundle").getString("LBL_ModifiedFiles"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
@@ -261,7 +227,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -278,7 +243,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(modifiedFilesValueS, gridBagConstraints);
@@ -296,8 +260,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JLabel modifiedFiles;
     private javax.swing.JTextArea modifiedFilesValue;
     private javax.swing.JScrollPane modifiedFilesValueS;
-    private javax.swing.JLabel packageName;
-    private javax.swing.JComboBox packageNameValue;
     private javax.swing.JLabel projectName;
     private javax.swing.JTextField projectNameValue;
     // End of variables declaration//GEN-END:variables
