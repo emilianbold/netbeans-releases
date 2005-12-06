@@ -346,7 +346,10 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
                     }
                 }
                 catch (IOException e) {
-                    DialogDisplayer.getDefault().notify(new Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+// This message is displayed in SaveCookie.save(), called above.                    
+//                    DialogDisplayer.getDefault().notify(new Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                    // Error performing save, don't close.
+                    return false;
                 }
              } else if (discardOption.equals(ret)){
                  try {	 
@@ -360,7 +363,7 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
                      DialogDisplayer.getDefault().notify(new Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                  }	 
              } else {  // user pressed Cancel - don't close	 
-                     return false;	 
+                 return false;	 
              }
          }
         // remove module nodes from app node
@@ -391,7 +394,7 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
     protected CloneableTopComponent createClonedObject() {
         return new ConfigBeanTopComponent(this.configDO);
     }
-    
+
     private class TwoPanelComponentPanel extends ComponentPanel {
         
         protected TwoPanelComponentPanel(){

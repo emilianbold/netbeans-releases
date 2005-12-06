@@ -179,7 +179,8 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
         StringBuffer sb = new StringBuffer();
         if (files.length > 0) {
             sb.append(files[0].getPath());
-        }        for (int i = 1; i < files.length; i++) {
+        }
+        for (int i = 1; i < files.length; i++) {
             sb.append(", "); // NOI18N
             sb.append(files[i].getPath());
         }
@@ -221,11 +222,11 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
                                         if (!NotifyDescriptor.YES_OPTION.equals(cf.getValue())) {
                                             return;
                                         }
-                                        configDO.removeAllEditorChanges();
                                     }
                                     save();
-                                } catch (Exception e) {
-                                     // ignore it
+                                } catch (Exception ex) {
+                                    // ignore it
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                                 } finally {
                                     dialogIsDisplayed = false;
                                 }
@@ -356,6 +357,12 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
     }
     
     public void save() throws IOException {
+        // If there is an exception during the save operation (either a ConfigurationException
+        // for some bizarre non-I/O related reason or a true IOException), display an appropriate
+        // message to the user.  Then rethrow the exception (wrapping as an IOException if required)
+        // so that the caller can handle it intelligently.  For example, this is the only way that
+        // ExitDialog can be notified that the file didn't save properly (and prevents the IDE from
+        // shutting down prematurely and throwing away the user's still unsaved data).
         try {
             saveInProgress++;
             
@@ -370,15 +377,55 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
                 throw new IllegalStateException("Attempted to save configuration when DeploymentConfiguration is null.");
             }
         } catch (ConfigurationException ce) {
-            if(!saveFailedDialogDisplayed) { // do not display multiple instances
-                saveFailedDialogDisplayed = true;
-                String msg = NbBundle.getMessage(ConfigurationStorage.class, "MSG_ConfigurationSaveFailed", 
-                    config.getAppServerVersion().toString(), filesToString(config.getConfigFiles()));
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-                saveFailedDialogDisplayed = false;
-            }
+            reportExceptionDuringSave(ce);
+            
+            // 1. Must throw IOException here, otherwise, if caller is IDE's exit dialog
+            // this dataobject will be removed from the queue of savable objects.
+            // 2. IOException constructor in JDK 1.4.2 cannot chain exceptions.
+            IOException ioe = new IOException(ce.getLocalizedMessage());
+            ioe.initCause(ce);
+            throw ioe;
+        } catch(IOException ioe) {
+            reportExceptionDuringSave(ioe);
+            throw ioe;
         } finally {
             saveInProgress--;
+        }
+    }
+    
+    private void reportExceptionDuringSave(Exception ex) {
+        if(!saveFailedDialogDisplayed) { // do not display multiple instances
+            try {
+                // Why is there a separate flag here instead of reusing saveInProgress?
+                saveFailedDialogDisplayed = true;
+
+                // Try to do a nice message box if this exception comes with a reason for the failure.
+                String errorMsg;
+                String exceptionMsg = ex.getLocalizedMessage();
+                String appServerVersion = config.getAppServerVersion().toString();
+                String fileList = filesToString(config.getConfigFiles());
+
+                if(exceptionMsg != null && exceptionMsg.length() > 0) {
+                    if(ex instanceof IOException) {
+                        // For IOExceptions, if there is message, just display that.  This eliminates
+                        // redundancy of the filename, e.g. "[filename]: Access denied" is the message if the file
+                        // is read-only.
+                        errorMsg = exceptionMsg;
+                    } else {
+                        // For all other exceptions, prefix the application server and affected file to the message.
+                        errorMsg = NbBundle.getMessage(ConfigurationStorage.class, "MSG_ConfigurationSaveFailedHasMessage", 
+                                appServerVersion, fileList, exceptionMsg);
+                    }                        
+                } else {
+                    // If there is no message, simply indicate there was a problem saving the affected files.
+                    errorMsg = NbBundle.getMessage(ConfigurationStorage.class, "MSG_ConfigurationSaveFailed", 
+                            appServerVersion, fileList);
+                }
+
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errorMsg));
+            } finally {
+                saveFailedDialogDisplayed = false;
+            }
         }
     }
     
@@ -478,6 +525,8 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
                 NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            } catch(IOException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             } catch (Exception e2) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e2);
             }

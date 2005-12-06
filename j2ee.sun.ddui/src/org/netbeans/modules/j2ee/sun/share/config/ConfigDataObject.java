@@ -487,12 +487,14 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     
     private class S implements SaveCookie {
         public void save() throws java.io.IOException {
+            // Do not clean up the editor's modified flags here, as there may have
+            // been an exception during save and if so, the flags are still correct.
+            // If the save is completed properly, the save code will remove the SaveCookie
+            // and clean up the flags for us.
             ConfigurationStorage cs = getStorage();
-            removeAllEditorChanges();
             if (cs != null) {
                 cs.save();
             }
-            resetAllChanged();
         }
     }
     
@@ -592,8 +594,6 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         class Save implements SaveCookie {
             public void save() throws IOException {
                 saveDocument();
-//                ((ConfigDataObject) getDataObject()).resetChanged();
-//                getDataObject().setModified(false);
             }
         }
         

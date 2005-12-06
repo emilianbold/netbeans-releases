@@ -97,7 +97,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     // !PW FIXME workaround for linking ConfigDataObjects w/ the correct Deployment
     // Configuration object.  Key is primary File for configuration.
     private static WeakHashMap configurationMap = new WeakHashMap();
-    
+
     public static void addConfiguration(File key, SunONEDeploymentConfiguration config) {
         configurationMap.put(key, config);
     }
@@ -189,26 +189,24 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         // Sync configuration instance with DataObjects if any of the configuration
         // files exist.  Otherwise, create the default configuration.
         try {
-            try {
-                // Find primary configuration file (e.g. sun-web.xml)
-                FileObject fo = FileUtil.toFileObject(configFiles[0]);
-                if(fo == null) {
-                    ConfigurationStorage storage = null;
-                    try {
-                        storage = new ConfigurationStorage(provider, this);
-                        storage.save();
-                    } finally {
-                        if(storage != null) {
-                            // !PW Might be nice to pass this to the data object so
-                            // it doesn't have to create a new one.
-                            storage.cleanup();
-                            storage = null;
-                        }
+            // Find primary configuration file (e.g. sun-web.xml)
+            FileObject fo = FileUtil.toFileObject(configFiles[0]);
+            if(fo == null) {
+                ConfigurationStorage storage = null;
+                try {
+                    storage = new ConfigurationStorage(provider, this);
+                    storage.save();
+                } finally {
+                    if(storage != null) {
+                        // !PW Might be nice to pass this to the data object so
+                        // it doesn't have to create a new one.
+                        storage.cleanup();
+                        storage = null;
                     }
                 }
-            } catch(IOException ex) {
-                ErrorManager.getDefault().notify(ex);
             }
+        } catch(IOException ex) {
+            ErrorManager.getDefault().notify(ex);
         } catch(InvalidModuleException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch(SAXException ex) {
@@ -240,7 +238,6 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     public void dispose() {
         SunONEDeploymentConfiguration storedCfg = getConfiguration(configFiles[0]);
         if(storedCfg != null) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "SunONEDeploymentConfiguration.dispose(): passed in configuration is not equal to logged configuration");
             removeConfiguration(configFiles[0]);
         }
     }
@@ -980,10 +977,10 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            ConfigurationException ce = new ConfigurationException("error");
+            ConfigurationException ce = new ConfigurationException("Error"); // NOI18N
             ce.initCause(ex);
         }
-        jsr88Logger.exiting(this.getClass().toString(), "save", params);
+        jsr88Logger.exiting(this.getClass().toString(), "Save", params); // NOI18N
     }
     
 /*    public void writeDDFilesIntoDirectory(java.io.File baseDir) {
@@ -1422,13 +1419,13 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             throw ce;
         }
         finally {
-            if (null != fis)
+            if (null != fis) {
                 try {
                     fis.close();
-                }
-                catch (java.io.IOException ioe) {
+                } catch (java.io.IOException ioe) {
                     // log this and move on
                 }
+            }
         }
         //Document doc = GraphManager.createXmlDocument(fis, false);
         // convert it to the right form of xml
@@ -1452,59 +1449,55 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         }
     }
     
-    public void extractFileFromPlanForModule(File f, DeployableObject mod, ConfigurationStorage storage) throws ConfigurationException {
+    public void extractFileFromPlanForModule(File f, DeployableObject mod, ConfigurationStorage storage) throws IOException {
         // find the uri
         String uri = getUriForDeployableObject(mod, storage);
         String fname = f.getName();
+
         // create the key
         String key = Utils.getFQNKey(uri,fname);
+
         // get the bean
         byte[] content = (byte[]) contentMap.get(key);
+
         // save it into the file
-        try {
-            if (null != content) {
-                File parentFile = f.getParentFile();
-                FileObject folder = FileUtil.toFileObject(parentFile);
-                if (folder == null) {
-                    try {
-                        folder = FileUtil.toFileObject(parentFile.getParentFile()).createFolder(parentFile.getName());
-                    } catch (IOException ioe) {
-                        throw new ConfigurationException(NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
-                                "MSG_FailedToCreateConfigFolder", parentFile.getAbsolutePath())); // NOI18N
-                    }
+        if (null != content) {
+            File parentFile = f.getParentFile();
+            FileObject folder = FileUtil.toFileObject(parentFile);
+            if (folder == null) {
+                // XXX We might want to wrap the IOException that could be thrown here
+                // with a more explantory message for better diagnosibility.  See MSG_FailedToCreateConfigFolder
+                folder = FileUtil.toFileObject(parentFile.getParentFile()).createFolder(parentFile.getName());
+            }
+            FileLock lock = null;
+            OutputStream out = null;
+            try {
+                FileObject configFO = folder.getFileObject(fname);
+                if (configFO == null) {
+                    configFO = folder.createData(fname);
                 }
-                FileLock lock = null;
-                OutputStream out = null;
-                try {
-                    FileObject configFO = folder.getFileObject(fname);
-                    if (configFO == null) {
-                        configFO = folder.createData(fname);
-                    }
-                    lock = configFO.lock();
-                    out = new BufferedOutputStream(configFO.getOutputStream(lock), 4096);
-                    out.write(content);
-                } finally {
-                    if (out != null) {
-                        try { out.close(); } catch(IOException ioe) {}
-                    }
-                    if (lock != null) {
-                        lock.releaseLock();
-                    }
+                lock = configFO.lock();
+                out = new BufferedOutputStream(configFO.getOutputStream(lock), 4096);
+                out.write(content);
+            } finally {
+                if (out != null) {
+                    try { out.close(); } catch(IOException ioe) {}
+                }
+                if (lock != null) {
+                    lock.releaseLock();
                 }
             }
-        } catch (IOException e) {
-            throw new ConfigurationException (e.getLocalizedMessage ());
         }
     }
     
-    private String getUriForDeployableObject(DeployableObject mod, ConfigurationStorage storage) throws ConfigurationException {
+    private String getUriForDeployableObject(DeployableObject mod, ConfigurationStorage storage) {
         // Logic here duplicates logic from the BaseRoot derived classes that implement
         // getUriText().  The reason is that the DConfigBean's do not necessarily exist
         // at times when this routine is needed and we don't want to be creating them at
         // that point for performance and other reasons.
-        String rootUri = "";
+        String rootUri = ""; // NOI18N
         if(ModuleType.EAR.equals(mod.getType())) {
-            rootUri = "EAR";
+            rootUri = "EAR"; // NOI18N
         } 
         return rootUri;
     }
@@ -1513,7 +1506,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     //
     //void updateContentMap(BaseRoot br) {
     void updateContentMap(DConfigBeanRoot rootBean) throws ConfigurationException {
-        jsr88Logger.entering(this.getClass().toString(), "save", rootBean);
+        jsr88Logger.entering(this.getClass().toString(), "save", rootBean); // NOI18N
         
 //        boolean useUriDataAtSave = false;
 //        if(null == rootBean || rootBean instanceof AppRoot) {
@@ -1612,7 +1605,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             }*/
         } catch (Exception ex) {
             ex.printStackTrace();
-            ConfigurationException ce = new ConfigurationException("error");
+            ConfigurationException ce = new ConfigurationException("Error"); // NOI18N
             ce.initCause(ex);
         }
         jsr88Logger.exiting(this.getClass().toString(), "save", rootBean); // NOI18N
@@ -1700,7 +1693,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         }
     }
     
-    public void writeDeploymentPlanFiles(ConfigurationStorage storage) throws ConfigurationException {
+    public void writeDeploymentPlanFiles(ConfigurationStorage storage) throws IOException, ConfigurationException {
         // Update content map, then write all files.
         updateContentMap(null);
 
@@ -1729,5 +1722,5 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         }
         
         return len;
-    }    
+    }
 }
