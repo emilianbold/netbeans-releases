@@ -18,6 +18,7 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -34,19 +35,26 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.plaf.TextUI;
 import javax.swing.plaf.ToolBarUI;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Keymap;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.MultiKeyBinding;
@@ -159,6 +167,9 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
 
     private boolean addListener = true;
     
+    private static final String NOOP_ACTION_KEY = "noop-action-key"; //NOI18N
+    private static final Action NOOP_ACTION = new NoOpAction();
+    
    
     NbEditorToolBar(JTextComponent component) {
         this.componentRef = new WeakReference(component);
@@ -173,8 +184,36 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         settingsChange(null);
 
         installModulesInstallationListener();
+        installNoOpActionMappings();
     }
 
+    // issue #69642
+    private void installNoOpActionMappings(){
+        InputMap im = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        // cut
+        KeyStroke[] keys = findEditorKeys(DefaultEditorKit.cutAction, KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK));
+        for (int i = 0; i < keys.length; i++) {
+            im.put(keys[i], NOOP_ACTION_KEY);
+        }
+        // copy
+        keys = findEditorKeys(DefaultEditorKit.copyAction, KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK));
+        for (int i = 0; i < keys.length; i++) {
+            im.put(keys[i], NOOP_ACTION_KEY);
+        }
+        // delete
+        keys = findEditorKeys(DefaultEditorKit.deleteNextCharAction, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0)); //NOI18N
+        for (int i = 0; i < keys.length; i++) {
+            im.put(keys[i], NOOP_ACTION_KEY);
+        }
+        // paste
+        keys = findEditorKeys(DefaultEditorKit.pasteAction, KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK));
+        for (int i = 0; i < keys.length; i++) {
+            im.put(keys[i], NOOP_ACTION_KEY);
+        }
+        
+        getActionMap().put(NOOP_ACTION_KEY, NOOP_ACTION);
+    }
+    
     /** See issue #57773 for details. Toolbar should be updated with possible changes after
        module install/uninstall */
     private void installModulesInstallationListener(){
@@ -248,6 +287,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                     if (visible) {
                         checkPresentersAdded();
                         if (keyBindingsChanged){ //#62487
+                            installNoOpActionMappings();
                             int componentCount = getComponentCount();
                             Map keybsMap = getKeyBindingMap();
                             Component comps[] = getComponents();
@@ -673,5 +713,44 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
             }
         }
     }
+
+    /** Attempt to find the editor keystroke for the given action. */
+    private KeyStroke[] findEditorKeys(String editorActionName, KeyStroke defaultKey) {
+        KeyStroke[] ret = new KeyStroke[] { defaultKey };
+        JTextComponent comp = getComponent();
+        if (editorActionName != null && comp != null) {
+            TextUI ui = comp.getUI();
+            Keymap km = comp.getKeymap();
+            if (ui != null && km != null) {
+                EditorKit kit = ui.getEditorKit(comp);
+                if (kit instanceof BaseKit) {
+                    Action a = ((BaseKit)kit).getActionByName(editorActionName);
+                    if (a != null) {
+                        KeyStroke[] keys = km.getKeyStrokesForAction(a);
+                        if (keys != null && keys.length > 0) {
+                            ret = keys;
+                        } else {
+                            // try kit's keymap
+                            Keymap km2 = ((BaseKit)kit).getKeymap();
+                            KeyStroke[] keys2 = km2.getKeyStrokesForAction(a);
+                            if (keys2 != null && keys2.length > 0) {
+                                ret = keys2;
+                            }                            
+                        }
+                    }
+                }
+            }
+        }
+        return ret;
+    }
     
+    /** No operation action  - do nothing when invoked 
+     *  issue #69642
+     */
+    public static final class NoOpAction extends AbstractAction{
+        public NoOpAction(){
+        }
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
 }
