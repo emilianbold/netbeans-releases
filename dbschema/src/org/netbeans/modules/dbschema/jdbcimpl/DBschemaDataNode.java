@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.dbschema.jdbcimpl;
 
+import javax.swing.Action;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 
@@ -29,4 +30,7 @@ public class DBschemaDataNode extends DataNode {
         setIconBase ("org/netbeans/modules/dbschema/jdbcimpl/DBschemaDataIcon"); //NOI18N
     }
 
+    public Action getPreferredAction() {
+        return null;
+    }
 }
