@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
@@ -149,24 +150,52 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
         diffShifts = new int[diffs.length][2];
 
         setSource1Title(title1);
-        setSource2Title(title2);        
-        setMimeType1(mimeType1);
-        setMimeType2(mimeType2);
-        try {
-            if (source1 != null) setSource1(new StringReader(source1));
-            if (source2 != null) setSource2(new StringReader(source2));
-        } catch (IOException ioex) {
-            org.openide.ErrorManager.getDefault().notify(ioex);
-        }
-        insertEmptyLines(true);
-        setDiffHighlight(true);
-        insertEmptyLinesNotReported();
+        setSource2Title(title2);
         
-        Color borderColor = UIManager.getColor("scrollpane_border");
-        if (borderColor == null) borderColor = UIManager.getColor("controlShadow");
-        jScrollPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
-        jScrollPane2.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
-        jSplitPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+//        java.lang.AssertionError: BaseKit.install() incorrectly called from non-AWT thread.
+//                at org.netbeans.editor.BaseKit.install(BaseKit.java:503)
+//                at org.netbeans.modules.diff.builtin.visualizer.DiffViewImpl.setSource1(DiffViewImpl.java:642)
+//                at org.netbeans.modules.diff.builtin.visualizer.DiffViewImpl.<init>(DiffViewImpl.java:173)
+//                at org.netbeans.modules.diff.builtin.DefaultDiff.createDiff(DefaultDiff.java:112)
+//                at org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffMainPanel$DiffPrepareTask.run(DiffMainPanel.java:634)
+
+        final String f1 = mimeType1;
+        final String f2 = mimeType2;
+        try {
+            Runnable awtTask = new Runnable() {
+                public void run() {
+                    setMimeType1(f1);
+                    setMimeType2(f2);
+                    try {
+                        if (source1 != null) setSource1(new StringReader(source1));
+                        if (source2 != null) setSource2(new StringReader(source2));
+                    } catch (IOException ioex) {
+                        org.openide.ErrorManager.getDefault().notify(ioex);
+                    }
+                    insertEmptyLines(true);
+                    setDiffHighlight(true);
+                    insertEmptyLinesNotReported();
+
+                    Color borderColor = UIManager.getColor("scrollpane_border");
+                    if (borderColor == null) borderColor = UIManager.getColor("controlShadow");
+                    jScrollPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+                    jScrollPane2.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+                    jSplitPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                awtTask.run();
+            } else {
+                 SwingUtilities.invokeAndWait(awtTask);
+            }
+        } catch (InterruptedException e) {
+            ErrorManager err = ErrorManager.getDefault();
+            err.notify(e);
+        } catch (InvocationTargetException e) {
+            ErrorManager err = ErrorManager.getDefault();
+            err.notify(e);
+        }
+
     }
 
     private void saveSources(Reader r1, Reader r2) throws IOException {
