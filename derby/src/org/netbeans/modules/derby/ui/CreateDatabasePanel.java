@@ -95,6 +95,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         String warning = null;
         
         String databaseName = getDatabaseName();
+        int illegalChar = getFirstIllegalChar(databaseName);
         
         if (databaseName.length() <= 0) { // NOI18N
             error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameEmpty");
@@ -107,6 +108,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         } else if (databaseName.length() > 0 && new File(derbySystemHome, databaseName).exists()) { // NOI18N
             String format = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseDirectoryExists");
             error = MessageFormat.format(format, new Object[] { databaseName });
+        } else if (illegalChar >= 0) {
+            warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameIllegalChar", new Character(databaseName.charAt(illegalChar)));
         } else if (getUser() == null || getPassword() == null) {
             warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_UserNamePasswordRecommended");
         }
@@ -129,6 +132,17 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     
     private void updateLocation() {
         databaseLocationTextField.setText(derbySystemHome.getAbsolutePath());
+    }
+    
+    private int getFirstIllegalChar(String databaseName) {
+        // workaround for issue 69265
+        for (int i = 0; i < databaseName.length(); i++) {
+            char ch = databaseName.charAt(i);
+            if (ch < '\u0020' || ch > '\u00ff') {
+                return i;
+            }
+        }
+        return -1;
     }
     
     /** This method is called from within the constructor to
