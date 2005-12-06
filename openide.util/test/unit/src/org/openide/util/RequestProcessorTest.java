@@ -34,7 +34,7 @@ public class RequestProcessorTest extends NbTestCase {
     protected void setUp () throws Exception {
         super.setUp();
         
-        log = ErrorManager.getDefault().getInstance(getName());
+        log = ErrorManager.getDefault().getInstance("TEST-" + getName());
     }
 
     protected void runTest() throws Throwable {
@@ -1008,6 +1008,7 @@ class R extends Object implements Runnable {
             private String name;
             public RequestProcessor.Task wait;
             public Object lock;
+            public Exception ex;
             
             public boolean checkBefore;
             public boolean checkAfter;
@@ -1015,6 +1016,7 @@ class R extends Object implements Runnable {
             public void run () {
                 synchronized (this) {
                     checkBefore = Thread.interrupted();
+                    log("checkBefore: " + checkBefore);
                     notifyAll();
                 }
                 if (lock != null) {
@@ -1023,9 +1025,11 @@ class R extends Object implements Runnable {
                         try {
                             lock.wait();
                         } catch (InterruptedException ex) {
+                            this.ex = ex;
                             ex.printStackTrace();
                             fail ("No InterruptedException");
                         }
+                        log.log("wait for lock over");
                     }
                 }
                 
@@ -1036,6 +1040,7 @@ class R extends Object implements Runnable {
                 
                 synchronized (this) {
                     checkAfter = Thread.interrupted();
+                    log.log("checkAfter: " + checkAfter);
                     notifyAll();
                 }
             }
@@ -1059,13 +1064,17 @@ class R extends Object implements Runnable {
         bigger.wait = smallerTask;
         
         synchronized (initLock) {
+            log.log("schedule 0");
             biggerTask.schedule(0);
             initLock.wait();
             initLock.notifyAll();
+            log.log("doing cancel");
             assertFalse ("Already running", biggerTask.cancel());
+            log.log("biggerTask cancelled");
         }
 
         biggerTask.waitFinished();
+        log.log("waitFinished over");
         
         assertFalse("bigger not interrupted at begining", bigger.checkBefore);
         assertFalse("smaller not interrupted at all", smaller.checkBefore);
@@ -1078,15 +1087,23 @@ class R extends Object implements Runnable {
         RequestProcessor rp = new RequestProcessor ("testInterruptedStatusWorksInInversedTasksWhenInterruptedSoon", 1, true);
         
         class Fail implements Runnable {
+            public Fail(String n) {
+                name = n;
+            }
+            
+            private String name;
             public RequestProcessor.Task wait;
             public Object lock;
             
             public boolean checkBefore;
             public boolean checkAfter;
             
+            public volatile boolean alreadyCanceled;
+            
             public void run () {
                 synchronized (this) {
                     checkBefore = Thread.interrupted();
+                    log.log(name + " checkBefore: " + checkBefore);
                     notifyAll();
                 }
                 if (lock != null) {
@@ -1098,15 +1115,22 @@ class R extends Object implements Runnable {
                 if (wait != null) {
                     // we cannot call Thread.sleep, so lets slow things own 
                     // in other way
-                    for (int i = 0; i < 10; i++) {
+
+                    log(name + " do waitFinished");
+                    wait.waitFinished();
+                    log(name + " waitFinished in task is over");
+                    
+                    log.log(name + " slowing by using System.gc");
+                    while (!alreadyCanceled) {
                         System.gc ();
                     }
+                    log.log(name + " ended slowing");
                     
-                    wait.waitFinished();
                 }
                 
                 synchronized (this) {
                     checkAfter = Thread.interrupted();
+                    log.log(name + " checkAfter: " + checkAfter);
                     notifyAll();
                 }
             }
@@ -1114,8 +1138,8 @@ class R extends Object implements Runnable {
         
         Object initLock = new Object();
         
-        Fail smaller = new Fail();
-        Fail bigger = new Fail();
+        Fail smaller = new Fail("smaller");
+        Fail bigger = new Fail("bigger");
         RequestProcessor.Task smallerTask, biggerTask;
         
         
@@ -1127,18 +1151,22 @@ class R extends Object implements Runnable {
         bigger.wait = smallerTask;
         
         synchronized (initLock) {
+            log.log("Do schedule");
             biggerTask.schedule(0);
             initLock.wait();
+            log.log("do cancel");
             assertFalse ("Already running", biggerTask.cancel());
+            bigger.alreadyCanceled = true;
+            log.log("cancel done");
         }
 
         biggerTask.waitFinished();
+        log.log("waitFinished is over");
         
         assertFalse("bigger not interrupted at begining", bigger.checkBefore);
         assertFalse("smaller not interrupted at all", smaller.checkBefore);
         assertFalse("smaller not interrupted at all2", smaller.checkAfter);
         assertTrue("bigger interrupted at end", bigger.checkAfter);
-        
     }
     
     public void testTaskFinishedOnCancelFiredAfterTaskHasReallyFinished() throws Exception {
@@ -1300,7 +1328,7 @@ class R extends Object implements Runnable {
         public org.openide.ErrorManager getInstance (String name) {
             if (
                 name.startsWith ("org.openide.util.RequestProcessor") ||
-                name.startsWith("test")
+                name.startsWith("TEST")
             ) {
                 return new ErrManager ('[' + name + ']');
             } else {
