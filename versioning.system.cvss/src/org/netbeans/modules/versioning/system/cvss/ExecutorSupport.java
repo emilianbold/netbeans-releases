@@ -355,6 +355,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
                     if (error instanceof CommandException) {
                         // TODO internalError = result.getError();?
                         // TODO group.fail();?
+                        internalError = error;
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, error);
                         report(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
                                NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"), 
