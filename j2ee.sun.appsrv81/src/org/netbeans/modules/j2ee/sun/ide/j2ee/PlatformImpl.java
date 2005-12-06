@@ -91,12 +91,12 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
         if (instanceProperties != null) {
             instanceProperties.addPropertyChangeListener (this);
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                RegisterPointbase.getDefault().register(rootLocation);
-                RunTimeDDCatalog.getRunTimeDDCatalog().refresh();
-            }
-        });
+////        SwingUtilities.invokeLater(new Runnable() {
+////            public void run() {
+////                RegisterPointbase.getDefault().register(rootLocation);
+////                RunTimeDDCatalog.getRunTimeDDCatalog().refresh();
+////            }
+////        });
     }
 
     /** Returns error message for an invalid platform or an empty string
