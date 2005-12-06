@@ -129,10 +129,7 @@ public final class FolderObj extends BaseFileObj {
 
         try {
             folder2Create = BaseFileObj.getFile(getFileName().getFile(), name, null);
-            boolean isSupported = new FileInfo(folder2Create).isSupportedFile();                                    
-            if (!isSupported || folder2Create.exists() || !folder2Create.mkdirs()) {
-                FSException.io("EXC_CannotCreateFolder", name, getPath());// NOI18N   
-            }
+            createFolder(folder2Create, name);
 
             final FileNaming childName = this.getChildrenCache().getChild(folder2Create.getName(), true);
             NamingFactory.checkCaseSensitivity(childName, folder2Create);                        
@@ -152,6 +149,17 @@ public final class FolderObj extends BaseFileObj {
         return retVal;
     }
 
+    private void createFolder(final File folder2Create, final String name) throws IOException {
+        boolean isSupported = new FileInfo(folder2Create).isSupportedFile();                                    
+        if (!isSupported) { 
+            FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N   
+        } else if (folder2Create.exists()) {
+            FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N               
+        } else if (!folder2Create.mkdirs()) {
+            FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N               
+        }
+    }
+
     public final FileObject createData(final String name, final String ext) throws java.io.IOException {
         if (name.indexOf('\\') != -1 || name.indexOf('/') != -1) {//NOI18N
             throw new IllegalArgumentException(name);
@@ -166,11 +174,7 @@ public final class FolderObj extends BaseFileObj {
         File file2Create;
         try {
             file2Create = BaseFileObj.getFile(getFileName().getFile(), name, ext);
-            boolean isSupported = new FileInfo(file2Create).isSupportedFile();                        
-
-            if (!isSupported || file2Create.exists() || !file2Create.createNewFile()) {
-                FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
-            }
+            createData(file2Create);
 
             final FileNaming childName = getChildrenCache().getChild(file2Create.getName(), true);
             NamingFactory.checkCaseSensitivity(childName, file2Create);                        
@@ -191,6 +195,17 @@ public final class FolderObj extends BaseFileObj {
         retVal.fireFileDataCreatedEvent(false);
 
         return retVal;
+    }
+
+    private void createData(final File file2Create) throws IOException {
+        boolean isSupported = new FileInfo(file2Create).isSupportedFile();                        
+        if (!isSupported) { 
+            FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
+        } else if (file2Create.exists()) {
+            FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
+        } else if (!file2Create.createNewFile()) {
+            FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
+        }        
     }
 
     public final void delete(final FileLock lock) throws IOException {
