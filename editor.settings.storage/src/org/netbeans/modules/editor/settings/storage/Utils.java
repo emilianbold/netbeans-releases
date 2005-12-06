@@ -97,7 +97,10 @@ public class Utils {
         String name = getFileName (mimeTypes, profile, fileName);
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
         try {
-            return FileUtil.createData (fs.getRoot (), name);
+            if (fileName == null)
+                return FileUtil.createFolder (fs.getRoot (), name);
+            else
+                return FileUtil.createData (fs.getRoot (), name);
         } catch (IOException ex) {
             ErrorManager.getDefault ().notify (ex);
             return null;
