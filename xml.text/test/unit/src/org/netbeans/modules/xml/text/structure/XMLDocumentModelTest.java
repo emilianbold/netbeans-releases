@@ -955,6 +955,119 @@ public class XMLDocumentModelTest extends NbTestCase {
         
     }
     
+    public void testChangeTreeFromElementsWithSameName() throws DocumentModelException, BadLocationException, InterruptedException {
+        //initialize documents used in tests
+        initDoc4();
+        //set the document content
+        DocumentModel model = DocumentModel.getDocumentModel(doc);
+        DocumentElement root = model.getRootElement();
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        assertEquals(2, root.getElementCount()); //has <?xml ...?> and <tree id="1"> elements
+        
+        DocumentElement tree1 = root.getElement(1); //get <tree id="1"> element
+        assertEquals(1, tree1.getElementCount()); //has <tree id="2"> element
+        
+        DocumentElement tree2 = tree1.getElement(0); //<tree id="2"> element
+        assertEquals(2, tree2.getElementCount()); //has <tree id="3"> and <tree id="4"> elements
+        
+        DocumentElement tree3 = tree2.getElement(0); //<tree id="3"> element
+        DocumentElement tree4 = tree2.getElement(1); //<tree id="4"> element
+        
+        assertEquals("tree", tree3.getName());
+        assertEquals("tree", tree4.getName());
+        
+        //listen to model
+        final Vector modelChanges = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementRemoved(DocumentElement de) {
+                System.out.println("removed " + de);
+                modelChanges.add(de);
+            }
+        });
+        
+        //listen to element
+        final Vector tree1Removes = new Vector();
+        final Vector tree1Adds = new Vector();
+        tree1.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void elementRemoved(DocumentElementEvent e) {
+                System.out.println("removed " + e.getChangedChild());
+                tree1Removes.add(e.getChangedChild());
+            }
+            public void elementAdded(DocumentElementEvent e) {
+                System.out.println("added " + e.getChangedChild());
+                tree1Adds.add(e.getChangedChild());
+            }
+        });
+        
+        doc.insertString(36, "BIG", null);
+        Thread.sleep(MODEL_TIMEOUT * 2); //wait for the model update (started after 500ms)
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        //check events
+        
+        // tree2 removed from model
+        assertEquals(1, modelChanges.size()); 
+        assertEquals(tree2, modelChanges.get(0));
+        
+        //tree2 removed from tree1
+        assertEquals(1, tree1Removes.size()); 
+        assertEquals(tree2, tree1Removes.get(0));
+        
+        //tree3 and tree4 added to tree1
+        assertEquals(2, tree1Adds.size());
+        assertEquals(tree1Adds.get(0), tree3);
+        assertEquals(tree1Adds.get(1), tree4);
+        assertEquals(tree1.getElement(0), tree3);
+        assertEquals(tree1.getElement(1), tree4);
+        
+        //OK lets return back to the original state
+        
+        //listen to model
+        final Vector modelChanges2 = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementAdded(DocumentElement de) {
+                System.out.println("added " + de);
+                modelChanges2.add(de);
+            }
+        });
+        
+        tree1Adds.clear();
+        tree1Removes.clear();
+        
+        doc.remove(36, "BIG".length());
+        Thread.sleep(MODEL_TIMEOUT * 2); //wait for the model update (started after 500ms)
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        
+        //check events
+        
+        // tree2 added to the model
+        assertEquals(1, modelChanges.size()); 
+        //tree2 added to tree1
+        assertEquals(1, tree1Adds.size()); 
+        //tree3 and 4 removed from tree1
+        assertEquals(2, tree1Removes.size()); 
+        
+        //so now tree1 has only one children - tree2
+        assertEquals(1, tree1.getElementCount());
+        DocumentElement tree2_2 = tree1.getElement(0);
+        
+        //and tree2 has tree3 and tree4
+        assertEquals(2, tree2.getElementCount());
+        
+        assertEquals(tree3, tree2.getElement(0));
+        assertEquals(tree4, tree2.getElement(1));
+        
+        assertEquals(2, root.getElementCount()); //has <?xml ...?> and <tree id="1"> elements
+        
+    }
     
     private void initDoc1() throws BadLocationException {
         /*
@@ -998,7 +1111,6 @@ public class XMLDocumentModelTest extends NbTestCase {
         //                  0         1         2         3         4         5
     }
     
-    
     private void initDoc3() throws BadLocationException {
         /*
           supposed structure:
@@ -1018,6 +1130,26 @@ public class XMLDocumentModelTest extends NbTestCase {
         //                  0         1         2         3         4         5         6         7         8
     }
     
+    private void initDoc4() throws BadLocationException {
+        /*
+          supposed structure:
+            ROOT
+             |
+             +--<?xml version='1.0'?>
+             +--<tree id="1">
+                   |
+                   +---<tree id="2">
+                           |
+                           +-- <tree id="3">                           |
+                           +-- <tree id="4">
+         */
+        doc = new BaseDocument(XMLKit.class, false);
+        doc.putProperty("mimeType", "text/xml");
+        
+        doc.insertString(0,"<?xml version=\"1.0\"?><tree id=\"1\"><tree id=\"2\"><tree id=\"3\"></tree><tree id=\"4\"></tree></tree></tree>",null);
+        //                  01234567890123 4567 89012345678901234567 89 01234567890123456789012345678901234567890123456789012345678901234567890123456789
+        //                  0         1         2         3         4         5         6         7         8
+    }
     
     private static class DocumentModelListenerAdapter implements DocumentModelListener {
         public void documentElementAdded(DocumentElement de) {
