@@ -60,7 +60,14 @@ class OutWriter extends PrintWriter {
     /**
      * Byte array used to write the line separator after line writes.
      */
-    static byte[] lineSepBytes = new byte[] { '\0', '\n'};
+    static byte[] lineSepBytes;
+    static {
+        if (Utilities.isWindows()) {
+            lineSepBytes = new byte[] { '\0', '\r', '\0', '\n'};
+        } else {
+            lineSepBytes = new byte[] { '\0', '\n'};
+        }
+    }
     /** The read-write backing storage.  May be heap or */
     private Storage storage;
     
