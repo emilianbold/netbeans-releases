@@ -430,7 +430,8 @@ public final class Utils {
      * @see  #getSourceFoldersRaw
      */
     public FileObject[] getTestFoldersRaw(FileObject srcFolder) {
-        return getFileObjects(UnitTestForSourceQuery.findUnitTests(srcFolder));
+        return getFileObjects(UnitTestForSourceQuery.findUnitTests(srcFolder),
+                              true);
     }
     
     /**
@@ -444,17 +445,23 @@ public final class Utils {
      * @see  #getTestFoldersRaw
      */
     public FileObject[] getSourceFoldersRaw(FileObject testFolder) {
-        return getFileObjects(UnitTestForSourceQuery.findSources(testFolder));
+        return getFileObjects(UnitTestForSourceQuery.findSources(testFolder),
+                              false);
     }
     
     /**
      * Returns <code>FileObject</code>s represented by the given URLs.
      *
      * @param  rootURLs  URLs representing <code>FileObject</code>s
+     * @param  srcToTest  <code>true</code> if we are searching for test
+     *                    folders, <code>false</code> if we are searching
+     *                    for source folders - affects only text of warning
+     *                    log messages
      * @return  array of <code>FileObject</code>s representing source root
      *          folders, possibly with superfluous <code>null</code> elements
      */
-    private FileObject[] getFileObjects(final URL[] rootURLs) {
+    private FileObject[] getFileObjects(final URL[] rootURLs,
+                                        final boolean srcToTest) {
         if (rootURLs.length == 0) {
             return new FileObject[0];
         }
@@ -463,13 +470,15 @@ public final class Utils {
         for (int i = 0; i < rootURLs.length; i++) {
             if ((sourceRoots[i] = URLMapper.findFileObject(rootURLs[i]))
                     == null) {
-                int severity = ErrorManager.INFORMATIONAL;
-                if (ErrorManager.getDefault().isNotifiable(severity)) {
-                    ErrorManager.getDefault().notify(
-                        severity,
-                        new IllegalStateException(
-                           "No FileObject found for the following URL: "//NOI18N
-                           + rootURLs[i]));
+                final int severity = ErrorManager.INFORMATIONAL;
+                if (ErrorManager.getDefault().isLoggable(severity)) {
+                    ErrorManager.getDefault().log(
+                            severity,
+                            (srcToTest ? "Test" : "Source")             //NOI18N
+                            + " directory " + rootURLs[i]               //NOI18N
+                            + " declared by project "                   //NOI18N
+                            + ProjectUtils.getInformation(project).getName()
+                            + " does not exist.");                      //NOI18N
                 }
                 continue;
             }
