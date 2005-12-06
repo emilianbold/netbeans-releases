@@ -354,7 +354,7 @@ public class AddNotifGenerator
                     Field notifType = pkg.getField().createField(
                             "NOTIF_TYPE_" + notifTypeIndex, // NOI18N
                             Collections.EMPTY_LIST,
-                            Modifier.STATIC | Modifier.PRIVATE,
+                            Modifier.STATIC | Modifier.FINAL | Modifier.PRIVATE,
                             notifTypeIndex == 0 ? comments : null,
                             null,
                             true,

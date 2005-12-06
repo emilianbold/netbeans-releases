@@ -78,7 +78,7 @@ public class AddOpAction extends CookieAction {
             JavaModel.setClassPath(fo);
             rc = JavaModel.getResource(fo);
             
-            return Introspector.isStandard(foClass);
+            return Introspector.isStandard(foClass) && !Introspector.isDynamic(foClass);
         } finally {
             JavaModel.getJavaRepository().endTrans();
         }

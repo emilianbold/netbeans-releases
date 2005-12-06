@@ -434,7 +434,40 @@ public class WizardHelpers
         }
         return resultType;
     }
-    
+     /**
+     * Returns the full type name of the type.
+     * @param type <CODE>String</CODE> a type name
+     * @return <CODE>String</CODE> code to get full type name.
+     */
+    public static String getFullWrappedName(String type) {
+        if (type.endsWith("[]")) //NOI18N
+            return getFullTypeName(type.substring(0, type.length() - 2)) + "[]"; //NOI18N
+        String resultType = type;
+        if (type.equals(WizardConstants.BOOLEAN_NAME)) {
+            resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.BYTE_NAME)) {
+            resultType = WizardConstants.BYTE_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.CHAR_NAME)) {
+            resultType = WizardConstants.CHAR_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.INT_NAME)) {
+            resultType = WizardConstants.INTEGER_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.LONG_NAME)) {
+            resultType = WizardConstants.LONG_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.DATE_OBJ_NAME)) {
+            resultType = WizardConstants.DATE_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.STRING_OBJ_NAME)) {
+            resultType = WizardConstants.STRING_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.OBJECTNAME_NAME)) {
+            resultType = WizardConstants.OBJECTNAME_FULLNAME;
+        } else if (type.equals(WizardConstants.FLOAT_NAME)) {
+            resultType = WizardConstants.FLOAT_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.DOUBLE_NAME)) {
+            resultType = WizardConstants.DOUBLE_OBJ_FULLNAME;
+        }else {
+            resultType = type;
+        }
+        return resultType;
+    }
     public static String getSimpleTypeName(String type) {
         String resultType = type;
         if (type.equals(WizardConstants.BOOLEAN_OBJ_FULLNAME)) {
@@ -507,6 +540,15 @@ public class WizardHelpers
             resultValue = "0";// NOI18N
         }
         return resultValue;
+    }
+    
+        /**
+     * Returns the default value of this type
+     * @param type <CODE>String</CODE> a type name
+     * @return <CODE>String</CODE> code which returns the corresponding default value.
+     */
+    public static String getWrappedDefaultValue(String type) {
+        return "(" +getFullWrappedName(type)+")null";// NOI18N
     }
     
     /**
