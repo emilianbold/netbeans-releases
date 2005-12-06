@@ -179,7 +179,7 @@ public class SwingLayoutCodeGenerator {
         if (interval.isGroup()) {
             layout.append(".add("); // NOI18N
             int alignment = interval.getAlignment();
-            if ((alignment != LayoutConstants.DEFAULT) && interval.getParent().isParallel()) {
+            if ((alignment != LayoutConstants.DEFAULT) && interval.getParent().isParallel() && alignment != groupAlignment) {
                 String alignmentStr = convertAlignment(alignment);
                 layout.append(alignmentStr).append(", "); // NOI18N
             }
