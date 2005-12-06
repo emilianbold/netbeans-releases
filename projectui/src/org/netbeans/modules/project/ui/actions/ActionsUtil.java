@@ -13,7 +13,10 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,6 +34,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
 /** Nice utility methods to be used in ProjectBased Actions
@@ -51,11 +55,10 @@ class ActionsUtil {
      * is one project with the command disabled it will return empty array.
      */
     public static Project[] getProjectsFromLookup( Lookup lookup, String command ) {    
-        
         if ( lookupResultsCache == null ) {
             lookupResultsCache = new LookupResultsCache( new Class[] { Project.class, DataObject.class } );
         }
-         
+        
         Project[] projectsArray = lookupResultsCache.getProjects( lookup );
                 
         if ( command != null ) {
@@ -243,40 +246,56 @@ class ActionsUtil {
                 
     }
     
-    /** Caches the projects and files included in the last quried lookup
+    /** Caches the projects and files included in the last quried lookup.
+     *
+     * Using weak references to fix issue #67846. Please note that holding the
+     * lookup results weak may cause that the cache will miss much more often
+     * than strictly necessary, but it is the best solution found so far.
+     * Holding the results weak should not break the correctness, it may only
+     * cause the cache will not work very well (or not at all).
+     *
+     * Please see also the tests.
      */
     private static class LookupResultsCache implements LookupListener {
         
         private Class watch[];
         
-        private Lookup lruLookup;
-        private Lookup.Result lruResults[];
+        private Reference/*<Lookup>*/ lruLookup;
+        private List/*<Reference<Lookup.Result>>*/ lruResults;
         private Project[] projects;
                 
         LookupResultsCache( Class[] watch ) {
             this.watch = watch;
         }
         
-        public Project[] getProjects( Lookup lookup ) {
+        public synchronized Project[] getProjects( Lookup lookup ) {
+            Lookup lruLookupLocal = lruLookup != null ? (Lookup) lruLookup.get() : null;
             
-            if ( lookup != lruLookup ) { // Lookup changed
+            if ( lookup != lruLookupLocal ) { // Lookup changed
                 if ( lruResults != null ) {
-                    for( int i = 0; i < watch.length; i++ ) {
-                        lruResults[i].removeLookupListener( this ); // Deregister
+                    for(Iterator i = lruResults.iterator(); i.hasNext(); ) {
+                        Lookup.Result result = (Lookup.Result) ((Reference) i.next()).get();
+                        
+                        if (result != null) {
+                            result.removeLookupListener( this ); // Deregister
+                        }
                     }        
                     lruResults = null;
                 }
                 makeDirty();
-                lruLookup = null;
+                lruLookupLocal = null;
             }
             
-            if ( lruLookup == null ) { // Needs to attach to lookup
-                lruLookup = lookup;
-                lruResults = new Lookup.Result[watch.length];
+            if ( lruLookupLocal == null ) { // Needs to attach to lookup
+                lruLookup = new CleanableWeakReference(lruLookupLocal = lookup);
+                lruResults = new ArrayList();
                 for ( int i = 0; i < watch.length; i++ ) {
-                    lruResults[i] = lookup.lookup( new Lookup.Template( watch[i] ) );
-                    lruResults[i].allItems();
-                    lruResults[i].addLookupListener( this ); 
+                    Lookup.Result result = lookup.lookup( new Lookup.Template( watch[i] ) );
+                    
+                    result.allItems();
+                    result.addLookupListener( this );
+                    
+                    lruResults.add(new CleanableWeakReference(result));
                 }                
             }
             
@@ -285,7 +304,7 @@ class ActionsUtil {
                 Set result = new HashSet();
 
                 // First find out whether there is a project directly in the Lookup                        
-                Collection currentProjects = lruLookup.lookup( new Lookup.Template( Project.class ) ).allInstances();
+                Collection currentProjects = lruLookupLocal.lookup( new Lookup.Template( Project.class ) ).allInstances();
                 
                 for( Iterator it = currentProjects.iterator(); it.hasNext(); ) {
                     Project p = (Project)it.next();
@@ -293,7 +312,7 @@ class ActionsUtil {
                 }
 
                 // Now try to guess the project from dataobjects
-                Collection currentDataObjects = lruLookup.lookup( new Lookup.Template( DataObject.class ) ).allInstances();
+                Collection currentDataObjects = lruLookupLocal.lookup( new Lookup.Template( DataObject.class ) ).allInstances();
                 for( Iterator it = currentDataObjects.iterator(); it.hasNext(); ) {
 
                     DataObject dObj = (DataObject)it.next();
@@ -318,7 +337,7 @@ class ActionsUtil {
             return projects == null;
         }
         
-        private void makeDirty() {
+        private synchronized void makeDirty() {
             projects = null;
         }
                 
@@ -328,8 +347,22 @@ class ActionsUtil {
             makeDirty();
         }
         
+        private class CleanableWeakReference extends WeakReference implements Runnable {
+            
+            public CleanableWeakReference(Object o) {
+                super(o, Utilities.activeReferenceQueue());
+            }
+
+            public void run() {
+                synchronized (LookupResultsCache.this) {
+                    lruLookup  = null;
+                    lruResults = null;
+                    projects   = null;
+                }
+            }
+        }
+        
     }
-    
 
 }
 
