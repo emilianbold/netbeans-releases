@@ -14,6 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.lib.cvsclient.file.DefaultFileHandler;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
@@ -44,7 +45,7 @@ class CvsLiteFileHandler extends DefaultFileHandler {
             return false;
         } else {
             File parent = file.getParentFile();
-            FileObject fo = FileUtil.toFileObject(parent);
+            FileObject fo = Utils.mkfolders(parent);
             try {
                 FilesystemHandler.ignoreEvents(true);
                 try {

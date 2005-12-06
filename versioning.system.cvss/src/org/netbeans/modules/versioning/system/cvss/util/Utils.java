@@ -522,4 +522,20 @@ public class Utils {
             throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
         }
     }
+    
+    /** Like mkdirs but but using openide filesystems (firing events) */
+    public static FileObject mkfolders(File file) throws IOException {
+        if (file.isDirectory()) return FileUtil.toFileObject(file);
+
+        File parent = file.getParentFile();
+        
+        String path = file.getName();
+        while (parent.isDirectory() == false) {
+            path = parent.getName() + "/" + path;  // NOI18N
+            parent = parent.getParentFile();
+        }
+
+        FileObject fo = FileUtil.toFileObject(parent);
+        return FileUtil.createFolder(fo, path);
+    }
 }
