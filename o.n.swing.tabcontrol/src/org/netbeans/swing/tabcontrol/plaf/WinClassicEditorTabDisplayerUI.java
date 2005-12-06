@@ -102,6 +102,9 @@ public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDispl
         //undocumented (?) call to hide action text - see JButton line 234
         button.putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
         button.setFocusable(false);
+        if( isGenericUI ) {
+            button.setBorder( BorderFactory.createEmptyBorder() );
+        }
     }
 
     private void genericPaintAfterTabs (Graphics g) {
