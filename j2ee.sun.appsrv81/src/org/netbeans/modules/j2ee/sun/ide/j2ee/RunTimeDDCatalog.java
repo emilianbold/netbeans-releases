@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
@@ -116,6 +117,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     /** Creates a new instance of RunTimeDDCatalog */
     public RunTimeDDCatalog() {
         // lazy call to possible registration. This is called only when needed (i.e runtime tab DTD exploration
+        InstanceProperties.getInstanceList();
         PluginProperties.configureDefaultServerInstance();        
         platformRootDir = ServerLocationManager.getLatestPlatformLocation();
     }
