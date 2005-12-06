@@ -254,7 +254,13 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
                 } catch(URISyntaxException uri2) {}
             }
         } else if(currentType.equalsIgnoreCase("java.util.Calendar")) {
-            returnValue = Calendar.getInstance();
+            try {
+                Date date = DateFormat.getDateTimeInstance().parse(inValue);
+                returnValue = Calendar.getInstance();
+                ((Calendar)returnValue).setTime(date);             
+            } catch (java.text.ParseException ex) {
+                returnValue = Calendar.getInstance();
+            }
         } else if(currentType.equalsIgnoreCase("java.util.Date")) {
             try {
                 returnValue = DateFormat.getInstance().parse(inValue);

@@ -94,13 +94,8 @@ public class TypeRowModel implements RowModel {
          //   case 0: return false;
             case 0: return false;
             case 1: if(data.getParameterType() instanceof JavaSimpleType ||
-            data.getParameterType() instanceof JavaEnumerationType) {
-                if(data.getParameterType().getRealName().equalsIgnoreCase("java.util.Calendar")) {
-                    return false;
-                } else {
-                    return true;
-                }
-            } else return false;
+                       data.getParameterType() instanceof JavaEnumerationType) return true;
+                    else return false;
             default: return false;
         }
         
