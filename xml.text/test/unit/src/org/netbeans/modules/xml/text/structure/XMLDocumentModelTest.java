@@ -813,7 +813,7 @@ public class XMLDocumentModelTest extends NbTestCase {
         //listen to model
         final Vector modelChanges = new Vector();
         model.addDocumentModelListener(new DocumentModelListenerAdapter() {
-            public void documentElementRemoved(DocumentElement de) {
+            public void documentElementAdded(DocumentElement de) {
                 modelChanges.add(de);
             }
         });
@@ -821,14 +821,14 @@ public class XMLDocumentModelTest extends NbTestCase {
         //listen to element
         final Vector aChanges = new Vector();
         aTag.addDocumentElementListener(new DocumentElementListenerAdapter() {
-            public void elementRemoved(DocumentElementEvent e) {
+            public void elementAdded(DocumentElementEvent e) {
                 aChanges.add(e.getChangedChild());
             }
         });
         
         final Vector bChanges = new Vector();
         bTag.addDocumentElementListener(new DocumentElementListenerAdapter() {
-            public void elementRemoved(DocumentElementEvent e) {
+            public void elementAdded(DocumentElementEvent e) {
                 bChanges.add(e.getChangedChild());
             }
         });
