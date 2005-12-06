@@ -26,7 +26,7 @@ import org.openide.util.HelpCtx;
 /** Test coveres implementation of issue 58530 - Background wizard validation.
  * @author Jiri Rechtacek
  */
-public class AsynchronousValidatingPanelTest extends NbTestCase {
+public class AsynchronousValidatingPanelTest extends LoggingTestCaseHid {
 
     public AsynchronousValidatingPanelTest (String name) {
         super(name);
@@ -40,6 +40,8 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
     WizardDescriptor wd;
     String exceptedValue;
 
+    private ErrorManager err;
+
     protected final void setUp () {
         WizardDescriptor.Panel panels[] = new WizardDescriptor.Panel[2];
         panels[0] = new Panel("first panel");
@@ -48,6 +50,7 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
         wd.addPropertyChangeListener(new Listener());
         java.awt.Dialog d = DialogDisplayer.getDefault().createDialog (wd);
         //d.show();
+        err = ErrorManager.getDefault ().getInstance ("test-" + getName ());
     }
     
     public void testAsynchronousLazyValidation () throws Exception {
@@ -67,12 +70,15 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
             }
             
             public synchronized void validate () throws WizardValidationException {
+                err.log ("validate() entry.");
                 running = false;
                 notifyAll ();
                 if (validateMsg != null) {
                     failedMsg = validateMsg;
+                    err.log ("Throw WizardValidationException.");
                     throw new WizardValidationException (null, "MyPanel.validate() failed.", validateMsg);
                 }
+                err.log ("validate() exit.");
                 return;
             }
         }
@@ -94,6 +100,7 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
         mp.failedMsg = null;
         mp.validateMsg = "xtest-fail-without-msg";
         assertTrue ("Next button must be enabled.", wd.isNextEnabled ());
+        err.log ("Do Next. Validation will run with: validateMsg=" + mp.validateMsg + ", failedMsg=" + mp.failedMsg);
         synchronized (mp) {
             wd.doNextClick ();
             assertTrue ("Validation runs.", mp.running);
@@ -103,24 +110,25 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
                 assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
                 mp.wait ();
             }
-            waitWhileSetValidDone ();
-            assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
         }
+        waitWhileSetValidDone ();
+        assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
         assertEquals ("The lazy validation failed on Next.", mp.validateMsg, mp.failedMsg);
         assertNull ("The lazy validation failed, still no initialiaation", panels[1].component);
         assertNull ("The lazy validation failed, still no initialiaation", panels[2].component);
         mp.failedMsg = null;
         mp.validateMsg = null;
         synchronized (mp) {
+            err.log ("Do Next. Validation will run with: validateMsg=" + mp.validateMsg + ", failedMsg=" + mp.failedMsg);
             wd.doNextClick ();
             assertTrue ("Validation runs.", mp.running);
             while (mp.running) {
                 assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
                 mp.wait ();
             }
-            waitWhileSetValidDone ();
-            assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
         }
+        waitWhileSetValidDone ();
+        assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
         assertNull ("Validation on Next passes", mp.failedMsg);
         assertNotNull ("Now we switched to another panel", panels[1].component);
         assertNull ("The lazy validation failed, still no initialiaation", panels[2].component);
@@ -130,14 +138,15 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
         mfp.validateMsg = "xtest-fail-without-msg";
         mfp.failedMsg = null;
         synchronized (mfp) {
+            err.log ("Do Finish. Validation will run with: validateMsg=" + mfp.validateMsg + ", failedMsg=" + mfp.failedMsg);
             wd.doFinishClick();
             while (mfp.running) {
                 assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
                 mfp.wait ();
             }
-            waitWhileSetValidDone ();
-            assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
         }
+        waitWhileSetValidDone ();
+        assertFalse ("Wizard is not valid when validation fails.",  wd.isValid ());
         assertEquals ("The lazy validation failed on Finish.", mfp.validateMsg, mfp.failedMsg);
         assertNull ("The validation failed, still no initialiaation", panels[2].component);
         assertEquals ("State has not changed", state, wd.getValue ());
@@ -145,14 +154,15 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
         mfp.validateMsg = null;
         mfp.failedMsg = null;
         synchronized (mfp) {
+            err.log ("Do Finish. Validation will run with: validateMsg=" + mfp.validateMsg + ", failedMsg=" + mfp.failedMsg);
             wd.doFinishClick ();
             while (mfp.running) {
                 assertFalse ("Wizard is not valid during validation.",  wd.isValid ());
                 mfp.wait ();
             }
-            waitWhileSetValidDone ();
-            assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
         }
+        waitWhileSetValidDone ();
+        assertTrue ("Wizard is valid when validation passes.",  wd.isValid ());
         assertNull ("Validation on Finish passes", mfp.failedMsg);        
         assertNull ("Finish was clicked, no initialization either", panels[2].component);
         assertEquals ("The state is finish", WizardDescriptor.FINISH_OPTION, wd.getValue ());
@@ -235,7 +245,12 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
     }
 
     private void waitWhileSetValidDone () {
+        err.log ("Start waitWhileSetValidDone.");
         try {
+            WizardDescriptor.ASYNCHRONOUS_JOBS_RP.post (new Runnable () {
+                public void run () {
+                }
+            }).waitFinished ();
             SwingUtilities.invokeAndWait (new Runnable () {
                 public void run () {
                 }
@@ -245,6 +260,7 @@ public class AsynchronousValidatingPanelTest extends NbTestCase {
         } catch (InvocationTargetException ex) {
             fail (ex.getMessage ());
         }
+        err.log ("End of waitWhileSetValidDone.");
     }
 
 }
