@@ -631,8 +631,11 @@ class LayoutDragger implements LayoutConstants {
     /**
      * Recursively scans given interval for suitable sub-intervals next to
      * which the moving component could be suitably positioned.
+     * @param interval group to scan
      * @param alignment determines which edges of the moving space should be
      *        checked - can be LEADING or TRAILING, or ALL_POINTS for both
+     * @return position of the group as a whole to the moving space (corresponds
+     *         to the edge by which the moving component is attached)
      */
     private int scanLayoutForNextTo(LayoutInterval interval, int alignment) {
         assert alignment == LayoutRegion.ALL_POINTS || alignment == LEADING || alignment == TRAILING;
@@ -665,7 +668,7 @@ class LayoutDragger implements LayoutConstants {
             if (sub.isComponent()) {
                 if (isValidInterval(sub)
                     && (operation != RESIZING || isValidNextToResizing(sub, alignment) == 1))
-                {   // sub is a component not moved nor resized
+                {   // sub is a component, not being moved/resized
                     nextToAlignment = checkNextToPosition(sub, alignment);
                 }
             }
@@ -673,8 +676,6 @@ class LayoutDragger implements LayoutConstants {
                 nextToAlignment = scanLayoutForNextTo(sub, alignment);
             }
             else { // parallel group
-                assert sub.isParallel();
-
                 // check if the group is not going to be dissolved (contains moving interval)
                 boolean validForRef = isValidInterval(sub);
                 int validResizing = validForRef && operation == RESIZING ?
@@ -709,35 +710,36 @@ class LayoutDragger implements LayoutConstants {
                 }
             }
 
-            if (interval.isSequential() && nextToAlignment != DEFAULT) {
-                // for sequence only first and last intervals can be used for outer alignment
-                if (idx > 0 && idx+1 < count) {
-                    nextToAlignment = DEFAULT;
-                }
-                if (idx != 0) {
-                    nextToAlignment = nextToAlignment == TRAILING ? DEFAULT : LEADING;
-                }
-                else if (idx+1 != count) {
-                    nextToAlignment = nextToAlignment == LEADING ? DEFAULT : TRAILING;
-                }
-            }
-
             if (nextToAlignment != DEFAULT) {
-                // check if 'sub' is aligned at the corresponding border of the
-                // group - to know if the whole group could not be next to
-                if (LayoutInterval.wantResize(sub)) {
-                    if (nextToAlignment == LayoutRegion.ALL_POINTS) {
-                        groupOuterAlignment = LayoutRegion.ALL_POINTS; // both L and T can happen
-                    }
-                    else if (groupOuterAlignment == DEFAULT) {
-                        groupOuterAlignment = nextToAlignment ^ 1; // "next to" side has 'sub' aligned
+                if (interval.isSequential()) {
+                    // for sequence only first and last intervals can be used for outer alignment
+                    if (groupOuterAlignment == DEFAULT && (idx == 0 || idx+1 == count)) {
+                        if (idx != 0) {
+                            nextToAlignment = nextToAlignment == TRAILING ? DEFAULT : LEADING;
+                        }
+                        else if (idx+1 != count) {
+                            nextToAlignment = nextToAlignment == LEADING ? DEFAULT : TRAILING;
+                        }
+                        groupOuterAlignment = nextToAlignment;
                     }
                 }
-                else if ((nextToAlignment == LayoutRegion.ALL_POINTS
-                          || (nextToAlignment^1) == sub.getAlignment())
-                         && groupOuterAlignment == DEFAULT)
-                {   // 'sub' aligned at the "next to" side
-                    groupOuterAlignment = sub.getAlignment();
+                else {
+                    // check if 'sub' is aligned at the corresponding border of the
+                    // group - to know if the whole group could not be next to
+                    if (LayoutInterval.wantResize(sub)) {
+                        if (nextToAlignment == LayoutRegion.ALL_POINTS) {
+                            groupOuterAlignment = LayoutRegion.ALL_POINTS; // both L and T can happen
+                        }
+                        else if (groupOuterAlignment == DEFAULT) {
+                            groupOuterAlignment = nextToAlignment; // "next to" side has 'sub' aligned
+                        }
+                    }
+                    else if ((nextToAlignment == LayoutRegion.ALL_POINTS
+                              || (nextToAlignment^1) == sub.getAlignment())
+                             && groupOuterAlignment == DEFAULT)
+                    {   // 'sub' aligned at the "next to" side
+                        groupOuterAlignment = sub.getAlignment() ^ 1;
+                    }
                 }
             }
         }
@@ -1045,15 +1047,15 @@ class LayoutDragger implements LayoutConstants {
                         return true;
                 }
                 else if (li.isEmptySpace()) {
-                    if (i > 0 // i == 0 indent space is not in the way
+                    if (i > 0 && i+1 < n // first/last space is not in the way
                         && (li.getMinimumSize() == NOT_EXPLICITLY_DEFINED || li.getMinimumSize() == USE_PREFERRED_SIZE)
                         && li.getPreferredSize() == NOT_EXPLICITLY_DEFINED
                         && (li.getMaximumSize() == NOT_EXPLICITLY_DEFINED || li.getMaximumSize() == USE_PREFERRED_SIZE))
                     {   // preferred padding might be in the way
                         LayoutInterval prev = group.getSubInterval(i-1);
-                        LayoutInterval next = i+1 < n ? group.getSubInterval(i+1) : null;
+                        LayoutInterval next = group.getSubInterval(i+1);
                         if ((!prev.isComponent() || isValidInterval(prev))
-                            && (next == null || !next.isComponent() || isValidInterval(next)))
+                            && (!next.isComponent() || isValidInterval(next)))
                         {   // preferred padding between valid intervals (i.e. not next to the moving component itself)
                             return true;
                         }
@@ -1292,17 +1294,26 @@ class LayoutDragger implements LayoutConstants {
     private int isValidNextToResizing(LayoutInterval interval, int alignment) {
         assert alignment == LEADING || alignment == TRAILING;
         LayoutInterval resizing = movingComponents[0].getLayoutInterval(dimension);
-        if (interval.isParentOf(resizing))
-            return interval.getParent() == null && clearWayToParent(resizing, interval, dimension, alignment) ?
+        if (interval.isParentOf(resizing)) {
+            return interval.getParent() == null && clearWayToParent(resizing, interval, dimension, alignment)
+                   && (!toDeepToMerge(resizing, interval, alignment)
+                       || LayoutInterval.getNeighbor(resizing, alignment, true, true, false) == null) ?
                    1 : 0;
+        }
 
         LayoutInterval commonParent = LayoutInterval.getCommonParent(interval, resizing);
         if (commonParent.isSequential()) {
-            if (interval.getParent() != commonParent)
+            if (toDeepToMerge(resizing, commonParent, alignment)
+                && LayoutInterval.getNeighbor(resizing, alignment, true, true, false) != interval)
                 return -1;
+
             resizing = getClearWayToParent(resizing, commonParent, dimension, alignment);
             if (resizing == null)
                 return -1;
+
+            while (interval.getParent() != commonParent) {
+                interval = interval.getParent();
+            }
 
             int startIndex = commonParent.indexOf(alignment == LEADING ? interval : resizing) + 1;
             int endIndex = commonParent.indexOf(alignment == LEADING ? resizing : interval) - 1;
@@ -1322,12 +1333,22 @@ class LayoutDragger implements LayoutConstants {
             // now exclude resizing across an interval in the same sequence
             LayoutInterval resizing = movingComponents[0].getLayoutInterval(dimension);
             if (interval.isParentOf(resizing)) {
-                return clearWayToParent(resizing, interval, dimension, alignment);
+                if (!clearWayToParent(resizing, interval, dimension, alignment))
+                    return false;
+                if (toDeepToMerge(resizing, interval, alignment)) {
+                    LayoutInterval neighbor = LayoutInterval.getNeighbor(resizing, alignment, true, true, false);
+                    if (neighbor != null && interval.isParentOf(neighbor))
+                        return false;
+                }
+                return true;
             }
             else {
                 LayoutInterval commonParent = LayoutInterval.getCommonParent(interval, resizing);
                 if (commonParent.isParallel())
                     return true;
+
+                if (toDeepToMerge(resizing, commonParent, alignment))
+                    return false;
 
                 // if in a sequence, aligning is possible if the intervals don't overlap orthogonally
                 resizing = getClearWayToParent(resizing, commonParent, dimension, alignment);
@@ -1384,6 +1405,34 @@ class LayoutDragger implements LayoutConstants {
             parent = interval.getParent();
         }
         return interval;
+    }
+
+    // When resizing we can't attach the component edge to a component that is
+    // more than one level of unaligned parallel groups away.
+    // See LayoutFeeder.accommodateSizeInSequence.
+    private static boolean toDeepToMerge(LayoutInterval interval, LayoutInterval parent, int alignment) {
+        int level = 0;
+        int a = DEFAULT;
+        LayoutInterval prev = null;
+        LayoutInterval p = interval.getParent();
+        while (p != parent) {
+            if (p.isParallel()) {
+                if (a == DEFAULT) {
+                    a = interval.getAlignment();
+                    if (a != alignment)
+                        level++;
+                }
+                else if (!LayoutInterval.isAlignedAtBorder(prev, p, a)) {
+                    level++;
+                    if (level > 1)
+                        return true;
+                }
+                prev = p;
+            }
+            interval = p;
+            p = interval.getParent();
+        }
+        return level >= 2;
     }
 
     /**
