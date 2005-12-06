@@ -37,18 +37,16 @@ fi
 #     . /etc/netbeans.conf
 # fi
 
-# XXX #68373: the following treatment destroys proper usage of spaces in non-userdir params:
-args=""
-
+# #68373: look for userdir, but do not modify "$@"
 userdir="${netbeans_default_userdir}"
-while [ $# -gt 0 ] ; do
-    case "$1" in
-        --userdir) shift; if [ $# -gt 0 ] ; then userdir="$1"; fi
-            ;;
-        *) args="$args $1"
-            ;;
-    esac
-    shift
+founduserdir=""
+for opt in "$@"; do
+    if [ "${founduserdir}" = "yes" ]; then
+        userdir="$opt"
+        break
+    elif [ "$opt" = "--userdir" ]; then
+        founduserdir="yes"
+    fi
 done
 
 if [ -f "${userdir}"/etc/netbeans.conf ] ; then
@@ -66,34 +64,39 @@ if [ ! -z "$netbeans_extraclusters" ] ; then
     netbeans_clusters="$netbeans_clusters:$netbeans_extraclusters"
 fi
 
-nbexec="$progdir"/../platform6/lib/nbexec
+launchNbexec() {
+    nbexec="$progdir"/../platform6/lib/nbexec
+    if [ "${founduserdir}" = "yes" ]; then
+        sh "$nbexec" "$@"
+    else
+        sh "$nbexec" --userdir "${userdir}" "$@"
+    fi
+}
 
 # in case of macosx, the apple.laf.useScreenMenuBar property should be ideally in the Info.plist file
 # but it doesn't get propagated into the executed java VM. 
 case "`uname`" in
     Darwin*)
-        sh "$nbexec" \
+        launchNbexec \
             --jdkhome "$netbeans_jdkhome" \
             -J-Dcom.apple.mrj.application.apple.menu.about.name=NetBeans \
             -J-Xdock:name=NetBeans \
             "-J-Xdock:icon=$progdir/../nb5.0/netbeans.icns" \
             --branding nb \
             --clusters "$netbeans_clusters" \
-            --userdir "${userdir}" \
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
             -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense \
             ${netbeans_default_options} \
-            $args
+            "$@"
         ;;
     *)
-        sh "$nbexec" \
+        launchNbexec \
             --jdkhome "$netbeans_jdkhome" \
             --branding nb \
             --clusters "$netbeans_clusters" \
-            --userdir "${userdir}" \
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
             -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense \
             ${netbeans_default_options} \
-            $args
+            "$@"
         ;;
 esac
