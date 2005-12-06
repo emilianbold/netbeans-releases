@@ -873,7 +873,7 @@ public final class ModuleList {
     // NONSTATIC PART
     
     /** all module entries, indexed by cnb */
-    private final Map/*<String,ModuleEntry>*/ entries;
+    private Map/*<String,ModuleEntry>*/ entries;
     
     /** originally passed top-level dir */
     private final File home;
@@ -915,7 +915,9 @@ public final class ModuleList {
         if (lazyNetBeansOrgList) {
             lazyNetBeansOrgList = false;
             File nbdestdir = new File(home, DEST_DIR_IN_NETBEANS_ORG);
-            doScanNetBeansOrgSources(entries, home, DEPTH_NB_ALL, home, nbdestdir, null, false);
+            Map/*<String,ModuleEntry>*/ _entries = new HashMap(entries); // #68513: possible race condition
+            doScanNetBeansOrgSources(_entries, home, DEPTH_NB_ALL, home, nbdestdir, null, false);
+            entries = _entries;
         }
     }
     
