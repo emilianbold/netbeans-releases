@@ -48,7 +48,8 @@ public class RADComponentNode extends FormNode
 
     private RADComponent component;
     private Action[] actions;
-
+    private boolean highlightDisplayName;
+    
     public RADComponentNode(RADComponent component) {
         this(component instanceof ComponentContainer ?
                 new RADChildren((ComponentContainer)component) : Children.LEAF,
@@ -598,4 +599,19 @@ public class RADComponentNode extends FormNode
             return NbBundle.getMessage(ChangeVariableNameAction.class, "ChangeVariableNameAction"); // NOI18N
         }
     }
+
+    public String getHtmlDisplayName() {
+        if(highlightDisplayName) {
+            return  "<html><b>" + getDisplayName() + "</b></html>"; // NOI18N
+        } else {
+            return "<html>" + getDisplayName() + "</html>"; // NOI18N           
+        }          
+    }    
+    
+    void highlightDisplayName(boolean highlight) {
+        if(highlight != highlightDisplayName) {
+            highlightDisplayName = highlight;        
+            fireDisplayNameChange(null, getDisplayName());            
+        }             
+    }    
 }

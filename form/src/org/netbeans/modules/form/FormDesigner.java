@@ -368,19 +368,33 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         return topDesignComponent;
     }
 
+    boolean isTopRADComponent() {
+        return formModel.getTopRADComponent().equals(topDesignComponent);
+    }
+    
     public void setTopDesignComponent(RADVisualComponent component,
                                       boolean update) {
+        
+        highlightTopDesignComponentName(false);
         topDesignComponent = component;
+        highlightTopDesignComponentName(!isTopRADComponent());        
+        
         FormDataObject formDO = formEditor.getFormDataObject();
         if(formDO!=null) {
-            formDO.getFormEditorSupport().updateMVTCDisplayName();
-        }
+            formDO.getFormEditorSupport().updateMVTCDisplayName();            
+        }        
         if (update) {
             setSelectedComponent(topDesignComponent);
             updateWholeDesigner();
         }
+    }    
+    
+    private void highlightTopDesignComponentName(boolean bl) {
+        if(topDesignComponent!=null) {
+            topDesignComponent.getNodeReference().highlightDisplayName(bl);
+        }        
     }
-
+    
     public void resetTopDesignComponent(boolean update) {
         setTopDesignComponent(
             formModel.getTopRADComponent() instanceof RADVisualComponent ?
