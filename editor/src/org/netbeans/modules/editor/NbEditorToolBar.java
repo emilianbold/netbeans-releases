@@ -747,7 +747,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     /** No operation action  - do nothing when invoked 
      *  issue #69642
      */
-    public static final class NoOpAction extends AbstractAction{
+    private static final class NoOpAction extends AbstractAction{
         public NoOpAction(){
         }
         public void actionPerformed(ActionEvent e) {
