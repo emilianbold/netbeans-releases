@@ -422,8 +422,8 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
 
             if (hierarchy.isInitialized()) {
                 oldNodes = hierarchy.getNodes();
-                hierarchy.detachFrom();
             }
+            hierarchy.detachFrom();
 
             boolean wasLeaf = hierarchy == Children.LEAF;
 

@@ -31,10 +31,6 @@ public class SetChildrenTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(SetChildrenTest.class));
-    }
-
     /** Tests whether the nodes get Changed.
      */
     public void testChldrenEvents () throws Exception {
@@ -105,6 +101,14 @@ public class SetChildrenTest extends NbTestCase {
         };
         
         GoldenEvent.assertEvents ( nlRoot.getEvents(), rootGoldenEvents, null );
+    }
+    
+    public void testFreeParent() throws Exception {
+        Node root = new TestNodeHid(Children.LEAF, "rootNode" );
+        Children.Array ch = new Children.Array();
+        root.setChildren(ch);
+        root.setChildren(Children.LEAF);
+        root.setChildren(ch);
     }
     
     
