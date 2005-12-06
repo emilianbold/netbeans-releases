@@ -73,6 +73,8 @@ public class DiffPresenter extends javax.swing.JPanel {
     private RequestProcessor.Task computationTask = diffRP.post(    // NOI28N
             new Runnable(){public void run(){}}
     );
+    
+    private boolean added;
 
     /**
      * Creates <i>just computing diff</i> presenter. The mode
@@ -256,26 +258,26 @@ public class DiffPresenter extends javax.swing.JPanel {
 
     /** Set the diff provider and update the view. */
     public void setProvider(DiffProvider p) {
-        asyncDiff((DiffProvider) p, defaultVisualizer);
-
         this.defaultProvider = (DiffProvider) p;
-        //propSupport.firePropertyChange(PROP_PROVIDER, null, p);
-        // Set the defaults for the future:
-        setDefaultDiffService(p, "Services/DiffProviders"); // NOI18N
+
+        if (added) {
+            asyncDiff((DiffProvider) p, defaultVisualizer);
+            setDefaultDiffService(p, "Services/DiffProviders"); // NOI18N
+        }
     }
     
     public DiffVisualizer getVisualizer() {
         return defaultVisualizer;
     }
-    
+
     /** Set the diff visualizer and update the view. */
     public void setVisualizer(DiffVisualizer v) {
-        asyncDiff(defaultProvider, (DiffVisualizer) v);
-
         this.defaultVisualizer = (DiffVisualizer) v;
-        //propSupport.firePropertyChange(PROP_PROVIDER, null, p);
-        // Set the defaults for the future:
-        setDefaultDiffService(v, "Services/DiffVisualizers"); // NOI18N
+
+        if (added) {
+            asyncDiff(defaultProvider, (DiffVisualizer) v);
+            setDefaultDiffService(v, "Services/DiffVisualizers"); // NOI18N
+        }
     }
     
     private static void setDefaultDiffService(Object ds, String folder) {
@@ -321,6 +323,19 @@ public class DiffPresenter extends javax.swing.JPanel {
         propSupport.removePropertyChangeListener(PROP_VISUALIZER, l);
     }
      */
+
+    /* Start lazy diff computation */
+    public void addNotify() {
+        super.addNotify();
+        added = true;
+        asyncDiff(defaultProvider, defaultVisualizer);
+    }
+
+    /* On close kill background task. */
+    public void removeNotify() {
+        super.removeNotify();
+        computationTask.cancel();
+    }
 
     /**
      * Asynchronously computes and shows diff.

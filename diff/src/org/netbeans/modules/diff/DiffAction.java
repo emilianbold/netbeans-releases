@@ -27,6 +27,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Cancellable;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
 
@@ -124,14 +125,7 @@ public class DiffAction extends NodeAction {
      * This is expected not to be called in AWT thread.
      */
     public static void performAction(final FileObject fo1, final FileObject fo2) {
-        String name = NbBundle.getMessage(DiffAction.class, "BK0001");
-        ProgressHandle ph = ProgressHandleFactory.createHandle(name);
-        try {
-            ph.start();
-            performAction(fo1, fo2, null);
-        } finally {
-            ph.finish();
-        }
+        performAction(fo1, fo2, null);
     }
     /**
      * Shows the diff between two FileObject objects.
@@ -167,10 +161,25 @@ public class DiffAction extends NodeAction {
             } else {
                 mimeType = fo1.getMIMEType();
             }
-            tp = diff.createDiff(fo1.getNameExt(), FileUtil.getFileDisplayName(fo1),
-                                 r1,
-                                 fo2.getNameExt(), FileUtil.getFileDisplayName(fo2),
-                                 r2, mimeType);
+            
+            final Thread victim = Thread.currentThread();
+            Cancellable killer = new Cancellable() {
+                public boolean cancel() {
+                    victim.interrupt();
+                    return true;
+                }
+            };
+            String name = NbBundle.getMessage(DiffAction.class, "BK0001");
+            ProgressHandle ph = ProgressHandleFactory.createHandle(name, killer);
+            try {
+                ph.start();
+                tp = diff.createDiff(fo1.getNameExt(), FileUtil.getFileDisplayName(fo1),
+                                     r1,
+                                     fo2.getNameExt(), FileUtil.getFileDisplayName(fo2),
+                                     r2, mimeType);
+            } finally {
+                ph.finish();
+            }
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
             return ;

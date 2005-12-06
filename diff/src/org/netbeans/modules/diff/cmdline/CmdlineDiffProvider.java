@@ -63,7 +63,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
     }
     
     public static CmdlineDiffProvider createDefault() {
-        return new CmdlineDiffProvider("diff {0} {1}");
+        return new CmdlineDiffProvider("diff \"{0}\" \"{1}\"");
     }
 
     /**
