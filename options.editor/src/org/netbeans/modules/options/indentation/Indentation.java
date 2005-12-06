@@ -13,12 +13,15 @@
 
 package org.netbeans.modules.options.indentation;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 /**
@@ -33,8 +36,16 @@ public final class Indentation extends OptionsCategory {
         return NbBundle.getMessage (Indentation.class, key);
     }
  
-    public String getIconBase () {
-        return "org/netbeans/modules/options/resources/indentation";
+
+    private static Icon icon;
+    
+    public Icon getIcon () {
+        if (icon == null)
+            icon = new ImageIcon (
+                Utilities.loadImage 
+                    ("org/netbeans/modules/options/resources/indentation.png")
+            );
+        return icon;
     }
     
     public String getCategoryName () {

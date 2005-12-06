@@ -13,10 +13,13 @@
 
 package org.netbeans.modules.options.colors;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 /**
@@ -32,8 +35,16 @@ public class FontAndColors extends OptionsCategory {
         return NbBundle.getMessage (FontAndColors.class, key);
     }
 
-    public String getIconBase () {
-        return "org/netbeans/modules/options/resources/colors";
+
+    private static Icon icon;
+    
+    public Icon getIcon () {
+        if (icon == null)
+            icon = new ImageIcon (
+                Utilities.loadImage 
+                    ("org/netbeans/modules/options/resources/colors.png")
+            );
+        return icon;
     }
 
     public String getCategoryName () {

@@ -13,11 +13,14 @@
 
 package org.netbeans.modules.options.editor;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 /**
@@ -32,8 +35,16 @@ public final class Editor extends OptionsCategory {
         return NbBundle.getMessage (Editor.class, key);
     }
  
-    public String getIconBase () {
-        return "org/netbeans/modules/options/resources/editor";
+
+    private static Icon icon;
+    
+    public Icon getIcon () {
+        if (icon == null)
+            icon = new ImageIcon (
+                Utilities.loadImage 
+                    ("org/netbeans/modules/options/resources/editor.png")
+            );
+        return icon;
     }
     
     public String getCategoryName () {

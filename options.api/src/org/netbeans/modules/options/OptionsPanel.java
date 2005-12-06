@@ -46,6 +46,7 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.FocusManager;
+import javax.swing.Icon;
 
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -354,11 +355,9 @@ public class OptionsPanel extends JPanel {
             label.setHorizontalAlignment (label.CENTER);
             pOptions.add ("Center", label);
         }
-        Image image = Utilities.loadImage (category.getIconBase () + ".png");
-        if (image == null)
-            image = Utilities.loadImage (category.getIconBase () + ".gif");
-        if (image != null)
-            lTitle.setIcon (new ImageIcon (image));
+        Icon icon = category.getIcon ();
+        if (icon != null)
+            lTitle.setIcon (icon);
         lTitle.setText (category.getTitle ());
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
@@ -475,9 +474,7 @@ public class OptionsPanel extends JPanel {
         private int index;
         
         Button (OptionsCategory category, int index) {
-            super (
-                new ImageIcon (Utilities.loadImage (category.getIconBase () + ".png"))
-            );
+            super (category.getIcon ());
             this.index = index;
             Mnemonics.setLocalizedText (this, category.getCategoryName ());
             setOpaque (true);

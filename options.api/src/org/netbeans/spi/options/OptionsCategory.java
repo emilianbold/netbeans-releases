@@ -13,11 +13,15 @@
 
 package org.netbeans.spi.options;
 
+import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 
 /**
@@ -48,9 +52,27 @@ public abstract class OptionsCategory {
      * Returns base name of 32x32 icon (gif, png) used in list on the left side of 
      * Options Dialog. See {@link AbstractNode#setIconBase} method for more info.
      *
+     * @deprecated  This method will not be a part of NB50! Use
+     *              {@link #getIcon} instead.
      * @return base name of 32x32 icon
      */
-    public abstract String getIconBase ();
+    public String getIconBase () {
+        return null;
+    }
+    
+    /**
+     * Returns 32x32 icon used in list on the left side of 
+     * Options Dialog.
+     *
+     * @return 32x32 icon
+     */
+    public Icon getIcon () {
+        Image image = Utilities.loadImage (getIconBase () + ".png");
+        if (image != null) return new ImageIcon (image);
+        image = Utilities.loadImage (getIconBase () + ".gif");
+        if (image == null) return null;
+        return new ImageIcon (image);
+    }
     
     /**
      * Returns name of category used in list on the left side of 
