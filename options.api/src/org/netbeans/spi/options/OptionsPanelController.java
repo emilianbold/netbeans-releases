@@ -90,7 +90,7 @@ public abstract class OptionsPanelController {
      * 
      * @param masterLookup master lookup composed from lookups provided by 
      *        individual OptionsPanelControllers 
-     *        - {@link OptionsPanelController.getLookup}
+     *        - {@link OptionsPanelController#getLookup}
      * @return visual component representing this options category
      */
     public abstract JComponent getComponent (Lookup masterLookup);
