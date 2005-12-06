@@ -27,6 +27,7 @@ import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.model.XpathEvent;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import org.openide.ErrorManager;
 
 import org.xml.sax.SAXException;
 
@@ -461,7 +462,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 				// TODO - what is proper handling of this exception? logging?
 				// TODO - narrower exceptions? (could be Model or DBException)
 				// for now, returns null
-				e.printStackTrace();
+				ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
 			}
 		}
 
@@ -515,7 +516,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 			// TODO - what is proper handling of this exception? logging?
 			// TODO - narrower exceptions? (could be Model or DBException)
 			// for now, newMCEs will be null and no registration of them
-			e.printStackTrace();
+			ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
 		}
 
 		if (newMCEs != null) {
@@ -528,45 +529,58 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	}
 
 	public void ensureCmpMappingExists (String beanName) {
-		MappingContext mappingContext = getMappingContext();
-		EJBInfoHelper infoHelper = getEJBInfoHelper();
-		ConversionHelper myConversionHelper = getConversionHelper();
+		try {
+			MappingContext mappingContext = getMappingContext();
+			EJBInfoHelper infoHelper = getEJBInfoHelper();
+			ConversionHelper myConversionHelper = getConversionHelper();
 
-		// if no corresponding MCE object, this must be a new
-		// bean, create the skeleton
-		if (mappingContext.getModel().getMappingClass(
-				myConversionHelper.getMappedClassName(beanName)) == null) {
-			MappingConverter mappingConverter = new MappingConverter(
-				infoHelper, SourceFileMap.findSourceMap(getConfig().getDeployableObject()));
-			MappingClassElement newMCE = null;
-			try {
-				newMCE = mappingConverter.toMappingClass(beanName);
-			} catch (Exception e) {
-				// TODO - what is proper handling of this exception? logging?
-				// TODO - narrower exceptions? (could be Model or DBException)
-				// for now, newMCE will be null and no registration of it
-				e.printStackTrace();
-			}
+			// if no corresponding MCE object, this must be a new
+			// bean, create the skeleton
+			if (mappingContext.getModel().getMappingClass(
+					myConversionHelper.getMappedClassName(beanName)) == null) {
+				MappingConverter mappingConverter = new MappingConverter(
+					infoHelper, SourceFileMap.findSourceMap(getConfig().getDeployableObject()));
+				MappingClassElement newMCE = null;
+				try {
+					newMCE = mappingConverter.toMappingClass(beanName);
+				} catch (Exception e) {
+					// TODO - what is proper handling of this exception? logging?
+					// TODO - narrower exceptions? (could be Model or DBException)
+					// for now, newMCE will be null and no registration of it
+					ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+				}
 
-			if (newMCE != null) {
-				addMappingListener(newMCE);
+				if (newMCE != null) {
+					addMappingListener(newMCE);
+					getPCS().firePropertyChange(CMP_MAPPINGS_CHANGED, null, newMCE);
+				}
 			}
+		} catch(NullPointerException ex) {
+			// The intent of this handler is to safely report bugs in the persistence code
+			// while keeping the rest of the system stable.
+			ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
 		}
 	}
 
 	private void removeMappingForCmp(String beanName) {
-		if ((beanName != null) && (mappingContext != null)) {
-			EJBInfoHelper infoHelper = getEJBInfoHelper();
-			ConversionHelper myConversionHelper = getConversionHelper();
-			Model model = mappingContext.getModel();
-			String pcClassName = conversionHelper.getMappedClassName(beanName);
-			MappingClassElement mce = model.getMappingClass(pcClassName);
+		try {
+			if ((beanName != null) && (mappingContext != null)) {
+				EJBInfoHelper infoHelper = getEJBInfoHelper();
+				ConversionHelper myConversionHelper = getConversionHelper();
+				Model model = mappingContext.getModel();
+				String pcClassName = conversionHelper.getMappedClassName(beanName);
+				MappingClassElement mce = model.getMappingClass(pcClassName);
 
-			if (mce != null) {
-				// remove the listener then the mce from model's cache
-				mce.removePropertyChangeListener(cmpMappingListener);
-				model.updateKeyForClass(null, pcClassName);
+				if (mce != null) {
+					// remove the listener then the mce from model's cache
+					mce.removePropertyChangeListener(cmpMappingListener);
+					model.updateKeyForClass(null, pcClassName);
+				}
 			}
+		} catch(NullPointerException ex) {
+			// The intent of this handler is to safely report bugs in the persistence code
+			// while keeping the rest of the system stable.
+			ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
 		}
 	}
 
@@ -580,85 +594,97 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 
 	private void addMappingForCmpField(String beanName, String fieldName, 
 			boolean isRelationship) {
-		if ((beanName != null) && (mappingContext != null)) {
-			EJBInfoHelper infoHelper = getEJBInfoHelper();
-			ConversionHelper myConversionHelper = getConversionHelper();
-			Model model = mappingContext.getModel();
-			String pcClassName = conversionHelper.getMappedClassName(beanName);
-			MappingClassElement mce = model.getMappingClass(pcClassName);
+		try {
+			if ((beanName != null) && (mappingContext != null)) {
+				EJBInfoHelper infoHelper = getEJBInfoHelper();
+				ConversionHelper myConversionHelper = getConversionHelper();
+				Model model = mappingContext.getModel();
+				String pcClassName = conversionHelper.getMappedClassName(beanName);
+				MappingClassElement mce = model.getMappingClass(pcClassName);
+	
+				if ((mce != null) && (mce.getField(fieldName) == null)) {
+					PersistenceClassElement pce = 
+						model.getPersistenceClass(pcClassName);
+					// workaround - problem with timing - bean impl update doesn't 
+					// seem to be done yet, so model's automatic field vs. 
+					// rel check based on type doesn't work
+					// we can determine field vs. rel here, but coll vs. upper bound
+					// is not correct & inverse is not set
+					//model.addFieldElement(pce, fieldName);
+					// PersistenceFieldElement newPFE = pce.getField(fieldName);
+					PersistenceFieldElement newPFE = ((isRelationship) ?
+						new RelationshipElement(
+							new RelationshipElementImpl(fieldName), pce) :
+						new PersistenceFieldElement(new
+							PersistenceFieldElementImpl(fieldName), pce));
 
-			if ((mce != null) && (mce.getField(fieldName) == null)) {
-				PersistenceClassElement pce = 
-					model.getPersistenceClass(pcClassName);
-			// workaround - problem with timing - bean impl update doesn't 
-			// seem to be done yet, so model's automatic field vs. 
-			// rel check based on type doesn't work
-			// we can determine field vs. rel here, but coll vs. upper bound
-			// is not correct & inverse is not set
-				//model.addFieldElement(pce, fieldName);
-				// PersistenceFieldElement newPFE = pce.getField(fieldName);
-				PersistenceFieldElement newPFE = ((isRelationship) ?
-					new RelationshipElement(
-						new RelationshipElementImpl(fieldName), pce) :
-					new PersistenceFieldElement(new
-						PersistenceFieldElementImpl(fieldName), pce));
-
-				try {
-					pce.addField(newPFE);
-				// end above timing issue
-					MappingFieldElement mfe = ((isRelationship) ?
-						new MappingRelationshipElementImpl(fieldName, mce) : 
-						new MappingFieldElementImpl(fieldName, mce));
-					mce.addField(mfe);
-				} catch (ModelException e) {
-					// TODO - what is proper handling of this exception?logging?
-					// for now, no mapping will be added
-					e.printStackTrace();
+					try {
+						pce.addField(newPFE);
+						// end above timing issue
+						MappingFieldElement mfe = ((isRelationship) ?
+							new MappingRelationshipElementImpl(fieldName, mce) : 
+							new MappingFieldElementImpl(fieldName, mce));
+						mce.addField(mfe);
+					} catch (ModelException e) {
+						// TODO - what is proper handling of this exception?logging?
+						// for now, no mapping will be added
+						ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+					}
 				}
 			}
+		} catch(NullPointerException ex) {
+			// The intent of this handler is to safely report bugs in the persistence code
+			// while keeping the rest of the system stable.
+			ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
 		}
 	}
 
 	private void removeMappingForCmpField(String beanName, String fieldName,  
 			boolean removeInverse) {
-		if (mappingContext != null) {
-			EJBInfoHelper infoHelper = getEJBInfoHelper();
-			ConversionHelper myConversionHelper = getConversionHelper();
-			Model model = mappingContext.getModel();
-			String pcClassName = conversionHelper.getMappedClassName(beanName);
-			MappingClassElement mce = model.getMappingClass(pcClassName);
+		try {
+			if (mappingContext != null) {
+				EJBInfoHelper infoHelper = getEJBInfoHelper();
+				ConversionHelper myConversionHelper = getConversionHelper();
+				Model model = mappingContext.getModel();
+				String pcClassName = conversionHelper.getMappedClassName(beanName);
+				MappingClassElement mce = model.getMappingClass(pcClassName);
 
-			if (mce != null) {
-				MappingFieldElement mfe = mce.getField(fieldName);
-				PersistenceFieldElement pfe = 
-					model.getPersistenceClass(pcClassName).getField(fieldName);
-				RelationshipElement inverse = (
-					(removeInverse && (pfe instanceof RelationshipElement)) ? 
-					((RelationshipElement)pfe).getInverseRelationship(model) : 
-					null);
+				if (mce != null) {
+					MappingFieldElement mfe = mce.getField(fieldName);
+					PersistenceFieldElement pfe = 
+						model.getPersistenceClass(pcClassName).getField(fieldName);
+					RelationshipElement inverse = (
+						(removeInverse && (pfe instanceof RelationshipElement)) ? 
+						((RelationshipElement)pfe).getInverseRelationship(model) : 
+						null);
 
-				try {
-					model.removeFieldElement(pfe);
-					if (mfe != null)
-						mce.removeField(mfe);
+					try {
+						model.removeFieldElement(pfe);
+						if (mfe != null)
+							mce.removeField(mfe);
 
-					if (inverse != null) {
-						String inverseName = inverse.getName();
-						MappingClassElement inverseMCE = model.getMappingClass(
-							inverse.getDeclaringClass().getName());
-						MappingFieldElement inverseMFE =
-							inverseMCE.getField(inverseName);
+						if (inverse != null) {
+							String inverseName = inverse.getName();
+							MappingClassElement inverseMCE = model.getMappingClass(
+								inverse.getDeclaringClass().getName());
+							MappingFieldElement inverseMFE =
+								inverseMCE.getField(inverseName);
 
-						model.removeFieldElement(inverse);
-						if (inverseMFE != null)
-							inverseMCE.removeField(inverseMFE);
+							model.removeFieldElement(inverse);
+							if (inverseMFE != null)
+								inverseMCE.removeField(inverseMFE);
+						}
+					} catch (ModelException e) {
+						// TODO - what is proper handling of this exception?logging?
+						// for now, no mapping will be removed
+						ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
 					}
-				} catch (ModelException e) {
-					// TODO - what is proper handling of this exception?logging?
-					// for now, no mapping will be removed
-					e.printStackTrace();
 				}
 			}
+		} catch(NullPointerException ex) {
+			// The intent of this handler is to safely report bugs in the persistence code
+			// while keeping the rest of the system stable.
+			ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
 		}
 	}
 
@@ -668,39 +694,45 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 
 	private void renameMappingForCmpField(String beanName, String oldFieldName,
 			String newFieldName) {
-		if ((beanName != null) && (mappingContext != null)) {
-			EJBInfoHelper infoHelper = getEJBInfoHelper();
-			ConversionHelper myConversionHelper = getConversionHelper();
-			Model model = mappingContext.getModel();
-			String pcClassName = conversionHelper.getMappedClassName(beanName);
-			MappingClassElement mce = model.getMappingClass(pcClassName);
-
-			if (mce != null) {
-				MappingFieldElement mfe = mce.getField(oldFieldName);
-				PersistenceFieldElement pfe = model.getPersistenceClass(
-					pcClassName).getField(oldFieldName);
-
-				try {
-					if (mfe != null)
-						mfe.setName(newFieldName);
-					if (pfe != null){
-						pfe.setName(newFieldName);
-                                                if (pfe instanceof RelationshipElement)
-                                                {
-                                                    RelationshipElement relationship = (RelationshipElement)pfe;
-                                                    RelationshipElement inverse =
-                                                                       relationship.getInverseRelationship(model);
-
-                                                    if (inverse != null)
-                                                        inverse.setInverseRelationship(relationship, model);
-                                                }
-                                        }
-				} catch (ModelException e) {
-					// TODO - what is proper handling of this exception?logging?
-					// for now, no mapping will be renamed
-					e.printStackTrace();
+		try {
+			if ((beanName != null) && (mappingContext != null)) {
+				EJBInfoHelper infoHelper = getEJBInfoHelper();
+				ConversionHelper myConversionHelper = getConversionHelper();
+				Model model = mappingContext.getModel();
+				String pcClassName = conversionHelper.getMappedClassName(beanName);
+				MappingClassElement mce = model.getMappingClass(pcClassName);
+	
+				if (mce != null) {
+					MappingFieldElement mfe = mce.getField(oldFieldName);
+					PersistenceFieldElement pfe = model.getPersistenceClass(
+						pcClassName).getField(oldFieldName);
+	
+					try {
+						if (mfe != null)
+							mfe.setName(newFieldName);
+						if (pfe != null){
+							pfe.setName(newFieldName);
+        	                                        if (pfe instanceof RelationshipElement)
+        	                                        {
+        	                                            RelationshipElement relationship = (RelationshipElement)pfe;
+        	                                            RelationshipElement inverse =
+        	                                                               relationship.getInverseRelationship(model);
+	
+        	                                            if (inverse != null)
+        	                                                inverse.setInverseRelationship(relationship, model);
+        	                                        }
+        	                                }
+					} catch (ModelException e) {
+						// TODO - what is proper handling of this exception?logging?
+						// for now, no mapping will be renamed
+						ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+					}
 				}
 			}
+		} catch(NullPointerException ex) {
+			// The intent of this handler is to safely report bugs in the persistence code
+			// while keeping the rest of the system stable.
+			ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
 		}
 	}
 
