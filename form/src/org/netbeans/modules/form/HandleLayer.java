@@ -210,7 +210,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
      *        (layout relations in container and resize handles)
      */
     private void paintSelection(Graphics2D g, RADComponent metacomp, boolean inLayout) {
-        if (!(metacomp instanceof RADVisualComponent))
+        if (!(metacomp instanceof RADVisualComponent) && !(metacomp instanceof RADMenuItemComponent))
             return;
         Object comp = formDesigner.getComponent(metacomp);
         if (!(comp instanceof Component))
