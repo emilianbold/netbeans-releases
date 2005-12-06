@@ -93,6 +93,17 @@ public final class DerbySupport {
     /**
      * Creates a sample directory in the Derby system home and registers it
      * in the Database Explorer.
+     *
+     * <p>This method requires at least the Derby net drivers to be registered. 
+     * Otherwise it will throw an IllegalStateException.</p>
+     *
+     * <p>This method might take a long time to perform. It is advised that
+     * clients do not call this method from the event dispatching thread, 
+     * where it would block the UI.</p>
+     *
+     * @throws IllegalStateException if the Derby net drivers is not registered.
+       @throws DatabaseException if an error occurs while registering
+     *         the new database in the Database Explorer.
      */
     public static DatabaseConnection registerSampleDatabase() throws DatabaseException {
         String targetDirectory = getSystemHome();
