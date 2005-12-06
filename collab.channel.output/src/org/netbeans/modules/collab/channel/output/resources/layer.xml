@@ -25,17 +25,4 @@ Microsystems, Inc. All Rights Reserved.
 	    </folder>
 	</folder>
     </folder>
-
-    <folder name="UI">
-	<folder name="Services">
-	    <folder name="Collaboration">
-		<folder name="Channels">
-		    <file name="org-netbeans-modules-collab-channel-output-OutputCollabletFactorySettings.shadow">
-		        <attr name="originalFile" stringvalue="Services/Collaboration/Channels/org-netbeans-modules-collab-channel-output-OutputCollabletFactorySettings.settings"/>
-		    </file>
-		</folder>
-	    </folder>
-	</folder>
-    </folder>
-     
 </filesystem>

@@ -9,4 +9,6 @@
 
 1.0.5:  Conversation UI cleanup (#68576)
 
-1.0.6:	Don't block AWT during sharing initialication.
+1.0.6:	Don't block AWT during sharing initialization.
+
+1.0.7:  Remove useless settings (#64551)

@@ -153,34 +153,6 @@ Microsystems, Inc. All Rights Reserved.
 		</folder>                        
 	</folder>
 
-	<folder name="UI">
-		<folder name="Services">
-			<folder name="Collaboration">
-				<attr name="DebuggingAndExecuting/Collaboration" boolvalue="true"/>
-				<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.options.Bundle"/>
-				<attr name="org-netbeans-modules-collab-ui-options-CollabSettings.shadow/CollaborationAccounts.shadow" boolvalue="true"/>
-				<file name="org-netbeans-modules-collab-ui-options-CollabSettings.shadow">
-	                <attr name="originalFile" stringvalue="Services/Collaboration/org-netbeans-modules-collab-ui-options-CollabSettings.settings"/>
-				</file>
-				<attr name="org-netbeans-modules-collab-ui-options-CollabSettings.shadow/org-netbeans-modules-collab-ui-options-NotificationSettings.shadow" boolvalue="true"/>
-				<file name="org-netbeans-modules-collab-ui-options-NotificationSettings.shadow">
-	                <attr name="originalFile" stringvalue="Services/Collaboration/org-netbeans-modules-collab-ui-options-NotificationSettings.settings"/>
-				</file>
-				<attr name="org-netbeans-modules-collab-ui-options-NotificationSettings.shadow/org-netbeans-modules-collab-ui-options-AccountsNode.instance" boolvalue="true"/>
-				<file name="org-netbeans-modules-collab-ui-options-AccountsNode.instance"/>
-				<!--
-				<attr name="org-netbeans-modules-collab-ui-options-AccountsNode.instance/org-netbeans-modules-collab-ui-options-ChannelProvidersNode.instance" boolvalue="true"/>
-				<file name="org-netbeans-modules-collab-ui-options-ChannelProvidersNode.instance"/>
-				-->
-				<attr name="org-netbeans-modules-collab-ui-options-AccountsNode.instance/Channels" boolvalue="true"/>
-				<folder name="Channels">
-					<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.options.Bundle"/>
-					<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/collab/ui/resources/channel_png.gif"/>
-				</folder>
-			</folder>
-		</folder>
-	</folder>
-
 	<folder name="Shortcuts">
 		<file name="CS-L.shadow">
 			<attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowCollabExplorerAction.instance"/>
@@ -212,5 +184,13 @@ Microsystems, Inc. All Rights Reserved.
 			</folder>
 		</folder>
 	</folder>
+
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="Collab.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.collab.ui.options.CollabOptions"/>
+            </file>
+        </folder>
+   </folder>
 	
 </filesystem>

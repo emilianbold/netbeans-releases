@@ -12,3 +12,5 @@
 1.0.6:  Conversation UI cleanup (#68576)
 
 1.0.7:	Don't substitute smiles in code snippets (#68473)
+
+1.0.8: Remove useless settings (#64551)

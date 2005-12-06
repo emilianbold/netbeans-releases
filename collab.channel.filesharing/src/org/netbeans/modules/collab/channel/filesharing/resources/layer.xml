@@ -42,18 +42,6 @@ Microsystems, Inc. All Rights Reserved.
 		</folder>
 	</folder>
 
-	<folder name="UI">
-		<folder name="Services">
-			<folder name="Collaboration">
-				<folder name="Channels">
-					<file name="org-netbeans-modules-collab-channel-filesharing-ui-FilesharingCollabletFactorySettings.shadow">
-						<attr name="originalFile" stringvalue="Services/Collaboration/Channels/org-netbeans-modules-collab-channel-filesharing-ui-FilesharingCollabletFactorySettings.settings"/>
-					</file>
-				</folder>
-			</folder>
-		</folder>
-	</folder>
-
     <!-- Lines marked as erroneous: -->
 	<folder name="Editors">
 		<folder name="AnnotationTypes">

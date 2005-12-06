@@ -16,3 +16,7 @@
 
 1.0.9:  Conversation UI cleanup (#68576)
 	Fix preferredID() warning
+	
+1.0.10:	Mnemonic colision fixed
+
+1.0.11: Added implementation of modern options (#67632)
