@@ -1490,7 +1490,7 @@ public class WizardDescriptor extends DialogDescriptor {
          * are clicked and allows implement asynchronous
          * instantating of newly created objects.
          *
-         * @throws WizardValidationException when validation fails
+         * @throws IOException when instantiate fails
          */
         public Set /*<Object>*/ instantiate () throws IOException;
 
@@ -2114,8 +2114,8 @@ public class WizardDescriptor extends DialogDescriptor {
             }
             
             nbWarningForeground = UIManager.getColor("nb.warningForeground"); //NOI18N
-            if (nbErrorForeground == null) {
-                nbErrorForeground = new Color(51, 51, 51); // Label.foreground
+            if (nbWarningForeground == null) {
+                nbWarningForeground = new Color(51, 51, 51); // Label.foreground
             }
             
             JPanel errorPanel = new JPanel(new BorderLayout());
