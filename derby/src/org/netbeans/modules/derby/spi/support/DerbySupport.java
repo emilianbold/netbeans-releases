@@ -101,7 +101,7 @@ public final class DerbySupport {
      * clients do not call this method from the event dispatching thread, 
      * where it would block the UI.</p>
      *
-     * @throws IllegalStateException if the Derby net drivers is not registered.
+     * @throws IllegalStateException if the Derby net driver is not registered.
        @throws DatabaseException if an error occurs while registering
      *         the new database in the Database Explorer.
      */
