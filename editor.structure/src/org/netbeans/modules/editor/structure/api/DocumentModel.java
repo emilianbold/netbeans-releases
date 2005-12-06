@@ -552,7 +552,7 @@ public final class DocumentModel {
                         DocumentElement docel = (DocumentElement)pchi.next();
                         
                         //test whether we didn't overpal the given 'de' endOffset
-                        if(docel.getStartOffset() >= de.getEndOffset()) break;
+                        if(docel.getStartOffset() > de.getEndOffset()) break;
                         
                         //test if the element is the first next child which has startOffset > previous child endOffset
                         if(docel.getStartOffset() >= nextChild.getEndOffset() ) {
