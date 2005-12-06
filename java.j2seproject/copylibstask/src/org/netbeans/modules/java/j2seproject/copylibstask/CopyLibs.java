@@ -14,8 +14,13 @@
 package org.netbeans.modules.java.j2seproject.copylibstask;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.types.Path;
@@ -62,10 +67,28 @@ public class CopyLibs extends Jar {
         }        
         super.execute();
         
-        if (filesToCopy != null) {
-            final File destFile = this.getDestFile();
-            final File destFolder = destFile.getParentFile();
-            assert destFolder != null && destFolder.canWrite();
+        final File destFile = this.getDestFile();
+        final File destFolder = destFile.getParentFile();
+        assert destFolder != null && destFolder.canWrite();
+        try {
+            ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.java.j2seproject.copylibstask.Bundle");  //NOI18N
+            assert bundle != null;            
+            final File readme = new File (destFolder,bundle.getString("TXT_README_FILE_NAME"));
+            if (!readme.exists()) {
+                readme.createNewFile();
+            }
+            final PrintWriter out = new PrintWriter (new FileWriter (readme));            
+            try {
+                final String content = bundle.getString("TXT_README_FILE_CONTENT");                
+                out.println (MessageFormat.format(content,new Object[] {destFile.getName()}));
+            } finally {
+                out.close ();
+            }
+        } catch (IOException ioe) {
+            this.log("Cannot generate readme file.",Project.MSG_VERBOSE);
+        }        
+        
+        if (filesToCopy != null && filesToCopy.length>0) {            
             final File libFolder = new File (destFolder,LIB);
             if (!libFolder.exists()) {
                 libFolder.mkdir ();
