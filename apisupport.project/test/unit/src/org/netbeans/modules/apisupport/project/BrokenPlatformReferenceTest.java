@@ -21,6 +21,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -171,10 +172,22 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         assertEquals(pl, p.getPlatform(false));
     }
     
+    public void testUsableModuleListForBrokenPlatform() throws Exception {
+        File sd = new File(getWorkDir(), "suite");
+        SuiteProjectGenerator.createSuiteProject(sd, NbPlatform.PLATFORM_ID_DEFAULT);
+        File d = new File(getWorkDir(), "suitecomp");
+        NbModuleProjectGenerator.createSuiteComponentModule(d, "x", "X", null, null, sd);
+        TestBase.delete(sd);
+        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
+        ModuleEntry e = p.getModuleList().getEntry("core");
+        assertNotNull("#67148: can find core.jar from default platform", e);
+        assertEquals("correct JAR path", new File(new File(new File(install, "platform"), "core"), "core.jar"), e.getJarLocation());
+        open(p); // check for errors
+    }
+    
     // XXX to test, for suite projects, suite component module projects, and standalone projects:
     // - return default platform if ${netbeans.dest.dir} undefined in any way or not pointing to valid platform [partly tested]
     // - OpenProjectHook fixes, or creates, platform-private.properties to point to current build.properties [in progress; need to test non-default platforms valid in new b.props]
-    // - test that NbPrj.getModuleList uses a valid dest dir even if some refs are broken [should be implemented, just need test]
     // - in OPH, platform.properties is fixed to use default if no value for nbplatform.active (and netbeans.dest.dir not independently set!) or points to invalid platform
     // - all problems are notified to user (maybe move ModuleProperties.reportLostPlatform, and change MP.runFromTests)
 

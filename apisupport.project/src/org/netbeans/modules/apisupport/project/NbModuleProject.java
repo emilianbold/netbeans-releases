@@ -121,6 +121,10 @@ public final class NbModuleProject implements Project {
             throw new IOException("Misconfigured project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " has no defined <code-name-base>"); // NOI18N
         }
         typeProvider = new NbModuleTypeProviderImpl();
+        if (typeProvider.getModuleType() == NbModuleTypeProvider.NETBEANS_ORG && ModuleList.findNetBeansOrg(FileUtil.toFile(getProjectDirectory())) == null) {
+            // #69097: preferable to throwing an assertion error later...
+            throw new IOException("netbeans.org-type module not in a complete netbeans.org source root: " + this); // NOI18N
+        }
         eval = new Eval();
         FileBuiltQueryImplementation fileBuilt;
         // XXX could add globs for other package roots too
@@ -441,10 +445,11 @@ public final class NbModuleProject implements Project {
                 }
             }
             ModuleEntry thisEntry = ml.getEntry(getCodeNameBase());
-            assert thisEntry != null : "Cannot find my own entry (" + getCodeNameBase() + ") in " + ml;
-            assert nbroot == null ^ thisEntry.getNetBeansOrgPath() != null : thisEntry;
-            File clusterDir = thisEntry.getClusterDirectory();
-            stock.put("cluster", clusterDir.getAbsolutePath()); // NOI18N
+            if (thisEntry != null) { // can be null e.g. for a broken suite component module
+                assert nbroot == null ^ thisEntry.getNetBeansOrgPath() != null : thisEntry;
+                File clusterDir = thisEntry.getClusterDirectory();
+                stock.put("cluster", clusterDir.getAbsolutePath()); // NOI18N
+            }
         }
         List/*<PropertyProvider>*/ providers = new ArrayList();
         providers.add(PropertyUtils.fixedPropertyProvider(stock));
@@ -765,6 +770,10 @@ public final class NbModuleProject implements Project {
     
     public ModuleList getModuleList() throws IOException {
         NbPlatform p = getPlatform(false);
+        if (p == null) {
+            // #67148: have to use something... (and getEntry(codeNameBase) will certainly fail!)
+            return ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()), NbPlatform.getDefaultPlatform().getDestDir());
+        }
         ModuleList ml = ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()), p.getDestDir());
         if (ml.getEntry(getCodeNameBase()) == null) {
             ModuleList.refresh();

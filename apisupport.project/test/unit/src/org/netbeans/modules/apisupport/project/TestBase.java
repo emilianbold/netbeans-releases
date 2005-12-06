@@ -391,5 +391,17 @@ public abstract class TestBase extends NbTestCase {
             os.close();
         }
     }
+
+    public static void delete(File f) throws IOException {
+        if (f.isDirectory()) {
+            File[] kids = f.listFiles();
+            for (int i = 0; i < kids.length; i++) {
+                delete(kids[i]);
+            }
+        }
+        if (!f.delete()) {
+            throw new IOException("Could not delete " + f);
+        }
+    }
     
 }
