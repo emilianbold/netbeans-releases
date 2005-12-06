@@ -14,6 +14,7 @@
 package org.netbeans.api.java.classpath;
 
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.util.*;
 
 import org.openide.execution.NbClassLoader;
@@ -90,6 +91,24 @@ class ClassLoaderSupport extends NbClassLoader
             }
         }
         return c;
+    }
+    
+    /**
+     * Tries to locate the resource on the ClassPath
+     * @param name
+     * @return URL of the resource
+     */
+    public URL findResource (String name) {
+        URL url = super.findResource (name);
+        if (url != null) {
+            FileObject fo = classPath.findResource(name);
+            if (fo != null) {
+                // if the file is from the file system pool,
+                // register to catch its changes
+                fo.addFileChangeListener (listener);
+            }
+        }
+        return url;
     }
 
     /** Tests whether this object is current loader and if so,
