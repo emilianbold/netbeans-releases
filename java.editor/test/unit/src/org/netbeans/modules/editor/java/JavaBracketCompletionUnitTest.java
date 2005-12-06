@@ -314,6 +314,16 @@ public class JavaBracketCompletionUnitTest extends JavaBaseDocumentUnitTestCase 
         );
     }    
 
+    /** issue #69935 */
+    public void testQuoteInsideComments() throws Exception {
+        setLoadDocumentText (
+            "/** |\n */"
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote Inside Comments", 
+            "/** \"|\n */"
+        );
+    }    
     
     // ------- Tests for completion of single quote (') -------------        
     
@@ -508,6 +518,18 @@ public class JavaBracketCompletionUnitTest extends JavaBaseDocumentUnitTestCase 
             "''|"
         );
     }    
+    
+    /** issue #69935 */
+    public void testSingleQuoteInsideComments() throws Exception {
+        setLoadDocumentText (
+            "/* |\n */"
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote Inside Comments", 
+            "/* \'|\n */"
+        );
+    }    
+    
     
     // ------- Private methods -------------
     

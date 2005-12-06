@@ -568,6 +568,10 @@ class BracketCompletion {
         token = syntax.getTokenID(dotPos);
     }
 
+    if (token == JavaTokenContext.BLOCK_COMMENT || token == JavaTokenContext.LINE_COMMENT){
+        return false;
+    }
+    
     boolean completablePosition = isQuoteCompletablePosition(doc, dotPos);    
     int lastNonWhite = Utilities.getRowLastNonWhite(doc, dotPos);
     // eol - true if the caret is at the end of line (ignoring whitespaces)
