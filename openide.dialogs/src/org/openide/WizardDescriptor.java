@@ -1698,8 +1698,10 @@ public class WizardDescriptor extends DialogDescriptor {
                                     public void run () {
                                         // all is OK
                                         // close wizrad
+                                        err.log (ErrorManager.INFORMATIONAL, "WD.finishOption.fireActionPerformed()");
                                         finishOption.fireActionPerformed();
-
+                                        err.log (ErrorManager.INFORMATIONAL, "Set value to OK_OPTION.");
+                                        setValue (OK_OPTION);
                                     }
                                 });
                                 err.log (ErrorManager.INFORMATIONAL, "performFinish exit."); // NOI18N
