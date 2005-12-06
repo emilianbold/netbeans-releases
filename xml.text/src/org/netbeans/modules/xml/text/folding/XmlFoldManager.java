@@ -251,7 +251,10 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
      */
     
     private void updateFolds() {
-        ((AbstractDocument)getDocument()).readLock();
+        Document doc = getDocument();
+        if(!(doc instanceof AbstractDocument)) return ;
+        
+        ((AbstractDocument)doc).readLock();
         try {
             FoldHierarchy fh = getOperation().getHierarchy();
             fh.lock();
@@ -321,7 +324,7 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
                 fh.unlock();
             }
         } finally {
-            ((AbstractDocument)getDocument()).readUnlock();
+            ((AbstractDocument)doc).readUnlock();
         }
         changes.clear();
         
