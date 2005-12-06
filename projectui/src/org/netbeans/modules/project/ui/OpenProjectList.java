@@ -370,6 +370,7 @@ public final class OpenProjectList {
     }
     
     public synchronized boolean isOpen( Project p ) {
+        // XXX shouldn't this just use openProjects.contains(p)?
         for( Iterator it = openProjects.iterator(); it.hasNext(); ) {
             Project cp = (Project)it.next();
             if ( p.getProjectDirectory().equals( cp.getProjectDirectory() ) ) { 
@@ -567,6 +568,11 @@ public final class OpenProjectList {
                 ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
             } catch (RuntimeException e) {
                 ErrorManager.getDefault().notify(e);
+                // Do not try to call its close hook if its open hook already failed:
+                INSTANCE.openProjects.remove(p);
+            } catch (Error e) {
+                ErrorManager.getDefault().notify(e);
+                INSTANCE.openProjects.remove(p);
             }
         }
     }
@@ -580,6 +586,8 @@ public final class OpenProjectList {
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectClosed(hook);
             } catch (RuntimeException e) {
+                ErrorManager.getDefault().notify(e);
+            } catch (Error e) {
                 ErrorManager.getDefault().notify(e);
             }
         }
