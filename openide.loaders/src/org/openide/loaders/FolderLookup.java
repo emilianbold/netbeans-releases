@@ -394,6 +394,11 @@ public class FolderLookup extends FolderInstance {
         
         static final ThreadLocal DANGEROUS = new ThreadLocal ();
 
+        /** error manager for ICItem */
+        private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(ICItem.class.getName());
+        /** is loggable? */
+        private static final boolean WILL_LOG = ERR.isLoggable(ErrorManager.INFORMATIONAL); 
+
         /** when deserialized only primary file is stored */
         private FileObject fo;
         
@@ -411,6 +416,8 @@ public class FolderLookup extends FolderInstance {
             this.obj = obj;
             this.rootName = rootName;
             this.fo = obj.getPrimaryFile();
+            
+            if (WILL_LOG) ERR.log("New ICItem: " + obj); // NOI18N
         }
         
         /** Initializes the item
@@ -479,15 +486,21 @@ public class FolderLookup extends FolderInstance {
         protected boolean instanceOf (Class clazz) {
             init ();
             
+            if (WILL_LOG) ERR.log("instanceOf: " + clazz.getName() + " obj: " + obj); // NOI18N
+            
             if (ic instanceof InstanceCookie.Of) {
                 // special handling for special cookies
                 InstanceCookie.Of of = (InstanceCookie.Of)ic;
-                return of.instanceOf (clazz);
+                boolean res = of.instanceOf (clazz);
+                if (WILL_LOG) ERR.log("  of: " + res); // NOI18N
+                return res;
             }
 
             // handling of normal instance cookies
             try {
-                return clazz.isAssignableFrom (ic.instanceClass ());
+                boolean res = clazz.isAssignableFrom (ic.instanceClass ());
+                if (WILL_LOG) ERR.log("  plain: " + res); // NOI18N
+                return res;
             } catch (ClassNotFoundException ex) {
                 exception(ex, fo);
             } catch (IOException ex) {
@@ -504,6 +517,7 @@ public class FolderLookup extends FolderInstance {
             
             try {
                 Object obj = ic.instanceCreate();
+                if (WILL_LOG) ERR.log("  getInstance: " + obj + " for " + this.obj); // NOI18N
                 ref = new WeakReference (obj);
                 return obj;
             } catch (ClassNotFoundException ex) {

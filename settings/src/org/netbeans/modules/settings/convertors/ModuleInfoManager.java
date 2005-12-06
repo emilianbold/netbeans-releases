@@ -64,10 +64,12 @@ final class ModuleInfoManager {
                 modulesResult.addLookupListener(new LookupListener() {
                     public void resultChanged(LookupEvent ev) {
                         Collection l = getModulesResult().allInstances();
+                        XMLSettingsSupport.err.log("Modules changed: " + l); // NOI18N
                         List reloaded;
                         synchronized (this) {
                             fillModules(l);
                             reloaded = replaceReloadedModules();
+                            XMLSettingsSupport.err.log("Reloaded modules: " + reloaded); // NOI18N
                         }
                         notifyReloads(reloaded);
                     }

@@ -42,7 +42,7 @@ final class XMLSettingsSupport {
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
     
     /** Logging for events in XML settings system. */
-    private static final ErrorManager err = ErrorManager.getDefault().getInstance(XMLSettingsSupport.class.getName()); // NOI18N
+    static final ErrorManager err = ErrorManager.getDefault().getInstance(XMLSettingsSupport.class.getName()); // NOI18N
     
     /** Store instanceof elements.
      * @param classes everything what class extends or implements

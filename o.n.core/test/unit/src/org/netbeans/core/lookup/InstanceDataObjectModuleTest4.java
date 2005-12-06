@@ -55,8 +55,9 @@ public class InstanceDataObjectModuleTest4 extends InstanceDataObjectModuleTestH
      */
     public void testReloadDotInstanceSwitchesLookupByNewClass() throws Exception {
         twiddle(m1, TWIDDLE_ENABLE);
+        ClassLoader l1 = null, l2 = null;
         try {
-            ClassLoader l1 = m1.getClassLoader();
+            l1 = m1.getClassLoader();
             Class c1 = l1.loadClass("test1.SomeAction");
             assertEquals("Correct loader", l1, c1.getClassLoader());
             assertTrue("SomeAction<1> instance found after module installation",
@@ -65,7 +66,7 @@ public class InstanceDataObjectModuleTest4 extends InstanceDataObjectModuleTestH
             twiddle(m1, TWIDDLE_RELOAD);
             ERR.log("After reload");
             // Sleeping for a few seconds here does *not* help.
-            ClassLoader l2 = m1.getClassLoader();
+            l2 = m1.getClassLoader();
             assertTrue("ClassLoader really changed", l1 != l2);
             Class c2 = l2.loadClass("test1.SomeAction");
             assertTrue("Class really changed", c1 != c2);
@@ -77,6 +78,22 @@ public class InstanceDataObjectModuleTest4 extends InstanceDataObjectModuleTestH
             assertTrue("SomeAction<2> instance found after module reload",
                 existsSomeAction(c2));
         } finally {
+            ERR.log("Verify why it failed");
+            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Services/Misc/inst-1.instance");
+            ERR.log("File object found: " + fo);
+            if (fo != null) {
+                DataObject obj = DataObject.find(fo);
+                ERR.log("data object found: " + obj);
+                InstanceCookie ic = (InstanceCookie)obj.getCookie(InstanceCookie.class);
+                ERR.log("InstanceCookie: " + ic);
+                if (ic != null) {
+                    ERR.log("value: " + ic.instanceCreate());
+                    ERR.log(" cl  : " + ic.instanceCreate().getClass().getClassLoader());
+                    ERR.log(" l1  : " + l1);
+                    ERR.log(" l2  : " + l2);
+                }
+            }
+            
             ERR.log("Before disable");
             twiddle(m1, TWIDDLE_DISABLE);
         }

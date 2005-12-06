@@ -186,8 +186,10 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         while (it.hasNext()) {
             Action a = (Action)it.next();
             ERR.log("First action read: " + a);
-            assertTrue("Assignable to template class: c=" + c.getName() + " a.class=" + a.getClass().getName(),
-                c.isInstance(a));
+            assertTrue("Assignable to template class: c=" + c.getName() + " a.class=" + a.getClass().getName() +
+                "  loaders: c1=" + c.getClassLoader() + " a.class=" + a.getClass().getClassLoader(),
+                c.isInstance(a)
+            );
             if ("SomeAction".equals(a.getValue(Action.NAME))) {
                 found = true;
                 ERR.log("Action with correct name found: " + a);
