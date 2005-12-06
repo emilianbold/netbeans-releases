@@ -896,7 +896,6 @@ class LayoutDragger implements LayoutConstants {
                         int distance = Math.abs(indentedDst) < Math.abs(directDst) ?
                                        indentedDst : directDst;
                         if (checkAlignedDistance(distance, sub.getCurrentSpace(), i)) {
-                                //distance != LayoutRegion.UNKNOWN && Math.abs(distance) < SNAP_DISTANCE
                             // compare the actual distance with the best one
                             PositionDef bestSoFar = findingsAligned[dimension][i];
                             if (compareAlignedPosition(sub, distance, bestSoFar) >= 0) {
@@ -993,13 +992,16 @@ class LayoutDragger implements LayoutConstants {
             if (indent == 0) {
                 x1 = examinedSpace.positions[dimension][alignment] - SNAP_DISTANCE/2;
                 x2 = examinedSpace.positions[dimension][alignment] + SNAP_DISTANCE/2;
+                y2 = movingSpace.positions[dimension^1][LEADING];
             }
             else {
                 x1 = examinedSpace.positions[dimension][alignment];
                 x2 = x1 + indent + SNAP_DISTANCE/2;
+                y2 = movingSpace.positions[dimension^1][TRAILING];
+                // note indent is not offered at all by getIndentedDistance if
+                // the vertical position "does not match"
             }
             y1 = examinedSpace.positions[dimension^1][TRAILING];
-            y2 = movingSpace.positions[dimension^1][LEADING];
             if (y1 > y2) {
                 y1 = movingSpace.positions[dimension^1][TRAILING];
                 y2 = examinedSpace.positions[dimension^1][LEADING];
@@ -1041,6 +1043,7 @@ class LayoutDragger implements LayoutConstants {
                 _y1 = positions[dim^1][LEADING];
                 _y2 = positions[dim^1][TRAILING];
             }
+
             if (_x1 < x2 && _x2 > x1 && _y1 < y2 && _y2 > y1) { // overlap
                 if (li.isComponent()) {
                     if (isValidInterval(li))
