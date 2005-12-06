@@ -462,6 +462,10 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                     item.defaultAction(getActiveComponent());
                     return;
                 }
+            } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN
+                    || e.getKeyCode() == KeyEvent.VK_PAGE_UP || e.getKeyCode() == KeyEvent.VK_PAGE_DOWN
+                    || e.getKeyCode() == KeyEvent.VK_HOME || e.getKeyCode() == KeyEvent.VK_END) {
+                hideCompletion();                
             }
             if (e.getKeyCode() == KeyEvent.VK_TAB) {
                 e.consume();
