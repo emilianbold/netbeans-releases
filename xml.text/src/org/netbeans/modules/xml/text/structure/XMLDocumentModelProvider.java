@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
@@ -122,16 +123,35 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
 //                continue;
             }
             
-            if(attribsOnly
-                    && (leaf.getType().equals(XML_TAG)
-                    || leaf.getType().equals(XML_EMPTY_TAG))) {
-                if(debug) System.out.println("ONLY ATTRIBS UPDATE!!!");
+            if((attribsOnly || dch.getChangeType() == DocumentChange.REMOVE)
+            && (leaf.getType().equals(XML_TAG)
+            || leaf.getType().equals(XML_EMPTY_TAG))) {
+                if(debug) System.out.println("POSSIBLE ATTRIBS UPDATE!!!");
                 //we need to parse the tag element attributes and set them according to the new values
                 try {
                     SyntaxElement sel = sup.getElementChain(leaf.getStartOffset() + 1);
                     if(sel instanceof Tag || sel instanceof EmptyTag) {
+                        //test whether the attributes changed
                         Map newAttrs = createAttributesMap((Tag)sel);
-                        dtm.updateDocumentElementAttribs(leaf, newAttrs);
+                        AttributeSet existing = leaf.getAttributes();
+                        boolean update = false;
+                        if(existing.getAttributeCount() == newAttrs.size()) {
+                            Iterator itr = newAttrs.keySet().iterator();
+                            while (itr.hasNext()) {
+                                String attrName = (String) itr.next();
+                                String attrValue = (String)newAttrs.get(attrName);
+                                if(attrName != null && attrValue != null
+                                        && !existing.containsAttribute(attrName, attrValue)) {
+                                    update = true;
+                                    break;
+                                }
+                                
+                            }
+                        } else update = true;
+                        
+                        if(update) {
+                            dtm.updateDocumentElementAttribs(leaf, newAttrs);
+                        }
                     }
                 }catch(BadLocationException ble) {
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, ble);
