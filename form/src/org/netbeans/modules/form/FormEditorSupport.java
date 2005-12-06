@@ -517,14 +517,15 @@ public class FormEditorSupport extends JavaEditor
         boolean readonly = !formDataObject.getPrimaryFile().canWrite();
         
         TopComponent active = TopComponent.getRegistry().getActivated();
-        if( active!=null && getSelectedElementType(active) == FORM_ELEMENT_INDEX ) {
-            FormEditorSupport fes = formDataObject.getFormEditor();
-            if(fes!=null) {
-                FormModel fm = fes.getFormModel();
-                if(fm!=null) {
-                    readonly = readonly || fm.isReadOnly();                                    
-                }                
-            }            
+        FormEditorSupport fes = formDataObject.getFormEditor();
+        FormModel fm = null;
+        if(fes!=null) {
+            fm = fes.getFormModel();            
+        }                    
+        if( active!=null && getSelectedElementType(active) == FORM_ELEMENT_INDEX ) {            
+            if(fm!=null) {
+                readonly = readonly || fm.isReadOnly();                                    
+            }                
         }        
         
         int version;
@@ -537,6 +538,17 @@ public class FormEditorSupport extends JavaEditor
         Node node = formDataObject.getNodeDelegate();
         String htmlTitle = node.getHtmlDisplayName();
         String title = node.getDisplayName();
+        if(fm!=null) {            
+            FormDesigner fd = FormEditor.getFormDesigner(formDataObject.getFormEditor().getFormModel());
+            if(fd!=null) {
+                RADComponent topDesignComponent = fd.getTopDesignComponent();
+                if( !fm.getTopRADComponent().equals(topDesignComponent) && fd.isShowing() ) {                                
+                    title = FormUtils.getFormattedBundleString(
+                                "FMT_FormTitleWithContainerName",          // NOI18N
+                                new Object[] {title, topDesignComponent.getName()}); 
+                }                
+            }            
+        }                        
         if (htmlTitle != null) {
             if (!htmlTitle.trim().startsWith("<html>")) { // NOI18N
                 htmlTitle = "<html>" + htmlTitle; // NOI18N

@@ -371,6 +371,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     public void setTopDesignComponent(RADVisualComponent component,
                                       boolean update) {
         topDesignComponent = component;
+        FormDataObject formDO = formEditor.getFormDataObject();
+        if(formDO!=null) {
+            formDO.getFormEditorSupport().updateMVTCDisplayName();
+        }
         if (update) {
             setSelectedComponent(topDesignComponent);
             updateWholeDesigner();
