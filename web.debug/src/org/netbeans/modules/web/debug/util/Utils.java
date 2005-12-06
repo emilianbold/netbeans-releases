@@ -46,54 +46,38 @@ public class Utils {
         return err;
     }
     
-    public static File getFileFromUrl(String url) {
-        if (url != null) {
-            URI uri = null;
-            try {
-                uri = new URI(url);
-            } catch (Exception e) {};
-            if (uri != null) {
-                try {
-                    File f = new File(uri);
-                    if (f != null) {
-                        f = FileUtil.normalizeFile(f);
-                    }
-                    return f;
-                } catch (IllegalArgumentException ex) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, url);
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.toString());
-                }
-            }
+    public static FileObject getFileObjectFromUrl(String url) {
+        
+        FileObject fo = null;
+        
+        try {
+            fo = URLMapper.findFileObject(new URL(url));
+        } catch (MalformedURLException e) {
+            //noop
         }
-        return null;
+
+        return fo;
     }
     
-    public static FileObject getFileObjectFromUrl(String url) {
-        File f = getFileFromUrl(url);
-        if (f != null) {
-            return FileUtil.toFileObject(f);
-        }
-        return null;
+    public static boolean isJsp(FileObject fo) {
+        return fo != null && "text/x-jsp".equals(fo.getMIMEType());   //NOI18N
     }
     
     public static boolean isJsp(String url) {
         FileObject fo = getFileObjectFromUrl(url);
-        if (fo != null) {
-           return "text/x-jsp".equals(fo.getMIMEType());   //NOI18N
-        }
-        return false;
+        return isJsp(fo);
     }
 
+    public static boolean isTag(FileObject fo) {
+        return fo != null && "text/x-tag".equals(fo.getMIMEType());   //NOI18N
+    }
+    
     public static boolean isTag(String url) {
         FileObject fo = getFileObjectFromUrl(url);
-        if (fo != null) {
-           return "text/x-tag".equals(fo.getMIMEType());   //NOI18N
-        }
-        return false;
+        return isTag(fo);
     }
 
-    public static String getTargetServerID(String url) {
-        FileObject fo = getFileObjectFromUrl(url);
+    public static String getTargetServerID(FileObject fo) {
         if (fo != null) {
             WebModule wm = WebModule.getWebModule(fo);
             if (wm != null) {
@@ -112,9 +96,9 @@ public class Utils {
     
     public static String getJspName(String url) {
 
-        File f = getFileFromUrl(url);
-        if (f != null) {
-            return f.getName();
+        FileObject fo = getFileObjectFromUrl(url);
+        if (fo != null) {
+            return fo.getNameExt();
         }
         return (url == null) ? null : url.toString();
     }
