@@ -305,7 +305,11 @@ public final class DocumentModel {
                 }
             }
             
-            assert leaf != null : "at least 'root' document element should always be found!";
+            //#69756 - there may be no found element in the case when the document content has been
+            //changed during the model update - then the documentmodel element's may be in inconsistent
+            //state so no element is found here. The correct approach to this is always lock the document
+            //for reading when updating the model. However from performance reasons it is not possible now.
+            if(leaf == null) leaf = getRootElement();
             
             return leaf;
             
