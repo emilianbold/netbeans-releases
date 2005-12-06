@@ -29,6 +29,7 @@ import java.util.Set;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
@@ -297,21 +298,32 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                     
                     if (panel.addTLDs()){
                         try{
-                            JspConfig jspConfig = ddRoot.getSingleJspConfig();
-                            if (jspConfig==null){
-                                jspConfig = (JspConfig)ddRoot.createBean("JspConfig");
-                                ddRoot.setJspConfig(jspConfig);
+                            CreateCapability create;
+                            if (ddRoot.getVersion().equals(ddRoot.VERSION_2_3)){
+                                create  = ddRoot;
+                                ddRoot.addTaglib(createTaglib(create, "/WEB-INF/struts-bean.tld", "/WEB-INF/struts-bean.tld"));     //NOI18N
+                                ddRoot.addTaglib(createTaglib(create, "/WEB-INF/struts-html.tld", "/WEB-INF/struts-html.tld"));     //NOI18N
+                                ddRoot.addTaglib(createTaglib(create, "/WEB-INF/struts-logic.tld", "/WEB-INF/struts-logic.tld"));   //NOI18N
+                                ddRoot.addTaglib(createTaglib(create, "/WEB-INF/struts-nested.tld", "/WEB-INF/struts-nested.tld")); //NOI18N
+                                ddRoot.addTaglib(createTaglib(create, "/WEB-INF/struts-tiles.tld", "/WEB-INF/struts-tiles.tld"));   //NOI18N
                             }
-                            
-                            addTaglib(jspConfig, "/WEB-INF/struts-bean.tld", "/WEB-INF/struts-bean.tld");
-                            addTaglib(jspConfig, "/WEB-INF/struts-html.tld", "/WEB-INF/struts-html.tld");
-                            addTaglib(jspConfig, "/WEB-INF/struts-logic.tld", "/WEB-INF/struts-logic.tld");
-                            addTaglib(jspConfig, "/WEB-INF/struts-nested.tld", "/WEB-INF/struts-nested.tld");
-                            addTaglib(jspConfig, "/WEB-INF/struts-tiles.tld", "/WEB-INF/struts-tiles.tld");
+                            else {
+                                JspConfig jspConfig = ddRoot.getSingleJspConfig();
+                                if (jspConfig==null){
+                                    jspConfig = (JspConfig)ddRoot.createBean("JspConfig");
+                                    ddRoot.setJspConfig(jspConfig);
+                                }
+                                create = jspConfig;
+                                jspConfig.addTaglib(createTaglib(create, "/WEB-INF/struts-bean.tld", "/WEB-INF/struts-bean.tld"));  //NOI18N
+                                jspConfig.addTaglib(createTaglib(create, "/WEB-INF/struts-html.tld", "/WEB-INF/struts-html.tld"));  //NOI18N
+                                jspConfig.addTaglib(createTaglib(create, "/WEB-INF/struts-logic.tld", "/WEB-INF/struts-logic.tld"));    //NOI18N
+                                jspConfig.addTaglib(createTaglib(create, "/WEB-INF/struts-nested.tld", "/WEB-INF/struts-nested.tld"));  //NOI18N
+                                jspConfig.addTaglib(createTaglib(create, "/WEB-INF/struts-tiles.tld", "/WEB-INF/struts-tiles.tld"));    //NOI18N
+                            }
                             
                         }
                         catch (VersionNotSupportedException e){
-                            e.printStackTrace(System.out);
+                            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
                         }
                     }
                     ddRoot.write(dd);
@@ -331,11 +343,11 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             }
         }
         
-        private void addTaglib(JspConfig jspConfig, String location, String uri) throws ClassNotFoundException {
-            Taglib taglib = (Taglib)jspConfig.createBean("Taglib"); //NOI18N
+        private Taglib createTaglib(CreateCapability createObject, String location, String uri) throws ClassNotFoundException {
+            Taglib taglib = (Taglib)createObject.createBean("Taglib"); //NOI18N
             taglib.setTaglibLocation(location);
             taglib.setTaglibUri(uri);
-            jspConfig.addTaglib(taglib);
+            return taglib;
         }
         
         /** Changes the index.jsp file. Only when there is <h1>JSP Page</h1> string.

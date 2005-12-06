@@ -176,7 +176,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
                     ddRoot.addServletMapping(mapping);
 
-                    InitParam contextParam = (InitParam)servlet.createBean("InitParam"); //NOI18N
+                    InitParam contextParam = (InitParam)ddRoot.createBean("InitParam"); //NOI18N
                     contextParam.setParamName("com.sun.faces.verifyObjects");  //NOI18N
                     if (panel.verifyObjects())
                         contextParam.setParamValue("true");  //NOI18N
@@ -184,7 +184,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         contextParam.setParamValue("false");  //NOI18N
                     ddRoot.addContextParam(contextParam);
 
-                    contextParam = (InitParam)servlet.createBean("InitParam"); //NOI18N
+                    contextParam = (InitParam)ddRoot.createBean("InitParam"); //NOI18N
                     contextParam.setParamName("com.sun.faces.validateXml"); //NOI18N
                     if(panel.validateXML())
                         contextParam.setParamValue("true"); //NOI18N
@@ -193,7 +193,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     ddRoot.addContextParam(contextParam);
                     
                     // adding configuration file deffinition
-                    contextParam = (InitParam)servlet.createBean("InitParam"); //NOI18N
+                    contextParam = (InitParam)ddRoot.createBean("InitParam"); //NOI18N
                     contextParam.setParamName("javax.faces.CONFIG_FILES"); //NOI18N
                     contextParam.setParamValue("/WEB-INF/faces-config.xml"); //NOI18N
                     ddRoot.addContextParam(contextParam);
