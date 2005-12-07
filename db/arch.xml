@@ -215,7 +215,6 @@ Microsystems, Inc. All Rights Reserved.
       &lt;database-url value='jdbc:postgresql:test'/&gt;
       &lt;schema value='public'/&gt;
       &lt;user value='test'/&gt;
-      &lt;password value='test'/&gt;
     &lt;/connection&gt;
    </pre>
    <p>
