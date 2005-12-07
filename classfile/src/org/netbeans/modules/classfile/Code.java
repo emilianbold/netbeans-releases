@@ -37,6 +37,7 @@ public final class Code {
     private int[] lineNumberTable;
     private LocalVariableTableEntry[] localVariableTable;
     private LocalVariableTypeTableEntry[] localVariableTypeTable;
+    private StackMapFrame[] stackMapTable;
 
     /** Creates a new Code object */
     /* package-private */ Code(DataInputStream in, ConstantPool pool) throws IOException {
@@ -76,6 +77,8 @@ public final class Code {
             else if (name.equals("LocalVariableTypeTable")) //NOI18N
                 localVariableTypeTable = 
                     LocalVariableTypeTableEntry.loadLocalVariableTypeTable(in, pool);
+            else if (name.equals("StackMapTable")) //NOI18N
+                stackMapTable = StackMapFrame.loadStackMapTable(in, pool);
             else {
 		if (debug)
 		    System.out.println("skipped unknown code attribute: " + name);
@@ -91,6 +94,8 @@ public final class Code {
             localVariableTable = new LocalVariableTableEntry[0];
         if (localVariableTypeTable == null)
             localVariableTypeTable = new LocalVariableTypeTableEntry[0];
+        if (stackMapTable == null)
+            stackMapTable = new StackMapFrame[0];
     }
     
     private void loadLineNumberTable(DataInputStream in, ConstantPool pool) throws IOException {
@@ -141,6 +146,14 @@ public final class Code {
      */
     public final LocalVariableTypeTableEntry[] getLocalVariableTypeTable() {
         return (LocalVariableTypeTableEntry[])localVariableTypeTable.clone();
+    }
+    
+    /**
+     * Returns the stack map table for this code, which defines the stack frame
+     * information needed by the new classfile verifier in Java 6.
+     */
+    public final StackMapFrame[] getStackMapTable() {
+        return (StackMapFrame[])stackMapTable.clone();
     }
 
     public String toString() {
