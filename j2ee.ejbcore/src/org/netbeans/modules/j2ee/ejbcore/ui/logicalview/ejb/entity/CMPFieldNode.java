@@ -18,9 +18,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import javax.swing.Action;
-import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Utilities;
@@ -30,9 +28,13 @@ import java.io.IOException;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.common.DDEditorNavigator;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 
 public class CMPFieldNode extends AbstractNode implements PropertyChangeListener, OpenCookie {
@@ -42,7 +44,18 @@ public class CMPFieldNode extends AbstractNode implements PropertyChangeListener
     private FileObject ddFile;
     
     public CMPFieldNode(CmpField field, EntityMethodController controller, FileObject ddFile) {
-        super(Children.LEAF);
+        this(field, controller, ddFile, new InstanceContent());
+    }
+
+    private CMPFieldNode(CmpField field, EntityMethodController controller, FileObject ddFile, InstanceContent ic) {
+        super(Children.LEAF, new AbstractLookup(ic));
+        ic.add(this); // for enabling Open action
+        try {
+            ic.add(DataObject.find(JavaModel.getFileObject(controller.getBeanClass().getResource()))); // for enabling SafeDelete action
+        } catch (DataObjectNotFoundException ex) {
+            // ignore
+        }
+        ic.add(controller.getGetterMethod(controller.getBeanClass(), field.getFieldName())); // for SafeDelete refactoring to find Method element
         this.field = field;
         this.ddFile = ddFile;
         this.controller = controller;
@@ -70,18 +83,11 @@ public class CMPFieldNode extends AbstractNode implements PropertyChangeListener
         fireDisplayNameChange(null,null);
     }
     
-    public Node.Cookie getCookie(Class type) {
-        if(type == OpenCookie.class) {
-            return this;
-        }
-        return super.getCookie(type);
-    }
-    
     public Action[] getActions(boolean context) {
-        return new SystemAction[] {
+        return new Action[] {
             SystemAction.get(OpenAction.class),
-                    null,
-                    SystemAction.get(DeleteAction.class),
+            null,
+            RefactoringActionsFactory.safeDeleteAction().createContextAwareInstance(Utilities.actionsGlobalContext())
         };
     }
     
@@ -101,4 +107,5 @@ public class CMPFieldNode extends AbstractNode implements PropertyChangeListener
             // do nothing
         }
     }
+    
 }
