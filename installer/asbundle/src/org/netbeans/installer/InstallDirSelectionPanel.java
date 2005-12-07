@@ -209,10 +209,17 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	// SJS AS install dir components
         
 	String asInstallDir;
-        if (Util.isAdmin()) {
-            asInstallDir = resolveString("$D(install)$J(file.separator)" + BUNDLE + "AS.defaultInstallDirectory)");
+	if (Util.isWindowsOS()) {
+	    StringBuffer drive = new StringBuffer(" :\\");
+	    drive.setCharAt(0, getWinSystemDrive());
+	    String sysDrive = drive.toString();
+	    asInstallDir = sysDrive + resolveString(BUNDLE + "AS.defaultInstallDirectoryWindows)");
         } else {
-            asInstallDir = resolveString("$D(home)$J(file.separator)" + BUNDLE + "AS.defaultInstallDirectory)");
+            if (Util.isAdmin()) {
+                asInstallDir = resolveString("$D(install)$J(file.separator)" + BUNDLE + "AS.defaultInstallDirectory)");
+            } else {
+                asInstallDir = resolveString("$D(home)$J(file.separator)" + BUNDLE + "AS.defaultInstallDirectory)");
+            }
         }
         
         asLabel = resolveString(BUNDLE + "InstallLocationPanel.asInstallDirectoryLabel)");
