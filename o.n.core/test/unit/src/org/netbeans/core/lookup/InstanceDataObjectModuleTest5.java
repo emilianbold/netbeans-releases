@@ -74,10 +74,10 @@ public class InstanceDataObjectModuleTest5 extends InstanceDataObjectModuleTestH
             assertTrue("SomeAction<1> instance not found after module reload",
                 !existsSomeAction(c1));
             assertTrue("SomeAction<2> instance found after module reload",
-                existsSomeAction(c2));fail("Ok");
+                existsSomeAction(c2));
         } finally {
             ERR.log("Verify why it failed");
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Services/Misc/inst-2.instance");
+            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Services/Misc/inst-2.settings");
             ERR.log("File object found: " + fo);
             if (fo != null) {
                 DataObject obj = DataObject.find(fo);
