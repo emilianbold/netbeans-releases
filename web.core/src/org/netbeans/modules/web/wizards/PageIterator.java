@@ -20,6 +20,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.openide.cookies.SaveCookie;
 
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
@@ -215,6 +216,8 @@ public class PageIterator implements TemplateWizard.Iterator {
                             }
                             tag.setPath("/"+packageName); //NOI18N
                             taglib.addTagFile(tag);
+                            SaveCookie save = (SaveCookie)tldDO.getCookie(SaveCookie.class);
+                            if (save!=null) save.save();
                             try {
                                 tldDO.write(taglib);
                             } catch (IOException ex) {

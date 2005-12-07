@@ -163,6 +163,8 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
                             tag.addAttribute(attr);
                         }
                         taglib.addTag(tag);
+                        SaveCookie save = (SaveCookie)tldDO.getCookie(SaveCookie.class);
+                        if (save!=null) save.save();
                         try {
                             tldDO.write(taglib);
                         } catch (IOException ex) {
