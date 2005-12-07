@@ -235,6 +235,11 @@ public final class ScrollingTabLayoutModel implements TabLayoutModel {
                 widths[start] = width;
                 lastTabClipped = width < getWrapped().getW(start);
             }
+            updateActions();
+            //set the changed flag so we won't recalculate all this again until
+            //the next time something warrants it
+            setChanged(false);
+            
             return;
         }
 
@@ -454,7 +459,7 @@ public final class ScrollingTabLayoutModel implements TabLayoutModel {
         //tab displayer area
         if (widthForRequestedTab > width) {
             //It will be left clipped, but what can you do...
-            setOffset (index);
+            setOffset (index-1);
             return changed;
         }
 
@@ -828,7 +833,9 @@ public final class ScrollingTabLayoutModel implements TabLayoutModel {
             bAction.setEnabled(mdl.size() > 1 && offset > -1);
         }
         if (fAction != null) {
-            fAction.setEnabled(isLastTabClipped() && mdl.size() > 2);
+            fAction.setEnabled(isLastTabClipped() && mdl.size() > 2 
+                    && (lastVisibleTab-firstVisibleTab > 1 //special case when a tab is too wide
+                        || lastVisibleTab < mdl.size()-1));
         }
     }
 
