@@ -306,6 +306,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Instantiat
     
     // copy-pasted-adjusted from org.netbeans.editor.ActionFactory.FormatAction
     private static void formatFile(final FileObject fo) {
+        assert fo != null;
         BaseDocument doc = null;
         boolean saved = false;
         try {
