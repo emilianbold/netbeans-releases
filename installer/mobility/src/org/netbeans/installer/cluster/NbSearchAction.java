@@ -14,6 +14,7 @@
 package org.netbeans.installer.cluster;
 
 import com.installshield.product.SoftwareObject;
+import com.installshield.product.SoftwareVersion;
 import com.installshield.product.service.registry.RegistryService;
 import com.installshield.util.Log;
 import com.installshield.wizard.CancelableWizardAction;
@@ -30,6 +31,8 @@ import org.netbeans.installer.Util;
 public class NbSearchAction extends CancelableWizardAction {
     
     private static Vector nbHomeList = new Vector();
+    
+    private static final String BUNDLE = "$L(org.netbeans.installer.cluster.Bundle,";
     
     public NbSearchAction() {
     }
@@ -51,9 +54,7 @@ public class NbSearchAction extends CancelableWizardAction {
         if (!nbHomeList.isEmpty()) {
             return;
         }
-        
-        String searchMsg = resolveString
-        ("$L(org.netbeans.installer..cluster.Bundle, NbSearchAction.searchMessage)");
+        String searchMsg = resolveString(BUNDLE + "NbSearchAction.searchMessage)");
         evt.getUserInterface().setBusy(searchMsg);
         
         findNb();
@@ -64,14 +65,21 @@ public class NbSearchAction extends CancelableWizardAction {
     void findNb () {
         try {
             // Get the instance of RegistryService
-            String nbUID = resolveString
-            ("$L(org.netbeans.installer.cluster.Bundle,NetBeans.productUID)");
+            String nbUID = resolveString(BUNDLE + "NetBeans.productUID)");
+            String jseUID = resolveString(BUNDLE + "JSE.productUID)");
             RegistryService regserv = (RegistryService) getService(RegistryService.NAME);  
             String [] arr = regserv.getAllSoftwareObjectUIDs();
             /*for (int i = 0; i < arr.length; i++) {
-               System.out.println("arr[" + i + "]: " + arr[i]);
+               logEvent(this, Log.DBG,"arr[" + i + "]: " + arr[i]);
             }*/
-            //Look for any profiler installation
+            
+            SoftwareVersion jseVersionMin = new SoftwareVersion(resolveString(BUNDLE + "JSE.versionMin)"));
+            SoftwareVersion jseVersionMax = new SoftwareVersion(resolveString(BUNDLE + "JSE.versionMax)"));
+            
+            logEvent(this, Log.DBG,"jseVersionMin:'" + resolveString(BUNDLE + "JSE.versionMin)") + "'");
+            logEvent(this, Log.DBG,"jseVersionMax:'" + resolveString(BUNDLE + "JSE.versionMax)") + "'");
+            
+            //Look for any NetBeans IDE installation
             SoftwareObject [] soArr = null;
             //System.out.println("substring:" + nbUID.substring(26,32));
             for (int i = 0; i < arr.length; i++) {
@@ -79,14 +87,32 @@ public class NbSearchAction extends CancelableWizardAction {
                     soArr = regserv.getSoftwareObjects(arr[i]);
                     System.out.println("so.length:" + soArr.length);
                     for (int j = 0; j < soArr.length; j++) {
+                        SoftwareVersion version = soArr[j].getKey().getVersion();
                         logEvent(this, Log.DBG,"so[" + j + "]:"
                         + " displayName: " + soArr[j].getDisplayName()
                         + " name: " + soArr[j].getName()
                         + " productNumber: " + soArr[j].getProductNumber()
-                        + " installLocation: " + soArr[j].getInstallLocation());
-                        //Fix: Due to unresolved product properties for NB 4.0 and NB 4.1
-                        //we must check UID not ProductNumber.
+                        + " installLocation: " + soArr[j].getInstallLocation()
+                        + " version:" + version);
                         nbHomeList.add(soArr[j]);
+                    }
+                } else if (arr[i].equals(jseUID)) {
+                    soArr = regserv.getSoftwareObjects(arr[i]);
+                    System.out.println("so.length:" + soArr.length);
+                    for (int j = 0; j < soArr.length; j++) {
+                        SoftwareVersion version = soArr[j].getKey().getVersion();
+                        logEvent(this, Log.DBG,"so[" + j + "]:"
+                        + " displayName: " + soArr[j].getDisplayName()
+                        + " name: " + soArr[j].getName()
+                        + " productNumber: " + soArr[j].getProductNumber()
+                        + " installLocation: " + soArr[j].getInstallLocation()
+                        + " version:" + version
+                        + " major:" + version.getMajor()
+                        + " version.compareTo(jseVersionMin):" + version.compareTo(jseVersionMin)
+                        + " version.compareTo(jseVersionMax):" + version.compareTo(jseVersionMax));
+                        if ((version.compareTo(jseVersionMin) >= 0) && (version.compareTo(jseVersionMax) <= 0)) {
+                            nbHomeList.add(soArr[j]);
+                        }
                     }
                 }
             }
@@ -97,7 +123,6 @@ public class NbSearchAction extends CancelableWizardAction {
     }
     
     private static void orderList (Vector nbHomeList) {
-        // Sort anagram groups according to size
         Collections.sort(nbHomeList, new SoftwareObjectComparator());
     }
     

@@ -43,7 +43,8 @@ import org.netbeans.installer.Util;
 public class NbSelectionPanel extends DirectoryChooserPanel 
 {    
     private String nbHome;
-    private static String BUNDLE = "$L(org.netbeans.installer.cluster.Bundle,";
+    
+    private static final String BUNDLE = "$L(org.netbeans.installer.cluster.Bundle,";
     
     public void build(WizardBuilderSupport support) {
         super.build(support);
@@ -104,7 +105,23 @@ public class NbSelectionPanel extends DirectoryChooserPanel
     public boolean queryExit(WizardBeanEvent event) {
         nbHome = getDestination();
         logEvent(this, Log.DBG, "nbHome: " + nbHome);
-        if (!validateNbDir(nbHome)) {
+        if (!validateNbDirNoUI(nbHome)) {
+            //Try to check subdirs as JSE has NB one dir level lower
+            File dir = new File(nbHome);
+            //isDirectory() returns true only if given dir exists and is directory
+            if (dir.isDirectory()) {
+                File [] files = dir.listFiles();
+                for (int i = 0; i < files.length; i++) {
+                    logEvent(this,Log.DBG,"queryExit files[" + i + "]: " + files[i].getPath());
+                    if (files[i].isDirectory()) {
+                        if (validateNbDirNoUI(files[i].getPath())) {
+                            nbHome = files[i].getPath();
+                            return validateDestination();
+                        }
+                    }
+                }
+            }
+            validateNbDir(nbHome);
             return false;
         }
         return validateDestination();
@@ -218,6 +235,78 @@ public class NbSelectionPanel extends DirectoryChooserPanel
         if (!f.canWrite()) {
             showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
             resolveString(BUNDLE + "NetBeansDirChooser.cannotWriteNbDir)"));
+            return false;
+        }
+        return true;
+    }
+    
+    /** Checks if there is NB cluster dir in selected NB installation directory without displaying
+     * any error dialog.
+     */
+    private boolean validateNbDirNoUI (String nbHomeDir) {
+        //Find nb cluster dir
+        if ("".equals(nbHomeDir)) {
+            //Empty string
+            return false;
+        }
+        File dir = new File(nbHomeDir);
+        //isDirectory() returns true only if given dir exists and is directory
+        if (!dir.isDirectory()) {
+            //Entered dir does not exist
+            return false;
+        }
+        File [] files = dir.listFiles(new PlatformClusterFilter());
+        for (int i = 0; i < files.length; i++) {
+            logEvent(this,Log.DBG,"validateNbDirNoUI files[" + i + "]: " + files[i].getPath());
+        }
+        if (files.length == 0) {
+            //NB Cluster dir not found
+            return false;
+        }
+
+        String minVersion = resolveString(BUNDLE + "NetBeans.platformMinClusterDirVersion)");
+        String maxVersion = resolveString(BUNDLE + "NetBeans.platformMaxClusterDirVersion)");
+        String basePlatformName = resolveString(BUNDLE + "NetBeans.platformClusterDirBase)");
+        String minClusterDir = basePlatformName + minVersion;
+        String maxClusterDir = basePlatformName + maxVersion;
+
+        if ((minClusterDir.length() > 0) && (maxClusterDir.length() > 0)) {
+            if (minClusterDir.compareTo(files[0].getName()) > 0) {
+                return false;
+            }
+            if (maxClusterDir.compareTo(files[0].getName()) < 0) {
+                return false;
+            }
+        } else if ((minClusterDir.length() > 0) && (maxClusterDir.length() == 0)) {
+            if (minClusterDir.compareTo(files[0].getName()) > 0) {
+                return false;
+            }
+        } else if ((minClusterDir.length() == 0) && (maxClusterDir.length() > 0)) {
+            if (maxClusterDir.compareTo(files[0].getName()) < 0) {
+                return false;
+            }
+        }
+
+        if (!files[0].isDirectory()) {
+            return false;
+        }
+        if (!files[0].canWrite()) {
+            return false;
+        }
+        //Platform cluster dir check passed
+        //Check ide cluster dir
+        //Get string after base name like ie. strip base name from "platform5"
+        //to get "5".
+        String version = files[0].getName().substring(basePlatformName.length(),files[0].getName().length());
+
+        String baseIdeName = resolveString(BUNDLE + "NetBeans.ideClusterDirBase)");
+        String ideClusterDir = baseIdeName + version;
+
+        File f = new File(nbHomeDir, ideClusterDir);
+        if (!f.isDirectory()) {
+            return false;
+        }
+        if (!f.canWrite()) {
             return false;
         }
         return true;
