@@ -27,6 +27,7 @@ import org.netbeans.modules.j2ee.weblogic9.config.EjbDeploymentConfiguration;
 import org.netbeans.modules.j2ee.weblogic9.config.WarDeploymentConfiguration;
 
 import org.netbeans.modules.j2ee.weblogic9.util.WLDebug;
+import org.openide.ErrorManager;
 
 
 /**
@@ -439,7 +440,12 @@ public class WLDeploymentManager implements DeploymentManager {
         try {
             if (dm != null) {
                 // delegate the call and clear the stored deployment manager
-                dm.release();
+                try {
+                    dm.release();
+                }
+                catch (Exception e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
                 dm = null;
             }
         } finally {

@@ -259,7 +259,6 @@ public class ServerInstance implements Node.Cookie, Comparable {
             manager = null;
         }
         if (disconnectedManager != null) {
-            disconnectedManager.release();
             disconnectedManager = null;
         }
         incrementalDeployment = null;
