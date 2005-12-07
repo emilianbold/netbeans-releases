@@ -12,28 +12,28 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!-- The root connection element. -->
+<!--- The root connection element. -->
 <!ELEMENT connection (driver-class|database-url|schema|user)*>
 
-<!-- The driver class. -->
+<!--- The driver class. -->
 <!ELEMENT driver-class EMPTY>
 <!ATTLIST driver-class 
     value CDATA #REQUIRED
 >
 
-<!-- The database URL. -->
+<!--- The database URL. -->
 <!ELEMENT database-url EMPTY>
 <!ATTLIST database-url 
     value CDATA #REQUIRED
 >
 
-<!-- The schema to which to connect by default. -->
+<!--- The schema to which to connect by default. -->
 <!ELEMENT schema EMPTY>
 <!ATTLIST schema 
     value CDATA #REQUIRED
 >
 
-<!-- The database user to connect as. -->
+<!--- The database user to connect as. -->
 <!ELEMENT user EMPTY>
 <!ATTLIST user 
     value CDATA #REQUIRED
