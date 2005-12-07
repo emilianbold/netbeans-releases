@@ -61,6 +61,8 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
                 DialogDescriptor desc = new DialogDescriptor(panel, title);
                 panel.setDialogDescriptor(desc);
                 Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+                String acsd = NbBundle.getMessage(DerbySystemHomePanel.class, "ACSD_DerbySystemHomePanel");
+                dialog.getAccessibleContext().setAccessibleDescription(acsd);
                 dialog.setVisible(true);
                 if (!desc.OK_OPTION.equals(desc.getValue())) {
                     return ""; // NOI18N
@@ -145,7 +147,10 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
         infoTextArea.setOpaque(false);
         infoScrollPane.setViewportView(infoTextArea);
 
+        derbySystemHomeLabel.setLabelFor(derbySystemHomeTextField);
         org.openide.awt.Mnemonics.setLocalizedText(derbySystemHomeLabel, org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_DerbySystemHome"));
+
+        derbySystemHomeTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "ACSD_DerbySystemHomePanel_derbySystemHomeTextField"));
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_Browse"));
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -153,6 +158,8 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
                 browseButtonActionPerformed(evt);
             }
         });
+
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "ACSD_DerbySystemHomePanel_browseButton"));
 
         messageLabel.setForeground(nbErrorForeground);
         org.openide.awt.Mnemonics.setLocalizedText(messageLabel, " ");
@@ -164,11 +171,11 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, infoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, infoScrollPane, 0, 505, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(derbySystemHomeLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(derbySystemHomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                        .add(derbySystemHomeTextField, 0, 280, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, messageLabel))
@@ -183,13 +190,12 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
                     .add(derbySystemHomeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(browseButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(infoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
+                .add(infoScrollPane, 0, 134, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(messageLabel)
                 .addContainerGap())
         );
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
