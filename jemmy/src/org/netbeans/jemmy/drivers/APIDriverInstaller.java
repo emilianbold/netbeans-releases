@@ -32,7 +32,7 @@ import org.netbeans.jemmy.drivers.lists.JTableHeaderDriver;
 import org.netbeans.jemmy.drivers.lists.JTabAPIDriver;
 import org.netbeans.jemmy.drivers.lists.JListMouseDriver;
 import org.netbeans.jemmy.drivers.lists.ListKeyboardDriver;
-//TODO import org.netbeans.jemmy.drivers.menus.AppleMenuDriver;
+import org.netbeans.jemmy.drivers.menus.AppleMenuDriver;
 
 import org.netbeans.jemmy.drivers.menus.DefaultJMenuDriver;
 import org.netbeans.jemmy.drivers.menus.QueueJMenuDriver;
@@ -129,10 +129,9 @@ public class APIDriverInstaller extends ArrayDriverInstaller {
 	      new APIFocusDriver(),
 	      new MouseFocusDriver(),
               (shortcutEvents ? ((Object)new QueueJMenuDriver()) : ((Object)new DefaultJMenuDriver())),
-/*TODO              ((System.getProperty("apple.laf.useScreenMenuBar") != null && 
+              ((System.getProperty("apple.laf.useScreenMenuBar") != null && 
                       System.getProperty("apple.laf.useScreenMenuBar").equals("true")) ? new AppleMenuDriver() :
                   (shortcutEvents ? ((Object)new QueueJMenuDriver()) : ((Object)new DefaultJMenuDriver()))),
- */
 	      new JTableHeaderDriver()});
     }
 
