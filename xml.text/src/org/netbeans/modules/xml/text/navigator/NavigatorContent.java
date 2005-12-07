@@ -317,7 +317,7 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
                     //otherwise the ClonableEditorSupport locks itself (new call to CES from CES.propertyChange))
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            navigate(dobj);
+                            if(dobj.isValid()) navigate(dobj);
                         }
                     });
                 }
