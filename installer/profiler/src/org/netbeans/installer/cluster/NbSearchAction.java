@@ -14,6 +14,7 @@
 package org.netbeans.installer.cluster;
 
 import com.installshield.product.SoftwareObject;
+import com.installshield.product.SoftwareVersion;
 import com.installshield.product.service.registry.RegistryService;
 import com.installshield.util.Log;
 import com.installshield.wizard.CancelableWizardAction;
@@ -97,14 +98,18 @@ public class NbSearchAction extends CancelableWizardAction {
     private void findNb () {
         try {
             // Get the instance of RegistryService
-            //String nbUID = resolveString(BUNDLE + "NetBeans.productUID)");
-            //String minUIDSubstring = resolveString(BUNDLE + "NetBeans.nbMinUIDSubstring)");
-            //String maxUIDSubstring = resolveString(BUNDLE + "NetBeans.nbMaxUIDSubstring)");
+            String jseUID = resolveString(BUNDLE + "JSE.productUID)");
             RegistryService regserv = (RegistryService)getService(RegistryService.NAME);  
             String [] arr = regserv.getAllSoftwareObjectUIDs();
             /*for (int i = 0; i < arr.length; i++) {
                System.out.println("arr[" + i + "]: " + arr[i]);
             }*/
+            
+            SoftwareVersion jseVersionMin = new SoftwareVersion(resolveString(BUNDLE + "JSE.versionMin)"));
+            SoftwareVersion jseVersionMax = new SoftwareVersion(resolveString(BUNDLE + "JSE.versionMax)"));
+            logEvent(this, Log.DBG,"jseVersionMin:'" + resolveString(BUNDLE + "JSE.versionMin)") + "'");
+            logEvent(this, Log.DBG,"jseVersionMax:'" + resolveString(BUNDLE + "JSE.versionMax)") + "'");
+            
             //Look for any profiler installation
             SoftwareObject [] soArr = null;
             //System.out.println("substring:" + nbUID.substring(26,32));
@@ -120,24 +125,24 @@ public class NbSearchAction extends CancelableWizardAction {
                         + " productNumber: " + soArr[j].getProductNumber()
                         + " installLocation: " + soArr[j].getInstallLocation());
                         nbHomeList.add(soArr[j]);
-                        //Fix: Due to unresolved product properties for NB 4.0 and NB 4.1
-                        //we must check UID not ProductNumber.
-                        /*if ((minUIDSubstring.length() > 0) && (maxUIDSubstring.length() > 0)) {
-                            if ((minUIDSubstring.compareTo(soArr[j].getKey().getUID().substring(26,29)) <= 0) && 
-                                (maxUIDSubstring.compareTo(soArr[j].getKey().getUID().substring(26,29)) >= 0)) {
-                                nbHomeList.add(soArr[j]);
-                            }
-                        } else if ((minUIDSubstring.length() > 0) && (maxUIDSubstring.length() == 0)) {
-                            if (minUIDSubstring.compareTo(soArr[j].getKey().getUID().substring(26,29)) <= 0) {
-                                nbHomeList.add(soArr[j]);
-                            }
-                        } else if ((minUIDSubstring.length() == 0) && (maxUIDSubstring.length() > 0)) {
-                            if (maxUIDSubstring.compareTo(soArr[j].getKey().getUID().substring(26,29)) >= 0) {
-                                nbHomeList.add(soArr[j]);
-                            }
-                        } else {
+                    }
+                } else if (arr[i].equals(jseUID)) {
+                    soArr = regserv.getSoftwareObjects(arr[i]);
+                    System.out.println("so.length:" + soArr.length);
+                    for (int j = 0; j < soArr.length; j++) {
+                        SoftwareVersion version = soArr[j].getKey().getVersion();
+                        logEvent(this, Log.DBG,"so[" + j + "]:"
+                        + " displayName: " + soArr[j].getDisplayName()
+                        + " name: " + soArr[j].getName()
+                        + " productNumber: " + soArr[j].getProductNumber()
+                        + " installLocation: " + soArr[j].getInstallLocation()
+                        + " version:" + version
+                        + " major:" + version.getMajor()
+                        + " version.compareTo(jseVersionMin):" + version.compareTo(jseVersionMin)
+                        + " version.compareTo(jseVersionMax):" + version.compareTo(jseVersionMax));
+                        if ((version.compareTo(jseVersionMin) >= 0) && (version.compareTo(jseVersionMax) <= 0)) {
                             nbHomeList.add(soArr[j]);
-                        }*/
+                        }
                     }
                 }
             }

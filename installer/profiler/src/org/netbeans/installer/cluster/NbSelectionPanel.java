@@ -105,7 +105,23 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
     public boolean queryExit(WizardBeanEvent event) {
         nbHome = getDestination();
         logEvent(this, Log.DBG, "nbHome: " + nbHome);
-        if (!validateNbDir()) {
+        if (!validateNbDirNoUI(nbHome)) {
+            //Try to check subdirs as JSE has NB one dir level lower
+            File dir = new File(nbHome);
+            //isDirectory() returns true only if given dir exists and is directory
+            if (dir.isDirectory()) {
+                File [] files = dir.listFiles();
+                for (int i = 0; i < files.length; i++) {
+                    logEvent(this,Log.DBG,"queryExit files[" + i + "]: " + files[i].getPath());
+                    if (files[i].isDirectory()) {
+                        if (validateNbDirNoUI(files[i].getPath())) {
+                            nbHome = files[i].getPath();
+                            return validateDestination();
+                        }
+                    }
+                }
+            }
+            validateNbDir(nbHome);
             return false;
         }
         return validateDestination();
@@ -134,16 +150,16 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
     /** Checks if there is NB cluster dir in selected NB installation directory.
      * If it fails at specific test try to check subdir on Mac OS X.
      */
-    private boolean validateNbDir () {
-        logEvent(this, Log.DBG,"Enter validateNbDir nbHome: " + nbHome);
+    private boolean validateNbDir (String nbHomeDir) {
+        logEvent(this, Log.DBG,"Enter validateNbDir nbHomeDir: " + nbHomeDir);
         //Find nb cluster dir
-        if ("".equals(nbHome)) {
+        if ("".equals(nbHomeDir)) {
             //Empty string
             showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
             resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
             return false;
         }
-        File dir = new File(nbHome);
+        File dir = new File(nbHomeDir);
         //isDirectory() returns true only if given dir exists and is directory
         if (!dir.isDirectory()) {
             //Entered dir does not exist
@@ -157,8 +173,8 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
         }
         if (files.length == 0) {
             //NB Cluster dir not found
-            if (Util.isMacOSX() && nbHome.endsWith(".app")) {
-                return validateNbDirMacOSX();
+            if (Util.isMacOSX() && nbHomeDir.endsWith(".app")) {
+                return validateNbDirMacOSX(nbHomeDir);
             } else {
                 showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
                 resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
@@ -216,7 +232,7 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
         String baseIdeName = resolveString(BUNDLE + "NetBeans.ideClusterDirBase)");
         String ideClusterDir = baseIdeName + version;
         
-        File f = new File(nbHome, ideClusterDir);
+        File f = new File(nbHomeDir, ideClusterDir);
         if (!f.isDirectory()) {
             showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
             resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
@@ -233,19 +249,19 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
     /** Checks if there is NB cluster dir in selected NB installation directory
      * on Mac OS X.
      */
-    private boolean validateNbDirMacOSX () {
+    private boolean validateNbDirMacOSX (String nbHomeDir) {
         //Find nb cluster dir
-        nbHome = nbHome + resolveString(BUNDLE + "NetBeans.nbSubDir)");
+        nbHomeDir = nbHomeDir + File.separator + resolveString(BUNDLE + "NetBeans.nbSubDir)");
         
-        logEvent(this, Log.DBG,"Enter validateNbDirMacOSX nbHome: " + nbHome);
+        logEvent(this, Log.DBG,"Enter validateNbDirMacOSX nbHomeDir: " + nbHomeDir);
         
-        if ("".equals(nbHome)) {
+        if ("".equals(nbHomeDir)) {
             //Empty string
             showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
             resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
             return false;
         }
-        File dir = new File(nbHome);
+        File dir = new File(nbHomeDir);
         //isDirectory() returns true only if given dir exists and is directory
         if (!dir.isDirectory()) {
             //Entered dir does not exist
@@ -314,7 +330,7 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
         String baseIdeName = resolveString(BUNDLE + "NetBeans.ideClusterDirBase)");
         String ideClusterDir = baseIdeName + version;
 
-        File f = new File(nbHome, ideClusterDir);
+        File f = new File(nbHomeDir, ideClusterDir);
         if (!f.isDirectory()) {
             showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
             resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
@@ -325,6 +341,163 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
             resolveString(BUNDLE + "NetBeansDirChooser.cannotWriteNbDir)"));
             return false;
         }
+        
+        nbHome = nbHome + File.separator + resolveString(BUNDLE + "NetBeans.nbSubDir)");
+
+        return true;
+    }
+    
+    /** Checks if there is NB cluster dir in selected NB installation directory.
+     * If it fails at specific test try to check subdir on Mac OS X.
+     */
+    private boolean validateNbDirNoUI (String nbHomeDir) {
+        logEvent(this, Log.DBG,"Enter validateNbDir nbHomeDir: " + nbHomeDir);
+        //Find nb cluster dir
+        if ("".equals(nbHomeDir)) {
+            //Empty string
+            return false;
+        }
+        File dir = new File(nbHomeDir);
+        //isDirectory() returns true only if given dir exists and is directory
+        if (!dir.isDirectory()) {
+            //Entered dir does not exist
+            return false;
+        }
+        File [] files = dir.listFiles(new PlatformClusterFilter());
+        for (int i = 0; i < files.length; i++) {
+            logEvent(this,Log.DBG,"validateNbDir files[" + i + "]: " + files[i].getPath());
+        }
+        if (files.length == 0) {
+            //NB Cluster dir not found
+            if (Util.isMacOSX() && nbHomeDir.endsWith(".app")) {
+                return validateNbDirMacOSXNoUI(nbHomeDir);
+            } else {
+                return false;
+            }
+        }
+
+        String minVersion = resolveString(BUNDLE + "NetBeans.platformMinClusterDirVersion)");
+        String maxVersion = resolveString(BUNDLE + "NetBeans.platformMaxClusterDirVersion)");
+        String basePlatformName = resolveString(BUNDLE + "NetBeans.platformClusterDirBase)");
+        String minClusterDir = basePlatformName + minVersion;
+        String maxClusterDir = basePlatformName + maxVersion;
+
+        if ((minClusterDir.length() > 0) && (maxClusterDir.length() > 0)) {
+            if (minClusterDir.compareTo(files[0].getName()) > 0) {
+                return false;
+            }
+            if (maxClusterDir.compareTo(files[0].getName()) < 0) {
+                return false;
+            }
+        } else if ((minClusterDir.length() > 0) && (maxClusterDir.length() == 0)) {
+            if (minClusterDir.compareTo(files[0].getName()) > 0) {
+                return false;
+            }
+        } else if ((minClusterDir.length() == 0) && (maxClusterDir.length() > 0)) {
+            if (maxClusterDir.compareTo(files[0].getName()) < 0) {
+                return false;
+            }
+        }
+
+        if (!files[0].isDirectory()) {
+            return false;
+        }
+        if (!files[0].canWrite()) {
+            return false;
+        }
+        //Platform cluster dir check passed
+        //Check ide cluster dir
+        //Get string after base name like ie. strip base name from "platform5"
+        //to get "5".
+        String version = files[0].getName().substring(basePlatformName.length(),files[0].getName().length());
+        
+        String baseIdeName = resolveString(BUNDLE + "NetBeans.ideClusterDirBase)");
+        String ideClusterDir = baseIdeName + version;
+        
+        File f = new File(nbHomeDir, ideClusterDir);
+        if (!f.isDirectory()) {
+            return false;
+        }
+        if (!f.canWrite()) {
+            return false;
+        }
+        return true;
+    }
+    
+    /** Checks if there is NB cluster dir in selected NB installation directory
+     * on Mac OS X.
+     */
+    private boolean validateNbDirMacOSXNoUI (String nbHomeDir) {
+        //Find nb cluster dir
+        nbHomeDir = nbHomeDir + File.separator + resolveString(BUNDLE + "NetBeans.nbSubDir)");
+        
+        logEvent(this, Log.DBG,"Enter validateNbDirMacOSX nbHomeDir: " + nbHomeDir);
+        
+        if ("".equals(nbHomeDir)) {
+            //Empty string
+            return false;
+        }
+        File dir = new File(nbHomeDir);
+        //isDirectory() returns true only if given dir exists and is directory
+        if (!dir.isDirectory()) {
+            //Entered dir does not exist
+            return false;
+        }
+        File [] files = dir.listFiles(new PlatformClusterFilter());
+        for (int i = 0; i < files.length; i++) {
+            logEvent(this,Log.DBG,"validateNbDir files[" + i + "]: " + files[i].getPath());
+        }
+        if (files.length == 0) {
+            //NB Cluster dir not found
+            return false;
+        }
+
+        String minVersion = resolveString(BUNDLE + "NetBeans.platformMinClusterDirVersion)");
+        String maxVersion = resolveString(BUNDLE + "NetBeans.platformMaxClusterDirVersion)");
+        String basePlatformName = resolveString(BUNDLE + "NetBeans.platformClusterDirBase)");
+        String minClusterDir = basePlatformName + minVersion;
+        String maxClusterDir = basePlatformName + maxVersion;
+
+        if ((minClusterDir.length() > 0) && (maxClusterDir.length() > 0)) {
+            if (minClusterDir.compareTo(files[0].getName()) > 0) {
+                return false;
+            }
+            if (maxClusterDir.compareTo(files[0].getName()) < 0) {
+                return false;
+            }
+        } else if ((minClusterDir.length() > 0) && (maxClusterDir.length() == 0)) {
+            if (minClusterDir.compareTo(files[0].getName()) > 0) {
+                return false;
+            }
+        } else if ((minClusterDir.length() == 0) && (maxClusterDir.length() > 0)) {
+            if (maxClusterDir.compareTo(files[0].getName()) < 0) {
+                return false;
+            }
+        }
+
+        if (!files[0].isDirectory()) {
+            return false;
+        }
+        if (!files[0].canWrite()) {
+            return false;
+        }
+        //Platform cluster dir check passed
+        //Check ide cluster dir
+        //Get string after base name like ie. strip base name from "platform5"
+        //to get "5".
+        String version = files[0].getName().substring(basePlatformName.length(),files[0].getName().length());
+
+        String baseIdeName = resolveString(BUNDLE + "NetBeans.ideClusterDirBase)");
+        String ideClusterDir = baseIdeName + version;
+
+        File f = new File(nbHomeDir, ideClusterDir);
+        if (!f.isDirectory()) {
+            return false;
+        }
+        if (!f.canWrite()) {
+            return false;
+        }
+        
         return true;
     }
     
