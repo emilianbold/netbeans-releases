@@ -142,10 +142,10 @@ public class PostInstallFixupAppServerAction extends ProductAction {
                 //not allow space in path. If it will be changed it must be tested
                 //also with IDE launcher.
                 if (Util.isWindowsOS()) {
-                    newLine = line.substring(0, pos - 1) + " " 
+                    newLine = line.substring(0, pos) + " " 
                     + "-J-Dcom.sun.aas.installRoot=\"" + asInstallDir + "\"\"";
                 } else {
-                    newLine = line.substring(0, pos - 1) + " " 
+                    newLine = line.substring(0, pos) + " " 
                     + "-J-Dcom.sun.aas.installRoot=" + asInstallDir + "\"";
                 }
                 logEvent(this, Log.DBG, "newLine: " + newLine);
