@@ -246,7 +246,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             
             public CompletionDocumentation resolveLink(String link) {
-                return new DocItem(doc.parseLink(link, (JavaClass)null), ui);
+                Object item = doc.parseLink(link, (JavaClass)null);
+                return item != null ? new DocItem(item, ui) : null;
             }
             
             public String getText() {
