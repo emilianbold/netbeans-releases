@@ -1937,7 +1937,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
 
         final void maskDraggingComponents() {
-            if (!isTopComponent()) {
+            if (!isTopComponent() && showingComponents != null) {
                 for (int i=0; i < showingComponents.length; i++) {
                     Rectangle r = movingBounds[i];
                     showingComponents[i].setBounds(r.x + Short.MIN_VALUE, r.y + Short.MIN_VALUE, r.width, r.height);
