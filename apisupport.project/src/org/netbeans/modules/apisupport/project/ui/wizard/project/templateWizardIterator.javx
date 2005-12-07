@@ -21,6 +21,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.InstantiatingIterator {
     
@@ -44,7 +45,7 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
     
     private String[] createSteps() {
         return new String[] {
-            "Create a new @@DISPLAYNAME@@ project",
+            NbBundle.getMessage(@@TEMPLATENAME@@WizardIterator.class, "LBL_CreateProjectStep")
         };
     }
     

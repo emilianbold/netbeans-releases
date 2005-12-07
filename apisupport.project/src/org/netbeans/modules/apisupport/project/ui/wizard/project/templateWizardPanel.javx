@@ -9,6 +9,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Panel just asking for basic info.
@@ -22,11 +23,11 @@ public class @@TEMPLATENAME@@WizardPanel implements WizardDescriptor.Panel,
     /** Creates a new instance of templateWizardPanel */
     public @@TEMPLATENAME@@WizardPanel() {
     }
-
     
     public Component getComponent() {
         if (component == null) {
             component = new @@TEMPLATENAME@@PanelVisual(this);
+            component.setName(NbBundle.getMessage(@@TEMPLATENAME@@WizardPanel.class, "LBL_CreateProjectStep"));
         }
         return component;
     }

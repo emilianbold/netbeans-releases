@@ -207,6 +207,7 @@ final class NewProjectIterator extends BasicWizardIterator {
                 externalFiles
                 ));
         fileChanges.add(fileChanges.bundleKeyDefaultBundle(category + "/" + name +  "Project.zip", displayName)); // NOI18N
+        fileChanges.add(fileChanges.bundleKeyDefaultBundle("LBL_CreateProjectStep",  "Create a new " + displayName + " project")); // NOI18N
         
         // x. generate java classes
         final String iteratorName = getRelativePath(project, packageName,
