@@ -273,7 +273,8 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                             //there is an element - skip it - analyze an element after the end of the
                             //existing element
                             if(debug) System.out.println("found existing element " + tagDE + " => skipping");
-                            sel = sup.getElementChain(Math.min(doc.getLength(), tagDE.getEndOffset() + 1));
+                            //sel = sup.getElementChain(Math.min(doc.getLength(), tagDE.getEndOffset() + 2));
+                            sel = endTagCheck.getNext();
                             skipped.add(tagDE);
                             continue;
                         }
