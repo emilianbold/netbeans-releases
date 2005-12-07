@@ -20,3 +20,5 @@
 1.0.10:	Mnemonic colision fixed
 
 1.0.11: Added implementation of modern options (#67632)
+
+1.0.12: Fix session node autoexpand (#63878)

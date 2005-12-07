@@ -23,13 +23,14 @@ import org.openide.util.NbBundle;
 
 import com.sun.collablet.*;
 import org.netbeans.modules.collab.core.Debug;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  *
  * @author        Todd Fast, todd.fast@sun.com
  */
-public class SessionsNodeChildren extends Children.Keys implements NodeListener, PropertyChangeListener {
+public class SessionsNodeChildren extends Children.Keys implements /*NodeListener,*/ PropertyChangeListener {
     ////////////////////////////////////////////////////////////////////////////
     // Instance fields
     ////////////////////////////////////////////////////////////////////////////
@@ -43,8 +44,6 @@ public class SessionsNodeChildren extends Children.Keys implements NodeListener,
     public SessionsNodeChildren(RootNode rootNode, CollabExplorerPanel explorerPanel) {
         super();
         this.explorerPanel = explorerPanel;
-
-        rootNode.addNodeListener(this);
     }
 
     /**
@@ -128,13 +127,6 @@ public class SessionsNodeChildren extends Children.Keys implements NodeListener,
         List keys = new ArrayList();
 
         try {
-            //			Set datasourceNames=new TreeSet(Arrays.asList(
-            //				getJatoWebContextCookie().getJDBCDatasourceNames()));
-            //			for (Iterator i=datasourceNames.iterator(); i.hasNext(); )
-            //			{
-            //				nodes.add(getJatoWebContextCookie().getJDBCDatasource(
-            //					(String)i.next()));
-            //			}
             // TODO: Sort contacts
             CollabSession[] sessions = (CollabManager.getDefault() != null) ? CollabManager.getDefault().getSessions()
                                                                             : new CollabSession[0];
@@ -153,6 +145,7 @@ public class SessionsNodeChildren extends Children.Keys implements NodeListener,
             }
 
             _setKeys(keys);
+            expandChildren();
         } catch (Exception e) {
             Debug.errorManager.notify(e);
         }
@@ -170,65 +163,28 @@ public class SessionsNodeChildren extends Children.Keys implements NodeListener,
         }
     }
 
-    /**
-     *
-     *
-     */
-    public void childrenAdded(NodeMemberEvent event) {
-        final Node[] nodes = event.getDelta();
-        final JTree tree = explorerPanel.getTreeViewJTree();
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                public void run() {
-                    try {
-                        // For each added session node...
-                        for (int i = 0; i < nodes.length; i++) {
-                            // Expand all its children
-                            for (int j = 0; j < tree.getRowCount(); j++) {
-                                TreePath path = tree.getPathForRow(j);
-
-                                if (Visualizer.findNode(path.getPath()[1]) == nodes[i]) {
-                                    tree.expandPath(path);
-                                }
+    private void expandChildren() {
+        Runnable r = new Runnable() {
+            Node[] nodes;
+            public void run() {
+                if (nodes == null) {
+                    nodes = getNodes(true);
+                    SwingUtilities.invokeLater(this);
+                } else {
+                    JTree tree = explorerPanel.getTreeViewJTree();
+                    for (int i = 0; i < nodes.length; i++) {
+                        // Expand all its children
+                        for (int j = 0; j < tree.getRowCount(); j++) {
+                            TreePath path = tree.getPathForRow(j);
+                            if (Visualizer.findNode(path.getPath()[1]) == nodes[i]) {
+                                tree.expandPath(path);
                             }
                         }
-                    } catch (Exception e) {
-                        Debug.debugNotify(e);
                     }
                 }
-
-                private void dumpPath(TreePath path) {
-                    for (int i = 0; i < path.getPathCount(); i++)
-                        System.out.print(path.getPathComponent(i) + " / ");
-
-                    System.out.println();
-                }
             }
-        );
-    }
-
-    /**
-     *
-     *
-     */
-    public void childrenRemoved(NodeMemberEvent ev) {
-        // Ignore
-    }
-
-    /**
-     *
-     *
-     */
-    public void childrenReordered(NodeReorderEvent ev) {
-        // Ignore
-    }
-
-    /**
-     *
-     *
-     */
-    public void nodeDestroyed(NodeEvent ev) {
-        refreshChildren();
+        };
+        RequestProcessor.getDefault().post(r);
     }
 
     ////////////////////////////////////////////////////////////////////////////
