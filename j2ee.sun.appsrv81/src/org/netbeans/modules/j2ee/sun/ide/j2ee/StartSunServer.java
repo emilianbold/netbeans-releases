@@ -64,7 +64,6 @@ import org.netbeans.modules.j2ee.sun.api.SunServerStateInterface;
 
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
 
-import org.netbeans.modules.j2ee.sun.api.InstrumentAVK;
 /**
  * Life Cycle management for an instance
  * @author Ludo
@@ -181,7 +180,6 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     public void stopDeploymentManagerSilently() {
         shouldStopDeploymentManagerSilently =true;
         stopDeploymentManager();
-        removeAVKSupport();
         //
     }
     
@@ -943,24 +941,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         }
         return false;
     }     
-    /* if the avk plugin is there (via layer)
-     * this routine will un instrument the AVK instrumentation in the instance at
-     * server stop time, automatically
-     **/
     
-    private void removeAVKSupport(){
-        InstrumentAVK avkSupport = AVKLayerUtil.getAVKImplemenation();
-        if(avkSupport != null){
-            DeploymentManagerProperties dmProps = new DeploymentManagerProperties(dm);
-           /// if(dmProps.getAVKOn()){
-                avkSupport.setDeploymentManager((SunDeploymentManagerInterface)dm);
-                avkSupport.setAVK(false);
-                avkSupport.generateReport();
-           /// }
-           /// dmProps.setAVKOn(false);
-        }
-    }
-
 /**
      * A class that attaches to the output streams of the executed process and sends the data
      * to the calling processes output streams
