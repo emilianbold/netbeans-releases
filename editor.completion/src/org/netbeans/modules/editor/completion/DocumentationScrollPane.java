@@ -22,6 +22,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
 /**
@@ -196,7 +198,7 @@ public class DocumentationScrollPane extends JScrollPane {
             try{
                 view.setPage(url);
             }catch(IOException ioe){
-                ioe.printStackTrace();
+                StatusDisplayer.getDefault().setStatusText(ioe.toString());
             }
         }
         bShowWeb.setEnabled(url != null);
@@ -398,12 +400,31 @@ public class DocumentationScrollPane extends JScrollPane {
         
         public void hyperlinkUpdate(HyperlinkEvent e) {
             if (e != null && HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-                String desc = e.getDescription();
+                final String desc = e.getDescription();
                 if (desc != null) {
                     CompletionDocumentation doc = currentDocumentation.resolveLink(desc);
-                    if (doc!=null){
-                        setData(doc);
+                    if (doc == null) {
+                        doc = new CompletionDocumentation() {
+                            private URL base = currentDocumentation.getURL();
+                            public Action getGotoSourceAction() {
+                                return null;
+                            }
+                            public String getText() {
+                                return null;
+                            }
+                            public URL getURL() {
+                                try {
+                                    return new URL(base, desc);
+                                } catch (MalformedURLException ex) {
+                                }
+                                return null;
+                            }
+                            public CompletionDocumentation resolveLink(String link) {
+                                return null;
+                            }
+                        };
                     }
+                    setData(doc);
                 }                    
             }
         }
