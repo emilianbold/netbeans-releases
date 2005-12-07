@@ -296,6 +296,13 @@ Microsystems, Inc. All Rights Reserved.
      </p>
     </api>
    </li>
+   <li>
+    <api group="java" name="XMLCatalogAPI" type="import" category="devel">
+     <p>
+      Validation of <code>project.xml</code> files (cf. #49976).
+     </p>
+    </api>
+   </li>
   </ul>
  </answer>
 
