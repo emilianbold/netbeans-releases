@@ -29,7 +29,6 @@ import java.io.OutputStreamWriter;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -39,11 +38,15 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
 import org.netbeans.modules.derby.spi.support.DerbySupport;
+import org.openide.util.RequestProcessor;
 /**
  *
  * @author  ludo
@@ -181,12 +184,15 @@ public class RegisterPointbase implements DatabaseRuntime {
             return;
         }
 
+        final FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         
         final File derbyInstall = new File(irf,"derby");//NOI18N
         if (derbyInstall.exists()){
-            
-            if ("".equals(DerbySupport.getSystemHome())) {
-                SwingUtilities.invokeLater(new Runnable() {
+         FileObject derb = fs.findResource("Databases/JDBCDrivers/org_apache_derby_jdbc_ClientDriver.xml"); //NOI18N
+         File dbsample = new File(DerbySupport.getDefaultSystemHome(),"sample");
+         // create sample db if things are not initialized correctly
+            if ((derb==null) || (!dbsample.exists()) || ("".equals(DerbySupport.getSystemHome())))    {
+                RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
                             File dbdir = new File(DerbySupport.getDefaultSystemHome());
@@ -196,8 +202,21 @@ public class RegisterPointbase implements DatabaseRuntime {
                             DerbySupport.setLocation(derbyInstall.getAbsolutePath());
                             DerbySupport.setSystemHome(dbdir.getAbsolutePath());
                             
-                            
+                            //now register the sample db
                             DerbySupport.registerSampleDatabase();
+                            
+                            //now register the sun-appserv-samples default connexion
+                            JDBCDriver[] newDriver = JDBCDriverManager.getDefault().getDrivers("org.apache.derby.jdbc.ClientDriver"); //NOI18N
+                            if(newDriver.length>0){
+                                FileObject sunSampleCon = fs.findResource("Databases/Connections/jdbc_derby___localhost_1527_sun_.xml"); //NOI18N
+                                if (sunSampleCon==null){
+                                    DatabaseConnection dbconn = DatabaseConnection.create(newDriver[0],
+                                        "jdbc:derby://localhost:1527/sun-appserv-samples;create=true", //NOI18N
+                                        "APP", "APP", "APP", true); //NOI18N
+                                ConnectionManager.getDefault().addConnection(dbconn);
+                                }
+                            }
+
                         } catch (DatabaseException ex) {
                             ex.printStackTrace();
                         }
@@ -212,11 +231,14 @@ public class RegisterPointbase implements DatabaseRuntime {
         if (!localInstall.exists()){
             return ;  
 	}      
-        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(DRIVER);
+   ///     JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(DRIVER);
 	//now it is a good one.
         AppServerinstallationDirectory =irf;
-        AddPointBaseMenus.execute();           
-        if (drvs.length>0)
+        AddPointBaseMenus.execute();
+        
+        FileObject props = fs.findResource("Databases/JDBCDrivers/com_pointbase_jdbc_jdbcUniversalDriver.xml");
+        if (props!=null)// 
+  
             return; //already there
 	
      
