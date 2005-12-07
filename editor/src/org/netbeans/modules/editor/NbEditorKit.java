@@ -89,6 +89,8 @@ public class NbEditorKit extends ExtKit {
     private static final NbUndoAction nbUndoActionDef = new NbUndoAction();
     private static final NbRedoAction nbRedoActionDef = new NbRedoAction();
     
+    private Map systemAction2editorAction = new HashMap();
+    
     static {
         contentTypeTable = new HashMap();
         contentTypeTable.put("org.netbeans.modules.properties.syntax.PropertiesKit", "text/x-properties"); // NOI18N
@@ -163,6 +165,7 @@ public class NbEditorKit extends ExtKit {
         if (a != null) {
             a.putValue(SYSTEM_ACTION_CLASS_NAME_PROPERTY, systemActionClass.getName());
         }
+        systemAction2editorAction.put(systemActionClass.getName(), editorActionName);
     }
     
     protected void updateActions() {
@@ -357,6 +360,14 @@ public class NbEditorKit extends ExtKit {
         
         protected void addAction(JTextComponent component, JPopupMenu popupMenu, Action action) {
             Lookup contextLookup = getContextLookup(component);
+            
+            // issue #69688
+            if (contextLookup == null && 
+                    systemAction2editorAction.containsKey(action.getClass().getName())){
+                addAction(component, popupMenu, (String) systemAction2editorAction.get(action.getClass().getName()));
+                return;
+            }
+            
             action = translateContextLookupAction(contextLookup, action);
 
             if (action != null) {
