@@ -692,7 +692,8 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
                     try {
                         executor.wait();
                     } catch (InterruptedException e) {
-                        // not interested
+                        // forward interrupt
+                        executor.getGroup().cancel();
                     }
                 }
             }

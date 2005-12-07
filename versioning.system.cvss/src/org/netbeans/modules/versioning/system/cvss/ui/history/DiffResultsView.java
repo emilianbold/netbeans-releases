@@ -23,6 +23,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Cancellable;
 import org.openide.ErrorManager;
 
 import javax.swing.*;
@@ -87,7 +88,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     public void ancestorRemoved(AncestorEvent event) {
         ExplorerManager em = ExplorerManager.find(treeView);
         em.removePropertyChangeListener(this);
-        currentTask = null;
+        cancelBackgroundTasks();
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -151,12 +152,17 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
     private void showDiff(LogInformation header, String revision1, String revision2, boolean showLastDifference) {
         synchronized(this) {
-            if (currentShowDiffTask != null && !currentShowDiffTask.isFinished()) {
-                currentShowDiffTask.cancel();
-            }
+            cancelBackgroundTasks();
             currentTask = new ShowDiffTask(header, revision1, revision2, showLastDifference);
             currentShowDiffTask = RequestProcessor.getDefault().create(currentTask);
             currentShowDiffTask.schedule(0);
+        }
+    }
+
+    private synchronized void cancelBackgroundTasks() {
+        if (currentShowDiffTask != null && !currentShowDiffTask.isFinished()) {
+            currentShowDiffTask.cancel();  // it almost always late it's enqueued, so:
+            currentTask.cancel();
         }
     }
 
@@ -235,12 +241,14 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         treeView.setSelection(container);
     }
 
-    private class ShowDiffTask implements Runnable {
+    private class ShowDiffTask implements Runnable, Cancellable {
         
         private final LogInformation header;
         private final String revision1;
         private final String revision2;
         private boolean showLastDifference;
+        private volatile boolean cancelled;
+        private Thread thread;
 
         public ShowDiffTask(LogInformation header, String revision1, String revision2, boolean showLastDifference) {
             this.header = header;
@@ -250,17 +258,30 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         }
 
         public void run() {
+            thread = Thread.currentThread();
             final Diff diff = Diff.getDefault();
             final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1);
             final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2);
+
+            // it's enqueued at ClientRuntime queue and does not return until previous request handled
             s1.getMIMEType();  // triggers s1.init()
+            if (cancelled) {
+                return;
+            }
+
             s2.getMIMEType();  // triggers s2.init()
+            if (cancelled) {
+                return;
+            }
 
             if (currentTask != this) return;
 
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
+                        if (cancelled) {
+                            return;
+                        }
                         final DiffView view = diff.createDiff(s1, s2);
                         if (currentTask == ShowDiffTask.this) {
                             currentDiff = view;
@@ -276,6 +297,14 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                     }
                 }
             });
+        }
+
+        public boolean cancel() {
+            cancelled = true;
+            if (thread != null) {
+                thread.interrupt();
+            }
+            return true;
         }
     }
     
