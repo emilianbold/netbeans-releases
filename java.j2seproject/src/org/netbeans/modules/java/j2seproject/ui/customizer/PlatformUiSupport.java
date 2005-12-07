@@ -51,10 +51,7 @@ import org.w3c.dom.NodeList;
  * Support class for {@link JavaPlatform} manipulation in j2seproject customizer.
  * @author tzezula
  */
-public class PlatformUiSupport {
-    
-    private static final String DEFAULT_JAVAC_TARGET = "${default.javac.target}";  //NOI18N
-    private static final String DEFAULT_JAVAC_SOURCE = "${default.javac.source}";  //NOI18N
+public class PlatformUiSupport {    
     
     
     private PlatformUiSupport() {
@@ -94,6 +91,7 @@ public class PlatformUiSupport {
         JavaPlatform platform = getPlatform(pk);                
         //null means active broken (unresolved) platform, no need to do anything
         if (platform != null) {
+            SpecificationVersion jdk13 = new SpecificationVersion ("1.3");  //NOI18N
             String platformAntName = (String) platform.getProperties().get("platform.ant.name");    //NOI18N        
             assert platformAntName != null;
             props.put(J2SEProjectProperties.JAVA_PLATFORM, platformAntName);
@@ -122,8 +120,7 @@ public class PlatformUiSupport {
                         break;
                     default:
                         throw new AssertionError("Broken project.xml file");   //NOI18N
-                }
-                SpecificationVersion jdk13 = new SpecificationVersion ("1.3");  //NOI18N
+                }                
                 String explicitSourceAttrValue = explicitPlatform.getAttribute("explicit-source-supported");    //NOI18N
                 if (jdk13.compareTo(platform.getSpecification().getVersion())>=0 &&
                     !"false".equals(explicitSourceAttrValue)) {   //NOI18N
@@ -146,11 +143,12 @@ public class PlatformUiSupport {
                 sourceLevel = ((SourceLevelKey)sourceLevelKey).getSourceLevel();
             }
             String javacSource = sourceLevel.toString();
+            String javacTarget = jdk13.compareTo(sourceLevel)>=0 ? "1.1" : javacSource;     //NOI18N
             if (!javacSource.equals(props.getProperty(J2SEProjectProperties.JAVAC_SOURCE))) {
                 props.setProperty (J2SEProjectProperties.JAVAC_SOURCE, javacSource);
             }
-            if (!javacSource.equals(props.getProperty(J2SEProjectProperties.JAVAC_TARGET))) {
-                props.setProperty (J2SEProjectProperties.JAVAC_TARGET, javacSource);
+            if (!javacTarget.equals(props.getProperty(J2SEProjectProperties.JAVAC_TARGET))) {
+                props.setProperty (J2SEProjectProperties.JAVAC_TARGET, javacTarget);
             }
                         
             if (changed) {
