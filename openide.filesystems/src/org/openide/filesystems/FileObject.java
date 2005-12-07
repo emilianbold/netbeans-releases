@@ -809,7 +809,17 @@ public abstract class FileObject extends Object implements Serializable {
              * FileSystem and from Repository mustn`t be forked.
              */
             FileObject fo = fe.getFile();
-            boolean transmit = (fo != null) && !fo.equals(fe.getSource());
+            boolean transmit = false;
+            if (fo != null) {
+                switch (op) {
+                    case FCLSupport.FILE_CHANGED:
+                        transmit = fo.equals(fe.getSource());
+                        break;
+                    default: 
+                        transmit = !fo.equals(fe.getSource());
+                }
+                
+            }                
 
             if (!en.hasMoreElements() && transmit && !onlyPriority) {
                 FileSystem fs = null;

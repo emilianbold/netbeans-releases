@@ -959,6 +959,43 @@ public class FolderObjTest extends NbTestCase {
         assertTrue(!l.isEmpty());
     }*/
 
+    public void testRefresh69744() throws Exception {
+        File thisTest = new File(getWorkDir(),"thisTest");
+        thisTest.createNewFile();
+        FileObject testf = FileBasedFileSystem.getFileObject(thisTest);
+        assertNotNull(testf);
+        assertGC("",new WeakReference(testf.getParent()));        
+        modifyFileObject(testf, "abc");
+        FileSystem fs = testf.getFileSystem();
+        final List l = new ArrayList();
+        FileChangeListener fcl = new FileChangeAdapter() {
+            public void fileChanged(FileEvent fe) {
+                l.add(fe);
+            }
+        };
+        Thread.sleep(1500);
+        fs.addFileChangeListener(fcl);
+        try {
+            modifyFileObject(testf, "def");
+            assertFalse(l.isEmpty());
+        } finally {
+            fs.removeFileChangeListener(fcl);
+        }
+    }
+
+    private void modifyFileObject(final FileObject testf, String content) throws IOException {
+        FileLock lock = null;
+        OutputStream os = null;
+        try {
+            lock = testf.lock();
+            os = testf.getOutputStream(lock);
+            os.write(content.getBytes());
+        } finally {
+            if (os != null) os.close();
+            if (lock != null) lock.releaseLock();            
+        }
+    }
+    
     public void testFileTypeChanged() throws Exception {
         String newFileName = "test";
         File f = new File(testFile, "testFileTypeNotRemembered/");
