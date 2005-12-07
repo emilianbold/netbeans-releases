@@ -476,7 +476,7 @@ public final class ScrollingTabLayoutModel implements TabLayoutModel {
 
             //Find the width of this tab, and count back
             currW = getWrapped().getW(index);
-            if (currW == selIdx) {
+            if (index == selIdx) {
                 currW += pixelsToAddToSelection;
             }
             int firstTab = index;
@@ -491,7 +491,9 @@ public final class ScrollingTabLayoutModel implements TabLayoutModel {
                     currW += wid;
                 }
             } while (currW <= width && firstTab >= -1);
-            newOffset = firstTab + 1;
+            newOffset = firstTab;
+            if( currW <= width )
+                newOffset++;
         } else if (index <= getFirstVisibleTab(width)) {
             isOffBack = true;
             newOffset = index-1;
