@@ -59,6 +59,8 @@ public class CreateDatabaseAction extends CallableSystemAction {
         DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(CreateDatabaseAction.class, "LBL_CreateDatabaseTitle"), true, null);
         panel.setDialogDescriptor(desc);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+        String acsd = NbBundle.getMessage(CreateDatabaseAction.class, "ACSD_CreateDatabaseAction");
+        dialog.getAccessibleContext().setAccessibleDescription(acsd);
         dialog.setVisible(true);
         dialog.dispose();
         
