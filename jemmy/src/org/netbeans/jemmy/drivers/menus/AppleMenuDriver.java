@@ -8,7 +8,6 @@
  */
 
 package org.netbeans.jemmy.drivers.menus;
-import com.sun.rsasign.i;
 import java.awt.event.KeyEvent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
