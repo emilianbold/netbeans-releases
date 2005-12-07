@@ -109,6 +109,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     // InterceptionListener implementation ---------------------------
     
     public void createSuccess(FileObject fo) {
+        if (ignoringEvents()) return;
         if (fo.isFolder() && fo.getNameExt().equals(CvsVersioningSystem.FILENAME_CVS)) {
             File f = new File(FileUtil.toFile(fo), CvsLiteAdminHandler.INVALID_METADATA_MARKER);
             try {
@@ -134,6 +135,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
      * @param fo FileObject, we are only interested in files inside CVS directory
      */ 
     public void beforeDelete(FileObject fo) {
+        if (ignoringEvents()) return;
         if (fo.isFolder()) {
             saveRecursively(FileUtil.toFile(fo));
         } else {
@@ -162,6 +164,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     }
 
     public void deleteSuccess(FileObject fo) {
+        if (ignoringEvents()) return;
         File deleted = FileUtil.toFile(fo);
         if (fo.isFolder()) {
             for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
@@ -194,6 +197,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     }
 
     public void deleteFailure(FileObject fo) {
+        if (ignoringEvents()) return;
         if (fo.isFolder()) {
             File notDeleted = FileUtil.toFile(fo);
             for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
