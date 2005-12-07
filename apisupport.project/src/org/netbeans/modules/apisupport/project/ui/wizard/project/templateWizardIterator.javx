@@ -10,12 +10,10 @@ import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -31,9 +29,9 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
- 
+    
     public @@TEMPLATENAME@@WizardIterator() {}
-        
+    
     public static @@TEMPLATENAME@@WizardIterator createIterator() {
         return new @@TEMPLATENAME@@WizardIterator();
     }
@@ -54,14 +52,11 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
         Set resultSet = new LinkedHashSet();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir"));
         dirF.mkdirs();
-        String name = (String) wiz.getProperty("name");
         
         FileObject template = Templates.getTemplate(wiz);
         FileObject dir = FileUtil.toFileObject(dirF);
         unZipFile(template.getInputStream(), dir);
         
-        Project p = ProjectManager.getDefault().findProject(dir);
-
         // Always open top dir as a project:
         resultSet.add(dir);
         // Look for nested projects to open as well:
@@ -77,7 +72,7 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
-                        
+        
         return resultSet;
     }
     
@@ -96,7 +91,7 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
                 steps[i] = c.getName();
             }
             if (c instanceof JComponent) { // assume Swing components
-                JComponent jc = (JComponent)c;
+                JComponent jc = (JComponent) c;
                 // Step #.
                 jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
                 // Step name (actually the whole list for reference).
@@ -114,27 +109,31 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
     
     public String name() {
         return MessageFormat.format("{0} of {1}",
-            new Object[] {new Integer (index + 1), new Integer (panels.length)});
+            new Object[] {new Integer(index + 1), new Integer(panels.length)});
     }
     
     public boolean hasNext() {
         return index < panels.length - 1;
     }
+    
     public boolean hasPrevious() {
         return index > 0;
     }
+
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
         index++;
     }
+
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
         }
         index--;
     }
+
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
@@ -149,7 +148,7 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
             ZipEntry entry;
             while ((entry = str.getNextEntry()) != null) {
                 if (entry.isDirectory()) {
-                    FileObject fo = FileUtil.createFolder(projectRoot, entry.getName());
+                    FileUtil.createFolder(projectRoot, entry.getName());
                 } else {
                     FileObject fo = FileUtil.createData(projectRoot, entry.getName());
                     FileLock lock = fo.lock();
@@ -168,6 +167,6 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
         } finally {
             source.close();
         }
-    } 
+    }
     
 }
