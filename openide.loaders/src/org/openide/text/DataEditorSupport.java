@@ -291,14 +291,13 @@ public class DataEditorSupport extends CloneableEditorSupport {
      * for read-only property of saving file and warns user in that case. */
     public void saveDocument() throws IOException {
         if(desEnv().isModified() && isEnvReadOnly()) {
-            DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(
-                    NbBundle.getMessage(DataObject.class,
-                        "MSG_FileReadOnlySaving", 
-                        new Object[] {((Env)env).getFileImpl().getNameExt()}),
-                NotifyDescriptor.WARNING_MESSAGE
-            ));
-            return;
+            IOException e = new IOException("File is read-only: " + ((Env)env).getFileImpl()); // NOI18N
+            ERR.annotate(e, ERR.USER, null, NbBundle.getMessage(DataObject.class,
+                "MSG_FileReadOnlySaving", 
+                new Object[] {((Env)env).getFileImpl().getNameExt()}),
+                null, null
+            );
+            throw e;
         }
         super.saveDocument();
     }

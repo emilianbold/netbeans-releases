@@ -154,13 +154,17 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             if (sc != null) {
                 sc.save();
             }
+            // only remove the object if the save succeeded
             listModel.removeElement(dataObject);
         } catch (java.io.IOException exc) {
+            Throwable t = exc;
             ErrorManager em = ErrorManager.getDefault();
-            Throwable t = em.annotate(
-                exc, NbBundle.getBundle(ExitDialog.class).getString("EXC_Save")
-            );
-            em.notify(ErrorManager.EXCEPTION, t);
+            if (em.findAnnotations(exc) == null) {
+                t = em.annotate(
+                    exc, ErrorManager.EXCEPTION, null, NbBundle.getBundle(ExitDialog.class).getString("EXC_Save"), null, null
+                );
+            }
+            em.notify(t);
         }
     }
  
