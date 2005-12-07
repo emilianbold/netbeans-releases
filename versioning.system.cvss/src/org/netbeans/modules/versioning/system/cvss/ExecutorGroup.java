@@ -342,7 +342,15 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
         int i = 0;
         while (it.hasNext()) {
             Groupable support = (Groupable) it.next();
-            support.execute();
+            try {
+                support.execute();
+            } catch (Error err) {
+                ErrorManager.getDefault().notify(err);
+                fail();
+            } catch (RuntimeException ex) {
+                ErrorManager.getDefault().notify(ex);
+                fail();
+            }
             i++;
             if (failed) break;
         }

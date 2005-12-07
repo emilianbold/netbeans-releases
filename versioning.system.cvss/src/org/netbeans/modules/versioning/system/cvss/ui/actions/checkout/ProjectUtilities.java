@@ -123,7 +123,7 @@ final class ProjectUtilities {
         if (deep <= 0) return Collections.EMPTY_LIST;
         List projects = new LinkedList();
         ProjectManager projectManager = ProjectManager.getDefault();
-        if (projectManager.isProject(scanRoot)) {
+        if (scanRoot.isFolder() && projectManager.isProject(scanRoot)) {
             try {
                 Project prj = projectManager.findProject(scanRoot);
                 projects.add(prj);
