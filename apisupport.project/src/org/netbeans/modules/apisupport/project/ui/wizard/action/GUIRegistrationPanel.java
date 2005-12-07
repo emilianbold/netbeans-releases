@@ -19,12 +19,9 @@ import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Vector;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
@@ -79,9 +76,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private final JComponent[] fileTypeGroup;
     private final JComponent[] editorGroup;
     
-    // XXX should be cleared when SFS of the module's universe has changed
-    private static Map cachedPositionModels = new HashMap();
-    
     public GUIRegistrationPanel(final WizardDescriptor setting, final DataModel data) {
         super(setting);
         this.data = data;
@@ -115,6 +109,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         combo.setEditable(true);
         if (combo.getEditor().getEditorComponent() instanceof JTextField) {
             JTextField txt = (JTextField) combo.getEditor().getEditorComponent();
+            // XXX check if there are not multiple (--> redundant) listeners
             txt.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
                 public void insertUpdate(DocumentEvent e) {
                     if (combo.getModel() != CustomizerComponentFactory.COMBO_WAIT_MODEL) {
@@ -312,23 +307,17 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         
         assert parent != null;
         assert positionsCombo != null;
-        ComboBoxModel model = (ComboBoxModel) cachedPositionModels.get(parent);
-        if (model == null) {
-            positionsCombo.setModel(CustomizerComponentFactory.COMBO_WAIT_MODEL);
-            SFS_RP.post(new Runnable() {
-                public void run() {
-                    final Enumeration filesEn = parent.getFileObject().getData(false);
-                    EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            createPositionModel(positionsCombo, filesEn, parent);
-                        }
-                    });
-                }
-            });
-        } else {
-            positionsCombo.setModel(model);
-            checkValidity();
-        }
+        positionsCombo.setModel(CustomizerComponentFactory.COMBO_WAIT_MODEL);
+        SFS_RP.post(new Runnable() {
+            public void run() {
+                final Enumeration filesEn = parent.getFileObject().getData(false);
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        createPositionModel(positionsCombo, filesEn, parent);
+                    }
+                });
+            }
+        });
     }
     
     private void createPositionModel(final JComboBox positionsCombo,
@@ -344,7 +333,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             previous = current;
         }
         newModel.addElement(createPosition(previous, null));
-        cachedPositionModels.put(parent, newModel);
         positionsCombo.setModel(newModel);
         checkValidity();
     }
