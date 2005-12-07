@@ -34,14 +34,22 @@ public class MBeanOperation implements Comparable {
     private String returnTypeName = "";// NOI18N
     private List<MBeanOperationParameter> parameters = null;
     private List<MBeanOperationException> exceptions = null;
-    
+    private List classParameterTypes;
     /** Creates a new instance of MBeanOperation */
-    public MBeanOperation(Method method, String description) {
+    public MBeanOperation(Method method, String description, List classParameterTypes) {
         this.method = method;
         this.description = description;
         this.name = method.getName();
         this.methodExists = true;
-        this.returnTypeName = method.getType().getName();
+        List methodParameterTypes = method.getTypeParameters();
+        if(classParameterTypes.contains(method.getType()) || 
+           methodParameterTypes.contains(method.getType()))
+            this.returnTypeName = "Object";
+        else
+            this.returnTypeName = method.getType().getName();
+        
+        this.classParameterTypes = classParameterTypes;
+        
         //inits exceptions
         List<JavaClass> exceptions = method.getExceptions();
         ArrayList exceptArray = new ArrayList();
@@ -55,9 +63,15 @@ public class MBeanOperation implements Comparable {
         List<Parameter> params = method.getParameters();
         ArrayList paramArray = new ArrayList();
         int i = 0;
+        
         for (Iterator<Parameter> it = params.iterator(); it.hasNext();) {
             Parameter param = it.next();
-            String typeName = param.isVarArg() ? param.getType().getName() + "..." : param.getType().getName(); // NOI18N
+            String typeName = null;
+            if(methodParameterTypes.contains(param.getType())||
+               classParameterTypes.contains(param.getType())) 
+                typeName = "Object";
+            else
+                typeName = param.isVarArg() ? param.getType().getName() + "..." : param.getType().getName(); // NOI18N
             paramArray.add(
                     new MBeanOperationParameter("param"+ i, // NOI18N
                         typeName, ""));// NOI18N
@@ -128,6 +142,10 @@ public class MBeanOperation implements Comparable {
         forceParamName(this.parameters);
     }
 
+    public List getClassParameterTypes() {
+        return classParameterTypes;
+    }
+    
     private void forceParamName(List<MBeanOperationParameter> parameters) {
         
         MBeanOperationParameter current;

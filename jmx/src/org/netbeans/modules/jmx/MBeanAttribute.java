@@ -17,6 +17,7 @@ import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Parameter;
 import java.util.List;
 import java.util.ArrayList;
+import org.netbeans.jmi.javamodel.Type;
 
 /**
  * class representing a MBean Attribute.
@@ -38,16 +39,23 @@ public class MBeanAttribute implements Comparable {
     private boolean getMethodExits = false;
     private boolean setMethodExits = false;
     private boolean wrapped = false;
-    
+    private List classParameterTypes;
     /** Creates a new instance of MBeanAttribute */
     public MBeanAttribute(String name, String description, 
-            Method getter, Method setter) {
+            Method getter, Method setter, List classParameterTypes) {
         this.name = name;
         this.description = description;
         this.getter = getter;
         this.setter = setter;
+        this.classParameterTypes = classParameterTypes;
         if (getter != null) {
-            this.typeName = getter.getType().getName();
+            List methodParameterTypes = getter.getTypeParameters();
+            if(methodParameterTypes.contains(getter.getType()) ||
+               classParameterTypes.contains(getter.getType()))
+                this.typeName = "Object";
+            else
+                this.typeName = getter.getType().getName();
+            
             this.isReadable = true;
             boolean hasIsMethod = (getter.getName().startsWith("is")); // NOI18N
             this.getMethodExits = !hasIsMethod;
@@ -58,8 +66,13 @@ public class MBeanAttribute implements Comparable {
             else
                 this.access = WizardConstants.ATTR_ACCESS_READ_ONLY;
         } else {
-            this.typeName = 
-                ((Parameter) setter.getParameters().get(0)).getType().getName();
+            List methodParameterTypes = getter.getTypeParameters();
+            Type t = ((Parameter) setter.getParameters().get(0)).getType();
+            if(methodParameterTypes.contains(t) ||
+               classParameterTypes.contains(t))
+                this.typeName = "Object";
+            else
+                this.typeName = t.getName();
             this.access = WizardConstants.ATTR_ACCESS_WRITE_ONLY;
             this.setMethodExits = true;
         }
@@ -114,6 +127,10 @@ public class MBeanAttribute implements Comparable {
         this.description = ""; // NOI18N
         this.getter = null;
         this.setter = null;
+    }
+    
+    public List getClassParameterTypes() {
+        return classParameterTypes;
     }
     
     /**
