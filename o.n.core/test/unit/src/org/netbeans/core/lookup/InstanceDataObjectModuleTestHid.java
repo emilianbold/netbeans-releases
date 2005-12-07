@@ -220,8 +220,11 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
             notifyAll();
         }
         public synchronized boolean gotSomething() throws InterruptedException {
+            ErrorManager.getDefault().log("gotSomething: " + count);
             if (count > 0) return true;
-            wait(3000);
+            ErrorManager.getDefault().log("gotSomething: do wait");
+            wait(23000);
+            ErrorManager.getDefault().log("gotSomething: wait done: " + count);
             return count > 0;
         }
     }
