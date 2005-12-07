@@ -367,7 +367,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         
     /** Gets all subprojects recursively
      */
-    private void addSubprojects(Project p, List/*<Project>*/ result, Map/*<Project,Set<Project>>*/ cache) {
+    static void addSubprojects(Project p, List/*<Project>*/ result, Map/*<Project,Set<Project>>*/ cache) {
         Set/*<Project>*/ subprojects = (Set) cache.get(p);
         if (subprojects == null) {
             SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);
@@ -382,8 +382,11 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             Project sp = (Project)it.next(); 
             if ( !result.contains( sp ) ) {
                 result.add( sp );
+                
+                //#70029: only add sp's subprojects if sp is not already in result,
+                //to prevent StackOverflow caused by misconfigured projects:
+                addSubprojects(sp, result, cache);
             }
-            addSubprojects(sp, result, cache);
         }
         
     }
