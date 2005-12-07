@@ -21,18 +21,27 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.dbschema.jdbcimpl.DDLBridge;
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
+import org.openide.ErrorManager;
+import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 
 public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
+    
+    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance("org.netbeans.modules.dbschema.jdbcimpl.wizard"); // NOI18N
+    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
 
     private final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
 
@@ -40,8 +49,10 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
     private LinkedList views;
     private ConnectionProvider cp;
     private String schema;
+    private String driver;
 
     private DatabaseConnection dbconnOld;
+    private Connection conn;
 
     private DBSchemaWizardData data;
 
@@ -95,8 +106,10 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
     }
 
     protected boolean init() {
-        String driver = null;
-        Connection conn = null;
+        
+        List handlers = new ArrayList();
+        Parameters params = new Parameters();
+        
         boolean init = true;
 
         if (data.getConnectionProvider() != null) {
@@ -105,106 +118,227 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
 
             if (init) {
                 cp = data.getConnectionProvider();
-                uninit();
+                handlers.add(new Handler() {
+                    public void handle(Parameters params) {
+                        uninit();
+                    }
+                    public String getMessage() {
+                        return NbBundle.getMessage(DBSchemaTablesPanel.class, "MSG_ClosingPrevious");
+                    }
+                });
             }
         }
 
-        if (init) {
-            data.setConnected(false);
+        if (!init) {
+            updateButtons();
+            return true;
+        }
+        
+        data.setConnected(false);
+        if (!data.isExistingConn()) {
+            return false;
+        }
+        
+        // the init starts here
+        
+        final DatabaseConnection dbconn = data.getDatabaseConnection();
+        conn = dbconn.getJDBCConnection();
 
-            if (data.isExistingConn()) {
-                final DatabaseConnection dbconn = data.getDatabaseConnection();
-                conn = dbconn.getJDBCConnection();
-
-                //fix for bug #4746507 - if the connection was broken outside of the IDE, set the connection to null and try to reconnect
-                if (conn != null)
+        //fix for bug #4746507 - if the connection was broken outside of the IDE, set the connection to null and try to reconnect
+        if (conn != null) {
+            handlers.add(new Handler() {
+                public void handle(Parameters params) {
                     try {
                         conn.getCatalog(); //test if the connection is alive - if it is alive, it should return something
                     } catch (SQLException exc) {
                         conn = null;
                     }
-
-                if (conn == null) {
-                    ConnectionManager.getDefault().showConnectionDialog(dbconn);
-                    conn = dbconn.getJDBCConnection();
-
-                    //fix for bug #4746507 - if the connection was broken outside of the IDE, set the connection to null and try to reconnect
-                    if (conn != null)
-                        try {
-                            conn.getCatalog(); //test if the connection is alive - if it is alive, it should return something
-                        } catch (SQLException exc) {
-                            conn = null;
-                            data.setConnected(false);
-                            return false;
-                        }
-
-                    data.setConnected(true);
                 }
+                public String getMessage() {
+                    return NbBundle.getMessage(DBSchemaTablesPanel.class, "MSG_CheckingExisting");
+                }
+            });
+        }
+        
+        handlers.add(new Handler() {
+            public void handle(Parameters params) {
+                ConnectionManager.getDefault().showConnectionDialog(dbconn);
+                conn = dbconn.getJDBCConnection();
+            }
+            public boolean getRunInEDT() {
+                return true;
+            }
+            public boolean isRunnable() {
+                return conn == null;
+            }
+        });
+        
+        handlers.add(new Handler() {
+            public void handle(Parameters params) {
+                
+                //fix for bug #4746507 - if the connection was broken outside of the IDE, set the connection to null and try to reconnect
+                if (conn != null) {
+                    try {
+                        conn.getCatalog(); //test if the connection is alive - if it is alive, it should return something
+                    } catch (SQLException exc) {
+                        conn = null;
+                        data.setConnected(false);
+                        params.setResult(false);
+                        return;
+                    }
+                }
+
+                data.setConnected(true);
+                
                 schema = dbconn.getSchema();
                 driver = dbconn.getDriverClass();
 
                 dbconnOld = dbconn;
-            }
 
-            try {
-                if (conn == null)
-                    return false;
+                try {
+                    if (conn == null) {
+                        params.setResult(false);
+                        return;
+                    }
 
-                cp = new ConnectionProvider(conn, driver);
-                cp.setSchema(schema);
-            } catch (SQLException exc) {
-                //PENDING
-            }
-
-            data.setConnectionProvider(cp);
-
-            tables.clear();
-            views.clear();
-
-            try {
-                DDLBridge bridge = new DDLBridge(cp.getConnection(), cp.getSchema(), cp.getDatabaseMetaData());
-
-                ResultSet rs;
-                bridge.getDriverSpecification().getTables("%", new String[] {"TABLE"}); //NOI18N
-                rs = bridge.getDriverSpecification().getResultSet();
-                if (rs != null) {
-                    while (rs.next())
-                        tables.add(rs.getString("TABLE_NAME").trim()); //NOI18N
-                    rs.close();
+                    cp = new ConnectionProvider(conn, driver);
+                    cp.setSchema(schema);
+                } catch (SQLException exc) {
+                    //PENDING
                 }
 
-                rs = null;
-                if (bridge.getDriverSpecification().areViewsSupported()) {
-                    bridge.getDriverSpecification().getTables("%", new String[] {"VIEW"}); //NOI18N
+                data.setConnectionProvider(cp);
+
+                tables.clear();
+                views.clear();
+
+                try {
+                    DDLBridge bridge = new DDLBridge(cp.getConnection(), cp.getSchema(), cp.getDatabaseMetaData());
+
+                    ResultSet rs;
+                    bridge.getDriverSpecification().getTables("%", new String[] {"TABLE"}); //NOI18N
                     rs = bridge.getDriverSpecification().getResultSet();
+                    if (rs != null) {
+                        while (rs.next())
+                            tables.add(rs.getString("TABLE_NAME").trim()); //NOI18N
+                        rs.close();
+                    }
+
+                    rs = null;
+                    if (bridge.getDriverSpecification().areViewsSupported()) {
+                        bridge.getDriverSpecification().getTables("%", new String[] {"VIEW"}); //NOI18N
+                        rs = bridge.getDriverSpecification().getResultSet();
+                    }
+                    if (rs != null) {
+                        while (rs.next())
+                            views.add(rs.getString("TABLE_NAME").trim()); //NOI18N
+                        rs.close();
+                    }
+                } catch (SQLException exc) {
+                    org.openide.ErrorManager.getDefault().notify(exc);
                 }
-                if (rs != null) {
-                    while (rs.next())
-                        views.add(rs.getString("TABLE_NAME").trim()); //NOI18N
-                    rs.close();
-                }
-            } catch (SQLException exc) {
-                org.openide.ErrorManager.getDefault().notify(exc);
+
+                ((SortedListModel) jListAvailableTables.getModel()).clear();
+                ((SortedListModel) jListSelectedTables.getModel()).clear();
+
+                tablesCount = tables.size();
+
+                for (int i = 0; i < tables.size(); i++)
+                    ((SortedListModel) jListAvailableTables.getModel()).add(bundle.getString("TablePrefix") + " " + tables.get(i).toString()); //NOI18N
+
+                for (int i = 0; i < views.size(); i++)
+                    ((SortedListModel) jListAvailableTables.getModel()).add(bundle.getString("ViewPrefix") + " " + views.get(i).toString()); //NOI18N
+                if (jListAvailableTables.getModel().getSize() > 0)
+                    jListAvailableTables.setSelectedIndex(0);
+                tables.clear();
+                views.clear();
+                
+                params.setResult(true);
             }
+            
+            public String getMessage() {
+                return NbBundle.getMessage(DBSchemaTablesPanel.class, "MSG_RetrievingTables");
+            }
+            
+            public boolean isRunnable() {
+                return conn != null;
+            }
+        });
 
-            ((SortedListModel) jListAvailableTables.getModel()).clear();
-            ((SortedListModel) jListSelectedTables.getModel()).clear();
-
-            tablesCount = tables.size();
-
-            for (int i = 0; i < tables.size(); i++)
-                ((SortedListModel) jListAvailableTables.getModel()).add(bundle.getString("TablePrefix") + " " + tables.get(i).toString()); //NOI18N
-
-            for (int i = 0; i < views.size(); i++)
-                ((SortedListModel) jListAvailableTables.getModel()).add(bundle.getString("ViewPrefix") + " " + views.get(i).toString()); //NOI18N
-            if (jListAvailableTables.getModel().getSize() > 0)
-                jListAvailableTables.setSelectedIndex(0);
-            tables.clear();
-            views.clear();
-        }
+        invokeHandlers(handlers, params);
+        
         updateButtons();
 
-        return true;
+        return params.getResult();
+    }
+
+    private void invokeHandlers(final List/*<Handler>*/ handlers, final Parameters params) {
+        final ProgressPanel progressPanel = new ProgressPanel();
+        
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(null);
+        JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
+        
+        progressHandle.start();
+        progressHandle.switchToIndeterminate();
+        
+        final int[] index = new int[1];
+        
+        try {
+            RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+                public void run() {
+                    index[0] = invokeHandlers(handlers, index[0], params, progressPanel);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            progressPanel.close();
+                        }
+                    });
+                }
+            });
+            
+            while (index[0] < handlers.size()) {
+                index[0] = invokeHandlers(handlers, index[0], params, null);
+                if (index[0] < handlers.size()) {
+                    task.schedule(0);
+                    progressPanel.open(progressComponent);
+                }
+            }
+        } finally {
+            progressHandle.finish();
+        }
+    }
+    
+    private int invokeHandlers(List/*<Handler>*/ handlers, int start, Parameters params, final ProgressPanel progressPanel) {
+        boolean isEDT = SwingUtilities.isEventDispatchThread();
+        int i;
+        
+        for (i = start; i < handlers.size(); i++) {
+            Handler h = (Handler)handlers.get(i);
+            if (!h.isRunnable()) {
+                if (LOG) {
+                    LOGGER.log("Skipping " + h); // NOI18N
+                }
+                continue;
+            }
+            if (h.getRunInEDT() != isEDT) {
+                break;
+            }
+            if (LOG) {
+                LOGGER.log("Invoking " + h); // NOI18N
+            }
+            if (progressPanel != null) {
+                final String message = h.getMessage();
+                if (message != null) {
+                    Mutex.EVENT.readAccess(new Runnable() {
+                        public void run() {
+                            progressPanel.setText(message);
+                        }
+                    });
+                }
+            }
+            h.handle(params);
+        }
+        
+        return i;
     }
 
     public void uninit() {
@@ -537,6 +671,40 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         for (int i=0; i< lst.size(); i++){
             ChangeListener listener = (ChangeListener) lst.get(i);
             listener.stateChanged(event);
+        }
+    }
+    
+    private static abstract class Handler {
+        
+        public abstract void handle(Parameters params);
+        
+        public String getMessage() {
+            return null;
+        }
+        
+        public boolean getRunInEDT() {
+            return false;
+        }
+        
+        public boolean isRunnable() {
+            return true;
+        }
+        
+        public String toString() {
+            return "Handler[message='" + getMessage() + "',runInEDT=" + getRunInEDT() + ",runnable=" + isRunnable() + "]"; // NOI18N
+        }
+    }
+    
+    private static final class Parameters {
+        
+        private boolean result;
+
+        public boolean getResult() {
+            return result;
+        }
+
+        public void setResult(boolean result) {
+            this.result = result;
         }
     }
 }
