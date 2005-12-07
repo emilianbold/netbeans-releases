@@ -76,7 +76,33 @@ import java.util.Map;
 * @author Ales Novak
 */
 public final class Mutex extends Object {
-    /** Mutex that allows code to be synchronized with the AWT event dispatch thread. */
+    /** Mutex that allows code to be synchronized with the AWT event dispatch thread.
+     * <P>
+     * When the Mutex methods are invoked on this mutex, the methods' semantics 
+     * change as follows:
+     * <UL>
+     * <LI>The {@link #isReadAccess} and {@link #isWriteAccess} methods
+     *  return <code>true</code> if the current thread is the event dispatch thread
+     *  and false otherwise.
+     * <LI>The {@link #postReadRequest} and {@link #postWriteRequest} methods
+     *  asynchronously execute the {@link java.lang.Runnable} passed in their 
+     *  <code>run</code> parameter on the event dispatch thead.
+     * <LI>The {@link #readAccess(java.lang.Runnable)} and 
+     *  {@link #writeAccess(java.lang.Runnable)} methods asynchronously execute the 
+     *  {@link java.lang.Runnable} passed in their <code>run</code> parameter 
+     *  on the event dispatch thread, unless the current thread is 
+     *  the event dispatch thread, in which case 
+     *  <code>run.run()</code> is immediately executed.
+     * <LI>The {@link #readAccess(Mutex.Action)},
+     *  {@link #readAccess(Mutex.ExceptionAction action)},
+     *  {@link #writeAccess(Mutex.Action action)} and
+     *  {@link #writeAccess(Mutex.ExceptionAction action)} 
+     *  methods synchronously execute the {@link Mutex.ExceptionAction}
+     *  passed in their <code>action</code> parameter on the event dispatch thread,
+     *  unless the current thread is the event dispatch thread, in which case
+     *  <code>action.run()</code> is immediately executed.
+     * </UL>
+     */
     public static final Mutex EVENT = new Mutex();
 
     /** this is used from tests to prevent upgrade from readAccess to writeAccess
