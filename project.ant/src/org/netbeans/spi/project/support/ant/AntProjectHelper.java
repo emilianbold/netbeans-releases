@@ -566,9 +566,10 @@ public final class AntProjectHelper {
     void maybeCallPendingHook() {
         // XXX synchronization of this method?
         assert pendingHookCount > 0;
-        assert pendingHook != null;
         pendingHookCount--;
-        if (pendingHookCount == 0) {
+        //#67465: the pendingHook may be null if project.xml is not being written
+        //eg. only project.properties is being saved:
+        if (pendingHookCount == 0 && pendingHook != null) {
             try {
                 ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                     public Object run() throws IOException {
@@ -586,14 +587,12 @@ public final class AntProjectHelper {
     }
     void cancelPendingHook() {
         assert pendingHookCount > 0;
-        assert pendingHook != null;
         pendingHookCount--;
         if (pendingHookCount == 0) {
             pendingHook = null;
         }
     }
     void needPendingHook() {
-        assert pendingHook != null;
         pendingHookCount++;
     }
     
