@@ -70,7 +70,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 continue;
             }
             
-            if ("Shortcuts/D-BACK_QUOTE.shadow".equals(fo.getPath())) {
+            if (
+                "Keymaps/NetBeans/D-BACK_QUOTE.shadow".equals(fo.getPath()) ||
+                "Keymaps/Emacs/D-BACK_QUOTE.shadow".equals(fo.getPath())
+            ) {
                 // #46753
                 continue;
             }
@@ -101,6 +104,21 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         while (en.hasMoreElements()) {
             FileObject fo = (FileObject)en.nextElement();
             cnt++;
+            
+            // XXX #16761 Removing attr in MFO causes storing special-null value even in unneeded cases.
+            // When the issue is fixed remove this hack.
+            if("Windows2/Modes/debugger".equals(fo.getPath()) // NOI18N
+            || "Windows2/Modes/explorer".equals(fo.getPath())) { // NOI18N
+                continue;
+            }
+            
+            if (
+                "Keymaps/NetBeans/D-BACK_QUOTE.shadow".equals(fo.getPath()) ||
+                "Keymaps/Emacs/D-BACK_QUOTE.shadow".equals(fo.getPath())
+            ) {
+                // #46753
+                continue;
+            }
             
             try {
                 DataObject obj = DataObject.find (fo);
