@@ -49,10 +49,12 @@ class CommandRunnable implements Runnable, Cancellable {
     }
 
     public void run() {
-        if (aborted) {
-            return;
+        synchronized(this) {
+            if (isAborted()) {
+                return;
+            }
+            support.commandStarted(this);
         }
-        support.commandStarted(this);
         interruptibleThread = Thread.currentThread();
         Runnable worker = new Runnable() {
             public void run() {
@@ -98,11 +100,11 @@ class CommandRunnable implements Runnable, Cancellable {
     /**
      * Cancelled?
      */
-    public boolean isAborted() {
+    public synchronized boolean isAborted() {
         return aborted;
     }
 
-    public boolean cancel() {
+    public synchronized boolean cancel() {
         if (aborted) {
             return false;
         }
