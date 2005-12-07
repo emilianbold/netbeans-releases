@@ -632,7 +632,7 @@ is divided into following sections:
                 <echo><xsl:choose>
                         <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
                         <xsl:otherwise>java</xsl:otherwise>
-                    </xsl:choose> -cp ${run.classpath.with.dist.jar} ${main.class}</echo>
+                    </xsl:choose> -cp "${run.classpath.with.dist.jar}" ${main.class}</echo>
             </target>
             
             <target name="-do-jar-with-libraries">
@@ -664,7 +664,7 @@ is divided into following sections:
                 <echo><xsl:choose>
                         <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
                         <xsl:otherwise>java</xsl:otherwise>
-                    </xsl:choose> -jar ${dist.jar.resolved}</echo>                
+                    </xsl:choose> -jar "${dist.jar.resolved}"</echo>                
             </target>
 
             <target name="-post-jar">
