@@ -656,10 +656,9 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
              */
             infoTextArea.setCaretPosition(1);
             
-            
-        }
-        if (!currentWSDLInfo.hasOperations()) {
-            displayError("<FONT COLOR=\"RED\">" + NbBundle.getMessage(AddWebServiceDlg.class, "WARNING_SOLICIT") + "</FONT>");
+            if (!currentWSDLInfo.hasOperations()) {
+                displayError("<FONT COLOR=\"RED\">" + NbBundle.getMessage(AddWebServiceDlg.class, "WARNING_SOLICIT") + "</FONT>");
+            }   
         }
         
         dialog.setCursor(normalCursor);
