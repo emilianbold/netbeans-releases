@@ -571,18 +571,25 @@ public class MultiDataObject extends DataObject {
         List backup = saveEntries();
 
         try {
-            if (LOG) ERR.log("moving primary entry: " + getPrimaryEntry()); // NOI18N
-            getPrimaryEntry ().changeFile (getPrimaryEntry ().move (df.getPrimaryFile (), suffix));
-            if (LOG) ERR.log("               moved: " + getPrimaryEntry().getFile()); // NOI18N
-
             HashMap add = null;
 
             ArrayList toRemove = new ArrayList();
             Iterator it;
+            int count;
             synchronized ( synchObjectSecondary() ) {
                 removeAllInvalid ();
-                it = new ArrayList(getSecondary().entrySet ()).iterator();
+                ArrayList list = new ArrayList(getSecondary().entrySet ());
+                count = list.size();
+                it = list.iterator();
             }
+            
+            if (LOG) {
+                ERR.log("move " + this + " to " + df + " number of secondary entries: " + count); // NOI18N
+                ERR.log("moving primary entry: " + getPrimaryEntry()); // NOI18N
+            }
+            getPrimaryEntry ().changeFile (getPrimaryEntry ().move (df.getPrimaryFile (), suffix));
+            if (LOG) ERR.log("               moved: " + getPrimaryEntry().getFile()); // NOI18N
+
             
             while (it.hasNext ()) {
                 Map.Entry e = (Map.Entry)it.next ();
@@ -632,9 +639,19 @@ public class MultiDataObject extends DataObject {
                 firePropertyChangeLater (PROP_FILES, null, null);
             }
 
+            if (LOG) {
+                ERR.log("successfully moved " + this); // NOI18N
+            }
             return getPrimaryEntry ().getFile ();
         } catch (IOException e) {
+            if (LOG) {
+                ERR.log("exception is here, restoring entries " + this); // NOI18N
+                ERR.notify(ErrorManager.INFORMATIONAL, e);
+            }
             restoreEntries(backup);
+            if (LOG) {
+                ERR.log("entries restored " + this); // NOI18N
+            }
             throw e;
         }
     }
@@ -967,7 +984,7 @@ public class MultiDataObject extends DataObject {
                 return;
             }
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.notify(ErrorManager.INFORMATIONAL, new Exception("changeFile: " + newFile + " for " + this + " of " + getDataObject()));  // NOI18N
+                ERR.log(ErrorManager.INFORMATIONAL, "changeFile: " + newFile + " for " + this + " of " + getDataObject());  // NOI18N
             }
             newFile.setImportant (isImportant ());
             this.file = newFile;
