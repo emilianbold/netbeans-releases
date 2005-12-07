@@ -16,6 +16,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
+import java.text.Collator;
+import java.util.Arrays;
+import java.util.Comparator;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -150,12 +153,17 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
     private void loadComboBox() {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         Project[] prjs = OpenProjects.getDefault().getOpenProjects();
-        if (prjs.length > 0) {
-            for (int i = 0; i < prjs.length; i++) {
-                if (prjs[i] != data.getProject()) {
-                    // ignore the currently active project..
-                    model.addElement(prjs[i]);
-                }
+        Arrays.sort(prjs, new Comparator() {
+            private final Collator COLL = Collator.getInstance();
+            public int compare(Object p1, Object p2) {
+                return COLL.compare(ProjectUtils.getInformation((Project) p1).getDisplayName(),
+                                    ProjectUtils.getInformation((Project) p2).getDisplayName());
+            }
+        });
+        for (int i = 0; i < prjs.length; i++) {
+            if (prjs[i] != data.getProject()) {
+                // ignore the currently active project..
+                model.addElement(prjs[i]);
             }
         }
         if (model.getSize() == 0) {
