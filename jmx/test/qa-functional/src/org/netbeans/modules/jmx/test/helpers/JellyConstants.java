@@ -67,7 +67,8 @@ public class JellyConstants {
    public static final String MBEAN_FOURTEEN = "ConstructTest14MBean";
    public static final String MBEAN_FIFTEEN = "ConstructTest15MBean";
    public static final String MBEAN_SIXTEEN = "ConstructTest16MBean";
-   
+   public static final String MBEAN_GENERIC_1 = "ConstructGeneric1";
+   public static final String MBEAN_GENERIC_2 = "ConstructGeneric2";
    //MBean Comments
    public static final String MBEAN_ONE_COMMENT = "StandardMBean without attributes, operations and notifications";
    public static final String MBEAN_TWO_COMMENT = "StandardMBean with one simple attribute, one two parameter operation and one notification";
@@ -82,7 +83,8 @@ public class JellyConstants {
    public static final String MBEAN_FOURTEEN_COMMENT = "Wrapped ExtendedStandardMBean with minimal attributes";
    public static final String MBEAN_FIFTEEN_COMMENT = "Wrapped ExtendedStandardMBean with all operations";
    public static final String MBEAN_SIXTEEN_COMMENT = "Wrapped ExtendedStandardMBean with no operations";
-   
+   public static final String MBEAN_GENERIC_1_COMMENT = "ConstructGeneric1 Description";
+   public static final String MBEAN_GENERIC_2_COMMENT = "Wrapped ExtendedStandardMBean with generic operations";
    // Diff
    public static final int COMPLETE_GENERATED_FILENAME = 0;
    public static final int CLASSNAME = 1;
@@ -247,6 +249,8 @@ public class JellyConstants {
    //================= Wrapper =======================//
    public static final String ATTRCLASS_TO_WRAP = "WrappedAttribute";
    public static final String OPCLASS_TO_WRAP = "WrappedOperation";
+   public static final String GENERIC_ATTRCLASS_TO_WRAP = "GenericWrappedAttribute";
+   
    
    //================ Index for tables ==================//
    

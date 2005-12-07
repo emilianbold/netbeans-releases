@@ -50,9 +50,11 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
     public static NbTestSuite suite() {
         
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateAttributeWrapperMBean("createClass"));
-        suite.addTest(new CreateAttributeWrapperMBean("constructTest13MBean"));
-        suite.addTest(new CreateAttributeWrapperMBean("constructTest14MBean"));
+        //suite.addTest(new CreateAttributeWrapperMBean("createClass"));
+        //suite.addTest(new CreateAttributeWrapperMBean("constructTest13MBean"));
+        //suite.addTest(new CreateAttributeWrapperMBean("constructTest14MBean"));
+        suite.addTest(new CreateAttributeWrapperMBean("createGenericClass"));
+        suite.addTest(new CreateAttributeWrapperMBean("constructGeneric1MBean"));
         
         return suite;
     }
@@ -74,6 +76,13 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
     public void createClass() {
         createMissingClass(JellyConstants.PROJECT_NAME, 
                 JellyConstants.ATTRCLASS_TO_WRAP, JellyConstants.PACKAGE_NAME);
+        updateFile(JellyConstants.ATTRCLASS_TO_WRAP);
+    }
+    
+    public void createGenericClass() {
+        createMissingClass(JellyConstants.PROJECT_NAME, 
+                JellyConstants.GENERIC_ATTRCLASS_TO_WRAP, JellyConstants.PACKAGE_NAME);
+        updateGenericFile(JellyConstants.GENERIC_ATTRCLASS_TO_WRAP);
     }
     
     public void constructTest13MBean() {
@@ -87,6 +96,14 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
         
         MBean wrapper2 = createSecondWrapperMBean();
         wizardExecution(wrapper2);
+        
+        //TODO Diff between generated and master files
+        
+    }
+    public void constructGeneric1MBean() {
+        
+        MBean genericWrapped = createGenericWrapperMBean();
+        wizardExecution(genericWrapped);
         
         //TODO Diff between generated and master files
         
@@ -134,6 +151,15 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
                 JellyConstants.PACKAGE_NAME+JellyConstants.PT+
                 JellyConstants.ATTRCLASS_TO_WRAP);
     }
+    
+    private MBean createGenericWrapperMBean() {
+        return new MBean(
+                JellyConstants.MBEAN_GENERIC_1, 
+                JellyConstants.PACKAGE_NAME, 
+                JellyConstants.MBEAN_GENERIC_1_COMMENT,
+                JellyConstants.PACKAGE_NAME+JellyConstants.PT+
+                JellyConstants.GENERIC_ATTRCLASS_TO_WRAP);
+    }
    
      //========================= Utility class generation  ===========================//
      
@@ -170,7 +196,9 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
                 JellyConstants.PIPE + fileName);
         
         node.select();
-        
+     }
+     
+     private void updateFile(String fileName) {
         EditorOperator eo = new EditorOperator(fileName);
         eo.deleteLine(16);
         eo.deleteLine(16);
@@ -184,6 +212,48 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
         eo.save();
     }
      
+    private void updateGenericFile(String fileName) {
+        EditorOperator eo = new EditorOperator(fileName);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.setCaretPositionToLine(16);
+  
+        eo.insert(createGenericWrappedClass(fileName));
+
+        eo.save();
+    }
+     
+    private String createGenericWrappedClass(String fileName) {
+        return "public class " + fileName + "<Z,Q> { \n" +
+                "\t" + attributeGeneric0() +
+                "\t" + attributeGeneric1() +
+                "\t" + attributeGeneric2() +
+                "} \n";
+    }
+    
+    private String attributeGeneric0() {
+        return "public Z getGenericAttribute() { \n" +
+                "\t return null; \n " +
+                "\t} \n";
+    }
+    
+    private String attributeGeneric1() {
+        return "public <T> T getGenericAttribute2() { \n" +
+                "\t return null; \n " +
+                "\t} \n";
+    }
+    
+     private String attributeGeneric2() {
+        return " public String getAttribute() { \n" +
+                "\t return null; \n " +
+                "\t} \n";
+    }
+    
     private String createWrapperClass(String fileName) {
         return "public class " + fileName + " extends Super" +fileName+ " { \n" +
                 "\t" + attribute0() +
@@ -313,8 +383,13 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
         
         if (mbean.getMBeanName().equals(JellyConstants.MBEAN_THIRTEEN))
             wrapper13Attributes(nfwo, mouseDriver, jto);
-        else 
-            wrapper14Attributes(nfwo, mouseDriver, jto);
+        else if(mbean.getMBeanName().equals(JellyConstants.MBEAN_GENERIC_1))
+            generic1Attributes(nfwo, mouseDriver, jto);
+    }
+    
+    private void generic1Attributes(NewFileWizardOperator nfwo,
+            JTableMouseDriver mouseDriver, JTableOperator jto) {
+        //Nothing to do, we just want to check that generation is successfull
     }
     
     private void wrapper13Attributes(NewFileWizardOperator nfwo,
