@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -62,6 +62,7 @@ public class LocalizedJar extends MatchingTask {
     private boolean warnMissingDir = false ;
     private boolean warnMissingDirSet = false ;
     private boolean preserveModuleJar = true;
+    private boolean alwaysIncludeManifest = false;
 
     /** Locale or branding specifier.
      * Represents a complete locale or branding suffix,
@@ -148,6 +149,14 @@ public class LocalizedJar extends MatchingTask {
      */
     public void setPreserveModuleJar(boolean pmj) {
         preserveModuleJar = pmj;
+    }
+
+    /** Turn on/off inclusion of manifest even for localized and/or branded
+     *  jars. Set it to true if you want to add special manifest tags
+     *  to all produced jarfiles
+     */
+    public void setAlwaysIncludeManifest(boolean aim) {
+        alwaysIncludeManifest = aim;
     }
 
     /** A set of files to JAR up.
@@ -424,7 +433,7 @@ log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
                         }
                     }
                 }
-                log ("Building localized jar: " + jar);
+                log ("Building localized/branded jar: " + jar);
                 IOException closing = null;
                 try {
                     jar.getParentFile ().mkdirs ();
@@ -437,20 +446,70 @@ log( "==> Examining file: " + path, Project.MSG_DEBUG) ;
                         // Add the manifest.
                         InputStream is;
                         long time;
+                        java.util.jar.Manifest mani;
                         if (manifest != null && localeMark == null && brandingMark == null) {
                             // Master JAR, and it has a manifest.
                             is = new FileInputStream (manifest);
                             time = manifest.lastModified ();
+                            try {
+                                mani = new java.util.jar.Manifest (is);
+                            } finally {
+                                is.close ();
+                            }
+                        } else if ((manifest != null) && (alwaysIncludeManifest)) {
+                            // always include specified manifest in localized/branded jars
+                            // such manifest must not contain attribute OpenIDE-Module
+                            // check supplied manifest and if contains key OpenIDE-Module, issue warning
+                            // and fallback to default Ant's manifest boilerplate (like no manifest was supplied)
+                            is = new FileInputStream (manifest);
+                            time = manifest.lastModified ();
+                            try {
+                                mani = new java.util.jar.Manifest (is);
+                            } finally {
+                                is.close ();
+                            }
+                            Attributes attr = mani.getMainAttributes ();
+                            //check if it's not module manifest for jarfile with localized/branded resources
+                            if ((attr.containsKey ("OpenIDE-Module")) && ((localeMark != null) || (brandingMark != null))){
+                            	String lbmsg = "";
+                            	if (localeMark != null) {
+                            	    lbmsg = "locale: '"+localeMark+"' ";
+                            	}
+                            	if (brandingMark != null) {
+                            	    lbmsg = "branding: '"+brandingMark+"' ";
+                            	}
+                                log("WARNING: Ignoring supplied NetBeans module manifest for "+lbmsg+"jarfile '"+jar+"'. Using default Ant manifest bolilerplate. "
+                                   +"Use -verbose option to see more details.", Project.MSG_INFO);
+                                log("WARNING(verbose): Supplied manifest file '"+manifest.getAbsolutePath()+"' contains "
+                                   +"key OpenIDE-Module, which cannot be included in manifest of localized "
+                                   +"and/or branded jar. Ignoring whole manifest for now. To fix this you have "
+                                   +"to avoid using NetBeans module manifest file together with attribute "
+                                   +"'allwaysincludemanifest' set to 'true' and non-empty properties 'locjar.locales' "
+                                   +"and 'locjar.brands'. You can accomplish that by i.e. using Ant's <jar> task "
+                                   +"for regular NetBeans module jarfile packaging and use NetBeans' Ant extension "
+                                   +"task <"+this.getTaskName()+"> for localized and/or branded jars. Using default "
+                                   +"Ant's manifest boilerplate instead.", Project.MSG_VERBOSE);
+                                try {
+                                    is.close();
+                                } finally {
+                                    is = MatchingTask.class.getResourceAsStream ("/org/apache/tools/ant/defaultManifest.mf");
+                                    time = System.currentTimeMillis ();
+                                    try {
+                                        mani = new java.util.jar.Manifest (is);
+                                    } finally {
+                                       is.close ();
+                                    }
+                                }
+                            }
                         } else {
                             // Some subsidiary JAR.
                             is = MatchingTask.class.getResourceAsStream ("/org/apache/tools/ant/defaultManifest.mf");
                             time = System.currentTimeMillis ();
-                        }
-                        java.util.jar.Manifest mani;
-                        try {
-                            mani = new java.util.jar.Manifest (is);
-                        } finally {
-                            is.close ();
+                            try {
+                                mani = new java.util.jar.Manifest (is);
+                            } finally {
+                                is.close ();
+                            }
                         }
                         Attributes attr = mani.getMainAttributes ();
                         if (! attr.containsKey (Attributes.Name.MANIFEST_VERSION)) {
