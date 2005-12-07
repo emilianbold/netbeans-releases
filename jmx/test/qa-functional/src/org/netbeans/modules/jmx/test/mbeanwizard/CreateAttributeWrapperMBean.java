@@ -50,9 +50,9 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
     public static NbTestSuite suite() {
         
         NbTestSuite suite = new NbTestSuite();
-        //suite.addTest(new CreateAttributeWrapperMBean("createClass"));
-        //suite.addTest(new CreateAttributeWrapperMBean("constructTest13MBean"));
-        //suite.addTest(new CreateAttributeWrapperMBean("constructTest14MBean"));
+        suite.addTest(new CreateAttributeWrapperMBean("createClass"));
+        suite.addTest(new CreateAttributeWrapperMBean("constructTest13MBean"));
+        suite.addTest(new CreateAttributeWrapperMBean("constructTest14MBean"));
         suite.addTest(new CreateAttributeWrapperMBean("createGenericClass"));
         suite.addTest(new CreateAttributeWrapperMBean("constructGeneric1MBean"));
         
@@ -89,24 +89,18 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
         
         MBean wrapper1 = createFirstWrapperMBean();
         wizardExecution(wrapper1);  
-        //TODO Diff between generated and master files
     }
     
     public void constructTest14MBean() {
         
         MBean wrapper2 = createSecondWrapperMBean();
         wizardExecution(wrapper2);
-        
-        //TODO Diff between generated and master files
-        
     }
+    
     public void constructGeneric1MBean() {
         
         MBean genericWrapped = createGenericWrapperMBean();
         wizardExecution(genericWrapped);
-        
-        //TODO Diff between generated and master files
-        
     }
     
   //========================= WizardExecution =================================//
@@ -384,7 +378,8 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
         if (mbean.getMBeanName().equals(JellyConstants.MBEAN_THIRTEEN))
             wrapper13Attributes(nfwo, mouseDriver, jto);
         else if(mbean.getMBeanName().equals(JellyConstants.MBEAN_GENERIC_1))
-            generic1Attributes(nfwo, mouseDriver, jto);
+                generic1Attributes(nfwo, mouseDriver, jto);
+            else wrapper14Attributes(nfwo, mouseDriver, jto);
     }
     
     private void generic1Attributes(NewFileWizardOperator nfwo,

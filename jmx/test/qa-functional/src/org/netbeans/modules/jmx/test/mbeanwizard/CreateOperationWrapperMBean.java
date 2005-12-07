@@ -49,10 +49,11 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     public static NbTestSuite suite() {
         
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateOperationWrapperMBean("createClass"));
-        suite.addTest(new CreateOperationWrapperMBean("constructTest15MBean"));
-        suite.addTest(new CreateOperationWrapperMBean("constructTest16MBean"));
-        
+        //suite.addTest(new CreateOperationWrapperMBean("createClass"));
+        //suite.addTest(new CreateOperationWrapperMBean("constructTest15MBean"));
+        //suite.addTest(new CreateOperationWrapperMBean("constructTest16MBean"));
+        suite.addTest(new CreateOperationWrapperMBean("createGenericClass"));
+        suite.addTest(new CreateOperationWrapperMBean("constructGeneric2MBean"));
         return suite;
     }
     
@@ -71,31 +72,40 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     }
     
     public void createClass() {
-        createMissingClass(JellyConstants.PROJECT_NAME, 
+        createMissingClass(JellyConstants.PROJECT_NAME,
                 JellyConstants.OPCLASS_TO_WRAP, JellyConstants.PACKAGE_NAME);
+        updateFile(JellyConstants.OPCLASS_TO_WRAP);
+    }
+    
+    public void createGenericClass() {
+        createMissingClass(JellyConstants.PROJECT_NAME,
+                JellyConstants.GENERIC_OPCLASS_TO_WRAP, JellyConstants.PACKAGE_NAME);
+        updateGenericFile(JellyConstants.GENERIC_OPCLASS_TO_WRAP);
     }
     
     public void constructTest15MBean() {
         
         MBean wrapper3 = createThirdWrapperMBean();
-        wizardExecution(wrapper3);  
-        //TODO Diff between generated and master files
+        wizardExecution(wrapper3);
     }
     
     public void constructTest16MBean() {
         
         MBean wrapper4 = createFourthWrapperMBean();
         wizardExecution(wrapper4);
-        
-        //TODO Diff between generated and master files
-        
     }
     
-  //========================= WizardExecution =================================//
+    public void constructGeneric2MBean() {
+        
+        MBean generic2 = createGeneric2WrapperMBean();
+        wizardExecution(generic2);
+    }
+    
+    //========================= WizardExecution =================================//
     
     private void wizardExecution(MBean mbean) {
         
-        NewFileWizardOperator nfwo = JellyToolsHelper.init(JellyConstants.CATEGORY, 
+        NewFileWizardOperator nfwo = JellyToolsHelper.init(JellyConstants.CATEGORY,
                 mbean.getMBeanName(), mbean.getMBeanPackage());
         nfwo.next();
         
@@ -105,21 +115,21 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         
         operationStep(nfwo, mbean);
         nfwo.next();
-      
+        
         nfwo.next();
-      
+        
         ArrayList<String> unitFileNames = junitStep(nfwo, mbean);
         nfwo.finish();
         
-        assertTrue(JellyToolsHelper.diffOK(fileNames, unitFileNames, mbean)); 
+        assertTrue(JellyToolsHelper.diffOK(fileNames, unitFileNames, mbean));
     }
-   
+    
     //========================= Class Name generation ===========================//
     
     private MBean createThirdWrapperMBean() {
         return new MBean(
-                JellyConstants.MBEAN_FIFTEEN, 
-                JellyConstants.PACKAGE_NAME, 
+                JellyConstants.MBEAN_FIFTEEN,
+                JellyConstants.PACKAGE_NAME,
                 JellyConstants.MBEAN_FIFTEEN_COMMENT,
                 JellyConstants.PACKAGE_NAME+JellyConstants.PT+
                 JellyConstants.OPCLASS_TO_WRAP);
@@ -127,16 +137,25 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     
     private MBean createFourthWrapperMBean() {
         return new MBean(
-                JellyConstants.MBEAN_SIXTEEN, 
-                JellyConstants.PACKAGE_NAME, 
+                JellyConstants.MBEAN_SIXTEEN,
+                JellyConstants.PACKAGE_NAME,
                 JellyConstants.MBEAN_SIXTEEN_COMMENT,
                 JellyConstants.PACKAGE_NAME+JellyConstants.PT+
                 JellyConstants.OPCLASS_TO_WRAP);
     }
-   
-     //========================= Utility class generation  ===========================//
-     
-     public void createMissingClass(String projectName, String fileName, 
+    
+    private MBean createGeneric2WrapperMBean() {
+        return new MBean(
+                JellyConstants.MBEAN_GENERIC_2,
+                JellyConstants.PACKAGE_NAME,
+                JellyConstants.MBEAN_GENERIC_2_COMMENT,
+                JellyConstants.PACKAGE_NAME+JellyConstants.PT+
+                JellyConstants.GENERIC_OPCLASS_TO_WRAP);
+    }
+    
+    //========================= Utility class generation  ===========================//
+    
+    public void createMissingClass(String projectName, String fileName,
             String packageName) {
         //creates a reference on the current wizard
         NewFileWizardOperator nfwoForFile = NewFileWizardOperator.invoke();
@@ -152,7 +171,7 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         
         //sets the file name
         nfnlsoForFile.setObjectName(fileName);
-        JTextField folder = JellyToolsHelper.findFolderJTextField(fileName, 
+        JTextField folder = JellyToolsHelper.findFolderJTextField(fileName,
                 nfnlsoForFile.getContentPane());
         folder.setText(packageName);
         
@@ -165,11 +184,13 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         ProjectRootNode prn = pto.getProjectRootNode(JellyConstants.PROJECT_NAME);
         
         prn.select();
-        Node node = new Node(prn, JellyConstants.SRC_PKG + packageName + 
+        Node node = new Node(prn, JellyConstants.SRC_PKG + packageName +
                 JellyConstants.PIPE + fileName);
         
         node.select();
-        
+    }
+    
+    private void updateFile(String fileName) {
         EditorOperator eo = new EditorOperator(fileName);
         eo.deleteLine(16);
         eo.deleteLine(16);
@@ -177,18 +198,54 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         eo.deleteLine(16);
         eo.deleteLine(16);
         eo.setCaretPositionToLine(16);
-  
+        
         eo.insert(createWrapperClass(fileName));
         eo.save();
     }
-     
+    
+    private void updateGenericFile(String fileName) {
+        EditorOperator eo = new EditorOperator(fileName);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.deleteLine(16);
+        eo.setCaretPositionToLine(16);
+  
+        eo.insert(createGenericWrappedClass(fileName));
+
+        eo.save();
+    }
+    
+    private String createGenericWrappedClass(String fileName) {
+        return "public class " + fileName + "<Z,Q> { \n" +
+                "\t" + operationGeneric0() +
+                "\t" + operationGeneric1() +
+                "\t" + operationGeneric2() +
+                "} \n";
+    }
+    
+    private String operationGeneric0() {
+        return "public Z doiIt(Q param1, String param2) { return null; }\n";
+    }
+    
+    private String operationGeneric1() {
+        return "public <T> T doIt2() { return null; }\n";
+    }
+    
+    private String operationGeneric2() {
+        return "public String doIt3(String param1) { return null; }\n";
+    }
+    
     private String createWrapperClass(String fileName) {
         return "public class " + fileName + " extends Super" +fileName+ " { \n" +
                 "\t" + operation0() +
                 "\t" + operation1() +
                 "\t" + operation2() +
                 "} \n \n" +
-               createWrapperSuperClass("Super"+fileName)+ "\n ";
+                createWrapperSuperClass("Super"+fileName)+ "\n ";
     }
     
     private String createWrapperSuperClass(String fileName) {
@@ -214,7 +271,7 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
                 "\t return new Integer(0); \n" +
                 "\t } \n";
     }
-     
+    
     //========================= Class Name generation ===========================//
     
     private String getCompleteGeneratedFileName(NewFileWizardOperator nfwo) {
@@ -244,7 +301,7 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         JellyToolsHelper.tempo(1000);
         JellyToolsHelper.setTextFieldContent(JellyConstants.EXISTINGCLASS_TXT, nfwo, mbean.getClassToWrap());
         JellyToolsHelper.tempo(1000);
-        assertEquals(mbean.getClassToWrap(), 
+        assertEquals(mbean.getClassToWrap(),
                 JellyToolsHelper.getTextFieldContent(JellyConstants.EXISTINGCLASS_TXT, nfwo));
         
         assertTrue(JellyToolsHelper.verifyRadioButtonSelected(mbean.getMBeanType(), nfwo));
@@ -273,19 +330,21 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     }
     
     private void operationStep(NewFileWizardOperator nfwo, MBean mbean) {
-      
+        
         assertTrue(JellyToolsHelper.verifyTableEnabled(JellyConstants.W_OPER_TBL,nfwo));
         assertFalse(JellyToolsHelper.verifyButtonEnabled(JellyConstants.W_OPER_REM_BTN,nfwo));
         JTable opTable = JellyToolsHelper.getPanelTable(JellyConstants.W_OPER_TBL, nfwo);
         JTableOperator jto = JellyToolsHelper.getPanelTableOperator(JellyConstants.W_OPER_TBL, nfwo);
         
         if (mbean.getMBeanName().equals(JellyConstants.MBEAN_SIXTEEN)) {
-           // check/uncheck attributes to keep
-            JTableMouseDriver mouseDriver = new JTableMouseDriver(); 
+            // check/uncheck attributes to keep
+            JTableMouseDriver mouseDriver = new JTableMouseDriver();
             uncheckOperation(mouseDriver, jto, JellyConstants.VOID_TYPE);
             uncheckOperation(mouseDriver, jto, JellyConstants.BOOL_TYPE);
             uncheckOperation(mouseDriver, jto, JellyConstants.INT_TYPE_FULL);
             
+        } else if(mbean.getMBeanName().equals(JellyConstants.MBEAN_GENERIC_2)){
+            //Do nothing. This test verify that what is generated is what is expected.
         } else {
             int op0Line = verifyOperationChecked(jto, JellyConstants.VOID_TYPE);
             int op1Line = verifyOperationChecked(jto, JellyConstants.BOOL_TYPE);
@@ -307,7 +366,7 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     
     private void uncheckOperation(JTableMouseDriver mouseDriver, JTableOperator jto, String name) {
         int index = jto.findCellRow(name);
-        mouseDriver.selectCell(jto, index, JellyConstants.EXPOSE_COL); 
+        mouseDriver.selectCell(jto, index, JellyConstants.EXPOSE_COL);
         assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.EXPOSE_COL));
     }
     
@@ -350,26 +409,26 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         
         unitFileNames.add(completeGeneratedTestFileName);
         unitFileNames.add(junitFileName);
-      
+        
         return unitFileNames;
     }
     
     private boolean checkMBeanTypeButtons(NewFileWizardOperator nfwo, MBean mbean) {
         String type = mbean.getMBeanType();
-           if (type.equals(JellyConstants.STDMBEAN)) {
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.EXTSTDMBEAN, nfwo));
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.DYNMBEAN, nfwo));
-                return true;
-           } else if (type.equals(JellyConstants.EXTSTDMBEAN)) {
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.STDMBEAN, nfwo));
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.DYNMBEAN, nfwo));
-                return true;
+        if (type.equals(JellyConstants.STDMBEAN)) {
+            assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.EXTSTDMBEAN, nfwo));
+            assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.DYNMBEAN, nfwo));
+            return true;
+        } else if (type.equals(JellyConstants.EXTSTDMBEAN)) {
+            assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.STDMBEAN, nfwo));
+            assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.DYNMBEAN, nfwo));
+            return true;
         } else if (type.equals(JellyConstants.DYNMBEAN)) {
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.STDMBEAN, nfwo));
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.EXTSTDMBEAN, nfwo));
-                return true;
+            assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.STDMBEAN, nfwo));
+            assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.EXTSTDMBEAN, nfwo));
+            return true;
         }
         return false;
     }
-     
+    
 }
