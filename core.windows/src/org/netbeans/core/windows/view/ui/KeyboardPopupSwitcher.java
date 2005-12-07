@@ -221,7 +221,7 @@ public final class KeyboardPopupSwitcher {
         Dimension popupDim = pTable.getPreferredSize();
         Rectangle screen = Utilities.getUsableScreenBounds();
         this.x = screen.x + ((screen.width / 2) - (popupDim.width / 2));
-        this.y = screen.x + ((screen.height / 2) - (popupDim.height / 2));
+        this.y = screen.y + ((screen.height / 2) - (popupDim.height / 2));
         // Set initial selection if there are at least two items in table
         int cols = pTable.getColumnCount();
         int rows = pTable.getRowCount();
