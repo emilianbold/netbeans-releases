@@ -25,6 +25,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
@@ -36,26 +37,23 @@ import org.w3c.dom.Element;
 public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementation {
     
     private final NbModuleProject project;
-    private URL moduleJarUrl;
+    private String clusterPath;
     private URL classesUrl;
     private URL testClassesUrl;
     private Map/*<URL, SourceForBinaryQuery.Result>*/ cache = new HashMap ();
-
+    
     public SourceForBinaryImpl(NbModuleProject project) {
         this.project = project;
     }
     
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         //System.err.println("findSourceRoot: " + binaryRoot);
-        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) cache.get (binaryRoot);
+        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) cache.get(binaryRoot);
         if (res == null) {
             URL binaryJar = FileUtil.getArchiveFile(binaryRoot);
             if (binaryJar != null) {
                 File binaryJarF = new File(URI.create(binaryJar.toExternalForm()));
-                File moduleJarF = new File(URI.create(
-                        FileUtil.getArchiveFile(getModuleJarUrl()).toExternalForm()));
-                // XXX should be more strict (e.g. compare also clusters)
-                if (binaryJarF.getName().equals(moduleJarF.getName())) {
+                if (binaryJarF.getAbsolutePath().endsWith(getModuleJarClusterPath())) {
                     FileObject srcDir = project.getSourceDirectory();
                     //System.err.println("\t-> " + srcDir);
                     if (srcDir != null) {
@@ -108,13 +106,12 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
         return res;
     }
     
-    private URL getModuleJarUrl() {
-        if (moduleJarUrl == null) {
-            File actualJar = project.getModuleJarLocation();
-            moduleJarUrl = Util.urlForJar(actualJar);
-            //System.err.println("Module JAR: " + moduleJarUrl);
+    private String getModuleJarClusterPath() {
+        if (clusterPath == null) { // XXX should listen to changes on cluster property?
+            File cluster = project.getHelper().resolveFile(project.evaluator().evaluate("${cluster}")); // NOI18N
+            clusterPath = PropertyUtils.relativizeFile(cluster.getParentFile(), project.getModuleJarLocation());
         }
-        return moduleJarUrl;
+        return clusterPath;
     }
     
     private URL getClassesUrl() {

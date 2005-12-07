@@ -19,8 +19,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -64,6 +68,32 @@ public class SourceForBinaryImplTest extends TestBase {
         ClassPath.getClassPath(FileUtil.toFileObject(file(EEP + "/suite3/dummy-project/src")), ClassPath.COMPILE);
         check(EEP + "/suite3/dummy-project/src",
               file(EEP + "/suite3/dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar"));
+    }
+    
+    public void testCompletionWorks_69735() throws Exception {
+        SuiteProject suite = TestBase.generateSuite(getWorkDir(), "suite");
+        NbModuleProject project = TestBase.generateSuiteComponent(suite, "module");
+        File library = new File(getDataDir(), "test-library-0.1_01.jar");
+        FileObject libraryFO = FileUtil.toFileObject(library);
+        FileObject yyJar = FileUtil.copyFile(libraryFO, FileUtil.toFileObject(getWorkDir()), "yy");
+        
+        // library wrapper
+        File suiteDir = FileUtil.toFile(suite.getProjectDirectory());
+        File wrapperDirF = new File(new File(getWorkDir(), "suite"), "wrapper");
+        NbModuleProjectGenerator.createSuiteLibraryModule(
+                wrapperDirF,
+                "yy", // 69735 - the same name as jar
+                "Testing Wrapper (yy)", // display name
+                "org/example/wrapper/resources/Bundle.properties",
+                suiteDir, // suite directory
+                null,
+                new File[] { FileUtil.toFile(yyJar)} );
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
+        cmf.add(cmf.addModuleDependency("yy", -1, null, true));
+        cmf.run();
+        
+        URL wrappedJar = Util.urlForJar(new File(wrapperDirF, "release/modules/ext/yy.jar"));
+        assertEquals("no sources for wrapper", 0, SourceForBinaryQuery.findSourceRoots(wrappedJar).getRoots().length);
     }
     
     private void check(String srcS, File jarF) throws Exception {
