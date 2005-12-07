@@ -14,6 +14,7 @@
 package org.netbeans.junit;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 
 /** Checks that we can do proper logging.
@@ -27,13 +28,18 @@ public class LoggingTest extends NbTestCase {
     }
     
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        // you can define order of test cases here
-        suite.addTest(new LoggingTest("testLogFileName"));
-        suite.addTest(new LoggingTest("testLogFileNameEqualsToNameOfTest"));
-        suite.addTest(new LoggingTest("testTrimLogFiles"));
-        suite.addTest(new LoggingTest("testCheckTrimLogFiles"));
+//        NbTestSuite suite = new NbTestSuite();
+//        // you can define order of test cases here
+//        suite.addTest(new LoggingTest("testLogFileName"));
+//        suite.addTest(new LoggingTest("testLogFileNameEqualsToNameOfTest"));
+//        suite.addTest(new LoggingTest("testTrimLogFiles"));
+        
+        NbTestSuite suite = new NbTestSuite(LoggingTest.class);
         return suite;
+    }
+
+    protected void setUp() throws Exception {
+        clearWorkDir();
     }
     
     public void testLogFileName() throws Exception {
@@ -52,7 +58,7 @@ public class LoggingTest extends NbTestCase {
      * in test case workdir to 1 MB. The method is called at the end of 
      * NbTestCase#run method.
      */
-    public void testTrimLogFiles() {
+    public void testTrimLogFiles() throws IOException {
         StringBuffer buff = new StringBuffer(1024);
         for(int i=0;i<1024;i++) {
             buff.append('A');
@@ -63,11 +69,8 @@ public class LoggingTest extends NbTestCase {
             log("myLog", string1kB);
             ref(string1kB);
         }
-    }
-    
-    /** Check log files created by previous test case were correctly trimmed. */
-    public void testCheckTrimLogFiles() throws Exception {
-        File trimmedDir = new File(getWorkDir().getParentFile(), "testTrimLogFiles");
+        
+        File trimmedDir = getWorkDir();
         String[] filenames = {"testTrimLogFiles.log", "testTrimLogFiles.ref", "myLog" };
         for(int i=0;i<filenames.length;i++) {
             File file = new File(trimmedDir, "TRIMMED_"+filenames[i]);
@@ -76,7 +79,7 @@ public class LoggingTest extends NbTestCase {
             file = new File(trimmedDir, filenames[i]);
             if(file.exists()) {
                 // original file exists only if cannot be deleted. Then it has minimal size.
-                assertTrue(file.getName()+" not trimmed.", file.length() < 1024L);
+                assertTrue(file.getName()+" not trimmed." + file.length(), file.length() < 1024 * 1024);
             }
         }
     }

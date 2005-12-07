@@ -122,7 +122,6 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 super.run(result);
             }
         }
-        trimLogFiles();
     }
     
     /**
@@ -141,61 +140,6 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             }
             this.time = last;
             tearDown();
-        }
-    }
-    
-    /** If a log file in workdir is bigger than limit, it trims the file to 
-     * the limit size. This restriction is needed because log files are stored
-     * in results and big files can exhaust storage. See issue 67854 for details.
-     */
-    private void trimLogFiles() {
-        final long MAX_SIZE = 1048576L; // 1MB
-        File workdir;
-        try {
-            workdir = getWorkDir();
-        } catch (Exception e) {
-            // ignore - nothing to trim
-            return;
-        }
-        try {
-            // touch all files to flush buffer
-            File[] allFiles = workdir.listFiles();
-            for(int i=0;i<allFiles.length;i++) {
-                if (!allFiles[i].isFile()) {
-                    continue;
-                }
-                new FileReader(allFiles[i]).close();
-            }
-            // find file bigger than limit
-            File[] list = workdir.listFiles(new FileFilter() {
-                public boolean accept(File file) {
-                    return file.length() > MAX_SIZE;
-                }
-            });
-            // copy up-to-limit part of file to TRIMMED_filename and delete original file
-            for(int i=0;i<list.length;i++) {
-                long fileLength = list[i].length();
-                BufferedReader reader = new BufferedReader(new FileReader(list[i]));
-                FileWriter writer = new FileWriter(new File(list[i].getParentFile(), "TRIMMED_"+list[i].getName()));
-                for(long l=0;l<MAX_SIZE;l++) {
-                    writer.write(reader.read());
-                }
-                writer.write("\n#####################################################################"); // NOI18N
-                writer.write("\nRemaining part was trimmed. Total length was "+fileLength+" bytes."); // NOI18N
-                writer.write("\n#####################################################################"); // NOI18N
-                reader.close();
-                writer.close();
-                if(!list[i].delete()) {
-                    // cannot delete original file. We only write notice to trim original file.
-                    FileWriter writerOrig = new FileWriter(list[i]);
-                    writerOrig.write("\n#####################################################################"); // NOI18N
-                    writerOrig.write("\nFile was too long. First "+MAX_SIZE+" bytes of total length "+fileLength+" bytes were copied to TRIMMED_"+list[i].getName()+"."); // NOI18N
-                    writerOrig.write("\n#####################################################################"); // NOI18N
-                    writerOrig.close();
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
     }
     
@@ -641,12 +585,52 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             }
         }
         // we didn't used this log, so let's create it
-        FileOutputStream fileLog = new FileOutputStream(new File(getWorkDir(),logName));
+        OutputStream fileLog = new WFOS(new File(getWorkDir(),logName));
         PrintStream printStreamLog = new PrintStream(fileLog,true);
         logStreamTable.put(logName,printStreamLog);
         //System.out.println("Created new stream:"+logName);
         return printStreamLog;
     }
+    
+    private static class WFOS extends FilterOutputStream {
+        private File f;
+        private int bytes;
+        
+        public WFOS(File f) throws FileNotFoundException {
+            super(new FileOutputStream(f));
+            this.f = f;
+        }
+
+        public void write(byte[] b, int off, int len) throws IOException {
+            add(len);
+            out.write(b, off, len);
+        }
+
+        public void write(byte[] b) throws IOException {
+            add(b.length);
+            out.write(b);
+        }
+
+        public void write(int b) throws IOException {
+            add(1);
+            out.write(b);
+        }
+
+        private synchronized void add(int i) throws IOException {
+            bytes += i;
+            if (bytes >= 1048576L) { // 1mb
+                out.close();
+                File trim = new File(f.getParent(), "TRIMMED_" + f.getName());
+                trim.delete();
+                f.renameTo(trim);
+                f.delete();
+                out = new FileOutputStream(f);
+                bytes = 0;
+            }
+        }
+        
+        
+    } // end of WFOS
     
     // private PrintStream wrapper for System.out
     PrintStream systemOutPSWrapper = new PrintStream(System.out);
