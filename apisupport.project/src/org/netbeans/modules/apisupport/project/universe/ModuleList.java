@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
@@ -36,6 +37,8 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -91,7 +94,7 @@ public final class ModuleList {
      * @param basedir the project directory to start in
      * @return a module list
      */
-    public static synchronized ModuleList getModuleList(File basedir) throws IOException {
+    public static ModuleList getModuleList(File basedir) throws IOException {
         return getModuleList(basedir, null);
     }
     
@@ -106,7 +109,11 @@ public final class ModuleList {
      *        default(active) platform from module's properties will be used
      * @return a module list
      */
-    public static synchronized ModuleList getModuleList(File basedir, File customNbDestDir) throws IOException {
+    public static ModuleList getModuleList(final File basedir, final File customNbDestDir) throws IOException {
+        try {
+            return (ModuleList) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() { // #69971
+                public Object run() throws IOException {
+                    synchronized (binaryLists) { // need to protect caches from race conditions, so this seems OK
         timeSpentInXmlParsing = 0L;
         xmlFilesParsed = 0;
         directoriesChecked = 0;
@@ -135,6 +142,12 @@ public final class ModuleList {
                 throw new IOException("Could not find netbeans.org CVS root from " + basedir + "; note that 3rd-level modules (a/b/c) are permitted at the maximum"); // NOI18N
             }
             return findOrCreateModuleListFromNetBeansOrgSources(nbroot);
+        }
+                    }
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
         }
     }
     
