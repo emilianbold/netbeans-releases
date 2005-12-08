@@ -195,8 +195,8 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
                     
                     //I need to lock the model for update since during the model
                     //update the UI is updated synchronously in AWT (current thread)
-                    if(model != null) {
-                        model.readLock();
+                    if(cachedPanel != null || model != null) {
+                        if(model != null) model.readLock();
                         try {
                             SwingUtilities.invokeAndWait(new Runnable() {
                                 public void run() {
@@ -232,7 +232,7 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
                         }catch(InvocationTargetException ite) {
                             ErrorManager.getDefault().notify(ErrorManager.ERROR, ite);
                         }finally {
-                            model.readUnlock();
+                            if(model != null) model.readUnlock();
                         }
                     } else {
                         //model is null => show message
@@ -285,6 +285,7 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
     
     public void showCannotNavigate() {
         removeAll();
+        msgLabel.setIcon(null);
         msgLabel.setForeground(Color.GRAY);
         msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_CannotNavigate"));
         msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
