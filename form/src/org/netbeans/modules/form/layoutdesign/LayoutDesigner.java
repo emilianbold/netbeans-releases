@@ -1531,12 +1531,34 @@ public class LayoutDesigner implements LayoutConstants {
      * @return preferred size of the given interval.
      */
     private int prefSizeOfInterval(LayoutInterval interval) {
+        int dimension = -1;
+        if (interval.isComponent()) {
+            LayoutComponent comp = interval.getComponent();
+            dimension = (interval == comp.getLayoutInterval(HORIZONTAL)) ? HORIZONTAL : VERTICAL;
+            if (comp.isLinkSized(dimension)) {
+                Collection linked = (Collection)layoutModel.getLinkSizeGroups(dimension).get(new Integer(comp.getLinkSizeId(dimension)));
+                Iterator iter = linked.iterator();
+                int prefSize = 0;
+                while (iter.hasNext()) {
+                    String compId = (String)iter.next();
+                    LayoutComponent component = layoutModel.getLayoutComponent(compId);
+                    LayoutInterval intr = component.getLayoutInterval(dimension);
+                    int pref = intr.getPreferredSize();
+                    if (pref == NOT_EXPLICITLY_DEFINED) {
+                        Dimension prefDim = visualMapper.getComponentPreferredSize(compId);
+                        pref = (dimension == HORIZONTAL) ? prefDim.width : prefDim.height;
+                    }
+                    prefSize = Math.max(pref, prefSize);
+                }
+                return prefSize;
+            }
+        }
         int prefSize = interval.getPreferredSize();
         if (prefSize == NOT_EXPLICITLY_DEFINED) {
             if (interval.isComponent()) {
                 LayoutComponent comp = interval.getComponent();
                 Dimension pref = visualMapper.getComponentPreferredSize(comp.getId());
-                return (interval == comp.getLayoutInterval(HORIZONTAL)) ? pref.width : pref.height;
+                return (dimension == HORIZONTAL) ? pref.width : pref.height;
             } else if (interval.isEmptySpace()) {
                 return sizeOfEmptySpace(interval);
             } else {
@@ -1589,6 +1611,31 @@ public class LayoutDesigner implements LayoutConstants {
         }
         modelListener.deactivate();
         LayoutInterval interval = comp.getLayoutInterval(dimension);
+        
+        // Unset the same-size if we are making the component resizable
+        if (resizing && comp.isLinkSized(dimension)) {
+            Collection linked = (Collection)layoutModel.getLinkSizeGroups(dimension).get(new Integer(comp.getLinkSizeId(dimension)));
+            Collection toChange;
+            if (linked.size() == 2) { // The second component will be unlinked, too.
+                toChange = linked;
+            } else {
+                toChange = Collections.singletonList(comp.getId());
+            }
+            Iterator iter = toChange.iterator();
+            while (iter.hasNext()) {
+                String compId = (String)iter.next();
+                LayoutComponent component = layoutModel.getLayoutComponent(compId);
+                LayoutInterval intr = component.getLayoutInterval(dimension);
+                Dimension prefDim = visualMapper.getComponentPreferredSize(compId);
+                int prefSize = (dimension == HORIZONTAL) ? prefDim.width : prefDim.height;
+                int currSize = intr.getCurrentSpace().size(dimension);
+                if (currSize == prefSize) {
+                    currSize = NOT_EXPLICITLY_DEFINED;
+                }
+                layoutModel.setIntervalSize(intr, intr.getMinimumSize(), currSize, intr.getMaximumSize());
+            }
+        }
+        
         LayoutInterval parent = interval.getParent();
         boolean fill = interval.hasAttribute(LayoutInterval.ATTRIBUTE_FILL);
         boolean formerFill = interval.hasAttribute(LayoutInterval.ATTRIBUTE_FORMER_FILL);
@@ -1737,6 +1784,11 @@ public class LayoutDesigner implements LayoutConstants {
             }
             intr = par;
             par = par.getParent();
+        }
+        
+        // Unset the same size once all changes in gap sizes are done
+        if (resizing) {
+            layoutModel.unsetSameSize(Collections.singletonList(comp.getId()), dimension);
         }
         modelListener.activate();
 
