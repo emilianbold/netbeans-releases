@@ -20,6 +20,7 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.status.*;
 import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -762,32 +763,26 @@ public class ServerInstance implements Node.Cookie, Comparable {
      * @throws ServerException if the server cannot be started.
      */
     private void start() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            //PENDING maybe a modal dialog instead of async is needed here
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    start();
+                }
+            });
+        }
         if (isRunning()) {
             return;
         }
-        
-        if (! RequestProcessor.getDefault().isRequestProcessorThread()) {
-            //PENDING maybe a modal dialog instead of async is needed here
-            RequestProcessor.Task t = RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        start(null);
-                    } catch (ServerException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-                }
-            }, 0, Thread.MAX_PRIORITY);
-        } else {
-            String title = NbBundle.getMessage(ServerInstance.class, "LBL_StartServerProgressMonitor", getDisplayName());
-            ProgressUI ui = new ProgressUI(title, false);
-            try {
-                ui.start();
-                start(ui);
-            } catch (ServerException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            } finally {
-                ui.finish();
-            }
+        String title = NbBundle.getMessage(ServerInstance.class, "LBL_StartServerProgressMonitor", getDisplayName());
+        ProgressUI ui = new ProgressUI(title, false);
+        try {
+            ui.start();
+            start(ui);
+        } catch (ServerException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } finally {
+            ui.finish();
         }
     }
     
