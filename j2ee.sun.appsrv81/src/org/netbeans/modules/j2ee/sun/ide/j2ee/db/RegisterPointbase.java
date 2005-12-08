@@ -53,8 +53,10 @@ import org.openide.util.RequestProcessor;
  */
 public class RegisterPointbase implements DatabaseRuntime {
     /** The name of the Pointbase driver to create the connection to sample database */
-    public static final String DRIVER_NAME = 
+    public static final String DRIVER_DISPLAY_NAME = 
             NbBundle.getMessage(RegisterPointbase.class, "LBL_DriverName");     //NOI18N
+    
+    public static final String DRIVER_NAME = "pointbase";                       // NOI18N
     
     /** The driver to create the connection to sample database */
     public static final String DRIVER = 
@@ -266,7 +268,7 @@ public class RegisterPointbase implements DatabaseRuntime {
             URL[] urls = new URL[1];
             urls[0]= f.toURI().toURL(); //NOI18N
             
-            JDBCDriver newDriver = JDBCDriver.create(DRIVER_NAME, DRIVER,urls);
+            JDBCDriver newDriver = JDBCDriver.create(DRIVER_NAME, DRIVER_DISPLAY_NAME, DRIVER,urls);
             JDBCDriverManager.getDefault().addDriver(newDriver);
             
             

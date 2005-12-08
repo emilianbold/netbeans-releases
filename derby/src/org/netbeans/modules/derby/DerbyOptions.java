@@ -54,8 +54,11 @@ public class DerbyOptions extends SystemOption {
     
     // XXX these should actually be localized, but we'd have to localize 
     // DriverListUtil in the db module first
-    private static final String DRIVER_NAME_NET = "Apache Derby (Net)"; // NOI18N
-    private static final String DRIVER_NAME_EMBEDDED = "Apache Derby (Embedded)"; // NOI18N
+    private static final String DRIVER_DISP_NAME_NET = "Apache Derby (Net)"; // NOI18N
+    private static final String DRIVER_DISP_NAME_EMBEDDED = "Apache Derby (Embedded)"; // NOI18N
+    
+    private static final String DRIVER_NAME_NET = "apache_derby_net"; // NOI18N
+    private static final String DRIVER_NAME_EMBEDDED = "apache_derby_embedded"; // NOI18N
     
     public static DerbyOptions getDefault() {
         return (DerbyOptions)SharedClassObject.findObject(DerbyOptions.class, true);
@@ -170,8 +173,8 @@ public class DerbyOptions extends SystemOption {
             // is refreshed only once
             Repository.getDefault().getDefaultFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() {
-                    registerDriver(DRIVER_NAME_NET, DRIVER_CLASS_NET, DRIVER_PATH_NET, newLocation);
-                    registerDriver(DRIVER_NAME_EMBEDDED, DRIVER_CLASS_EMBEDDED, DRIVER_PATH_EMBEDDED, newLocation);
+                    registerDriver(DRIVER_NAME_NET, DRIVER_DISP_NAME_NET, DRIVER_CLASS_NET, DRIVER_PATH_NET, newLocation);
+                    registerDriver(DRIVER_NAME_EMBEDDED, DRIVER_DISP_NAME_EMBEDDED, DRIVER_CLASS_EMBEDDED, DRIVER_PATH_EMBEDDED, newLocation);
                 }
             });
         } catch (IOException e) {
@@ -179,7 +182,7 @@ public class DerbyOptions extends SystemOption {
         }
     }
 
-    private static void registerDriver(String driverName, String driverClass, String driverRelativeFile, String newLocation) {
+    private static void registerDriver(String driverName, String driverDisplayName, String driverClass, String driverRelativeFile, String newLocation) {
         // try to remove the driver first if it exists was registered from the current location
         JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
         for (int i = 0; i < drivers.length; i++) {
@@ -221,7 +224,7 @@ public class DerbyOptions extends SystemOption {
             File newDriverFile = new File(newLocation, driverRelativeFile);
             if (newDriverFile.exists()) {
                 try {
-                    JDBCDriver newDriver = JDBCDriver.create(driverName, /*XXX hotfix, pls. change*/driverName, driverClass, new URL[] { newDriverFile.toURI().toURL() });
+                    JDBCDriver newDriver = JDBCDriver.create(driverName, driverDisplayName, driverClass, new URL[] { newDriverFile.toURI().toURL() });
                     JDBCDriverManager.getDefault().addDriver(newDriver);
                 } catch (MalformedURLException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
