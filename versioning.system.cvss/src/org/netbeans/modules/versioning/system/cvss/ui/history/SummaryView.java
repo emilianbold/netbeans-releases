@@ -595,23 +595,37 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             } else {
                 diffLink = null;
             }
-            
+
+            Project [] projects  = OpenProjects.getDefault().getOpenProjects();
+            if (projects.length > 0) {
+                acopLink = new HyperlinkLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommitInOpenProjects"), foregroundColor, backgroundColor);
+            } else {
+                acopLink = null;
+            }
             Project prj = Utils.getProject(dispRevision.getRevision().getLogInfoHeader().getFile());
             if (prj != null) {
                 String prjName = ProjectUtils.getInformation(prj).getDisplayName();
-                JLabel l1 = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommitIn"));
-                l1.setForeground(foregroundColor);
-                actionsPane.add(l1);
                 acpLink = new HyperlinkLabel("\"" + prjName + "\"", foregroundColor, backgroundColor); // NOI18N
-                actionsPane.add(acpLink);
-                JLabel l2 = new JLabel(","); // NOI18N
-                l2.setForeground(foregroundColor);
-                actionsPane.add(l2);
             } else {
                 acpLink = null;
             }
-            acopLink = new HyperlinkLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommitInOpenProjects"), foregroundColor, backgroundColor);
-            actionsPane.add(acopLink);
+
+            if (acpLink != null || acopLink != null) {
+                JLabel l1 = new JLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindCommitIn"));
+                l1.setForeground(foregroundColor);
+                actionsPane.add(l1);
+                if (acpLink != null) {
+                    actionsPane.add(acpLink);
+                }
+                if (acopLink != null) {
+                    if (acpLink != null) {
+                        JLabel l2 = new JLabel(","); // NOI18N
+                        l2.setForeground(foregroundColor);
+                        actionsPane.add(l2);
+                    }
+                    actionsPane.add(acopLink);
+                }
+            }
             actionsPane.revalidate();
         }
 

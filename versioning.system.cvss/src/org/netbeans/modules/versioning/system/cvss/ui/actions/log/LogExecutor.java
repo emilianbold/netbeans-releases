@@ -38,8 +38,6 @@ public class LogExecutor extends ExecutorSupport {
 
     private final List listeners = new ArrayList(1);
 
-    private boolean silent;
-
     /**
      * Splits the original command into more commands if the original
      * command would execute on incompatible files.
@@ -106,10 +104,6 @@ public class LogExecutor extends ExecutorSupport {
     }
 
     protected boolean logCommandOutput() {
-        return silent == false;
-    }
-
-    void setSilent(boolean silent) {
-        this.silent = silent;
+        return false;
     }
 }

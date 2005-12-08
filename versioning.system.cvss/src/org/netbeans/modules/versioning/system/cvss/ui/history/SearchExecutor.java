@@ -18,16 +18,23 @@ import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.lib.cvsclient.command.log.LogCommand;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.RLogExecutor;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.LogExecutor;
-import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 
 import javax.swing.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.net.URL;
+import java.net.MalformedURLException;
+
 import org.openide.util.NbBundle;
+import org.openide.windows.OutputListener;
+import org.openide.windows.OutputEvent;
+import org.openide.awt.HtmlBrowser;
 
 /**
  * Executes searches in Search History panel.
@@ -46,12 +53,17 @@ class SearchExecutor implements Runnable {
         new SimpleDateFormat("yyyy-MM-dd"), // NOI18N
     };
     
+    /**
+     * Collection of CVSRoots that do not support rXXX commands.
+     */ 
+    private static Set                  misconfiguredServers = Collections.synchronizedSet(new HashSet());
+    
     private final SearchHistoryPanel    master;
-    private final File[]                folders;
-    private final File[]                files;
+    private File[]                      folders;
+    private File[]                      files;
     private final SearchCriteriaPanel   criteria;
     
-    private List                        results;
+    private List                        results = new ArrayList();
 
     public SearchExecutor(SearchHistoryPanel master) {
         this.master = master;
@@ -61,7 +73,13 @@ class SearchExecutor implements Runnable {
         Set filesSet = new HashSet(roots.length); 
         for (int i = 0; i < roots.length; i++) {
             File root = roots[i];
-            if (root.isFile()) {
+            String cvsRoot = null;
+            try {
+                cvsRoot = Utils.getCVSRootFor(root);
+            } catch (IOException e) {
+                // ignore
+            }
+            if (root.isFile() || misconfiguredServers.contains(cvsRoot)) {
                 filesSet.add(root);
             } else {
                 foldersSet.add(root);
@@ -131,7 +149,12 @@ class SearchExecutor implements Runnable {
         final LogExecutor [] flexecutors = lexecutors;
         Runnable action = new Runnable() {
             public void run() {
-                results = processResults(frexecutors, flexecutors);
+                List newResults = processResults(frexecutors, flexecutors);
+                results.addAll(newResults);
+                if (testForRLogFailures(frexecutors)) {
+                    SearchExecutor.this.run();
+                    return;
+                }
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         master.setResults(results);
@@ -142,6 +165,49 @@ class SearchExecutor implements Runnable {
         group.addBarrier(action);
         group.execute();
 
+    }
+
+    private boolean testForRLogFailures(RLogExecutor[] executors) {
+        Set failedFiles = new HashSet();
+        for (int i = 0; i < executors.length; i++) {
+            RLogExecutor executor = executors[i];
+            if (executor.hasFailedOnSymbolicLink()) {
+                showMisconfiguredServerWarning(executor);
+                try {
+                    misconfiguredServers.add(Utils.getCVSRootFor(executor.getFile()));
+                } catch (IOException e) {
+                    // harmless + should never happen
+                }
+                failedFiles.add(executor.getFile());
+            }
+        }
+        if (failedFiles.size() > 0) {
+            files = (File[]) failedFiles.toArray(new File[failedFiles.size()]);
+            folders = new File[0];
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void showMisconfiguredServerWarning(RLogExecutor executor) {
+        final String relNotesUrl = "http://javacvs.netbeans.org/release/5.0"; // NOI18N
+        executor.log(NbBundle.getMessage(SearchExecutor.class, "MSG_SymlinkWarning1") + "\n", null);  // NOI18N
+        executor.log(NbBundle.getMessage(SearchExecutor.class, "MSG_SymlinkWarning2", relNotesUrl) + "\n", new OutputListener() {  // NOI18N
+            public void outputLineSelected(OutputEvent ev) {
+            }
+
+            public void outputLineAction(OutputEvent ev) {
+                try {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(relNotesUrl));
+                } catch (MalformedURLException e) {
+                    // never happens
+                }
+            }
+
+            public void outputLineCleared(OutputEvent ev) {
+            }
+        });
     }
 
     private List processResults(RLogExecutor[] rexecutors, LogExecutor[] lexecutors) {

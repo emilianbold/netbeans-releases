@@ -35,6 +35,7 @@ import org.openide.util.Task;
 import org.openide.ErrorManager;
 import org.openide.windows.InputOutput;
 import org.openide.windows.IOProvider;
+import org.openide.windows.OutputListener;
 
 import javax.net.SocketFactory;
 import java.io.File;
@@ -150,6 +151,14 @@ public class ClientRuntime {
      * is appended at the end.
      */
     public void log(String message) {
+        log(message, null);
+    }
+    
+    /**
+     * Logs given message to associated console and formats it as a hyperlink. The message
+     * is appended at the end.
+     */
+    public void log(String message, OutputListener hyperlinkListener) {
         if (log.isClosed()) {
             log = IOProvider.getDefault().getIO(cvsRoot, false);
             try {
@@ -161,8 +170,16 @@ public class ClientRuntime {
             }
             //log.select();
         }
-        log.getOut().write(message);
-    }
+        if (hyperlinkListener != null) {
+            try {
+                log.getOut().println(message, hyperlinkListener);
+            } catch (IOException e) {
+                log.getOut().write(message);
+            }
+        } else {
+            log.getOut().write(message);
+        }
+    }    
 
     public void logError(Throwable e) {
         e.printStackTrace(log.getOut());

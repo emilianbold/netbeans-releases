@@ -117,7 +117,6 @@ public class AnnotationsAction extends AbstractSystemAction {
 
                     LogExecutor lexecutor = new LogExecutor(cvss, log);
                     lexecutor.addLogOutputListener(ab);
-                    lexecutor.setSilent(true);
                     group.addExecutor(lexecutor);
 
                     group.addCancellable(new Cancellable(){

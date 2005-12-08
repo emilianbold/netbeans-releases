@@ -24,6 +24,7 @@ import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.windows.OutputListener;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -417,7 +418,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         }
     }
 
-    private void report(String title, String prompt, List messages, int type) {
+    protected void report(String title, String prompt, List messages, int type) {
         CommandReport report = new CommandReport(prompt, messages);
         JButton ok = new JButton(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandReport_OK"));
         NotifyDescriptor descriptor = new NotifyDescriptor(
@@ -428,6 +429,10 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
                 new Object [] { ok },
                 ok);
         DialogDisplayer.getDefault().notify(descriptor);
+    }
+    
+    public void log(String s, OutputListener hyperlinkListener) {
+        clientRuntime.log(s, hyperlinkListener);
     }
     
     /** Retry aware task events source*/

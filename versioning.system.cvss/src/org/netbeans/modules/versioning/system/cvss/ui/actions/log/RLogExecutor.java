@@ -23,6 +23,7 @@ import org.netbeans.lib.cvsclient.command.log.RlogCommand;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.netbeans.lib.cvsclient.event.FileInfoEvent;
+import org.netbeans.lib.cvsclient.event.MessageEvent;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -38,6 +39,7 @@ import java.io.IOException;
 public class RLogExecutor extends ExecutorSupport {
     
     private final File localRoot;
+    private boolean     failedOnSymbolicLink;
 
     /**
      * Splits the original command into more commands if the original
@@ -101,6 +103,10 @@ public class RLogExecutor extends ExecutorSupport {
         super(cvs, cmd, options);
         this.localRoot = localRoot;
     }
+    
+    public File getFile() {
+        return localRoot;
+    }
 
     public void fileInfoGenerated(FileInfoEvent e) {
         LogInformation information = (LogInformation) e.getInfoContainer();
@@ -160,4 +166,38 @@ public class RLogExecutor extends ExecutorSupport {
     public List getLogEntries() {
         return toRefresh;
     }
+
+    /**
+     * Overridden to detect failures due to symbolic link server misconfiguration.
+     * 
+     * @param e a message
+     */ 
+    public void messageSent(MessageEvent e) {
+        super.messageSent(e);
+        if (!failedOnSymbolicLink && e.isError()) {
+            String msg = e.getMessage();
+            failedOnSymbolicLink = msg != null && msg.indexOf("failed assertion `strncmp (repository,") != -1;
+        }
+    }
+
+    public boolean hasFailedOnSymbolicLink() {
+        return failedOnSymbolicLink;
+    }
+    
+    /**
+     * Does not log anything by default.
+     * 
+     * @return false
+     */ 
+    protected boolean logCommandOutput() {
+        return false;
+    }
+
+    /**
+     * Be quiet if the command failed due to symbolic link problems.
+     */ 
+    protected void report(String title, String prompt, List messages, int type) {
+        if (!failedOnSymbolicLink) super.report(title, prompt, messages, type);
+    }
+
 }
