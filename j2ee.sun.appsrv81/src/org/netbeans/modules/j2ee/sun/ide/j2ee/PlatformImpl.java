@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.filesystems.FileUtil;
@@ -34,7 +33,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.db.RegisterPointbase;
+
 /**
  */
 public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeListener {
