@@ -64,6 +64,8 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
      */
     private static WeakReference providerRef;
     
+    private static JDBCDriverConvertor provider;
+    
     /**
      * The path where the drivers are registered in the SystemFileSystem.
      */
@@ -89,11 +91,18 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
     Reference refDriver = new WeakReference(null);
 
     private static synchronized JDBCDriverConvertor createProvider() {
-        if (providerRef == null) {
-            providerRef = new WeakReference(new JDBCDriverConvertor());
+        JDBCDriverConvertor provider = null;
+        
+        if (providerRef != null) {
+            provider = (JDBCDriverConvertor)providerRef.get();
         }
         
-        return (JDBCDriverConvertor)providerRef.get();
+        if (provider == null) {
+            provider = new JDBCDriverConvertor();
+            providerRef = new WeakReference(provider);
+        }
+        
+        return provider;
     }
     
     private JDBCDriverConvertor() {
