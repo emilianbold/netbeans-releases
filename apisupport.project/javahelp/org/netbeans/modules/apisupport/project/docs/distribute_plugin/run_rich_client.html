@@ -16,7 +16,23 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-<p>tbd
+Unless your NetBeans modules are designed to be deployed 
+as standalone modules, you should always deploy them by deploying the application (the module suite project)
+that contains them. If you run the Run Project command 
+on an individual module that is part of an application built on top of the NetBeans Platform, the IDE only deploys 
+that module itself.
+
+<p><b>To deploy a standalone application:</b>
+
+<ul><li>In the Projects window, right-click the module suite project and choose one of the following:
+	
+	<ul><li>Run Project. Starts the <a href="../csh/NbPlatformCustomizer.html">target platform</a>, 
+		undeploys the standalone application if it is already deployed, 
+		deploys the standalone application to the target platform, starts the platform
+		 and loads the application as one unit.
+		 <li>Run JNLP Applications. Builds and runs the application as a <a href="../build_plugin/building_jnlp.html">JNLP application</a>.	
+	</ul>
+</ul>
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>
