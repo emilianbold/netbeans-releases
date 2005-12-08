@@ -138,16 +138,18 @@ public class MessageGenerator {
         pwm.getConfigSupport().ensureResourceDefinedForEjb(ejbName + "Bean", "message-driven"); //NOI18N
         
         // use simple names in all generated classes, use imports
+        FileObject beanFO = pkg.getFileObject(EjbGenerationUtil.getBaseName(mb.getEjbClass()), "java"); // NOI18N
         boolean rollback = true;
         JMIUtils.beginJmiTransaction(true);
         try {
-            FileObject beanFO = pkg.getFileObject(EjbGenerationUtil.getBaseName(mb.getEjbClass()), "java"); // NOI18N
             JavaMetamodel.getManager().setClassPath(beanFO);
             JMIUtils.fixImports(mb.getEjbClass());
             rollback = false;
         } finally {
             JMIUtils.endJmiTransaction(rollback);
         }
+        
+        JMIUtils.saveClass(mb.getEjbClass(), beanFO);
     }
     
 }

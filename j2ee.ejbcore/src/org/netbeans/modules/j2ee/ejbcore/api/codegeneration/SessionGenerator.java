@@ -148,6 +148,14 @@ public class SessionGenerator extends EntityAndSessionGenerator {
             JMIUtils.endJmiTransaction(rollback);
         }
         
+        JMIUtils.saveClass(s.getEjbClass(), beanFO);
+        JMIUtils.saveClass(s.getLocal(), beanFO);
+        JMIUtils.saveClass(s.getLocalHome(), beanFO);
+        JMIUtils.saveClass(s.getRemote(), beanFO);
+        JMIUtils.saveClass(s.getHome(), beanFO);
+        JMIUtils.saveClass(remoteBusinessIntfName, beanFO);
+        JMIUtils.saveClass(localBusinessIntfName, beanFO);
+
         DataObject dobj = DataObject.find(beanFO);
         EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
         ec.open();
