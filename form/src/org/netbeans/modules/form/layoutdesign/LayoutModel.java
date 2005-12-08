@@ -156,9 +156,11 @@ public class LayoutModel implements LayoutConstants {
     public void addNewComponent(LayoutComponent component, LayoutComponent parent, LayoutComponent prototype) {
         for (int i=0; i<DIM_COUNT; i++) {
             LayoutInterval interval = component.getLayoutInterval(i);
-            addInterval(interval, parent.getLayoutRoot(i), -1);
+            if (parent != null) {
+                addInterval(interval, parent.getLayoutRoot(i), -1);
+            }
             setIntervalAlignment(interval, DEFAULT);
-            setIntervalSize(interval, USE_PREFERRED_SIZE, interval.getPreferredSize(), USE_PREFERRED_SIZE);
+//            setIntervalSize(interval, USE_PREFERRED_SIZE, interval.getPreferredSize(), USE_PREFERRED_SIZE);
             if (prototype != null) {
                 LayoutInterval pInt = prototype.getLayoutInterval(i);
                 setIntervalSize(interval, interval.getMinimumSize(), pInt.getPreferredSize(), interval.getMaximumSize());

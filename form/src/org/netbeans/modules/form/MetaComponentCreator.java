@@ -78,28 +78,7 @@ public class MetaComponentCreator {
         if (compClass == null)
             return null; // class loading failed
 
-        RADComponent component = createAndAddComponent(compClass, targetComp, constraints);
-        if (component instanceof RADVisualContainer
-            && ((RADVisualContainer)component).getLayoutSupport() == null)
-        {
-            LayoutModel layoutModel = formModel.getLayoutModel();
-            Object layoutUndoMark = layoutModel.getChangeMark();
-            javax.swing.undo.UndoableEdit layoutUndoEdit = layoutModel.getUndoableEdit();
-            boolean autoUndo = true;
-            try {
-                layoutModel.addRootComponent(new LayoutComponent(component.getId(), true));
-                autoUndo = false;
-            } finally {
-                if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                    formModel.addUndoableEdit(layoutUndoEdit);
-                }
-                if (autoUndo) {
-                    formModel.forceUndoOfCompoundEdit();
-                }
-            }
-        }
-
-        return component;
+        return createAndAddComponent(compClass, targetComp, constraints);
     }
 
     /** Creates a copy of a metacomponent and adds it to FormModel. The new 
@@ -204,41 +183,47 @@ public class MetaComponentCreator {
     LayoutComponent getPrecreatedLayoutComponent() {
         if (preMetaComp != null) {
             if (preLayoutComp == null) {
-                Dimension initialSize = prepareDefaultLayoutSize(
-                        (Component)preMetaComp.getBeanInstance(),
-                        preMetaComp instanceof RADVisualContainer);
-                boolean isLayoutContainer = shouldBeLayoutContainer(preMetaComp);
-                if (isLayoutContainer) {
-                    RADVisualContainer metacont = (RADVisualContainer)preMetaComp;
-                    Container cont = metacont.getContainerDelegate(metacont.getBeanInstance());
-                    if (initialSize == null) {
-                        initialSize = cont.getPreferredSize();
-                    }
-                    Insets insets = cont.getInsets();
-                    initialSize.width -= insets.left + insets.right;
-                    initialSize.height -= insets.top + insets.bottom;
-                }
-                preLayoutComp = initialSize == null ?
-                    new LayoutComponent(preMetaComp.getId(), isLayoutContainer) :
-                    new LayoutComponent(preMetaComp.getId(), isLayoutContainer,
-                                        initialSize.width, initialSize.height);
-                // test code logging
-                LayoutDesigner ld = FormEditor.getFormDesigner(formModel).getLayoutDesigner();
-                if ((ld != null) && ld.logTestCode()) {
-                    if (initialSize == null) {
-                        ld.testCode.add("lc = new LayoutComponent(\"" + preMetaComp.getId() + "\", " + isLayoutContainer + ");"); //NOI18N
-                    } else {
-                        ld.testCode.add("lc = new LayoutComponent(\"" + preMetaComp.getId() + "\", " + isLayoutContainer + ", " + //NOI18N 
-                                                                    initialSize.width + ", " + initialSize.height + ");"); //NOI18N
-                    } 
-                }
+                preLayoutComp = createLayoutComponent(preMetaComp);
             }
             return preLayoutComp;
         }
         return null;
     }
 
-    static boolean shouldBeLayoutContainer(RADVisualComponent metacomp) {
+    LayoutComponent createLayoutComponent(RADVisualComponent metacomp) {
+        Dimension initialSize = prepareDefaultLayoutSize(
+                (Component)metacomp.getBeanInstance(),
+                metacomp instanceof RADVisualContainer);
+        boolean isLayoutContainer = shouldBeLayoutContainer(metacomp);
+        if (isLayoutContainer) {
+            RADVisualContainer metacont = (RADVisualContainer)metacomp;
+            Container cont = metacont.getContainerDelegate(metacont.getBeanInstance());
+            if (initialSize == null) {
+                initialSize = cont.getPreferredSize();
+            }
+            Insets insets = cont.getInsets();
+            initialSize.width -= insets.left + insets.right;
+            initialSize.height -= insets.top + insets.bottom;
+        }
+        // test code logging - only for precreation
+        if (metacomp == preMetaComp) {
+            LayoutDesigner ld = FormEditor.getFormDesigner(formModel).getLayoutDesigner();
+            if ((ld != null) && ld.logTestCode()) {
+                if (initialSize == null) {
+                    ld.testCode.add("lc = new LayoutComponent(\"" + metacomp.getId() + "\", " + isLayoutContainer + ");"); //NOI18N
+                } else {
+                    ld.testCode.add("lc = new LayoutComponent(\"" + metacomp.getId() + "\", " + isLayoutContainer + ", " + //NOI18N 
+                                                                initialSize.width + ", " + initialSize.height + ");"); //NOI18N
+                } 
+            }
+        }
+        return initialSize == null ?
+            new LayoutComponent(metacomp.getId(), isLayoutContainer) :
+            new LayoutComponent(metacomp.getId(), isLayoutContainer,
+                                initialSize.width, initialSize.height);
+    }
+
+    static boolean shouldBeLayoutContainer(RADComponent metacomp) {
         return metacomp instanceof RADVisualContainer
                && ((RADVisualContainer)metacomp).getLayoutSupport() == null;
     }
@@ -318,16 +303,21 @@ public class MetaComponentCreator {
 
         else if (targetPlacement == TARGET_VISUAL) {
             newMetaComp = addVisualComponent(compClass, targetComp, constraints);
-            RADVisualContainer targetCont = (RADVisualContainer)targetComp;
             if (java.awt.Window.class.isAssignableFrom(compClass) ||
                 java.applet.Applet.class.isAssignableFrom(compClass)) {
-                targetCont = null;
-            }
-            if ((targetCont != null) && (targetCont.getLayoutSupport() == null)) {
-                createAndAddLayoutComponent((RADVisualComponent)newMetaComp, targetCont, null);
+                targetComp = null;
             }
         } else if (targetPlacement == TARGET_OTHER)
             newMetaComp = addOtherComponent(compClass, targetComp);
+
+        if (newMetaComp instanceof RADVisualComponent
+            && (shouldBeLayoutContainer(targetComp)
+                || (shouldBeLayoutContainer(newMetaComp))))
+        {   // container with new layout...
+            createAndAddLayoutComponent((RADVisualComponent)newMetaComp,
+                                        (RADVisualContainer)targetComp,
+                                        null);
+        }
 
         return newMetaComp;
     }
@@ -337,13 +327,13 @@ public class MetaComponentCreator {
         LayoutModel layoutModel = formModel.getLayoutModel();
         LayoutComponent layoutComp = layoutModel.getLayoutComponent(radComp.getId());
         if (layoutComp == null) {
-            boolean isContainer = shouldBeLayoutContainer(radComp);
-            layoutComp = new LayoutComponent(radComp.getId(), isContainer);
+            layoutComp = createLayoutComponent(radComp);
         }
         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
         boolean autoUndo = true;
         try {
-            LayoutComponent parent = layoutModel.getLayoutComponent(targetCont.getId());    
+            LayoutComponent parent = targetCont != null ?
+                layoutModel.getLayoutComponent(targetCont.getId()) : null;
             layoutModel.addNewComponent(layoutComp, parent, prototype);
             autoUndo = false;
         } finally {
@@ -1489,8 +1479,14 @@ public class MetaComponentCreator {
         else if (isContainer) {
             Dimension pref = comp.getPreferredSize();
             if (pref.width < 16 && pref.height < 12) {
-                width = 100;
-                height = 100;
+                if (comp instanceof Window || comp instanceof java.applet.Applet) {
+                    width = 400;
+                    height = 300;
+                }
+                else {
+                    width = 100;
+                    height = 100;
+                }
             }
             else {
                 Dimension designerSize = FormEditor.getFormDesigner(formModel).getDesignerSize();
