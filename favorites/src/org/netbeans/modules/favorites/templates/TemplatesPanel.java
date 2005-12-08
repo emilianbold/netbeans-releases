@@ -471,7 +471,15 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             
             // #69623: IllegalArgumentException when call getFolder() on an unvalid DataObject
             if (dobj.isValid ()) {
-                DataFolder folder = dobj instanceof DataFolder ? (DataFolder) dobj : dobj.getFolder ();
+                DataFolder folder = null;
+                if (dobj instanceof DataFolder) {
+                    folder = (DataFolder) dobj;
+                } else {
+                    // check parent
+                    if (dobj.getPrimaryFile ().getParent () != null && dobj.getPrimaryFile ().getParent ().isValid ()) {
+                        folder = dobj.getFolder ();
+                    }
+                }
                 if (folder != null) {
                     content.add (new DataFolder.Index (folder, this));
                 }
