@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
@@ -33,16 +34,13 @@ import org.openide.util.NbBundle;
 final class ActionTypePanel extends BasicWizardIterator.Panel {
     
     private static final Map/*<String, String>*/ NAME_TO_FQCN;
-    private static final DefaultComboBoxModel COOKIE_CLASS_MODEL;
     
     static {
-        COOKIE_CLASS_MODEL = new DefaultComboBoxModel();
         Map map = new HashMap(DataModel.PREDEFINED_COOKIE_CLASSES.length);
         for (int i = 0; i < DataModel.PREDEFINED_COOKIE_CLASSES.length; i++) {
             String fqcn = DataModel.PREDEFINED_COOKIE_CLASSES[i];
             String name = DataModel.parseClassName(fqcn);
             map.put(name, fqcn);
-            COOKIE_CLASS_MODEL.addElement(name);
         }
         NAME_TO_FQCN = Collections.unmodifiableMap(map);
     }
@@ -55,7 +53,7 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         initComponents();
         initAccesibility();
         putClientProperty("NewFileWizard_Title", getMessage("LBL_ActionWizardTitle"));
-        coockieClass.setModel(COOKIE_CLASS_MODEL);
+        cookieClass.setModel(createCookieClassModel());
     }
     
     protected String getPanelName() {
@@ -70,7 +68,7 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     
     private String[] getCookieClasses() {
         StringTokenizer classesST  = new StringTokenizer(
-                coockieClass.getEditor().getItem().toString(), ","); // NOI18N
+                cookieClass.getEditor().getItem().toString(), ","); // NOI18N
         Collection classes = new ArrayList();
         while (classesST.hasMoreTokens()) {
             String clazz = ((String) classesST.nextToken()).trim();
@@ -98,6 +96,18 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         return NbBundle.getMessage(ActionTypePanel.class, key);
     }
     
+    private static ComboBoxModel createCookieClassModel() {
+        DefaultComboBoxModel cookieClassModel = new DefaultComboBoxModel();
+        Map map = new HashMap(DataModel.PREDEFINED_COOKIE_CLASSES.length);
+        for (int i = 0; i < DataModel.PREDEFINED_COOKIE_CLASSES.length; i++) {
+            String fqcn = DataModel.PREDEFINED_COOKIE_CLASSES[i];
+            String name = DataModel.parseClassName(fqcn);
+            map.put(name, fqcn);
+            cookieClassModel.addElement(name);
+        }
+        return cookieClassModel;
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -111,8 +121,8 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         modeGroup = new javax.swing.ButtonGroup();
         alwaysEnabled = new javax.swing.JRadioButton();
         condionallyEnabled = new javax.swing.JRadioButton();
-        coockieClassTxt = new javax.swing.JLabel();
-        coockieClass = new javax.swing.JComboBox();
+        cookieClassTxt = new javax.swing.JLabel();
+        cookieClass = new javax.swing.JComboBox();
         filler = new javax.swing.JLabel();
         modeOne = new javax.swing.JRadioButton();
         modeMultiple = new javax.swing.JRadioButton();
@@ -156,16 +166,16 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(condionallyEnabled, gridBagConstraints);
 
-        coockieClassTxt.setLabelFor(coockieClass);
-        org.openide.awt.Mnemonics.setLocalizedText(coockieClassTxt, org.openide.util.NbBundle.getMessage(ActionTypePanel.class, "LBL_CookieClass"));
+        cookieClassTxt.setLabelFor(cookieClass);
+        org.openide.awt.Mnemonics.setLocalizedText(cookieClassTxt, org.openide.util.NbBundle.getMessage(ActionTypePanel.class, "LBL_CookieClass"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 18, 6, 0);
-        add(coockieClassTxt, gridBagConstraints);
+        add(cookieClassTxt, gridBagConstraints);
 
-        coockieClass.setEditable(true);
+        cookieClass.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -173,7 +183,7 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 0);
-        add(coockieClass, gridBagConstraints);
+        add(cookieClass, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -209,13 +219,12 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(0, 18, 0, 0);
         add(modeMultiple, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void condionallyEnabledActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_condionallyEnabledActionPerformed
         boolean enabled = condionallyEnabled.isSelected();
-        coockieClass.setEnabled(enabled);
-        coockieClassTxt.setEnabled(enabled);
+        cookieClass.setEnabled(enabled);
+        cookieClassTxt.setEnabled(enabled);
         modeOne.setEnabled(enabled);
         modeMultiple.setEnabled(enabled);
     }//GEN-LAST:event_condionallyEnabledActionPerformed
@@ -223,8 +232,8 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton alwaysEnabled;
     private javax.swing.JRadioButton condionallyEnabled;
-    private javax.swing.JComboBox coockieClass;
-    private javax.swing.JLabel coockieClassTxt;
+    private javax.swing.JComboBox cookieClass;
+    private javax.swing.JLabel cookieClassTxt;
     private javax.swing.JLabel filler;
     private javax.swing.ButtonGroup modeGroup;
     private javax.swing.JRadioButton modeMultiple;
@@ -236,9 +245,10 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_ActionTypePanel"));
         alwaysEnabled.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_alwaysEnabled"));
         condionallyEnabled.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_condionallyEnabled"));
-        coockieClass.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_coockieClass"));
+        cookieClass.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_cookieClass"));
         modeMultiple.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_modeMultiple"));
         modeOne.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_modeOne"));
     }
+
 }
 
