@@ -13,18 +13,18 @@
 
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
-import java.awt.Image;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import org.openide.util.Utilities;
+import java.util.Collections;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -34,22 +34,22 @@ import org.openide.util.Utilities;
  * @author  nn136682
  */
 public class InstanceTargetXNode extends FilterXNode implements ServerInstance.StateListener {
+    
     private ServerTarget instanceTarget;
     private ServerInstance instance;
     private InstanceProperties instanceProperties;
-    
-    private boolean running;
+    private InstanceTargetChildren instanceTargetChildren;
     
     public InstanceTargetXNode(Node instanceNode, ServerInstance instance) {
-        this(instanceNode, Node.EMPTY, instance);
-        instance.addStateListener(this);
-    }
-    
-    public InstanceTargetXNode(Node instanceNode, Node xnode, ServerInstance instance) {
-        super(instanceNode, xnode, true, new InstanceTargetChildren(xnode, instance));
+        this(instanceNode, Node.EMPTY, new InstanceTargetChildren(Node.EMPTY));
         this.instance = instance;
         instanceProperties = instance.getInstanceProperties();
         instance.addStateListener(this);
+    }
+    
+    private InstanceTargetXNode(Node instanceNode, Node xnode, InstanceTargetChildren instanceTargetChildren) {
+        super(instanceNode, xnode, true, instanceTargetChildren);
+        this.instanceTargetChildren = instanceTargetChildren;
     }
     
     private ServerTarget getServerTarget() {
@@ -74,39 +74,6 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
     
     private void resetDelegateTargetNode() {
         xnode = null;
-    }
-    
-    public static class InstanceTargetChildren extends Children {
-        ServerInstance instance;
-        ServerTarget target;
-        
-        public InstanceTargetChildren(Node original, ServerInstance instance) {
-            super(original);
-            this.instance = instance;
-        }
-        protected void addNotify() {
-            super.addNotify();
-            if (isFurtherExpandable()) {
-                if (original == Node.EMPTY) {
-                    InstanceTargetXNode parent = (InstanceTargetXNode) getNode();
-                    Node newOriginal = null;
-                    if (parent != null)
-                        newOriginal = parent.getDelegateTargetNode();
-                    if (newOriginal != null && newOriginal != Node.EMPTY)
-                        this.changeOriginal(newOriginal);
-                }
-            } else {
-                this.setKeys(java.util.Collections.EMPTY_SET);
-            }
-        }
-        
-        private boolean isFurtherExpandable() {
-            ServerRegistryNode root = ServerRegistryNode.getServerRegistryNode();
-            if (root != null) 
-                return root.isExpandablePassTargetNode();
-
-            return true;
-        }
     }
     
     public javax.swing.Action[] getActions(boolean context) {
@@ -141,14 +108,86 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
     // StateListener implementation -------------------------------------------
     
     public void stateChanged(int oldState, int newState) {
-        if (instance.getServerState() != ServerInstance.STATE_WAITING 
-            && instance.getServerState() != ServerInstance.STATE_SUSPENDED) {
-            instanceTarget = null;
-            resetDelegateTargetNode();
-            setChildren(new InstanceTargetChildren(Node.EMPTY, instance));
-            getChildren().getNodes(true);
-        } else if (instance.getServerState() == ServerInstance.STATE_SUSPENDED) {
-            setChildren(Children.LEAF);
+        if (newState == ServerInstance.STATE_RUNNING || newState == ServerInstance.STATE_DEBUGGING
+            || newState == ServerInstance.STATE_PROFILING) {
+            if (oldState == ServerInstance.STATE_SUSPENDED) {
+                // it looks like the server is being debugged right now, show the
+                // cached nodes rather than trying to retrieve new ones
+                instanceTargetChildren.showLastNodes();
+                getChildren().getNodes(true); // this will make the nodes expand
+            } else {
+                instanceTarget = null;
+                resetDelegateTargetNode();
+                instanceTargetChildren.hideNodes();
+                setChildren(instanceTargetChildren);
+                instanceTargetChildren.updateNodes(this);
+                getChildren().getNodes(true); // this will make the nodes expand
+            }
+        } else {
+            instanceTargetChildren.hideNodes();
+        }
+    }
+    
+    public static class InstanceTargetChildren extends Children {
+        
+        private ServerTarget target;
+        private Node lastDelegateTargetNode;
+        
+        public InstanceTargetChildren(Node original) {
+            super(original);
+        }
+        
+        public void updateNodes(final InstanceTargetXNode parent) {
+            if (isFurtherExpandable()) {
+                if (original == Node.EMPTY) {
+                    changeOriginal(createWaitNode());
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            Node newOriginal = null;
+                            if (parent != null) {
+                                newOriginal = parent.getDelegateTargetNode();
+                                lastDelegateTargetNode = newOriginal;
+                            }
+                            if (newOriginal != null) {
+                                changeOriginal(newOriginal);
+                            } else {
+                                changeOriginal(Node.EMPTY);
+                            }
+                        }
+                    });
+                }
+            } else {
+                changeOriginal(Node.EMPTY);
+            }
+        }
+        
+        public void hideNodes() {
+            changeOriginal(Node.EMPTY);
+        }
+        
+        public void showLastNodes() {
+            Node node = lastDelegateTargetNode;
+            if (node != null) {
+                changeOriginal(node);
+            }
+        }
+        
+        private Node createWaitNode() {
+            AbstractNode node = new AbstractNode(Children.LEAF);
+            node.setName(NbBundle.getMessage(InstanceTargetXNode.class, "LBL_WaitNode_DisplayName"));
+            node.setIconBaseWithExtension("org/openide/src/resources/wait.gif"); // NOI18N
+            
+            Children.Array children = new Children.Array();
+            children.add(new Node[]{node});
+            return new AbstractNode(children);
+        }
+        
+        private boolean isFurtherExpandable() {
+            ServerRegistryNode root = ServerRegistryNode.getServerRegistryNode();
+            if (root != null) {
+                return root.isExpandablePassTargetNode();
+            }
+            return true;
         }
     }
 }
