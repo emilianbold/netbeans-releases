@@ -189,7 +189,7 @@ public class RegisterPointbase implements DatabaseRuntime {
         final File derbyInstall = new File(irf,"derby");//NOI18N
         if (derbyInstall.exists()){
          FileObject derb = fs.findResource("Databases/JDBCDrivers/org_apache_derby_jdbc_ClientDriver.xml"); //NOI18N
-         File dbsample = new File(DerbySupport.getDefaultSystemHome(),"sample");
+         final File dbsample = new File(DerbySupport.getDefaultSystemHome(),"sample");
          // create sample db if things are not initialized correctly
             if ((derb==null) || (!dbsample.exists()) || ("".equals(DerbySupport.getSystemHome())))    {
                 RequestProcessor.getDefault().post(new Runnable() {
@@ -199,11 +199,13 @@ public class RegisterPointbase implements DatabaseRuntime {
                             if (dbdir.exists()==false){
                                 dbdir.mkdirs();
                             }
-                            DerbySupport.setLocation(derbyInstall.getAbsolutePath());
-                            DerbySupport.setSystemHome(dbdir.getAbsolutePath());
+                            if ("".equals(DerbySupport.getLocation()))
+                                DerbySupport.setLocation(derbyInstall.getAbsolutePath());
+                            if ("".equals(DerbySupport.getSystemHome()))
+                                DerbySupport.setSystemHome(dbdir.getAbsolutePath());
                             
                             //now register the sample db
-                            DerbySupport.registerSampleDatabase();
+                                DerbySupport.registerSampleDatabase();
                             
                             //now register the sun-appserv-samples default connexion
                             JDBCDriver[] newDriver = JDBCDriverManager.getDefault().getDrivers("org.apache.derby.jdbc.ClientDriver"); //NOI18N
