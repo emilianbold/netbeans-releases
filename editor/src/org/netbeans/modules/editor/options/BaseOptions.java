@@ -88,6 +88,7 @@ import java.awt.RenderingHints;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 
 
@@ -216,6 +217,10 @@ public class BaseOptions extends OptionSupport {
     /** Code template expand key setting name */
     public static final String CODE_TEMPLATE_EXPAND_KEY = "code-template-expand-key"; // NOI18N
 
+    private Lookup.Result resultKB;
+    private LookupListener weakLookupListenerKB;
+    private LookupListener lookupListenerKB;
+    
     public BaseOptions() {
         this(BaseKit.class, BASE);
         optionsVersion = LATEST_OPTIONS_VERSION;
@@ -687,40 +692,22 @@ public class BaseOptions extends OptionSupport {
     private void loadDefaultKeyBindings(){
         if (defaultKeyBindingsMap!=null) return;
         MIMEOptionFolder mof;
-        if (BASE.equals(getTypeName())){
-            MIMEOptionFolder mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
-            if (mimeFolder == null) return;
-            mof = mimeFolder.getFolder(OptionUtilities.DEFAULT_FOLDER);
-        }else{
-            AllOptionsFolder.getDefault().loadDefaultKeyBindings();
-            MIMEOptionFolder mimeFolder = getMIMEFolder();
-            if (mimeFolder == null) return;
-            mof = mimeFolder.getFolder(OptionUtilities.DEFAULT_FOLDER);
-        }
+        MIMEOptionFolder mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
+        if (mimeFolder == null) return;
+        mof = mimeFolder.getFolder(OptionUtilities.DEFAULT_FOLDER);
         if (mof == null) {
             return;
         }
-        
         MIMEOptionFile file = mof.getFile(KeyBindingsMIMEProcessor.class, false);
         if ((file!=null) && (!file.isLoaded())) {
             file.loadSettings(false);
             defaultKeyBindingsMap = new HashMap(file.getAllProperties());
         }
-        
         //#68762 - Basic keybinding broken for old editor kits
-        if (!usingNewOptions){
-            Object obj = super.getSettingValue(SettingsNames.KEY_BINDING_LIST);
-            boolean setSettings = true;
-            if (obj instanceof List){
-                List list = (List)obj;
-                setSettings = list.isEmpty();
-            }
-            if (setSettings){
+        if (!usingNewOptions && !BASE.equals(getTypeName())){
                 super.setSettingValue(SettingsNames.KEY_BINDING_LIST,
                         new ArrayList(defaultKeyBindingsMap.values()),
                         KEY_BINDING_LIST_PROP);        
-            }
-            
         }
     }
     
@@ -909,14 +896,14 @@ public class BaseOptions extends OptionSupport {
             setTextLimitLineColor(color);
         }
     }
-
+    
     private synchronized KeyBindingSettings getKeybindingSettings(){
         if (keyBindingsSettings == null){
             String mime = getContentType();
             MimeLookup lookup = MimeLookup.getMimeLookup(mime);    
-            Lookup.Result result = lookup.lookup(new Lookup.Template(KeyBindingSettings.class));
-            Collection inst = result.allInstances();
-            lookupListener = new LookupListener(){
+            resultKB = lookup.lookup(new Lookup.Template(KeyBindingSettings.class));
+            Collection inst = resultKB.allInstances();
+            lookupListenerKB = new LookupListener(){
                 public void resultChanged(LookupEvent ev){
                     Lookup.Result result = ((Lookup.Result)ev.getSource());
                     // refresh keyBindingsSettings
@@ -928,7 +915,11 @@ public class BaseOptions extends OptionSupport {
                     updateKeybindingsFromNewOptionsDialogAttributes();
                 }
             };
-            result.addLookupListener(lookupListener);
+            
+            weakLookupListenerKB = (LookupListener) WeakListeners.create(
+                    LookupListener.class, lookupListenerKB, resultKB);
+            
+            resultKB.addLookupListener(weakLookupListenerKB);            
             if (inst.size() > 0){
                 keyBindingsSettings = (KeyBindingSettings)inst.iterator().next();
             }
