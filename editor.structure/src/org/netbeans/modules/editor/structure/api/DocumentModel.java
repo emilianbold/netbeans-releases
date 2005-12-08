@@ -199,7 +199,7 @@ public final class DocumentModel {
                     doc.putProperty(DocumentModel.class, new WeakReference(model));
 //                    System.out.println("[document model] created a new instance");
                     return model;
-                } else 
+                } else
                     return null; //no provider ??? should not happen?!?!
             } else {
                 throw new IllegalStateException("No editor kit for document " + doc + "!");
@@ -261,7 +261,7 @@ public final class DocumentModel {
             
             if(!descendant.isEmpty()) {
                 if((ancestorSO == descendantSO && ancestorEO > descendantEO)
-                        || (ancestorEO == descendantEO && ancestorSO < descendantSO))
+                || (ancestorEO == descendantEO && ancestorSO < descendantSO))
                     return true;
             }
             
@@ -1100,7 +1100,7 @@ public final class DocumentModel {
             DocumentElement de2 = (DocumentElement)o2;
             
             //fastly handle root element comparing
-            if(de1.isRootElement() && !de2.isRootElement()) return -1; 
+            if(de1.isRootElement() && !de2.isRootElement()) return -1;
             if(!de1.isRootElement() && de2.isRootElement()) return +1;
             if(de2.isRootElement() && de1.isRootElement()) return 0;
             
@@ -1122,10 +1122,18 @@ public final class DocumentModel {
                         int namesDelta = de1.getName().compareTo(de2.getName());
                         if(namesDelta != 0) return namesDelta;
                         else {
-                            //compare according to attributes values
-                            return 0;
 //                            //equality acc. to attribs causes problems with readding of elements in XMLDocumentModelProvider when changing attributes.
-//                            return ((DocumentElement.Attributes)de1.getAttributes()).compareTo(de2.getAttributes());
+                            int attrsComp = ((DocumentElement.Attributes)de1.getAttributes()).compareTo(de2.getAttributes());
+                            if(attrsComp != 0) {
+                                return attrsComp;
+                            } else {
+                                //Compare according to their hashCodes
+                                //the same element have the same hashcode
+                                //This is necessary when more elements with the same name is deleted
+                                //then they have the same start-end offsets so they "seem" to be
+                                //the same, thought they aren't.
+                                return de1.isEmpty() ? de2.hashCode() - de1.hashCode() : 0;
+                            }
                         }
                     }
                 }

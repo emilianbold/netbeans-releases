@@ -159,7 +159,9 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
             }
             
             //if one or more elements are deleted get correct paret to regenerate
-            if(leaf.getStartOffset() == leaf.getEndOffset())
+            if((leaf.getStartOffset() == leaf.getEndOffset())
+                    || (changeOffset == leaf.getStartOffset())
+                    || (changeOffset == leaf.getEndOffset()))
                 toRegenerate = leaf.getParentElement();
             else {
                 //user written a tag or something what is not a text
