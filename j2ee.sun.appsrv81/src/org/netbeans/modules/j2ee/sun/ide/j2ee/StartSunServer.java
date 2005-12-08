@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -32,6 +33,7 @@ import java.net.Authenticator;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.j2ee.sun.appsrvapi.PortDetector;
 import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
 
 import javax.enterprise.deploy.shared.ActionType;
@@ -221,9 +223,11 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         if(current_mode==MODE_PROFILE){
             current_mode =MODE_RUN;
             //System.out.println("resetting profiler mode");
-            ConfigureProfiler.removeProfilerInDOmain(new DeploymentManagerProperties(dm));
         }
 
+        //always try to remove this profiler, otherwise it's possible sometimes
+        // that the launcer that stop the server cannot work
+        ConfigureProfiler.removeProfilerInDOmain(new DeploymentManagerProperties(dm));
         
         pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,
                                                      ct, "",
@@ -297,16 +301,17 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 	    }
 	    
 	    String asadminCmd = domainDir + File.separator + domain + File.separator + "bin" +   File.separator + "startserv";
-	    if (File.separator.equals("\\")) {
+	    if (File.separator.equals("\\")) {//NOI18N
 		asadminCmd = asadminCmd + ".bat"; //NOI18N
 	    }
-	    String arr[] = new String[2];
+	    String arr[] = new String[3];
 	    arr[0]= asadminCmd;
+	    arr[1]= "native";//NOI18N
 	    if (debug) {
-		arr[1]= "debug";
+		arr[2]= "debug";//NOI18N
 		
 	    } else{
-		arr[1]= "";
+		arr[2]= "";//NOI18N
 	    }
 	    
 	    
@@ -315,7 +320,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 	    if (errorCode != 0) {
 		
 		pes.fireHandleProgressEvent(null,new Status(ActionType.EXECUTE,
-			ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingServer"), StateType.FAILED));
+			ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingServer"), StateType.FAILED));//NOI18N
 		cmd = CMD_NONE;
 		pes.clearProgressListener();
 		return; //we failed to start the server.
@@ -325,7 +330,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 	
 	
 	if(current_mode==MODE_PROFILE){
-	    pes.fireHandleProgressEvent(null,  new Status(ActionType.EXECUTE, ct, "", StateType.COMPLETED));
+	    pes.fireHandleProgressEvent(null,  new Status(ActionType.EXECUTE, ct, "", StateType.COMPLETED));//NOI18N
 	    cmd = CMD_NONE;
 	    pes.clearProgressListener();
 	    
@@ -420,44 +425,20 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 shouldStopDeploymentManagerSilently =false;
                 return 0;
             }
+            pes.fireHandleProgressEvent(null,
+                    new Status(ActionType.EXECUTE,
+                    ct, "" ,StateType.RUNNING));
             if(current_mode==MODE_PROFILE){
                 try {
-                        Thread.sleep(3000);
-                        pes.fireHandleProgressEvent(null,
-                    new Status(ActionType.EXECUTE,
-                    ct, "running in profiler mode" ,StateType.RUNNING));
+                    Thread.sleep(3000);
+                    
                 } catch (Exception e) {
-                } 
-                if (hasCommandSucceeded())
-                    return 0;
-                else return -1;
+                }
             }
-            else
-            // wait for max 150 seconds
-            for (int i = 0; i < 150; i++) {                
-                try {
-                    exitValue = process.exitValue();
-                } catch (IllegalThreadStateException ite) {
-                } 
-
-                if (exitValue >= 0) {//0 is not error, positive number is bad...See CLI return codes
-                    try {
-                        Thread.sleep(1000);
-                    } catch (Exception e) {
-                    }
-                    return exitValue;
-                }
-                if (i==0){
-                    pes.fireHandleProgressEvent(null,new Status(ActionType.EXECUTE,
-                    ct, cmdName,StateType.RUNNING));
-                }
-
-
-                try {
-                        Thread.sleep(1000);
-                } catch (Exception e) {
-                } 
-            } 
+            if (hasCommandSucceeded())
+                return 0;
+            else return -1;
+            
         } catch (IOException e) {
         }
         
@@ -608,9 +589,11 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
          *         <code>false</code> if time-out ran out.
          */
         private boolean hasCommandSucceeded() {
+            SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;        
             long timeout = System.currentTimeMillis() + TIMEOUT_DELAY;
+
             while (true) {
-                boolean isRunning = isRunning();
+                boolean isRunning = sunDm.isRunning(true);
                 if (ct == CommandType.START) {
                     if (isRunning) {
                         return true;
@@ -618,19 +601,20 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                     if (current_mode == MODE_PROFILE) {
                         int state = ProfilerSupport.getState();
                         if (state == ProfilerSupport.STATE_BLOCKING ||
-                        state == ProfilerSupport.STATE_RUNNING  ||
-                        state == ProfilerSupport.STATE_PROFILING) {
+                                state == ProfilerSupport.STATE_RUNNING  ||
+                                state == ProfilerSupport.STATE_PROFILING) {
                             
                             return true;
                         } else if (state == ProfilerSupport.STATE_INACTIVE) {
                             System.out.println("---ProfilerSupport.STATE_INACTIVE");
-                          // return false;
+                            return false;
                         }
                     }
                 }
                 if (ct == CommandType.STOP && !isRunning) {
                     return true;
                 }
+
                 // if time-out ran out, suppose command failed
                 if (System.currentTimeMillis() > timeout) {
                     return false;
