@@ -221,7 +221,7 @@ public class DerbyOptions extends SystemOption {
             File newDriverFile = new File(newLocation, driverRelativeFile);
             if (newDriverFile.exists()) {
                 try {
-                    JDBCDriver newDriver = JDBCDriver.create(driverName, driverClass, new URL[] { newDriverFile.toURI().toURL() });
+                    JDBCDriver newDriver = JDBCDriver.create(driverName, /*XXX hotfix, pls. change*/driverName, driverClass, new URL[] { newDriverFile.toURI().toURL() });
                     JDBCDriverManager.getDefault().addDriver(newDriver);
                 } catch (MalformedURLException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
