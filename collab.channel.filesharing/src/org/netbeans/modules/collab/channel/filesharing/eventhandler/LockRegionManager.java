@@ -18,6 +18,7 @@ import org.openide.windows.TopComponent;
 import java.util.HashMap;
 import java.util.TimerTask;
 import java.util.Vector;
+import java.util.List;
 
 import javax.swing.SwingUtilities;
 
@@ -69,6 +70,15 @@ public class LockRegionManager {
         this.regionInfo = regionInfo;
         getFileHandler(); //init	
         setValid(true);
+
+        // remove lrm after 5 sec, since the 2phase lock should be done between 200ms to 2200ms
+        TimerTask cleanupTask = new TimerTask() {
+            public void run() {
+                Debug.log("FilesharingContext","LRM, final cleanup"); //NoI18n
+                cleanup();
+            }
+        };
+        getContext().schedule(cleanupTask, 4000);
     }
 
     private CollabFileHandler getFileHandler() {
@@ -92,7 +102,20 @@ public class LockRegionManager {
         this.collabBean = collabBean;
         this.isUserStarted2Phase = true;
         this.userCount = userCount;
+	
+	//set use2phase element to lock message
+        Use2phase use2phase = new Use2phase();
+        use2phase.setUse2phaseId(this.lockID);
+        collabBean.getChLockRegion().setUse2phase(use2phase);        
 
+        CollabFileHandler fh=getFileHandler();
+
+        //if this is the fileowner then no need for 2phase lock, send the beginlock msg
+        if(getContext().isFileOwner(getContext().getLoginUser(), fh.getName())) {
+            sendBeginLockMessage(collabBean);
+            return;
+        }
+                  
         final long delay = FilesharingConstants.PERIOD * 2;
         tt = new TimerTask() {
                     public void run() {
@@ -112,6 +135,7 @@ public class LockRegionManager {
     }
 
     public void undoDocumentUpdate() {
+        Debug.log("FilesharingContext","LRM, undoDocumentUpdate"); //NoI18n
         final CollabFileHandler fh = getFileHandler();
 
         if (fh == null) {
@@ -149,10 +173,14 @@ public class LockRegionManager {
 
     public void sendLockRequest(String use2phaseID, CCollab collabBean)
     throws CollabException {
-        Use2phase use2phase = new Use2phase();
-        use2phase.setUse2phaseId(this.lockID);
+        Debug.log("FilesharingContext","LRM, sendLockRequest: "+use2phaseID);//NoI18n
+        Use2phase use2phase = collabBean.getChLockRegion().getUse2phase();
+        if (use2phase == null) {
+            use2phase = new Use2phase();
+            use2phase.setUse2phaseId(this.lockID);
+            collabBean.getChLockRegion().setUse2phase(use2phase);
+        }
         use2phase.setRequest(true);
-        collabBean.getChLockRegion().setUse2phase(use2phase);
         sendMessage(collabBean);
     }
 
@@ -162,29 +190,28 @@ public class LockRegionManager {
 
         boolean beginLock = false;
         Use2phase use2phase = collabBean.getChLockRegion().getUse2phase();
-
-        //process "lock-region/use2phase/request" message
-        if (use2phase.isRequest()) {
+	
+	CollabFileHandler fh = getFileHandler();
+        if (fh == null) return false;
+	
+        //process "lock-region/use2phase/request" message if this user is file owner
+        if (use2phase.isRequest() && getContext().isFileOwner(getContext().getLoginUser(), fh.getName())) {
+            Debug.log("FilesharingContext","LRM, processing request");//NoI18n
             U2pResponse u2pResponse = new U2pResponse();
-
+            ((CollabFileHandlerSupport)fh).lockFileForCreateRegion();
             if (isContentionFound()) {
-                CollabFileHandler fh = getFileHandler();
-                ((CollabFileHandlerSupport) fh).lockFileForCreateRegion();
+                Debug.log("FilesharingContext","LRM, contention found");//NoI18n
                 u2pResponse.setContentionFound(true);
-                undoDocumentUpdate();
-
-                String regionName = regionInfo.getID();
-                CollabRegion r = ((CollabFileHandlerSupport) fh).getRegion(regionName);
-
-                if (r != null) {
-                    r.setValid(false);
-                }
-
-                ((CollabFileHandlerSupport) fh).removeRegion(userID, regionName);
-                ((CollabFileHandlerSupport) fh).unlockFileForCreateRegion();
             } else {
+                Debug.log("FilesharingContext","LRM, contention not found");//NoI18n
                 u2pResponse.setContentionNotfound(true);
+                //temporarily asssign these lineregions, then unassign if the requester
+                //didn't beginlock in 3 seconds
+                Vector lineRegions=regionInfo.getLineRegion();
+                long unassignDelay=3000;
+                assignBeforeLockRegion(lineRegions, unassignDelay);                                
             }
+            ((CollabFileHandlerSupport)fh).unlockFileForCreateRegion();
 
             use2phase.setResponse(u2pResponse);
 
@@ -192,51 +219,93 @@ public class LockRegionManager {
             use2phase.setRequest(false);
             sendMessage(collabBean);
             beginLock = false;
-        } else if (use2phase.isBegin()) //process normal handleLock if "lock-region/use2phase/begin" message
-         {
+        } else if (use2phase.isBegin()) { //process normal handleLock if "lock-region/use2phase/begin" message
+            Debug.log("FilesharingContext","LRM, processing begin");//NoI18n
             beginLock = true;
+            cleanup();
         } else if (use2phase.getResponse() != null && isUserStarted2Phase) {
             //process response only if this user started 2phase Locking
+	    Debug.log("FilesharingContext","LRM, process response");//NoI18n
             U2pResponse response = use2phase.getResponse();
 
-            if (response.isContentionFound()) //release any lock and start over
-             {
+            if (response.isContentionFound()) { //release any lock and start over
+                Debug.log("FilesharingContext","LRM, contention found");//NoI18n
+                //received response from file owner, so start again
                 beginLock = false;
                 undoDocumentUpdate();
-
-                CollabFileHandler fh = getFileHandler();
-                String regionName = regionInfo.getID();
-                CollabRegion r = ((CollabFileHandlerSupport) fh).getRegion(regionName);
-
-                if (r != null) {
-                    r.setValid(false);
-                }
-
-                ((CollabFileHandlerSupport) fh).removeRegion(userID, regionName);
-                ((CollabFileHandlerSupport) fh).unlockFileForCreateRegion();
-                cleanup();
-            } else if (response.isContentionNotfound()) //store responses
-             {
-                synchronized (replies) {
-                    replies.put(user, collabBean);
-                    Debug.log(
-                        "FilesharingContext",
-                        "LRM, processLockReply: rsize: " + replies.size() + "userCount: " + userCount
-                    ); //NoI18n					
-
-                    if (replies.size() >= (userCount - 1)) {
-                        beginLock = false;
-                        sendBeginLockMessage(collabBean);
-                    }
-                }
+                unAssignRegion(regionInfo.getID());
+                ((CollabFileHandlerSupport)fh).unlockFileForCreateRegion();                                
+                cleanup();                                
+            } else if (response.isContentionNotfound()) {
+                Debug.log("FilesharingContext","LRM, contention not found");//NoI18n
+                //received response from file owner, so beginlock
+                beginLock=false;
+                sendBeginLockMessage(collabBean);
             }
         }
-
         return beginLock;
     }
 
-    private void sendBeginLockMessage(CCollab collabBean)
-    throws CollabException {
+    private void unAssignRegion(String regionName) throws CollabException {
+        Debug.log("FilesharingContext","LRM, unAssignRegion region: " +regionName); //NoI18n
+        CollabFileHandler fh = getFileHandler();
+        CollabRegion r = ((CollabFileHandlerSupport) fh).getRegion(regionName);
+        if (r != null) r.setValid(false);
+
+        List lines=((CollabFileHandlerSupport)fh).getLineRegions(regionName);
+        if (lines != null) {
+            for(int i=0;i<lines.size();i++) {
+                CollabLineRegion liner=(CollabLineRegion)lines.get(i);
+                if (liner != null) {
+                    Debug.log("FilesharingContext","LRM, setAssigned " +
+                        "false for: " + liner.getID()); //NoI18n
+                    liner.setAssigned(null, false);
+                }
+            }
+        }
+        ((CollabFileHandlerSupport) fh).removeRegion(userID, regionName);
+    }
+    
+    private void assignBeforeLockRegion(final Vector lineRegions, long unassignDelay) throws CollabException {
+        Debug.log("FilesharingContext","LRM, assignBeforeLockRegion");//NoI18n
+        if (lineRegions != null && lineRegions.size()>0) {
+            Debug.log("FilesharingContext","LRM, lineRegions.size: "+lineRegions.size());//NoI18n
+            for (int i=0;i<lineRegions.size();i++) {
+                CollabLineRegion liner=(CollabLineRegion)lineRegions.get(i);
+                if (liner != null) {
+                    Debug.log("FilesharingContext","LRM, setAssigned " +
+                        "true for: " + liner.getID()); //NoI18n
+                    liner.setAssigned(null, true);
+		}
+            }
+        }
+	
+        TimerTask unassignTask = new TimerTask() {
+            public void run() {
+	        CollabLineRegion beginLine=(CollabLineRegion)lineRegions.firstElement();
+                CollabLineRegion endLine=(CollabLineRegion)lineRegions.lastElement();
+                // If these lineregions are not assigned yet, then unassign them
+                if (beginLine != null && endLine != null &&
+                        beginLine.getAssignedRegion() == null &&
+                        endLine.getAssignedRegion() == null) {
+                    for (int i=0;i<lineRegions.size();i++) {
+                        CollabLineRegion liner=(CollabLineRegion)lineRegions.get(i);
+                        if (liner != null) {
+                            if (liner.getAssignedRegion() == null) {
+                                Debug.log("FilesharingContext","LRM, setAssigned " +
+                                        "false for: " + liner.getID()); //NoI18n
+                                liner.setAssigned(null, false);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        getContext().schedule(unassignTask, unassignDelay);
+    }
+
+    private void sendBeginLockMessage(CCollab collabBean) throws CollabException {
+        Debug.log("FilesharingContext","LRM, sendBeginLockMessage");//NoI18n
         if (!isValid()) {
             return;
         }
@@ -260,10 +329,13 @@ public class LockRegionManager {
     }
     
     private void cleanup() {
-        //remove lrm
+        Debug.log("FilesharingContext","LRM, cleanup");
         if (tt != null) tt.cancel();
         setValid(false);
-        getContext().removeLockManager(this.lockID);
+        CollabFileHandler fh=getFileHandler();
+        if (fh != null) {
+            ((CollabFileHandlerSupport)fh).removeLockRegionManager(this.lockID);
+        }
     }
 
     public boolean isContentionFound() throws CollabException {

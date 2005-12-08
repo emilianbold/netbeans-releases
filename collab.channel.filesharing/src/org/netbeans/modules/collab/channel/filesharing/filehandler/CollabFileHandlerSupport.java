@@ -13,6 +13,11 @@
 package org.netbeans.modules.collab.channel.filesharing.filehandler;
 
 import com.sun.collablet.CollabException;
+import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import org.netbeans.modules.collab.channel.filesharing.FilesharingCollablet;
+import org.netbeans.modules.collab.channel.filesharing.msgbean.LockRegion;
 
 import org.openide.*;
 import org.openide.cookies.*;
@@ -21,7 +26,6 @@ import org.openide.loaders.*;
 import org.openide.text.*;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 import java.beans.*;
 
@@ -38,19 +42,9 @@ import org.netbeans.modules.collab.channel.filesharing.FilesharingConstants;
 import org.netbeans.modules.collab.channel.filesharing.FilesharingContext;
 import org.netbeans.modules.collab.channel.filesharing.FilesharingEventNotifierFactory;
 import org.netbeans.modules.collab.channel.filesharing.FilesharingEventProcessorFactory;
-import org.netbeans.modules.collab.channel.filesharing.annotations.CollabRegionAnnotation;
-import org.netbeans.modules.collab.channel.filesharing.annotations.RegionAnnotation1;
-import org.netbeans.modules.collab.channel.filesharing.annotations.RegionAnnotation2;
-import org.netbeans.modules.collab.channel.filesharing.annotations.RegionAnnotation3;
-import org.netbeans.modules.collab.channel.filesharing.annotations.RegionAnnotation4;
-import org.netbeans.modules.collab.channel.filesharing.annotations.RegionAnnotation5;
-import org.netbeans.modules.collab.channel.filesharing.annotations.RegionAnnotation6;
-import org.netbeans.modules.collab.channel.filesharing.annotations.RegionAnnotation7;
-import org.netbeans.modules.collab.channel.filesharing.annotations.RegionAnnotation8;
-import org.netbeans.modules.collab.channel.filesharing.annotations.RegionAnnotation9;
-import org.netbeans.modules.collab.channel.filesharing.annotations.RegionHistoryAnnotation;
 import org.netbeans.modules.collab.channel.filesharing.context.LockRegionContext;
 import org.netbeans.modules.collab.channel.filesharing.context.UnlockRegionContext;
+import org.netbeans.modules.collab.channel.filesharing.eventhandler.LockRegionManager;
 import org.netbeans.modules.collab.channel.filesharing.event.LockRegionEvent;
 import org.netbeans.modules.collab.channel.filesharing.event.UnlockRegionEvent;
 import org.netbeans.modules.collab.channel.filesharing.eventlistener.DocumentTabMarker;
@@ -91,7 +85,7 @@ import org.netbeans.modules.collab.core.Debug;
  * @author  Ayub Khan, ayub.khan@sun.com
  * @version 1.0
  */
-public abstract class CollabFileHandlerSupport extends Object implements FilesharingConstants {
+public abstract class CollabFileHandlerSupport extends Object implements FilesharingConstants, KeyListener, MouseListener {
     ////////////////////////////////////////////////////////////////////////////
     // Instance variables
     ////////////////////////////////////////////////////////////////////////////
@@ -201,6 +195,10 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
     protected RegionQueue queue = null;
     private CollabRegionContext rCtx = null;
     private EditorLock createRegionEditorLock=null;
+
+    /* Lock Region Manager Map */
+    private HashMap lrmanagers = new HashMap();
+
     /**
      *
      *
@@ -336,6 +334,8 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
             }
         } catch (javax.swing.text.BadLocationException e) {
             //throw new CollabException(e);
+            Debug.logDebugException("CollabFileHandlerSupport, " +//NoI18n
+                    "cannot update document", e, true);//NoI18n        
         } finally {
             getContext().setSkipSendFile(getName(), false);
             unlockEditor(editorLock);
@@ -990,6 +990,13 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
             if(tc!=null) tc.requestActive();*/
         }
 
+	// Hack, to set focus to users current file editorPane
+        Debug.log("CollabFileHandlerSupport","CFHS, request Focus"+
+            "after createLock for user: "+getContext().getLoginUser());
+        if (FilesharingCollablet.currentEditorPane!=null) {
+            FilesharingCollablet.currentEditorPane.requestFocusInWindow();
+        }
+	
         disableUnlockTimer(false);
     }
 
@@ -1224,7 +1231,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
         Debug.log("CollabFileHandlerSupport", "CollabFileHandlerSupport, regionEnd: " + regionEnd); //NoI18n
 
         Vector lineRegions = regionInfo.getLineRegion();
-        CollabLineRegion[] regions = (CollabLineRegion[]) lineRegions.toArray(new CollabLineRegion[0]);
+        CollabLineRegion[] regions = null;
 
         if (lineRegions == null) {
             synchronized (getDocumentLock()) {
@@ -1239,15 +1246,13 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                     unlockEditor(editorLock);
                 }
             }
+        } else {
+            regions=(CollabLineRegion[])lineRegions.toArray(new CollabLineRegion[0]);
         }
 
-        Debug.log(
-            "CollabFileHandlerSupport",
-            "CollabFileHandlerSupport, # of containing LineRegions is: " + //NoI18n
-            regions.length
-        );
-
         if (regions != null) {
+            Debug.log("CollabFileHandlerSupport","CollabFileHandlerSupport, # of containing LineRegions is: " +  //NoI18n
+                regions.length);
             LineRegion[] pregions = setLockLineRegion(lockRegionData, regions.length);
 
             List cLineRegionList = new ArrayList();
@@ -1474,18 +1479,6 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
 
                 newLineRegionList = rCtx.doUpdateLineRegion(regionName, beginOffset,
                         endOffset, unlockRegionData, null); 
-                /*synchronized(getDocumentLock()) {
-                    EditorLock editorLock = lockEditor(getEditorCookie());
-
-                    try {
-                        newLineRegionList = rCtx.doUpdateLineRegion(regionName, beginOffset, endOffset, unlockRegionData, null);
-                    } catch (Throwable th) {
-                        //unlockEditor(editorLock);
-                        throw new CollabException(th);
-                    } finally {
-                        unlockEditor(editorLock);
-                    }
-                 }*/ 
 
                 //construct protocol line regions
                 LineRegion[] pregions = setUnlockLineRegion(unlockRegionData, newLineRegionList.size());
@@ -1579,6 +1572,13 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                 continue;
             }
 
+	    //Hack, to set focus to users current file editorPane
+            Debug.log("CollabFileHandlerSupport","CFHS, request Focus"+
+                "after createLock for user: "+getContext().getLoginUser());
+            if (FilesharingCollablet.currentEditorPane != null) {
+                FilesharingCollablet.currentEditorPane.requestFocusInWindow();
+            }
+
             CollabRegion region = (CollabRegion) tmpRegion;
             Debug.log("CollabFileHandlerSupport", "CollabFileHandlerSupport, region valid:" + //NoI18n
                 region.isValid()
@@ -1587,7 +1587,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
             if (!region.isValid() || !region.isReadyToUnlock()) {
                 continue;
             }
-
+	    
             region.setValid(false);
 
             TimerTask cleanupRegionTask = new TimerTask() {
@@ -2001,17 +2001,12 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
             return fileDocument.getText(0, fileDocument.getLength());
         } catch (javax.swing.text.BadLocationException ex) {
             //throw new CollabException(ex);
+            Debug.logDebugException("CollabFileHandlerSupport, " +//NoI18n
+                    "getContent failed", ex, true); //NoI18n
         }
 
         return "";
     }
-
-    /**
-     *
-     * @return contentTyoe
-     */
-
-    //public abstract String getContentType();
 
     /**
      * getter for contentType
@@ -2317,39 +2312,6 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                             "Cannot create lock, no line regions match, so try to " +
                             "create regions from " + beginLine + " to: " +endLine);
                     return;
-                    /* 
-                    int newBeginLine = beginLine - 1;
-
-                    if (newBeginLine < 0) {
-                        newBeginLine = 0;
-                    }
-
-                    CollabLineRegion beginLineRegion = rCtx.getLineRegion(newBeginLine);
-
-                    if (beginLineRegion != null) {
-                        Debug.log("CollabFileHandlerSupport","CFHS, Add line: " + //NoI18n
-                            beginLineRegion.getID());
-                        lineRegions.add(beginLineRegion);
-                    }
-
-                    int newEndLine = endLine + 1;
-
-                    if (newEndLine >= fileDocument.getDefaultRootElement().getElementCount()) {
-                        newEndLine = endLine;
-                    }
-
-                    Debug.log("CollabFileHandlerSupport","CFHS," + 
-                            "no line regions match, so try to create regions from " +
-                            newBeginLine + " to: " + newEndLine);
-
-                    CollabLineRegion endLineRegion = rCtx.getLineRegion(newEndLine);
-
-                    if (endLineRegion != null) {
-                        Debug.log("CollabFileHandlerSupport","CFHS, Add line: " + //NoI18n 
-                            endLineRegion.getID()
-                        );
-                        lineRegions.add(endLineRegion);
-                    }*/
                 }
 
                 //Calculate offset based on unassigned lineregions only
@@ -2438,6 +2400,10 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
             ce.printStackTrace(Debug.out);
         } finally {
             unlockEditor(editorLock);
+
+	    //Hack - Now save the editorpane that had the users focus
+            registerInputListener();
+/*
             SwingUtilities.invokeLater( new Runnable() {
                 public void run() {
                     try {
@@ -2450,6 +2416,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                     }
                 }
             });
+  */
         } 
     }
 
@@ -3347,6 +3314,8 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
             //save this listener
             getContext().addCollabDocumentListener(getName(), documentListener);
         }
+	//Hack - Now save the editorpane that had the users focus
+        registerInputListener();
     }
 
     /**
@@ -3533,7 +3502,8 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                         lineRegion.setBeginOffset(beginOffset);
                         lineRegion.setEndOffset(endOffset);
                     } catch (java.lang.IllegalArgumentException ia) {
-                        //ignore
+			Debug.logDebugException("CollabFileHandlerSupport, " +//NoI18n
+                            "resetallbeginoffset failed", ia, true);//NoI18n
                     }
                 }
 
@@ -3571,6 +3541,32 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
         getContext().schedule(resetOffsetTask, delay);
     }
 
+    /**
+     * getLineRegions
+     *
+     * @param   regionName
+     * @return        lineRegions
+     */
+    public List getLineRegions(String regionName) {
+        return rCtx.getLineRegions(regionName);
+    }
+
+    public String createUniqueLockID(String userID, String regionID) {
+        return rCtx.createUniqueLockID(userID, regionID);
+    }
+
+    public LockRegionManager createLockRegionManager(String userID, LockRegion lockRegion) {
+        return rCtx.createLockRegionManager(userID, lockRegion);
+    }        
+
+    public LockRegionManager createLockRegionManager(String userID, RegionInfo regionInfo) {
+        return rCtx.createLockRegionManager(userID, regionInfo);
+    }
+
+    public void removeLockRegionManager(String lockID) {
+        rCtx.removeLockManager(lockID);
+    }
+    
     /**
      * disableUnlockTimer
      *
@@ -3630,7 +3626,159 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
     public RegionQueue getQueue() {
         return this.queue;
     }
+    
+    //Key Events
+    /** Handle the key typed event from the text field. */
+    public void keyTyped(KeyEvent e) {
+        setCurrentEditorPane(findCurrentEditorPane());
+	if(Debug.isEnabled()) displayInfo(e, "KEY TYPED: ");
+    }
 
+    /** Handle the key pressed event from the text field. */
+    public void keyPressed(KeyEvent e) {
+        setCurrentEditorPane(findCurrentEditorPane());
+        if(Debug.isEnabled()) displayInfo(e, "KEY PRESSED: ");
+    }
+          
+    /** Handle the key released event from the text field. */
+    public void keyReleased(KeyEvent e) {}      
+  
+    protected void displayInfo(KeyEvent e, String s) {
+        String keyString=null;
+        String modString=null;
+        String actionString=null;
+        String locationString=null;
+        //You should only rely on the key char if the event
+        //is a key typed event.
+        int id = e.getID();
+        if (id == KeyEvent.KEY_TYPED) {
+            char c = e.getKeyChar();
+            keyString = "key character = '" + c + "'";
+        } else {
+            int keyCode = e.getKeyCode();
+            keyString = "key code = " + keyCode
+                    + " ("
+                    + KeyEvent.getKeyText(keyCode)
+                    + ")";
+        }
+        
+        int modifiers = e.getModifiersEx();
+        modString = "modifiers = " + modifiers;
+        String tmpString = KeyEvent.getModifiersExText(modifiers);
+        if (tmpString.length() > 0) {
+            modString += " (" + tmpString + ")";
+        } else {
+            modString += " (no modifiers)";
+        }
+        
+        actionString = "action key? ";
+        if (e.isActionKey()) {
+            actionString += "YES";
+        } else {
+            actionString += "NO";
+        }
+        
+        locationString = "key location: ";
+        int location = e.getKeyLocation();
+        if (location == KeyEvent.KEY_LOCATION_STANDARD) {
+            locationString += "standard";
+        } else if (location == KeyEvent.KEY_LOCATION_LEFT) {
+            locationString += "left";
+        } else if (location == KeyEvent.KEY_LOCATION_RIGHT) {
+            locationString += "right";
+        } else if (location == KeyEvent.KEY_LOCATION_NUMPAD) {
+            locationString += "numpad";
+        } else { // (location == KeyEvent.KEY_LOCATION_UNKNOWN)
+            locationString += "unknown";
+        }
+        
+        Debug.log("CollabFileHandlerSupport", "CFHS, " +
+                "keyString: "+keyString+
+                "actionString: "+actionString+
+                "locationString: "+locationString);
+    }
+    
+    //Mouse events
+    public void mousePressed(MouseEvent e) {
+        setCurrentEditorPane(findCurrentEditorPane());
+        if(Debug.isEnabled())
+            saySomething("Mouse pressed; # of clicks: "
+                    + e.getClickCount(), e);
+    }
+    
+    public void mouseClicked(MouseEvent e) {
+        setCurrentEditorPane(findCurrentEditorPane());
+        if(Debug.isEnabled())
+            saySomething("Mouse clicked (# of clicks: "
+                    + e.getClickCount() + ")", e);
+    }
+    
+    public void mouseReleased(MouseEvent e) {}
+    
+    public void mouseEntered(MouseEvent e) {}
+    
+    public void mouseExited(MouseEvent e) {}
+    
+    void saySomething(String eventDescription, MouseEvent e) {
+        Debug.log("CollabFileHandlerSupport", "CFHS, " +
+                eventDescription + " detected on "
+                + e.getComponent().getClass().getName());
+    }
+    
+    private void registerInputListener()
+    throws CollabException {
+        JEditorPane[] editorPanes = getEditorPanes();;
+        if(editorPanes==null)
+            return;
+        Debug.log("CollabFileHandlerSupport","CFHS, save editor pane for focus: " +
+                "# of editorPanes: "+ editorPanes.length);
+        for(int i=0;i<editorPanes.length;i++) {
+            JEditorPane editorPane = editorPanes[i];
+            if(editorPane!=null) {
+                //Now remove and add key and mouse listeners for this editorpane
+                Debug.log("CollabFileHandlerSupport","CFHS, isFocusOwner: "+
+                        editorPane.isFocusOwner()+" for user: "+getContext().getLoginUser());
+                editorPane.removeMouseListener(this);
+                editorPane.removeKeyListener(this);
+                editorPane.addMouseListener(this);
+                editorPane.addKeyListener(this);
+            }
+        }
+        //get the last editor pane and set as the current editorpane
+        JEditorPane editorPane=findCurrentEditorPane(editorPanes);
+        if(editorPane!=null) {
+            Debug.log("CollabFileHandlerSupport","CFHS, isFocusOwner: "+
+                    editorPane.isFocusOwner()+" for user: "+getContext().getLoginUser());
+            setCurrentEditorPane(editorPane);
+        }
+    }
+    
+    private JEditorPane findCurrentEditorPane() {
+        try{
+            return findCurrentEditorPane(getEditorPanes());
+        } catch(CollabException ce){
+            return null;
+        }
+    }
+    
+    private JEditorPane findCurrentEditorPane(JEditorPane[] editorPanes) {
+        if(editorPanes!=null && editorPanes.length>0)
+            return editorPanes[editorPanes.length-1];
+        else
+            return null;
+    }
+    
+    private JEditorPane[] getEditorPanes()
+    throws CollabException {
+        EditorCookie ec=getEditorCookie();
+        if(ec!=null)
+            return ec.getOpenedPanes();
+        return null;
+    }
+    
+    private void setCurrentEditorPane(JEditorPane editorPane) {
+        FilesharingCollablet.currentEditorPane=editorPane;
+    }
     /**
      * toString
      *
@@ -4572,6 +4720,42 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
             }
 
             return false;
+        }
+
+        public String createUniqueLockID(String userID, String regionID) {
+            return userID+getName()+regionID;
+        }
+
+        public LockRegionManager createLockRegionManager(String userID, LockRegion lockRegion) {
+            LockRegionManager lrm=null;
+            LockRegionData[] lockRegionData = lockRegion.getLockRegionData();
+            if (lockRegionData!=null && lockRegionData.length>0) {
+                RegionInfo regionInfo = getLockRegion(lockRegionData[0]);
+                lrm=createLockRegionManager(userID, regionInfo);
+            }
+            return lrm;
+        }        
+
+        public LockRegionManager createLockRegionManager(String userID, RegionInfo regionInfo) {
+            LockRegionManager lrm = null;
+            String lockID = createUniqueLockID(userID, regionInfo.getID());
+            synchronized(lrmanagers) {
+                if (lrmanagers.containsKey(lockID)) {
+                    lrm = (LockRegionManager)lrmanagers.get(lockID);
+                } else {
+                    lrm = new LockRegionManager(lockID, getContext(), userID, regionInfo);
+                    lrmanagers.put(lockID, lrm);
+                }
+            }
+            return lrm;
+        }
+
+        public void removeLockManager(String lockID) {
+            synchronized (lrmanagers) {
+                if (lrmanagers.containsKey(lockID)) {
+                    lrmanagers.remove(lockID);
+                }
+            }
         }
     }
 }

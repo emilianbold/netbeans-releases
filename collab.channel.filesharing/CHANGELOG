@@ -12,3 +12,6 @@
 1.0.6:	Don't block AWT during sharing initialization.
 
 1.0.7:  Remove useless settings (#64551)
+
+1.0.8:	Filesharing fixes for 3 users editing (JSE issue #6318138)
+        Jumping focus (#62871, JSE issue #6317025)

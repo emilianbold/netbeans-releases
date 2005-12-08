@@ -32,7 +32,7 @@ import org.netbeans.modules.collab.core.Debug;
  */
 public class CollabLineRegion extends CollabRegionSupport implements CollabRegion {
     private Annotation lineAnnotation = null;
-    CollabRegion parent = null;
+    private CollabRegion parent = null;
     private boolean assigned = false;
 
     /**
@@ -128,5 +128,14 @@ public class CollabLineRegion extends CollabRegionSupport implements CollabRegio
     public boolean isAssigned() {
         Debug.log("CollabRegionSupport","CRS, isAssigned: "+this.assigned);
         return this.assigned;
+    }
+    
+    /**
+     * getAssignedRegion
+     *
+     */
+    public CollabRegion getAssignedRegion() {
+        Debug.log("CollabRegionSupport","CRS, getAssignedRegion: "+this.parent);
+        return this.parent;        
     }
 }

@@ -20,6 +20,7 @@ import org.netbeans.modules.collab.channel.filesharing.FilesharingContext;
 import org.netbeans.modules.collab.channel.filesharing.context.LockRegionContext;
 import org.netbeans.modules.collab.channel.filesharing.context.MessageContext;
 import org.netbeans.modules.collab.channel.filesharing.filehandler.CollabFileHandler;
+import org.netbeans.modules.collab.channel.filesharing.filehandler.CollabFileHandlerSupport;
 import org.netbeans.modules.collab.channel.filesharing.filehandler.RegionInfo;
 import org.netbeans.modules.collab.channel.filesharing.filehandler.SharedFileGroup;
 import org.netbeans.modules.collab.channel.filesharing.mdc.CollabContext;
@@ -77,11 +78,17 @@ public class LockRegionHandler extends FilesharingEventHandler {
             if(!skipSend) {
                 LockRegionContext lockRegionContext = (LockRegionContext)evContext;
                 RegionInfo regionInfo = lockRegionContext.getRegionInfo();
-                //get self LockRegionManager
-                LockRegionManager lrmanager = getContext().createManager(
+		String fileName = regionInfo.getFileName();
+		CollabFileHandler fh =
+		    getContext().getSharedFileGroupManager().getFileHandler(fileName);
+                if (fh != null) { 
+                    //get self LockRegionManager
+                    LockRegionManager lrmanager = 
+                        ((CollabFileHandlerSupport)fh).createLockRegionManager(
                         getContext().getLoginUser(), regionInfo);
-                CCollab collab = constructMsg(evContext);
-                lrmanager.start2PhaseLock(collab, getContext().getConversation().getParticipants().length);
+                    CCollab collab = constructMsg(evContext);
+                    lrmanager.start2PhaseLock(collab, getContext().getConversation().getParticipants().length);
+                }
             }
         }
     }
@@ -146,12 +153,20 @@ public class LockRegionHandler extends FilesharingEventHandler {
         Use2phase use2phase=lockRegion.getUse2phase();
         boolean beginLock=false;
         if(use2phase!=null) {
-            //get self LockRegionManager
-            LockRegionManager lrmanager = getContext().createManager(
-                    getContext().getLoginUser(), lockRegion);
-            beginLock=lrmanager.processLockReply(messageOriginator, collabBean);
-            //return for response received from remote user either contention or not
-            if (!beginLock) return;
+            LockRegionData[] lockRegionData = lockRegion.getLockRegionData();
+            if (lockRegionData != null && lockRegionData.length > 0) {
+                CollabFileHandler fh =
+		    getContext().getSharedFileGroupManager().getFileHandler(
+                        lockRegionData[0].getFileName());
+                if (fh != null) {
+                    //get self LockRegionManager
+                    LockRegionManager lrmanager = ((CollabFileHandlerSupport)fh).createLockRegionManager(
+                        getContext().getLoginUser(), lockRegion);
+                    beginLock=lrmanager.processLockReply(messageOriginator, collabBean);
+                    //return for response received from remote user either contention or not
+                    if (!beginLock) return;
+                }
+            }
         } 
 
         //This section is processed either if beginLock=true or there is no use2phase  
