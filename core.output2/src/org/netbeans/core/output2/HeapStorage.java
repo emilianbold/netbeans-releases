@@ -41,7 +41,7 @@ class HeapStorage implements Storage {
     public synchronized int write(ByteBuffer buf, boolean addNewLine) throws IOException {
         closed = false;
         int oldSize = size;
-        size += buf.limit() + ( addNewLine ? 2 : 0);
+        size += buf.limit() + ( addNewLine ? OutWriter.lineSepBytes.length : 0);
         if (size > bytes.length) {
             byte[] oldBytes = bytes;
             bytes = new byte[Math.max (oldSize * 2, (buf.limit() * 2) + oldSize)]; 
@@ -50,7 +50,7 @@ class HeapStorage implements Storage {
         buf.flip();
         buf.get(bytes, oldSize, buf.limit());
         if (addNewLine) {
-            bytes[size-1] = '\n'; //NOI18N
+            System.arraycopy (OutWriter.lineSepBytes, 0, bytes, size - OutWriter.lineSepBytes.length - 1, OutWriter.lineSepBytes.length);
         }
         return oldSize;
     }

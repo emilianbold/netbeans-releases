@@ -14,6 +14,7 @@
 package org.netbeans.core.output2;
 
 import java.awt.EventQueue;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -273,7 +274,7 @@ public class OutputDocumentTest extends NbTestCase {
         
     }
     
-    public void testGetLength() {
+    public void testGetLength() throws UnsupportedEncodingException {
         System.out.println("testGetLength");
         
         OutWriter ow = new OutWriter ();
@@ -286,7 +287,9 @@ public class OutputDocumentTest extends NbTestCase {
         ow.println (third);
         ow.flush();
         
-        int expectedLength = first.length() + second.length() + third.length() + 3;
+        String lineSeparator = new String(OutWriter.lineSepBytes, "UTF-16");
+        
+        int expectedLength = first.length() + second.length() + third.length() + (3 * lineSeparator.length()) ;
         int receivedLength = doc.getLength();
         
         assertTrue ("Number of characters counting carriage returns should be " 
@@ -332,7 +335,7 @@ public class OutputDocumentTest extends NbTestCase {
         
     }
     
-    public void testGetText() {
+    public void testGetText() throws UnsupportedEncodingException {
         System.out.println("testGetText");
         OutWriter ow = new OutWriter ();
         OutputDocument doc = new OutputDocument (ow);
@@ -368,7 +371,8 @@ public class OutputDocumentTest extends NbTestCase {
             ble.printStackTrace();
             fail ("Unexpected BadLocationException: " + ble.getMessage());
         }
-        expected = first + "\n" + second + "\n";
+        String lineSeparator = new String(OutWriter.lineSepBytes, "UTF-16");
+        expected = first + lineSeparator + second + lineSeparator;
         
         assertEquals ("getText for first two strings should be \"" + expected + "\" but was \"" + received + "\"", expected, received);
     }
@@ -435,7 +439,7 @@ public class OutputDocumentTest extends NbTestCase {
 
     }
     
-    public void testGetElement() {
+    public void testGetElement() throws UnsupportedEncodingException {
         System.out.println("testGetElement");
         
         OutWriter ow = new OutWriter ();
@@ -447,12 +451,13 @@ public class OutputDocumentTest extends NbTestCase {
         ow.println (second);
         ow.println (third);
         ow.flush();        
+        String lineSeparator = new String(OutWriter.lineSepBytes, "UTF-16");
         
         Element el = doc.getElement(0);
         assertTrue (el.getStartOffset() == 0);
         assertTrue ("End offset should be length of string + separator length (" 
-            + (first.length() + 1) + " but was " + el.getEndOffset(), 
-            el.getEndOffset() == first.length() + 1);
+            + (first.length() + lineSeparator.length()) + " but was " + el.getEndOffset(), 
+            el.getEndOffset() == first.length() + lineSeparator.length());
         
         el = doc.getElement(1);
     }
@@ -567,18 +572,19 @@ public class OutputDocumentTest extends NbTestCase {
         ODListener docListener = new ODListener(doc);
         ODListener styListener = new ODListener(styled);
         
-        
+        String lineSeparator = new String(OutWriter.lineSepBytes, "UTF-16");
+
         
         
         String s = "This is a string I will append";
         
-        styled.insertString(styled.getLength(), s + "\n", SimpleAttributeSet.EMPTY);
+        styled.insertString(styled.getLength(), s + lineSeparator, SimpleAttributeSet.EMPTY);
         ow.println (s);
         ow.flush();
         docListener.assertChanged();
         styListener.assertChanged();
         
-        styled.insertString(styled.getLength(), s + "\n", SimpleAttributeSet.EMPTY);
+        styled.insertString(styled.getLength(), s + lineSeparator, SimpleAttributeSet.EMPTY);
         ow.println (s);
         ow.flush();
         
@@ -608,7 +614,7 @@ public class OutputDocumentTest extends NbTestCase {
         //Stress test it to ensure no off-by-ones that show up only when the file is large
         for (int i = 0; i < 10; i++) {
             for (int j=0; j < STRINGS.length; j++) {
-                styled.insertString(styled.getLength(), s + "\n", SimpleAttributeSet.EMPTY);
+                styled.insertString(styled.getLength(), s + lineSeparator, SimpleAttributeSet.EMPTY);
                 ow.println (s);
                 ow.flush();
 

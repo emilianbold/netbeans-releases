@@ -14,6 +14,7 @@
 package org.netbeans.core.output2;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -30,7 +31,7 @@ public class OutWriterTest extends TestCase {
         super(testName);
     }
     
-    public void testPositionOfLine() {
+    public void testPositionOfLine() throws UnsupportedEncodingException {
         System.out.println("testPositionOfLine");
 
         OutWriter ow = new OutWriter ();
@@ -48,8 +49,9 @@ public class OutWriterTest extends TestCase {
         int pos = ow.getLines().getLineStart(0);
         
         assertTrue ("First line position should be 0 but is " + pos, pos == 0);
+        String lineSeparator = new String(OutWriter.lineSepBytes, "UTF-16");
         
-        int expectedPosition = first.length() + 1;
+        int expectedPosition = first.length() + lineSeparator.length();
         pos = ow.getLines().getLineStart(1);
         
         assertTrue ("Second line position should be length of first (" + first.length() + ") + line " +
@@ -59,14 +61,14 @@ public class OutWriterTest extends TestCase {
          
         
         pos = ow.getLines().getLineStart (2);
-        int targetPos = first.length() + second.length() + (lineSepBytes.length * 2) - 2;
+        int targetPos = first.length() + second.length() + (lineSeparator.length() * 2);
         
         assertTrue ("Third line position should be " + targetPos + " but is " +
             pos, pos == targetPos);
     }
     
     
-    public void testPosition() {
+    public void testPosition() throws UnsupportedEncodingException {
         System.out.println("testPosition");
         
         OutWriter ow = new OutWriter();
@@ -85,8 +87,10 @@ public class OutWriterTest extends TestCase {
         ow.println (second);
         
         assertTrue (ow.getLines().getLineCount() == 2);
+
+        String lineSeparator = new String(OutWriter.lineSepBytes, "UTF-16");
         
-        int targetLength = first.length() + second.length() + 2;
+        int targetLength = first.length() + second.length() + (2 *  lineSeparator.length());
 
         assertTrue ( 
             "After printing strings with length " + first.length() + " and " + 
@@ -97,13 +101,13 @@ public class OutWriterTest extends TestCase {
         ow.println (third);
         
         targetLength = first.length() + second.length() + third.length() + 
-            3;
+            (3 *  lineSeparator.length());
         
         assertTrue ("Length should be " + targetLength + " but position is "
             + ow.getLines().getCharCount(), targetLength == ow.getLines().getCharCount());
     }
     
-    public void testLine() {
+    public void testLine() throws UnsupportedEncodingException {
         System.out.println("testLine");
         
         
@@ -133,10 +137,10 @@ public class OutWriterTest extends TestCase {
             ioe.printStackTrace();
             fail (ioe.getMessage());
         }
-        
-        String firstExpected = first + "\n";
-        String secondExpected = second + "\n";
-        String thirdExpected = third + "\n";
+        String lineSeparator = new String(OutWriter.lineSepBytes, "UTF-16");
+        String firstExpected = first + lineSeparator;
+        String secondExpected = second + lineSeparator;
+        String thirdExpected = third + lineSeparator;
         
         assertEquals("First string should be \"" + firstExpected + "\" but was \"" + firstBack + "\"",
             firstBack, firstExpected);
@@ -339,7 +343,7 @@ public class OutWriterTest extends TestCase {
             ow.println(first);
             ow.flush();
             
-            String firstExpected = first + "\n";
+            String firstExpected = first + new String(OutWriter.lineSepBytes, "UTF-16");
             String firstReceived = ow.getLines().getLine(0);
             
             assertEquals ("First line should be \"" + firstExpected + "\" but was \"" + firstReceived + "\"", firstExpected, firstReceived);
@@ -380,7 +384,8 @@ public class OutWriterTest extends TestCase {
         System.out.println("testWrite");
         try {
             OutWriter ow = new OutWriter ();
-
+            String lineSeparator = new String(OutWriter.lineSepBytes, "UTF-16");
+  
             ow.write('x');
             ow.write('y');
             ow.write('z');
@@ -388,7 +393,7 @@ public class OutWriterTest extends TestCase {
             ow.flush();
             assertEquals(1, ow.getLines().getLineCount());
             String firstReceived = ow.getLines().getLine(0);
-            assertEquals ("xyz\n", firstReceived);
+            assertEquals ("xyz" + lineSeparator, firstReceived);
         
             ow = new OutWriter();
             ow.println("firstline");
@@ -397,7 +402,7 @@ public class OutWriterTest extends TestCase {
             ow.flush();
             assertEquals(2, ow.getLines().getLineCount());
             firstReceived = ow.getLines().getLine(1);
-            assertEquals ("xyz\n", firstReceived);
+            assertEquals ("xyz" + lineSeparator, firstReceived);
             
             ow = new OutWriter();
             ow.println("firstline");
@@ -407,33 +412,32 @@ public class OutWriterTest extends TestCase {
             ow.flush();
             assertEquals(2, ow.getLines().getLineCount());
             firstReceived = ow.getLines().getLine(1);
-            assertEquals ("xyzxyz-end\n", firstReceived);
+            assertEquals ("xyzxyz-end" + lineSeparator, firstReceived);
             
             ow = new OutWriter();
             ow.write(new char[] {'x', 'y', '\n', 'z', 'z', 'z', '\n', 'A'});
             ow.println();
             ow.flush();
             assertEquals(3, ow.getLines().getLineCount());
-            assertEquals("xy\n", ow.getLines().getLine(0));
-            assertEquals("zzz\n", ow.getLines().getLine(1));
-            System.out.println("last=" + ow.getLines().getLine(2));
-            assertEquals("A\n", ow.getLines().getLine(2));
+            assertEquals("xy" + lineSeparator, ow.getLines().getLine(0));
+            assertEquals("zzz" + lineSeparator, ow.getLines().getLine(1));
+            assertEquals("A" + lineSeparator, ow.getLines().getLine(2));
             
             ow = new OutWriter();
             ow.write(new char[] {'x', 'y', '\n', 'z', 'z', 'z', '\n'});
             ow.flush();
             assertEquals(2, ow.getLines().getLineCount());
-            assertEquals("xy\n", ow.getLines().getLine(0));
-            assertEquals("zzz\n", ow.getLines().getLine(1));
+            assertEquals("xy" + lineSeparator, ow.getLines().getLine(0));
+            assertEquals("zzz" + lineSeparator, ow.getLines().getLine(1));
             
             ow = new OutWriter();
             ow.write(new char[] {'\n', '\n', '\n', 'z', 'z', 'z', '\n'});
             ow.flush();
             assertEquals(4, ow.getLines().getLineCount());
-            assertEquals("\n", ow.getLines().getLine(0));
-            assertEquals("\n", ow.getLines().getLine(1));
-            assertEquals("\n", ow.getLines().getLine(2));
-            assertEquals("zzz\n", ow.getLines().getLine(3));
+            assertEquals(lineSeparator, ow.getLines().getLine(0));
+            assertEquals(lineSeparator, ow.getLines().getLine(1));
+            assertEquals(lineSeparator, ow.getLines().getLine(2));
+            assertEquals("zzz" + lineSeparator, ow.getLines().getLine(3));
             
             
         } catch (Exception e) {
@@ -446,6 +450,7 @@ public class OutWriterTest extends TestCase {
         System.out.println("testWritePartial");
         try {
             OutWriter ow = new OutWriter ();
+            String lineSeparator = new String(OutWriter.lineSepBytes, "UTF-16");
 
             ow.write('x');
             assertEquals(1, ow.getLines().getLineCount());
@@ -455,7 +460,7 @@ public class OutWriterTest extends TestCase {
             ow.write('z');
             assertEquals ("xyz", ow.getLines().getLine(0));
             ow.println();
-            assertEquals ("xyz\n", ow.getLines().getLine(0));
+            assertEquals ("xyz" + lineSeparator, ow.getLines().getLine(0));
             ow.write('a');
             assertEquals(2, ow.getLines().getLineCount());
             assertEquals ("a", ow.getLines().getLine(1));
@@ -464,14 +469,14 @@ public class OutWriterTest extends TestCase {
             ow = new OutWriter();
             ow.write(new char[] { 'x', 'y', 'z', '\n', 'A'});
             assertEquals(2, ow.getLines().getLineCount());
-            assertEquals ("xyz\n", ow.getLines().getLine(0));
+            assertEquals ("xyz" + lineSeparator, ow.getLines().getLine(0));
             assertEquals ("A", ow.getLines().getLine(1));
             ow.write('B');
             assertEquals(2, ow.getLines().getLineCount());
             assertEquals ("AB", ow.getLines().getLine(1));
             ow.println("CD");
             assertEquals(2, ow.getLines().getLineCount());
-            assertEquals ("ABCD\n", ow.getLines().getLine(1));
+            assertEquals ("ABCD" + lineSeparator, ow.getLines().getLine(1));
             
         } catch (Exception e) {
             e.printStackTrace();
