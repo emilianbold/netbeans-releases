@@ -1248,6 +1248,15 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
             //dumpResultLineNumbers();
         }
         adjustLineNumbers(line4 + physicalLineDiff + 1, lineDiff);
+
+        // #65970 workaround, resultLineNumbers content must be primitive only raising
+        int line = -1;
+        for (int i = 0; i< resultLineNumbers.length; i++) {
+            if (resultLineNumbers[i] < line) {
+                resultLineNumbers[i] = line;
+            }
+            line = resultLineNumbers[i];
+        }
     }
     
     /*
