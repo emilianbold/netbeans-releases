@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -60,6 +60,11 @@ import org.xml.sax.helpers.DefaultHandler;
 public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie.Of {
     
     /**
+     * The reference to the instance of Environment.Provider
+     */
+    private static WeakReference providerRef;
+    
+    /**
      * The path where the drivers are registered in the SystemFileSystem.
      */
     public static final String DRIVERS_PATH = "Databases/JDBCDrivers"; // NOI18N
@@ -83,8 +88,12 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
 
     Reference refDriver = new WeakReference(null);
 
-    private static JDBCDriverConvertor createProvider() {
-        return new JDBCDriverConvertor();
+    private static synchronized JDBCDriverConvertor createProvider() {
+        if (providerRef == null) {
+            providerRef = new WeakReference(new JDBCDriverConvertor());
+        }
+        
+        return (JDBCDriverConvertor)providerRef.get();
     }
     
     private JDBCDriverConvertor() {
@@ -163,7 +172,10 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
             return null;
         }
         
-        return JDBCDriver.create(handler.name, handler.clazz, urls);
+        if (handler.displayName == null) {
+            handler.displayName = handler.name;
+        }
+        return JDBCDriver.create(handler.name, handler.displayName, handler.clazz, urls);
     }
     
     // Other
@@ -321,9 +333,10 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
 
         void write(PrintWriter pw) throws IOException {
             pw.println("<?xml version='1.0'?>"); //NOI18N
-            pw.println("<!DOCTYPE driver PUBLIC '-//NetBeans//DTD JDBC Driver 1.0//EN' 'http://www.netbeans.org/dtds/jdbc-driver-1_0.dtd'>"); //NOI18N
+            pw.println("<!DOCTYPE driver PUBLIC '-//NetBeans//DTD JDBC Driver 1.1//EN' 'http://www.netbeans.org/dtds/jdbc-driver-1_1.dtd'>"); //NOI18N
             pw.println("<driver>"); //NOI18N
             pw.println("  <name value='" + XMLUtil.toAttributeValue(instance.getName()) + "'/>"); //NOI18N
+            pw.println("  <display-name value='" + XMLUtil.toAttributeValue(instance.getDisplayName()) + "'/>"); //NOI18N
             pw.println("  <class value='" + XMLUtil.toAttributeValue(instance.getClassName()) + "'/>"); //NOI18N
             pw.println("  <urls>"); //NOI18N
             URL[] urls = instance.getURLs();
@@ -341,11 +354,13 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
     private static final class Handler extends DefaultHandler {
         
         private static final String ELEMENT_NAME = "name"; // NOI18N
+        private static final String ELEMENT_DISPLAY_NAME = "display-name"; // NOI18N
         private static final String ELEMENT_CLASS = "class"; // NOI18N
         private static final String ELEMENT_URL = "url"; // NOI18N
         private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
         
         String name;
+        String displayName;
         String clazz;
         LinkedList urls = new LinkedList();
 
@@ -358,6 +373,8 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         public void startElement(String uri, String localName, String qName, Attributes attrs) throws SAXException {
             if (ELEMENT_NAME.equals(qName)) {
                 name = attrs.getValue(ATTR_PROPERTY_VALUE);
+            } else if (ELEMENT_DISPLAY_NAME.equals(qName)) {
+                displayName = attrs.getValue(ATTR_PROPERTY_VALUE);
             } else if (ELEMENT_CLASS.equals(qName)) {
                 clazz = attrs.getValue(ATTR_PROPERTY_VALUE);
             } else if (ELEMENT_URL.equals(qName)) {

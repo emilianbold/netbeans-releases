@@ -56,19 +56,17 @@ public class CustomizeDriverAction extends DatabaseAction {
 		final DriverNodeInfo info = (DriverNodeInfo) n[0].getCookie(DriverNodeInfo.class);
         if (info == null)
             return; //should not happen
-        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(info.getURL());
-        for (int i = 0; i < drvs.length; i++)
-            if (activatedNodes[0].getName().equals(drvs[i].getName())) {
-                drvIndex = i;
-                break;
-            }
-        final AddDriverDialog dlgPanel = new AddDriverDialog(drvs[drvIndex]);
+        JDBCDriver drv = info.getJDBCDriver();
+        if (drv == null) {
+            return;
+        }
+        final AddDriverDialog dlgPanel = new AddDriverDialog(drv);
         
         
         ActionListener actionListener = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                    String name = dlgPanel.getName();
+                    String displayName = dlgPanel.getDisplayName();
                     List drvLoc = dlgPanel.getDriverLocation();
                     String drvClass = dlgPanel.getDriverClass();
                     
@@ -91,12 +89,13 @@ public class CustomizeDriverAction extends DatabaseAction {
                     closeDialog();
                     
                     //create driver instance and save it in the XML format
-                    if (name == null || name.equals(""))
-                        name = drvClass;
+                    if (displayName == null || displayName.equals(""))
+                        displayName = drvClass;
                     
                     try {
+                        String oldName = info.getJDBCDriver().getName();
                         info.delete();
-                        JDBCDriverManager.getDefault().addDriver(JDBCDriver.create(name, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()])));
+                        JDBCDriverManager.getDefault().addDriver(JDBCDriver.create(oldName, displayName, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()])));
                     } catch (IOException exc) {
                         //PENDING
                     } catch (DatabaseException exc) {

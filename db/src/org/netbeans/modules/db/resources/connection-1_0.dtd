@@ -13,11 +13,17 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <!--- The root connection element. -->
-<!ELEMENT connection (driver-class|database-url|schema|user)*>
+<!ELEMENT connection (driver-class,driver-name,database-url,schema,user)>
 
 <!--- The driver class. -->
 <!ELEMENT driver-class EMPTY>
 <!ATTLIST driver-class 
+    value CDATA #REQUIRED
+>
+
+<!--- The driver name. -->
+<!ELEMENT driver-name EMPTY>
+<!ATTLIST driver-name 
     value CDATA #REQUIRED
 >
 

@@ -25,29 +25,32 @@ public final class JDBCDriver {
     
     private URL[] urls;
     private String clazz;
+    private String displayName;
     private String name;
     
-    JDBCDriver(String name, String clazz, URL[] urls) {
-        assert name != null && clazz != null && urls != null;
-        this.clazz = clazz;
+    JDBCDriver(String name, String displayName, String clazz, URL[] urls) {
+        assert name != null && displayName != null && clazz != null && urls != null;
         this.name = name;
+        this.displayName = displayName;
+        this.clazz = clazz;
         this.urls = urls;
     }
 
     /**
      * Creates a new JDBCDriver instance.
      *
-     * @param name the name of the driver; must not be null.
+     * @param name the programmatic name of the driver; must not be null.
+     * @param displayName the display name of the driver (used for example to display the driver in the UI); must not be null.
      * @param clazz the JDBC driver class; must not be null.
      * @param urls the array of the JDBC driver files URLs; must not be null.
      * 
      * @throws NullPointerException if any of the parameters is null.
      */
-    public static JDBCDriver create(String name, String clazz, URL[] urls) {
-        if (name == null || clazz == null || urls == null) {
+    public static JDBCDriver create(String name, String displayName, String clazz, URL[] urls) {
+        if (name == null || displayName == null || clazz == null || urls == null) {
             throw new NullPointerException();
         }
-        return new JDBCDriver(name, clazz, urls);
+        return new JDBCDriver(name, displayName, clazz, urls);
     }
     
     /**
@@ -69,15 +72,27 @@ public final class JDBCDriver {
     }
     
     /**
-     * Return the user defined driver name.
+     * Returns the display name of the driver (used for example to display the driver in the UI).
      *
-     * @return the user defined driver name.
+     * @return the display name of the driver.
+     */
+    public String getDisplayName() {
+        return displayName;
+    }
+    
+    /**
+     * Return the programmatic driver name.
+     *
+     * @return the programmatic driver name.
      */
     public String getName() {
         return name;
     }
     
     public String toString() {
-        return "JDBCDriver[name='" + name + ",className='" + clazz + ",urls=" + Arrays.asList(urls) + "]";
+        return "JDBCDriver[name='" + name + // NOI18N
+                "',displayName='" + displayName + // NOI18N
+                "',className='" + clazz + // NOI18N
+                "',urls=" + Arrays.asList(urls) + "]"; // NOI18N
     }
 }

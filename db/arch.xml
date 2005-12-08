@@ -154,14 +154,15 @@ Microsystems, Inc. All Rights Reserved.
     <a href="@TOP@org/netbeans/api/db/explorer/JDBCDriverManager.html">JDBCDriverManager</a> or 
     by registering an XML file which describes the driver in the module layer.
     The XML file is described by the 
-    <a href="http://www.netbeans.org/dtds/jdbc-driver-1_0.dtd">JDBC Driver DTD</a>. 
+    <a href="http://www.netbeans.org/dtds/jdbc-driver-1_1.dtd">JDBC Driver DTD</a>. 
     An example of a registration file describing the JDBC driver for PostgreSQL follows:
    </p>
    <pre>
     &lt;?xml version='1.0'?&gt;
     &lt;!DOCTYPE driver PUBLIC '-//NetBeans//DTD JDBC Driver 1.0//EN' 'http://www.netbeans.org/dtds/jdbc-driver-1_0.dtd'&gt;
     &lt;driver&gt;
-      &lt;name value='PostgreSQL (v7.0 and later)'/&gt;
+      &lt;name value='postgresql-7'/&gt;
+      &lt;display-name value='PostgreSQL (v7.0 and later)'/&gt;
       &lt;class value='org.postgresql.Driver'/&gt;
       &lt;urls&gt;
         &lt;url value='file:/folder1/folder2/drivers/pg74.1jdbc3.jar'/&gt;
@@ -212,6 +213,7 @@ Microsystems, Inc. All Rights Reserved.
     &lt;!DOCTYPE connection PUBLIC '-//NetBeans//DTD Database Connection 1.0//EN' 'http://www.netbeans.org/dtds/connection-1_0.dtd'&gt;
     &lt;connection&gt;
       &lt;driver-class value='org.postgresql.Driver'/&gt;
+      &lt;driver-name value='postgres-7'/&gt;
       &lt;database-url value='jdbc:postgresql:test'/&gt;
       &lt;schema value='public'/&gt;
       &lt;user value='test'/&gt;

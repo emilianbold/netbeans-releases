@@ -15,6 +15,9 @@ package org.netbeans.modules.db.explorer;
 
 import java.util.*;
 import java.io.*;
+import org.netbeans.api.db.explorer.JDBCDriver;
+
+// XXX this class is completely unuseful and should be removed
 
 /**
 * xxx
@@ -27,6 +30,7 @@ public class DatabaseDriver extends Object implements Externalizable
     private String url;
     private String prefix;
     private String adaptor;
+    private transient JDBCDriver jdbcDriver;
 
     static final long serialVersionUID =7937512184160164098L;
     public DatabaseDriver()
@@ -44,6 +48,14 @@ public class DatabaseDriver extends Object implements Externalizable
         name = dname;
         url = durl;
         prefix = dprefix;
+    }
+    
+    public DatabaseDriver(String dname, String durl, String dprefix, JDBCDriver djdbcDriver)
+    {
+        name = dname;
+        url = durl;
+        prefix = dprefix;
+        jdbcDriver = djdbcDriver;
     }
 
     public DatabaseDriver(String dname, String durl, String dprefix, String dbadap)
@@ -96,6 +108,10 @@ public class DatabaseDriver extends Object implements Externalizable
         else if (name.startsWith("Database.Adaptors.")) adaptor = name; //NOI18N
         else adaptor = "Database.Adaptors."+name; //NOI18N
         //		System.out.println("Metadata adaptor class set = "+adaptor);
+    }
+    
+    public JDBCDriver getJDBCDriver() {
+        return jdbcDriver;
     }
 
     public boolean equals(Object obj)

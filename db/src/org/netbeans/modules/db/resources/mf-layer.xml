@@ -52,6 +52,9 @@
                 <file name="DTD_JDBC_Driver_1_0" url="jdbc-driver-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD JDBC Driver 1.0//EN"/>
                 </file>
+                <file name="DTD_JDBC_Driver_1_1" url="jdbc-driver-1_1.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD JDBC Driver 1.1//EN"/>
+                </file>
                 <file name="DTD_Database_Connection_1_0" url="connection-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Database Connection 1.0//EN"/>
                 </file>
@@ -61,6 +64,11 @@
         <folder name="lookups">
             <folder name="NetBeans">
                 <file name="DTD_JDBC_Driver_1_0.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor.createProvider"/>
+                </file>
+                <file name="DTD_JDBC_Driver_1_1.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor"/>
                     <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor.createProvider"/>

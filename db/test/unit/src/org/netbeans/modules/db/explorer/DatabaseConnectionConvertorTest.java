@@ -41,8 +41,6 @@ import org.xml.sax.SAXParseException;
  */
 public class DatabaseConnectionConvertorTest extends TestBase {
     
-    private static final String CONNECTION_FILE = "connection.xml";
-    
     public DatabaseConnectionConvertorTest(String testName) {
         super(testName);
     }
@@ -55,20 +53,21 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     }
     
     public void testReadXml() throws Exception {
-        FileObject fo = createConnectionFile(CONNECTION_FILE, getConnectionsFolder());
+        FileObject fo = createConnectionFile("connection.xml", getConnectionsFolder());
         DataObject dobj = DataObject.find(fo);
         InstanceCookie ic = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
         assertNotNull(ic);
         
         DatabaseConnection conn = (DatabaseConnection)ic.instanceCreate();
         assertEquals("org.foo.FooDriver", conn.getDriver());
+        assertEquals("foo_driver", conn.getDriverName());
         assertEquals("jdbc:foo:localhost", conn.getDatabase());
         assertEquals("schema", conn.getSchema());
         assertEquals("user", conn.getUser());
     }
     
     public void testWriteXml() throws Exception {
-        DatabaseConnection conn = new DatabaseConnection("org.bar.BarDriver", "jdbc:bar:localhost", "schema", "user", null);
+        DatabaseConnection conn = new DatabaseConnection("org.bar.BarDriver", "bar_driver", "jdbc:bar:localhost", "schema", "user", null);
         DatabaseConnectionConvertor.create(conn);
         
         FileObject fo = getConnectionsFolder().getChildren()[0];
@@ -99,16 +98,17 @@ public class DatabaseConnectionConvertorTest extends TestBase {
      * Tests that the instance retrieved from the DO created by DCC.create(DCI dbconn) is the same object as dbconn.
      */
     public void testSameInstanceAfterCreate() throws Exception {
-        DatabaseConnection dbconn = new DatabaseConnection("org.bar.BarDriver", "jdbc:bar:localhost", "schema", "user", null);
+        DatabaseConnection dbconn = new DatabaseConnection("org.bar.BarDriver", "bar_driver", "jdbc:bar:localhost", "schema", "user", null);
         DataObject dobj = DatabaseConnectionConvertor.create(dbconn);
         assertSame(dbconn, ((InstanceCookie)dobj.getCookie(InstanceCookie.class)).instanceCreate());
     }
     
     public void testSaveOnPropertyChange() throws Exception {
-        DatabaseConnection dbconn = new DatabaseConnection("a", "b", "c", "d", null);
+        DatabaseConnection dbconn = new DatabaseConnection("a", "b", "c", "d", "e", null);
         DatabaseConnectionConvertor.create(dbconn);
         
         dbconn.setDriver("org.bar.BarDriver");
+        dbconn.setDriverName("bar_driver");
         dbconn.setDatabase("jdbc:bar:localhost");
         dbconn.setSchema("schema");
         dbconn.setUser("user");
@@ -141,7 +141,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     
     public void testLookup() throws Exception {
         FileObject parent = getConnectionsFolder();
-        createConnectionFile(CONNECTION_FILE, parent);
+        createConnectionFile("connection.xml", parent);
         FolderLookup lookup = new FolderLookup(DataFolder.findFolder(parent));
         Lookup.Result result = lookup.getLookup().lookup(new Lookup.Template(DatabaseConnection.class));
         Collection instances = result.allInstances();
@@ -149,7 +149,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     }
     
     public void testImportOldConnections() throws Exception {
-        DatabaseConnection conn = new DatabaseConnection("org.foo.FooDriver", "jdbc:foo:localhost", "schema", "user", null);
+        DatabaseConnection conn = new DatabaseConnection("org.foo.FooDriver", "foo_driver", "jdbc:foo:localhost", "schema", "user", null);
         RootNode.getOption().getConnections().add(conn);
         
         DatabaseConnectionConvertor.importOldConnections();
@@ -160,6 +160,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         
         DatabaseConnection importedConn = (DatabaseConnection)instances.iterator().next();
         assertEquals(conn.getDriver(), importedConn.getDriver());
+        assertEquals(conn.getDriverName(), importedConn.getDriverName());
         assertEquals(conn.getDatabase(), importedConn.getDatabase());
         assertEquals(conn.getSchema(), importedConn.getSchema());
         assertEquals(conn.getUser(), importedConn.getUser());
@@ -179,6 +180,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
                 writer.write("<!DOCTYPE connection PUBLIC '-//NetBeans//DTD Database Connection 1.0//EN' 'http://www.netbeans.org/dtds/connection-1_0.dtd'>");
                 writer.write("<connection>");
                 writer.write("<driver-class value='org.foo.FooDriver'/>");
+                writer.write("<driver-name value='foo_driver'/>");
                 writer.write("<database-url value='jdbc:foo:localhost'/>");
                 writer.write("<schema value='schema'/>");
                 writer.write("<user value='user'/>");

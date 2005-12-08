@@ -41,7 +41,10 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
 
     public void delete() throws IOException {
         try {
-            JDBCDriverManager.getDefault().removeDriver(getJDBCDriver());
+            JDBCDriver driver = getJDBCDriver();
+            if (driver != null) {
+                JDBCDriverManager.getDefault().removeDriver(driver);
+            }
         } catch (DatabaseException e) {
             // PENDING
         }
@@ -59,20 +62,19 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
     }
 
     private boolean checkDriverFiles() {
-        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(getURL());
-        for (int i = 0; i < drvs.length; i++)
-            if (drvs[i].getName().equals(getName()))
-                return JDBCDriverSupport.isAvailable(drvs[i]);
-        
-        return false;
+        JDBCDriver driver = getJDBCDriver();
+        if (driver != null) {
+            return JDBCDriverSupport.isAvailable(driver);
+        } else {
+            return false;
+        }
     }
     
-    private JDBCDriver getJDBCDriver() {
-        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(getURL());
-        for (int i = 0; i < drvs.length; i++) {
-            if (drvs[i].getName().equals(getName()))
-                return drvs[i];
+    public JDBCDriver getJDBCDriver() {
+        DatabaseDriver dbdrv = getDatabaseDriver();
+        if (dbdrv == null) {
+            return null;
         }
-        return null;
+        return dbdrv.getJDBCDriver();
     }
 }

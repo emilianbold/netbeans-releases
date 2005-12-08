@@ -452,7 +452,7 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         }
         
         public String toString() {
-            return driver.getName();
+            return driver.getDisplayName();
         }
     }
 }

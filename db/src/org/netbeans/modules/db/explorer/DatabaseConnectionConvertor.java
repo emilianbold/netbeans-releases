@@ -142,7 +142,6 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 reader.parse(is);
             } catch (SAXException ex) {
                 Exception x = ex.getException();
-                ex.printStackTrace();
                 if (x instanceof java.io.IOException)
                     throw (IOException)x;
                 else
@@ -165,6 +164,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     private static DatabaseConnection createDatabaseConnection(Handler handler) {
         DatabaseConnection dbconn = new DatabaseConnection(
                 handler.driverClass, 
+                handler.driverName,
                 handler.connectionUrl,
                 handler.schema,
                 handler.user,
@@ -308,6 +308,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             pw.println("<!DOCTYPE connection PUBLIC '-//NetBeans//DTD Database Connection 1.0//EN' 'http://www.netbeans.org/dtds/connection-1_0.dtd'>"); //NOI18N
             pw.println("<connection>"); //NOI18N
             pw.println("  <driver-class value='" + XMLUtil.toAttributeValue(instance.getDriver()) + "'/>"); //NOI18N
+            pw.println("  <driver-name value='" + XMLUtil.toAttributeValue(instance.getDriverName()) + "'/>"); // NOI18N
             pw.println("  <database-url value='" + XMLUtil.toAttributeValue(instance.getDatabase()) + "'/>"); //NOI18N
             if (instance.getSchema() != null) {
                 pw.println("  <schema value='" + XMLUtil.toAttributeValue(instance.getSchema()) + "'/>"); //NOI18N
@@ -325,12 +326,14 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     private static final class Handler extends DefaultHandler {
         
         private static final String ELEMENT_DRIVER_CLASS = "driver-class"; // NOI18N
+        private static final String ELEMENT_DRIVER_NAME = "driver-name"; // NOI18N
         private static final String ELEMENT_DATABASE_URL = "database-url"; // NOI18N
         private static final String ELEMENT_SCHEMA = "schema"; // NOI18N
         private static final String ELEMENT_USER = "user"; // NOI18N
         private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
         
         String driverClass;
+        String driverName;
         String connectionUrl;
         String schema;
         String user;
@@ -345,6 +348,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             String value = attrs.getValue(ATTR_PROPERTY_VALUE);
             if (ELEMENT_DRIVER_CLASS.equals(qName)) {
                 driverClass = value;
+            } else if (ELEMENT_DRIVER_NAME.equals(qName)) {
+                driverName = value;
             } else if (ELEMENT_DATABASE_URL.equals(qName)) {
                 connectionUrl = value;
             } else if (ELEMENT_SCHEMA.equals(qName)) {

@@ -192,7 +192,7 @@ public class DbDriverManagerTest extends TestBase {
     
     private static JDBCDriver createJDBCDriver() {
         URL url = DbDriverManagerTest.class.getProtectionDomain().getCodeSource().getLocation();
-        return JDBCDriver.create("DbDriverManagerTest Driver", "org.netbeans.modules.db.explorer.DbDriverManagerTest$DriverImpl", new URL[] { url });
+        return JDBCDriver.create("test_driver", "DbDriverManagerTest Driver", "org.netbeans.modules.db.explorer.DbDriverManagerTest$DriverImpl", new URL[] { url });
     }
     
     public static final class DriverImpl implements Driver {

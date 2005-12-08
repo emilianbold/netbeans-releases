@@ -46,8 +46,6 @@ import org.xml.sax.SAXParseException;
  */
 public class JDBCDriverConvertorTest extends TestBase {
     
-    private static final String DRIVER_FILE = "org_foo_FooDriver.xml";
-    
     public JDBCDriverConvertorTest(String testName) {
         super(testName);
     }
@@ -60,13 +58,28 @@ public class JDBCDriverConvertorTest extends TestBase {
     }
     
     public void testReadXml() throws Exception {
-        FileObject fo = createDriverFile(DRIVER_FILE, getDriversFolder());
+        // DTD version 1.0
+        FileObject fo = createDriverFile10("org_foo_FooDriver_10.xml", getDriversFolder());
         DataObject dobj = DataObject.find(fo);
         InstanceCookie ic = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
         assertNotNull(ic);
         
         JDBCDriver driver = (JDBCDriver)ic.instanceCreate();
-        assertEquals("Foo Driver", driver.getName());
+        assertEquals("foo_driver", driver.getName());
+        assertEquals("org.foo.FooDriver", driver.getClassName());
+        assertEquals(2, driver.getURLs().length);
+        assertEquals(new URL("file:///foo1.jar"), driver.getURLs()[0]);
+        assertEquals(new URL("file:///foo2.jar"), driver.getURLs()[1]);
+        
+        // DTD version 1.1
+        fo = createDriverFile11("org_foo_FooDriver_11.xml", getDriversFolder());
+        dobj = DataObject.find(fo);
+        ic = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
+        assertNotNull(ic);
+        
+        driver = (JDBCDriver)ic.instanceCreate();
+        assertEquals("foo_driver", driver.getName());
+        assertEquals("Foo Driver", driver.getDisplayName());
         assertEquals("org.foo.FooDriver", driver.getClassName());
         assertEquals(2, driver.getURLs().length);
         assertEquals(new URL("file:///foo1.jar"), driver.getURLs()[0]);
@@ -74,7 +87,7 @@ public class JDBCDriverConvertorTest extends TestBase {
     }
     
     public void testWriteXml() throws Exception {
-        JDBCDriver driver = JDBCDriver.create("Bar Driver", "org.bar.BarDriver", new URL[] { new URL("file:///bar1.jar"), new URL("file:///bar2.jar") });
+        JDBCDriver driver = JDBCDriver.create("bar_driver", "Bar Driver", "org.bar.BarDriver", new URL[] { new URL("file:///bar1.jar"), new URL("file:///bar2.jar") });
         JDBCDriverConvertor.create(driver);
         
         FileObject fo = getDriversFolder().getFileObject("org_bar_BarDriver.xml");
@@ -103,7 +116,7 @@ public class JDBCDriverConvertorTest extends TestBase {
     
     public void testLookup() throws Exception {
         FileObject parent = getDriversFolder();
-        createDriverFile(DRIVER_FILE, parent);
+        createDriverFile11("org_foo_FooDriver.xml", parent);
         FolderLookup lookup = new FolderLookup(DataFolder.findFolder(parent));
         Lookup.Result result = lookup.getLookup().lookup(new Lookup.Template(JDBCDriver.class));
         Collection instances = result.allInstances();
@@ -124,7 +137,7 @@ public class JDBCDriverConvertorTest extends TestBase {
             oldRoot = FileUtil.createFolder(sfs.getRoot(), JDBCDriverConvertor.OLD_DRIVERS_PATH);
         }
         URL[] urls = new URL[] { new URL(UNENCODED_URL) };
-        createDriverFile("testdriver.xml", oldRoot, urls);
+        createDriverFile10("testdriver.xml", oldRoot, urls);
         
         JDBCDriverConvertor.importOldDrivers();
         
@@ -138,30 +151,50 @@ public class JDBCDriverConvertorTest extends TestBase {
         Collection instances = result.allInstances();
         JDBCDriver drv = (JDBCDriver)instances.iterator().next();
         assertEquals(JDBCDriverConvertor.encodeURL(new URL(UNENCODED_URL)), drv.getURLs()[0]);
+        // assert the imported driver has a display name set
+        assertEquals(drv.getName(), drv.getDisplayName());
     }
     
     private FileObject getDriversFolder() {
         return Repository.getDefault().getDefaultFileSystem().findResource(JDBCDriverConvertor.DRIVERS_PATH);
     }
     
-    private static FileObject createDriverFile(String name, FileObject folder) throws Exception {
+    private static FileObject createDriverFile10(String fileName, FileObject folder) throws Exception {
         URL[] urls = new URL[] {
             new URL("file:///foo1.jar"),
             new URL("file:///foo2.jar"),
         };
-        return createDriverFile(name, folder, urls);
+        return createDriverFile10(fileName, folder, urls);
     }
     
-    private static FileObject createDriverFile(String name, FileObject folder, URL[] urls) throws Exception {
-        FileObject fo = folder.createData(name);
+    private static FileObject createDriverFile10(String fileName, FileObject folder, URL[] urls) throws Exception {
+        return createDriverFile(10, fileName, folder, urls);
+    }
+    
+    private static FileObject createDriverFile11(String fileName, FileObject folder) throws Exception {
+        URL[] urls = new URL[] {
+            new URL("file:///foo1.jar"),
+            new URL("file:///foo2.jar"),
+        };
+        return createDriverFile(11, fileName, folder, urls);
+    }
+    
+    private static FileObject createDriverFile(int version, String fileName, FileObject folder, URL[] urls) throws Exception {
+        String publicIdVer = version == 10 ? "1.0" : "1.1";
+        String systemIdVer = version == 10 ? "1_0" : "1_1";
+        
+        FileObject fo = folder.createData(fileName);
         FileLock lock = fo.lock();
         try {
             OutputStreamWriter writer = new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8");
             try {
                 writer.write("<?xml version='1.0' encoding='UTF-8'?>");
-                writer.write("<!DOCTYPE driver PUBLIC '-//NetBeans//DTD JDBC Driver 1.0//EN' 'http://www.netbeans.org/dtds/jdbc-driver-1_0.dtd'>");
+                writer.write("<!DOCTYPE driver PUBLIC '-//NetBeans//DTD JDBC Driver " + publicIdVer + "//EN' 'http://www.netbeans.org/dtds/jdbc-driver-" + systemIdVer + ".dtd'>");
                 writer.write("<driver>");
-                writer.write("<name value='Foo Driver'/>");
+                writer.write("<name value='foo_driver'/>");
+                if (version == 11) {
+                    writer.write("<display-name value='Foo Driver'/>");
+                }
                 writer.write("<class value='org.foo.FooDriver'/>");
                 writer.write("<urls>");
                 for (int i = 0; i < urls.length; i++) {

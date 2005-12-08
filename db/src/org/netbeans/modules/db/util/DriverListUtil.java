@@ -270,7 +270,7 @@ public class DriverListUtil {
         Vector names = new Vector();
         JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers();
         for (int i = 0; i < drivers.length; i++)
-            names.add(drivers[i].getName());
+            names.add(drivers[i].getDisplayName());
         
         if (names.contains(name))
             for (int i = 1;;i++) {

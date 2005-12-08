@@ -64,8 +64,19 @@ public class ConnectUsingDriverAction extends DatabaseAction {
     public void performAction(Node[] activatedNodes) {
         Node node = activatedNodes[0];
         DriverNodeInfo info = (DriverNodeInfo) node.getCookie(DatabaseNodeInfo.class);
-        // info.getURL() returns the driver class
-        new NewConnectionDialogDisplayer().showDialog(info.getName(), info.getURL());
+        JDBCDriver driver = info.getJDBCDriver();
+        
+        String driverName, driverClass;
+        if (driver != null) {
+            driverName = driver.getName();
+            driverClass = driver.getClassName();
+        } else {
+            // no JDBCDriver, have to resort to the info
+            driverName = info.getName();
+            // info.getURL() suprisingly returns the driver class
+            driverClass = info.getURL();
+        }
+        new NewConnectionDialogDisplayer().showDialog(driverName, driverClass);
     }
     
     public static final class NewConnectionDialogDisplayer extends ConnectionDialogMediator {

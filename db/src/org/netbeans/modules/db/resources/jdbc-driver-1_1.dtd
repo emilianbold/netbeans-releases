@@ -12,15 +12,23 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<!-- This is the JDBC driver registration file format used in 5.0. -->
+
 <!--- Description of the registered driver. -->
-<!ELEMENT driver (name|class|urls)*>
+<!ELEMENT driver (name,display-name,class,urls)>
 
 <!--- Programmatic name of the driver. -->
 <!ELEMENT name EMPTY>
 <!ATTLIST name
     value CDATA #REQUIRED
   >
-
+  
+<!--- Display name of the driver. -->
+<!ELEMENT display-name EMPTY>
+<!ATTLIST display-name
+    value CDATA #REQUIRED
+  >
+  
 <!--- JDBC driver class. -->
 <!ELEMENT class EMPTY>
 <!ATTLIST class

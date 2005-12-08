@@ -95,7 +95,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         }
         drvClassComboBox.addItem(drv.getClassName());
         drvClassComboBox.setSelectedItem(drv.getClassName());
-        nameTextField.setText(drv.getName());
+        nameTextField.setText(drv.getDisplayName());
     }
     
     private void initAccessibility() {
@@ -406,11 +406,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
     
-    public String getName() {
-        if (nameTextField != null)
-            return nameTextField.getText();
-        else
-            return super.getName();
+    public String getDisplayName() {
+        return nameTextField.getText();
     }
     
     public List getDriverLocation() {

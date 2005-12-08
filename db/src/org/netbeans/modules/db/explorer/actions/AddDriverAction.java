@@ -48,7 +48,7 @@ public class AddDriverAction extends DatabaseAction {
             ActionListener actionListener = new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                        String name = dlgPanel.getName();
+                        String name = dlgPanel.getDisplayName();
                         List drvLoc = dlgPanel.getDriverLocation();
                         String drvClass = dlgPanel.getDriverClass();
 
@@ -76,7 +76,7 @@ public class AddDriverAction extends DatabaseAction {
                             name = drvClass;
 
                         try {
-                            driver = JDBCDriver.create(name, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()]));
+                            driver = JDBCDriver.create(name, name, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()]));
                             JDBCDriverManager.getDefault().addDriver(driver);
                         } catch (DatabaseException exc) {
                             //PENDING

@@ -214,7 +214,8 @@ public class DatabaseOption extends SystemOption {
                 while (it.hasNext()) {
                     drv = (String) it.next();
                     if (jf.getEntry(drv.replace('.', '/') + ".class") != null) {//NOI18N
-                        JDBCDriver driver = JDBCDriver.create(DriverListUtil.findFreeName(DriverListUtil.getName(drv)), drv, new URL[] {files[i].toURL()});
+                        String driverName = DriverListUtil.findFreeName(DriverListUtil.getName(drv));
+                        JDBCDriver driver = JDBCDriver.create(driverName, driverName, drv, new URL[] {files[i].toURL()});
                         try {
                             JDBCDriverManager.getDefault().addDriver(driver);
                         } catch (DatabaseException e) {

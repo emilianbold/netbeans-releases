@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,6 +19,8 @@ import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
+import java.util.Arrays;
+import org.openide.ErrorManager;
 
 /**
  * This class loader is used to load JDBC drivers from their locations.
@@ -27,9 +29,15 @@ import java.security.Permissions;
  */
 public class DbURLClassLoader extends URLClassLoader {
     
+    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance("org.netbeans.modules.db.explorer"); // NOI18N
+    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
+    
     /** Creates a new instance of DbURLClassLoader */
     public DbURLClassLoader(URL[] urls) {
         super(urls);
+        if (LOG) {
+            LOGGER.log(ErrorManager.INFORMATIONAL, "Creating DbURLClassLoader for " + Arrays.asList(urls)); // NOI18N
+        }
     }
     
     protected PermissionCollection getPermissions(CodeSource codesource) {

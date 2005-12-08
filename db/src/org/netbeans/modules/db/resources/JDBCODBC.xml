@@ -1,7 +1,9 @@
 <?xml version='1.0'?>
 <!DOCTYPE driver PUBLIC '-//NetBeans//DTD JDBC Driver 1.0//EN' 'http://www.netbeans.org/dtds/jdbc-driver-1_0.dtd'>
 <driver>
+  <!-- the name should be exactly 'JDBC-ODBC Bridge', since connections created in 4.1 will rely on it -->
   <name value='JDBC-ODBC Bridge'/>
+  <display-name value='JDBC-ODBC Bridge'/>
   <class value='sun.jdbc.odbc.JdbcOdbcDriver'/>
   <urls>
   	<url value='file:/'/>

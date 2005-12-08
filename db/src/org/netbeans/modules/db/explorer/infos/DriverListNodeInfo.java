@@ -63,7 +63,7 @@ public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperat
                     file = file.substring(1);
                 sb.append(file);
             }
-            DatabaseDriver drv = new DatabaseDriver(drvs[i].getName(), drvs[i].getClassName(), sb.toString());
+            DatabaseDriver drv = new DatabaseDriver(drvs[i].getDisplayName(), drvs[i].getClassName(), sb.toString(), drvs[i]);
             DriverNodeInfo chinfo = (DriverNodeInfo) DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.DRIVER);
             if (chinfo != null && drv != null) {
                 chinfo.setDatabaseDriver(drv);

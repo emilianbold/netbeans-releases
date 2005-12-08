@@ -154,9 +154,10 @@ public class DatabaseConnection implements DBConnection {
         name = getName();
     }
     
-    public DatabaseConnection(String driver, String database, String theschema, String user, String password) {
+    public DatabaseConnection(String driver, String driverName, String database, String theschema, String user, String password) {
         this();
         drv = driver;
+        drvname = driverName;
         db = database;
         usr = user;
         schema = theschema;
