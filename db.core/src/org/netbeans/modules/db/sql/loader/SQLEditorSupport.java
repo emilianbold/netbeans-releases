@@ -15,6 +15,8 @@ package org.netbeans.modules.db.sql.loader;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,11 +26,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Enumeration;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
@@ -450,6 +454,13 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
             container.add(splitter);
             splitter.setDividerLocation(250);
             splitter.setDividerSize(7);
+            
+            // #69642: the parent of the CloneableEditor's ActionMap is
+            // the editor pane's ActionMap, therefore the delete action is always returned by the
+            // CloneableEditor's ActionMap.get(). This workaround delegates to the editor pane 
+            // only when the editor pane has the focus.
+            getActionMap().setParent(new DelegateActionMap(getActionMap().getParent(), getEditorPane()));
+            
             if (equals(TopComponent.getRegistry().getActivated())) {
                 // setting back the focus lost when removing the editor from the CloneableEditor
                 requestFocusInWindow();
@@ -560,6 +571,59 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
         
         private SQLEditorSupport findSQLEditorSupport() {
             return (SQLEditorSupport)getDataObject().getCookie(SQLEditorSupport.class);
+        }
+    }
+    
+    private static final class DelegateActionMap extends ActionMap {
+        
+        private ActionMap delegate;
+        private JEditorPane editorPane;
+        
+        public DelegateActionMap(ActionMap delegate, JEditorPane editorPane) {
+            this.delegate = delegate;
+            this.editorPane = editorPane;
+        }
+
+        public void remove(Object key) {
+
+            super.remove(key);
+        }
+
+        public javax.swing.Action get(Object key) {
+            boolean isEditorPaneFocused = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner() == editorPane;
+            if (isEditorPaneFocused) {
+                return delegate.get(key);
+            } else {
+                return null;
+            }
+        }
+
+        public void put(Object key, Action action) {
+            delegate.put(key, action);
+        }
+
+        public void setParent(ActionMap map) {
+            delegate.setParent(map);
+        }
+
+        public int size() {
+            return delegate.size();
+        }
+
+        public Object[] keys() {
+            return delegate.keys();
+        }
+
+        public ActionMap getParent() {
+            return delegate.getParent();
+        }
+
+        public void clear() {
+            delegate.clear();
+        }
+
+        public Object[] allKeys() {
+            return delegate.allKeys();
         }
     }
 }
