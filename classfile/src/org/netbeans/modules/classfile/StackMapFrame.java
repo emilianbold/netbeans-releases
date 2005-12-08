@@ -18,13 +18,16 @@ import java.io.IOException;
 
 /**
  * A stack map frame, as defined by a StackMapTable attribute.  A stack map
- * frame is a union of frame structures, which are represented here by public
- * subclasses.
+ * frame is defined by the Java Virtual Machine Specification, section 4.8.4,
+ * as a C-like union of stack frame descriptions.  To map this union to Java
+ * classes, this class is abstract and has a separate public subclass for each
+ * union member.  The stack map frame type can be determined either by the
+ * its <code>frame_type</code> or using an instanceof test.
  *
  * @author tball
  */
 public abstract class StackMapFrame {
-    private int tag;
+    int frameType;
     
     static StackMapFrame[] loadStackMapTable(DataInputStream in, ConstantPool pool) 
       throws IOException {
@@ -90,35 +93,88 @@ public abstract class StackMapFrame {
     
     /** Creates new StackMapFrame */
     StackMapFrame(int tag) {
-        this.tag = tag;
+        frameType = tag;
     }
 
     private void loadLocalVariableEntry(DataInputStream in, ConstantPool pool) 
       throws IOException {
     }
 
-    public final int getTag() {
-        return tag;
+    /**
+     * Returns the frame_type for this frame.  As documented in the JVM specification,
+     * different tag ranges define different frame_type values.
+     */
+    public final int getFrameType() {
+        return frameType;
     }
     
+    /**
+     * Returns the <code>offset_delta</code> for this frame type.  From the 
+     * Java Virtual Machine Specification, section 4.8.4:
+     * <br/><br/>
+     * "Each stack_map_frame structure specifies the type state at a particular 
+     * byte code offset. Each frame type specifies (explicitly or implicitly) a 
+     * value, <code>offset_delta</code>, that is used to calulate the actual byte 
+     * code offset at which it applies. The byte code offset at which the frame 
+     * applies is given by adding <code>1 + offset_delta</code> to the offset of 
+     * the previous frame, unless the previous frame is the initial frame of
+     * the method, in which case the byte code offset is <code>offset_delta</code>."
+     */
+    public abstract int getOffsetDelta();
+        
+   /**
+     * A frame type of <code>same_frame</code>, which means that the frame 
+     * has exactly the same locals as the previous stack map frame and that 
+     * the number of stack items is zero.  
+     */
     public static final class SameFrame extends StackMapFrame {
         SameFrame(int tag) {
             super(tag);
         }
+        
+        /**
+         * The <code>offset_delta</code> value for the frame is the value 
+         * of the tag item, frame_type.
+         */
+        public int getOffsetDelta() {
+            return frameType;
+        }
     }
     
+    /**
+     * A frame type of <code>same_locals_1_stack_item_frame</code>, which means
+     * that the frame has exactly the same locals as the previous stack map 
+     * frame and that the number of stack items is 1.  
+     */
     public static final class SameLocals1StackItemFrame extends StackMapFrame {
         VerificationTypeInfo typeInfo;
         SameLocals1StackItemFrame(int tag, VerificationTypeInfo typeInfo) {
             super(tag);
             this.typeInfo = typeInfo;
         }
+ 
+        /**
+         * The <code>offset_delta</code> value for the frame is the value 
+         * <code>(frame_type - 64)</code>.
+         */
+        public int getOffsetDelta() {
+            return frameType - 64;
+        }
         
+        /**
+         * Returns the verification type info for the single stack item
+         * referenced by this frame.
+         */
         public VerificationTypeInfo getVerificationTypeInfo() {
             return typeInfo;
         }
     }
     
+    /**
+     * A frame type of <code>same_locals_1_stack_item_frame_extended</code>,
+     * which means that the frame has exactly the same locals as the previous 
+     * stack map frame and that the number of stack items is 1.  
+     */
     public static final class SameLocals1StackItemFrameExtended extends StackMapFrame {
         int offset;
         VerificationTypeInfo typeInfo;
@@ -128,15 +184,28 @@ public abstract class StackMapFrame {
             this.typeInfo = typeInfo;
         }
         
+        /**
+         * Returns the <code>offset_delta</code> for this frame type.
+         */
         public int getOffsetDelta() {
             return offset;
         }
         
+        /**
+         * Returns the verification type info for the single stack item for 
+         * this frame.
+         */
         public VerificationTypeInfo getVerificationTypeInfo() {
             return typeInfo;
         }
     }
     
+    /**
+     * A frame type of <code>chop_frame</code>, which means that the operand 
+     * stack is empty and the current locals are the same as the locals in 
+     * the previous frame, except that the <i>k</i> last locals are absent. 
+     * The value of <i>k</i> is given by the formula <code>251-frame_type</code>.
+     */
     public static final class ChopFrame extends StackMapFrame {
         int offset;
         ChopFrame(int tag, int offset) {
@@ -144,11 +213,19 @@ public abstract class StackMapFrame {
             this.offset = offset;
         }
         
+        /**
+         * Returns the <code>offset_delta</code> for this frame type.
+         */
         public int getOffsetDelta() {
             return offset;
         }
     }
     
+    /**
+     * A frame type of <code>same_frame_extended</code>, which means the frame 
+     * has exactly the same locals as the previous stack map frame and that the 
+     * number of stack items is zero.
+     */
     public static final class SameFrameExtended extends StackMapFrame {
         int offset;
         SameFrameExtended(int tag, int offset) {
@@ -156,11 +233,20 @@ public abstract class StackMapFrame {
             this.offset = offset;
         }
         
+        /**
+         * Returns the <code>offset_delta</code> for this frame type.
+         */
         public int getOffsetDelta() {
             return offset;
         }
     }
     
+    /**
+     * A frame type of <code>append_frame</code>, which means that the operand 
+     * stack is empty and the current locals are the same as the locals in the 
+     * previous frame, except that <i>k</i> additional locals are defined.  The 
+     * value of <i>k</i> is given by the formula <code>frame_type-251</code>.
+     */
     public static final class AppendFrame extends StackMapFrame {
         int offset;
         VerificationTypeInfo[] locals;
@@ -170,15 +256,26 @@ public abstract class StackMapFrame {
             this.locals = locals;
         }
         
+        /**
+         * Returns the <code>offset_delta</code> for this frame type.
+         */
         public int getOffsetDelta() {
             return offset;
         }
         
+        /**
+         * Returns the verification type info for this frame's set of
+         * locals.
+         */
         public VerificationTypeInfo[] getLocals() {
             return (VerificationTypeInfo[])locals.clone();
         }
     }
     
+    /**
+     * A frame type of <code>full_frame</code>, which declares all of its
+     * locals and stack items.
+     */
     public static final class FullFrame extends StackMapFrame {
         int offset;
         VerificationTypeInfo[] locals;
@@ -191,14 +288,25 @@ public abstract class StackMapFrame {
             this.stackItems = stackItems;
         }
         
+        /**
+         * Returns the <code>offset_delta</code> for this frame type.
+         */
         public int getOffsetDelta() {
             return offset;
         }
         
+        /**
+         * Returns the verification type info for this frame's set of
+         * locals.
+         */
         public VerificationTypeInfo[] getLocals() {
             return (VerificationTypeInfo[])locals.clone();
         }
         
+        /**
+         * Returns the verification type info for this frame's set of
+         * stack items.
+         */
         public VerificationTypeInfo[] getStackItems() {
             return (VerificationTypeInfo[])stackItems.clone();
         }
