@@ -657,8 +657,19 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 || ((RADVisualFormContainer)topDesignComponent).getFormSizePolicy() != RADVisualFormContainer.GEN_BOUNDS))
         {   // new layout container defining designer size
             // designer size not defined explicitly - check minimum size
+            Component topComp = (Component) getComponent(topDesignComponent);
+            Component topCont = getTopVisualContainer(); // container delegate
+            if (topCont == null)
+                topCont = topComp;
+            // can't rely on minimum size of the container wrap - e.g. menu bar
+            // returns wrong min height
+            int wDiff = topComp.getWidth() - topCont.getWidth();
+            int hDiff = topComp.getHeight() - topCont.getHeight();
+
             Dimension designerSize = new Dimension(getDesignerSize());
-            Dimension minSize = ((Component)getComponent(topDesignComponent)).getMinimumSize();
+            designerSize.width -= wDiff;
+            designerSize.height -= hDiff;
+            Dimension minSize = topCont.getMinimumSize();
             boolean corrected = false;
             if (designerSize.width < minSize.width) {
                 designerSize.width = minSize.width;
@@ -668,7 +679,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 designerSize.height = minSize.height;
                 corrected = true;
             }
+
             if (corrected) {
+                designerSize.width += wDiff;
+                designerSize.height += hDiff;
+
                 // hack: we need the size correction in the undo/redo
                 if (formModel.isCompoundEditInProgress()) {
                     FormModelEvent ev = new FormModelEvent(formModel, FormModelEvent.SYNTHETIC_PROPERTY_CHANGED);
