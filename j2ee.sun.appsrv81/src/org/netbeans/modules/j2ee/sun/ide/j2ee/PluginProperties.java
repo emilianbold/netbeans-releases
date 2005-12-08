@@ -14,11 +14,15 @@
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.ide.Installer;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.db.RegisterPointbase;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 import org.openide.modules.InstalledFileLocator;
@@ -581,14 +585,30 @@ public class PluginProperties  {
                             if (i!=0) {//not the first one, but other possible domains
                                 displayName = domainsList[i].getName();
                             }
-                            InstanceProperties instanceProperties = InstanceProperties.createInstanceProperties(dmUrl, username, password, displayName);
-                            instanceProperties.setProperty("displayName", displayName);
-                            instanceProperties.setProperty("DOMAIN", domainsList[i].getName());
+                            Repository rep = (Repository)Lookup.getDefault().lookup(Repository.class);
+                            FileObject dir = rep.getDefaultFileSystem().findResource("/J2EE/InstalledServers"); // NOI18N
+                            FileObject instanceFOs[] = dir.getChildren();
+                            FileObject instanceFO = null;
+                            for (int j = 0; j < instanceFOs.length; j++) {
+                                if (dmUrl.equals(instanceFOs[j].getAttribute(InstanceProperties.URL_ATTR))) {
+                                    instanceFO = instanceFOs[j];
+                                }
+                            }
+                            if (instanceFO == null) {
+                                String name = FileUtil.findFreeFileName(dir, "instance", null); // NOI18N
+                                instanceFO = dir.createData(name);
+                            }
+                            instanceFO.setAttribute(InstanceProperties.URL_ATTR, dmUrl);
+                            instanceFO.setAttribute(InstanceProperties.USERNAME_ATTR, username);
+                            instanceFO.setAttribute(InstanceProperties.PASSWORD_ATTR, password);
+                            instanceFO.setAttribute(InstanceProperties.DISPLAY_NAME_ATTR, displayName);
+                            instanceFO.setAttribute("DOMAIN", domainsList[i].getName()); // NOI18N
                             //  The LOCATION is the domains directory, not the install root now...
-                            instanceProperties.setProperty("LOCATION", platformRoot.getAbsolutePath()+File.separator+"domains");
+                            instanceFO.setAttribute("LOCATION", platformRoot.getAbsolutePath()+File.separator+"domains"); // NOI18N
                         }
                     }
-                } catch (InstanceCreationException e){
+                } catch (IOException ioe){
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                     ///  Util.showInformation(e.getLocalizedMessage(), NbBundle.getMessage(RegisterServerAction.class, "LBL_RegServerFailed"));
                 }
             }
