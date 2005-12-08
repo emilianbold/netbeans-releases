@@ -387,9 +387,6 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         Node [] nodes = manager.getSelectedNodes (); 
         for (int i = 0; i < nodes.length; i++) {
             try {
-                if (! nodes [i].isLeaf ()) {
-                    nodes [i].getChildren ().remove (nodes [i].getChildren ().getNodes ());
-                }
                 nodes [i].destroy ();
             } catch (IOException ioe) {
                 ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
