@@ -302,7 +302,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
                                     }
                                 }
                             }
-                            if (isReallyRunning()) {
+                            if (isReallyRunning() || isSuspended()) {
                                 try {
                                     _stop(progressUI);
                                 } catch (ServerException ex) {
@@ -680,7 +680,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             boolean inProfile = profiledServerInstance == this;
             boolean stopped = true;
             
-            if (inProfile || isReallyRunning()) {
+            if (inProfile || isReallyRunning() || isSuspended()) {
                 _stop(ui);
             }
             if (stopped) {
@@ -705,7 +705,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     public void stop(ProgressUI ui) throws ServerException {
         try {
             setServerState(STATE_WAITING);
-            if (profiledServerInstance == this || isReallyRunning()) {
+            if (profiledServerInstance == this || isReallyRunning() || isSuspended()) {
                 _stop(ui);
             }
             debugInfo.clear();
@@ -1004,7 +1004,6 @@ public class ServerInstance implements Node.Cookie, Comparable {
             coTarget = null;
             targets = null;
             initCoTarget();
-            refresh();
         } finally {
             if (ui != null) {
                 ui.setProgressObject(null);
@@ -1050,8 +1049,6 @@ public class ServerInstance implements Node.Cookie, Comparable {
             coTarget = null;
             targets = null;
             initCoTarget();
-            refresh();
-            setServerState(ServerInstance.STATE_DEBUGGING);
         } finally {
             if (ui != null) {
                 ui.setProgressObject(null);
@@ -1118,7 +1115,6 @@ public class ServerInstance implements Node.Cookie, Comparable {
             profiledServerInstance = this;
             profilerSettings = settings;
             managerStartedByIde = true;
-            refresh();
         } finally {
             if (ui != null) {
                 ui.setProgressObject(null);
@@ -1171,6 +1167,32 @@ public class ServerInstance implements Node.Cookie, Comparable {
         if (profiledServerInstance == this) {
             shutdownProfiler(ui);
             profiledServerInstance = null;
+        }
+        // if the server is suspended, the debug session has to be terminated first
+        if (isSuspended()) {
+            Target target = _retrieveTarget(null);
+            ServerDebugInfo sdi = getServerDebugInfo(target);
+            Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+            for (int i = 0; i < sessions.length; i++) {
+                Session s = sessions[i];
+                if (s != null) {
+                    AttachingDICookie attCookie = (AttachingDICookie)s.lookupFirst(null, AttachingDICookie.class);
+                    if (attCookie != null) {
+                        if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                            String shmem = attCookie.getSharedMemoryName();
+                            if (shmem != null && shmem.equalsIgnoreCase(sdi.getShmemName())) {
+                                s.kill();
+                            }
+                        } else {
+                            String host = stripHostName(attCookie.getHostName());
+                            if (host != null && host.equalsIgnoreCase(stripHostName(sdi.getHost())) 
+                                && attCookie.getPortNumber() == sdi.getPort()) {
+                                s.kill();
+                            }
+                        }
+                    }
+                }
+            }
         }
         
         String displayName = getDisplayName();
