@@ -195,43 +195,48 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
                     
                     //I need to lock the model for update since during the model
                     //update the UI is updated synchronously in AWT (current thread)
-                    if(model != null) model.readLock();
-                    try {
-                        SwingUtilities.invokeAndWait(new Runnable() {
-                            public void run() {
-                                showWaitPanel();
-                                JPanel panel = null;
-                                if(cachedPanel == null) {
-                                    //cache the newly created panel
-                                    panel = new NavigatorContentPanel(model);
-                                    //use the document dataobject as a key since the document itself is very easily discarded and hence
-                                    //harly usable as a key of the WeakHashMap
-                                    DataObject documentDO = NbEditorUtilities.getDataObject(bdoc);
-                                    if(documentDO != null)
-                                        uiCache.put(documentDO, new WeakReference(panel));
-                                    if(DEBUG) System.out.println("[xml navigator] panel created");
+                    if(model != null) {
+                        model.readLock();
+                        try {
+                            SwingUtilities.invokeAndWait(new Runnable() {
+                                public void run() {
+                                    showWaitPanel();
+                                    JPanel panel = null;
+                                    if(cachedPanel == null) {
+                                        //cache the newly created panel
+                                        panel = new NavigatorContentPanel(model);
+                                        //use the document dataobject as a key since the document itself is very easily discarded and hence
+                                        //harly usable as a key of the WeakHashMap
+                                        DataObject documentDO = NbEditorUtilities.getDataObject(bdoc);
+                                        if(documentDO != null)
+                                            uiCache.put(documentDO, new WeakReference(panel));
+                                        if(DEBUG) System.out.println("[xml navigator] panel created");
+                                        
+                                        //start to listen to the document property changes - we need to get know when the document is being closed
+                                        ((EditorCookie.Observable)documentDO.getCookie(EditorCookie.class)).addPropertyChangeListener(NavigatorContent.this);
+                                    } else {
+                                        panel = cachedPanel;
+                                        if(DEBUG) System.out.println("[xml navigator] panel gotten from cache");
+                                    }
                                     
-                                    //start to listen to the document property changes - we need to get know when the document is being closed
-                                    ((EditorCookie.Observable)documentDO.getCookie(EditorCookie.class)).addPropertyChangeListener(NavigatorContent.this);
-                                } else {
-                                    panel = cachedPanel;
-                                    if(DEBUG) System.out.println("[xml navigator] panel gotten from cache");
+                                    //paint the navigator UI
+                                    removeAll();
+                                    add(panel, BorderLayout.CENTER);
+                                    revalidate();
+                                    //panel.revalidate();
+                                    repaint();
                                 }
-                                
-                                //paint the navigator UI
-                                removeAll();
-                                add(panel, BorderLayout.CENTER);
-                                revalidate();
-                                //panel.revalidate();
-                                repaint();
-                            }
-                        });
-                    }catch(InterruptedException ie) {
-                        ErrorManager.getDefault().notify(ErrorManager.WARNING, ie);
-                    }catch(InvocationTargetException ite) {
-                        ErrorManager.getDefault().notify(ErrorManager.ERROR, ite);
-                    }finally {
-                        if(model != null) model.readUnlock();
+                            });
+                        }catch(InterruptedException ie) {
+                            ErrorManager.getDefault().notify(ErrorManager.WARNING, ie);
+                        }catch(InvocationTargetException ite) {
+                            ErrorManager.getDefault().notify(ErrorManager.ERROR, ite);
+                        }finally {
+                            model.readUnlock();
+                        }
+                    } else {
+                        //model is null => show message
+                        showCannotNavigate();
                     }
                 }catch(DocumentModelException dme) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dme);
@@ -273,6 +278,15 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
         removeAll();
         msgLabel.setForeground(Color.GRAY);
         msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_TooLarge"));
+        msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        add(emptyPanel, BorderLayout.CENTER);
+        repaint();
+    }
+    
+    public void showCannotNavigate() {
+        removeAll();
+        msgLabel.setForeground(Color.GRAY);
+        msgLabel.setText(NbBundle.getMessage(NavigatorContent.class, "LBL_CannotNavigate"));
         msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
         add(emptyPanel, BorderLayout.CENTER);
         repaint();
