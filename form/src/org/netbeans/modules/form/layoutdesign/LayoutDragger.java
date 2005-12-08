@@ -1226,10 +1226,10 @@ class LayoutDragger implements LayoutConstants {
         if (nextTo.interval == null || aligned.interval == null)
             return false;
 
-        if (LayoutInterval.getNeighbor(aligned.interval, nextTo.alignment, true, true, false) == nextTo.interval)
-            return true;
-
-        return false;
+        LayoutInterval neighbor = LayoutInterval.getNeighbor(
+                aligned.interval, nextTo.alignment, true, true, false);
+        return neighbor == nextTo.interval
+               || (neighbor == null && nextTo.interval.getParent() == null);
     }
 
     private PositionDef getAlignedEqualToNextTo(PositionDef bestNextTo) {
