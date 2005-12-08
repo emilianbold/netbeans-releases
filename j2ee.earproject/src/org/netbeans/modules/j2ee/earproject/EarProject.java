@@ -401,12 +401,6 @@ public final class EarProject implements Project, AntProjectListener, FileChange
                     }
                 }
                 
-                //fix of [Issue 63495] Creating new EAR doesn't open submodules
-                //this is actually a workaround because of a design flaw in TemplateWizard
-                SubprojectProvider spp = (SubprojectProvider)EarProject.this.getLookup().lookup( SubprojectProvider.class );
-                if(spp != null && spp.getSubprojects() != null && OpenProjects.getDefault() != null)
-                    OpenProjects.getDefault().open((Project[])new ArrayList(spp.getSubprojects()).toArray(new Project[]{}), false);
-                
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }

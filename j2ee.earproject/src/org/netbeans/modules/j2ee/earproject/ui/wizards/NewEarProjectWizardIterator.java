@@ -17,12 +17,10 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Comparator;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -35,13 +33,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
-import org.netbeans.modules.j2ee.earproject.EarProject;
 
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 import org.openide.util.NbBundle;
-
-import org.netbeans.modules.j2ee.earproject.ui.wizards.WizardProperties;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
@@ -53,7 +48,6 @@ import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectType;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
-import org.openide.ErrorManager;
 
 /**
  * Wizard to create a new Web project.
@@ -108,7 +102,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
     Set testableInstantiate(File dirF, String name, String j2eeLevel,
             String serverInstanceID, String contextPath, String warName, String jarName,
             String platformName, String sourceLevel) throws IOException {
-        Set resultSet = new HashSet();
+        Set resultSet = new LinkedHashSet();
         AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID, contextPath, sourceLevel);
         FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
         Project p = ProjectManager.getDefault().findProject(dir);
@@ -132,6 +126,8 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
             }
         }
         
+        resultSet.add(dir);
+        
         AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
         ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator());
         EarProjectProperties epp = new EarProjectProperties((EarProject) p, refHelper, new EarProjectType());
@@ -148,6 +144,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
             FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(webAppDir));
             p = ProjectManager.getDefault().findProject(dir2);
             epp.addJ2eeSubprojects(new Project[] { p });
+            resultSet.add(dir2);
         }
         if (null != jarName) {
             File ejbJarDir = new File(dirF,name+"-ejb"); // NOI18N
@@ -159,12 +156,8 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
             FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(ejbJarDir));
             p = ProjectManager.getDefault().findProject(dir2);
             epp.addJ2eeSubprojects(new Project[] { p });
+            resultSet.add(dir2);
         }
-        
-        
-        // Returning set of FileObject of project diretory.
-        // Project will be open and set as main
-        resultSet.add(dir);
         
         return resultSet;
     }
