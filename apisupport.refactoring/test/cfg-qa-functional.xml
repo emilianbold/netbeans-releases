@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!-- 
+  These classes are excluded by default (defined in build.xml):
+    "**/*Suite.class"
+    "**/*$$*.class"
+    "**/data/**"
+    "**/hidden/**"
+    "**/*Hidden.*"
+    "**/*Hid.*"
+-->
+
+<mconfig name="Apisupport/refactoring qa-functional tests">
+
+    <!--
+    Stable tests are enumerated bellow
+    -->
+        
+    <testbag testattribs="validation" executor="ide" name="basic" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/modules/apisupport/refactoring/RenameTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+
+  <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>    
+  <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
+
+</mconfig>
