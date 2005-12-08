@@ -411,7 +411,11 @@ public abstract class Properties {
                 int i, k = l.size ();
                 for (i = 0; i < k; i++) {
                     String key = (String) l.get (i);
-                    pw.println ("" + key + ":" + properties.get (key));
+                    Object value = properties.get (key);
+                    if (value != null) {
+                        // Do not write null values
+                        pw.println ("" + key + ":" + value);
+                    }
                 }
                 pw.flush ();
             } catch (IOException ex) {
@@ -444,8 +448,7 @@ public abstract class Properties {
 
         private void initReaders () {
             register = new HashMap ();
-            Lookup lookup = new Lookup.MetaInf (null);
-            Iterator i = lookup.lookup (null, Reader.class).iterator ();
+            Iterator i = DebuggerManager.getDebuggerManager().lookup(null, Reader.class).iterator ();
             while (i.hasNext ()) {
                 Reader r = (Reader) i.next ();
                 String[] ns = r.getSupportedClassNames ();
@@ -491,8 +494,12 @@ public abstract class Properties {
             return value.substring (1, value.length () - 1);
         }
 
-       public void setString (String propertyName, String value) {
-            impl.setProperty (propertyName, "\"" + value + "\"");
+        public void setString (String propertyName, String value) {
+            if (value != null) {
+                impl.setProperty (propertyName, "\"" + value + "\"");
+            } else {
+                impl.setProperty (propertyName, value);
+            }
         }
 
         public int getInt (String propertyName, int defaultValue) {

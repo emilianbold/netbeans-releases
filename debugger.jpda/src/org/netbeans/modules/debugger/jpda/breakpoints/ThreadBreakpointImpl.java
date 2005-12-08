@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.ThreadDeathEvent;
 import com.sun.jdi.event.ThreadStartEvent;
@@ -44,7 +45,7 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
     // init ....................................................................
     
     public ThreadBreakpointImpl (ThreadBreakpoint presenter, JPDADebuggerImpl debugger, Session session) {
-        super (presenter, debugger, session);
+        super (presenter, null, debugger, session);
         breakpoint = presenter;
         set ();
     }
@@ -64,9 +65,12 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
             if ( (breakpoint.getBreakpointType () & 
                   breakpoint.TYPE_THREAD_DEATH) != 0
             ) {
-                ThreadDeathRequest tdr = getVirtualMachine ().
-                    eventRequestManager ().createThreadDeathRequest ();
-                addEventRequest (tdr);
+                VirtualMachine vm = getVirtualMachine();
+                if (vm != null) {
+                    ThreadDeathRequest tdr = vm.eventRequestManager().
+                        createThreadDeathRequest();
+                    addEventRequest (tdr);
+                }
             }
         } catch (VMDisconnectedException e) {
         }

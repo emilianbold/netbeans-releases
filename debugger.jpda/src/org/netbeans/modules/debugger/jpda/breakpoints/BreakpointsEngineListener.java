@@ -22,6 +22,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
@@ -54,6 +55,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
     private SourcePath           engineContext;
     private boolean                 started = false;
     private Session                 session;
+    private BreakpointsReader       breakpointsReader;
 
 
     public BreakpointsEngineListener (ContextProvider lookupProvider) {
@@ -66,8 +68,9 @@ implements PropertyChangeListener, DebuggerManagerListener {
             JPDADebugger.PROP_STATE,
             this
         );
+        breakpointsReader = PersistenceManager.findBreakpointsReader();
     }
-
+    
     protected void destroy () {
         debugger.removePropertyChangeListener (
             JPDADebugger.PROP_STATE,
@@ -162,6 +165,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 b,
                 new LineBreakpointImpl (
                     (LineBreakpoint) b,
+                    breakpointsReader,
                     debugger,
                     session,
                     engineContext

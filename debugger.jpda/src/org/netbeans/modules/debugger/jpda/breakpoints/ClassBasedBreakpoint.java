@@ -44,7 +44,16 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         JPDADebuggerImpl debugger,
         Session session
     ) {
-        super (breakpoint, debugger, session);
+        super (breakpoint, null, debugger, session);
+    }
+    
+    public ClassBasedBreakpoint (
+        JPDABreakpoint breakpoint, 
+        BreakpointsReader reader,
+        JPDADebuggerImpl debugger,
+        Session session
+    ) {
+        super (breakpoint, reader, debugger, session);
     }
     
     protected void setClassRequests (
@@ -99,20 +108,21 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         }
     }
     
-    protected void checkLoadedClasses (
+    protected boolean checkLoadedClasses (
         String className, 
         boolean all
     ) {
         if (verbose)
             System.out.println("B   check loaded classes: " + className + " : " + all);
         VirtualMachine vm = getVirtualMachine ();
-        if (vm == null) return;
+        if (vm == null) return false;
+        boolean matched = false;
         try {
             Iterator i = null;
             if (all) {
-                i = getVirtualMachine ().allClasses ().iterator ();
+                i = vm.allClasses ().iterator ();
             } else {
-                i = getVirtualMachine ().classesByName (className).iterator ();
+                i = vm.classesByName (className).iterator ();
             }
             while (i.hasNext ()) {
                 ReferenceType referenceType = (ReferenceType) i.next ();
@@ -124,11 +134,13 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                         if (verbose)
                             System.out.println("B       cls loaded! " + referenceType);
                         classLoaded (referenceType);
+                        matched = true;
                     }
                 }
             }
         } catch (VMDisconnectedException e) {
         }
+        return matched;
     }
 
     public boolean exec (Event event) {

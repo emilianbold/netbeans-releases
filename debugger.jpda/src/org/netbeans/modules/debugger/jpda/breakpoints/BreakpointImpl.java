@@ -53,13 +53,15 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
 
     private JPDADebuggerImpl    debugger;
     private JPDABreakpoint      breakpoint;
+    private BreakpointsReader   reader;
     private final Session       session;
     private Expression          compiledCondition;
     private List                requests = new ArrayList ();
 
 
-    protected BreakpointImpl (JPDABreakpoint p, JPDADebuggerImpl debugger, Session session) {
+    protected BreakpointImpl (JPDABreakpoint p, BreakpointsReader reader, JPDADebuggerImpl debugger, Session session) {
         this.debugger = debugger;
+        this.reader = reader;
         breakpoint = p;
         this.session = session;
     }
@@ -76,6 +78,9 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
      * Called when Fix&Continue is invoked. Reqritten in LineBreakpointImpl.
      */
     void fixed () {
+        if (reader != null) {
+            reader.storeCachedClassName(breakpoint, null);
+        }
         update ();
     }
     
@@ -96,6 +101,9 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         if (Breakpoint.PROP_DISPOSED.equals(evt.getPropertyName())) {
             remove();
         } else {
+            if (reader != null) {
+                reader.storeCachedClassName(breakpoint, null);
+            }
             update ();
         }
     }

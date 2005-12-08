@@ -32,6 +32,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
@@ -57,15 +58,18 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     private LineBreakpoint      breakpoint;
     private SourcePath          sourcePath;
     private int                 lineNumber;
+    private BreakpointsReader   reader;
     
     
     public LineBreakpointImpl (
         LineBreakpoint breakpoint, 
+        BreakpointsReader reader,
         JPDADebuggerImpl debugger,
         Session session,
         SourcePath sourcePath
     ) {
-        super (breakpoint, debugger, session);
+        super (breakpoint, reader, debugger, session);
+        this.reader = reader;
         this.breakpoint = breakpoint;
         this.sourcePath = sourcePath;
         lineNumber = breakpoint.getLineNumber ();
@@ -81,10 +85,16 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     
     protected void setRequests () {
         lineNumber = breakpoint.getLineNumber ();
-        String className = EditorContextBridge.getClassName (
-            breakpoint.getURL (), 
-            lineNumber
-        );
+        String className = reader.findCachedClassName(breakpoint);
+        if (className == null) {
+            className = EditorContextBridge.getClassName (
+                breakpoint.getURL (), 
+                lineNumber
+            );
+            if (className != null) {
+                reader.storeCachedClassName(breakpoint, className);
+            }
+        }
         if (className == null) {
             //HACK: for JSPs.
             //PENDING
