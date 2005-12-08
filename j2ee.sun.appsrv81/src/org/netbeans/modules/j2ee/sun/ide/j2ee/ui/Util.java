@@ -240,16 +240,19 @@ public class Util {
     
     static JFileChooser getJFileChooser(final FileFilter f){
         JFileChooser chooser = new JFileChooser();
-        
-        chooser.setDialogTitle(NbBundle.getMessage(Util.class, 
-                "LBL_Chooser_Name"));                                           //NOI18N
+        decorateChooser(chooser,null,NbBundle.getMessage(Util.class, 
+                "LBL_Chooser_Name"));
+        return chooser;
+    }
+    
+    static void decorateChooser(JFileChooser chooser,String fname,String title) {
+        chooser.setDialogTitle(title);                                           //NOI18N
         chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
         
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setApproveButtonMnemonic(NbBundle.getMessage(Util.class, 
                 "Choose_Button_Mnemonic").charAt(0));                           //NOI18N
         chooser.setMultiSelectionEnabled(false);
-        chooser.addChoosableFileFilter(f);
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setApproveButtonToolTipText(NbBundle.getMessage(Util.class, 
                 "LBL_Chooser_Name"));                                           //NOI18N
@@ -260,8 +263,13 @@ public class Util {
         chooser.getAccessibleContext().
                 setAccessibleDescription(NbBundle.getMessage(Util.class, 
                 "LBL_Chooser_Name"));                                           //NOI18N
-        
-        return chooser;
+        if (null != fname && fname.length() > 0) {
+            File sel = new File(fname);
+            if (sel.isDirectory())
+                chooser.setCurrentDirectory(sel);
+            else
+                chooser.setSelectedFile(sel);
+        }
     }
     
     

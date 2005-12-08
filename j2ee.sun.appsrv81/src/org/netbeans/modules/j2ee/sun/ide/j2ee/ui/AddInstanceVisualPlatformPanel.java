@@ -18,8 +18,10 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -168,7 +170,11 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
     
     private String browseInstallLocation(){
         String insLocation = null;
-        JFileChooser chooser = Util.getJFileChooser(new DirFilter());
+        JFileChooser chooser = new PlatformInstChooser();
+        String fname = platformField.getText();
+        Util.decorateChooser(chooser,fname,
+                NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, 
+                "LBL_Choose_Install")); //NOI18M
         int returnValue = chooser.showDialog(this,
                 NbBundle.getMessage(AddInstanceVisualDirectoryPanel.class,
                 "LBL_Choose_Button"));                                          //NOI18N
@@ -179,27 +185,20 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         return insLocation;
     }
     
-    /** Class to filter possible directories.  It isn't complete.
-     */
-    private class DirFilter extends javax.swing.filechooser.FileFilter {
-        
-        /** Accept files that are existing writable directories
-         */
-        public boolean accept(File f) {
-            if(!f.exists() || !f.canRead() || !f.isDirectory() ) {
-                return false;
-            }else{
-                return true;
+    private class PlatformInstChooser extends JFileChooser {
+        public void approveSelection() {
+            File dir = FileUtil.normalizeFile(getSelectedFile());
+            
+            if ( ServerLocationManager.isGoodAppServerLocation(dir) ) {
+                super.approveSelection();
+            }
+            else {
+                setCurrentDirectory( dir );
             }
         }
         
-        public String getDescription() {
-            return NbBundle.getMessage(AddInstanceVisualPlatformPanel.class,
-                    "LBL_InstDirType");                                            // NOI18N
-        }
-        
     }
-    
+        
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

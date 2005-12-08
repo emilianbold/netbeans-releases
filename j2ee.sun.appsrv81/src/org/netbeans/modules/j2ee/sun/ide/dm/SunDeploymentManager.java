@@ -40,6 +40,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 
@@ -323,6 +324,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         //System.out.println("distribute.");
         ThrowExceptionIfSuspended();
       //  getStartServerInterface().viewLogFile();
+        ViewLogAction.viewLog(this);
 
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         try {
@@ -374,6 +376,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         try {
             Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
       //  getStartServerInterface().viewLogFile();
+        ViewLogAction.viewLog(this);
             return innerDM.distribute(target, archive, null);
            // return distribute(target, a, p);
             //}
@@ -538,6 +541,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
 
         InputStream innerPlan = null;
    //     getStartServerInterface().viewLogFile();
+        ViewLogAction.viewLog(this);
         
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         try {
@@ -595,6 +599,8 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             ise.initCause(fnfe);
             throw ise;
         }
+        ViewLogAction.viewLog(this);
+        
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         try{

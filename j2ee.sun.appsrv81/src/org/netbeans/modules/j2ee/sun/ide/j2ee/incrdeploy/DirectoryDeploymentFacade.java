@@ -29,6 +29,7 @@ import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
@@ -104,7 +105,9 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
          //called with appropriate DeployableObject before this method.
          if((resourceDirs != null) && (dm != null))
             Utils.registerResources(resourceDirs, (ServerInterface)dm.getManagement());
-
+            if (null!=dm)
+                ViewLogAction.viewLog(dm);
+                
          return ((IncrementalDeployment)inner).incrementalDeploy(module, changes);
     }
     
@@ -116,6 +119,8 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
        File[] resourceDirs = Utils.getResourceDirs(deployableObject);
        if((resourceDirs != null) && (dm != null)) 
            Utils.registerResources(resourceDirs, (ServerInterface)dm.getManagement());
+       if (null != dm)
+        ViewLogAction.viewLog(dm);
         return ((IncrementalDeployment)inner).initialDeploy(target,deployableObject,deploymentConfiguration, file);
     }
 

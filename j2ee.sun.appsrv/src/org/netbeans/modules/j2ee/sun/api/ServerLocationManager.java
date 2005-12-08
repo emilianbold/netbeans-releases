@@ -191,14 +191,16 @@ public class ServerLocationManager  {
     private static Collection fileColl = new java.util.ArrayList();
     
     static {
-	fileColl.add("bin");
-	fileColl.add("lib");
-	fileColl.add("config");
+	fileColl.add("bin");                                                    //NOI18N
+	fileColl.add("lib");                                                    //NOI18N
+	fileColl.add("config");                                                 //NOI18N
+        fileColl.add("docs");                                                   //NOI18N
     }
     
     public static boolean isGlassFish(File candidate){
 	//now test for AS 9 (J2EE 5.0) which should work for this plugin
-	File as9 = new File(candidate.getAbsolutePath()+"/lib/dtds/sun-web-app_2_5-0.dtd");
+	File as9 = new File(candidate.getAbsolutePath()+
+                "/lib/dtds/sun-web-app_2_5-0.dtd");                             //NOI18N
 	return as9.exists();
     }
     

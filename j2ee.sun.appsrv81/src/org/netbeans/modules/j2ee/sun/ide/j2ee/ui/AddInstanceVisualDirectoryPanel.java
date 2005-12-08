@@ -22,7 +22,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileFilter;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public final class AddInstanceVisualDirectoryPanel extends JPanel {
@@ -102,9 +102,12 @@ public final class AddInstanceVisualDirectoryPanel extends JPanel {
     }
     
     
-    private String browseInstallLocation(){
+    private String browseDomainLocation(){
         String insLocation = null;
-        JFileChooser chooser = Util.getJFileChooser(new DirFilter());
+        JFileChooser chooser = new DomainChooser();
+        Util.decorateChooser(chooser,instanceDirectory.getText(),
+                NbBundle.getMessage(AddInstanceVisualDirectoryPanel.class, 
+                "LBL_Choose_Domain"));                                          //NOI18N
         int returnValue = chooser.showDialog(this,
                 NbBundle.getMessage(AddInstanceVisualDirectoryPanel.class,
                 "LBL_Choose_Button"));                                          //NOI18N
@@ -115,27 +118,23 @@ public final class AddInstanceVisualDirectoryPanel extends JPanel {
         return insLocation;
     }
     
-    /** Class to filter possible directories.  It isn't complete.
-     */
-    private class DirFilter extends javax.swing.filechooser.FileFilter {
-        
-        /** Accept files that are existing writable directories
-         */
-        public boolean accept(File f) {
-            if(!f.exists() || !f.canRead() || !f.isDirectory() ) {
-                return false;
-            }else{
-                return true;
+    private class DomainChooser extends JFileChooser {
+        public void approveSelection() {
+            File dir = FileUtil.normalizeFile(getSelectedFile());
+            
+            if ( Util.rootOfUsableDomain(dir) ) {
+                super.approveSelection();
             }
+            else {
+                setCurrentDirectory( dir );
+            }
+            
         }
         
-        public String getDescription() {
-            return NbBundle.getMessage(AddInstanceVisualDirectoryPanel.class,
-                    "LBL_DomainDirType");                                            // NOI18N
-        }
         
-    }
     
+    }
+        
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -245,7 +244,7 @@ public final class AddInstanceVisualDirectoryPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void openInstanceDirectorySelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openInstanceDirectorySelectorActionPerformed
-        String val = browseInstallLocation();
+        String val = browseDomainLocation();
         if (null != val && val.length() >=1)
             instanceDirectory.setText(val);
     }//GEN-LAST:event_openInstanceDirectorySelectorActionPerformed
