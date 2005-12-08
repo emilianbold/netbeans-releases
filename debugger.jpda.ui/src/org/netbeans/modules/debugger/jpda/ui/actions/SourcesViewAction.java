@@ -57,7 +57,7 @@ public class SourcesViewAction extends AbstractAction {
         v.open ();
         v.requestActive ();
     }
-    
+    // TODO Rewrite this code - it creates all TopComponents !!!
     static boolean activateComponent (Class componentClass) {
         Iterator it = WindowManager.getDefault ().getModes ().iterator ();
         while (it.hasNext ()) {
