@@ -87,6 +87,14 @@ implements CloneableEditorSupport.Env {
         assertNotNull ("One again", panes);
         assertEquals ("One is there again", 1, panes.length);
     }
+    
+    public void testEditorPaneActionMapIsParentOfCloneableEditorActionMap() {
+        support.open();
+        
+        CloneableEditor ed = (CloneableEditor)support.getRef().getArbitraryComponent();
+        
+        assertSame(ed.getEditorPane().getActionMap(), ed.getActionMap().getParent());
+    }
 
     
     //
