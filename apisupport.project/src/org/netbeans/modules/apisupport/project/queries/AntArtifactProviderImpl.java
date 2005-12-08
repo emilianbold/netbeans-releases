@@ -15,6 +15,7 @@ package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -65,11 +66,17 @@ public final class AntArtifactProviderImpl implements AntArtifactProvider {
         public URI[] getArtifactLocations() {
             String jarloc = eval.evaluate("${cluster}/${module.jar}"); // NOI18N
             File jar = helper.resolveFile(jarloc); // probably absolute anyway, now
-            return new URI[] {
-                // This is a relative URI:
-                URI.create(PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), jar)),
-                // XXX should it add in class path extensions?
-            };
+            String reldir = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), jar);
+            if (reldir != null) {
+                try {
+                    return new URI[] {new URI(null, null, reldir, null)};
+                } catch (URISyntaxException e) {
+                    throw new AssertionError(e);
+                }
+            } else {
+                return new URI[] {jar.toURI()};
+            }
+            // XXX should it add in class path extensions?
         }
         
         public String getTargetName() {
