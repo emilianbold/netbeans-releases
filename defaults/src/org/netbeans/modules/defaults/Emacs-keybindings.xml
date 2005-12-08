@@ -59,6 +59,7 @@
     <bind actionName="find-previous" key="A-R"/>
     <bind actionName="find-previous" key="C-R"/>
     <bind actionName="find-previous" key="S-F3"/>
+    <bind actionName="fix-imports" key="OS-F"/>
     <bind actionName="goto-declaration" key="A-PERIOD"/>
     <bind actionName="goto-declaration" key="CA-G"/>
     <bind actionName="insert-break" key="ENTER"/>
@@ -101,6 +102,7 @@
     <bind actionName="to-upper-case" key="C-X$C-U"/>
     <bind actionName="toggle-case-identifier-begin" key="A-C"/>
     <bind actionName="toggle-typing-mode" key="INSERT"/>
+    <bind actionName="try-catch" key="OS-W"/>
     <bind actionName="undo" key="UNDO"/>
     <bind actionName="undo" key="C-X$U"/>
     <bind actionName="undo" key="C-SLASH"/>    

@@ -68,6 +68,7 @@
     <bind actionName="to-lower-case" key="CS-Y"/>
     <bind actionName="to-upper-case" key="CS-X"/>
     <bind actionName="toggle-typing-mode" key="INSERT"/>
+    <bind actionName="try-catch" key="OS-W"/>
     <bind actionName="undo" key="UNDO"/>
     <bind actionName="word-match-next" key="A-SLASH"/>
 </bindings>
