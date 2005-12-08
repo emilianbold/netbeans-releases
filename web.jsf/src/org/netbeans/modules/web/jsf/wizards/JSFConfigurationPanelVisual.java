@@ -235,19 +235,19 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     }
     
     public boolean validateXML(){
-        return cbVerify.isSelected();
-    }
-    
-    public void setValidateXML(boolean ver){
-        cbVerify.setSelected(ver);
-    }
-    
-    public boolean verifyObjects(){
         return cbValidate.isSelected();
     }
     
+    public void setValidateXML(boolean ver){
+        cbValidate.setSelected(ver);
+    }
+    
+    public boolean verifyObjects(){
+        return cbVerify.isSelected();
+    }
+    
     public void setVerifyObjects(boolean val){
-        cbValidate.setSelected(val);
+        cbVerify.setSelected(val);
     }
     
     public boolean packageJars(){
