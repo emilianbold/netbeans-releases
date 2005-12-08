@@ -19,6 +19,8 @@ import org.netbeans.lib.cvsclient.command.log.LogCommand;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.RLogExecutor;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.LogExecutor;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 
 import javax.swing.*;
@@ -35,6 +37,7 @@ import org.openide.util.NbBundle;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputEvent;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
 
 /**
  * Executes searches in Search History panel.
@@ -69,17 +72,22 @@ class SearchExecutor implements Runnable {
         this.master = master;
         File [] roots = master.getRoots();
         
+        Set printedWarnings = new HashSet(1);
         Set foldersSet = new HashSet(roots.length); 
         Set filesSet = new HashSet(roots.length); 
         for (int i = 0; i < roots.length; i++) {
             File root = roots[i];
-            String cvsRoot = null;
+            boolean isMisconfiguredServer = false;
             try {
-                cvsRoot = Utils.getCVSRootFor(root);
+                String cvsRoot = Utils.getCVSRootFor(root);
+                isMisconfiguredServer = misconfiguredServers.contains(cvsRoot);
+                if (root.isDirectory() && isMisconfiguredServer && printedWarnings.add(cvsRoot)) {
+                    showMisconfiguredServerWarning(cvsRoot);
+                }
             } catch (IOException e) {
                 // ignore
             }
-            if (root.isFile() || misconfiguredServers.contains(cvsRoot)) {
+            if (root.isFile() || isMisconfiguredServer) {
                 filesSet.add(root);
             } else {
                 foldersSet.add(root);
@@ -127,7 +135,7 @@ class SearchExecutor implements Runnable {
         rcmd.setUserFilter(criteria.getUsername());
         lcmd.setUserFilter(criteria.getUsername());
 
-        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(SearchExecutor.class, "BK0001"));
+        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(SearchExecutor.class, "BK0001"), false);
         RLogExecutor [] rexecutors;
         if (folders.length > 0) {
             rexecutors = RLogExecutor.splitCommand(rcmd, folders, null);
@@ -169,12 +177,16 @@ class SearchExecutor implements Runnable {
 
     private boolean testForRLogFailures(RLogExecutor[] executors) {
         Set failedFiles = new HashSet();
+        Set printedWarnings = new HashSet(1);
         for (int i = 0; i < executors.length; i++) {
             RLogExecutor executor = executors[i];
             if (executor.hasFailedOnSymbolicLink()) {
-                showMisconfiguredServerWarning(executor);
                 try {
-                    misconfiguredServers.add(Utils.getCVSRootFor(executor.getFile()));
+                    String cvsRoot = Utils.getCVSRootFor(executor.getFile());
+                    if (printedWarnings.add(cvsRoot)) {
+                        showMisconfiguredServerWarning(cvsRoot);
+                    }
+                    misconfiguredServers.add(cvsRoot);
                 } catch (IOException e) {
                     // harmless + should never happen
                 }
@@ -190,10 +202,11 @@ class SearchExecutor implements Runnable {
         }
     }
 
-    private void showMisconfiguredServerWarning(RLogExecutor executor) {
+    private void showMisconfiguredServerWarning(String cvsRoot) {
         final String relNotesUrl = "http://javacvs.netbeans.org/release/5.0"; // NOI18N
-        executor.log(NbBundle.getMessage(SearchExecutor.class, "MSG_SymlinkWarning1") + "\n", null);  // NOI18N
-        executor.log(NbBundle.getMessage(SearchExecutor.class, "MSG_SymlinkWarning2", relNotesUrl) + "\n", new OutputListener() {  // NOI18N
+        ClientRuntime runtime = CvsVersioningSystem.getInstance().getClientRuntime(cvsRoot);
+        runtime.log(NbBundle.getMessage(SearchExecutor.class, "MSG_SymlinkWarning1") + "\n", null);  // NOI18N
+        runtime.log(NbBundle.getMessage(SearchExecutor.class, "MSG_SymlinkWarning2", relNotesUrl) + "\n", new OutputListener() {  // NOI18N
             public void outputLineSelected(OutputEvent ev) {
             }
 
@@ -208,6 +221,7 @@ class SearchExecutor implements Runnable {
             public void outputLineCleared(OutputEvent ev) {
             }
         });
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SearchExecutor.class, "MSG_StatusSymlinkWarning"));
     }
 
     private List processResults(RLogExecutor[] rexecutors, LogExecutor[] lexecutors) {

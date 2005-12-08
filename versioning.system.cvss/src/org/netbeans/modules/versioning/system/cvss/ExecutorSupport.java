@@ -24,7 +24,6 @@ import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.windows.OutputListener;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -429,10 +428,6 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
                 new Object [] { ok },
                 ok);
         DialogDisplayer.getDefault().notify(descriptor);
-    }
-    
-    public void log(String s, OutputListener hyperlinkListener) {
-        clientRuntime.log(s, hyperlinkListener);
     }
     
     /** Retry aware task events source*/

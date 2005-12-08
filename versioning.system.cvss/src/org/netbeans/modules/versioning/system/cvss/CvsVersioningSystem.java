@@ -130,7 +130,7 @@ public class CvsVersioningSystem {
      * @param cvsRoot root never <code>null</code>
      * @return
      */ 
-    private ClientRuntime getClientRuntime(String cvsRoot) {
+    public ClientRuntime getClientRuntime(String cvsRoot) {
  
             cvsRoot.length();  // rise NPE
 
