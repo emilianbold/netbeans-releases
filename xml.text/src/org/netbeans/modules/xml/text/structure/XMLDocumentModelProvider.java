@@ -368,9 +368,16 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                     addedElements.add(dtm.addDocumentElement("...", XML_CONTENT, Collections.EMPTY_MAP, sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 }
                 //find next syntax element
-//                sel = sel.getNext();
+//                sel = sel.getNext();     //this cannot be used since it chains the results and they are hard to GC then.                
                 try {
-                    sel = sup.getElementChain(sel.getElementOffset() + sel.getElementLength() + 1 );
+                    //prevent cycles
+                    SyntaxElement prev = null;
+                    int add = 0;
+                    do {
+                        add++;
+                        prev = sup.getElementChain(sel.getElementOffset() + sel.getElementLength() + add);
+                    } while(prev != null && sel.getElementOffset() >= prev.getElementOffset());
+                    sel = prev;
                 }catch(BadLocationException ble) {
                     sel = null;
                 }
