@@ -15,6 +15,7 @@ import org.netbeans.junit.NbTestSuite;
         super("Java Formatter");
         
         addTestSuite(JavaFormatterUnitTest.class);
+        addTestSuite(JavaFormatterArrayInitOrEnumUnitTest.class);
     }
     
 

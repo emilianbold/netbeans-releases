@@ -120,9 +120,17 @@ public class JavaFormatSupport extends ExtFormatSupport {
                         break;
 
                     case JavaTokenContext.LBRACE_ID:
-                    case JavaTokenContext.RBRACE_ID:
                     case JavaTokenContext.ELSE_ID:
                         return (lit != null) ? lit : t;
+                        
+                    case JavaTokenContext.RBRACE_ID:
+                        // Check whether this is an array initialization block
+                        if (!isArrayInitializationBraceBlock(t, null)) {
+                            return (lit != null) ? lit : t;
+                        } else { // skip the array initialization block
+                            t = findMatchingToken(t, null, JavaTokenContext.LBRACE, true);
+                        }
+                        break;
 
                     case JavaTokenContext.COLON_ID:
                         TokenItem tt = findAnyToken(t, null, new TokenID[] {JavaTokenContext.CASE, JavaTokenContext.DEFAULT, JavaTokenContext.FOR, JavaTokenContext.QUESTION, JavaTokenContext.ASSERT}, t.getTokenContextPath(), true);
@@ -772,7 +780,21 @@ public class JavaFormatSupport extends ExtFormatSupport {
                     default: {
                         // Find stmt start and add continuation indent
                         TokenItem stmtStart = findStatementStart(t);
-                        indent = getTokenIndent(stmtStart) + getFormatStatementContinuationIndent();
+                        indent = getTokenIndent(stmtStart);
+                        if (stmtStart != null) {
+                            // Check whether there is a comma on the previous line end
+                            // and if so then also check whether the present
+                            // statement is inside array initialization statement
+                            // and not inside parens and if so then do not indent
+                            // statement continuation
+                            if (t != null && tokenEquals(t, JavaTokenContext.COMMA, tokenContextPath)) {
+                                if (isArrayInitializationBraceBlock(t, null) && !isInsideParens(t, stmtStart)) {
+                                    // Eliminate the later effect of statement continuation shifting
+                                    indent -= getFormatStatementContinuationIndent();
+                                }
+                            }
+                            indent += getFormatStatementContinuationIndent();
+                        }
 
                         break;
                     }
@@ -936,6 +958,82 @@ public class JavaFormatSupport extends ExtFormatSupport {
             token = token.getPrevious();
         }
 
+        return false;
+    }
+    
+    /**
+     * Check whether there are left parenthesis before the given token
+     * until the limit token.
+     * 
+     * @param token non-null token from which to start searching back.
+     * @param limitToken limit token when reached the search will stop
+     *  with returning false.
+     * @return true if there is LPAREN token before the given token
+     *  (while respecting paren nesting).
+     */
+    private boolean isInsideParens(TokenItem token, TokenItem limitToken) {
+        int depth = 0;
+        token = token.getPrevious();
+
+        while (token != null && token != limitToken) {
+            if (tokenEquals(token, JavaTokenContext.LPAREN, tokenContextPath)) {
+                if (--depth < 0) {
+                    return true;
+                }
+
+            } else if (tokenEquals(token, JavaTokenContext.RPAREN, tokenContextPath)) {
+                depth++;
+            }
+            token = token.getPrevious();
+        }
+        return false;
+    }
+
+    /**
+     * Check whether the given token is located in array initialization block.
+     * 
+     * @param token non-null token from which to start searching back.
+     * @param limitToken limit token when reached the search will stop
+     *  with returning false.
+     * @return true if the token is located inside the brace block of array
+     *  initialization.
+     */
+    private boolean isArrayInitializationBraceBlock(TokenItem token, TokenItem limitToken) {
+        int depth = 0;
+        token = token.getPrevious();
+
+        while (token != null && token != limitToken && token.getTokenContextPath() == tokenContextPath) {
+            switch (token.getTokenID().getNumericID()) {
+                case JavaTokenContext.RBRACE_ID:
+                    depth++;
+                    break;
+
+                case JavaTokenContext.LBRACE_ID:
+                    depth--;
+                    if (depth < 0) {
+                        TokenItem prev = findImportantToken(token, limitToken, true);
+                        // Array initialization left brace should be preceded
+                        // by either '=' or ']' i.e.
+                        // either "String array = { "a", "b", ... }"
+                        // or     "String array = new String[] { "a", "b", ... }"
+                        return (prev != null && prev.getTokenContextPath() == tokenContextPath
+                                && (JavaTokenContext.RBRACKET.equals(prev.getTokenID())
+                                 || JavaTokenContext.EQ.equals(prev.getTokenID())));
+                    }
+                    break;
+
+                // Array initialization block should not contain statements or ';'
+                case JavaTokenContext.DO_ID:
+                case JavaTokenContext.FOR_ID:
+                case JavaTokenContext.IF_ID:
+                case JavaTokenContext.WHILE_ID:
+                case JavaTokenContext.SEMICOLON_ID:
+                    if (depth == 0) {
+                        return false;
+                    }
+            }                    
+            token = token.getPrevious();
+        }
         return false;
     }
 

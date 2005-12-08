@@ -16,10 +16,8 @@ package org.netbeans.modules.editor.java;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
-import org.netbeans.editor.ext.java.JavaTokenContext;
+import org.netbeans.modules.editor.java.JavaFormatterUnitTestCase;
 
 
 /**
@@ -27,7 +25,7 @@ import org.netbeans.editor.ext.java.JavaTokenContext;
  *
  * @autor Miloslav Metelka
  */
-public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
+public class JavaFormatterUnitTest extends JavaFormatterUnitTestCase {
     
     public JavaFormatterUnitTest(String testMethodName) {
         super(testMethodName);
@@ -301,96 +299,6 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
         
     }
     
-    /** uncomment after fixing the problem 
-    public void testReformatMultiArray(){
-        setLoadDocumentText(
-                "static int[][] CONVERT_TABLE={{1,2},{2,3},\n"
-                + "{3,4},{4,5},{5,6},|\n"
-                + "{6,7},{7,8},{8,9}};\n");
-        reformat();
-        assertDocumentText("Incorrect multi-array && multi-line reformating",
-                "static int[][] CONVERT_TABLE={{1,2},{2,3},\n"
-                + "        {3,4},{4,5},{5,6},\n"
-                + "        {6,7},{7,8},{8,9}};\n");
-    }
-     */
-    
-    public void testReformatSimpleEnum() {
-        setLoadDocumentText(
-                "public enum SimpleEnum {\n" +
-                "ONE,\n" +
-                "TWO,\n" +
-                "THREE\n" +
-                "}\n");
-        reformat();
-        assertDocumentText("Incorrect simple enum reformating",
-                "public enum SimpleEnum {\n" +
-                "    ONE,\n" +
-                "    TWO,\n" +
-                "    THREE\n" +
-                "}\n");
-    }
-    
-    public void testReformatNestedEnum() {
-        setLoadDocumentText(
-                "public enum SimpleEnum {\n" +
-                "ONE,\n" +
-                "TWO,\n" +
-                "THREE;\n" +
-                "public enum NestedEnum {\n" +
-                "A,\n" +
-                "B\n" +
-                "}\n" +
-                "}\n");
-        reformat();
-        assertDocumentText("Incorrect nested enum reformating",
-                "public enum SimpleEnum {\n" +
-                "    ONE,\n" +
-                "    TWO,\n" +
-                "    THREE;\n" +
-                "    public enum NestedEnum {\n" +
-                "        A,\n" +
-                "        B\n" +
-                "    }\n" +
-                "}\n");
-    }
-    
-    public void testReformatComplexEnum() {
-        setLoadDocumentText(
-                "public enum ComplexEnum {\n" +
-                "ONE,\n" +
-                "TWO {\n" +
-                "public void op(int a,\n" +
-                "int b,\n" +
-                "int c) {\n" +
-                "}\n" +
-                "public class Inner {\n" +
-                "int a, b,\n" +
-                "c,\n" +
-                "d;\n" +
-                "}\n" +
-                "},\n" +
-                "THREE\n" +
-                "}\n");
-        reformat();
-        assertDocumentText("Incorrect complex enum reformating",
-                "public enum ComplexEnum {\n" +
-                "    ONE,\n" +
-                "    TWO {\n" +
-                "        public void op(int a,\n" +
-                "                int b,\n" +
-                "                int c) {\n" +
-                "        }\n" +
-                "        public class Inner {\n" +
-                "            int a, b,\n" +
-                "                    c,\n" +
-                "                    d;\n" +
-                "        }\n" +
-                "    },\n" +
-                "    THREE\n" +
-                "}\n");
-    }
-    
     // tests for regressions
     
     /**
@@ -503,25 +411,6 @@ public class JavaFormatterUnitTest extends JavaBaseDocumentUnitTestCase {
                 "    return 0.0f;\n" +
                 "else\n" +
                 "    return performanceSum / getCount()");
-    }
-    
-    
-    // ------- Private methods -------------
-    
-    private void indentNewLine() {
-        Formatter f = getDocument().getFormatter();
-        int offset = f.indentNewLine(getDocument(), getCaretOffset());
-        getCaret().setDot(offset);
-    }
-    
-    private void reformat() {
-        Formatter f = getDocument().getFormatter();
-        try {
-            f.reformat(getDocument(), 0, getDocument().getLength());
-        } catch (BadLocationException e) {
-            e.printStackTrace(getLog());
-            fail(e.getMessage());
-        }
     }
     
 }
