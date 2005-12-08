@@ -19,17 +19,119 @@
 
 Wizards are defined in the <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
     <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-dialogs/org/openide/doc-files/wizard-guidebook.html">
-    <param name="text" value="<html><u>Wizard Descriptor API</u>.</html>">
+    <param name="text" value="<html><u>Wizard Descriptor API</u></html>">
     <param name="textFontSize" value="medium">
     <param name="textColor" value="blue">
-</object> This API lets you create wizard panels, with steps, graphics, left side-bar text, and a user panel on the right. 
+</object>. This API lets you create wizard panels that have steps, graphics, left side-bar text, and a user panel on the right. The
+ Wizard wizard helps you by creating several of the basic Java source files, containing sample code, for you.
 
-<p>The IDE provides templates that you can use to create a variety of wizards:
-<ul>
-	<li><b>New Project wizard.</b> Use the <a href="../../csh/SelectProjectPanel.html">New Project Template wizard</a>.
-	<li><b>New File wizard.</b> Use the <a href="../../csh/WizardTypePanel.html">New Wizard wizard</a>.
-	<li><b>Any other type of wizard.</b> Use the <a href="../../csh/WizardTypePanel.html">New Wizard wizard</a>.
-</ul>
+
+<p>Depending on the selections you make in the Wizard Type panel in the New Wizard wizard, the IDE
+ creates the following Java source files for you:
+
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+	  <th scope="col" align="left" width="30">Selection</th>
+	 
+	  <th scope="col" align="left">Files</th>
+ <th scope="col" align="left">Purpose</th>
+  </tr>
+ <tr valign="top"> 
+	 <td>Registration Type: Custom<br>Wizard Step Sequence: Static</td>
+	
+	  <td><ul><li><tt>SampleAction.java</tt><br>
+		  <li><tt>VisualPanel.java</tt> (for each wizard step)<br>
+		  <li><tt>WizardPanel.java</tt> (for each wizard step)</ul>
+	  
+  </td>
+ <td>Uncomplicated wizards that progress sequentially from panel to panel
+	 without divergences or reversals. A menu item or toolbar button
+	 invokes the wizard and subsequent steps are generally linear and forward-directed. For
+  example, the Update Center wizard does not allow you to skip steps. It does branch off or change
+  direction based on choices made by the user.</td>
+  </tr>
+ 
+  <tr valign="top"> 
+   <td>Registration Type: Custom<br>Wizard Step Sequence: Dynamic</td>
+   <td><ul><li><tt>WizardIterator.java</tt><br>
+		  <li> <tt>VisualPanel.java</tt> (for each wizard step)<br>
+		  <li><tt>WizardPanel.java</tt> (for each wizard step)</ul>
+  </td>
+  <td>A <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-dialogs/org/openide/WizardDescriptor.Iterator.html">
+    <param name="text" value="<html><u>WizardDescriptor.Iterator</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object> class guides progress from one panel to the next. The developer has a lot more
+ freedom in coding the wizard, but has a more complex task since there are many more possibilities
+ to consider. Even though the Custom/Simple wizard type can also be extended to provide support
+ for panel skipping and reversals, the Custom/Dynamic type was made for this purpose. For example, the
+ Add Server Instance wizard offers different panels depending on the type of server that the user
+ wants to register.</td>
+</td>
+  </tr>
+  <tr>
+  <td>Registration Type: New File</td>
+  <td><ul><li><tt>WizardIterator.java</tt><br>
+		  <li><tt>VisualPanel.java</tt> (for each wizard step)<br>
+		  <li><tt>WizardPanel.java</tt> (for each wizard step)
+		  <li><tt>.HTML</tt> file (for the description area in the New File wizard)</ul>
+		 
+	   </td>
+	   <td>Wizard for the the creation of new files. This wizard is registered in the New File wizard
+	    via the <tt>layer.xml</tt> file. All the necessary entries in the <tt>layer.xml</tt> file
+	    are created for you by the Wizard wizard. In addition, when you make this choice, the Wizard wizard
+	    creates an <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-dialogs/org/openide/WizardDescriptor.Iterator.html">
+    <param name="text" value="<html><u>WizardDescriptor.Iterator</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object> so that you can provide the direction and sequence of the wizard. The New File wizard can
+ be as simple or as complex as your needs dictate. An HTML file is created by the Wizard wizard so that
+ you can provide a description for your new wizard in the New File wizard.</td>
+  </tr>
+  
+
+</table>
+
+  <p>When you want to create a wizard, you do not always need to use the Wizard wizard. The table below
+   helps you to chose.
+
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+	  <th scope="col" align="left" width="30">When you want to create a...</th>
+    <th scope="col" align="left">Use a...</th>
+  </tr>
+
+
+  
+  <tr valign="top"> 
+	  <td>New Project wizard</td>
+	  <td><a href="../../csh/SelectProjectPanel.html">New Project Template wizard</a>
+	  </td>
+  </tr>
+<tr valign="top"> 
+	<td>New Sample wizard</td>
+	  <td><a href="../../csh/SelectProjectPanel.html">New Project Template wizard</a>
+	  </td>
+  </tr>
+  <tr valign="top"> 
+   <td>New File wizard</td>
+   <td>'New File' registration type in the <a href="../../csh/WizardTypePanel.html">New Wizard wizard</a>
+	  </td>
+</td>
+  </tr>
+  <tr>
+  <td>Any other type of wizard</td>
+  <td>'Custom' registration type in the <a href="../../csh/WizardTypePanel.html">New Wizard wizard</a>
+	  </td>
+  </tr>
+  
+
+</table>
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
