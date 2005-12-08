@@ -13,19 +13,30 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import java.lang.reflect.Modifier;
+import java.rmi.RemoteException;
+import javax.jmi.reflect.JmiException;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.jmi.javamodel.ClassMember;
+import org.netbeans.jmi.javamodel.Import;
 import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EjbGenerationUtil;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityAndSessionGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
 import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -147,36 +158,48 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
             boolean rollback = true;
             String componentInterfaceName;
             String homeInterfaceName;
+            String oppositeComponentInterfaceName;
+            String oppositeHomeInterfaceName;
             try {
                 if (local) {
                     componentInterfaceName = EjbGenerationUtil.getLocalName(packageName, ejbName);
-                    componentInterfaceName = generator.generateLocal(packageName, packageFile, componentInterfaceName, ejbName);
                     homeInterfaceName = EjbGenerationUtil.getLocalHomeName(packageName, ejbName);
-                    homeInterfaceName = generator.generateLocalHome(packageName, packageFile, homeInterfaceName,
-                            componentInterfaceName, ejbName);
-                    String businessInterfaceName = EjbGenerationUtil.getLocalBusinessInterfaceName(packageName, ejbName);
-                    generator.generateBusinessInterfaces(packageName, packageFile, businessInterfaceName, ejbName, ejb.getEjbClass(),
-                            componentInterfaceName);
+                    oppositeComponentInterfaceName = ejb.getRemote();
+                    oppositeHomeInterfaceName = ejb.getHome();
+                    componentInterfaceName = generator.generateLocal(packageName, packageFile, componentInterfaceName, ejbName);
+                    if (oppositeComponentInterfaceName != null && oppositeHomeInterfaceName != null) {
+                        generateHomeInterface(oppositeHomeInterfaceName, homeInterfaceName, oppositeComponentInterfaceName, componentInterfaceName,  false, packageFile);
+                    } else {
+                        homeInterfaceName = generator.generateLocalHome(packageName, packageFile, homeInterfaceName, componentInterfaceName, ejbName);
+                        String businessInterfaceName = EjbGenerationUtil.getLocalBusinessInterfaceName(packageName, ejbName);
+                        generator.generateBusinessInterfaces(packageName, packageFile, businessInterfaceName, ejbName, ejb.getEjbClass(), componentInterfaceName);
+                    }
                 } else {
                     componentInterfaceName = EjbGenerationUtil.getRemoteName(packageName, ejbName);
-                    componentInterfaceName = generator.generateRemote(packageName, packageFile, componentInterfaceName, ejbName);
                     homeInterfaceName = EjbGenerationUtil.getHomeName(packageName, ejbName);
-                    homeInterfaceName = generator.generateHome(packageName, packageFile, homeInterfaceName,
-                            componentInterfaceName, ejbName);
-                    String businessInterfaceName = EjbGenerationUtil.getBusinessInterfaceName(packageName, ejbName);
-                    generator.generateBusinessInterfaces(packageName, packageFile, businessInterfaceName, ejbName, ejb.getEjbClass(),
-                            componentInterfaceName);
+                    oppositeComponentInterfaceName = ejb.getLocal();
+                    oppositeHomeInterfaceName = ejb.getLocalHome();
+                    componentInterfaceName = generator.generateRemote(packageName, packageFile, componentInterfaceName, ejbName);
+                    if (oppositeComponentInterfaceName != null && oppositeHomeInterfaceName != null) {
+                        generateHomeInterface(oppositeHomeInterfaceName, homeInterfaceName, oppositeComponentInterfaceName, componentInterfaceName, true, packageFile);
+                    } else {
+                        homeInterfaceName = generator.generateHome(packageName, packageFile, homeInterfaceName, componentInterfaceName, ejbName);
+                        String businessInterfaceName = EjbGenerationUtil.getBusinessInterfaceName(packageName, ejbName);
+                        generator.generateBusinessInterfaces(packageName, packageFile, businessInterfaceName, ejbName, ejb.getEjbClass(), componentInterfaceName);
+                    }
+                }
+                if (local) {
+                    ejb.setLocal(componentInterfaceName);
+                    ejb.setLocalHome(homeInterfaceName);
+                } else {
+                    ejb.setRemote(componentInterfaceName);
+                    ejb.setHome(homeInterfaceName);
                 }
                 rollback = false;
+            } catch (JmiException jmie) {
+                ErrorManager.getDefault().notify(jmie);
             } finally {
                 JMIUtils.endJmiTransaction(rollback);
-            }
-            if (local) {
-                ejb.setLocal(componentInterfaceName);
-                ejb.setLocalHome(homeInterfaceName);
-            } else {
-                ejb.setRemote(componentInterfaceName);
-                ejb.setHome(homeInterfaceName);
             }
             modelUpdatedFromUI();
         } catch (IOException e) {
@@ -184,6 +207,86 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
         }
     }
 
+    /**
+     * Generates local or remote home interface based on provided opposite existing remote or local interface.
+     * It will copy all create methods and findByPrimaryKey method from existing opposite home interface.
+     * 
+     * @param oldHome name of home interface from which create and findByPrimary methods will be taken
+     * @param newHome name of home interface to create
+     * @param oldBusiness name of existing business interface (returned by create and findByPrimaryKey method of home interface)
+     * @param newBusiness name of already created new business interface (will be returned by create and findByPrimaryKey method of new home interface)
+     * @param generateRemote if new home interface is remote
+     * @param foForClasspath any file from same classpath as oldHome interface used just for resolving of class by name
+     * @throws java.io.IOException
+     */
+    private static void generateHomeInterface(String oldHome, String newHome, String oldBusiness, String newBusiness, boolean remote, FileObject foForClasspath) throws IOException {
+        boolean rollback = true;
+        try {
+            JMIUtils.beginJmiTransaction(true);
+            JavaClass oldIfClass = JMIUtils.findClass(oldHome, foForClasspath);
+            if (oldIfClass != null) {
+                FileObject oldIfFO = JavaModel.getFileObject(oldIfClass.getResource());
+                if (oldIfFO != null) {
+                    JavaClass newIfClass = JMIUtils.createClass(oldIfClass, newHome);
+                    newIfClass.setModifiers(Modifier.PUBLIC | Modifier.INTERFACE);
+                    FileObject newIfFo = oldIfFO.getParent().createData(newIfClass.getSimpleName(), oldIfFO.getExt());
+                    Resource resource = JavaModel.getResource(newIfFo);
+                    resource.setPackageName(oldIfClass.getResource().getPackageName());
+                    resource.getClassifiers().add(newIfClass);
+                    for (Iterator it = oldIfClass.getResource().getImports().iterator(); it.hasNext();) {
+                        Import imp = (Import) it.next();
+                        resource.addImport((Import) imp.duplicate());
+                    }
+                    // add EJBHome or EJBLocalHome as supertype
+                    if (remote) {
+                        newIfClass.getInterfaceNames().add(JMIUtils.createMultipartId(newIfClass, "javax.ejb.EJBHome"));
+                    } else {
+                        newIfClass.getInterfaceNames().add(JMIUtils.createMultipartId(newIfClass, "javax.ejb.EJBLocalHome"));
+                    }
+                    for (Iterator it = getImportantHomeMethods(oldIfClass).iterator(); it.hasNext();) {
+                        Method originalMethod = (Method) it.next();
+                        Method method = JMIUtils.duplicate(originalMethod);
+                        method.setModifiers(0);
+                        if (oldBusiness != null && newBusiness != null) {
+                            if (method.getType().getName().indexOf(oldBusiness.substring(oldBusiness.lastIndexOf(".") + 1)) != -1) {
+                                method.setTypeName(JMIUtils.createMultipartId(method, newBusiness));
+                            }
+                        }
+                        if (remote) {
+                            JMIUtils.addException(method, RemoteException.class.getName());
+                        }
+                        newIfClass.getContents().add(method);
+                    }
+                }
+            }
+            rollback = false;
+        } catch (JmiException jmie) {
+            ErrorManager.getDefault().notify(jmie);
+        } finally {
+            JMIUtils.endJmiTransaction(rollback);
+        }
+    }
+
+    /**
+     * Fids all create methods and findByPrimaryKey method in home interface
+     *
+     * @param homeInterface  
+     * @return collection of method or empty collection if no methods found
+     */
+    private static Collection getImportantHomeMethods(JavaClass homeInterface) {
+        Collection result = new HashSet();
+        for (Iterator it = homeInterface.getContents().iterator(); it.hasNext();) {
+            ClassMember classMember = (ClassMember) ((ClassMember) it.next()).duplicate();
+            if (classMember instanceof Method && Modifier.isInterface(homeInterface.getModifiers())) {
+                Method method = (Method) classMember;
+                if (method.getName().startsWith("create") || method.getName().equals("findByPrimaryKey")) {
+                    result.add(method);
+                }
+            }
+        }
+        return result;
+    }
+    
     protected abstract EntityAndSessionGenerator getGenerator();
 
     public JavaClass getLocalHomeInterfaceClass() {
