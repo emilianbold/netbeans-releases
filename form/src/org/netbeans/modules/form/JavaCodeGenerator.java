@@ -2034,8 +2034,8 @@ class JavaCodeGenerator extends CodeGenerator {
 			String componentParameterString = getComponentParameterString(
 							    event.getComponent(), false);
 			
-			int varType = event.getComponent().getCodeExpression().getVariable().getType();			
-			if( (varType & CodeVariable.LOCAL) == CodeVariable.LOCAL ) {
+			CodeVariable variable = event.getComponent().getCodeExpression().getVariable();                                                
+			if( variable!= null && ( (variable.getType() & CodeVariable.LOCAL) == CodeVariable.LOCAL) ) {
 			    codeWriter.write(
 				FormUtils.getFormattedBundleString(
 				    "MSG_WrongLocalVariableSettingComment", // NOI18N
