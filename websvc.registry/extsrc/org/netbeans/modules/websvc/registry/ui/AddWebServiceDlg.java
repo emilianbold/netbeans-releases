@@ -574,7 +574,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         String urlString = null;
         
         if(this.urlRadioButton.isSelected()) {
-            String urlStr = ((String) urlComboBox.getSelectedItem()).trim();
+            final String urlStr = ((String) urlComboBox.getSelectedItem()).trim();
             /**
              * Make sure we don't have the default.
              */
@@ -587,11 +587,16 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
                 if(((DefaultComboBoxModel)urlComboBox.getModel()).getIndexOf(urlStr) == -1) {
                     urlComboBox.addItem(urlStr);
                 }
-                processWSDL(fixWsdlURL(urlStr));
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        processWSDL(fixWsdlURL(urlStr));
+                    } 
+                });
+                
             }
         } else if(this.localFileRadioButton.isSelected()) {
             
-            String chosenFile = (String)this.localFileComboBox.getSelectedItem();
+            final String chosenFile = (String)this.localFileComboBox.getSelectedItem();
             /**
              * Make sure we don't have the default.
              */
@@ -606,7 +611,11 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
                 if(((DefaultComboBoxModel)localFileComboBox.getModel()).getIndexOf(chosenFile) == -1) {
                     localFileComboBox.addItem(chosenFile);
                 }
-                processWSDL(this.fixFileURL(chosenFile));
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        processWSDL(fixFileURL(chosenFile));
+                    }
+                });
             }
         }
         
