@@ -84,6 +84,15 @@ final class FormClassLoader extends ClassLoader {
                         data = temp;
                     }
                 }
+                int dot = name.lastIndexOf('.');
+                if (dot != -1) { // Is there anything we should do for the default package?
+                    String packageName = name.substring(0, dot);
+                    Package pakcage = getPackage(packageName);
+                    if (pakcage == null) {
+                        // PENDING are we able to determine the attributes somehow?
+                        definePackage(packageName, null, null, null, null, null, null, null);
+                    }
+                }
                 c = defineClass(name, data, 0, data.length);
             }
             catch (Exception ex) {
