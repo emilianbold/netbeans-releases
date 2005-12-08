@@ -19,6 +19,8 @@ import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.CVSRoot;
+import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -162,7 +164,7 @@ public class VersionsCache {
 
     private String getRepositoryForDirectory(File directory, String repository) {
         if (directory == null) return null;
-        if (!directory.exists()) {
+        if (!directory.exists() && MetadataAttic.getMetadata(directory) == null) {
             return getRepositoryForDirectory(directory.getParentFile(), repository) + "/" + directory.getName(); // NOI18N
         }
         try {
@@ -229,18 +231,17 @@ public class VersionsCache {
     }
 
     private String getCvsRoot(File baseFile) throws IOException {
-        File root = new File (new File(baseFile, "CVS"), "Root");  // NOI18N
-        if (root.isFile()) {
-            BufferedReader r = null;
-            try {
-                r = new BufferedReader(new FileReader(root));
-                return r.readLine();
-            } finally {
-                if (r != null) r.close();
-            }
-        } else {
-            return getCvsRoot(baseFile.getParentFile());
+        try {
+            return  Utils.getCVSRootFor(baseFile);
+        } catch (IOException e) {
+            // the file is not versioned or deleted, try the attic
         }
+        // Should this functionality be already in Utils.getCVSRootFor?
+        CvsMetadata data = MetadataAttic.getMetadata(baseFile);
+        if (data != null) {
+            return data.getRoot();
+        }
+        throw new IOException("CVS/Root not found"); // NOI18N
     }
 
 }
