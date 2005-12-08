@@ -50,7 +50,7 @@ import org.openide.util.RequestProcessor;
  * <em>Add</em> button on the <code>CustomizerLibraries</code> panel has been
  * pushed.
  *
- * @author  mkrauskopf
+ * @author Martin Krauskopf, Jesse Glick
  */
 final class AddModulePanel extends JPanel {
     
@@ -192,8 +192,9 @@ final class AddModulePanel extends JPanel {
                     int loc = doc.getLength();
                     doc.insertString(loc, hit, null);
                     int start = hit.toLowerCase(Locale.US).indexOf(filterTextLC);
-                    if (start != -1) {
+                    while (start != -1) {
                         doc.setCharacterAttributes(loc + start, filterTextLC.length(), match, true);
+                        start = hit.toLowerCase(Locale.US).indexOf(filterTextLC, start + 1);
                     }
                     if (it.hasNext()) {
                         doc.insertString(doc.getLength(), "; ", null); // NOI18N
