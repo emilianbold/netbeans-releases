@@ -37,14 +37,14 @@ public class PortDetector {
      *	result to determine if the port is secure or unsecure (currently only
      *	http / https is supported).
      */
-    public static boolean isSecurePort(String host, int port) {
+    public static boolean isSecurePort(String host, int port) throws ConnectException {
         boolean isSecure = false;
         
         int i =0;
         
         try {
             Socket socket = new Socket(host,port);
-            socket.setSoTimeout(10000); // 10 seconds
+            socket.setSoTimeout(1000000); // 10 seconds
             OutputStream os = socket.getOutputStream();
             os.write("GET / HTTP/1.1\n".getBytes()); //NOI18N
             os.write( ("host: " + host + "\n").getBytes() ); //NOI18N
@@ -65,26 +65,29 @@ public class PortDetector {
                 isSecure = true;
             }
         } catch (ConnectException ex){
-           // ex.printStackTrace();
-                isSecure = false;
+      //      ex.printStackTrace();
+            if (ex.getMessage().indexOf("Connection refused: connect") != -1){ //NOI18N
+                throw ex; //Status is unknown
+            }
+            isSecure = false;
         } catch (SocketTimeoutException ex){
-          //  ex.printStackTrace();
+           // ex.printStackTrace();
             if (ex.getMessage().indexOf("Read") != -1 && i == 0){ //NOI18N
                 isSecure = true;
             }
         } catch (SocketException ex){
-          //  ex.printStackTrace();
+           // ex.printStackTrace();
             if (ex.getMessage().indexOf("broken pipe") != -1){ //NOI18N
                 isSecure = true;
             }
             isSecure = true;
         } catch (IOException ex) {
-          //  ex.printStackTrace();
+           // ex.printStackTrace();
             if (ex.getMessage().indexOf("end of file") != -1){ //NOI18N
                 isSecure = true;
             }
         } catch (Throwable ex) {
-           // ex.printStackTrace();
+            //ex.printStackTrace();
         }
        // System.out.println("is secure"+isSecure);
         return isSecure;

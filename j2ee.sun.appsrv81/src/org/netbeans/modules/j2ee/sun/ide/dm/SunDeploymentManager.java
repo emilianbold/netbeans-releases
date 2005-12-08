@@ -802,7 +802,8 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
          ** and accordingly set the environment correctly */
 
         if (secureStatusHasBeenChecked == false) {
-                long current=System.currentTimeMillis();
+            long current=System.currentTimeMillis();
+            mmm=null;
             try{
                 if (PortDetector.isSecurePort(getHost(),getPort())){
                     secure =true;
