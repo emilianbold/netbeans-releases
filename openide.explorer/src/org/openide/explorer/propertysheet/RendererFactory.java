@@ -153,8 +153,10 @@ final class RendererFactory {
             }
 
             if ((result != radioRenderer) && (result != textFieldRenderer)) {
-                if ((result != checkboxRenderer) && tableUI) {
+                if ((result != checkboxRenderer) && tableUI && !(result instanceof JComboBox)) {
                     result.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
+                } else if ((result instanceof JComboBox) && tableUI) {
+                    result.setBorder(BorderFactory.createEmptyBorder());
                 } else if (!(result instanceof JComboBox) && (!(result instanceof JCheckBox))) {
                     result.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
                 }
@@ -713,6 +715,7 @@ final class RendererFactory {
                 lbl.setOpaque(true);
                 lbl.setBackground(getBackground());
                 lbl.setForeground(getForeground());
+                lbl.setBorder( getBorder() );
                 lbl.paint(g);
             }
 

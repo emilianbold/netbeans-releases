@@ -17,6 +17,7 @@
  */
 package org.openide.explorer.propertysheet;
 
+import javax.swing.JTextField;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 import org.openide.nodes.Node.Property;
 
@@ -232,7 +233,10 @@ final class InplaceEditorFactory {
 
         //XXX?
         if (tableUI) {
-            result.getComponent().setBorder(BorderFactory.createEmptyBorder());
+            if( result instanceof JTextField )
+                result.getComponent().setBorder(BorderFactory.createEmptyBorder(0,3,0,0));
+            else
+                result.getComponent().setBorder(BorderFactory.createEmptyBorder());
         }
 
         return result;
