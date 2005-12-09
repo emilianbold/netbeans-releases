@@ -49,11 +49,10 @@ public class SuiteLogicalViewTest extends TestBase {
         SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
         TestBase.generateSuiteComponent(suite1, "module1a");
         SuiteLogicalView.ModulesNode modulesNode = new SuiteLogicalView.ModulesNode(suite1);
-        assertEquals("one children", 1, modulesNode.getChildren().getNodes().length);
+        assertEquals("one children", 1, modulesNode.getChildren().getNodes(true).length);
         
         TestBase.generateSuiteComponent(suite1, "module1b");
-        Thread.sleep(SuiteLogicalView.MODULES_NODE_SCHEDULE * 2);
-        assertEquals("two children", 2, modulesNode.getChildren().getNodes().length);
+        assertEquals("two children", 2, modulesNode.getChildren().getNodes(true).length);
     }
     
     public void testNameAndDisplayName() throws Exception {

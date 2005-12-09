@@ -18,10 +18,13 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.text.Collator;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -31,6 +34,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -60,9 +64,6 @@ import org.openide.windows.WindowManager;
  * @author Jesse Glick, Martin Krauskopf
  */
 public final class SuiteLogicalView implements LogicalViewProvider {
-    
-    // package private for unit test
-    static final int MODULES_NODE_SCHEDULE = 100;
     
     private final SuiteProject suite;
     
@@ -152,31 +153,20 @@ public final class SuiteLogicalView implements LogicalViewProvider {
     }
     
     /** Represent <em>Modules</em> node in the Suite Logical View. */
-    static final class ModulesNode extends AbstractNode implements Runnable {
+    static final class ModulesNode extends AbstractNode {
         
         public static final String SUITE_MODULES_ICON_PATH =
                 "org/netbeans/modules/apisupport/project/suite/resources/suiteModules.gif"; // NOI18N
         public static final String SUITE_MODULES_OPENED_ICON_PATH =
                 "org/netbeans/modules/apisupport/project/suite/resources/suiteModulesOpened.gif"; // NOI18N
         
-        private RequestProcessor.Task task;
         private SuiteProject suite;
         
         ModulesNode(final SuiteProject suite) {
-            super(createSuiteComponentNodes(suite));
+            super(new ModuleChildren(suite));
             this.suite = suite;
             setName("modules"); // NOI18N
             setDisplayName(NbBundle.getMessage(SuiteLogicalView.class, "CTL_Modules"));
-            suite.getHelper().addAntProjectListener(new AntProjectListener() {
-                public void configurationXmlChanged(AntProjectEvent ev) {
-                }
-                public void propertiesChanged(AntProjectEvent ev) {
-                    if (task == null) {
-                        task = RequestProcessor.getDefault().create(ModulesNode.this);
-                    }
-                    task.schedule(MODULES_NODE_SCHEDULE); // batch by MODULES_NODE_SCHEDULE
-                }
-            });
         }
         
         public Action[] getActions(boolean context) {
@@ -185,16 +175,53 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             };
         }
         
-        public void run() {
-            setChildren(createSuiteComponentNodes(suite));
-        }
-        
         public Image getIcon(int type) {
             return Utilities.loadImage(SUITE_MODULES_ICON_PATH);
         }
         
         public Image getOpenedIcon(int type) {
             return Utilities.loadImage(SUITE_MODULES_OPENED_ICON_PATH);
+        }
+        
+        private static final class ModuleChildren extends Children.Keys/*<NbModuleProject>*/ implements AntProjectListener {
+            
+            private static final Collator COLLATOR = Collator.getInstance();
+            
+            private final SuiteProject suite;
+            
+            public ModuleChildren(SuiteProject suite) {
+                this.suite = suite;
+            }
+
+            protected void addNotify() {
+                updateKeys();
+                suite.getHelper().addAntProjectListener(this);
+            }
+            
+            private void updateKeys() {
+                // #70112: sort them.
+                SortedSet/*<NbModuleProject>*/ subModules = new TreeSet(Util.projectDisplayNameComparator());
+                subModules.addAll(SuiteUtils.getSubProjects(suite));
+                setKeys(subModules);
+            }
+
+            protected void removeNotify() {
+                suite.getHelper().removeAntProjectListener(this);
+                setKeys(Collections.EMPTY_SET);
+            }
+
+            protected Node[] createNodes(Object key) {
+                return new Node[] {new SuiteComponentNode((NbModuleProject) key)};
+            }
+
+            public void configurationXmlChanged(AntProjectEvent ev) {
+                // ignore
+            }
+
+            public void propertiesChanged(AntProjectEvent ev) {
+                updateKeys();
+            }
+            
         }
         
     }
@@ -227,19 +254,6 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             }
         }
         
-    }
-    
-    private static Children createSuiteComponentNodes(final SuiteProject suite) {
-        Set/*<Project>*/ subModules = SuiteUtils.getSubProjects(suite);
-        Node[] nodes = new Node[subModules.size()];
-        Children children = new Children.Array();
-        int i = 0;
-        for (Iterator it = subModules.iterator(); it.hasNext();) {
-            NbModuleProject suiteComponent = (NbModuleProject) it.next();
-            nodes[i++] = new SuiteComponentNode(suiteComponent);
-        }
-        children.add(nodes);
-        return children;
     }
     
     /** Represent one module (a suite component) node. */

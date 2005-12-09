@@ -109,9 +109,9 @@ public class NbModuleProjectGenerator {
                         createLayerInSrc(dirFO, layerPath);
                     }
                     createEmptyTestDir(dirFO);
-                    appendToSuite(cnb, dirFO, suiteDir);
                     ModuleList.refresh();
                     ProjectManager.getDefault().clearNonProjectCache();
+                    appendToSuite(cnb, dirFO, suiteDir);
                     return null;
                 }
             });
