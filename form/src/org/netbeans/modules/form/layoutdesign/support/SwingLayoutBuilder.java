@@ -190,17 +190,28 @@ public class SwingLayoutBuilder {
                 ((GroupLayout.ParallelGroup)group).add(alignment, composeGroup(layout, interval, first, last));
             }
         } else {
-            int min = interval.getMinimumSize(designMode);
-            int pref = interval.getPreferredSize(designMode);
-            if ((min == LayoutConstants.NOT_EXPLICITLY_DEFINED) && (pref >= 0)) min = 0;
-            min = convertSize(min, interval);
-            pref = convertSize(pref, interval);
+            int minimum = interval.getMinimumSize(designMode);
+            int preferred = interval.getPreferredSize(designMode);
+            int min = convertSize(minimum, interval);
+            int pref = convertSize(preferred, interval);
             int max = convertSize(interval.getMaximumSize(designMode), interval);
             if (interval.isComponent()) {
                 int alignment = interval.getAlignment();
                 LayoutComponent layoutComp = interval.getComponent();
                 Component comp = (Component)componentIDMap.get(layoutComp.getId());
                 assert (comp != null);
+                if (minimum == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
+                    int dimension = (layoutComp.getLayoutInterval(LayoutConstants.HORIZONTAL) == interval) ? LayoutConstants.HORIZONTAL : LayoutConstants.VERTICAL;
+                    if ((dimension == LayoutConstants.HORIZONTAL) && comp.getClass().getName().equals("javax.swing.JComboBox")) { // Issue 68612 // NOI18N
+                        min = 0;
+                    } else if (preferred >= 0) {
+                        Dimension minDim = comp.getMinimumSize();
+                        int compMin = (dimension == LayoutConstants.HORIZONTAL) ? minDim.width : minDim.height;
+                        if (compMin > preferred) {
+                            min = convertSize(LayoutConstants.USE_PREFERRED_SIZE, interval);
+                        }
+                    }
+                }
                 if (group instanceof GroupLayout.SequentialGroup) {
                     if (alignment != LayoutConstants.DEFAULT) {
                         System.err.println("WARNING: Ignoring non-default alignment of interval in sequential group."); // NOI18N

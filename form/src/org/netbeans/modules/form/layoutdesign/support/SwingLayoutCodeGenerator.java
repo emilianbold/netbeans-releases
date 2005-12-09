@@ -187,13 +187,23 @@ public class SwingLayoutCodeGenerator {
         } else {
             int min = interval.getMinimumSize(false);
             int pref = interval.getPreferredSize(false);
-            if ((min == LayoutConstants.NOT_EXPLICITLY_DEFINED) && (pref >= 0)) min = 0;
             int max = interval.getMaximumSize(false);
             if (interval.isComponent()) {
                 layout.append(".add("); // NOI18N
                 int alignment = interval.getAlignment();
                 LayoutComponent layoutComp = interval.getComponent();
                 ComponentInfo info = (ComponentInfo)componentIDMap.get(layoutComp.getId());
+                if (min == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
+                    int dimension = (layoutComp.getLayoutInterval(LayoutConstants.HORIZONTAL) == interval) ? LayoutConstants.HORIZONTAL : LayoutConstants.VERTICAL;
+                    if ((dimension == LayoutConstants.HORIZONTAL) && info.clazz.getName().equals("javax.swing.JComboBox")) { // Issue 68612 // NOI18N
+                        min = 0;
+                    } else if (pref >= 0) {
+                        int compMin = (dimension == LayoutConstants.HORIZONTAL) ? info.minSize.width : info.minSize.height;
+                        if (compMin > pref) {
+                            min = LayoutConstants.USE_PREFERRED_SIZE;
+                        }
+                    }
+                }
                 assert (info.variableName != null);
                 if (interval.getParent().isSequential() || (alignment == LayoutConstants.DEFAULT) || (alignment == groupAlignment)) {
                     layout.append(info.variableName);
@@ -362,6 +372,8 @@ public class SwingLayoutCodeGenerator {
         public String variableName;
         /** The component's class. */
         public Class clazz;
+        /** The component's minimum size. */
+        public Dimension minSize;
         /**
          * Determines whether size properties (e.g. minimumSize, preferredSize
          * or maximumSize properties of the component has been changed).

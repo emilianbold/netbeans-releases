@@ -1069,6 +1069,7 @@ class JavaCodeGenerator extends CodeGenerator {
                             info.sizingChanged = !(((minProp == null) || minProp.isDefaultValue())
                                 && ((prefProp == null) || prefProp.isDefaultValue())
                                 && ((maxProp == null) || maxProp.isDefaultValue()));
+                            info.minSize = ((Component)subComp.getBeanInstance()).getMinimumSize();
                             infos[i] = info;
                         }
                         CodeExpression contExpr = LayoutSupportManager.containerDelegateCodeExpression(
