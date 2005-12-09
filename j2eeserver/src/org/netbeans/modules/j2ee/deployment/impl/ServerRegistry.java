@@ -123,6 +123,16 @@ public final class ServerRegistry implements java.io.Serializable {
         String name = fo.getName();
         if(serversMap().containsKey(name)) {
             Server server = (Server) serversMap().get(name);
+            if (server != null) {
+                // remove all registered server instances of the given server type
+                ServerInstance[] instances = getServerInstances();
+                for (int i = 0; i < instances.length; i++) {
+                    ServerInstance si = instances[i];
+                    if (server.equals(si.getServer())) {
+                        removeServerInstance(si.getUrl());
+                    }
+                }
+            }
             serversMap().remove(name);
             firePluginListeners(server,false);
         }

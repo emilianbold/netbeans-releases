@@ -164,6 +164,9 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     /** dispose all created deployment configurations */
     public void dispose() {
         provider.removePropertyChangeListener(this);
+        if (server == null) {
+            return;
+        }
         ConfigurationSupport serverConfig = server.getConfigurationSupport();
         if (deploymentConfiguration != null && serverConfig != null) {
             serverConfig.disposeConfiguration(deploymentConfiguration);
@@ -193,12 +196,17 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             ErrorManager.getDefault().log("getWebContextRoot called on other module type then WAR"); //NOI18N
             return null;
         }
-        
+        if (server == null) {
+            return null;
+        }
         DeploymentConfiguration config = getDeploymentConfiguration();
-        if (config == null || server == null) {
+        if (config == null) {
             return null;
         }
         ConfigurationSupport serverConfig = server.getConfigurationSupport();
+        if (serverConfig == null) {
+            return null;
+        }
         try {
             return serverConfig.getWebContextRoot(config, config.getDeployableObject());
         } catch (ConfigurationException ce) {
@@ -215,11 +223,17 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             ErrorManager.getDefault().log("setWebContextRoot called on other module type then WAR"); //NOI18N
             return;
         }
+        if (server == null) {
+            return;
+        }
         DeploymentConfiguration config = getDeploymentConfiguration();
-        if (config == null || server == null) {
+        if (config == null) {
             return;
         }
         ConfigurationSupport serverConfig = server.getConfigurationSupport();
+        if (serverConfig == null) {
+            return;
+        }
         try {
             serverConfig.setWebContextRoot(config, config.getDeployableObject(), contextRoot);
         } catch (ConfigurationException ce) {
