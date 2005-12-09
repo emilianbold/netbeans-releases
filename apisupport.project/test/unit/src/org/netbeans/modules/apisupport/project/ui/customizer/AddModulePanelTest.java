@@ -60,7 +60,7 @@ public class AddModulePanelTest extends TestBase {
             }
         });
         // wait until filter is applied
-        while (amp.moduleList.getModel() == CustomizerComponentFactory.LIST_WAIT_MODEL) {
+        while (CustomizerComponentFactory.hasOnlyValue(amp.moduleList.getModel(), CustomizerComponentFactory.WAIT_VALUE)) {
             Thread.sleep(200);
         }
         ListModel model = amp.moduleList.getModel();
@@ -68,8 +68,8 @@ public class AddModulePanelTest extends TestBase {
         final int EXPECTED_MAX = 50; // XXX really should be computed
         assertTrue("filter was successfull (" + all + " > " + filtered + ")", all > filtered);
         assertTrue("filter was successfull (" + filtered + " > " + EXPECTED_MAX + ")", filtered < EXPECTED_MAX);
-        assertTrue("non-wait model", model != CustomizerComponentFactory.LIST_WAIT_MODEL);
-        assertTrue("non-empty model", model != CustomizerComponentFactory.EMPTY_MODEL);
+        assertTrue("non-wait model", !CustomizerComponentFactory.hasOnlyValue(amp.moduleList.getModel(), CustomizerComponentFactory.WAIT_VALUE));
+        assertTrue("non-empty model", !CustomizerComponentFactory.hasOnlyValue(amp.moduleList.getModel(), CustomizerComponentFactory.EMPTY_VALUE));
     }
     
 }
