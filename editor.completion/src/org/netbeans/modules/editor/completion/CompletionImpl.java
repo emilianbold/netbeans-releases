@@ -369,6 +369,20 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         }
         Document document = Registry.getMostActiveDocument();
         if (document != getActiveDocument()) {
+            activeProviders = getCompletionProvidersForComponent(component);
+            if (debug) {
+                StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
+                if (activeProviders != null) {
+                    for (int i = 0; i < activeProviders.length; i++) {
+                        sb.append("providers["); // NOI18N
+                        sb.append(i);
+                        sb.append("]: "); // NOI18N
+                        sb.append(activeProviders[i].getClass());
+                        sb.append('\n');
+                    }
+                }
+                System.err.println(sb.toString());
+            }
             if (getActiveDocument() != null)
                 DocumentUtilities.removeDocumentListener(getActiveDocument(), this,
                         DocumentListenerPriority.AFTER_CARET_UPDATE);
