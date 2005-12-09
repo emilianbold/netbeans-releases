@@ -116,7 +116,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
      * Stops the server.
      */
     public ProgressObject stopDeploymentManager() {
-        String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+    String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));//NOI18N
         RequestProcessor.getDefault().post(new JBStopRunnable(), 0, Thread.NORM_PRIORITY);
         isDebugModeUri.remove(dm.getUrl());
@@ -338,7 +338,9 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 return;
             }
 
-            org.openide.execution.NbProcessDescriptor pd = new org.openide.execution.NbProcessDescriptor(serverRunFileName, "-c "+JBOSS_INSTANCE);
+//            String args = ("all".equals(JBOSS_INSTANCE) ? "-b 127.0.0.1 " : "") + "-c " + JBOSS_INSTANCE;
+            String args = "-c " + JBOSS_INSTANCE;
+            org.openide.execution.NbProcessDescriptor pd = new org.openide.execution.NbProcessDescriptor(serverRunFileName, args);
 
             String envp[];
 
