@@ -92,11 +92,15 @@ abstract class AbstractLines implements Lines, Runnable {
         synchronized(readLock()) {
             int fileStart = AbstractLines.toByteIndex(start);
             int byteCount = AbstractLines.toByteIndex(end - start);
-            if (chars.length < end - start) {
-                chars = new char[end-start];
-            }
             try {
-                getStorage().getReadBuffer(fileStart, byteCount).asCharBuffer().get(chars, 0, end - start);
+                CharBuffer chb = getStorage().getReadBuffer(fileStart, byteCount).asCharBuffer();
+                //#68386 satisfy the request as much as possible, but if there's not enough remaining
+                // content, not much we can do..
+                int len = Math.min(end - start, chb.remaining());
+                if (chars.length < len) {
+                    chars = new char[len];
+                }
+                chb.get(chars, 0, len);
                 return chars;
             } catch (Exception e) {
                 handleException (e);
