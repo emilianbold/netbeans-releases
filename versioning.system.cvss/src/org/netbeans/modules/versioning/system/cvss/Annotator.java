@@ -18,6 +18,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
+import org.openide.util.MapFormat;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
@@ -39,6 +40,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAct
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.lib.cvsclient.admin.Entry;
 
 import javax.swing.*;
 import java.util.*;
@@ -78,6 +80,7 @@ public class Annotator {
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
     
     private final FileStatusCache cache;
+    private MessageFormat format;
 
     Annotator(CvsVersioningSystem cvs) {
         cache = cvs.getStatusCache();
@@ -91,6 +94,16 @@ public class Annotator {
             if (name.endsWith("Format")) {  // NOI18N
                 initDefaultColor(name.substring(0, name.length() - 6)); 
             }
+        }
+
+        String string = System.getProperty("netbeans.experimental.cvs.ui.statusLabelFormat");  // NOI18N
+        if (string != null) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "CVS status labels use format \"" + string + "\" where:"); // NOI18N
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{0} stays for revision"); // NOI18N
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{1} stays for status"); // NOI18N
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{2} stays for branch or sticky tag"); // NOI18N
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{3} stays for binary flag"); // NOI18N
+            format = new MessageFormat(string);
         }
     }
 
@@ -135,15 +148,19 @@ public class Annotator {
         String textAnnotation;
         String textAnnotationFormat = CvsModuleConfig.getDefault().getTextAnnotationsFormat();
         if (textAnnotationFormat != null && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
-            String sticky = Utils.getSticky(file);
-            if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
-                textAnnotation = "";  // NOI18N
-            } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                textAnnotation = " [" + sticky.substring(1) + "]"; // NOI18N
-            } else  if (sticky == null) {
-                textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
+            if (format != null) {
+                textAnnotation = formatAnnotation(info, file);
             } else {
-                textAnnotation = " [" + info.getShortStatusText() + "; " + sticky.substring(1) + "]"; // NOI18N
+                String sticky = Utils.getSticky(file);
+                if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
+                    textAnnotation = "";  // NOI18N
+                } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
+                    textAnnotation = " [" + sticky.substring(1) + "]"; // NOI18N
+                } else  if (sticky == null) {
+                    textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
+                } else {
+                    textAnnotation = " [" + info.getShortStatusText() + "; " + sticky.substring(1) + "]"; // NOI18N
+                }
             }
         } else {
             textAnnotation = ""; // NOI18N
@@ -183,6 +200,39 @@ public class Annotator {
         default:
             throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
         }
+    }
+
+    private String formatAnnotation(FileInformation info, File file) {
+        String statusString = "";  // NOI18N
+        int status = info.getStatus();
+        if (status != FileInformation.STATUS_VERSIONED_UPTODATE) {
+            statusString = info.getShortStatusText();
+        }
+
+        String revisionString = ""; // NOI18N
+        String binaryString = ""; // NOI18N
+        Entry entry = info.getEntry(file);
+        if (entry != null) {
+            revisionString = entry.getRevision();
+            binaryString = entry.getOptions();
+            if ("-kb".equals(binaryString) == false) { // NOI18N
+                binaryString = ""; // NOI18N
+            }
+        }
+        String stickyString = Utils.getSticky(file);
+        if (stickyString != null) {
+            stickyString = stickyString.substring(1);
+        } else {
+            stickyString = ""; // NOI18N
+        }
+
+        Object[] arguments = new Object[] {
+            revisionString,
+            statusString,
+            stickyString,
+            binaryString
+        };
+        return format.format(arguments, new StringBuffer(), null).toString().trim();
     }
 
     private String annotateFolderNameHtml(String name, FileInformation info, File file) {
