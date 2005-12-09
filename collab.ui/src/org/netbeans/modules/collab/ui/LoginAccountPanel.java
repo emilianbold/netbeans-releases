@@ -51,11 +51,10 @@ public class LoginAccountPanel extends JPanel {
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JButton loginButton;
     private javax.swing.JLabel messageLabel;
-    private javax.swing.JLabel newAccountLink;
+    private javax.swing.JButton newAccountLink;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JCheckBox rememberPasswordCheckBox;
-
     // End of variables declaration//GEN-END:variables
     private Image backgroundImage;
     private Set pendingLogins = Collections.synchronizedSet(new HashSet());
@@ -106,6 +105,7 @@ public class LoginAccountPanel extends JPanel {
      */
     private void initialize() {
         initComponents();
+        newAccountLink.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountForm_Mnemonic").charAt(0));
         newAccountLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         accountScrollPane.getVerticalScrollBar().setUnitIncrement(25);
 
@@ -235,6 +235,9 @@ public class LoginAccountPanel extends JPanel {
                 newAccountLink.setText(
                     NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountForm_manageAccountLink")
                 ); // NOI18N
+                newAccountLink.setMnemonic(
+                        java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle") // NOI18N
+                            .getString("LBL_LoginAccountForm_manageAccountLink_Mnemonic").charAt(0)); // NOI18N
 
                 // If the default wasn't found, select the first valid account,
                 // or simply the first account if none are valid
@@ -463,7 +466,7 @@ public class LoginAccountPanel extends JPanel {
 
         accountScrollPane = new javax.swing.JScrollPane();
         jPanel2 = new javax.swing.JPanel();
-        newAccountLink = new javax.swing.JLabel();
+        newAccountLink = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
         accountPanel = new javax.swing.JPanel();
         accountLabel = new javax.swing.JLabel();
@@ -479,7 +482,7 @@ public class LoginAccountPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         setPreferredSize(new java.awt.Dimension(275, 300));
         setRequestFocusEnabled(false);
         setOpaque(false);
@@ -487,22 +490,16 @@ public class LoginAccountPanel extends JPanel {
         accountScrollPane.setMinimumSize(new java.awt.Dimension(200, 22));
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        newAccountLink.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        newAccountLink.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString(
-                "LBL_LoginAccountForm_newAccountLink"
-            )
-        );
+        newAccountLink.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountForm_newAccountLink"));
+        newAccountLink.setBorderPainted(false);
         newAccountLink.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
         newAccountLink.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         newAccountLink.setMinimumSize(new java.awt.Dimension(109, 15));
-        newAccountLink.addMouseListener(
-            new java.awt.event.MouseAdapter() {
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    newAccountLinkMouseClicked(evt);
-                }
+        newAccountLink.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newAccountLinkActionPerformed(evt);
             }
-        );
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -519,11 +516,7 @@ public class LoginAccountPanel extends JPanel {
         accountPanel.setLayout(new java.awt.GridBagLayout());
 
         accountPanel.setOpaque(false);
-        accountLabel.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString(
-                "LBL_LoginAccountPanel_Account"
-            )
-        );
+        accountLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountPanel_Account"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -531,13 +524,11 @@ public class LoginAccountPanel extends JPanel {
 
         accountComboBox.setMinimumSize(new java.awt.Dimension(24, 22));
         accountComboBox.setPreferredSize(new java.awt.Dimension(24, 22));
-        accountComboBox.addActionListener(
-            new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    accountComboBoxActionPerformed(evt);
-                }
+        accountComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                accountComboBoxActionPerformed(evt);
             }
-        );
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -547,11 +538,7 @@ public class LoginAccountPanel extends JPanel {
         accountPanel.add(accountComboBox, gridBagConstraints);
 
         passwordLabel.setLabelFor(passwordField);
-        passwordLabel.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString(
-                "LBL_LoginAccountPanel_Password"
-            )
-        );
+        passwordLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountPanel_Password"));
         passwordLabel.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -570,37 +557,25 @@ public class LoginAccountPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 5, 0);
         accountPanel.add(passwordField, gridBagConstraints);
 
-        rememberPasswordCheckBox.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString(
-                "LBL_LoginAccountPanel_RememberPassword"
-            )
-        );
+        rememberPasswordCheckBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountPanel_RememberPassword"));
         rememberPasswordCheckBox.setOpaque(false);
-        rememberPasswordCheckBox.addItemListener(
-            new java.awt.event.ItemListener() {
-                public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                    rememberPasswordCheckBoxItemStateChanged(evt);
-                }
+        rememberPasswordCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                rememberPasswordCheckBoxItemStateChanged(evt);
             }
-        );
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         accountPanel.add(rememberPasswordCheckBox, gridBagConstraints);
 
-        autoLoginCheckBox.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString(
-                "LBL_LoginAccountPanel_AutoLogin"
-            )
-        );
-        autoLoginCheckBox.addItemListener(
-            new java.awt.event.ItemListener() {
-                public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                    autoLoginCheckBoxItemStateChanged(evt);
-                }
+        autoLoginCheckBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountPanel_AutoLogin"));
+        autoLoginCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                autoLoginCheckBoxItemStateChanged(evt);
             }
-        );
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -635,18 +610,12 @@ public class LoginAccountPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel1.add(messageLabel, gridBagConstraints);
 
-        loginButton.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString(
-                "BTN_LoginAccountPanel_Login"
-            )
-        );
-        loginButton.addActionListener(
-            new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    loginButtonActionPerformed(evt);
-                }
+        loginButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("BTN_LoginAccountPanel_Login"));
+        loginButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loginButtonActionPerformed(evt);
             }
-        );
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
@@ -655,19 +624,13 @@ public class LoginAccountPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 3);
         jPanel1.add(loginButton, gridBagConstraints);
 
-        cancelButton.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString(
-                "LBL_LoginAccountPanel_cancelButton"
-            )
-        );
+        cancelButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountPanel_cancelButton"));
         cancelButton.setEnabled(false);
-        cancelButton.addActionListener(
-            new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    cancelButtonActionPerformed(evt);
-                }
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
             }
-        );
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -679,9 +642,8 @@ public class LoginAccountPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jPanel1, gridBagConstraints);
-    }
 
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     private void rememberPasswordCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rememberPasswordCheckBoxItemStateChanged
 
         if (rememberPasswordCheckBox.isSelected()) {
@@ -716,7 +678,7 @@ public class LoginAccountPanel extends JPanel {
         CollabExplorerPanel.getInstance().showComponent(CollabExplorerPanel.COMPONENT_EXPLORER);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void newAccountLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_newAccountLinkMouseClicked
+    private void newAccountLinkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newAccountLinkActionPerformed
 
         if (accountPanel.isVisible()) // bring up account managment dialog
          {
@@ -727,7 +689,7 @@ public class LoginAccountPanel extends JPanel {
          {
             newAccount = CollabManager.getDefault().getUserInterface().createNewAccount(null, null);
         }
-    }//GEN-LAST:event_newAccountLinkMouseClicked
+    }//GEN-LAST:event_newAccountLinkActionPerformed
 
     private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
         login(getSelectedAccount());

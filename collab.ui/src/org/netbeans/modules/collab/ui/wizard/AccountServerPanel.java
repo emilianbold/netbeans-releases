@@ -263,9 +263,17 @@ public class AccountServerPanel extends WizardPanelBase {
             NbBundle.getMessage(AccountServerPanel.class, "ACSD_NAME_AccountProxyPanel_SocksProxy")
         ); // NOI18N
 
+        serverLbl.setDisplayedMnemonic(NbBundle.getMessage(AccountUserInfoPanel.class,
+            "LBL_AccountServerPanel_ServerURL_Mnemonic").charAt(0));
         serverLbl.setLabelFor(serverField);
+        proxyPasswordLabel.setDisplayedMnemonic(NbBundle.getMessage(AccountUserInfoPanel.class,
+            "LBL_AccountProxyPanel_ProxyAuthPanel_ProxyPassword_Mnemonic").charAt(0));
         proxyPasswordLabel.setLabelFor(proxyPassword);
+        proxyServerLabel.setDisplayedMnemonic(NbBundle.getMessage(AccountUserInfoPanel.class,
+            "LBL_AccountProxyPanel_ProxyServer_Mnemonic").charAt(0));
         proxyServerLabel.setLabelFor(proxyServer);
+        proxyUserNameLabel.setDisplayedMnemonic(NbBundle.getMessage(AccountUserInfoPanel.class,
+            "LBL_AccountProxyPanel_ProxyAuthPanel_ProxyUserName_Mnemonic").charAt(0));
         proxyUserNameLabel.setLabelFor(proxyUserName);
 
         displayNameLbl.setLabelFor(null);

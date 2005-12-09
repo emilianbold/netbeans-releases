@@ -37,6 +37,12 @@ public class DeleteAccountConfirmationPanel extends javax.swing.JPanel {
                 account.getServer()
             )
         );
+        jCheckBox1.setMnemonic(
+            NbBundle.getMessage(
+                DeleteAccountConfirmationPanel.class, "BTN_DeleteAccountConfirmationPanel_DeleteServerAccount_Mnemonic",
+                account.getServer()
+            ).charAt(0)
+        );
     }
 
     /**
@@ -83,7 +89,7 @@ public class DeleteAccountConfirmationPanel extends javax.swing.JPanel {
             )
         );
         jCheckBox1.setBorder(null);
-        jCheckBox1.setFocusPainted(false);
+        jCheckBox1.setFocusPainted(true);
         jCheckBox1.setPreferredSize(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;

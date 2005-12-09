@@ -165,14 +165,13 @@ public class DefaultUserInterface extends UserInterface {
         // Prompt to accept conference
         Object[] options=new Object[] {acceptOption,declineOption};
         NotifyDescriptor descriptor=new NotifyDescriptor(
-            messageText,
-            NbBundle.getMessage (NotifyDescriptor.class, "NTF_QuestionTitle"),
-            NotifyDescriptor.YES_NO_OPTION,
-            NotifyDescriptor.QUESTION_MESSAGE,
-            options,
-            options[0]
+                (Object)NbBundle.getMessage(DefaultUserInterface.class, "MSG_DefaultUserInterface_AcceptConference", new Object[] { name, message }),
+                NbBundle.getMessage (NotifyDescriptor.class, "NTF_QuestionTitle"),
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                options,
+                options[0]
         );
-
         return DialogDisplayer.getDefault().notify(descriptor) == acceptOption;
     }
 

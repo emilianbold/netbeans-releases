@@ -15,6 +15,9 @@ package org.netbeans.modules.collab.ui;
 import java.util.Vector;
 import javax.swing.*;
 
+import java.awt.*;
+import java.awt.event.*;
+
 import org.openide.util.*;
 
 import com.sun.collablet.CollabPrincipal;
@@ -38,6 +41,7 @@ public final class ListModel extends AbstractListModel {
         this.v = v;
         this.list = list;
         this.show_server = show_server;
+        list.addFocusListener(new ListFocusListener());
     }
 
     public ListModel(JList list, Vector v, boolean show_server, boolean show_uid, boolean show_desc) {
@@ -46,6 +50,7 @@ public final class ListModel extends AbstractListModel {
         this.show_server = show_server;
         this.show_uid = show_uid;
         this.show_desc = show_desc;
+        list.addFocusListener(new ListFocusListener());
     }
 
     /**
@@ -152,5 +157,44 @@ public final class ListModel extends AbstractListModel {
         }
 
         return new ImageIcon(Utilities.loadImage("/org/netbeans/modules/collab/ui/resources/empty.gif")); // NOI18N
+    }
+    
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner class
+    ////////////////////////////////////////////////////////////////////////////
+ 
+    /**
+     *
+     *
+     */
+    class ListFocusListener implements FocusListener {
+ 
+        Color backgroundColor = list.getBackground();
+        Color foregroundColor = list.getForeground();
+ 
+        Color selectionBackgroundColor = list.getSelectionBackground();
+        Color selectionForegroundColor = list.getSelectionForeground();
+ 
+        public void focusGained(FocusEvent evt) {
+         
+            list.setSelectionBackground(selectionBackgroundColor);
+            list.setSelectionForeground(selectionForegroundColor);
+            
+            int size  = list.getModel().getSize();
+            int index = list.getSelectedIndex();
+ 
+            if( 0 < size ){
+                if( index < 0 ){
+                    list.setSelectedIndex(size - 1);
+                }
+            }
+            
+        }
+         
+        public void focusLost(FocusEvent e) {
+            list.setSelectionBackground(backgroundColor);
+            list.setSelectionForeground(foregroundColor);
+        }        
     }
 }

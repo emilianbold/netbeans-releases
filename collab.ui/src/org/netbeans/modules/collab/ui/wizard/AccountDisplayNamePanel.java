@@ -128,6 +128,8 @@ public class AccountDisplayNamePanel extends WizardPanelBase {
     }
 
     public void initAccessibility() {
+        displayNameLabel.setDisplayedMnemonic(NbBundle.getMessage(AccountUserInfoPanel.class,
+            "LBL_AccountDisplayNamePanel_ServerURL_Mnemonic").charAt(0));
         displayNameLabel.setLabelFor(displayNameField);
         exampleLabel.setLabelFor(null);
         messageLabel.setLabelFor(null);

@@ -113,9 +113,15 @@ public class AccountUserInfoPanel extends WizardPanelBase {
     }
 
     public void initAccessibility() {
+        emailLbl.setDisplayedMnemonic(NbBundle.getMessage(AccountUserInfoPanel.class,
+            "LBL_AccountUserInfoPanel_Email_Mnemonic").charAt(0));
         emailLbl.setLabelFor(emailField);
+        firstNameLbl.setDisplayedMnemonic(NbBundle.getMessage(AccountUserInfoPanel.class,
+            "LBL_AccountUserInfoPanel_FirstName_Mnemonic").charAt(0));
         firstNameLbl.setLabelFor(firstNameField);
         jLabel1.setLabelFor(null);
+        lastNameLbl.setDisplayedMnemonic(NbBundle.getMessage(AccountUserInfoPanel.class,
+            "LBL_AccountUserInfoPanel_LastName_Mnemonic").charAt(0));
         lastNameLbl.setLabelFor(lastNameField);
 
         emailField.getAccessibleContext().setAccessibleDescription(

@@ -16,10 +16,17 @@ import java.awt.Cursor;
 import java.io.*;
 import java.net.MalformedURLException;
 
+import java.awt.event.*;
+
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 
 import com.sun.collablet.Account;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.collab.core.Debug;
 
 /**
@@ -47,6 +54,16 @@ public class AccountTypePanel extends WizardPanelBase {
         initComponents();
         termsOfConditionLbl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         initAccessibility();
+        
+        Action keyAction = new AbstractAction() {
+           public void actionPerformed(ActionEvent e) {
+               termsOfConditionLblAction(); 
+           }
+        };
+
+        InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_MASK), "keyAction");
+        getActionMap().put("keyAction", keyAction);
     }
 
     /**
@@ -160,6 +177,9 @@ public class AccountTypePanel extends WizardPanelBase {
             NbBundle.getMessage(AccountTypePanel.class, "ACSD_DESC_AccountTypePanel_NewAccount")
         ); // NOI18N   
 
+        acceptCheckBox.setMnemonic(NbBundle.getMessage(
+            AccountTypePanel.class, "LBL_AccountTypePanel_AcceptCheckBox_Mnemonic").charAt(0)); // NOI18N  
+        
         newHostedServerAccountBtn.getAccessibleContext().setAccessibleName(
             NbBundle.getMessage(AccountTypePanel.class, "ACSD_NAME_AccountTypePanel_NewHostedServerAccount")
         ); // NOI18N		
@@ -246,7 +266,7 @@ public class AccountTypePanel extends WizardPanelBase {
             )
         );
         acceptCheckBox.setEnabled(false);
-        acceptCheckBox.setFocusPainted(false);
+        acceptCheckBox.setFocusPainted(true);
         acceptCheckBox.setMargin(new java.awt.Insets(2, 22, 2, 2));
         acceptCheckBox.addChangeListener(
             new javax.swing.event.ChangeListener() {
@@ -348,7 +368,10 @@ public class AccountTypePanel extends WizardPanelBase {
     }//GEN-LAST:event_newHostedServerAccountBtnStateChanged
 
     private void termsOfConditionLblMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_termsOfConditionLblMouseClicked
+        termsOfConditionLblAction();
+    }//GEN-LAST:event_termsOfConditionLblMouseClicked
 
+    private void termsOfConditionLblAction() {
         String text = NbBundle.getMessage(AccountTypePanel.class, "MSG_AccountTypePanel_TermsOfCondition"); // NOI18N
         String userHome = System.getProperty("netbeans.user"); // NOI18N
         String legalFileDir = userHome + File.separator + "collab" + // NOI18N
@@ -376,8 +399,7 @@ public class AccountTypePanel extends WizardPanelBase {
             HtmlBrowser.URLDisplayer.getDefault().showURL(legalFile.toURI().toURL());
         } catch (MalformedURLException me) {
             Debug.debugNotify(me);
-        }
-    }//GEN-LAST:event_termsOfConditionLblMouseClicked
-
+        }        
+    }
     // End of variables declaration                   
 }

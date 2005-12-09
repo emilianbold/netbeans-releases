@@ -147,8 +147,14 @@ public class AccountInfoPanel extends WizardPanelBase {
     }
 
     public void initAccessibility() {
+        confirmPasswordLabel.setDisplayedMnemonic(NbBundle.getMessage(AccountUserInfoPanel.class,
+            "LBL_AccountInfoPanel_Confirm_Password_Mnemonic").charAt(0));
         confirmPasswordLabel.setLabelFor(confirmPasswordField);
+        passwordLabel.setDisplayedMnemonic(NbBundle.getMessage(AccountUserInfoPanel.class,
+            "LBL_AccountInfoPanel_Password_Mnemonic").charAt(0));
         passwordLabel.setLabelFor(passwordField);
+        userNameLbl.setDisplayedMnemonic(NbBundle.getMessage(AccountUserInfoPanel.class,
+            "LBL_AccountInfoPanel_UserName_Mnemonic").charAt(0));
         userNameLbl.setLabelFor(userNameField);
         jLabel1.setLabelFor(null);
         messageLabel.setLabelFor(null);
