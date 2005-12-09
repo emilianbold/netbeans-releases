@@ -16,8 +16,10 @@ package org.netbeans.modules.j2ee.ejbjar.project.ui;
 import java.awt.Image;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.Repository;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -47,8 +49,8 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * Node to represent the setup folder described in the blueprints.
- * @author Chris Webster
- * @author Andrei Badea
+ *
+ * @author Chris Webster, Andrei Badea
  */
 public class ServerResourceNode extends FilterNode {
     
@@ -77,39 +79,16 @@ public class ServerResourceNode extends FilterNode {
         this.project = project;
     }
     
-    public Image getIcon( int type ) {
-        return computeIcon( false, type );
+    public Image getIcon(int type) {
+        return badgeIcon(super.getIcon(type));
     }
     
     public Image getOpenedIcon( int type ) {
-        return computeIcon( true, type );
+        return badgeIcon(super.getOpenedIcon(type));
     }
     
-    private Image computeIcon( boolean opened, int type ) {
-        // AB: always use the generic icon of a folder
-        // because this node is displayed even if the setup directory 
-        // doesn't exist (in which case there's no node to get the icon from)
-        Image image = getDefaultFolderImage(opened, type);
-        if (image == null) {
-            Node folderNode = getOriginal();
-            image = opened ? getOriginal().getOpenedIcon( type ) : getOriginal().getIcon( type );
-        }
-        return Utilities.mergeImages( image, RESOURCE_FILE_BADGE, 7, 7 );
-    }
-    
-    /**
-     * Tries to get a folder icon. We can't get it from then node of the
-     * setup directory, because the setup directory may be inexistent
-     */
-    public Image getDefaultFolderImage(boolean opened, int type) {
-        FileObject projectDirFo = project.getProjectDirectory();
-        if (projectDirFo != null) {
-            try {
-                DataObject projectDirDo = DataObject.find(projectDirFo);
-                return opened ? projectDirDo.getNodeDelegate().getOpenedIcon(type) : projectDirDo.getNodeDelegate().getIcon(type);
-            } catch (DataObjectNotFoundException donfe) {}
-        }
-        return null;
+    private static Image badgeIcon(Image icon) {
+        return Utilities.mergeImages(icon, RESOURCE_FILE_BADGE, 7, 7);
     }
     
     public String getDisplayName() {
@@ -179,7 +158,7 @@ public class ServerResourceNode extends FilterNode {
     
     private static Node getDataFolderNode(DataFolder folderDo, Project project) {
         // The project in the placeholder node lookup is needed for the New File action.
-        return (folderDo != null) ? folderDo.getNodeDelegate() : new AbstractNode(Children.LEAF, Lookups.singleton(project));
+        return (folderDo != null) ? folderDo.getNodeDelegate() : new PlaceHolderNode(Lookups.singleton(project));
     }
     
     private static org.openide.nodes.Children getDataFolderNodeChildren(DataFolder folderDo) {
@@ -255,5 +234,52 @@ public class ServerResourceNode extends FilterNode {
             ell.remove(ChangeListener.class, listener);
         }
     }    
+    
+    /**
+     * A placeholder node for a folder node.
+     */
+    private static final class PlaceHolderNode extends AbstractNode {
+        
+        public PlaceHolderNode(Lookup lookup) {
+            super(Children.LEAF, lookup);
+        }
+
+        public Image getIcon(int type) {
+            Image image = null;
+            Node imageDelegate = getImageDelegate();
+            if (imageDelegate != null) {
+                image = imageDelegate.getIcon(type);
+            }
+            if (image == null) {
+                image = super.getIcon(type);
+            }
+            return image;
+        }
+        
+        public Image getOpenedIcon(int type) {
+            Image image = null;
+            Node imageDelegate = getImageDelegate();
+            if (imageDelegate != null) {
+                image = imageDelegate.getOpenedIcon(type);
+            }
+            if (image == null) {
+                image = super.getOpenedIcon(type);
+            }
+            return image;
+        }
+        
+        private static Node getImageDelegate() {
+            FileObject imageFo = Repository.getDefault().getDefaultFileSystem().getRoot();
+            if (imageFo != null) {
+                try {
+                    DataObject imageDo = DataObject.find(imageFo);
+                    return imageDo.getNodeDelegate();
+                } catch (DataObjectNotFoundException donfe) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, donfe);
+                }
+            }
+            return null;
+        }
+    }
 }
 
