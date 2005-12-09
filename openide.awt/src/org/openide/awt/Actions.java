@@ -1019,7 +1019,7 @@ public class Actions extends Object {
             } else if (cnt == 1) {
                 updateState(null);
                 currentOnes.add(single);
-                single.setEnabled(true);
+                single.setEnabled(action.isEnabled());
                 // generate without submenu
                 HelpCtx help = model.getHelpCtx(0);
                 associateHelp(single, (help == null) ? findHelp(action) : help);

@@ -16,15 +16,20 @@ package org.openide.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
 
 import junit.textui.TestRunner;
 
 import org.netbeans.junit.*;
 import org.openide.actions.*;
 import org.openide.actions.ActionsInfraHid.UsefulThings;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.util.Lookup;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
 
 
@@ -202,6 +207,34 @@ public class PasteActionTest extends AbstractCallbackActionTestHidden {
         
         clone.actionPerformed (new java.awt.event.ActionEvent (this, 0, "waitFinished"));
         arr[0].assertCnt ("First delegate invoked", 1);
+    }
+    
+    public void testDisableIsOk() throws Exception {
+        PasteAction p = (PasteAction)PasteAction.get(PasteAction.class);
+        
+        class A extends AbstractAction {
+            public void actionPerformed(ActionEvent e) {
+            }
+        }
+        A action = new A();
+        action.setEnabled(false);
+//        action.putValue("delegates", new A[0]);
+        
+        TopComponent td = new TopComponent();
+        td.getActionMap().put(javax.swing.text.DefaultEditorKit.pasteAction, action);
+        
+        ActionsInfraHid.UT.setActivated(td);
+        
+        assertFalse("Disabled", p.isEnabled());
+        JMenuItem item = p.getMenuPresenter();
+        assertTrue("Dynamic one: " + item, item instanceof DynamicMenuContent);
+        DynamicMenuContent d = (DynamicMenuContent)item;
+        JComponent[] items = d.getMenuPresenters();
+        items = d.synchMenuPresenters(items);
+        assertEquals("One item", 1, items.length);
+        assertTrue("One jmenu item", items[0] instanceof JMenuItem);
+        JMenuItem one = (JMenuItem)items[0];
+        assertFalse("And is disabled", one.getModel().isEnabled());
     }
     
     private static final class OurPasteType extends org.openide.util.datatransfer.PasteType {
