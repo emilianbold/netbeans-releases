@@ -40,8 +40,10 @@ public class MessageDestRefsTablePanel extends DefaultTablePanel {
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 int row = getTable().getSelectedRow();
                 model.removeRow(row);
+                dObj.setChangedFromUI(false);
             }
         });
         editButton.addActionListener(new TableActionListener(false));
@@ -106,6 +108,7 @@ public class MessageDestRefsTablePanel extends DefaultTablePanel {
             
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 String name = dialogPanel.getMessageDestRefName().trim();
                 String type = dialogPanel.getMessageDestRefType();
                 String usage = dialogPanel.getUsage();
@@ -113,6 +116,7 @@ public class MessageDestRefsTablePanel extends DefaultTablePanel {
                 String description = dialogPanel.getDescription();
                 if (add) model.addRow(new String[]{name,type,usage,link,description});
                 else model.editRow(row,new String[]{name,type,usage,link,description});
+                dObj.setChangedFromUI(false);
             }
         }
     }

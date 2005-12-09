@@ -41,8 +41,10 @@ public class EjbRefsTablePanel extends DefaultTablePanel {
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 int row = getTable().getSelectedRow();
                 model.removeRow(row);
+                dObj.setChangedFromUI(false);
             }
         });
         editButton.addActionListener(new TableActionListener(false));
@@ -148,6 +150,7 @@ public class EjbRefsTablePanel extends DefaultTablePanel {
             
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 String name = dialogPanel.getEjbName().trim();
                 String beanType = dialogPanel.getBeanType();
                 String interfaceType = dialogPanel.getInterfaceType();
@@ -157,6 +160,7 @@ public class EjbRefsTablePanel extends DefaultTablePanel {
                 String description = dialogPanel.getDescription();
                 if (add) model.addRow(new String[]{name,beanType,interfaceType,home,remote,link,description});
                 else model.editRow(row,new String[]{name,beanType,interfaceType,home,remote,link,description});
+                dObj.setChangedFromUI(false);
             }
         }   
     }

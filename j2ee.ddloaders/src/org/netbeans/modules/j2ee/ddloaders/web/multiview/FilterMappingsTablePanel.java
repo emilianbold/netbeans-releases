@@ -49,14 +49,15 @@ public class FilterMappingsTablePanel extends DefaultTablePanel {
                 int row = getTable().getSelectedRow();
                 String filterName = (String)model.getValueAt(row,0);
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 model.removeRow(row);
+                dObj.setChangedFromUI(false);
                 // updating filter's panel title
                 Filter filter = (Filter)webApp.findBeanByName("Filter","FilterName",filterName); //NOI18N
                 if (filter!=null) {
                     SectionPanel panel = view.findSectionPanel(filter);
                     panel.setTitle(((FiltersMultiViewElement.FiltersView)view).getFilterTitle(filter));
                 }
-                
             }
         });
         addButton.addActionListener(new TableActionListener(true));
@@ -120,6 +121,7 @@ public class FilterMappingsTablePanel extends DefaultTablePanel {
             dialogPanel.getUrlTF().getDocument().removeDocumentListener(docListener);
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 String filterName = dialogPanel.getFilterName();
                 String urlPattern = dialogPanel.getUrlPattern();
                 String servletName = dialogPanel.getServletName();
@@ -138,6 +140,7 @@ public class FilterMappingsTablePanel extends DefaultTablePanel {
                         }
                     }
                 }
+                dObj.setChangedFromUI(false);
                 // updating filter's panel title
                 Filter filter = (Filter)webApp.findBeanByName("Filter","FilterName",filterName); //NOI18N
                 if (filter!=null) {

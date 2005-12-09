@@ -39,8 +39,10 @@ public class ResEnvRefsTablePanel extends DefaultTablePanel {
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 int row = getTable().getSelectedRow();
                 model.removeRow(row);
+                dObj.setChangedFromUI(false);
             }
         });
         editButton.addActionListener(new TableActionListener(false));
@@ -105,11 +107,13 @@ public class ResEnvRefsTablePanel extends DefaultTablePanel {
             
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 String name = dialogPanel.getResEnvRefName().trim();
                 String type = dialogPanel.getResEnvRefType().trim();
                 String description = dialogPanel.getDescription();
                 if (add) model.addRow(new String[]{name,type,description});
                 else model.editRow(row,new String[]{name,type,description});
+                dObj.setChangedFromUI(false);
             }
         }
     }

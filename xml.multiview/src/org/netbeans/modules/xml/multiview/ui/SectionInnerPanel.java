@@ -250,6 +250,7 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                     } else {
                         signalUIChange();
                         setValue(tc, tc.getText());
+                        endUIChange();
                         sectionView.checkValidity();
                     }
                 } else {
@@ -266,8 +267,9 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                 }
             } else {
                 if (!tc.getText().equals(orgValue)) {
-                    setValue(tc, tc.getText());
                     signalUIChange();
+                    setValue(tc, tc.getText());
+                    endUIChange();
                     sectionView.checkValidity();
                 } else {
                     if (viewIsBuggy) {
@@ -301,8 +303,9 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
 
         public boolean flushData() {
             if (!tc.getText().equals(orgValue)) {
-                setValue(tc, tc.getText());
                 signalUIChange();
+                setValue(tc, tc.getText());
+                endUIChange();
             }
             return true;
         }
@@ -322,5 +325,9 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
     /** This will be called before model is changed from this panel
      */
     protected void signalUIChange() {
+    }
+    /** This will be called after model is changed from this panel
+     */
+    protected void endUIChange() {
     }
 }

@@ -41,7 +41,9 @@ public class InitParamsPanel extends DefaultTablePanel {
                 
                 int row = getTable().getSelectedRow();
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 model.removeRow(row);
+                dObj.setChangedFromUI(false);
             }
         });
         editButton.addActionListener(new TableActionListener(false));
@@ -122,12 +124,14 @@ public class InitParamsPanel extends DefaultTablePanel {
             
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 String[] values = dialogPanel.getValues();
                 String name = values[0];
                 String value = values[1];
                 String description = values[2];
                 if (add) model.addRow(new String[]{name,value,description});
                 else model.editRow(row,new String[]{name,value,description});
+                dObj.setChangedFromUI(false);
             }
         }
     }

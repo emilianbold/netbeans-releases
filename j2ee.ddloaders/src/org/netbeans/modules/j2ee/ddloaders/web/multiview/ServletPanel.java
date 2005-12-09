@@ -341,7 +341,9 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
                 if (!res.equals(jspFileTF.getText())) {
                     dObj.modelUpdatedFromUI();
                     jspFileTF.setText(res);
+                    dObj.setChangedFromUI(true);
                     servlet.setJspFile(res);
+                    dObj.setChangedFromUI(false);
                     getSectionView().checkValidity();
                 }
             }
@@ -358,7 +360,9 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
                 if (className.length()>0 && !className.equals(servletClassTF.getText())) {
                     dObj.modelUpdatedFromUI();
                     servletClassTF.setText(className);
+                    dObj.setChangedFromUI(true);
                     servlet.setServletClass(className);
+                    dObj.setChangedFromUI(false);
                     getSectionView().checkValidity();
                 }
             }
@@ -396,7 +400,9 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
             String servletClass = servletClassTF.getText().trim();
             if (servletClass.length()>0 && !servletClass.equals(servlet.getServletClass())) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 servlet.setServletClass(servletClass);
+                dObj.setChangedFromUI(false);
                 getSectionView().checkValidity();
             }
         } else {
@@ -407,7 +413,9 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
             String jspFile = jspFileTF.getText().trim();
             if (jspFile.length()>0 && !jspFile.equals(servlet.getJspFile())) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 servlet.setJspFile(jspFile);
+                dObj.setChangedFromUI(false);
                 getSectionView().checkValidity();
             }
         }
@@ -531,6 +539,13 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
      */
     protected void signalUIChange() {
         dObj.modelUpdatedFromUI();
+        dObj.setChangedFromUI(true);
+    }
+    
+    /** This will be called after model is changed from this panel
+     */
+    protected void endUIChange() {
+        dObj.setChangedFromUI(false);
     }
     
  }

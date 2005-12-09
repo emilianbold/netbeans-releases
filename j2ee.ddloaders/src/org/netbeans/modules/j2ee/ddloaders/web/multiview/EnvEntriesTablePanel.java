@@ -39,8 +39,10 @@ public class EnvEntriesTablePanel extends DefaultTablePanel {
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 int row = getTable().getSelectedRow();
                 model.removeRow(row);
+                dObj.setChangedFromUI(false);
             }
         });
         editButton.addActionListener(new TableActionListener(false));
@@ -100,12 +102,14 @@ public class EnvEntriesTablePanel extends DefaultTablePanel {
             
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 String name = dialogPanel.getEnvEntryName().trim();
                 String type = dialogPanel.getEnvEntryType();
                 String value = dialogPanel.getEnvEntryValue().trim();
                 String description = dialogPanel.getDescription();
                 if (add) model.addRow(new String[]{name,type,value,description});
                 else model.editRow(row,new String[]{name,type,value,description});
+                dObj.setChangedFromUI(false);
             }
         }
     }

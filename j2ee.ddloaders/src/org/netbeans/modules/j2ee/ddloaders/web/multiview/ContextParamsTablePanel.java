@@ -39,8 +39,10 @@ public class ContextParamsTablePanel extends DefaultTablePanel {
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 int row = getTable().getSelectedRow();
                 model.removeRow(row);
+                dObj.setChangedFromUI(false);
             }
         });
         editButton.addActionListener(new TableActionListener(false));
@@ -121,12 +123,14 @@ public class ContextParamsTablePanel extends DefaultTablePanel {
             
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 String[] values = dialogPanel.getValues();
                 String name = values[0];
                 String value = values[1];
                 String description = values[2];
                 if (add) model.addRow(new String[]{name,value,description});
                 else model.editRow(row,new String[]{name,value,description});
+                dObj.setChangedFromUI(false);
             }
         }
     }

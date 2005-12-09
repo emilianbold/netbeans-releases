@@ -243,7 +243,9 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
         // TODO add your handling code here:
         if (evt.getSource() == jCheckBox1) {
             dObj.modelUpdatedFromUI();
+            dObj.setChangedFromUI(true);
             webApp.setDistributable(jCheckBox1.isSelected());
+            dObj.setChangedFromUI(false);
         }
     }
     
@@ -251,5 +253,11 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
      */
     protected void signalUIChange() {
         dObj.modelUpdatedFromUI();
+        dObj.setChangedFromUI(true);
+    }
+    /** This will be called after model is changed from this panel
+     */
+    protected void endUIChange() {
+        dObj.setChangedFromUI(false);
     }
 }

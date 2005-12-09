@@ -40,8 +40,10 @@ public class ErrorPagesTablePanel extends DefaultTablePanel {
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 int row = getTable().getSelectedRow();
                 model.removeRow(row);
+                dObj.setChangedFromUI(false);
             }
         });
         addButton.addActionListener(new TableActionListener(true));
@@ -162,6 +164,7 @@ public class ErrorPagesTablePanel extends DefaultTablePanel {
             
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 String[] values = dialogPanel.getValues();
                 String page = values[0].trim();
                 String code = values[1].trim();
@@ -170,6 +173,7 @@ public class ErrorPagesTablePanel extends DefaultTablePanel {
                     model.addRow(new Object[]{page,(code.length()==0?null:new Integer(code)),(exc.length()==0?null:exc)});
                 else 
                     model.editRow(row,new Object[]{page,(code.length()==0?null:new Integer(code)),(exc.length()==0?null:exc)});
+                dObj.setChangedFromUI(false);
             }
         }
     }

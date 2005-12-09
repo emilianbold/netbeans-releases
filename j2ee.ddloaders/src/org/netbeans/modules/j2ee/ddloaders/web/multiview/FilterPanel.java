@@ -209,8 +209,10 @@ public class FilterPanel extends SectionInnerPanel {
                 String className = DDUtils.getResourcePath(groups,fo);
                 if (className.length()>0 && !className.equals(filterClassTF.getText())) {
                     dObj.modelUpdatedFromUI();
+                    dObj.setChangedFromUI(true);
                     filterClassTF.setText(className);
                     filter.setFilterClass(className);
+                    dObj.setChangedFromUI(false);
                     getSectionView().checkValidity();
                 }
             }
@@ -296,6 +298,12 @@ public class FilterPanel extends SectionInnerPanel {
      */
     protected void signalUIChange() {
         dObj.modelUpdatedFromUI();
+        dObj.setChangedFromUI(true);
+    }
+    /** This will be called after model is changed from this panel
+     */
+    protected void endUIChange() {
+        dObj.setChangedFromUI(false);
     }
     
  }

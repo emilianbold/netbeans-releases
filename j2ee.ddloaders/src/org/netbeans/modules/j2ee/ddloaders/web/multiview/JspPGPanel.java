@@ -418,8 +418,10 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
                     String newValue = DDUtils.addItem(oldValue,fileName,false);
                     if (!oldValue.equals(newValue)) {
                         dObj.modelUpdatedFromUI();
+                        dObj.setChangedFromUI(true);
                         codaTF.setText(newValue);
                         setCodas(newValue);
+                        dObj.setChangedFromUI(false);
                     }
                 }
             }
@@ -438,8 +440,10 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
                     String newValue = DDUtils.addItem(oldValue,fileName,false);
                     if (!oldValue.equals(newValue)) {
                         dObj.modelUpdatedFromUI();
+                        dObj.setChangedFromUI(true);
                         preludeTF.setText(newValue);
                         setPreludes(newValue);
+                        dObj.setChangedFromUI(false);
                     }
                 }
             }
@@ -458,8 +462,10 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
                     String newValue = DDUtils.addItem(oldValue,fileName,false);
                     if (!oldValue.equals(newValue)) {
                         dObj.modelUpdatedFromUI();
+                        dObj.setChangedFromUI(true);
                         urlPatternsTF.setText(newValue);
                         setUrlPatterns(newValue);
+                        dObj.setChangedFromUI(false);
                         getSectionView().checkValidity();
                     }
                 }
@@ -494,6 +500,7 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
     public void itemStateChanged(java.awt.event.ItemEvent evt) {                                            
         // TODO add your handling code here:
         dObj.modelUpdatedFromUI();
+        dObj.setChangedFromUI(true);
         if (evt.getSource() == jCheckBox1) {
             group.setElIgnored(jCheckBox1.isSelected());
         } else if (evt.getSource() == jCheckBox2) {
@@ -501,10 +508,17 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
         } else if (evt.getSource() == jCheckBox3) {
             group.setIsXml(jCheckBox3.isSelected());
         }
+        dObj.setChangedFromUI(false);
     }
     /** This will be called before model is changed from this panel
      */
     protected void signalUIChange() {
         dObj.modelUpdatedFromUI();
+        dObj.setChangedFromUI(true);
+    }
+    /** This will be called after model is changed from this panel
+     */
+    protected void endUIChange() {
+        dObj.setChangedFromUI(false);
     }
 }
