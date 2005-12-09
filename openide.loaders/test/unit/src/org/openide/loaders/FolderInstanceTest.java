@@ -93,8 +93,9 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
         if (bb != null) {
             bb.delete ();
         }
-        FileUtil.createData (lfs.getRoot (), "/AA/A.simple");
+        FileObject theFile = FileUtil.createData (lfs.getRoot (), "/AA/A.simple");
         bb = FileUtil.createFolder(lfs.getRoot (), "/AA");
+        assertTrue("Is file", theFile.isData());
         
         
         DataFolder folder = DataFolder.findFolder (bb);
