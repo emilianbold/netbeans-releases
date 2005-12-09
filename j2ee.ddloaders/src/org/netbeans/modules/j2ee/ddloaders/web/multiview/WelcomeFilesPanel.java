@@ -49,7 +49,6 @@ public class WelcomeFilesPanel extends SectionInnerPanel {
     /** This will be called before model is changed from this panel
      */
     protected void signalUIChange() {
-        dObj.setChangedFromUI(false);
         dObj.modelUpdatedFromUI();
     }
 
@@ -61,33 +60,37 @@ public class WelcomeFilesPanel extends SectionInnerPanel {
     
     private void setWelcomeFiles(WebApp webApp, String text) {
         dObj.setChangedFromUI(true);
-        if (text.length()==0) {
-            webApp.setWelcomeFileList(null);
-        } else {
-            java.util.List wfList = new java.util.ArrayList();
-            java.util.StringTokenizer tok = new java.util.StringTokenizer(text,",");
-            while (tok.hasMoreTokens()) {
-                String wf = tok.nextToken().trim();
-                if (wf.length()>0 && !wfList.contains(wf)) wfList.add(wf);
-            }
-            if (wfList.size()==0) {
-                try {
-                    WelcomeFileList welcomeFileList = (WelcomeFileList)webApp.createBean("WelcomeFileList"); //NOI18N
-                    webApp.setWelcomeFileList(welcomeFileList);
-                } catch (ClassNotFoundException ex) {}
-            }
-            else {
-                String[] welcomeFiles = new String[wfList.size()];
-                wfList.toArray(welcomeFiles);
-                WelcomeFileList welcomeFileList = webApp.getSingleWelcomeFileList();
-                if (welcomeFileList==null) {
+        try {
+            if (text.length()==0) {
+                webApp.setWelcomeFileList(null);
+            } else {
+                java.util.List wfList = new java.util.ArrayList();
+                java.util.StringTokenizer tok = new java.util.StringTokenizer(text,",");
+                while (tok.hasMoreTokens()) {
+                    String wf = tok.nextToken().trim();
+                    if (wf.length()>0 && !wfList.contains(wf)) wfList.add(wf);
+                }
+                if (wfList.size()==0) {
                     try {
-                        welcomeFileList = (WelcomeFileList)webApp.createBean("WelcomeFileList"); //NOI18N
-                        welcomeFileList.setWelcomeFile(welcomeFiles);
+                        WelcomeFileList welcomeFileList = (WelcomeFileList)webApp.createBean("WelcomeFileList"); //NOI18N
                         webApp.setWelcomeFileList(welcomeFileList);
                     } catch (ClassNotFoundException ex) {}
-                } else welcomeFileList.setWelcomeFile(welcomeFiles);
+                }
+                else {
+                    String[] welcomeFiles = new String[wfList.size()];
+                    wfList.toArray(welcomeFiles);
+                    WelcomeFileList welcomeFileList = webApp.getSingleWelcomeFileList();
+                    if (welcomeFileList==null) {
+                        try {
+                            welcomeFileList = (WelcomeFileList)webApp.createBean("WelcomeFileList"); //NOI18N
+                            welcomeFileList.setWelcomeFile(welcomeFiles);
+                            webApp.setWelcomeFileList(welcomeFileList);
+                        } catch (ClassNotFoundException ex) {}
+                    } else welcomeFileList.setWelcomeFile(welcomeFiles);
+                }
             }
+        } finally {
+            dObj.setChangedFromUI(false);
         }
     }
     
