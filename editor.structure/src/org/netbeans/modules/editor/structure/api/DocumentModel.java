@@ -1088,7 +1088,7 @@ public final class DocumentModel {
         
     }
     
-    private static final boolean isEmpty(DocumentElement de) {
+    static final boolean isEmpty(DocumentElement de) {
         return de.getStartOffset() == de.getEndOffset();
     }
     

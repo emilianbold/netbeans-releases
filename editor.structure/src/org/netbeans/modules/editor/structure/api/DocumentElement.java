@@ -60,8 +60,12 @@ public final class DocumentElement {
     private int startSectionLength, endSectionLength;
     private DocumentModel model;
     private Attributes attributes;
-    private boolean elementEmpty;
+    private int elementEmpty;
     private boolean isRootElement;
+    
+    private static final int ELEMENT_EMPTY_UNSET = 0;
+    private static final int ELEMENT_EMPTY_TRUE = 1;
+    private static final int ELEMENT_EMPTY_FALSE = 2;
     
     //stores DocumentElement listeners
     private HashSet deListeners = new HashSet();
@@ -74,7 +78,7 @@ public final class DocumentElement {
         this.endSectionLength = endSectionLength;
         this.type = type;
         this.attributes = new Attributes(this, attrsMap);
-        this.elementEmpty = false;
+        this.elementEmpty = ELEMENT_EMPTY_UNSET;
         this.isRootElement = false;
         
         //create positions for start and end offsets
@@ -220,12 +224,16 @@ public final class DocumentElement {
     
     /** called by DocumentModel when checking elements after a document content update */
     void setElementIsEmptyState(boolean state) {
-        elementEmpty = state;
+        elementEmpty = state ? ELEMENT_EMPTY_TRUE : ELEMENT_EMPTY_FALSE;
     }
     
-    /** states whether the document is empty - used only by DocumentModel */
+    /** states whether the document is empty - used only by DocumentModel.
+     * First call to isEmpty() method will cache the result
+     */
+    
     boolean isEmpty() {
-        return elementEmpty;
+        if(elementEmpty == ELEMENT_EMPTY_UNSET) elementEmpty = model.isEmpty(this) ? ELEMENT_EMPTY_TRUE : ELEMENT_EMPTY_FALSE;
+        return elementEmpty == ELEMENT_EMPTY_TRUE;
     }
     
     /** Returns an instance of DocumentModel within which hierarchy the element lives.
