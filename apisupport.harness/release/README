@@ -503,8 +503,8 @@ containing your help set, under "javahelp/".
 javahelp.excludes - optionally, list of file name patterns to exclude from
 JavaHelp search index construction.
 
-javahelp.jar - "modules/docs/${code.name.base.dashes}.jar". Probably no need to
-override. Constructed from ${javahelp.jar.basename} and ${javahelp.jar.dir}.
+javahelp.jar - "modules/docs/${code.name.base.dashes}.jar". Do not override.
+Constructed from ${javahelp.jar.basename} and ${javahelp.jar.dir}.
 
 javahelp.search - "JavaHelpSearch" by default; name of search database
 directory, relative to your help set. Must match what your help set specifies.
