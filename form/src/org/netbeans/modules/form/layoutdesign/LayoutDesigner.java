@@ -85,7 +85,7 @@ public class LayoutDesigner implements LayoutConstants {
                     LayoutComponent cont = (LayoutComponent) it.next();
                     visualMapper.rebuildLayout(cont.getId());
                 }
-                updatePositions(updatedContainers);
+                updatePositions(null);
             }
         }
 
@@ -134,8 +134,10 @@ public class LayoutDesigner implements LayoutConstants {
                     updatedContainers.add(comp);
                     for (int i=0; i < DIM_COUNT; i++) {
                         LayoutInterval root = comp.getLayoutRoot(i);
-                        if (optimizeStructure)
+                        if (optimizeStructure) {
                             optimizeGaps(root, i, true);
+                            destroyRedundantGroups(root);
+                        }
                         updateDesignModifications(root, i);
                     }
                 }
@@ -620,7 +622,11 @@ public class LayoutDesigner implements LayoutConstants {
                     }
 
                     // add the intervals
-                    imposeSize = layoutFeeder.add();
+                    layoutFeeder.add();
+                    if (layoutFeeder.imposeSize)
+                        imposeSize = true;
+                    if (layoutFeeder.optimizeStructure)
+                        optimizeStructure = true;
                     // if an overlap occurred we can't calculate the correct sizes
                     // of resizing intervals, thus need to do real layout first (to
                     // get the right picture), then update the actual sizes, and then

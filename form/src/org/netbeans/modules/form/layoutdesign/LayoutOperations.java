@@ -1078,6 +1078,40 @@ class LayoutOperations implements LayoutConstants {
         }
     }
 
+    boolean cutStartingGap(LayoutInterval group, int size, int dimension, int alignment) {
+        assert group.isGroup() && size > 0 && (alignment == LEADING || alignment == TRAILING);
+        // [just very simple impl. for now - considering just one sequence...]
+        LayoutInterval seq = null;
+        if (group.isSequential()) {
+            seq = group;
+        }
+        else if (group.getSubIntervalCount() == 1) {
+            LayoutInterval li = group.getSubInterval(0);
+            if (li.isSequential() && LayoutInterval.isAlignedAtBorder(li, alignment))
+                seq = li;
+        }
+        if (seq != null && seq.getSubIntervalCount() > 1) {
+            LayoutInterval gap = seq.getSubInterval(alignment == LEADING ? 0 : seq.getSubIntervalCount()-1);
+            LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(gap, alignment^1, true);
+            if (gap != null && gap.isEmptySpace() && neighbor != null) {
+                int currentSize = gap.getPreferredSize();
+                if (currentSize == NOT_EXPLICITLY_DEFINED) {
+                    currentSize = LayoutRegion.distance(group.getCurrentSpace(), neighbor.getCurrentSpace(),
+                                                        dimension, alignment, alignment)
+                                  * (alignment == TRAILING ? -1 : 1);
+                }
+                if (currentSize >= size) {
+                    if (currentSize > size)
+                        resizeInterval(gap, currentSize - size);
+                    else
+                        layoutModel.removeInterval(gap);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Inserts a gap before or after specified interval. If in a sequence, the
      * method takes care about merging gaps if there is already some as neighbor.

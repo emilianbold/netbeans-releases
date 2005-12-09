@@ -30,6 +30,9 @@ import java.util.*;
 
 class LayoutFeeder implements LayoutConstants {
 
+    boolean imposeSize;
+    boolean optimizeStructure;
+
     private LayoutModel layoutModel;
     private LayoutOperations operations;
 
@@ -41,7 +44,6 @@ class LayoutFeeder implements LayoutConstants {
     private LayoutDragger.PositionDef[] newPositions = new LayoutDragger.PositionDef[DIM_COUNT];
     private LayoutInterval[] addingIntervals; // horizontal, vertical
     private boolean[] becomeResizing = new boolean[DIM_COUNT];
-    private boolean encounteredOverlap;
 
     // working context (actual dimension)
     private int dimension;
@@ -123,8 +125,7 @@ class LayoutFeeder implements LayoutConstants {
         }
     }
 
-    boolean add() {
-        encounteredOverlap = false;
+    void add() {
         int overlapDim = getDimensionSolvingOverlap(newPositions);
 
         for (int dim=overlapDim, dc=0; dc < DIM_COUNT; dim^=1, dc++) {
@@ -277,7 +278,6 @@ class LayoutFeeder implements LayoutConstants {
 
             addInterval(inclusion1, inclusion2);
         }
-        return encounteredOverlap;
     }
 
     private static IncludeDesc findOutCurrentPosition(LayoutInterval interval, int dimension, int alignment) {
@@ -930,9 +930,11 @@ class LayoutFeeder implements LayoutConstants {
             LayoutInterval gap = new LayoutInterval(SINGLE);
             if (!minorGap && (iiDesc == null || iiDesc.snappedNextTo == null)) {
                 // the gap possibly needs an explicit size
+                LayoutRegion space = iiDesc != null && iiDesc.snappedParallel != null ?
+                                     iiDesc.snappedParallel.getCurrentSpace() : addingSpace;
                 int distance = neighbors[i] != null ?
-                    LayoutRegion.distance(neighbors[i].getCurrentSpace(), addingSpace, dimension, i^1, i) :
-                    LayoutRegion.distance(parent.getCurrentSpace(), addingSpace, dimension, i, i);
+                    LayoutRegion.distance(neighbors[i].getCurrentSpace(), space, dimension, i^1, i) :
+                    LayoutRegion.distance(parent.getCurrentSpace(), space, dimension, i, i);
                 if (i == TRAILING)
                     distance *= -1;
 
@@ -1436,17 +1438,18 @@ class LayoutFeeder implements LayoutConstants {
 
         // if not in same parallel group try to substitute interval with parent
         boolean resizing = LayoutInterval.wantResize(interval);
+        LayoutInterval aligning = interval; // may be substituted with parent
         LayoutInterval parParent = LayoutInterval.getFirstParent(interval, PARALLEL);
         while (!parParent.isParentOf(toAlignWith)) {
-            if (LayoutInterval.isAlignedAtBorder(interval, parParent, alignment)) { // substitute with parent
-                // make sure parent space is up-to-date
-                parParent.getCurrentSpace().positions[dimension][alignment]
-                        = interval.getCurrentSpace().positions[dimension][alignment];
+            if (LayoutInterval.isAlignedAtBorder(aligning, parParent, alignment)) { // substitute with parent
+//                // make sure parent space is up-to-date
+//                parParent.getCurrentSpace().positions[dimension][alignment]
+//                        = aligning.getCurrentSpace().positions[dimension][alignment];
                 // allow parent resizing if substituting for resizing interval
                 if (resizing && !LayoutInterval.canResize(parParent))
                     operations.enableGroupResizing(parParent);
-                interval = parParent;
-                parParent = LayoutInterval.getFirstParent(interval, PARALLEL);
+                aligning = parParent;
+                parParent = LayoutInterval.getFirstParent(aligning, PARALLEL);
             }
             else parParent = null;
             if (parParent == null) // not parent of toAlignWith
@@ -1455,8 +1458,10 @@ class LayoutFeeder implements LayoutConstants {
 
         boolean resizingOp = dragger.isResizing(dimension);
 
-        // hack: remove the aligning interval temporarily not to influence the follwoing analysis
-        LayoutInterval tempRemoved = interval.getParent().isSequential() ? interval.getParent() : interval;
+        // hack: remove aligning interval temporarily not to influence next analysis
+        LayoutInterval tempRemoved = aligning;
+        while (tempRemoved.getParent() != parParent)
+            tempRemoved = tempRemoved.getParent();
         int removedIndex = parParent.remove(tempRemoved);
 
         // check if we shouldn't rather align with a whole group (parent of toAlignWith)
@@ -1469,7 +1474,7 @@ class LayoutFeeder implements LayoutConstants {
             if (canSubstAlignWithParent(toAlignWith, dimension, alignment, resizingOp)) {
                 // toAlignWith is at border so we can perhaps use the parent instead
                 if (alignParent == parParent) {
-                    if (LayoutInterval.getDirectNeighbor(interval, alignment, false) == null)
+//                    if (LayoutInterval.getDirectNeighbor(aligning, alignment, false) == null)
                         alignWithParent = true;
                 }
                 else toAlignWith = alignParent;
@@ -1482,27 +1487,49 @@ class LayoutFeeder implements LayoutConstants {
         if (alignParent != parParent)
             return null; // can't align (toAlignWith is too deep)
 
+        if (aligning != interval) {
+            if (!LayoutInterval.isAlignedAtBorder(toAlignWith, alignment)) {
+                // may have problems with S-layout
+                int dst = LayoutRegion.distance(aligning.getCurrentSpace(),
+                                                toAlignWith.getCurrentSpace(), 
+                                                dimension, alignment, alignment)
+                          * (alignment == TRAILING ? -1 : 1);
+                if (dst > 0) { // try to eliminate effect of avoiding S-layout
+                    // need to exclude 'interval' - remove it temporarily
+                    tempRemoved = interval;
+                    while (tempRemoved.getParent() != aligning)
+                        tempRemoved = tempRemoved.getParent();
+                    removedIndex = aligning.remove(tempRemoved);
+
+                    operations.cutStartingGap(aligning, dst, dimension, alignment);
+
+                    aligning.add(tempRemoved, removedIndex); // add back temporarily removed
+                }
+            }
+            optimizeStructure = true;
+        }
+
         // check congruence of effective alignment
         int effAlign1 = LayoutInterval.getEffectiveAlignment(toAlignWith, alignment);
-//        int effAlign2 = LayoutInterval.getEffectiveAlignment(interval, alignment);
+//        int effAlign2 = LayoutInterval.getEffectiveAlignment(aligning, alignment);
 //        if (effAlign1 == (alignment^1) /*&& effAlign2 != effAlign1*/) {
-//            LayoutInterval gap = LayoutInterval.getDirectNeighbor(interval, alignment, false);
+//            LayoutInterval gap = LayoutInterval.getDirectNeighbor(aligning, alignment, false);
 //            if (gap != null && gap.isEmptySpace()) {
 //                layoutModel.setIntervalSize(gap, NOT_EXPLICITLY_DEFINED, gap.getPreferredSize(), Short.MAX_VALUE);
 //            }
-//            gap = LayoutInterval.getDirectNeighbor(interval, alignment^1, false);
+//            gap = LayoutInterval.getDirectNeighbor(aligning, alignment^1, false);
 //            if (gap != null && gap.isEmptySpace() && LayoutInterval.getDirectNeighbor(gap, alignment^1, true) == null) {
 //                layoutModel.setIntervalSize(gap, USE_PREFERRED_SIZE, gap.getPreferredSize(), USE_PREFERRED_SIZE);
 //            }
 //        }
 
         // separate content out of the emerging group
-        List aligned = new ArrayList(2);
+        List alignedList = new ArrayList(2);
         List remainder = new ArrayList(2);
         int originalCount = parParent.getSubIntervalCount();
 
-        int extAlign1 = extract(toAlignWith, aligned, remainder, alignment);
-        extract(interval, aligned, remainder, alignment);
+        int extAlign1 = extract(toAlignWith, alignedList, remainder, alignment);
+        extract(aligning, alignedList, remainder, alignment);
 
         assert !alignWithParent || remainder.isEmpty();
 
@@ -1514,24 +1541,19 @@ class LayoutFeeder implements LayoutConstants {
             LayoutInterval indentGap = new LayoutInterval(SINGLE);
             indentGap.setSize(Math.abs(indent));
             // [need to use default padding for indent gap]
-            LayoutInterval li = (LayoutInterval) aligned.get(aligned.size()-1);
-            if (!li.isSequential()) {
-                LayoutInterval seq;
-                LayoutInterval parent = li.getParent();
-                if (parent == null || !parent.isSequential()) {
-                    if (parent != null) {
-                        layoutModel.removeInterval(li);
-                        layoutModel.setIntervalAlignment(li, DEFAULT);
-                    }
-                    seq = new LayoutInterval(SEQUENTIAL);
-                    layoutModel.addInterval(li, seq, 0);
+            LayoutInterval parent = interval.getParent();
+            if (parent == null || !parent.isSequential()) {
+                LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
+                if (parent != null) {
+                    layoutModel.addInterval(seq, parent, layoutModel.removeInterval(interval));
                 }
-                else seq = parent;
-                
-                aligned.set(aligned.size()-1, seq);
-                li = seq;
+                layoutModel.setIntervalAlignment(interval, DEFAULT);
+                layoutModel.addInterval(interval, seq, 0);
+                parent = seq;
             }
-            layoutModel.addInterval(indentGap, li, alignment == LEADING ? 0 : -1);
+            layoutModel.addInterval(indentGap, parent, alignment == LEADING ? 0 : -1);
+            if (interval == aligning)
+                alignedList.set(alignedList.size()-1, parent);
         }
 
         // prepare the group where the aligned intervals will be placed
@@ -1586,7 +1608,7 @@ class LayoutFeeder implements LayoutConstants {
         }
 
         // add the intervals and their separated neighbors to the aligned group
-        LayoutInterval aligning2 = (LayoutInterval) aligned.get(1);
+        LayoutInterval aligning2 = (LayoutInterval) alignedList.get(1);
         if (aligning2.getParent() != group) {
             if (aligning2.getParent() != null) {
                 layoutModel.removeInterval(aligning2);
@@ -1597,7 +1619,7 @@ class LayoutFeeder implements LayoutConstants {
             layoutModel.setIntervalAlignment(aligning2, alignment);
         }
 
-        LayoutInterval aligning1 = (LayoutInterval) aligned.get(0);
+        LayoutInterval aligning1 = (LayoutInterval) alignedList.get(0);
         if (aligning1.getParent() != group) {
             if (aligning1.getParent() != null) {
                 layoutModel.setIntervalAlignment(aligning1, extAlign1); //aligning1.getAlignment()); // remember explicit alignment
@@ -1887,7 +1909,7 @@ class LayoutFeeder implements LayoutConstants {
                     // inside 'sub', so this position should be in sequence
                 }
                 if (dimOverlap)
-                    encounteredOverlap = true;
+                    imposeSize = true;
 
                 int distance = LayoutRegion.UNKNOWN;
                 if (aSnappedNextTo != null) {
@@ -1980,7 +2002,7 @@ class LayoutFeeder implements LayoutConstants {
                         // inside 'sub', so this position should be in sequence
                     }
                     if (ortOverlap)
-                        encounteredOverlap = true;
+                        imposeSize = true;
 
                     inSequence = true;
                     distance = ortDistance = 0;
