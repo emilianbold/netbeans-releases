@@ -177,8 +177,44 @@ public class ManagePublicConversationForm extends JPanel {
 
         int defaultAccess = getOriginalDefaultPrivilege().getAccess();
         defaultAccessComboBox.setSelectedIndex(defaultAccess);
+        
+        initAccessibility();
     }
 
+    private void initAccessibility() {
+        getAccessibleContext().setAccessibleName(
+                NbBundle.getBundle(AddContactForm.class).getString("ACSD_NAME_ManagePublicConversationForm"));
+        getAccessibleContext().setAccessibleDescription(
+                NbBundle.getBundle(AddContactForm.class).getString("ACSD_DESC_ManagePublicConversationForm"));
+        
+        defaultAccessLabel.setDisplayedMnemonic(
+                NbBundle.getBundle(AddContactForm.class).getString("MNE_ManagePublicConversationForm_DefaultAccess").charAt(0));
+        defaultAccessComboBox.getAccessibleContext().setAccessibleName(
+                NbBundle.getBundle(AddContactForm.class).getString("ACSD_NAME_ManagePublicConversationForm_DefaultAccess"));
+        defaultAccessComboBox.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getBundle(AddContactForm.class).getString("ACSD_DESC_ManagePublicConversationForm_DefaultAccess"));
+        
+        addButton.setMnemonic(
+                NbBundle.getBundle(AddContactForm.class).getString("MNE_ManagePublicConversationForm_AddPrivilegeButton").charAt(0));
+        addButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getBundle(AddContactForm.class).getString("ACSD_NAME_ManagePublicConversationForm_AddPrivilegeButton"));
+        addButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getBundle(AddContactForm.class).getString("ACSD_DESC_ManagePublicConversationForm_AddPrivilegeButton"));
+        
+        removeButton.setMnemonic(
+                NbBundle.getBundle(AddContactForm.class).getString("MNE_ManagePublicConversationForm_RemovePrivilegeButton").charAt(0));
+        removeButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getBundle(AddContactForm.class).getString("ACSD_NAME_ManagePublicConversationForm_RemovePrivilegeButton"));
+        removeButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getBundle(AddContactForm.class).getString("ACSD_DESC_ManagePublicConversationForm_RemovePrivilegeButton"));
+        
+        privilegeTable.getAccessibleContext().setAccessibleName(
+                NbBundle.getBundle(AddContactForm.class).getString("ACSD_NAME_ManagePublicConversationForm_PrivilegeTable"));
+        privilegeTable.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getBundle(AddContactForm.class).getString("ACSD_DESC_ManagePublicConversationForm_PrivilegeTable"));
+    }
+    
+    
     /**
      *
      *
@@ -186,7 +222,7 @@ public class ManagePublicConversationForm extends JPanel {
     public CollabSession getCollabSession() {
         return session;
     }
-
+    
     /**
      *
      *
@@ -194,7 +230,7 @@ public class ManagePublicConversationForm extends JPanel {
     public String getConversationName() {
         return conferenceName;
     }
-
+    
     /**
      *
      *
@@ -202,52 +238,52 @@ public class ManagePublicConversationForm extends JPanel {
     public ConversationPrivilege[] getPrivileges() {
         return (ConversationPrivilege[]) privileges.toArray(new ConversationPrivilege[privileges.size()]);
     }
-
+    
     /**
      *
      *
      */
     public ConversationPrivilege getDefaultPrivilege() {
         int defaultAccess = defaultAccessComboBox.getSelectedIndex();
-
+        
         return new ConversationPrivilege(null, defaultAccess);
     }
-
+    
     /**
      *
      *
      */
     public ConversationPrivilege getOriginalDefaultPrivilege() {
         ConversationPrivilege privilege = null;
-
+        
         try {
             privilege = getCollabSession().getPublicConversationDefaultPrivilege(getConversationName());
         } catch (CollabException e) {
             Debug.errorManager.notify(e);
         }
-
+        
         Debug.out.println(" original default privilege: " + privilege.getAccess());
-
+        
         return privilege;
     }
-
+    
     /**
      *
      *
      */
     public static void _test(CollabSession session, String conference, ConversationPrivilege[] privileges) {
         ManagePublicConversationForm form = new ManagePublicConversationForm(session, conference, privileges);
-
+        
         DialogDescriptor descriptor = new DialogDescriptor(form, "Manage Public Conversation");
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-
+        
         try {
             dialog.show();
         } finally {
             dialog.dispose();
         }
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

@@ -87,6 +87,60 @@ public class AddContactForm extends javax.swing.JPanel implements ListSelectionL
         initialize();
     }
 
+    private void initAccessibility() {
+        getAccessibleContext().setAccessibleName(
+                NbBundle.getBundle(AddContactForm.class).getString("ACSD_NAME_AddContactForm"));
+	getAccessibleContext().setAccessibleDescription(
+		NbBundle.getBundle(AddContactForm.class).getString("ACSD_DESC_AddContactForm"));
+
+        findContactLb.setDisplayedMnemonic(NbBundle.getBundle(AddContactForm.class).getString("MNE_AddContactForm_FindContact").charAt(0));
+	findContactLb.setLabelFor(findContactTextField);
+
+        findContactTextField.getAccessibleContext().setAccessibleName(
+                NbBundle.getBundle(AddContactForm.class).getString("ACSD_NAME_AddContactForm_FindContact"));
+	findContactTextField.getAccessibleContext().setAccessibleDescription(
+		NbBundle.getBundle(AddContactForm.class).getString("ACSD_DESC_AddContactForm_FindContact"));
+
+	
+        findBtn.setMnemonic(NbBundle.getBundle(AddContactForm.class).getString("MNE_AddContactForm_Find").charAt(0));
+	findBtn.getAccessibleContext().setAccessibleName(
+		NbBundle.getBundle(AddContactForm.class).getString("ACSD_NAME_AddContactForm_Find"));
+	findBtn.getAccessibleContext().setAccessibleDescription(
+		NbBundle.getBundle(AddContactForm.class).getString("ACSD_DESC_AddContactForm_Find"));
+
+	nameTypeRadioButton.setMnemonic(NbBundle.getBundle(AddContactForm.class).getString("MNE_AddContactForm_Name").charAt(0));
+        nameTypeRadioButton.getAccessibleContext().setAccessibleName(
+		NbBundle.getBundle(AddContactForm.class).getString("ACSD_NAME_AddContactForm_Name"));
+	nameTypeRadioButton.getAccessibleContext().setAccessibleDescription(
+		NbBundle.getBundle(AddContactForm.class).getString("ACSD_DESC_AddContactForm_Name"));
+
+	userIDTypeRadioButton.setMnemonic(NbBundle.getBundle(AddContactForm.class).getString("MNE_AddContactForm_UserID").charAt(0));
+        userIDTypeRadioButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getBundle(AddContactForm.class).getString("ACSD_NAME_AddContactForm_UserID"));
+	userIDTypeRadioButton.getAccessibleContext().setAccessibleDescription(
+		NbBundle.getBundle(AddContactForm.class).getString("ACSD_DESC_AddContactForm_UserID"));
+
+	contactJList.getAccessibleContext().setAccessibleName(
+		NbBundle.getBundle(AddContactForm.class).getString("ACSD_NAME_AddContactForm_searchResultLabel"));
+	contactJList.getAccessibleContext().setAccessibleDescription(
+		NbBundle.getBundle(AddContactForm.class).getString("ACSD_DESC_AddContactForm_searchResultLabel"));
+
+	
+        removeBtn.setMnemonic(NbBundle.getBundle(AddContactForm.class).getString("MNE_AddContactForm_Remove").charAt(0));
+	removeBtn.getAccessibleContext().setAccessibleName(
+		NbBundle.getBundle(AddContactForm.class).getString("ACSD_NAME_AddContactForm_Remove"));
+	removeBtn.getAccessibleContext().setAccessibleDescription(
+		NbBundle.getBundle(AddContactForm.class).getString("ACSD_DESC_AddContactForm_Remove"));
+
+        addToLbl.setDisplayedMnemonic(NbBundle.getBundle(AddContactForm.class).getString("MNE_AddContactForm_AddContactTo").charAt(0));
+	addToLbl.setLabelFor(groupComboBox);
+
+	groupComboBox.getAccessibleContext().setAccessibleName(
+		NbBundle.getBundle(AddContactForm.class).getString("ACSD_NAME_AddContactForm_AddContactTo"));
+	groupComboBox.getAccessibleContext().setAccessibleDescription(
+		NbBundle.getBundle(AddContactForm.class).getString("ACSD_DESC_AddContactForm_AddContactTo"));
+	}
+    
     private void initialize() {
         // Create the dialog descriptor here, since we need it in order to
         // be able to change the valid state of the dialog
@@ -96,7 +150,8 @@ public class AddContactForm extends javax.swing.JPanel implements ListSelectionL
         dialogDescriptor.setValid(false);
 
         initComponents();
-
+        initAccessibility();
+        
         optionsComboBox.setVisible(useComboBoxes);
         typeComboBox.setVisible(useComboBoxes);
 
