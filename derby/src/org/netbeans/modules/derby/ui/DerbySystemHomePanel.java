@@ -21,6 +21,7 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -58,16 +59,35 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
             public Object run() {
                 DerbySystemHomePanel panel = new DerbySystemHomePanel();
                 String title = NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_SetDerbySystemHome");
+
                 DialogDescriptor desc = new DialogDescriptor(panel, title);
                 panel.setDialogDescriptor(desc);
-                Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
-                String acsd = NbBundle.getMessage(DerbySystemHomePanel.class, "ACSD_DerbySystemHomePanel");
-                dialog.getAccessibleContext().setAccessibleDescription(acsd);
-                dialog.setVisible(true);
-                if (!desc.OK_OPTION.equals(desc.getValue())) {
-                    return ""; // NOI18N
+                
+                for (;;) {                    
+                    Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+                    String acsd = NbBundle.getMessage(DerbySystemHomePanel.class, "ACSD_DerbySystemHomePanel");
+                    dialog.getAccessibleContext().setAccessibleDescription(acsd);
+                    dialog.setVisible(true);
+                    dialog.dispose();
+                    
+                    if (!desc.OK_OPTION.equals(desc.getValue())) {
+                        return ""; // NOI18N
+                    }
+                    
+                    File derbySystemHome = new File(panel.getDerbySystemHome());
+                    
+                    if (!derbySystemHome.exists()) {
+                        boolean success = derbySystemHome.mkdirs();
+                        if (!success) {
+                            String message = NbBundle.getMessage(DerbySystemHomePanel.class, "ERR_DerbySystemHomeCantCreate");
+                            NotifyDescriptor ndesc = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(ndesc);
+                            continue;
+                        }
+                    }
+                    
+                    return panel.getDerbySystemHome();
                 }
-                return panel.getDerbySystemHome();
             }
         });
     }
@@ -105,10 +125,12 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
         String error = null;
         File derbySystemHome = new File(getDerbySystemHome());
         
-        if (!derbySystemHome.exists()) {
-            error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DerbySystemHomeDoesNotExist");
-        } else if (!derbySystemHome.isDirectory()) {
+        if (derbySystemHome.getPath().length() <= 0) {
+            error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DerbySystemHomeNotEntered");
+        } else if (derbySystemHome.exists() && !derbySystemHome.isDirectory()) {
             error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DerbySystemHomeNotDirectory");
+        } else if (!derbySystemHome.isAbsolute()) {
+            error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DerbySystemHomeNotAbsolute");
         }
         
         if (error != null) {
