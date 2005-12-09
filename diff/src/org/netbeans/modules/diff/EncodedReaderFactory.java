@@ -419,7 +419,7 @@ public class EncodedReaderFactory {
         file = FileUtil.normalizeFile(file);
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
-            if (name.endsWith(",java")) {
+            if (name.endsWith(".java")) {
                 encoding = findJavaEncoding(fo); // is not in cache
             }
             if (encoding == null) {
