@@ -125,10 +125,12 @@ implements ServerRegistry.PluginListener, InstanceListener {
             if (startServer == null) {
                 return new Node[0];
             }
-            if (startServer.isAlsoTargetServer(null)) 
+            if (startServer.isAlsoTargetServer(null)) {
                 childNode = instance.getServer().getNodeProvider().createInstanceTargetNode(instance);
-            else
+            } else {
                 childNode = instance.getServer().getNodeProvider().createInstanceNode(instance);
+            }
+            instance.refresh(); // detect the server instance status
             return new Node[] { childNode };
         }
         
