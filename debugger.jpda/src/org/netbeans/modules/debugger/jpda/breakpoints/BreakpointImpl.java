@@ -128,7 +128,12 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
     }
     
     protected EventRequestManager getEventRequestManager () {
-        return getVirtualMachine ().eventRequestManager ();
+        VirtualMachine vm = getVirtualMachine();
+        if (vm == null) {
+            // Already disconnected
+            throw new VMDisconnectedException();
+        }
+        return vm.eventRequestManager ();
     }
 
     synchronized protected void addEventRequest (EventRequest r) {
