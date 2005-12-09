@@ -38,6 +38,7 @@ import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
+import org.netbeans.modules.j2ee.sun.appsrvapi.PortDetector;
 import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
@@ -60,7 +61,6 @@ import org.netbeans.modules.j2ee.sun.api.SunServerStateInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 
-import org.netbeans.modules.j2ee.sun.appsrvapi.PortDetector;
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 /**
@@ -89,6 +89,8 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     private boolean secure =false;
     private long timeStampCheckingRunning =0;
     private File platformRoot  =null;
+    //are we java ee 5 or only 8.x? Needed for testing the secure mode.
+    private boolean isGlassFish = false;
     
     /* cache for local value. Sometimes, the islocal() call can be very long for IP that changed
      * usually when dhcp is used. So we calculate the value in a thread at construct time
@@ -112,6 +114,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         this.df= df;
         this.uri =uri;
 	this.platformRoot =  platformRootDir;
+        isGlassFish= ServerLocationManager.isGlassFish(platformRootDir);
         secure = uri.endsWith(SECURESTRINGDETECTION);
         String uriNonSecure =uri;
         if (secure)
@@ -464,6 +467,8 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     
     public Target[] getTargets() throws IllegalStateException {
         ThrowExceptionIfSuspended();
+        if (secureStatusHasBeenChecked==false) //unknown status. no targets.
+            return null;
         Target[] retVal = null;
         // VBK Hack for getting the configuration editing to in the origClassLoader
         // J2EE 1.4 RI beta 1 deploytool to appear. It required this call to
@@ -480,7 +485,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             try{
                 Object configDir = getManagement().invoke(new javax.management.ObjectName("ias:type=domain,category=config"),"getConfigDir", null, null);
                 if (configDir==null){
-                    
+                    mmm=null;
                     return null;
                 }
                 String dir = configDir.toString();
@@ -811,8 +816,12 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             long current=System.currentTimeMillis();
             mmm=null;
             try{
-                if (PortDetector.isSecurePort(getHost(),getPort())){
-                    secure =true;
+                if(isGlassFish)
+                    secure=PortDetector.isSecurePortGlassFish(getHost(),getPort());
+                else
+                    secure=PortDetector.isSecurePort(getHost(),getPort());
+                    
+                if (secure==true){
                     if (!uri.endsWith(SECURESTRINGDETECTION)){
                         uri=uri+SECURESTRINGDETECTION;//make it secure and reset the inner one
                     }
