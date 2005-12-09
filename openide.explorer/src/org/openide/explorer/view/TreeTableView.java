@@ -420,7 +420,19 @@ public class TreeTableView extends BeanTreeView {
         );
 
         defaultActionListener = new PopupSupport();
-        treeTable.getActionMap().put("org.openide.actions.PopupAction", defaultActionListener.popup);
+        Action popupWrapper = new AbstractAction() {
+                public void actionPerformed(ActionEvent evt) {
+                    SwingUtilities.invokeLater( defaultActionListener );
+                }
+
+                public boolean isEnabled() {
+                    return treeTable.isFocusOwner() || tree.isFocusOwner();
+                }
+            };
+            
+        treeTable.getInputMap( JTree.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put( 
+                KeyStroke.getKeyStroke( KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction" );
+        treeTable.getActionMap().put("org.openide.actions.PopupAction", popupWrapper);
         tree.addMouseListener(defaultActionListener);
 
         tableMouseListener = new MouseUtils.PopupMouseAdapter() {

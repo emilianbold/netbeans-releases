@@ -281,6 +281,8 @@ public abstract class TreeView extends JScrollPane {
         setRequestFocusEnabled(false);
 
         defaultActionListener = new PopupSupport();
+        getInputMap( JTree.WHEN_FOCUSED ).put( 
+                KeyStroke.getKeyStroke( KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction" );
         getActionMap().put("org.openide.actions.PopupAction", defaultActionListener.popup);
         tree.addFocusListener(defaultActionListener);
         tree.addMouseListener(defaultActionListener);
