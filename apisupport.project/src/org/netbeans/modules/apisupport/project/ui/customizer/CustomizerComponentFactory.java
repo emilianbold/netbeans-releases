@@ -15,10 +15,8 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.Component;
 import java.io.CharConversionException;
-import java.text.Collator;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,6 +35,7 @@ import javax.swing.ListModel;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.openide.awt.HtmlRenderer;
 import org.openide.util.NbBundle;
@@ -56,7 +55,6 @@ public final class CustomizerComponentFactory {
             NbBundle.getMessage(CustomizerDisplay.class, "LBL_Empty");
     
     static DependencyListModel INVALID_DEP_LIST_MODEL;
-    private static final Collator LOC_COLLATOR = Collator.getInstance();
     
     private static final String INVALID_PLATFORM =
             "<html><font color=\"!nb.errorForeground\">&lt;" // NOI18N
@@ -445,7 +443,7 @@ public final class CustomizerComponentFactory {
         private boolean changed;
         
         SuiteSubModulesListModel(Set/*<Project>*/ subModules) {
-            this.subModules = new TreeSet(new ProjectComparator());
+            this.subModules = new TreeSet(Util.projectDisplayNameComparator());
             this.subModules.addAll(subModules);
         }
         
@@ -482,22 +480,6 @@ public final class CustomizerComponentFactory {
         
         public boolean isChanged() {
             return changed;
-        }
-    }
-    
-    private static final class ProjectComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            Project p1 = (Project)o1;
-            Project p2 = (Project)o2;
-            int result = LOC_COLLATOR.compare(
-                    ProjectUtils.getInformation(p1).getDisplayName(),
-                    ProjectUtils.getInformation(p2).getDisplayName());
-            if (result == 0) {
-                return LOC_COLLATOR.compare(
-                        ProjectUtils.getInformation(p1).getName(),
-                        ProjectUtils.getInformation(p2).getName());
-            }
-            return result;
         }
     }
     

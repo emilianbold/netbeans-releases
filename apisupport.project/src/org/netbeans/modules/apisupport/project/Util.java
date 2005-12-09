@@ -21,9 +21,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,6 +40,7 @@ import java.util.zip.ZipEntry;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
@@ -731,6 +734,30 @@ public final class Util {
                 ((ChangeListener) it.next()).stateChanged(ev);
             }
         }
+    }
+    
+    /**
+     * Order projects by display name.
+     */
+    public static Comparator/*<Project>*/ projectDisplayNameComparator() {
+        return new Comparator() {
+            private final Collator LOC_COLLATOR = Collator.getInstance();
+            public int compare(Object o1, Object o2) {
+                ProjectInformation i1 = ProjectUtils.getInformation((Project) o1);
+                ProjectInformation i2 = ProjectUtils.getInformation((Project) o2);
+                int result = LOC_COLLATOR.compare(i1.getDisplayName(), i2.getDisplayName());
+                if (result != 0) {
+                    return result;
+                } else {
+                    result = i1.getName().compareTo(i2.getName());
+                    if (result != 0) {
+                        return result;
+                    } else {
+                        return System.identityHashCode(o1) - System.identityHashCode(o2);
+                    }
+                }
+            }
+        };
     }
     
 }
