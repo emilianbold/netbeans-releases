@@ -201,6 +201,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 if(vendorName != null) {
                     name = vendorName;
                 }
+                
                 if(vendorName.equals("derby_embedded")){  //NOI18N
                     NotifyDescriptor d = new NotifyDescriptor.Message(bundle.getString("Err_UnSupportedDerby"), NotifyDescriptor.WARNING_MESSAGE); // NOI18N
                     DialogDisplayer.getDefault().notify(d);
@@ -361,8 +362,18 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             
             
             String url = databaseConnection.getDatabaseURL();
+            PropertyElement user = jdbcConnectionPool.newPropertyElement();
+            user.setName("User"); // NOI18N
+            PropertyElement password = jdbcConnectionPool.newPropertyElement();
+            password.setName("Password"); // NOI18N
+            String dbUser = databaseConnection.getUser();
+            String dbPassword = databaseConnection.getPassword();
             if(vendorName.equals("derby_net")) {  //NOI18N)
                 jdbcConnectionPool = setDerbyProps(vendorName, url, jdbcConnectionPool);
+                if(dbUser == null || dbUser.trim().length() == 0)
+                    dbUser = "app"; //NOI18N
+                if(dbPassword == null || dbPassword.trim().length() == 0)
+                    dbPassword = "app"; //NOI18N
             }else {
                 PropertyElement databaseOrUrl = jdbcConnectionPool.newPropertyElement();
                 if(vendorName.equals("pointbase")) { // NOI18N
@@ -373,17 +384,12 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 databaseOrUrl.setValue(databaseConnection.getDatabaseURL());
                 jdbcConnectionPool.addPropertyElement(databaseOrUrl);
             }
-
-            PropertyElement user = jdbcConnectionPool.newPropertyElement();
-            user.setName("User"); // NOI18N
-            user.setValue(databaseConnection.getUser());
+            user.setValue(dbUser);
             jdbcConnectionPool.addPropertyElement(user);
-            PropertyElement password = jdbcConnectionPool.newPropertyElement();
-            password.setName("Password"); // NOI18N
-            password.setValue(databaseConnection.getPassword());
+            password.setValue(dbPassword);
             jdbcConnectionPool.addPropertyElement(password);
             resources.addJdbcConnectionPool(jdbcConnectionPool);
-            
+
             createFile(resourceDir, name, __JdbcConnectionPool, resources);
         }
     }
@@ -409,6 +415,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     }
     
     private JdbcConnectionPool setDerbyProps(String vendorName, String url, JdbcConnectionPool jdbcConnectionPool){
+        url = stripExtraDBInfo(url);
         String workingUrl = url.substring(url.indexOf("//") + 2, url.length());
         String hostName = getDerbyServerName(workingUrl);
         PropertyElement servName = jdbcConnectionPool.newPropertyElement();
@@ -425,6 +432,13 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         dbName.setName(WizardConstants.__DerbyDatabaseName);
         dbName.setValue(databaseName);
         
+        String connectionAttr = getDerbyConnAttrs(workingUrl);
+        if(! connectionAttr.equals("")) { //NOI18N
+            PropertyElement connAttr = jdbcConnectionPool.newPropertyElement();
+            connAttr.setName(WizardConstants.__DerbyConnAttr);
+            connAttr.setValue(connectionAttr);
+            jdbcConnectionPool.addPropertyElement(connAttr);
+        }
         jdbcConnectionPool.addPropertyElement(servName);
         jdbcConnectionPool.addPropertyElement(portno);
         jdbcConnectionPool.addPropertyElement(dbName);
@@ -560,7 +574,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return returnVal;
     }
     
-    private static boolean isSameDatabaseConnection(File resourceFile, String databaseUrl) {
+    private boolean isSameDatabaseConnection(File resourceFile, String databaseUrl) {
         try {
             FileInputStream in = new FileInputStream(resourceFile);
             Resources resources = DDProvider.getDefault().getResourcesGraph(in);
@@ -571,6 +585,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 JdbcConnectionPool connPool = pools[0];
                 PropertyElement[] pl = (PropertyElement[])connPool.getPropertyElement();
                 if(databaseUrl.startsWith("jdbc:derby:")){ //NOI18N
+                    databaseUrl = stripExtraDBInfo(databaseUrl);
                     String workingUrl = databaseUrl.substring(databaseUrl.indexOf("//") + 2, databaseUrl.length());
                     String hostName = getDerbyServerName(workingUrl);
                     String portNumber = getDerbyPortNo(workingUrl);
@@ -641,24 +656,47 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return wizard;
     }
     
-    private static String getDerbyServerName(String url){
-        String hostName = url.substring(0, url.indexOf(":")); //NOI18N
+    private String getDerbyServerName(String url){
+        String hostName = ""; //NOI18N
+        int index = url.indexOf(":"); //NOI18N
+        if(index != -1)
+            hostName = url.substring(0, index); 
+        else{
+            index = url.indexOf("/"); //NOI18N
+            if(index != -1)
+                hostName = url.substring(0, index); 
+        }    
         return hostName;
     }
     
-    private static String getDerbyPortNo(String url){
-        String portNumber = url.substring(url.indexOf(":") + 1, url.indexOf("/")); //NOI18N
+    private String getDerbyPortNo(String url){
+        String portNumber = "1527";  //NOI18N
+        int index = url.indexOf(":"); //NOI18N
+        if(index != -1)
+            portNumber = url.substring(index + 1, url.indexOf("/")); //NOI18N
         return portNumber;
     }
     
-    private static String getDerbyDatabaseName(String url){
-        String databaseName;
-        int braceIndex = url.indexOf("["); //NOI18N
-        if(braceIndex == -1)
-            databaseName = url.substring(url.indexOf("/") + 1, url.length()); //NOI18N
-        else
-            databaseName = url.substring(url.indexOf("/") + 1, braceIndex + 1).trim(); //NOI18N
+    private String getDerbyDatabaseName(String url){
+        String databaseName = ""; //NOI18N
+        int index = url.indexOf("/"); //NOI18N
+        if(index != -1){
+            int colonIndex = url.indexOf(";"); //NOI18N
+            if(colonIndex != -1)
+                databaseName = url.substring(index + 1, colonIndex);        
+            else  
+                databaseName = url.substring(index + 1, url.length());        
+        }
         return databaseName;
     }
+    
+    private String getDerbyConnAttrs(String url){
+        String connAttr = ""; //NOI18N
+        int colonIndex = url.indexOf(";"); //NOI18N
+        if(colonIndex != -1)
+            connAttr = url.substring(colonIndex,  url.length());         
+        return connAttr;
+    }
+    
 }
 

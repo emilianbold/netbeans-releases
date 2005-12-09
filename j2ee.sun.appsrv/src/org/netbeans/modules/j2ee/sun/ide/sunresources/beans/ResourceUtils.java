@@ -37,6 +37,7 @@ import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
+
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.nodes.Node.Property;
@@ -88,76 +89,61 @@ public class ResourceUtils implements WizardConstants{
     public static void register(JdbcConnectionPool resource, ServerInterface mejb, boolean update) throws Exception{
         AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
         PropertyElement[] props = resource.getPropertyElement();
-        Properties propsList = ResourceUtils.getProperties(props);
+        Properties propsList = getProperties(props);
         Object[] params = new Object[]{attrList, propsList, null};
         String operName = NbBundle.getMessage(ListServerInstances.class, "CreateCP"); //NOI18N
-        if(update){
-            String resourceName = resource.getName();
-            if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetJdbcConnectionPool)){
-                createResource(operName, params, mejb);
-            }
-        }else
+        String resourceName = resource.getName();
+        if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetJdbcConnectionPool)){
             createResource(operName, params, mejb);
+        }
     }
     
     public static void register(JdbcResource resource, ServerInterface mejb, boolean update) throws Exception{
         AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
         PropertyElement[] props = resource.getPropertyElement();
-        Properties propsList = ResourceUtils.getProperties(props);
+        Properties propsList = getProperties(props);
         Object[] params = new Object[]{attrList, propsList, null};
         String operName = NbBundle.getMessage(ListServerInstances.class, "CreateDS"); //NOI18N
-        if(update){
-            String resourceName = resource.getJndiName();
-            if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetJdbcResource)){
-                createResource(operName, params, mejb);
-            }
-        }else
+        String resourceName = resource.getJndiName();
+        if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetJdbcResource)){
             createResource(operName, params, mejb);
+        }
     }
        
      public static void register(PersistenceManagerFactoryResource resource, ServerInterface mejb, boolean update) throws Exception{
          AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
          PropertyElement[] props = resource.getPropertyElement();
-         Properties propsList = ResourceUtils.getProperties(props);
+         Properties propsList = getProperties(props);
          Object[] params = new Object[]{attrList, propsList, null};
          String operName = NbBundle.getMessage(ListServerInstances.class, "CreatePMF"); //NOI18N
-         if(update){
-             String resourceName = resource.getJndiName();
-             if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetPMFResource)){
-                 createResource(operName, params, mejb);
-             }
-         }else
+         String resourceName = resource.getJndiName();
+         if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetPMFResource)){
              createResource(operName, params, mejb);
+         }
      }
      
      public static void register(MailResource resource, ServerInterface mejb, boolean update) throws Exception{
          AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
          PropertyElement[] props = resource.getPropertyElement();
-         Properties propsList = ResourceUtils.getProperties(props);
+         Properties propsList = getProperties(props);
          Object[] params = new Object[]{attrList, propsList, null};
          String operName = NbBundle.getMessage(ListServerInstances.class, "CreateMail"); //NOI18N
-         if(update){
-             String resourceName = resource.getJndiName();
-             if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetMailResource)){
-                 createResource(operName, params, mejb);
-             }
-         }else
+         String resourceName = resource.getJndiName();
+         if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetMailResource)){
              createResource(operName, params, mejb);
+         }
      }
      
      public static void register(JmsResource resource, ServerInterface mejb, boolean update) throws Exception{
          AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
          PropertyElement[] props = resource.getPropertyElement();
-         Properties propsList = ResourceUtils.getProperties(props);
+         Properties propsList = getProperties(props);
          Object[] params = new Object[]{attrList, propsList, null};
          String operName = NbBundle.getMessage(ListServerInstances.class, "CreateJMS"); //NOI18N
-         if(update){
-             String resourceName = resource.getJndiName();
-             if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetJmsResource)){
-                 createResource(operName, params, mejb);
-             }
-         }else
+         String resourceName = resource.getJndiName();
+         if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetJmsResource)){
              createResource(operName, params, mejb);
+         }
      }
     
      private static boolean isResourceUpdated(String resourceName, ServerInterface mejb, AttributeList attrList, Properties props, String operName ){  
@@ -394,10 +380,14 @@ public class ResourceUtils implements WizardConstants{
         return attrs;
     }
     
-    public static Properties getProperties(PropertyElement[] props){
+    private static Properties getProperties(PropertyElement[] props) throws Exception {
         Properties propList = new Properties();
         for(int i=0; i<props.length; i++){
-            propList.put(props[i].getName(), props[i].getValue());
+            String name = props[i].getName();
+            String value = props[i].getValue();
+            if(value != null && value.trim().length() != 0){
+                propList.put(name, value);
+            }
         }
         return propList;
     }

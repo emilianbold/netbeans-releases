@@ -386,6 +386,16 @@
                 </option-value-pair>
             </field-value>
         </field>
+        <field field-type="string">
+            <name>connectionAttributes</name>
+            <field-value>
+                <default-field-value></default-field-value>
+                <option-value-pair>
+                    <option-name>derby_net</option-name>
+                    <conditional-value>NA</conditional-value>
+                </option-value-pair>
+            </field-value>
+        </field>
     </field-group>
     <field-group>
         <name>pool-setting</name>

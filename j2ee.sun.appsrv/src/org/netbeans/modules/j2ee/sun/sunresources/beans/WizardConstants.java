@@ -137,4 +137,5 @@ public interface WizardConstants {
     public static final String __DerbyDatabaseName = "DatabaseName";
     public static final String __DerbyPortNumber = "PortNumber";
     public static final String __ServerName = "serverName";
+    public static final String __DerbyConnAttr = "connectionAttributes";
 }
