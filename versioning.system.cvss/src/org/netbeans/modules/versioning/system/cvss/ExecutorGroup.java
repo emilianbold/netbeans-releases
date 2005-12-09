@@ -39,6 +39,7 @@ import java.awt.event.ActionEvent;
 public final class ExecutorGroup extends AbstractAction implements Cancellable {
 
     private final String name;
+    private final boolean abortOnExecutorFailure;    
     public boolean executed;
     private boolean cancelled;
     private List listeners = new ArrayList(2);
@@ -65,9 +66,14 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
      * "Updating" or "Status Refresh".
      */
     public ExecutorGroup(String displayName) {
-        name = displayName;
+        this(displayName, true);
     }
 
+    public ExecutorGroup(String displayName, boolean abortOnExecutorFailure) {
+        name = displayName;
+        this.abortOnExecutorFailure = abortOnExecutorFailure;
+    }
+    
     /**
      * Defines group display name.
      */
@@ -118,7 +124,7 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
 
         Iterator it = keys.iterator();
         while (it.hasNext()) {
-            Object key = (Object) it.next();
+            Object key = it.next();
             Set commands = (Set) queues.get(key);
             if (commands == null) {
                 commands = new HashSet();
@@ -162,7 +168,7 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
         boolean finished = executed; // TODO how to tip true for non-executed?
         Iterator it = keys.iterator();
         while (it.hasNext()) {
-            Object key = (Object) it.next();
+            Object key = it.next();
 
             Set commands = (Set) queues.get(key);
             commands.remove(id);
@@ -219,9 +225,10 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
     }
 
     /**
-     * A command in group failed. Stop all pending commands.
+     * A command in group failed. Stop all pending commands if abortOnExecutorFailure is set.
      */
     public void fail() {
+        if (!abortOnExecutorFailure) return;
         failed = true;
         Iterator it;
         synchronized(listeners) {

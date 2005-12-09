@@ -135,7 +135,7 @@ class SearchExecutor implements Runnable {
         rcmd.setUserFilter(criteria.getUsername());
         lcmd.setUserFilter(criteria.getUsername());
 
-        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(SearchExecutor.class, "BK0001"));
+        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(SearchExecutor.class, "BK0001"), false);
         RLogExecutor [] rexecutors;
         if (folders.length > 0) {
             rexecutors = RLogExecutor.splitCommand(rcmd, folders, null);
