@@ -40,15 +40,17 @@ import org.openide.util.Utilities;
 final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private static final Map PURE_TEMPLATES_FILTER = new HashMap(2);
-
+    
     private static final String TEMPLATES_DIR = "Templates"; // NOI18N
     private static final String DEFAULT_CATEGORY_PATH = TEMPLATES_DIR + "/Other"; // NOI18N
+    
     
     static {
         PURE_TEMPLATES_FILTER.put("template", Boolean.TRUE); // NOI18N
         PURE_TEMPLATES_FILTER.put("simple", Boolean.FALSE); // NOI18N
     }
     
+    private boolean categoriesLoaded;
     private boolean firstTime = true;
     private DataModel data;
     
@@ -90,26 +92,32 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     protected void storeToDataModel() {
         data.setClassNamePrefix(getClassNamePrefix());
-        data.setDisplayName(displayName.getText());
-        data.setIcon(icon.getText().equals(NONE_LABEL) ? null : icon.getText());
         data.setPackageName(packageName.getEditor().getItem().toString());
-        data.setCategory(getCategoryPath());
+        if (data.isFileTemplateType()) {
+            data.setDisplayName(displayName.getText());
+            data.setIcon(icon.getText().equals(NONE_LABEL) ? null : icon.getText());
+            data.setCategory(getCategoryPath());
+        }
     }
     
     protected void readFromDataModel() {
-        boolean visible = data.isFileTemplateType();
-        displayName.setVisible(visible);
-        displayNameTxt.setVisible(visible);
-        category.setVisible(visible);
-        categoryTxt.setVisible(visible);
-        icon.setVisible(visible);
-        iconButton.setVisible(visible);
-        iconTxt.setVisible(visible);
+        boolean isFileTemplate = data.isFileTemplateType();
+        displayName.setVisible(isFileTemplate);
+        displayNameTxt.setVisible(isFileTemplate);
+        category.setVisible(isFileTemplate);
+        categoryTxt.setVisible(isFileTemplate);
+        icon.setVisible(isFileTemplate);
+        iconButton.setVisible(isFileTemplate);
+        iconTxt.setVisible(isFileTemplate);
+        if (isFileTemplate && !categoriesLoaded) {
+            category.setModel(UIUtil.createLayerPresenterComboModel(
+                    data.getProject(), TEMPLATES_DIR, PURE_TEMPLATES_FILTER));
+            categoriesLoaded = true;
+        }
         if (firstTime) {
             if (data.getPackageName() != null) {
                 packageName.setSelectedItem(data.getPackageName());
             }
-            loadCategories();
             firstTime = false;
             setValid(Boolean.FALSE);
         } else {
@@ -156,11 +164,6 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private String getClassNamePrefix() {
         return classNamePrefix.getText().trim();
-    }
-    
-    private void loadCategories() {
-        category.setModel(UIUtil.createLayerPresenterComboModel(
-                data.getProject(), TEMPLATES_DIR, PURE_TEMPLATES_FILTER)); // NOI18N
     }
     
     protected HelpCtx getHelp() {
