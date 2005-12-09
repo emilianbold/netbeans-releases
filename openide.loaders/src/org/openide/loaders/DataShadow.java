@@ -654,6 +654,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         Updator u = new Updator();
         u.sh = shadow;
         u.primary = u.sh.original.getPrimaryFile ();
+        ERR.log("updateShadowOriginal: " + u.sh + " primary " + u.primary); // NOI18N
         lastTask = RP.post(u, 100, Thread.MIN_PRIORITY + 1);
     }
     
