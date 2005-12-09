@@ -228,13 +228,19 @@ public class NbEditorKit extends ExtKit {
         }
         
         public JMenuItem getPopupMenuItem(JTextComponent target) {
-            JCheckBoxMenuItem item = new JCheckBoxMenuItem(LocaleSupport.getString("PROP_base_toolbarVisible"), AllOptionsFolder.getDefault().isToolbarVisible());
+            JCheckBoxMenuItem item = new JCheckBoxMenuItem(
+                    NbBundle.getBundle(BaseOptions.class).getString("PROP_base_toolbarVisible"),
+                    AllOptionsFolder.getDefault().isToolbarVisible());
             item.addItemListener( new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     actionPerformed(null,null);
                 }
             });
             return item;
+        }
+        
+        protected Class getShortDescriptionBundleClass() {
+            return BaseKit.class;
         }
         
     }
@@ -572,22 +578,18 @@ public class NbEditorKit extends ExtKit {
 
     public static class NbGenerateGoToPopupAction extends BaseAction {
 
-        public String getShortDescription() {
-            return org.openide.util.NbBundle.getBundle (NbEditorKit.class).getString(generateGoToPopupAction); // NOI18N
-        }
-        
         public NbGenerateGoToPopupAction() {
             super(generateGoToPopupAction);
-            String desc = getShortDescription();
-            if (desc != null) {
-                putValue(SHORT_DESCRIPTION, desc);
-            }
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
         }
 
+        protected Class getShortDescriptionBundleClass() {
+            return NbEditorKit.class;
+        }
+        
     }
 
 
@@ -607,15 +609,11 @@ public class NbEditorKit extends ExtKit {
 
         public GenerateFoldPopupAction() {
             super(generateFoldPopupAction);
-            String desc = getShortDescription();
-            if (desc != null) {
-                putValue(SHORT_DESCRIPTION, desc);
-            }
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
         }
 
-        public String getShortDescription() {
-            return org.openide.util.NbBundle.getBundle (NbEditorKit.class).getString(generateFoldPopupAction); // NOI18N
+        protected Class getShortDescriptionBundleClass() {
+            return NbEditorKit.class;
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {

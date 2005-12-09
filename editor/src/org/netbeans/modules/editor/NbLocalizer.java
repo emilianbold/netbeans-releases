@@ -45,5 +45,9 @@ public class NbLocalizer implements LocaleSupport.Localizer {
             return null;
         }
     }
+    
+    public String toString() {
+        return "NbLocalizer(" + bundleClass + ")"; // NOI18N
+    }
 
 }
