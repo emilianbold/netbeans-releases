@@ -1,7 +1,8 @@
-/** Block comment. */
+/** 
+ * Comment. 
+ */
 public class JavaExample {
     
-    public String method (int param) {
-        return "String " + '-' + 1.2);
-    }// line comment
+    String identifier = "String " + '-' + 1.2);
+
 }
