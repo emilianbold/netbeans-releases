@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,7 +16,6 @@ package org.netbeans.modules.i18n;
 
 
 import java.io.IOException;
-import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -189,12 +188,13 @@ public class I18nOptions extends SystemOption {
     
     /** Getter for last resource property. */
     public DataObject getLastResource2() {
-        FileObject f = (FileObject)getProperty(PROP_LAST_RESOURCE2);
-        if (f != null) {
+        FileObject f = (FileObject) getProperty(PROP_LAST_RESOURCE2);
+        if ((f != null) && !f.isFolder() && f.isValid()) {
             try {
                 return DataObject.find(f);
             } catch (DataObjectNotFoundException e) {
-                ErrorManager.getDefault().notify(e);
+                /* The file was probably deleted or moved. */
+                putProperty(PROP_LAST_RESOURCE2, null, true);
             }
         }
         return null;

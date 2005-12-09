@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -185,9 +185,11 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
             formI18nString = (FormI18nString)object;
         else {
             formI18nString = createFormI18nString();
-        
-            if(I18nUtil.getOptions().getLastResource2() != null)
-                formI18nString.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2());
+            DataObject lastResource = I18nUtil.getOptions().getLastResource2();
+            if (lastResource != null) {
+                formI18nString.getSupport().getResourceHolder()
+                        .setResource(lastResource);
+            }
         }
     }
 
