@@ -194,7 +194,6 @@ public class ServerLocationManager  {
 	fileColl.add("bin");                                                    //NOI18N
 	fileColl.add("lib");                                                    //NOI18N
 	fileColl.add("config");                                                 //NOI18N
-        fileColl.add("docs");                                                   //NOI18N
     }
     
     public static boolean isGlassFish(File candidate){
@@ -204,12 +203,17 @@ public class ServerLocationManager  {
 	return as9.exists();
     }
     
+    // TODO remove isGoodAppServerLocation from PluginProperties.java???
     public static boolean isGoodAppServerLocation(File candidate){
 	if (null == candidate || !candidate.exists() || !candidate.canRead() ||
 		!candidate.isDirectory()  || !hasRequiredChildren(candidate, fileColl)) {
 	    
 	    return false;
 	}
+        File f = new File(candidate.getAbsolutePath()+"/lib/appserv-rt.jar");
+        if (!f.exists())
+            return false;
+        
 	//now test for AS 9 (J2EE 5.0) which should work for this plugin
 	if(isGlassFish(candidate)){
 	    return true;//we are as9
