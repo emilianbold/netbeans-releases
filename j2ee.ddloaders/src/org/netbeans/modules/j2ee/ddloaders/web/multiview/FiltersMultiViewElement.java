@@ -267,6 +267,7 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
             
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 String[] values = dialogPanel.getValues();
                 try {
                     Filter filter = (Filter)webApp.createBean("Filter"); //NOI18N
@@ -284,6 +285,9 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
                     pan.setHeaderActions(new javax.swing.Action[]{removeAction});
                     view.getFiltersContainer().addSection(pan, true);
                 } catch (ClassNotFoundException ex){}
+                finally {
+                    dObj.setChangedFromUI(false);
+                }
             }
         }
     }
@@ -306,18 +310,22 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
                 Filter filter = (Filter)sectionPanel.getKey();
                 // updating data model
                 dObj.modelUpdatedFromUI();
-                
-                java.util.Stack deletedRows = DDUtils.removeFilterMappings(webApp,filter.getFilterName());
-                webApp.removeFilter(filter);
-                
-                // removing section
-                sectionPanel.getSectionView().removeSection(sectionPanel.getNode());
-                
-                //updating Mappings table
-                SectionInnerPanel mappingsInnerPanel = ((FiltersView)sectionPanel.getSectionView()).getFilterMappingSectionPanel().getInnerPanel();
-                if (mappingsInnerPanel!=null) {
-                    while (!deletedRows.empty())
-                        ((FilterMappingsPanel)mappingsInnerPanel).removeRow(((Integer)deletedRows.pop()).intValue());
+                dObj.setChangedFromUI(true);
+                try {
+                    java.util.Stack deletedRows = DDUtils.removeFilterMappings(webApp,filter.getFilterName());
+                    webApp.removeFilter(filter);
+
+                    // removing section
+                    sectionPanel.getSectionView().removeSection(sectionPanel.getNode());
+
+                    //updating Mappings table
+                    SectionInnerPanel mappingsInnerPanel = ((FiltersView)sectionPanel.getSectionView()).getFilterMappingSectionPanel().getInnerPanel();
+                    if (mappingsInnerPanel!=null) {
+                        while (!deletedRows.empty())
+                            ((FilterMappingsPanel)mappingsInnerPanel).removeRow(((Integer)deletedRows.pop()).intValue());
+                    }
+                } finally {
+                    dObj.setChangedFromUI(false);
                 }
             }
         }

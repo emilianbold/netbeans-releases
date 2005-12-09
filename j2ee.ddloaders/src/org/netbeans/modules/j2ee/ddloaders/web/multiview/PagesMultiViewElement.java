@@ -310,7 +310,8 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
             dialogPanel.getTextComponents()[2].getDocument().removeDocumentListener(docListener);
             
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
-                dObj.modelUpdatedFromUI();;
+                dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 String[] values = dialogPanel.getValues();
                 String name = values[0];
                 String description = values[1];
@@ -340,6 +341,9 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
                     pan.setHeaderActions(new javax.swing.Action[]{removeAction});
                     view.getJspGroupsContainer().addSection(pan, true);
                 } catch (ClassNotFoundException ex){}
+                finally {
+                    dObj.setChangedFromUI(false);
+                }
             }
         }
     }
@@ -363,11 +367,15 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
                 try {
                     // removing jsp-property-group from data model
                     dObj.modelUpdatedFromUI();
+                    dObj.setChangedFromUI(true);
                     webApp.getSingleJspConfig().removeJspPropertyGroup(group);
                     
                     // removing section
                     sectionPanel.getSectionView().removeSection(sectionPanel.getNode());
                 } catch (org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException ex) {}
+                finally {
+                    dObj.setChangedFromUI(false);
+                }
             }
         }
     }

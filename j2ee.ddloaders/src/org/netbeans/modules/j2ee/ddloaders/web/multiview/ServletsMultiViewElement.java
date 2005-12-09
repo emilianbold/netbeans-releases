@@ -269,6 +269,7 @@ public class ServletsMultiViewElement extends ToolBarMultiViewElement implements
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
                 String[] values = dialogPanel.getValues();
                 dObj.modelUpdatedFromUI();
+                dObj.setChangedFromUI(true);
                 try {
                     Servlet servlet = (Servlet)webApp.createBean("Servlet"); //NOI18N
                     servlet.setServletName(values[0].trim());
@@ -290,6 +291,9 @@ public class ServletsMultiViewElement extends ToolBarMultiViewElement implements
                     pan.setHeaderActions(new javax.swing.Action[]{removeAction});
                     view.getServletsContainer().addSection(pan, true);
                 } catch (ClassNotFoundException ex){}
+                finally {
+                    dObj.setChangedFromUI(false);
+                }
             }
         }
     }
@@ -311,12 +315,17 @@ public class ServletsMultiViewElement extends ToolBarMultiViewElement implements
                 Servlet servlet = (Servlet)sectionPanel.getKey();
                 // updating data model
                 dObj.modelUpdatedFromUI();
-                DDUtils.removeServletMappings(webApp,servlet.getServletName());
-                DDUtils.removeFilterMappingsForServlet(webApp,servlet.getServletName());
-                webApp.removeServlet(servlet);
-                
-                // removing section
-                sectionPanel.getSectionView().removeSection(sectionPanel.getNode());
+                dObj.setChangedFromUI(true);
+                try {
+                    DDUtils.removeServletMappings(webApp,servlet.getServletName());
+                    DDUtils.removeFilterMappingsForServlet(webApp,servlet.getServletName());
+                    webApp.removeServlet(servlet);
+
+                    // removing section
+                    sectionPanel.getSectionView().removeSection(sectionPanel.getNode());
+                } finally {
+                    dObj.setChangedFromUI(false);
+                }
             }
         }
     }
