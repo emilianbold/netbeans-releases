@@ -476,7 +476,27 @@
 	</xsd:key>
       </xsd:element>
     </xsd:sequence>
-
+    
+    <xsd:attribute name="xmlns:xsi"
+		   type="j2ee:string"
+		   fixed="http://www.w3.org/2001/XMLSchema-instance"
+		   use="required">
+      <xsd:annotation>
+	<xsd:documentation>
+	  Required by Netbeans
+	</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="xsi:schemaLocation"
+		   type="j2ee:string"
+		   fixed="http://java.sun.com/xml/ns/j2ee http://www.ibm.com/webservices/xsd/j2ee_web_services_1_1.xsd"
+		   use="required">
+      <xsd:annotation>
+	<xsd:documentation>
+	  Required by Netbeans
+	</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
     <xsd:attribute name="version"
 		   type="j2ee:dewey-versionType"
 		   fixed="1.1"
@@ -490,6 +510,7 @@
       </xsd:annotation>
     </xsd:attribute>
     <xsd:attribute name="id" type="xsd:ID"/>
+    
   </xsd:complexType>
 
 </xsd:schema>
