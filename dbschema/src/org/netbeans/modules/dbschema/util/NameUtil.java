@@ -16,7 +16,7 @@ package org.netbeans.modules.dbschema.util;
 public class NameUtil {
 
     /** Column names separator in the column pair name. */
-    private static char columnPairSeparator = ';';
+    private static final char columnPairSeparator = ';';
     
     /** Element namess separator in the fully qualified name. */
     public static final char dbElementSeparator = '.';
