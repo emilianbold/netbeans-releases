@@ -15,18 +15,24 @@ package org.netbeans.modules.editor;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JEditorPane;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.MultiKeymap;
 import org.netbeans.editor.Registry;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
@@ -160,7 +166,6 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         ActionMap am = getContextActionMap();
         Action action = null;
         JMenuItem presenter = getMenuPresenter();
-
         if (am!=null){
             action = am.get(getActionName());
             if (action == null){
@@ -191,7 +196,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         
         presenter.setEnabled(action != null);
         JTextComponent comp = Utilities.getFocusedComponent();
-        if (comp != null){
+        if (comp != null && comp instanceof JEditorPane){
             addAccelerators(action, presenter, comp);
         } else {
             presenter.setAccelerator(getDefaultAccelerator());
@@ -210,6 +215,22 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     
     /** Get default accelerator */
     protected KeyStroke getDefaultAccelerator(){
+        MimeLookup ml = MimeLookup.getMimeLookup("text/x-java"); //NOI18N
+        KeyBindingSettings kbs = (KeyBindingSettings) ml.lookup(KeyBindingSettings.class);
+        if (kbs != null){
+            List lst = kbs.getKeyBindings();
+            if (lst != null){
+                for (int i=0; i<lst.size(); i++){
+                    MultiKeyBinding mkb = (MultiKeyBinding)lst.get(i);
+                    String an = mkb.getActionName();
+                    if (an != null && an.equals(getActionName())){
+                        if (mkb.getKeyStrokeCount() == 1){// we do not support multi KB in mnemonics
+                            return mkb.getKeyStroke(0);
+                        }
+                    }
+                }
+            }
+        }
         return null;
     }
     
