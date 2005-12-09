@@ -230,7 +230,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                         invalid(null);
                         progress(NbBundle.getMessage(CheckoutWizard.class, "BK2011"));
                         SocketFactory factory = SocketFactory.getDefault();
-                        if (proxyDescriptor != null && proxyDescriptor.isEffective() && proxyDescriptor.needsProxy(root.getHostName())) {
+                        if (proxyDescriptor != null && proxyDescriptor.needsProxy(root.getHostName())) {
                             ConnectivitySettings connectivitySettings = ClientRuntime.toConnectivitySettings(proxyDescriptor);
                             factory = new ClientSocketFactory(connectivitySettings);
                         }
@@ -571,26 +571,6 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     }
     
     private void onProxyConfiguration() {
-        // proxy config button
-        // displays notification if Java environment defines socksProxyHost
-        // property because it influences ALL new Socket() that crashes
-        // our ClientSocketFactory. It may not be able to connect
-        // SOCKS (general rule failure) or HTTP (ruleset failure)
-        // proxy via Java platform defined SOCKS proxy.
-
-        String hostName = System.getProperty("socksProxyHost"); // NOI18N
-        if (hostName != null) {
-            NotifyDescriptor nd = new NotifyDescriptor(
-                    NbBundle.getMessage(RepositoryStep.class, "MSG_SystemProxy_Prompt", hostName), // NOI18N
-                    NbBundle.getMessage(RepositoryStep.class, "MSG_SystemProxy_Title"), // NOI18N
-                    NotifyDescriptor.OK_CANCEL_OPTION,
-                    NotifyDescriptor.INFORMATION_MESSAGE,
-                    new Object [] { NotifyDescriptor.OK_OPTION },
-                    NotifyDescriptor.OK_OPTION
-            );
-            DialogDisplayer.getDefault().notify(nd);
-            return;
-        }
         ProxySelector selector = new ProxySelector();
         selector.setProxyDescriptor(proxyDescriptor);
         ProxyDescriptor pd = selector.selectProxy();

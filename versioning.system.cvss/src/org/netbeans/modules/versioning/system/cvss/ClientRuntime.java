@@ -288,7 +288,7 @@ public class ClientRuntime {
         if (proxy == null ) proxy = CvsRootSettings.getProxyFor(cvsRoot);
 
         SocketFactory factory = SocketFactory.getDefault();
-        if (proxy.isEffective() && proxy.needsProxy(cvsRoot.getHostName())) {
+        if (proxy.needsProxy(cvsRoot.getHostName())) {
             factory = new ClientSocketFactory(toConnectivitySettings(proxy));
         }
 
