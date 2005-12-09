@@ -254,6 +254,15 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             setName(info.getName());
             setDisplayName(info.getDisplayName());
             setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
+            info.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName() == ProjectInformation.PROP_DISPLAY_NAME) {
+                        SuiteComponentNode.this.setDisplayName((String) evt.getNewValue());
+                    } else if (evt.getPropertyName() == ProjectInformation.PROP_NAME) {
+                        SuiteComponentNode.this.setName((String) evt.getNewValue());
+                    }
+                }
+            });
         }
         
         public Action[] getActions(boolean context) {
