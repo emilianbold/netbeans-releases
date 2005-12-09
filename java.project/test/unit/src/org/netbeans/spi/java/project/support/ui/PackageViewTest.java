@@ -19,11 +19,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.ResourceBundle;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.TestUtil;
@@ -114,7 +116,7 @@ public class PackageViewTest extends NbTestCase {
                      new int[] { 0, } );
 
         // Delete the file and folder
-        nonignoredFile.delete();             
+        nonignoredFile.delete();
         assertNodes( ch, 
                      new String[] { "a.b.c", },
                      new int[] { 0, } );
@@ -510,6 +512,7 @@ public class PackageViewTest extends NbTestCase {
         assertNode( n, "" );
                 
         dp_java.delete(); // Dp will disapear should return root node
+        waitForAWT();
         n = PackageView.findPath( sourceRoot, group.getRootFolder() );
         assertNode( n, group.getName() );
         
@@ -790,19 +793,20 @@ public class PackageViewTest extends NbTestCase {
                      new int[] { 0, 0, 0 } );
     }
 
-    private static void assertNodes( Children children, String[] nodeNames, boolean optimalResult ) {
+    private static void assertNodes( Children children, String[] nodeNames, boolean optimalResult ) throws InterruptedException, InvocationTargetException {
         assertNodes( children, nodeNames, null, optimalResult );
     }
 
-    private static void assertNodes( Children children, String[] nodeNames ) {
+    private static void assertNodes( Children children, String[] nodeNames ) throws InterruptedException, InvocationTargetException {
         assertNodes( children, nodeNames, null, false );
     }
 
-    private static void assertNodes (Children children, String[] nodeNames, int[] childCount) {
+    private static void assertNodes (Children children, String[] nodeNames, int[] childCount) throws InterruptedException, InvocationTargetException {
         assertNodes(children, nodeNames, childCount, false);
     }
 
-    private static void assertNodes( Children children, String[] nodeNames, int[] childCount, boolean optimalResult ) {
+    private static void assertNodes( Children children, String[] nodeNames, int[] childCount, boolean optimalResult ) throws InterruptedException, InvocationTargetException {
+        waitForAWT();
         Node[] nodes = children.getNodes (optimalResult);
         String[] actualNodeNames = new String[nodes.length];
         for (int i = 0; i < nodes.length; i++) {
@@ -892,6 +896,14 @@ public class PackageViewTest extends NbTestCase {
             lock.releaseLock();
         }
         return fo;
+    }
+    
+    
+    private static void waitForAWT () throws InterruptedException, InvocationTargetException {
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+            }
+        } );
     }
     
     private static class SimpleSourceGroup implements SourceGroup {

@@ -190,6 +190,17 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         setKeys( names2nodes.keySet() );
     }
     
+    /* #70097: workaround of a javacore deadlock
+     * See related issue: #61027
+     */
+    private void refreshKeysAsync () {
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run () {
+                refreshKeys();
+            }
+         });
+    }
+    
     private void computeKeys() {
         // XXX this is not going to perform too well for a huge source root...
         // However we have to go through the whole hierarchy in order to find
@@ -351,7 +362,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                         add( parent, true );
                     }
                 }
-                refreshKeys();
+                refreshKeysAsync();
             }
             else {
                 FileObject parent = fo.getParent();
@@ -375,7 +386,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 // If the parent folder only contains folders remove it
                 if ( toBeRemoved( parent ) ) {
                     remove( parent );
-                    refreshKeys();
+                    refreshKeysAsync();
                 }
                  
             }
