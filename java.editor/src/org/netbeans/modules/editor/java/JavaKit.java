@@ -512,6 +512,11 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         public String getPopupMenuText(JTextComponent target) {
             return NbBundle.getBundle(JavaKit.class).getString("goto_source_open_source_not_formatted"); //NOI18N//openSource(target, true); // simulate open
         }
+
+        protected Class getShortDescriptionBundleClass() {
+            return BaseKit.class;
+        }
+        
     }
 
     public static class JavaGotoSuperImplementation extends BaseAction {
@@ -870,6 +875,10 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 }
 
             }
+        }
+        
+        protected Class getShortDescriptionBundleClass() {
+            return BaseKit.class;
         }
         
         /** Surround With try-catch action in Source main menu, wrapper for TryCatchAction
