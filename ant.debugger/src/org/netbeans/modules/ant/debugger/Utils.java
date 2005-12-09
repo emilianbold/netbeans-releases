@@ -303,7 +303,7 @@ public class Utils {
             List annotatables = new ArrayList ();
             if (nextTargetName != null) {
                 Line fLine = lineCookie.getLineSet ().getCurrent (ln);
-                int inx = fLine.getText ().indexOf (nextTargetName);
+                int inx = findIndexOf(fLine.getText (), nextTargetName);
                 if (inx >= 0) {
                     annotatables.add (fLine.createPart (
                         inx, nextTargetName.length ()
@@ -321,6 +321,28 @@ public class Utils {
             e.printStackTrace ();
         }
         return null;
+    }
+    
+    private static int findIndexOf(String text, String target) {
+        int index = 0;
+        while ((index = text.indexOf(target, index)) > 0) {
+            char c = text.charAt(index - 1);
+            if (!Character.isWhitespace(c) && c != ',' && c != '\"') {
+                // begins with some text => is not the target
+                index++;
+                continue;
+            }
+            if (text.length() > index + target.length()) {
+                c = text.charAt(index + target.length());
+                if (!Character.isWhitespace(c) && c != ',' && c != '\"') {
+                    // ends with some text => is not the target
+                    index++;
+                    continue;
+                }
+            }
+            break;
+        }
+        return index;
     }
     
     /**
