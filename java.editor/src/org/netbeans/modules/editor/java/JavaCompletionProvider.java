@@ -210,8 +210,6 @@ public class JavaCompletionProvider implements CompletionProvider {
             Object ret = item;
             if (item instanceof NbJMIResultItem) {
                 ret = ((NbJMIResultItem)item).getAssociatedObject();
-                if (ret instanceof JMIUtils.FakeConstructor)
-                    ret = ((JMIUtils.FakeConstructor)ret).getDeclaringClass();
             }
             if (ret instanceof Feature)
                 ret = JMIUtils.getDefintion((Feature)ret);
