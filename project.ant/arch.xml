@@ -468,7 +468,10 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-introspection">
   <p>
-   No.
+   A check for buggy Xalan is performed during startup. The test tries to lookup
+   org.apache.xalan.Version class. If the class is not found, the buggy Xalan is
+   not on the classpath. If the class can be resolved, other checks (not using
+   Java reflection) are performed.
   </p>
  </answer>
 
@@ -531,6 +534,12 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="exec-property">
   <p>
    Standard property evaluators mirror system properties, as does Ant.
+  </p>
+  <p>
+      <api type="export" group="property" name="netbeans.do.not.check.xalan" category="private">
+          The "netbeans.do.not.check.xalan" property switches off the startup check for
+          buggy Xalan. See issue #70130 for more information.
+      </api>
   </p>
  </answer>
 
@@ -836,6 +845,11 @@ Microsystems, Inc. All Rights Reserved.
   <p>
    No. Project types may however (re-)generate any necessary build scripts on
    startup or opening.
+  </p>
+  <p>
+      Moreover, a check for buggy Xalan is performed on the startup. The test should
+      be very fast if the buggy Xalan is not detected. See issue #70130 for more
+      information.
   </p>
  </answer>
 
