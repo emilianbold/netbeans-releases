@@ -126,6 +126,7 @@
 <mapID target="comp_quickref" url="compile/comp_quickref.html" />
 <mapID target="comp_libraries" url="compile/comp_libraries.html" />
 <mapID target="output.window" url="compile/comp_output.html" />
+<mapID target="jar.deploy" url="compile/comp_jar_deploy.html" />
 
 <mapID target="run_about" url="run/run_about.html" />
 <mapID target="run_app" url="run/run_app.html" />
