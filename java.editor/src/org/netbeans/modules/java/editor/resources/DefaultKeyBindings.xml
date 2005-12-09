@@ -6,21 +6,20 @@
      this file, with minor diffs, in ide/applemenu.  Any changes made here should
      be made there too -->                            
 <bindings>
-    <bind actionName="goto-source" key="O-O"/>
+    <bind actionName="comment" key="DS-T"/>
     <bind actionName="fast-import" key="OS-I"/>
     <bind actionName="fix-imports" key="OS-F"/>
-    <bind actionName="try-catch" key="OS-W"/>
-
-    <bind actionName="goto-super-implementation" key="D-B"/>
     <bind actionName="goto-declaration" key="O-G"/>    
-    <bind actionName="comment" key="DS-T"/>
     <bind actionName="goto-help" key="O-F1"/>
-    <bind actionName="make-is" key="O-U$I"/>
-    <bind actionName="make-getter" key="O-U$G"/>
+    <bind actionName="goto-source" key="O-O"/>
+    <bind actionName="goto-super-implementation" key="D-B"/>
+    <bind actionName="javadoc-show-action" key="CS-SPACE"/> 
     <bind actionName="macro-debug-var" key="D-J$D"/>
-    <bind actionName="uncomment" key="DS-D"/>
+    <bind actionName="make-getter" key="O-U$G"/>
+    <bind actionName="make-is" key="O-U$I"/>
     <bind actionName="make-setter" key="O-U$S"/>
     <bind actionName="select-element-next" key="OS-S"/>
     <bind actionName="select-element-previous" key="OS-A"/>
-    <bind actionName="javadoc-show-action" key="CS-SPACE"/> 
+    <bind actionName="try-catch" key="OS-W"/>
+    <bind actionName="uncomment" key="DS-D"/>
 </bindings>

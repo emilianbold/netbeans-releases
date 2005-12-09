@@ -17,6 +17,7 @@
     <bind actionName="caret-up" key="UP"/>
     <bind actionName="caret-up" key="KP_UP"/>
     <bind actionName="collapse-fold" key="C-SUBTRACT"/>
+    <bind actionName="collapse-all-folds" key="DS-SUBTRACT"/>
     <bind actionName="completion-show" key="C-SPACE"/>
     <bind actionName="copy-to-clipboard" key="COPY"/>
     <bind actionName="cut-to-clipboard" key="CUT"/>
@@ -37,6 +38,9 @@
     <bind actionName="insert-tab" key="TAB"/>
     <bind actionName="jump-list-next" key="A-RIGHT"/>
     <bind actionName="jump-list-prev" key="A-LEFT"/>
+    <bind actionName="make-getter" key="O-U$G"/>
+    <bind actionName="make-is" key="O-U$I"/>
+    <bind actionName="make-setter" key="O-U$S"/>
     <bind actionName="match-brace" key="CAS-P"/>
     <bind actionName="page-down" key="PAGE_DOWN"/>
     <bind actionName="page-up" key="PAGE_UP"/>
@@ -64,7 +68,9 @@
     <bind actionName="selection-previous-word" key="DS-LEFT"/>
     <bind actionName="selection-up" key="S-UP"/>
     <bind actionName="split-line" key="D-ENTER"/>
+    <bind actionName="start-macro-recording" key="D-J$S"/>
     <bind actionName="start-new-line" key="S-ENTER"/>
+    <bind actionName="stop-macro-recording" key="D-J$E"/>
     <bind actionName="to-lower-case" key="CS-Y"/>
     <bind actionName="to-upper-case" key="CS-X"/>
     <bind actionName="toggle-typing-mode" key="INSERT"/>

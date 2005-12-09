@@ -642,6 +642,45 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
         <folder name="Eclipse">
+            <file name="DO-F.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-ui-FindUsagesOpenAction.instance"/>
+            </file>
+            <file name="A-RIGHT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
+            </file>
+            <file name="A-LEFT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
+            </file>
+            <file name="S-A-Right.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-NextViewCallbackAction.instance"/>
+            </file>
+            <file name="S-A-Left.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
+            </file>
+            <file name="DS-3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-favorites-Select.instance"/>
+            </file>
+            <file name="S-F2.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
+            </file>
+            <file name="D-F2.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
+            </file>
+            <file name="DS-7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
+            </file>
+            <file name="CS-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
+            </file>
+            <file name="D-7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
+            </file>
+            <file name="D-3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
+            </file>
+            <file name="D-5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
+            </file>
             <file name="F1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-javahelp-HelpAction.instance"/>
             </file>

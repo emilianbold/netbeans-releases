@@ -29,18 +29,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-    <folder name="Shortcuts">
-        <file name="F2.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance"/>
-        </file>
-        <file name="S-F2.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
-        </file>
-        <file name="D-F2.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
-        </file>
-    </folder>
-
     <folder name="Menu" >
         <folder name="GoTo" >
             <file name="org-netbeans-editor-bookmarks-ToggleBookmark.shadow" >
