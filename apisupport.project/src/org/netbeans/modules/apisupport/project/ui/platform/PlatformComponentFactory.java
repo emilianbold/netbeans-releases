@@ -143,7 +143,12 @@ public final class PlatformComponentFactory {
             NbPlatform[] platforms = (NbPlatform[]) NbPlatform.getPlatforms().toArray(new NbPlatform[0]);
             Arrays.sort(platforms, new Comparator() {
                 public int compare(Object o1, Object o2) {
-                    return Collator.getInstance().compare(((NbPlatform) o1).getLabel(), ((NbPlatform) o2).getLabel());
+                    int res = Collator.getInstance().compare(((NbPlatform) o1).getLabel(), ((NbPlatform) o2).getLabel());
+                    if (res != -1) {
+                        return res;
+                    } else {
+                        return System.identityHashCode(o1) - System.identityHashCode(o2);
+                    }
                 }
             });
             return platforms;

@@ -311,8 +311,13 @@ public final class UIUtil {
         }
         
         public int compareTo(Object o) {
-            return Collator.getInstance().compare(getDisplayName(),
+            int res = Collator.getInstance().compare(getDisplayName(),
                     ((LayerItemPresenter) o).getDisplayName());
+            if (res != -1) {
+                return res;
+            } else {
+                return getFullPath().compareTo(((LayerItemPresenter) o).getFullPath());
+            }
         }
         
         private static String getFileObjectName(FileObject fo) {

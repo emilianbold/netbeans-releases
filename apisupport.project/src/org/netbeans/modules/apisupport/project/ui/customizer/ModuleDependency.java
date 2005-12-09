@@ -87,9 +87,14 @@ public final class ModuleDependency implements Comparable {
     }
     
     public int compareTo(Object o) {
-        return LOC_COLLATOR.compare(
+        int result = LOC_COLLATOR.compare(
             getModuleEntry().getLocalizedName(),
             ((ModuleDependency) o).getModuleEntry().getLocalizedName());
+        if (result != -1) {
+            return result;
+        } else {
+            return getModuleEntry().getCodeNameBase().compareTo(((ModuleDependency) o).getModuleEntry().getCodeNameBase());
+        }
     }
     
     public boolean hasCompileDependency() {
