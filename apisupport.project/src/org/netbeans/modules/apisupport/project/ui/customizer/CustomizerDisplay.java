@@ -81,7 +81,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     
     private void fillUpCategoryValue() {
         categoryValue.setEnabled(false);
-        categoryValue.setModel(CustomizerComponentFactory.COMBO_WAIT_MODEL);
+        categoryValue.setModel(CustomizerComponentFactory.createComboWaitModel());
         categoryValue.setSelectedItem(CustomizerComponentFactory.WAIT_VALUE);
         ModuleProperties.RP.post(new Runnable() {
             public void run() {

@@ -144,7 +144,7 @@ final class AddModulePanel extends JPanel {
         filterValue.setEnabled(false);
         filterValue.setText(CustomizerComponentFactory.WAIT_VALUE);
         moduleList.setEnabled(false);
-        moduleList.setModel(CustomizerComponentFactory.LIST_WAIT_MODEL);
+        moduleList.setModel(CustomizerComponentFactory.createListWaitModel());
         ModuleProperties.RP.post(new Runnable() {
             public void run() {
                 final SortedSet universeDeps = props.getUniverseDependencies(true);
@@ -250,7 +250,7 @@ final class AddModulePanel extends JPanel {
             };
             if (filterer == null) {
                 // Slow to create it, so show Please wait...
-                moduleList.setModel(CustomizerComponentFactory.LIST_WAIT_MODEL);
+                moduleList.setModel(CustomizerComponentFactory.createListWaitModel());
                 filterTask = RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         if (filterer == null) {

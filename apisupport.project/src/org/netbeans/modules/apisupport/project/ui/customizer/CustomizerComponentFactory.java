@@ -33,6 +33,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.ListModel;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -46,32 +47,13 @@ import org.openide.xml.XMLUtil;
  */
 public final class CustomizerComponentFactory {
     
-    /** Generally usable in conjuction with {@link #COMBO_WAIT_MODEL}. */
+    /** Generally usable in conjuction with {@link #createComboWaitModel}. */
     public static final String WAIT_VALUE =
             NbBundle.getMessage(CustomizerDisplay.class, "ComponentFactory_please_wait");
     
-    /** Generally usable in conjuction with {@link #COMBO_WAIT_MODEL}. */
+    /** Generally usable in conjuction with {@link #createComboEmptyModel}. */
     public static final String EMPTY_VALUE =
             NbBundle.getMessage(CustomizerDisplay.class, "LBL_Empty");
-    
-    /**
-     * Use this model in situation when you need to populate combo in the
-     * background. The only item in this model is {@link #WAIT_VALUE}.
-     */
-    public static final ComboBoxModel COMBO_WAIT_MODEL = new DefaultComboBoxModel(new Object[] { WAIT_VALUE });
-    
-    /** The only item in this model is {@link #EMPTY_MODEL}. */
-    public static final ComboBoxModel EMPTY_MODEL = new DefaultComboBoxModel(new Object[] { EMPTY_VALUE });
-    
-    /**
-     * Use this model in situation when you need to populate list in the
-     * background. The only item in this model is {@link #WAIT_VALUE}.
-     */
-    public static final DefaultListModel LIST_WAIT_MODEL = new DefaultListModel();
-    
-    static {
-        LIST_WAIT_MODEL.addElement(WAIT_VALUE);
-    }
     
     static DependencyListModel INVALID_DEP_LIST_MODEL;
     private static final Collator LOC_COLLATOR = Collator.getInstance();
@@ -83,6 +65,37 @@ public final class CustomizerComponentFactory {
     
     private CustomizerComponentFactory(final Project project) {
         // don't allow instances
+    }
+    
+    /**
+     * Use this model in situation when you need to populate combo in the
+     * background. The only item in this model is {@link #WAIT_VALUE}.
+     */
+    public static ComboBoxModel createComboWaitModel() {
+        return new DefaultComboBoxModel(new Object[] { WAIT_VALUE });
+    }
+    
+    /** The only item in this model is {@link #EMPTY_VALUE}. */
+    public static ComboBoxModel createComboEmptyModel() {
+        return new DefaultComboBoxModel(new Object[] { EMPTY_VALUE });
+    }
+    
+    /**
+     * Returns true if the given model is not <code>null</code> and contains
+     * only the given value.
+     */
+    public static boolean hasOnlyValue(final ListModel model, final Object value) {
+        return model != null && model.getSize() == 1 && model.getElementAt(0) == value;
+    }
+    
+    /**
+     * Use this model in situation when you need to populate list in the
+     * background. The only item in this model is {@link #WAIT_VALUE}.
+     */
+    public static ListModel createListWaitModel() {
+        DefaultListModel listWaitModel = new DefaultListModel();
+        listWaitModel.addElement(WAIT_VALUE);
+        return listWaitModel;
     }
     
     /**
@@ -248,6 +261,7 @@ public final class CustomizerComponentFactory {
     }
     
     private static class ProjectListCellRenderer extends DefaultListCellRenderer {
+        
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
             Component c = super.getListCellRendererComponent(
@@ -255,18 +269,19 @@ public final class CustomizerComponentFactory {
                     index, isSelected, cellHasFocus);
             return c;
         }
+        
     }
+    
     private static class ModuleEntryListCellRenderer extends DefaultListCellRenderer {
-        public Component getListCellRendererComponent(
-            JList list, Object value,
-            int index, boolean isSelected, boolean cellHasFocus
-        ) {
+        
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
             ModuleEntry me = (ModuleEntry)value;
             Component c = super.getListCellRendererComponent(
-                list, me.getLocalizedName(), index, isSelected, cellHasFocus
-            );
+                    list, me.getLocalizedName(), index, isSelected, cellHasFocus);
             return c;
         }
+        
     }
     
     static final class PublicPackagesTableModel extends AbstractTableModel {

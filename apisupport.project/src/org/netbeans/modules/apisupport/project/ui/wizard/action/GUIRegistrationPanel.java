@@ -112,7 +112,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             // XXX check if there are not multiple (--> redundant) listeners
             txt.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
                 public void insertUpdate(DocumentEvent e) {
-                    if (combo.getModel() != CustomizerComponentFactory.COMBO_WAIT_MODEL) {
+                    if (!CustomizerComponentFactory.hasOnlyValue(combo.getModel(), CustomizerComponentFactory.WAIT_VALUE)) {
                         checkValidity();
                     }
                 }
@@ -226,11 +226,14 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private void setGroupEnabled(JComponent[] group, boolean enabled) {
         for (int i = 0; i < group.length; i++) {
             if (group[i] != null) {
-                group[i].setEnabled(enabled
-                        && !(group[i] instanceof JComboBox
-                        && ((JComboBox) group[i]).getModel() == CustomizerComponentFactory.EMPTY_MODEL));
+                group[i].setEnabled(enabled && !isEmptyCombo(group[i]));
             }
         }
+    }
+    
+    private boolean isEmptyCombo(JComponent c) {
+        return c instanceof JComboBox &&
+                CustomizerComponentFactory.hasOnlyValue(((JComboBox) c).getModel(), CustomizerComponentFactory.EMPTY_VALUE);
     }
     
     private void readSFS() {
@@ -255,7 +258,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             final JComboBox comboPositions,
             final String subFolderName,
             final boolean editable) {
-        combo.setModel(CustomizerComponentFactory.COMBO_WAIT_MODEL);
+        combo.setModel(CustomizerComponentFactory.createComboWaitModel());
         SFS_RP.post(new Runnable() {
             public void run() {
                 Util.err.log("Loading " + startFolder + " from SFS...."); // NOI18N
@@ -307,7 +310,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         
         assert parent != null;
         assert positionsCombo != null;
-        positionsCombo.setModel(CustomizerComponentFactory.COMBO_WAIT_MODEL);
+        positionsCombo.setModel(CustomizerComponentFactory.createComboWaitModel());
         SFS_RP.post(new Runnable() {
             public void run() {
                 final Enumeration filesEn = parent.getFileObject().getData(false);
@@ -356,7 +359,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     
     private void setEmptyModel(JComboBox combo) {
         if (combo != null) {
-            combo.setModel(CustomizerComponentFactory.EMPTY_MODEL);
+            combo.setModel(CustomizerComponentFactory.createComboEmptyModel());
             combo.setEnabled(false);
             combo.setEditable(false);
             checkValidity();

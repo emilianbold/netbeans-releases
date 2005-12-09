@@ -29,14 +29,6 @@ import org.openide.util.RequestProcessor;
  */
 final class NbPlatformCustomizerModules extends JPanel {
     
-    private static final ListModel EMPTY_MODEL = new DefaultListModel();
-    private static final DefaultListModel WAIT_MODEL = new DefaultListModel();
-    
-    static {
-        WAIT_MODEL.addElement(NbBundle.getMessage(
-                NbPlatformCustomizerModules.class, "LBL_PleaseWait")); // NOI18N
-    }
-    
     /** Creates new form NbPlatformCustomizerModules */
     NbPlatformCustomizerModules() {
         initComponents();
@@ -44,7 +36,7 @@ final class NbPlatformCustomizerModules extends JPanel {
     }
     
     void setPlatform(final NbPlatform plaf) {
-        moduleList.setModel(WAIT_MODEL);
+        moduleList.setModel(createWaitModel());
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 final ModuleEntry[] modules = plaf.getModules();
@@ -58,7 +50,7 @@ final class NbPlatformCustomizerModules extends JPanel {
     }
     
     void reset() {
-        moduleList.setModel(EMPTY_MODEL);
+        moduleList.setModel(new DefaultListModel());
     }
     
     /** This method is called from within the constructor to
@@ -113,6 +105,13 @@ final class NbPlatformCustomizerModules extends JPanel {
     
     private String getMessage(String key) {
         return NbBundle.getMessage(NbPlatformCustomizerJavadoc.class, key);
+    }
+    
+    private ListModel createWaitModel() {
+        DefaultListModel waitModel = new DefaultListModel();
+        waitModel.addElement(NbBundle.getMessage(
+                NbPlatformCustomizerModules.class, "LBL_PleaseWait")); // NOI18N
+        return waitModel;
     }
     
 }
