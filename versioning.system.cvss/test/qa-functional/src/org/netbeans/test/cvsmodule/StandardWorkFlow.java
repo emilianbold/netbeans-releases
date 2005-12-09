@@ -593,7 +593,6 @@ public class StandardWorkFlow extends JellyTestCase {
         }
             
         br.close();
-        System.out.println("Line: " + line);
         assertTrue("Diff Patch file is empty!", generated);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
@@ -663,7 +662,10 @@ public class StandardWorkFlow extends JellyTestCase {
         bo.branch();
         
         //oo = OutputOperator.invoke();
-        oto.waitText("Branching \"ForImport [Main]\" finished");
+        //oto.waitText("Branching \"ForImport [Main]\" finished");
+        oto.waitText("Branch");
+        oto.waitText("ForImport");
+        oto.waitText("finished");
         Thread.sleep(1000);
         
         cvss.stop();
