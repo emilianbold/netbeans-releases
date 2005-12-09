@@ -645,9 +645,6 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Move Down.shadow">
                     <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-MoveDownAction.instance"/>
                 </file>
-                <file name="Add.shadow">
-                    <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-NewAction.instance"/>
-                </file>
                 <file name="Change Order....shadow">
                     <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ReorderAction.instance"/>
                 </file>
@@ -706,6 +703,9 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="Hidden">
+                <file name="Add.shadow">
+                    <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-NewAction.instance"/>
+                </file>
                 <file name="Zoom In.shadow">
                     <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.image.ZoomInAction.instance"/>
                 </file>
