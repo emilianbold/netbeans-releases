@@ -19,7 +19,7 @@ public class NameUtil {
     private static char columnPairSeparator = ';';
     
     /** Element namess separator in the fully qualified name. */
-    private static char dbElementSeparator = '.';
+    public static final char dbElementSeparator = '.';
     
     /** Returns schema resource name.
      * @return the schema resource name
