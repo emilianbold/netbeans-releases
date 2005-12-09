@@ -24,6 +24,12 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="swing-layout-1.0.jar"/>
             </fileset>
         </copy>
+        <mkdir dir="${cluster}/docs"/>
+        <copy todir="${cluster}/docs">
+            <fileset dir="../external">
+                <include name="swing-layout-1.0-doc.zip"/>
+            </fileset>
+        </copy>
     </target>
 
 </project>
