@@ -1317,6 +1317,10 @@ public class Controller { //XXX public only for debug access to logging code
                     if (s.endsWith("\n")) { //NOI18N
                         s = s.substring(0, s.length()-1);
                     }
+                    //#70008 on windows \r can also be there..
+                    if (s.endsWith("\r")) { //NOI18N
+                        s = s.substring(0, s.length()-1);
+                    }
                     return s;
                 }
             } catch (IOException ioe) {
