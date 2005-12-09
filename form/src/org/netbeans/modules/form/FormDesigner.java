@@ -99,6 +99,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     static final int MODE_ADD = 2;
     
     private boolean initialized = false;
+    private boolean firstLayout;
 
     private RADComponent connectionSource;
     private RADComponent connectionTarget;
@@ -158,6 +159,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     
     void initialize() {
         initialized = true;
+        firstLayout = true;
         removeAll();
 
         componentLayer = new ComponentLayer();
@@ -417,6 +419,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     private void updateComponentLayer(final boolean fireChange) {
+        boolean firstLayout = this.firstLayout;
+        this.firstLayout = false;
         if (getLayoutDesigner() == null)
             return;
 
@@ -435,9 +439,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             }
             autoUndo = false;
         } finally {
-            if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+            if ((!firstLayout || autoUndo) && !layoutUndoMark.equals(layoutModel.getChangeMark())) {
                 formModel.addUndoableEdit(layoutUndoEdit);
-            }
+            } // note: change is ignored if done as part of adjusting newly
+              // opened form - this should not be undoable
             if (autoUndo) {
                 formModel.forceUndoOfCompoundEdit();                
             }
