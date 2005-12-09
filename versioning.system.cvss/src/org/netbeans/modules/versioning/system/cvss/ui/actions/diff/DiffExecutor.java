@@ -81,7 +81,7 @@ public class DiffExecutor {
 
     private void showDiff(int type, ExecutorGroup group) {
         VersionsCache.getInstance().purgeVolatileRevisions();
-        DiffMainPanel panel = new DiffMainPanel(context, type, contextName, group);
+        DiffMainPanel panel = new DiffMainPanel(context, type, contextName, group); // spawns bacground DiffPrepareTask
         openDiff(panel, group);
     }
     

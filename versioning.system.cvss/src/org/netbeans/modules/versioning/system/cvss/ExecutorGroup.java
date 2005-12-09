@@ -87,7 +87,7 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
      *
      * @param details progress detail messag eor null
      */
-    public void progress(String details) {
+    public synchronized void progress(String details) {
         if (progressHandle == null) {
             progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ExecutorGroup.class, "BK2001", name), this, this);
             progressHandle.start();
@@ -374,11 +374,12 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
             i++;
         }
 
-        if (i == 0 && progressHandle != null) {  // kill progress provoked by progress()
-            progressHandle.finish();
-            progressHandle = null;
+        synchronized(this) {
+            if (i == 0 && progressHandle != null) {  // kill progress provoked by progress()
+                progressHandle.finish();
+                progressHandle = null;
+            }
         }
-
     }
 
     /**
@@ -398,7 +399,7 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
         }
     }
 
-    void increaseDataCounter(long bytes) {
+    synchronized void increaseDataCounter(long bytes) {
         dataCounter += bytes;
         if (progressHandle != null) {  // dangling event from zombie worker thread
             progressHandle.progress(NbBundle.getMessage(ExecutorGroup.class, "BK2002", name, format(dataCounter)));
