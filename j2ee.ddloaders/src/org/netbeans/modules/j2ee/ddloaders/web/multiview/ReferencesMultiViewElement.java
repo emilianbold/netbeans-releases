@@ -54,10 +54,6 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
         this.index=index;
         comp = new ToolBarDesignEditor();
         factory = new ReferencesFactory(comp, dObj);
-        /*
-        addAction = new AddAction(dObj, NbBundle.getMessage(FiltersMultiViewElement.class,"LBL_addFilter"));
-        removeAction = new RemoveAction(NbBundle.getMessage(FiltersMultiViewElement.class,"LBL_remove"));
-         */
         setVisualEditor(comp);
         repaintingTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
