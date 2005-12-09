@@ -198,6 +198,7 @@ public class ConnectionAction extends CookieAction {
                     combo.setToolTipText(selectedItem != null ? selectedItem.toString() : null);
                 }
             });
+            combo.setOpaque(false);
             add(combo, BorderLayout.CENTER);
             
             comboLabel = new JLabel();
