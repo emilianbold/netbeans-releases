@@ -3,3 +3,5 @@
 1.0.5:	Change the misleading module description
 
 1.0.6:	Add default keepalive for direct connection, #67659
+
+1.0.7:	Some JSE fixes integrated
