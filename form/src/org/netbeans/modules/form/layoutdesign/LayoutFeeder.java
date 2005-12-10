@@ -2663,13 +2663,14 @@ class LayoutFeeder implements LayoutConstants {
                     }
                 }
                 else {
-                    endIndex = iDesc2.index - 1;
-                    endGap = commonGroup.getSubInterval(endIndex).isEmptySpace();
+                    endIndex = iDesc2.index;
+                    if (iDesc2.snappedParallel == null || !commonGroup.isParentOf(iDesc2.snappedParallel))
+                        endGap = commonGroup.getSubInterval(--endIndex).isEmptySpace();
                 }
             }
 
             if ((endIndex > startIndex + 1 || (endIndex == startIndex+1 && !startGap && !endGap))
-                && ((ext1 != null && !iDesc1.newSubGroup) || (ext2 !=null && !iDesc2.newSubGroup)))
+                && ((ext1 != null && !iDesc1.newSubGroup) || (ext2 != null && !iDesc2.newSubGroup)))
             {   // there is a significant part of the common sequence to be parallelized
                 LayoutInterval parGroup;
                 if (startIndex == 0 && endIndex == commonGroup.getSubIntervalCount()-1) {
