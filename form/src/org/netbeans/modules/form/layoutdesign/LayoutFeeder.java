@@ -1732,6 +1732,13 @@ class LayoutFeeder implements LayoutConstants {
         else if (neighborGap == null)
             return;
 
+        if (!LayoutInterval.canResize(group)
+            && ((iDesc1.snappedNextTo != null && !group.isParentOf(iDesc1.snappedNextTo))
+                 || (iDesc2 != null && iDesc2.snappedNextTo != null && !group.isParentOf(iDesc2.snappedNextTo))))
+        {   // snapped out of the group - it might not want to be suppressed (will check right away)
+            operations.enableGroupResizing(group);
+        }
+
         if (LayoutInterval.canResize(group) && group.getParent() != null) {
             // suppress par. group resizing if it is otherwise fixed
             boolean contentResizing = false;
