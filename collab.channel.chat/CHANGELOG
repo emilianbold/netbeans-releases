@@ -16,3 +16,5 @@
 1.0.8:	Removed useless settings (#64551)
 
 1.0.9:	Removed Allow Enter/Tab buttons, #67634, #64467
+
+1.0.10: Move typing status into the chat toolbar. Prevents #69294
