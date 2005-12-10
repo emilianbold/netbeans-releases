@@ -13,4 +13,6 @@
 
 1.0.7:	Don't substitute smiles in code snippets (#68473)
 
-1.0.8: Remove useless settings (#64551)
+1.0.8:	Removed useless settings (#64551)
+
+1.0.9:	Removed Allow Enter/Tab buttons, #67634, #64467

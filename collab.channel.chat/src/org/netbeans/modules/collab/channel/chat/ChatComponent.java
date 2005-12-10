@@ -135,9 +135,6 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
     private javax.swing.Timer typingTimer = null;
     private int TYPE_TIMER_INTERVAL = 2000;
     private Set typingParticipants = Collections.synchronizedSet(new HashSet());
-    private Map contentTypeSettings;
-    private JToggleButton allowEnterButton;
-    private JToggleButton allowTabsButton;
     private JPopupMenu popupMenu;
     private JPopupMenu newMenu;
     private JButton smileyButton;
@@ -286,11 +283,6 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
 
             // registers itself
             InputPaneDocumentListener lst = new InputPaneDocumentListener();
-
-            // Make sure this is done after initializeToolbar()
-            setInsertTabKey(false, false);
-            setInsertEnterKey(false, false);
-            syncAllowCharacterButtons();
 
             // Create a scroll pane to contain the input pane
             JScrollPane inputScrollPane = new JScrollPane(inputPane);
@@ -483,35 +475,6 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
             contentTypeToButton.put(contentType, button);
         }
 
-        // Add button for enter handling
-        allowEnterButton = new JToggleButton();
-        Mnemonics.setLocalizedText(allowEnterButton,
-                NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_AllowEnter")); // NOI18N
-        allowEnterButton.setRequestFocusEnabled(false);
-        allowEnterButton.addItemListener(
-            new ItemListener() {
-                public void itemStateChanged(ItemEvent event) {
-                    setInsertEnterKey(event.getStateChange() == ItemEvent.SELECTED, true);
-                    syncAllowCharacterButtons();
-                    inputPane.grabFocus();
-                }
-            }
-        );
-
-        // Add button for tab handling
-        allowTabsButton = new JToggleButton();
-        Mnemonics.setLocalizedText(allowTabsButton,
-                NbBundle.getMessage(ChatComponent.class, "LBL_ChatComponent_AllowTabs")); // NOI18N
-        allowTabsButton.setRequestFocusEnabled(false);
-        allowTabsButton.addItemListener(
-            new ItemListener() {
-                public void itemStateChanged(ItemEvent event) {
-                    setInsertTabKey(event.getStateChange() == ItemEvent.SELECTED, true);
-                    syncAllowCharacterButtons();
-                    inputPane.grabFocus();                }
-            }
-        );
-
         inputToolbar.addSeparator();
 
         Image smileyButtonIcon = org.openide.util.Utilities.loadImage(
@@ -524,12 +487,6 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
         smileyButton.setRequestFocusEnabled(false);
         smileyButton.addActionListener(new SmileListener());
         inputToolbar.add(smileyButton);
-
-        // Create the input area toolbar
-        inputToolbar.addSeparator();
-        inputToolbar.add(allowEnterButton);
-        inputToolbar.addSeparator();
-        inputToolbar.add(allowTabsButton);
 
         return inputToolbar;
     }
@@ -568,120 +525,6 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
         button.setBorderPainted(false);
         button.setRequestFocusEnabled(false);
         return button;
-    }
-
-    /**
-     *
-     *
-     */
-    protected void setInsertEnterKey(boolean value, boolean updateSettings) {
-        final String ACTION = "enterAction";
-        final KeyStroke KEYSTROKE = KeyStroke.getKeyStroke("ENTER"); // NOI18N
-
-        if (value) {
-            // Remove enter action and allow keystroke to make it through
-            getInputPane().getInputMap().remove(KEYSTROKE); // NOI18N
-            getInputPane().getActionMap().remove(ACTION);
-        } else {
-            // Install filter for enter and invoke send button instead
-            getInputPane().getInputMap().put(KEYSTROKE, ACTION); // NOI18N
-            getInputPane().getActionMap().put(ACTION, new SendButtonActionListener());
-        }
-
-        if (updateSettings) {
-            HiddenChatChannelSettings.ContentTypeSettings settings = getContentTypeSettings(getInputContentType());
-            settings.allowEnter = value;
-        }
-    }
-
-    /**
-     *
-     *
-     */
-    protected void setInsertTabKey(boolean value, boolean updateSettings) {
-        final String ACTION = "tabAction";
-        final KeyStroke KEYSTROKE = KeyStroke.getKeyStroke("TAB"); // NOI18N
-
-        if (value) {
-            // Remove tab action and allow keystroke to make it through
-            getInputPane().getInputMap().remove(KEYSTROKE); // NOI18N
-            getInputPane().getActionMap().remove(ACTION);
-        } else {
-            // Install filter for tab and focus the send button instead
-            getInputPane().getInputMap().put(KEYSTROKE, ACTION); // NOI18N
-            getInputPane().getActionMap().put(
-                ACTION,
-                new AbstractAction() {
-                    public void actionPerformed(ActionEvent event) {
-                        getSendButton().requestFocus();
-                    }
-                }
-            );
-        }
-
-        if (updateSettings) {
-            HiddenChatChannelSettings.ContentTypeSettings settings = getContentTypeSettings(getInputContentType());
-            settings.allowTabs = value;
-        }
-    }
-
-    /**
-     *
-     *
-     */
-    protected Map getContentTypeSettings() {
-        if (contentTypeSettings == null) {
-            contentTypeSettings = new HashMap();
-
-            // Initialize from the chat channel settings
-            HiddenChatChannelSettings.ContentTypeSettings[] settings = HiddenChatChannelSettings.getDefault()
-                                                                                                .getContentTypeSettings();
-
-            for (int i = 0; i < settings.length; i++)
-                contentTypeSettings.put(settings[i].contentType, settings[i]);
-        }
-
-        return contentTypeSettings;
-    }
-
-    /**
-     *
-     *
-     */
-    private HiddenChatChannelSettings.ContentTypeSettings getContentTypeSettings(String contentType) {
-        HiddenChatChannelSettings.ContentTypeSettings result = (HiddenChatChannelSettings.ContentTypeSettings) getContentTypeSettings()
-                                                                                                                   .get(
-                contentType
-            );
-
-        if (result == null) {
-            result = new HiddenChatChannelSettings.ContentTypeSettings();
-            result.contentType = contentType;
-            result.allowEnter = false;
-            result.allowTabs = false;
-            getContentTypeSettings().put(contentType, result);
-        }
-
-        return result;
-    }
-
-    /**
-     *
-     *
-     */
-    protected void syncAllowCharacterButtons() {
-        String contentType = getInputContentType();
-
-        // Update the buttons
-        final HiddenChatChannelSettings.ContentTypeSettings settings = getContentTypeSettings(contentType);
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                public void run() {
-                    allowEnterButton.setSelected(settings.allowEnter);
-                    allowTabsButton.setSelected(settings.allowTabs);
-                }
-            }
-        );
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -1411,7 +1254,6 @@ LOOP:
             previouslySelectedContentType = null;
 
             setInputContentType(type, false, false);
-            syncAllowCharacterButtons();
         }
     }
 
@@ -1431,7 +1273,6 @@ LOOP:
         public void run() {
             JToggleButton button = (JToggleButton) contentTypeToButton.get(inputContentType);
             button.setSelected(true);
-            syncAllowCharacterButtons();
         }
     }
 

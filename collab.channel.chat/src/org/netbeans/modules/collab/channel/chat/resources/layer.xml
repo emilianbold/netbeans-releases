@@ -31,10 +31,6 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.chat.Bundle"/>
                     <attr name="SystemFileSystem.layer" stringvalue="session"/>
                 </file>
-                <file name="org-netbeans-modules-collab-channel-chat-HiddenChatChannelSettings.settings" url="HiddenChatChannelSettings.settings">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.options.Bundle"/>
-                    <attr name="SystemFileSystem.layer" stringvalue="session"/>
-                </file>
             </folder>
         </folder>
         <folder name="JavaHelp">

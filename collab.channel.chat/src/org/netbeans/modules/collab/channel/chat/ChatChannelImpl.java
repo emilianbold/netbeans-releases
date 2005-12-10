@@ -88,16 +88,6 @@ public class ChatChannelImpl extends Object implements ChatCollablet {
     public void close() {
         // Do nothing
         activeChannelCount--;
-
-        // If this is the last active channel, save its settings
-        if ((--activeChannelCount <= 0) && (component != null)) {
-            Map settingsMap = component.getContentTypeSettings();
-            HiddenChatChannelSettings.ContentTypeSettings[] settings = (HiddenChatChannelSettings.ContentTypeSettings[]) settingsMap.values()
-                                                                                                                                    .toArray(
-                    new HiddenChatChannelSettings.ContentTypeSettings[0]
-                );
-            HiddenChatChannelSettings.getDefault().setContentTypeSettings(settings);
-        }
     }
 
     /**
