@@ -288,7 +288,6 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
      *
      */
     public int getPersistenceType() {
-        //        return PERSISTENCE_ALWAYS; //PERSISTENCE_ONLY_OPENED; // PERSISTENCE_NEVER
         return PERSISTENCE_ALWAYS;
     }
 
@@ -314,6 +313,7 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
                     } else if (componentID.equals(COMPONENT_EXPLORER)) {
                         title = NbBundle.getMessage(CollabExplorerPanel.class, "TITLE_CollabExplorerPanel_ContactList"); // NOI18N
                         currentComponent = sessionPanel;
+                        treeViewJTree.requestFocus();
                     }
 
                     setName(title);

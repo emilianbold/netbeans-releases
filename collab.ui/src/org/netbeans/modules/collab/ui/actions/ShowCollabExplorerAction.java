@@ -42,10 +42,6 @@ public class ShowCollabExplorerAction extends SystemAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    protected boolean asynchronous() {
-        return true;
-    }
-
     public void actionPerformed(ActionEvent actionEvent) {
         CollabExplorerPanel panel = CollabExplorerPanel.getInstance();
 
@@ -59,5 +55,6 @@ public class ShowCollabExplorerAction extends SystemAction {
         }
 
         panel.open(null);
+        panel.requestActive();
     }
 }
