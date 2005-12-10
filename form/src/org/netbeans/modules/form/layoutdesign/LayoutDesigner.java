@@ -2795,6 +2795,14 @@ public class LayoutDesigner implements LayoutConstants {
                         layoutModel.addInterval(last, superParent, layoutModel.removeInterval(parent));
                         layoutModel.setIntervalAlignment(last, parent.getRawAlignment());
                     }
+                    else { // adjust current space of the parent sequence
+                           // (border interval at the open end removed)
+                        int l = (trailingNeighbor != null && leadingNeighbor == null ?
+                            trailingNeighbor : parent).getCurrentSpace().positions[dimension][LEADING];
+                        int t = (leadingNeighbor != null && trailingNeighbor == null ?
+                            leadingNeighbor : parent).getCurrentSpace().positions[dimension][TRAILING];
+                        parent.getCurrentSpace().set(dimension, l, t);
+                    }
                     maintainSize(superParent, wasResizing || restResizing, dimension,
                                  parent, parent.getCurrentSpace().size(dimension) - cutSize);
                 }
