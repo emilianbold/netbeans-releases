@@ -22,6 +22,7 @@ import com.sun.collablet.Conversation;
 import com.sun.collablet.ConversationPrivilege;
 import com.sun.collablet.UserInterface;
 import com.sun.collablet.chat.ChatCollablet;
+import javax.swing.SwingUtilities;
 
 import org.openide.util.*;
 
@@ -61,6 +62,7 @@ public class IMConversation extends Object implements Conversation, ConferenceLi
     private List invitedParticipants = new ArrayList();
     private Timer timer;
     private boolean joined;
+    private boolean isPublic;
 
     /**
      *
@@ -199,6 +201,8 @@ public class IMConversation extends Object implements Conversation, ConferenceLi
         if (index != -1) {
             displayName = identifier.substring(0, index);
         }
+        
+        this.isPublic = getConference().isPublic();
 
         // Add ourself to the list of participants. Note, this probably
         // already happened during construction of the conference via
@@ -284,7 +288,7 @@ public class IMConversation extends Object implements Conversation, ConferenceLi
      *
      */
     protected void updateDisplayName() {
-        if ((getConference() != null) && getConference().isPublic()) {
+        if ((getConference() != null) && isPublic()) {
             return;
         }
 
@@ -631,7 +635,7 @@ public class IMConversation extends Object implements Conversation, ConferenceLi
 
                     // TODO: I suspect we have to parse the destination to a 
                     // canonical form before trying to get the principal
-                    CollabPrincipal principal = getCollabSession().getPrincipal(
+                    final CollabPrincipal principal = getCollabSession().getPrincipal(
                             StringUtility.removeResource(tuple.destination)
                         );
 
@@ -647,16 +651,16 @@ public class IMConversation extends Object implements Conversation, ConferenceLi
                                 );
                             }
 
-                            addParticipant(principal);
-                            getCollabSession().getManager().getUserInterface().notifyConversationEvent(
-                                this, UserInterface.NOTIFY_PARTICIPANT_JOINED
-                            );
-
-                            //								changeSupport.firePropertyChange(USER_JOINED,
-                            //									null,principal);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    addParticipant(principal);
+                                    getCollabSession().getManager().getUserInterface().notifyConversationEvent(
+                                        IMConversation.this, UserInterface.NOTIFY_PARTICIPANT_JOINED);
+                                    removeInvitedParticipant(principal);
+                                }
+                            });
                         }
 
-                        removeInvitedParticipant(principal);
 
                         break;
                     }
@@ -668,13 +672,14 @@ public class IMConversation extends Object implements Conversation, ConferenceLi
                             );
                         }
 
-                        removeParticipant(principal);
-                        getCollabSession().getManager().getUserInterface().notifyConversationEvent(
-                            this, UserInterface.NOTIFY_PARTICIPANT_LEFT
-                        );
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                removeParticipant(principal);
+                                getCollabSession().getManager().getUserInterface().notifyConversationEvent(
+                                    IMConversation.this, UserInterface.NOTIFY_PARTICIPANT_LEFT);
+                            }
+                        });
 
-                        //							changeSupport.firePropertyChange(USER_LEFT,null,
-                        //								principal);
                         break;
                     }
 
@@ -866,7 +871,7 @@ public class IMConversation extends Object implements Conversation, ConferenceLi
      *
      */
     public boolean isPublic() {
-        return getConference().isPublic();
+        return isPublic;
     }
 
     /**
