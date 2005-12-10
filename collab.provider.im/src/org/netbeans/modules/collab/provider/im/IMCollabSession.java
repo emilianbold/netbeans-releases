@@ -1649,4 +1649,20 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
 
         return criticalServerError;
     }
+
+    public Collection getParticipantsFromPublicConference(String destinationPublicConversation){
+        try {
+            ConferenceService service = getConferenceService();
+            Conference conference = service.getPublicConference(destinationPublicConversation);
+            
+            if (conference!=null) {
+                return conference.getParticipants();
+            }
+        }catch(Exception e){
+            Debug.debugNotify(e);
+        }
+        
+        return null;
+    }
+
 }

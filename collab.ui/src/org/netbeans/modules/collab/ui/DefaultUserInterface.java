@@ -932,27 +932,15 @@ public class DefaultUserInterface extends UserInterface {
             Conversation[] conversations = session.getConversations();
             Conversation conversation = null;
 
-            for (int i = 0; i < conversations.length; i++) {
-                if (conversations[i].getIdentifier().equals(conversationName)) {
-                    conversation = conversations[i];
-                }
-            }
-
-            if (conversation != null) {
-                CollabPrincipal[] convUsers = conversation.getParticipants();
-
-                if (((convUsers != null) && (convUsers.length > 0))) //conv users are enough
-                 {
-                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(
-                                DefaultUserInterface.class, "MSG_DefaultUserInterface_ManagePublicConversation_Warning",
-                                conversationName, new Integer(convUsers.length).toString()
-                            ), NotifyDescriptor.OK_CANCEL_OPTION
-                        );
-
-                    if (DialogDisplayer.getDefault().notify(descriptor) != NotifyDescriptor.OK_OPTION) {
-                        return;
-                    }
+            Collection convUsers = session.getParticipantsFromPublicConference(conversationName); 
+            if ((convUsers != null && convUsers.size() > 0)) { //conv users are enough 
+                NotifyDescriptor descriptor=new NotifyDescriptor.Confirmation(  
+                    NbBundle.getMessage(DefaultUserInterface.class,  
+                        "MSG_DefaultUserInterface_ManagePublicConversation_Warning",   
+                        conversationName, new Integer(convUsers.size()).toString()),  
+                    NotifyDescriptor.OK_CANCEL_OPTION);
+                if (DialogDisplayer.getDefault().notify(descriptor) != NotifyDescriptor.OK_OPTION) {
+                    return;
                 }
             }
 
