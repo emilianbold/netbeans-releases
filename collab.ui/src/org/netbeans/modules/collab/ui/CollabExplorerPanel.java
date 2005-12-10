@@ -20,8 +20,8 @@ import javax.swing.border.*;
 
 import org.openide.*;
 import org.openide.awt.*;
-import org.openide.explorer.*;
-import org.openide.explorer.view.*;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.TreeView;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.*;
@@ -73,15 +73,6 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
      */
     public CollabExplorerPanel() {
         super();
-        initialize();
-    }
-
-    /**
-     *
-     *
-     */
-    protected CollabExplorerPanel(ExplorerManager manager) {
-        super(manager);
         initialize();
     }
 
@@ -357,14 +348,6 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
      *
      *
      */
-    public TreeView getTreeView() {
-        return treeView;
-    }
-
-    /**
-     *
-     *
-     */
     protected JTree getTreeViewJTree() {
         return treeViewJTree;
     }
@@ -373,7 +356,7 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
      *
      *
      */
-    public RootNode getRootNode() {
+    RootNode getRootNode() {
         return rootNode;
     }
 
@@ -383,25 +366,6 @@ public class CollabExplorerPanel extends ExplorerPanel implements NotificationLi
      */
     protected void updateTitle() {
         // Avoid calling super method
-    }
-
-    /**
-     *
-     *
-     */
-    public void open(Workspace workspace) {
-        // Try to dock us into the current workspace before opening
-        Workspace realWorkspace = (workspace == null) ? WindowManager.getDefault().getCurrentWorkspace() : workspace;
-
-        if ((realWorkspace.findMode(this) == null) && (realWorkspace.findMode("collaboration") != null)) // NOI18N
-         {
-            realWorkspace.findMode("collaboration").dockInto(this); // NOI18N
-        } else if ((realWorkspace.findMode(this) == null) && (realWorkspace.findMode("explorer") != null)) // NOI18N
-         {
-            realWorkspace.findMode("explorer").dockInto(this); // NOI18N
-        }
-
-        super.open(workspace);
     }
 
     /**

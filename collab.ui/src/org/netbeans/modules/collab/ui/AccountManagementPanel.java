@@ -16,7 +16,7 @@ import java.beans.*;
 import java.util.*;
 
 import org.openide.*;
-import org.openide.explorer.*;
+import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 

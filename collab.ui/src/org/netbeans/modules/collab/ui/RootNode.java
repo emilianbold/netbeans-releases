@@ -106,7 +106,7 @@ public class RootNode extends AbstractNode {
      *
      *
      */
-    public void bug_5071137_workaround() {
+    void bug_5071137_workaround() {
         Debug.out.println("ATTEMPTING WORKAROUND FOR BUG 5071137");
         ((SessionsNodeChildren) getChildren()).refreshCollabManagerListener();
     }
