@@ -79,9 +79,6 @@ public class ContactGroupNodeChildren extends Children.Keys implements NodeListe
      *
      */
     protected void removeNotify() {
-        _setKeys(Collections.EMPTY_SET);
-
-        //		getCollabSession().removePropertyChangeListener(this);
         getContactGroup().removePropertyChangeListener(this);
     }
 
