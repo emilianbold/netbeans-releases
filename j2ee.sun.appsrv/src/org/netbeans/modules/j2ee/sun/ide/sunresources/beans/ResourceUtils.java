@@ -33,6 +33,9 @@ import java.util.ResourceBundle;
 import javax.management.Attribute;
 import javax.management.ObjectName;
 import javax.management.AttributeList;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 
 import org.openide.util.NbBundle;
@@ -816,25 +819,13 @@ public class ResourceUtils implements WizardConstants{
     }
     
     public static FileObject setUpExists(FileObject targetFolder){
-        java.util.Enumeration enume = targetFolder.getFolders(false);
-        boolean setupExists = false;
-        while(enume.hasMoreElements()){
-            FileObject fold = (FileObject)enume.nextElement();
-            if(fold.getName().equals(__SunResourceFolder)){
-                setupExists = true;
-                targetFolder = targetFolder.getFileObject(__SunResourceFolder, null);
-                break;
-            }    
+        FileObject pkgLocation = getResourceDirectory(targetFolder);
+        if(pkgLocation == null){
+            //resource will be created under existing structure
+            return targetFolder;
+        }else{
+            return pkgLocation;
         }
-        try{
-            if(!setupExists){
-                targetFolder = targetFolder.createFolder(__SunResourceFolder);
-            }
-        }catch(Exception ex){
-            //Unable to create setup folder
-            //resource will be created under existing structure 
-        }    
-        return targetFolder;
     }
     
     private static Resources getResourceGraph(){
@@ -876,6 +867,24 @@ public class ResourceUtils implements WizardConstants{
                 return false;
         
         return true;
+    }
+    
+    public static FileObject getResourceDirectory(FileObject fo){
+        Project holdingProj = FileOwnerQuery.getOwner(fo);
+        FileObject resourceDir = fo;
+        if (holdingProj != null){
+            J2eeModuleProvider provider = (J2eeModuleProvider) holdingProj.getLookup().lookup(J2eeModuleProvider.class);
+            File resourceLoc = provider.getEnterpriseResourceDirectory();
+            if(resourceLoc != null){
+                if(resourceLoc.exists()){
+                    resourceDir = FileUtil.toFileObject(resourceLoc);
+                }else{
+                    resourceLoc.mkdirs();
+                    resourceDir = FileUtil.toFileObject(resourceLoc);
+                }
+            }
+        }
+        return resourceDir;
     }
     
     private final static char BLANK = ' ';
