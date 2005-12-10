@@ -35,6 +35,7 @@ public class LocMakeNBM extends Task {
   protected String mainDir = null ;
   protected File topDir = null ;
   protected String fileName = null ;
+  protected String moduleName = null ;
   protected String baseFileName = null ;
   protected boolean deleteInfo = false ;
   protected String nbmIncludes = null ;
@@ -56,8 +57,13 @@ public class LocMakeNBM extends Task {
   public void setTopDir( File f) {
     topDir = f ;
   }
+  public void setModule(String module) {
+      this.moduleName = module;
+      log("Setting moduleName = '"+moduleName+"'", Project.MSG_VERBOSE);
+  }
   public void setFile( String s) {
     fileName = s ;
+    log("Setting fileName = '"+fileName+"'", Project.MSG_VERBOSE);
     if( !fileName.substring( fileName.length() - 4).equals( ".nbm")) { //NOI18N
       throw new BuildException( "Incorrect NBM file name \""+ s+"\". NBM file name must end in '.nbm'") ;
     }
@@ -105,7 +111,35 @@ public class LocMakeNBM extends Task {
     if( topDir == null) {
       topDir = getProject().getBaseDir() ;
     }
-
+    
+    if (( modInfo == null) && (moduleName != null)) {
+        // load module info frommodule jarfile
+        File f = new File (topDir,moduleName.replace('/', File.separatorChar));
+        java.util.jar.JarFile jf;
+        try {
+            jf= new java.util.jar.JarFile(f);
+        } catch (java.io.IOException ioe) {
+            throw new BuildException("I/O error during opening module jarfile", ioe, this.getLocation());
+        }
+        java.util.jar.Manifest mani;
+        try {
+            mani = jf.getManifest();
+        } catch (java.io.IOException ioe) {
+            throw new BuildException("I/O error getting manifest from file '"+f.getAbsolutePath()+"'", ioe, this.getLocation());
+        }
+        if ( mani != null ) {
+            java.util.jar.Attributes attr = mani.getMainAttributes();
+            String cname = attr.getValue("OpenIDE-Module");
+            String sver = attr.getValue("OpenIDE-Module-Specification-Version");
+            if ((cname != null) && (!(cname.equals(""))) && (sver != null) && (!(sver.equals("")))) {
+                modInfo = cname + '/' + sver;
+                log("Gathered module information from module jarfile. Codename = '"+cname+"' and specification version = '"+sver+"'",Project.MSG_VERBOSE);
+            } else {
+                throw new BuildException("Module in file '"+f.getAbsolutePath()+"' does not have either OpenIDE-Module attribute or OpenIDE-Module-Specification-Version attributes or missing both.", this.getLocation());
+            }
+        }
+    }
+    
     // Print a warning and stop if the topDir doesn't exist. //
     if( printMissingDirWarning()) {
       return ;
@@ -126,8 +160,12 @@ public class LocMakeNBM extends Task {
     stok = new StringTokenizer( locs, ",") ; //NOI18N
     while( stok.hasMoreTokens()) {
       loc = stok.nextToken() ;
+      log("Checking if module has files in locale '"+loc+"'", Project.MSG_VERBOSE);
       if( hasFilesInLocale( loc)) {
 	build_locales.add( loc) ;
+        log("Module has files in locale '"+loc+"'", Project.MSG_VERBOSE);
+      } else {
+        log("Module has no files in locale '"+loc+"'", Project.MSG_VERBOSE);
       }
     }
 
@@ -319,13 +357,19 @@ public class LocMakeNBM extends Task {
 
   protected void addLocalePatterns( LinkedList list,
 				    String loc) {
-    String dir = new String() ;
+//    String dir = new String() ;
     String re = new String() ;
 
-    dir = mainDir ;
-    re = dir + "/**/*_" + loc + ".*" ; // pattern is: ${dir}/**/*_${locale}.* //NOI18N
+
+//    dir = mainDir ;        // modified for clusterization
+//    re = dir + "/**/*_" + loc + ".*" ; // pattern is: ${dir}/**/*_${locale}.* //NOI18N
+//    list.add( new String( re)) ;
+//    re = dir + "/**/" + loc + "/" ;    // pattern is: ${dir}/${locale}/ //NOI18N
+//    list.add( new String( re)) ;
+
+    re = "**/*_" + loc + ".*" ; // pattern is: ${dir}/**/*_${locale}.* //NOI18N
     list.add( new String( re)) ;
-    re = dir + "/**/" + loc + "/" ;    // pattern is: ${dir}/${locale}/ //NOI18N
+    re = "**/" + loc + "/" ;    // pattern is: ${dir}/${locale}/ //NOI18N
     list.add( new String( re)) ;
 
     addLocIncludes( list, loc) ;
@@ -468,9 +512,9 @@ public class LocMakeNBM extends Task {
     if( srcdirfile.exists()) {
       srcdir = getSrcDir( srcdirfile) ;
     }
-    if( srcdir == null) {
-      throw new BuildException( "ERROR: Could not get source dir from: " + srcdirfile.getPath()) ;
-    }
+//    if( srcdir == null) {
+//      throw new BuildException( "ERROR: Could not get source dir from: " + srcdirfile.getPath()) ;
+//    }
 
     // Get the codename of this module. //
     index = modInfo.indexOf( "/") ; //NOI18N
