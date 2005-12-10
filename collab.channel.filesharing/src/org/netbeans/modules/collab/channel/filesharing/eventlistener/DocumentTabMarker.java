@@ -82,7 +82,7 @@ public class DocumentTabMarker implements PropertyChangeListener {
         inUpdate = true;
 
         try {
-            String orig = tc.getDisplayName();
+            String orig = tc.getHtmlDisplayName();
             Node[] nodes = tc.getActivatedNodes();
             boolean displayMark = false;
 
@@ -128,16 +128,16 @@ public class DocumentTabMarker implements PropertyChangeListener {
                 }
             }
 
-            if ((orig != null) && orig.startsWith("<html>")) {
+            if (orig == null) orig = tc.getDisplayName();
+            if (orig == null) orig = tc.getName();
+
+            if (orig.startsWith("<html>")) {
                 return;
             }
 
-            if (orig == null) {
-                orig = tc.getName();
-            }
 
             if (displayMark) {
-                tc.setDisplayName(NbBundle.getMessage(DocumentTabMarker.class, "FMT_Mark", orig));
+                tc.setHtmlDisplayName(NbBundle.getMessage(DocumentTabMarker.class, "FMT_Mark", orig));
             }
         } finally {
             inUpdate = false;
@@ -154,7 +154,7 @@ public class DocumentTabMarker implements PropertyChangeListener {
                 updateListening(reg.getOpened());
             }
         } else if (source instanceof TopComponent) {
-            if ("displayName".equals(name)) {
+            if ("displayName".equals(name) || "htmlDisplayName".equals(name)) {
                 updateDisplayName((TopComponent) source, name);
             }
         }
