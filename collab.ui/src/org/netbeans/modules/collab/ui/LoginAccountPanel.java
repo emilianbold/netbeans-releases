@@ -105,7 +105,7 @@ public class LoginAccountPanel extends JPanel {
      */
     private void initialize() {
         initComponents();
-        newAccountLink.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountForm_Mnemonic").charAt(0));
+        newAccountLink.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountForm_newAccountLink_Mnemonic").charAt(0));
         newAccountLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         accountScrollPane.getVerticalScrollBar().setUnitIncrement(25);
 
