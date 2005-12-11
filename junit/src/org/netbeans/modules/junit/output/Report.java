@@ -35,6 +35,7 @@ final class Report {
     File antScript;
     File resultsDir;
     String suiteClassName;
+    Collection/*<FileObject>*/ classpathSourceRoots;
     String[] outputStd;
     String[] outputErr;
     int totalTests;

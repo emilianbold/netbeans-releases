@@ -33,7 +33,8 @@ public final class JUnitAntLogger extends AntLogger {
     /** levels of interest for logging (info, warning, error, ...) */
     private static final int[] LEVELS_OF_INTEREST = {
         AntEvent.LOG_INFO,
-        AntEvent.LOG_WARN      //test failures
+        AntEvent.LOG_WARN,     //test failures
+        AntEvent.LOG_VERBOSE
     };
     
     /** */

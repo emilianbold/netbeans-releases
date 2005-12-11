@@ -18,13 +18,26 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntSession;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.xml.sax.SAXException;
 
 /**
@@ -96,6 +109,10 @@ final class JUnitOutputReader {
     private boolean waitingForIssueStatus;
     /** */
     private final Manager manager = Manager.getInstance();
+    /** */
+    private String classpath;
+    /** */
+    private ClassPath platformSources;
     
     
     /** Creates a new instance of JUnitOutputReader */
@@ -116,6 +133,33 @@ final class JUnitOutputReader {
             return;
         }
         
+        final int msgLevel = event.getLogLevel();
+        
+        //<editor-fold defaultstate="collapsed" desc="if (LOG_VERBOSE) ...">
+        if (msgLevel == AntEvent.LOG_VERBOSE) {
+            
+            /* Look for classpaths: */
+
+            /* Code copied from JavaAntLogger */
+            
+            Matcher matcher;
+            
+            matcher = RegexpUtils.CLASSPATH_ARGS.matcher(msg);
+            if (matcher.find()) {
+                setClasspath(matcher.group(1));
+            }
+            // XXX should also probably clear classpath when taskFinished called
+            matcher = RegexpUtils.JAVA_EXECUTABLE.matcher(msg);
+            if (matcher.find()) {
+                String executable = matcher.group(1);
+                ClassPath platformSrcs = findPlatformSources(executable);
+                if (platformSrcs != null) {
+                    setPlatformSources(platformSrcs);
+                }
+            }
+            return;     //ignore other verbose messages
+        }//</editor-fold>
+            
         //<editor-fold defaultstate="collapsed" desc="if (waitingForIssueStatus) ...">
         if (waitingForIssueStatus) {
             assert testcase != null;
@@ -180,6 +224,10 @@ final class JUnitOutputReader {
                 testcase = null;
                 return;
             }
+            if (trimmed.startsWith(RegexpUtils.CALLSTACK_LINE_PREFIX_CATCH)) {
+                trimmed = trimmed.substring(
+                              RegexpUtils.CALLSTACK_LINE_PREFIX_CATCH.length());
+            }
             if (trimmed.startsWith(RegexpUtils.CALLSTACK_LINE_PREFIX)) {
                 matcher = regexp.getCallstackLinePattern().matcher(msg);
                 if (matcher.matches()) {
@@ -189,6 +237,7 @@ final class JUnitOutputReader {
                     callstackBuffer.add(
                             trimmed.substring(
                                    RegexpUtils.CALLSTACK_LINE_PREFIX.length()));
+                    setClasspathSourceRoots();
                     return;
                 }
             }
@@ -311,9 +360,106 @@ final class JUnitOutputReader {
         //<editor-fold defaultstate="collapsed" desc="output">
         else {
             displayOutput(msg,
-                          event.getLogLevel() == AntEvent.LOG_WARN);
+                          msgLevel == AntEvent.LOG_WARN);
         }
         //</editor-fold>
+    }
+    
+    /**
+     */
+    private void setClasspath(String classpath) {
+        this.classpath = classpath;
+        if (report != null) {
+            report.classpathSourceRoots = null;
+        }
+    }
+    
+    /**
+     */
+    private void setPlatformSources(ClassPath platformSources) {
+        this.platformSources = platformSources;
+        if (report != null) {
+            report.classpathSourceRoots = null;
+        }
+}
+    
+    /**
+     */
+    private ClassPath findPlatformSources(final String javaExecutable) {
+        
+        /* Copied from JavaAntLogger */
+        
+        final JavaPlatform[] platforms = JavaPlatformManager.getDefault()
+                                         .getInstalledPlatforms();
+        for (int i = 0; i < platforms.length; i++) {
+            FileObject fo = platforms[i].findTool("java");              //NOI18N
+            if (fo != null) {
+                File f = FileUtil.toFile(fo);
+                if (f.getAbsolutePath().startsWith(javaExecutable)) {
+                    return platforms[i].getSourceFolders();
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Finds source roots corresponding to the apparently active classpath
+     * (as reported by logging from Ant when it runs the Java launcher
+     * with -cp) and stores it in the current report.
+     * <!-- copied from JavaAntLogger -->
+     */
+    private void setClasspathSourceRoots() {
+        
+        /* Copied from JavaAntLogger */
+        
+        if (report == null) {
+            return;
+        }
+        
+        if (report.classpathSourceRoots != null) {      //already set
+            return;
+        }
+        
+        if (classpath == null) {
+            return;
+        }
+        
+        Collection/*<FileObject>*/ sourceRoots = new LinkedHashSet();
+        final StringTokenizer tok = new StringTokenizer(classpath,
+                                                        File.pathSeparator);
+        while (tok.hasMoreTokens()) {
+            String binrootS = tok.nextToken();
+            File f = FileUtil.normalizeFile(new File(binrootS));
+            URL binroot;
+            try {
+                binroot = f.toURI().toURL();
+            } catch (MalformedURLException e) {
+                throw new AssertionError(e);
+            }
+            if (FileUtil.isArchiveFile(binroot)) {
+                URL root = FileUtil.getArchiveRoot(binroot);
+                if (root != null) {
+                    binroot = root;
+                }
+            }
+            FileObject[] someRoots = SourceForBinaryQuery
+                                     .findSourceRoots(binroot).getRoots();
+            sourceRoots.addAll(Arrays.asList((Object[]) someRoots));
+        }
+
+        if (platformSources != null) {
+            sourceRoots.addAll(Arrays.asList(platformSources.getRoots()));
+        } else {
+            // no platform found. use default one:
+            JavaPlatform platform = JavaPlatform.getDefault();
+            // in unit tests the default platform may be null:
+            if (platform != null) {
+                sourceRoots.addAll(
+                        Arrays.asList(platform.getSourceFolders().getRoots()));
+            }
+        }
+        report.classpathSourceRoots = sourceRoots;
     }
     
     /**

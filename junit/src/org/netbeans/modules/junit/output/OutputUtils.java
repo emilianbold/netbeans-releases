@@ -14,6 +14,7 @@
 package org.netbeans.modules.junit.output;
 
 import java.io.File;
+import java.util.Collection;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -38,7 +39,14 @@ final class OutputUtils {
     static void openCallstackFrame(Node node,
                                    String frameInfo) {
         Report report = getTestsuiteNode(node).getReport();
-        ClassPath srcClassPath = getSrcClassPath(report.antScript);
+        Collection/*<FileObject>*/ srcRoots = report.classpathSourceRoots;
+        if ((srcRoots == null) || srcRoots.isEmpty()) {
+            return;
+        }
+
+        FileObject[] srcRootsArr = new FileObject[srcRoots.size()];
+        srcRoots.toArray(srcRootsArr);
+        ClassPath srcClassPath = ClassPathSupport.createClassPath(srcRootsArr);
 
         final int[] lineNumStorage = new int[1];
         FileObject file = getFile(frameInfo, lineNumStorage, srcClassPath);
@@ -54,22 +62,6 @@ final class OutputUtils {
         return (TestsuiteNode) node;
     }
     
-    /**
-     */
-    private static ClassPath getSrcClassPath(final File file) {
-        FileObject scriptFileObj = FileUtil.toFileObject(
-                                            FileUtil.normalizeFile(file));
-        Project project = FileOwnerQuery.getOwner(scriptFileObj);
-        SourceGroup[] srcGroups = new Utils(project).getJavaSourceGroups();
-
-        final FileObject[] srcRoots = new FileObject[srcGroups.length];
-        for (int i = 0; i < srcRoots.length; i++) {
-            srcRoots[i] = srcGroups[i].getRootFolder();
-        }
-
-        return ClassPathSupport.createClassPath(srcRoots);
-    }
-        
     /**
      * Returns FileObject corresponding to the given callstack line.
      *

@@ -74,8 +74,11 @@ final class RegexpUtils {
     /** */
     static final String CALLSTACK_LINE_PREFIX = "at ";                  //NOI18N
     /** */
+    static final String CALLSTACK_LINE_PREFIX_CATCH = "[catch] ";       //NOI18N
+    /** */
     static final String CALLSTACK_LINE_REGEX
-            = "(?:\\t\\t?|  +)" + CALLSTACK_LINE_PREFIX                 //NOI18N
+            = "(?:\\t\\t?|  +| *\\t? *\\[catch\\] )"                    //NOI18N
+              + CALLSTACK_LINE_PREFIX
               + RegexpPatterns.JAVA_ID_REGEX + "(?:\\."                 //NOI18N
               + RegexpPatterns.JAVA_ID_REGEX + ")+"                     //NOI18N
               + "(?: ?\\([^()]+\\))?";                                  //NOI18N
@@ -107,6 +110,29 @@ final class RegexpUtils {
               + ")?"                                                    //NOI18N
                   + XML_SPACE_REGEX + '*' + "\\?>";                     //NOI18N
     
+    /**
+     * Regexp matching part of a Java task's invocation debug message
+     * that specificies the classpath.
+     * Hack to find the classpath an Ant task is using.
+     * Cf. Commandline.describeArguments, issue #28190.<br />
+     * Captured groups:
+     * <ol>
+     *     <li>the classpath
+     * </ol>
+     * <!-- copied from JavaAntLogger -->
+     */
+    static final Pattern CLASSPATH_ARGS
+            = Pattern.compile("\r?\n'-classpath'\r?\n'(.*)'\r?\n");     //NOI18N
+    /**
+     * Regexp matching part of a Java task's invocation debug message
+     * that specificies java executable.
+     * Hack to find JDK used for execution.
+     * <!-- copied from JavaAntLogger -->
+     */
+    static final Pattern JAVA_EXECUTABLE
+            = Pattern.compile("^Executing '(.*)' with arguments:$",     //NOI18N
+                              Pattern.MULTILINE);
+
     /** */
     private static Reference instRef;
     
