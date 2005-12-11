@@ -45,7 +45,6 @@ import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 
 public final class DataSourceWizard implements WizardDescriptor.InstantiatingIterator, ChangeListener, WizardConstants{
     
-    private static Project project;
     /** An array of all wizard panels */
        
     private static final String DATAFILE = "org/netbeans/modules/j2ee/sun/sunresources/beans/DSWizard.xml";  //NOI18N
@@ -121,7 +120,7 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
         wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(ConnPoolWizard.class, "Templates/SunResources/JDBC_Resource")); //NOI18N
         index = 0;
                 
-        project = Templates.getProject(wiz);
+        Project project = Templates.getProject(wiz);
         
         panels = createPanels();
         // Make sure list of steps is accurate.

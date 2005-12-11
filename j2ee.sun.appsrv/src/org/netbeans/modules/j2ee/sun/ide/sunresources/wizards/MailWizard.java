@@ -42,7 +42,6 @@ import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 
 public final class MailWizard implements WizardDescriptor.InstantiatingIterator, WizardConstants{
     
-    private static Project project;
            
     private static final String DATAFILE = "org/netbeans/modules/j2ee/sun/sunresources/beans/MailWizard.xml";  //NOI18N
         
@@ -92,7 +91,7 @@ public final class MailWizard implements WizardDescriptor.InstantiatingIterator,
         wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(MailWizard.class, "Templates/SunResources/JavaMail_Resource")); //NOI18N
         index = 0;
                 
-        project = Templates.getProject(wiz);
+        Project project = Templates.getProject(wiz);
         
         panels = createPanels();
         // Make sure list of steps is accurate.
