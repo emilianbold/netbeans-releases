@@ -179,7 +179,9 @@ PropertyChangeListener, KeyListener {
     
     private void checkExpansionKeystroke(KeyEvent evt) {
         KeyStroke expandKeyStroke = AbbrevSettings.getDefaultExpansionKeyStroke();
-        if (abbrevEndPosition != null && component != null) {
+        if (abbrevEndPosition != null && component != null
+                && component.getCaretPosition() == abbrevEndPosition.getOffset()
+        ) {
             Document doc = component.getDocument();
             String mimeType = (String)doc.getProperty("mimeType"); // NOI18N
             if (mimeType != null) {
