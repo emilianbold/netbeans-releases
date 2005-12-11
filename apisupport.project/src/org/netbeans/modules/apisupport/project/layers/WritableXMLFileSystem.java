@@ -1089,7 +1089,8 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 parent.appendChild(new TreeText("\n" + spaces(depth * INDENT_STEP))); // NOI18N
             }
             parent.normalize();
-            if (((TreeElement) child).getQName().equals("attr") && ((TreeElement) child).getAttribute("name").getValue().indexOf('/') != -1) { // NOI18N
+            TreeElement childe = (TreeElement) child;
+            if (childe.getQName().equals("attr") && childe.getAttribute("name").getValue().indexOf('/') != -1) { // NOI18N
                 // Check for ordering attributes, which we have to handle specially.
                 resort(parent);
             }
@@ -1116,9 +1117,12 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             while (it.hasNext()) {
                 TreeElement kid = (TreeElement) it.next();
                 if (kid.getQName().equals("file") || kid.getQName().equals("folder")) { // NOI18N
-                    String kidname = kid.getAttribute("name").getValue(); // NOI18N
-                    if (kidname.compareTo(name) > 0) {
-                        return kid;
+                    TreeAttribute attr = kid.getAttribute("name"); // NOI18N
+                    if (attr != null) { // #66816 - layer might be malformed
+                        String kidname = attr.getValue();
+                        if (kidname.compareTo(name) > 0) {
+                            return kid;
+                        }
                     }
                 }
             }
@@ -1134,9 +1138,12 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                     if (kid.getQName().equals("file") || kid.getQName().equals("folder")) { // NOI18N
                         return kid;
                     } else if (kid.getQName().equals("attr")) { // NOI18N
-                        String kidname = kid.getAttribute("name").getValue(); // NOI18N
-                        if (kidname.compareTo(name) > 0) {
-                            return kid;
+                        TreeAttribute attr = kid.getAttribute("name"); // NOI18N
+                        if (attr != null) {
+                            String kidname = attr.getValue();
+                            if (kidname.compareTo(name) > 0) {
+                                return kid;
+                            }
                         }
                     } else {
                         throw new AssertionError("Weird child: " + kid.getQName());
@@ -1197,7 +1204,8 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 return child.getQName().equals("attr"); // NOI18N
             }
             String getName() {
-                return child.getAttribute("name").getValue(); // NOI18N
+                TreeAttribute attr = child.getAttribute("name"); // NOI18N
+                return attr != null ? attr.getValue() : "";
             }
             boolean isOrderingAttr() {
                 return isAttr() && getName().indexOf('/') != -1;
@@ -1361,7 +1369,10 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                     // Make sure we convert it to an empty tag (seems to only affect elements
                     // which were originally parsed?):
                     TreeElement parent2 = new TreeElement(parent.getQName(), true);
-                    parent2.addAttribute("name", parent.getAttribute("name").getValue()); // NOI18N
+                    TreeAttribute attr = parent.getAttribute("name"); // NOI18N
+                    if (attr != null) {
+                        parent2.addAttribute("name", attr.getValue()); // NOI18N
+                    }
                     TreeParentNode grandparent = ((TreeChild) parent).getParentNode();
                     // TreeElement.empty is sticky - cannot be changed retroactively (argh!).
                     grandparent.replaceChild(parent, parent2);
