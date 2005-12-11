@@ -155,7 +155,7 @@ final class Manager {
     void sessionFinished(final AntSession session,
                          final int sessionType,
                          final boolean initializationFailed) {
-        Object o = junitSessions.remove(session);
+        Object o = junitSessions.get(session);
         assert (o == null) || (o instanceof Integer);
         if (o == null) {
             /* This session did not run the "junit" task. */
@@ -168,6 +168,9 @@ final class Manager {
                                         "LBL_TestBuildInitFailed")      //NOI18N
                          : null;
         displayMessage(session, sessionType, message);
+        junitSessions.remove(session);   //must be after displayMessage(...)
+                                         //otherwise the window would get
+                                         //activated
         
         if (listener != null) {
             Mutex.EVENT.writeAccess(new Runnable() {
