@@ -1421,19 +1421,15 @@ class LayoutFeeder implements LayoutConstants {
     private LayoutInterval alignInParallel(LayoutInterval interval, LayoutInterval toAlignWith, int alignment) {
         assert alignment == LEADING || alignment == TRAILING;
 
-        if (toAlignWith.getParent() == null)
-            return null; // aligning with root - nothing to do (the interval must be already aligned)
-
-        if (toAlignWith.isParentOf(interval)) {
-            assert LayoutInterval.isAlignedAtBorder(interval, toAlignWith, alignment);
-            return null; // already aligned to parent
+        if (toAlignWith.isParentOf(interval) // already aligned to parent
+            || interval.isParentOf(toAlignWith)) // can't align with own subinterval
+        {   // contained intervals can't be aligned
+            return null;
         }
-        else { 
-            assert !interval.isParentOf(toAlignWith); // can't align with own subinterval
-            if (!toAlignWith.isParentOf(interval)) {
-                // can't align with interval in the same sequence
-                assert LayoutInterval.getCommonParent(interval, toAlignWith).isParallel();
-            }
+        else {
+            LayoutInterval commonParent = LayoutInterval.getCommonParent(interval, toAlignWith);
+            if (commonParent == null || commonParent.isSequential()) // can't align with interval in the same sequence
+                return null;
         }
 
         // if not in same parallel group try to substitute interval with parent
@@ -1627,7 +1623,9 @@ class LayoutFeeder implements LayoutConstants {
             }
             layoutModel.addInterval(aligning1, group, -1);
         }
-        if (!resizingOp && group.getSubIntervalCount() == 2 && !LayoutInterval.isAlignedAtBorder(aligning1, alignment)) {
+        if (!resizingOp && group.getSubIntervalCount() == 2
+                && !LayoutInterval.isAlignedAtBorder(aligning1, alignment)
+                && !LayoutInterval.isAlignedAtBorder(aligning2, alignment^1)) {
             layoutModel.setIntervalAlignment(aligning1, alignment);
         }
 
