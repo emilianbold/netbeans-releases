@@ -648,20 +648,8 @@ class LayoutDragger implements LayoutConstants {
                 continue;
             }
 
-            LayoutRegion subSpace = sub.getCurrentSpace();
-
-            boolean orthogonalOverlap = true;
-            for (int i=0; i < DIM_COUNT; i++) {
-                if (i != dimension
-                    && !LayoutRegion.overlap(subSpace, movingSpace, i, 0)) // ORT_DISTANCE
-                {   // the space coordinates do not overlap in the other dimension
-                    orthogonalOverlap = false;
-                    break;
-                }
-            }
-            if (!orthogonalOverlap) {
-                continue; // not overlapping orthogonally, can't be "next to"
-            }
+            if (!orthogonalOverlap(interval, idx))
+                continue;
 
             int nextToAlignment = DEFAULT;
 
@@ -688,7 +676,7 @@ class LayoutDragger implements LayoutConstants {
                         if (alignment != LayoutRegion.ALL_POINTS && i != alignment) {
                             continue; // skip irrelevant alignment
                         }
-                        int insideDst = LayoutRegion.distance(subSpace, movingSpace, dimension, i, i)
+                        int insideDst = LayoutRegion.distance(sub.getCurrentSpace(), movingSpace, dimension, i, i)
                                         * (i == LEADING ? 1 : -1);
                         if (insideDst < -SNAP_DISTANCE) {
                             // out of the subgroup - there is nothing "next to" inside
@@ -745,6 +733,56 @@ class LayoutDragger implements LayoutConstants {
         }
 
         return groupOuterAlignment;
+    }
+
+    /**
+     * Checks if moving interval can be considered as overlapping in the
+     * orthogonal dimension (thus being relevant for next to snapping) with
+     * given interval's sub-interval.
+     */
+    private boolean orthogonalOverlap(LayoutInterval interval, int index) {
+        LayoutInterval sub = interval.getSubInterval(index);
+        LayoutRegion subSpace = sub.getCurrentSpace();
+        if (LayoutRegion.overlap(movingSpace, subSpace, dimension^1, 0))
+            return true;
+
+        if (dimension == VERTICAL) { // there may be some exceptions in vertical dimension
+            if (sub.isSequential()) // sub-sequence to be checked later
+                return true;
+
+            // [note: can do this reliably only for root vertical sequence - with
+            //        more sequences LayoutFeeder might ignore it anyway]
+            if (interval.getParent() != null && interval.getParent().getSubIntervalCount() > 1)
+                return false;
+
+            if (!LayoutRegion.overlap(movingSpace, interval.getCurrentSpace(), dimension, 0))
+                return true; // not in parallel with any sibling
+            if (interval.isSequential()) {
+                // check if it is before first or after last
+                if (LayoutRegion.distance(movingSpace, subSpace, dimension, TRAILING, LEADING) > 0) {
+                    // moving interval is located in front of 'sub''
+                    while (--index >= 0) {
+                        LayoutInterval li = interval.getSubInterval(index);
+                        if (!li.isEmptySpace() && isValidInterval(li))
+                            break;
+                    }
+                    if (index < 0) // 'sub' is the first interval
+                        return true;
+                }
+                else if (LayoutRegion.distance(subSpace, movingSpace, dimension, TRAILING, LEADING) > 0) {
+                    // moving interval is locate behind 'sub''
+                    while (++index < interval.getSubIntervalCount()) {
+                        LayoutInterval li = interval.getSubInterval(index);
+                        if (!li.isEmptySpace() && isValidInterval(li))
+                            break;
+                    }
+                    if (index == interval.getSubIntervalCount()) // 'sub' is the last interval
+                        return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private int checkNextToPosition(LayoutInterval sub, int alignment) {
