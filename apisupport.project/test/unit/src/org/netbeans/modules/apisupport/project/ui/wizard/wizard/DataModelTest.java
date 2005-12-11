@@ -38,7 +38,7 @@ public class DataModelTest extends LayerTestBase {
         TestBase.initializeBuildProperties(getWorkDir());
     }
     
-    public void testDataModelGenarationForCustomBranchingWizard() throws Exception {
+    public void testDataModelGenerationForCustomBranchingWizard() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         WizardDescriptor wd = new WizardDescriptor(new Panel[] {});
         wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
@@ -72,7 +72,7 @@ public class DataModelTest extends LayerTestBase {
         cmf.run();
     }
     
-    public void testDataModelGenarationForFileTemplateBranchingWizard() throws Exception {
+    public void testDataModelGenerationForFileTemplateBranchingWizard() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         WizardDescriptor wd = new WizardDescriptor(new Panel[] {});
         wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
@@ -114,7 +114,7 @@ public class DataModelTest extends LayerTestBase {
         cmf.run();
     }
     
-    public void testDataModelGenarationForCustomSimpleWizard() throws Exception {
+    public void testDataModelGenerationForCustomSimpleWizard() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         WizardDescriptor wd = new WizardDescriptor(new Panel[] {});
         wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
@@ -145,5 +145,42 @@ public class DataModelTest extends LayerTestBase {
         cmf.run();
     }
     
+    public void testDataModelCMFUpdated() throws Exception {
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        WizardDescriptor wd = new WizardDescriptor(new Panel[] {});
+        wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
+        DataModel data = new DataModel(wd);
+        data.setBranching(false);
+        data.setFileTemplateType(false);
+        data.setNumberOfSteps(1);
+        data.setClassNamePrefix("X");
+        data.setPackageName("x");
+        assertEquals("initial files correct",
+                Arrays.asList(new String[] {
+                    "src/x/SampleAction.java",
+                    "src/x/XVisualPanel1.form",
+                    "src/x/XVisualPanel1.java",
+                    "src/x/XWizardPanel1.java",
+                }),
+                Arrays.asList(data.getCreatedModifiedFiles().getCreatedPaths()));
+        data.setClassNamePrefix("Y");
+        assertEquals("class name change takes effect",
+                Arrays.asList(new String[] {
+                    "src/x/SampleAction.java",
+                    "src/x/YVisualPanel1.form",
+                    "src/x/YVisualPanel1.java",
+                    "src/x/YWizardPanel1.java",
+                }),
+                Arrays.asList(data.getCreatedModifiedFiles().getCreatedPaths()));
+        data.setPackageName("y");
+        assertEquals("package change takes effect",
+                Arrays.asList(new String[] {
+                    "src/y/SampleAction.java",
+                    "src/y/YVisualPanel1.form",
+                    "src/y/YVisualPanel1.java",
+                    "src/y/YWizardPanel1.java",
+                }),
+                Arrays.asList(data.getCreatedModifiedFiles().getCreatedPaths()));
+    }
+    
 }
-

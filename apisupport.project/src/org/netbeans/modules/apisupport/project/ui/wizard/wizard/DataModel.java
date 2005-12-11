@@ -174,6 +174,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     }
     
     void setClassNamePrefix(String prefix) {
+        reset();
         this.prefix = prefix;
     }
     
@@ -189,6 +190,10 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         reset();
         this.origIconPath = origIconPath;
     }
+
+    public void setPackageName(String packageName) {
+        super.setPackageName(packageName);
+        reset();
+    }
     
 }
-
