@@ -781,12 +781,12 @@ class LayoutFeeder implements LayoutConstants {
         if (parent.isSequential()) {
             if (iDesc1.newSubGroup) {
                 LayoutRegion space = addingSpace;
-                if (dimension == VERTICAL) { // count in a margin in vertical direction
-                    // [because analyzeAdding uses it - maybe we should get rid of it completely]
-                    space = new LayoutRegion(space);
-                    space.reshape(VERTICAL, LEADING, -4);
-                    space.reshape(VERTICAL, TRAILING, 4);
-                }
+//                if (dimension == VERTICAL) { // count in a margin in vertical direction
+//                    // [because analyzeAdding uses it - maybe we should get rid of it completely]
+//                    space = new LayoutRegion(space);
+//                    space.reshape(VERTICAL, LEADING, -4);
+//                    space.reshape(VERTICAL, TRAILING, 4);
+//                }
                 LayoutInterval subgroup = extractParallelSequence(
                         parent, space, false, iDesc1.alignment); // dimension == VERTICAL
                 if (subgroup != null) { // just for robustness - null only if something got screwed up
@@ -892,18 +892,18 @@ class LayoutFeeder implements LayoutConstants {
 
             boolean minorGap = false;
             if (!aligned && neighbors[i] == null && originalGap == null) {
+                IncludeDesc otherDesc = iiDesc == iDesc1 ? iDesc2 : iDesc1;
+                LayoutInterval parallel = otherDesc != null ? otherDesc.snappedParallel : null;
+                // make sure new sequence has appropriate explicit alignment
+                if (parallel == null && seq.getSubIntervalCount() == 0 && seq.getAlignment() != (i^1)) {
+                    layoutModel.setIntervalAlignment(seq, i^1);
+                }
                 if (outerNeighbor != null && outerNeighbor.isEmptySpace()) {
                     continue; // unaligned ending gap not needed - there's a gap outside the parent
                 }
                 else { // minor gap if it does not need to define the parent size
-                    IncludeDesc otherDesc = iiDesc == iDesc1 ? iDesc2 : iDesc1;
-                    LayoutInterval parallel = otherDesc != null ? otherDesc.snappedParallel : null;
                     minorGap = (parallel != null && parallel.getParent() != null)
                                || (parent.getParent() != null && LayoutInterval.getCount(parent, i^1, true) > 0);
-                    // make sure new sequence has appropriate explicit alignment
-                    if (parallel == null && seq.getSubIntervalCount() == 0 && seq.getAlignment() != (i^1)) {
-                        layoutModel.setIntervalAlignment(seq, i^1);
-                    }
                 }
             }
 
