@@ -97,16 +97,7 @@ public class CompletionJList extends JList {
             if (itemCount > 0) {
                 setSelectedIndex(0);
             }
-            int visibleRowCount = getVisibleRowCount();
-            if (itemCount > visibleRowCount) {
-                visibleRowCount = Math.min(itemCount, maxVisibleRowCount);
-
-            } else if (itemCount < visibleRowCount) { // less items than now
-                // If less than 2/3 of the current visible row count => reset to present size
-                if (itemCount < visibleRowCount * 2 / 3) {
-                    visibleRowCount = itemCount;
-                }
-            }
+            int visibleRowCount = Math.min(itemCount, maxVisibleRowCount);
             setVisibleRowCount(visibleRowCount);
         }
     }

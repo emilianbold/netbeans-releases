@@ -45,18 +45,6 @@ public final class CompletionLayout {
     public static final int COMPLETION_ITEM_HEIGHT = 16;
     
     /**
-     * The minimum factor of the completion scrollpane height
-     * below which the completion popup will be recreated.
-     */
-    private static final float COMPLETION_WIDTH_THRESHOLD = 0.5f;
-    
-    /**
-     * The minimum factor of the completion scrollpane height
-     * below which the completion popup will be recreated.
-     */
-    private static final float COMPLETION_HEIGHT_THRESHOLD = 0.7f;
-    
-    /**
      * Visual shift of the completion window to the left
      * so that the text in the rendered completion items.aligns horizontally
      * with the text in the document.
@@ -304,11 +292,9 @@ public final class CompletionLayout {
 
             boolean changePopupSize;
             if (isVisible()) {
-                changePopupSize = (prefSize.height > lastSize.height)
-                                       || (prefSize.width > lastSize.width)
-                    || prefSize.height < lastSize.height * COMPLETION_HEIGHT_THRESHOLD
-                    || prefSize.width < lastSize.width * COMPLETION_WIDTH_THRESHOLD
-                    || anchorOffset != lastAnchorOffset;
+                changePopupSize = (prefSize.height != lastSize.height)
+                        || (prefSize.width != lastSize.width)
+                        || anchorOffset != lastAnchorOffset;
 
             } else { // not visible yet
                 changePopupSize = true;
