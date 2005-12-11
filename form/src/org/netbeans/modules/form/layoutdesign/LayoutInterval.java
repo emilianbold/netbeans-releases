@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.form.layoutdesign;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -86,7 +87,7 @@ public final class LayoutInterval implements LayoutConstants {
         minSize = NOT_EXPLICITLY_DEFINED;
         prefSize = NOT_EXPLICITLY_DEFINED;
         if (type == SEQUENTIAL || type == PARALLEL) {
-            subIntervals = new LinkedList();
+            subIntervals = new ArrayList();
             maxSize = NOT_EXPLICITLY_DEFINED; // group can resize by default
         }
         else {
