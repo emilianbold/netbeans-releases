@@ -267,6 +267,7 @@ final class Manager {
     /**
      */
     void displayOutput(final AntSession session,
+                       final int sessionType,
                        final String text,
                        final boolean error) {
 
@@ -274,19 +275,20 @@ final class Manager {
 
         final ResultDisplayHandler displayHandler = getDisplayHandler(session);
         displayHandler.displayOutput(text, error);
-        displayInWindow(session, displayHandler);
+        displayInWindow(session, sessionType, displayHandler);
     }
     
     /**
      */
     void displayReport(final AntSession session,
+                       final int sessionType,
                        final Report report) {
 
         /* Called from the AntLogger's thread */
         
         final ResultDisplayHandler displayHandler = getDisplayHandler(session);
         displayHandler.displayReport(report);
-        displayInWindow(session, displayHandler);
+        displayInWindow(session, sessionType, displayHandler);
     }
     
     /**
@@ -302,21 +304,9 @@ final class Manager {
 
         /* Called from the AntLogger's thread */
 
-        final boolean promote =
-                (junitSessions.put(session, new Integer(sessionType)) == null)
-                && (sessionType == AntSessionInfo.SESSION_TYPE_TEST);
-        
         final ResultDisplayHandler displayHandler = getDisplayHandler(session);
         displayHandler.displayMessage(message);
-        displayInWindow(session, displayHandler);
-        
-        if (promote) {
-            Mutex.EVENT.writeAccess(new Runnable() {
-                public void run() {
-                    ResultWindow.getInstance().promote();
-                }
-            });
-        }
+        displayInWindow(session, sessionType, displayHandler);
         
         //<editor-fold defaultstate="collapsed" desc="disabled code">
         /*
@@ -376,17 +366,41 @@ final class Manager {
     /**
      */
     private void displayInWindow(final AntSession session,
+                                 final int sessionType,
                                  final ResultDisplayHandler displayHandler) {
+        final boolean promote =
+                (junitSessions.put(session, new Integer(sessionType)) == null)
+                && (sessionType == AntSessionInfo.SESSION_TYPE_TEST);
+        
         int displayIndex = getDisplayIndex(session);
         if (displayIndex == -1) {
             addDisplay(session);
             
-            Mutex.EVENT.writeAccess(new Runnable() {
-                public void run() {
-                    ResultWindow.getInstance().addDisplayComponent(
-                            displayHandler.getDisplayComponent());
-                }
-            });
+            Mutex.EVENT.writeAccess(new Displayer(displayHandler, promote));
+        } else if (promote) {
+            Mutex.EVENT.writeAccess(new Displayer(null, promote));
+        }
+    }
+    
+    /**
+     *
+     */
+    private class Displayer implements Runnable {
+        private final ResultDisplayHandler displayHandler;
+        private final boolean promote;
+        Displayer(final ResultDisplayHandler displayHandler,
+                  final boolean promote) {
+            this.displayHandler = displayHandler;
+            this.promote = promote;
+        }
+        public void run() {
+            final ResultWindow window = ResultWindow.getInstance();
+            if (displayHandler != null) {
+               window.addDisplayComponent(displayHandler.getDisplayComponent());
+            }
+            if (promote) {
+               window.promote();
+            }
         }
     }
     

@@ -121,7 +121,30 @@ public final class JUnitAntLogger extends AntLogger {
     /**
      */
     public void messageLogged(final AntEvent event) {
-        getOutputReader(event.getSession()).messageLogged(event);
+        if (event.getLogLevel() != AntEvent.LOG_VERBOSE) {
+            getOutputReader(event.getSession()).messageLogged(event);
+        } else {
+            /* verbose messages are logged no matter which task produced them */
+            verboseMessageLogged(event);
+        }
+    }
+    
+    /**
+     */
+    private void verboseMessageLogged(final AntEvent event) {
+        final String currTask = event.getTaskName();
+        if (currTask == null) {
+            return;
+        }
+
+        final AntSession session = event.getSession();
+        final String[] myTasks = interestedInTasks(session);
+        for (int i = 0; i < myTasks.length; i++) {
+            if (currTask.equals(myTasks[i])) {
+                getOutputReader(session).verboseMessageLogged(event);
+                break;
+            }
+        }
     }
     
     /**

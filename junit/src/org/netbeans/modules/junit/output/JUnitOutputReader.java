@@ -127,39 +127,41 @@ final class JUnitOutputReader {
     
     /**
      */
+    void verboseMessageLogged(final AntEvent event) {
+        final String msg = event.getMessage();
+        if (msg == null) {
+            return;
+        }
+        
+        /* Look for classpaths: */
+
+        /* Code copied from JavaAntLogger */
+
+        Matcher matcher;
+
+        matcher = RegexpUtils.CLASSPATH_ARGS.matcher(msg);
+        if (matcher.find()) {
+            setClasspath(matcher.group(1));
+        }
+        // XXX should also probably clear classpath when taskFinished called
+        matcher = RegexpUtils.JAVA_EXECUTABLE.matcher(msg);
+        if (matcher.find()) {
+            String executable = matcher.group(1);
+            ClassPath platformSrcs = findPlatformSources(executable);
+            if (platformSrcs != null) {
+                setPlatformSources(platformSrcs);
+            }
+        }
+    }
+    
+    /**
+     */
     void messageLogged(final AntEvent event) {
         final String msg = event.getMessage();
         if (msg == null) {
             return;
         }
         
-        final int msgLevel = event.getLogLevel();
-        
-        //<editor-fold defaultstate="collapsed" desc="if (LOG_VERBOSE) ...">
-        if (msgLevel == AntEvent.LOG_VERBOSE) {
-            
-            /* Look for classpaths: */
-
-            /* Code copied from JavaAntLogger */
-            
-            Matcher matcher;
-            
-            matcher = RegexpUtils.CLASSPATH_ARGS.matcher(msg);
-            if (matcher.find()) {
-                setClasspath(matcher.group(1));
-            }
-            // XXX should also probably clear classpath when taskFinished called
-            matcher = RegexpUtils.JAVA_EXECUTABLE.matcher(msg);
-            if (matcher.find()) {
-                String executable = matcher.group(1);
-                ClassPath platformSrcs = findPlatformSources(executable);
-                if (platformSrcs != null) {
-                    setPlatformSources(platformSrcs);
-                }
-            }
-            return;     //ignore other verbose messages
-        }//</editor-fold>
-            
         //<editor-fold defaultstate="collapsed" desc="if (waitingForIssueStatus) ...">
         if (waitingForIssueStatus) {
             assert testcase != null;
@@ -360,7 +362,7 @@ final class JUnitOutputReader {
         //<editor-fold defaultstate="collapsed" desc="output">
         else {
             displayOutput(msg,
-                          msgLevel == AntEvent.LOG_WARN);
+                          event.getLogLevel() == AntEvent.LOG_WARN);
         }
         //</editor-fold>
     }
@@ -488,7 +490,7 @@ final class JUnitOutputReader {
     private void suiteStarted() {
         assert report != null;
         
-        Manager.getInstance().displayReport(session, report);
+        Manager.getInstance().displayReport(session, sessionType, report);
     }
     
     /**
@@ -538,7 +540,7 @@ final class JUnitOutputReader {
     private void displayOutput(final String text, final boolean error) {
         checkReportStarted();
         
-        Manager.getInstance().displayOutput(session, text, error);
+        Manager.getInstance().displayOutput(session, sessionType, text, error);
     }
     
     //--------------------------------------------------------
