@@ -2808,7 +2808,7 @@ public class LayoutDesigner implements LayoutConstants {
                 }
 
                 if (wasResizing && !restResizing) {
-                    operations.enableGroupResizing(parent); // in case it was disabled
+                    operations.enableGroupResizing(superParent); // in case it was disabled
                 }
             }
         }
