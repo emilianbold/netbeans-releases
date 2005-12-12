@@ -177,6 +177,7 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = GridBagConstraints.EAST;
+        locationLabel.setLabelFor(locationField);
         add(locationLabel, gridBagConstraints);
         
         // add server installation directory field
@@ -192,6 +193,7 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(0, 10, 0, 10);
+        locationField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerLocationPanel.class, "ACSD_ServerLocationPanel_locationField")); // NOI18N
         add(locationField, gridBagConstraints);
         
         // add server installation directory field browse button
@@ -203,6 +205,7 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
+        locationBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerLocationPanel.class, "ACSD_ServerLocationPanel_locationBrowseButton")); // NOI18N
         add(locationBrowseButton, gridBagConstraints);
         
         // add the empty panel, that will take up all the remaining space
