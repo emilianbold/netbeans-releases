@@ -160,6 +160,9 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         //opaque.
         getRootPane().setOpaque(true);
         
+        // #55273: Dialogs created by DialogDisplayer are not disposed after close
+        setDefaultCloseOperation (WindowConstants.DISPOSE_ON_CLOSE);
+        
         descriptor = d;
 
         buttonListener = new ButtonListener();
