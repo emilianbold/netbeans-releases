@@ -589,6 +589,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="folder">
             <folder name="any">
                 <folder name="Actions">
+                    <file name="org-netbeans-modules-project-ui-actions-OpenProjectFolderAction.instance"/>
+                    <attr name="org-netbeans-modules-project-ui-actions-OpenProjectFolderAction.instance/NewProjectFile.instance" boolvalue="true"/>
                     <file name="NewTemplateAction.instance_hidden" />
                     <file name="NewProjectFile.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile$WithSubMenu"/>
