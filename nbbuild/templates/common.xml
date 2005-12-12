@@ -277,7 +277,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="test.unit.src.dir" location="${test.unit.dir}/src"/>
         <property name="build.test.unit.dir" location="build/test/unit"/>
         <property name="build.test.unit.classes.dir" location="${build.test.unit.dir}/classes"/>
-        <property name="build.test.unit.results.dir" location="${build.test.unit.dir}/results "/>
+        <property name="build.test.unit.results.dir" location="${build.test.unit.dir}/results"/>
         <property name="test.filter.trace" value="true"/>
         <path id="test.unit.cp">
             <path refid="cp"/>
