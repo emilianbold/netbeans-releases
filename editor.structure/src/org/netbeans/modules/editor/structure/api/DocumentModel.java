@@ -153,9 +153,6 @@ public final class DocumentModel {
         //create a new root element - this element comprises the entire document
         addRootElement();        
         
-        this.changesWatcher = new DocumentChangesWatcher();
-        getDocument().addDocumentListener(WeakListeners.document(changesWatcher, doc));
-        
         /*create a sorted set which sorts its elements according to their
         startoffsets and endoffsets.
         - lets have elements E1 and E2:
@@ -164,8 +161,11 @@ public final class DocumentModel {
         if E1.startOffset == E2.startOffset then
            if E1.endOffset > E2.endOffset then the E1 is before E2
          */
-        
         initDocumentModel();
+        
+        this.changesWatcher = new DocumentChangesWatcher();
+        getDocument().addDocumentListener(WeakListeners.document(changesWatcher, doc));
+
     }
     
     /** Clients uses this method to obtain an instance of the model for a particullar text document.
