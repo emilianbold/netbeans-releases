@@ -7,28 +7,41 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup.layers;
 
-import org.openide.util.WeakListeners;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.beans.*;
-import java.io.*;
+import java.beans.BeanInfo;
+import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.*;
-
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.Set;
 import org.openide.ErrorManager;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-
+import org.openide.util.WeakListeners;
 
 /** The system FileSystem - represents system files under $NETBEANS_HOME/system.
 *
@@ -39,10 +52,6 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
 
     /** generated Serialized Version UID */
     static final long serialVersionUID = -7761052280240991668L;
-
-
-    /** Resource for all localized strings in jar file system. */
-    //org.openide.util.NbBundle.getBundle(SystemFileSystem.class);
 
     /** system name of this filesystem */
     private static final String SYSTEM_NAME = "SystemFileSystem"; // NOI18N
@@ -202,35 +211,7 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
             if (fixedName != null) return fixedName;
         }
 
-        return annotateNameNoLocalization (s, set);
-    }
-
-    /** Annotate name but do not consider using localized name. */
-    private String annotateNameNoLocalization (String s, Set set) {
-
-        if (home == null || user == null) {
-            // no annotation if not running as multiuser
-            return s;
-        }
-
-        Iterator it = set.iterator ();
-        int cnt = 0;
-        while (it.hasNext ()) {
-            FileObject fo = (FileObject)it.next ();
-            if (!fo.isRoot ()) {
-                cnt++;
-            }
-            if (findSystem (fo) == home) {
-                return getHomeFormat ().format (new Object[] { s });
-            }
-        }
-
-        if (cnt == 0) {
-            // only roots
-            return s;
-        }
-
-        return getUserFormat ().format (new Object[] { s });
+        return s;
     }
 
     /** Annotate icon
@@ -319,24 +300,6 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
         arr[home == null ? 1 : 2] = FixedFileSystem.deflt;
 
         return new SystemFileSystem (arr);
-    }
-
-    /** Getter for message.
-    */
-    private static MessageFormat getUserFormat () {
-        if (userFormat == null) {
-            userFormat = new MessageFormat (NbBundle.getMessage(SystemFileSystem.class, "CTL_UserFile"));
-        }
-        return userFormat;
-    }
-
-    /** Getter for message.
-    */
-    private static MessageFormat getHomeFormat () {
-        if (homeFormat == null) {
-            homeFormat = new MessageFormat (NbBundle.getMessage(SystemFileSystem.class, "CTL_HomeFile"));
-        }
-        return homeFormat;
     }
 
     /** Notification that a file has migrated from one file system
