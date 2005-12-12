@@ -678,6 +678,10 @@ public class FormEditorSupport extends JavaEditor
 
         if (designerSelected && !Boolean.TRUE.equals(groupVisible)) {
             group.open();
+            final TopComponentGroup paletteGroup = wm.findTopComponentGroup( "commonpalette" ); // NOI18N
+            if( null != paletteGroup ) {
+                paletteGroup.open();
+            }
             ComponentInspector inspector = ComponentInspector.getInstance();
             if (!Boolean.TRUE.equals(inspector.getClientProperty("isSliding"))) { // NOI18N
                 inspector.requestVisible();
