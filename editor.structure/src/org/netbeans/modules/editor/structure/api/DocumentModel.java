@@ -149,6 +149,9 @@ public final class DocumentModel {
         //init RP & RP task
         requestProcessor = new RequestProcessor(DocumentModel.class.getName());
         task = null;
+
+        //create a new root element - this element comprises the entire document
+        addRootElement();        
         
         this.changesWatcher = new DocumentChangesWatcher();
         getDocument().addDocumentListener(WeakListeners.document(changesWatcher, doc));
@@ -161,8 +164,6 @@ public final class DocumentModel {
         if E1.startOffset == E2.startOffset then
            if E1.endOffset > E2.endOffset then the E1 is before E2
          */
-        //create a new root element - this element comprises the entire document
-        addRootElement();
         
         initDocumentModel();
     }
