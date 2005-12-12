@@ -882,18 +882,22 @@ public class BaseOptions extends OptionSupport {
 
         // set other colorings like text limit line, caret
         AttributeSet set = (AttributeSet) fcs.getFontColors(SettingsNames.CARET_COLOR_INSERT_MODE);
-        Color color = (Color)set.getAttribute(StyleConstants.Foreground);
-        Color current  = getCaretColorInsertMode();
-        if (!current.equals(color) && color!=null){
-            setCaretColorInsertMode(color);
-            setCaretColorOverwriteMode(color);
+        if (set != null){
+            Color color = (Color)set.getAttribute(StyleConstants.Foreground);
+            Color current  = getCaretColorInsertMode();
+            if (color!=null && !color.equals(current)){
+                setCaretColorInsertMode(color);
+                setCaretColorOverwriteMode(color);
+            }
         }
 
         set = (AttributeSet) fcs.getFontColors(SettingsNames.TEXT_LIMIT_LINE_COLOR);
-        color = (Color)set.getAttribute(StyleConstants.Foreground);
-        current  = getTextLimitLineColor();
-        if (!current.equals(color) && color!=null){
-            setTextLimitLineColor(color);
+        if (set != null){
+            Color color = (Color)set.getAttribute(StyleConstants.Foreground);
+            Color current  = getTextLimitLineColor();
+            if (color!=null && !color.equals(current)){
+                setTextLimitLineColor(color);
+            }
         }
     }
     
