@@ -78,7 +78,8 @@ import org.openide.util.NbBundle;
  */
 public class ColorModel {
     
-    static final String         ALL_LANGUAGES = "All Languages";
+    static final String         ALL_LANGUAGES = NbBundle.getMessage
+                                    (ColorModel.class, "CTL_All_Languages");
     static final String         HIGHLIGHTING_LANGUAGE = "Highlighting";
     
     private EditorSettings      editorSettings = EditorSettings.getDefault ();
