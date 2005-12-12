@@ -1013,7 +1013,7 @@ public final class FileUtil extends Object {
             FileObject archiveFile = FileUtil.getArchiveFile(fo);
 
             if (archiveFile != null) {
-                displayName = getArchivDisplayName(fo, archiveFile);
+                displayName = getArchiveDisplayName(fo, archiveFile);
             }
         }
 
@@ -1035,7 +1035,7 @@ public final class FileUtil extends Object {
         return displayName;
     }
 
-    private static String getArchivDisplayName(FileObject fo, FileObject archiveFile) {
+    private static String getArchiveDisplayName(FileObject fo, FileObject archiveFile) {
         String displayName = null;
 
         File f = FileUtil.toFile(archiveFile);
