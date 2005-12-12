@@ -108,14 +108,14 @@ method on the
 begining of this process. DebuggerInfo determines a set of debugger
 Sessions to be started:<br>
 <br>
-<pre style="background-color: rgb(255, 255, 153);">SessionProvider[] sessionProviders = (SessionProvider[]) debuggerInfo.lookup (SessionsProvider.class);<br></pre>
+<pre style="background-color: rgb(255, 255, 153);">List sessionProviders = debuggerInfo.lookup (null, SessionsProvider.class);<br></pre>
 <br>
 A new instance of {@link
 org.netbeans.api.debugger.Session} is created for every {@link
 org.netbeans.spi.debugger.SessionProvider} after that. A set of
 DebuggerEngines is created for each Session in the second step:<br>
 <br>
-<pre style="background-color: rgb(255, 255, 153);">DebuggerEngineProvider[] engineProviders = (DebuggerEngineProvider[]) session.lookup (DebuggerEngineProvider.class);<br></pre>
+<pre style="background-color: rgb(255, 255, 153);">List engineProviders = session.lookup (null, DebuggerEngineProvider.class);<br></pre>
 <br>
 Each {@link
 org.netbeans.spi.debugger.DebuggerEngineProvider} drives creation of
