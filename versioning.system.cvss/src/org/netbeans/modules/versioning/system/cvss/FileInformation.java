@@ -147,21 +147,6 @@ public class FileInformation implements Serializable {
      */
     private transient Entry       cvsEntry;
 
-    private static final String STATUS_UNKNOWN_EXT = "W";  // NOI18N
-    private static final String STATUS_NOTVERSIONED_NOTMANAGED_EXT = "Z"; // NOI18N
-    private static final String STATUS_NOTVERSIONED_EXCLUDED_EXT = "I"; // NOI18N
-    private static final String STATUS_NOTVERSIONED_NEWLOCALLY_EXT = "?"; // NOI18N
-    private static final String STATUS_VERSIONED_UPTODATE_EXT = "S"; // NOI18N
-    private static final String STATUS_VERSIONED_MODIFIEDLOCALLY_EXT = "M"; // NOI18N
-    private static final String STATUS_VERSIONED_MODIFIEDINREPOSITORY_EXT = "G"; // NOI18N
-    private static final String STATUS_VERSIONED_CONFLICT_EXT = "C"; // NOI18N
-    private static final String STATUS_VERSIONED_MERGE_EXT = "P"; // NOI18N
-    private static final String STATUS_VERSIONED_REMOVEDLOCALLY_EXT = "R"; // NOI18N
-    private static final String STATUS_VERSIONED_NEWINREPOSITORY_EXT = "N"; // NOI18N
-    private static final String STATUS_VERSIONED_REMOVEDINREPOSITORY_EXT = "D"; // NOI18N
-    private static final String STATUS_VERSIONED_DELETEDLOCALLY_EXT = "E"; // NOI18N
-    private static final String STATUS_VERSIONED_ADDEDLOCALLY_EXT = "A"; // NOI18N
-
     /**
      * For deserialization purposes only.
      */ 
@@ -191,82 +176,6 @@ public class FileInformation implements Serializable {
 
     public boolean isDirectory() {
         return isDirectory;
-    }
-
-    /** Converts to String decodeable by {@link #fromExternalForm} */
-    public String toExternalForm() {
-        String dir = isDirectory ? "d" : ""; // NOI18N
-        switch (status) {
-            case STATUS_UNKNOWN:
-                return STATUS_UNKNOWN_EXT + dir;
-            case STATUS_NOTVERSIONED_NOTMANAGED:
-                return STATUS_NOTVERSIONED_NOTMANAGED_EXT + dir;
-            case STATUS_NOTVERSIONED_EXCLUDED:
-                return STATUS_NOTVERSIONED_EXCLUDED_EXT + dir;
-            case STATUS_NOTVERSIONED_NEWLOCALLY:
-                return STATUS_NOTVERSIONED_NEWLOCALLY_EXT + dir;
-            case STATUS_VERSIONED_UPTODATE:
-                return STATUS_VERSIONED_UPTODATE_EXT + dir;
-            case STATUS_VERSIONED_MODIFIEDLOCALLY:
-                return STATUS_VERSIONED_MODIFIEDLOCALLY_EXT + dir;
-            case STATUS_VERSIONED_MODIFIEDINREPOSITORY:
-                return STATUS_VERSIONED_MODIFIEDINREPOSITORY_EXT + dir;
-            case STATUS_VERSIONED_CONFLICT:
-                return STATUS_VERSIONED_CONFLICT_EXT + dir;
-            case STATUS_VERSIONED_MERGE:
-                return STATUS_VERSIONED_MERGE_EXT + dir;
-            case STATUS_VERSIONED_REMOVEDLOCALLY:
-                return STATUS_VERSIONED_REMOVEDLOCALLY_EXT + dir;
-            case STATUS_VERSIONED_NEWINREPOSITORY:
-                return STATUS_VERSIONED_NEWINREPOSITORY_EXT + dir;
-            case STATUS_VERSIONED_REMOVEDINREPOSITORY:
-                return STATUS_VERSIONED_REMOVEDINREPOSITORY_EXT + dir;
-            case STATUS_VERSIONED_DELETEDLOCALLY:
-                return STATUS_VERSIONED_DELETEDLOCALLY_EXT + dir;
-            case STATUS_VERSIONED_ADDEDLOCALLY:
-                return STATUS_VERSIONED_ADDEDLOCALLY_EXT + dir;
-            default:
-                throw new IllegalStateException("Status " + status); // NOI18N
-        }
-    }
-
-    /** Decodes external form produced by {@link #toExternalForm}. */
-    public static FileInformation fromExternalForm(String ext) {
-        boolean dir = ext.length() == 2;
-        if (dir) {
-            ext = ext.substring(0, 1);
-        }
-        if (STATUS_UNKNOWN_EXT.equals(ext)) {
-            return new FileInformation(STATUS_UNKNOWN, dir);
-        } else if (STATUS_NOTVERSIONED_NOTMANAGED_EXT.equals(ext)) {
-            return new FileInformation(STATUS_NOTVERSIONED_NOTMANAGED, dir);
-        } else if (STATUS_NOTVERSIONED_EXCLUDED_EXT.equals(ext)) {
-            return new FileInformation(STATUS_NOTVERSIONED_EXCLUDED, dir);
-        } else if (STATUS_NOTVERSIONED_NEWLOCALLY_EXT.equals(ext)) {
-            return new FileInformation(STATUS_NOTVERSIONED_NEWLOCALLY, dir);
-        } else if (STATUS_VERSIONED_UPTODATE_EXT.equals(ext)) {
-            return new FileInformation(STATUS_VERSIONED_UPTODATE, dir);
-        } else if (STATUS_VERSIONED_MODIFIEDLOCALLY_EXT.equals(ext)) {
-            return new FileInformation(STATUS_VERSIONED_MODIFIEDLOCALLY, dir);
-        } else if (STATUS_VERSIONED_MODIFIEDINREPOSITORY_EXT.equals(ext)) {
-            return new FileInformation(STATUS_VERSIONED_MODIFIEDINREPOSITORY, dir);
-        } else if (STATUS_VERSIONED_CONFLICT_EXT.equals(ext)) {
-            return new FileInformation(STATUS_VERSIONED_CONFLICT, dir);
-        } else if (STATUS_VERSIONED_MERGE_EXT.equals(ext)) {
-            return new FileInformation(STATUS_VERSIONED_MERGE, dir);
-        } else if (STATUS_VERSIONED_REMOVEDLOCALLY_EXT.equals(ext)) {
-            return new FileInformation(STATUS_VERSIONED_REMOVEDLOCALLY, dir);
-        } else if (STATUS_VERSIONED_NEWINREPOSITORY_EXT.equals(ext)) {
-            return new FileInformation(STATUS_VERSIONED_NEWINREPOSITORY, dir);
-        } else if (STATUS_VERSIONED_REMOVEDINREPOSITORY_EXT.equals(ext)) {
-            return new FileInformation(STATUS_VERSIONED_REMOVEDINREPOSITORY, dir);
-        } else if (STATUS_VERSIONED_DELETEDLOCALLY_EXT.equals(ext)) {
-            return new FileInformation(STATUS_VERSIONED_DELETEDLOCALLY, dir);
-        } else if (STATUS_VERSIONED_ADDEDLOCALLY_EXT.equals(ext)) {
-            return new FileInformation(STATUS_VERSIONED_ADDEDLOCALLY, dir);
-        } else {
-            throw new IllegalStateException("External form " + ext); // NOI18N
-        }
     }
 
     /**
