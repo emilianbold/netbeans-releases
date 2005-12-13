@@ -552,6 +552,10 @@ class BracketCompletion {
   static boolean completeQuote(BaseDocument doc, int dotPos, Caret caret,
           char bracket) throws BadLocationException {
 
+    if (!completionSettingEnabled()){
+        return false;
+    }
+    
     if (isEscapeSequence(doc, dotPos)){ // \" or \' typed
         return false;
     } 
