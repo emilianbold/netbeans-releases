@@ -120,7 +120,11 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                 //add the element update request into transaction
                 if(debug) System.out.println("ONLY CONTENT UPDATE!!!");
                 dtm.updateDocumentElementText(leaf);
-//                continue;
+                
+                //do not scan the context tag if the change is only insert or remove of one character into a text (typing text perf. optimalization)
+                if(dch.getChangeLength() == 1) {
+                    continue;
+                }
             }
             
             if((attribsOnly || dch.getChangeType() == DocumentChange.REMOVE)
@@ -399,6 +403,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                     if(debug) System.out.println("[xml model] removed element " + d);
                 }
             }
+
         } catch( BadLocationException e ) {
             throw new DocumentModelException("Error occurred during generation of Document elements", e);
         }

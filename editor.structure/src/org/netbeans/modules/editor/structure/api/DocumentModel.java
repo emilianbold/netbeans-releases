@@ -1007,6 +1007,9 @@ public final class DocumentModel {
             //remove the element itself. Do not do so if the element is root element
             if(de.isRootElement()) return ;
             
+            //do not try to remove already removed element
+            if(!getElementsSet().contains(de)) return ;
+            
             //I need to get the parent before removing from the list!
             parent = getParent(de);
             
