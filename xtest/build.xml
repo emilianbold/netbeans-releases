@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="prepare-nbjunit"> 
         <ant dir="nbjunit" target="jar-nbjunit" inheritAll="false"/>
         <!-- Need to initialize ${xtest/nbjunit.dir} property -->
-        <property file="${moduleCluster.file}"/>
+        <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
         <copy file="${xtest/nbjunit.dir}/modules/ext/nbjunit.jar" todir="lib"/>
         <copy file="${xtest/nbjunit.dir}/modules/ext/nbjunit-ide.jar" todir="lib"/>
     </target>
