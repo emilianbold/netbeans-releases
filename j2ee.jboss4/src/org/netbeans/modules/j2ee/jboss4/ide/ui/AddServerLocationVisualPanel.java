@@ -152,9 +152,8 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
 //        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
 //        add(jTextArea1, gridBagConstraints);
 
-        jLabel1.setDisplayedMnemonic("LBL_InstallLocation_Mnemonic".charAt(0));
         jLabel1.setLabelFor(locationTextField);
-        jLabel1.setText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocation"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocation"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
