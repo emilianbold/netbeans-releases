@@ -78,29 +78,30 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
         wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE, null);
         if (!ServerLocationManager.isGoodAppServerLocation(location)) {
             // not valid install directory
-            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE, 
-                    NbBundle.getMessage(AddDomainPlatformPanel.class, 
+            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(AddDomainPlatformPanel.class,
                     "Msg_InValidInstall"));                                     // NOI18N
             component.setDomainsList(new Object[0]);
             return false;
         } else {
-          
-            Object[] domainsList = getDomainList(Util.getRegisterableDefaultDomains(location));
-            component.setDomainsList(domainsList);
-        
+            
+            if (component.getDomainsListModel().getSize() < 1) {
+                Object[] domainsList = getDomainList(Util.getRegisterableDefaultDomains(location));
+                component.setDomainsList(domainsList);
+            }
             //component.setDomainsList();
             if (ServerLocationManager.isGlassFish(location)) {
-                String javaClassVersion = 
+                String javaClassVersion =
                         System.getProperty("java.class.version");               // NOI18N
                 double jcv = Double.parseDouble(javaClassVersion);
                 if (jcv < 49.0) {
                     // prevent ClassVersionUnsupportedError....
-                    wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE, 
-                            NbBundle.getMessage(AddDomainPlatformPanel.class, 
+                    wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                            NbBundle.getMessage(AddDomainPlatformPanel.class,
                             "Msg_RequireJ2SE5"));                               // NOI18N
                     return false;
                 }
-            } 
+            }
             wiz.putProperty(AddDomainWizardIterator.PLATFORM_LOCATION,location);
         }
         wiz.putProperty(AddDomainWizardIterator.USER_NAME,
@@ -111,65 +112,65 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
         if (selectedType == AddDomainWizardIterator.DEFAULT) {
             File[] usableDomains = Util.getRegisterableDefaultDomains(location);
             if (usableDomains.length == 0) {
-                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE, 
-                        NbBundle.getMessage(AddDomainPlatformPanel.class, 
+                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(AddDomainPlatformPanel.class,
                         "Msg_NoDefaultDomainsAvailable"));                      //NOI18N
                 retVal = false;
             }
             wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
             String dirCandidate = component.getDomainDir();
             if (null != dirCandidate) {
-            File domainDir = new File(dirCandidate);
-            // this should not happen. The previous page of the wizard should
-            // prevent this panel from appearing.
-            if (!Util.rootOfUsableDomain(domainDir)) {
-                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(AddDomainDefaultDomainPanel.class,
-                        "Msg_InValidDomainDir",                                     //NOI18N
-                        component.getDomainDir()));
-                retVal = false;
-            } else {
-            //File platformDir = (File) wiz.getProperty(AddDomainWizardIterator.PLATFORM_LOCATION);
-            Util.fillDescriptorFromDomainXml(wiz, domainDir);
-            // fill in the admin name and password from the asadminprefs file
-            String username = "admin";
-            String password = null;
-            File f = new File(System.getProperty("user.home")+"/.asadminprefs"); //NOI18N
-            try{
-                
-                FileInputStream fis = new FileInputStream(f);
-                Properties p = new Properties();
-                p.load(fis);
-                fis.close();
-                
-                Enumeration e = p.propertyNames() ;
-                for ( ; e.hasMoreElements() ;) {
-                    String v = (String)e.nextElement();
-                    if (v.equals("AS_ADMIN_USER"))//admin user//NOI18N
-                        username = p.getProperty(v );
-                    else if (v.equals("AS_ADMIN_PASSWORD")){ // admin password//NOI18N
-                        password = p.getProperty(v );
+                File domainDir = new File(dirCandidate);
+                // this should not happen. The previous page of the wizard should
+                // prevent this panel from appearing.
+                if (!Util.rootOfUsableDomain(domainDir)) {
+                    wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                            NbBundle.getMessage(AddDomainDefaultDomainPanel.class,
+                            "Msg_InValidDomainDir",                                     //NOI18N
+                            component.getDomainDir()));
+                    retVal = false;
+                } else {
+                    //File platformDir = (File) wiz.getProperty(AddDomainWizardIterator.PLATFORM_LOCATION);
+                    Util.fillDescriptorFromDomainXml(wiz, domainDir);
+                    // fill in the admin name and password from the asadminprefs file
+                    String username = "admin";
+                    String password = null;
+                    File f = new File(System.getProperty("user.home")+"/.asadminprefs"); //NOI18N
+                    try{
+                        
+                        FileInputStream fis = new FileInputStream(f);
+                        Properties p = new Properties();
+                        p.load(fis);
+                        fis.close();
+                        
+                        Enumeration e = p.propertyNames() ;
+                        for ( ; e.hasMoreElements() ;) {
+                            String v = (String)e.nextElement();
+                            if (v.equals("AS_ADMIN_USER"))//admin user//NOI18N
+                                username = p.getProperty(v );
+                            else if (v.equals("AS_ADMIN_PASSWORD")){ // admin password//NOI18N
+                                password = p.getProperty(v );
+                            }
+                        }
+                        
+                    } catch (Exception e){
+                        //either the file does not exist or not available. No big deal, we continue ands NB will popup the request dialog.
                     }
+                    wiz.putProperty(AddDomainWizardIterator.PASSWORD, password);
+                    wiz.putProperty(AddDomainWizardIterator.USER_NAME,username);
                 }
-                
-            } catch (Exception e){
-                //either the file does not exist or not available. No big deal, we continue ands NB will popup the request dialog.
-            }
-            wiz.putProperty(AddDomainWizardIterator.PASSWORD, password);
-            wiz.putProperty(AddDomainWizardIterator.USER_NAME,username);
-            }
             }
         } else if (selectedType == AddDomainWizardIterator.REMOTE) {
             wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
             wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION,"");
-            wiz.putProperty(AddDomainWizardIterator.DOMAIN,"");            
+            wiz.putProperty(AddDomainWizardIterator.DOMAIN,"");
         } else if (selectedType == AddDomainWizardIterator.LOCAL) {
             wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
         } else if (selectedType == AddDomainWizardIterator.PERSONAL) {
             wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
         } else {
-            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE, 
-                    NbBundle.getMessage(AddDomainPlatformPanel.class, 
+            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(AddDomainPlatformPanel.class,
                     "Msg_UnsupportedType"));                                    //NOI18N
             retVal = false;
         }

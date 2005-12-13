@@ -290,6 +290,12 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         registerDefault.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_registerDefault"));
 
         instanceSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        instanceSelector.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                instanceSelectorActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -376,8 +382,11 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.insets = new java.awt.Insets(6, 23, 5, 6);
         add(instanceSelectorLabel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void instanceSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_instanceSelectorActionPerformed
+        fireChangeEvent();
+    }//GEN-LAST:event_instanceSelectorActionPerformed
 
     private void createPersonalItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_createPersonalItemStateChanged
         setSelectedType(AddDomainWizardIterator.PERSONAL,evt);
@@ -400,6 +409,10 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         if (null != val && val.length() >=1)
             platformField.setText(val);
     }//GEN-LAST:event_openDirectoryCooserActionPerformed
+
+    ComboBoxModel getDomainsListModel() {
+        return instanceSelector.getModel();
+    }
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
