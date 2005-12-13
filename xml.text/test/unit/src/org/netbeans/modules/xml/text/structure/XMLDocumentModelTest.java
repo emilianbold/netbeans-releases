@@ -1069,6 +1069,47 @@ public class XMLDocumentModelTest extends NbTestCase {
         
     }
     
+     public void testRemoveElementsInText() throws DocumentModelException, BadLocationException, InterruptedException {
+        //initialize documents used in tests
+        initDoc5();
+        //set the document content
+        DocumentModel model = DocumentModel.getDocumentModel(doc);
+        
+        DocumentElement root = model.getRootElement();
+        DocumentElement rootTag = root.getElement(2); //get <root> element (first is PI, second whitespaces)
+        
+        //listen to model
+        final Vector removedElements = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementRemoved(DocumentElement de) {
+                removedElements.add(de);
+            }
+        });
+        
+        //listen to element
+        final Vector removedElements2 = new Vector();
+        rootTag.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void elementRemoved(DocumentElementEvent e) {
+                removedElements2.add(e.getChangedChild());
+            }
+        });
+        
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        doc.remove(31,"  <a>   <c/>   </a> ".length());
+        Thread.sleep(MODEL_TIMEOUT * 2); //wait for the model update (started after 500ms)
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        assertEquals(6, removedElements.size()); //remove A, C + WHs
+        assertEquals(6, removedElements2.size());
+        
+        assertEquals(3, rootTag.getElementCount()); //has B children and 2 WS children
+        
+    }
+    
+    
     private void initDoc1() throws BadLocationException {
         /*
           supposed structure:
@@ -1149,6 +1190,30 @@ public class XMLDocumentModelTest extends NbTestCase {
         doc.insertString(0,"<?xml version=\"1.0\"?><tree id=\"1\"><tree id=\"2\"><tree id=\"3\"></tree><tree id=\"4\"></tree></tree></tree>",null);
         //                  01234567890123 4567 89012345678901234567 89 01234567890123456789012345678901234567890123456789012345678901234567890123456789
         //                  0         1         2         3         4         5         6         7         8
+    }
+    
+    private void initDoc5() throws BadLocationException {
+        /*
+          supposed structure:
+            ROOT
+             |
+             +--<?xml version='1.0'?>
+             +--<root>
+                   |
+                   +--<a>
+                   |   |
+                   |   +---<c>
+                   |
+                   +--<b>
+                       |
+                       +----text
+         */
+        doc = new BaseDocument(XMLKit.class, false);
+        doc.putProperty("mimeType", "text/xml");
+        
+        doc.insertString(0,"<?xml version='1.0'?>   <root>   <a>   <c/>   </a>   <b>text</b>   </root>",null);
+        //                  012345678901234567890123456789012345678901234567890123456789
+        //                  0         1         2         3         4         5
     }
     
     private static class DocumentModelListenerAdapter implements DocumentModelListener {
