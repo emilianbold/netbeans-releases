@@ -29,11 +29,8 @@ import javax.swing.text.Position;
 
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtEditorUI;
-import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.editor.ext.java.JCExpression;
 import org.netbeans.editor.ext.java.JavaSyntaxSupport;
 import org.netbeans.jmi.javamodel.ClassDefinition;
@@ -184,8 +181,7 @@ public class JavaCompletionProvider implements CompletionProvider {
     
     static class DocQuery extends AsyncCompletionQuery {
         
-        private Object item;
-        
+        private Object item;        
         private JTextComponent component;
         
         DocQuery(Object item) {
@@ -196,8 +192,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (item == null)
                 item = JMIUtils.findItemAtCaretPos(component);
             if (item != null) {
-                resultSet.setDocumentation(new DocItem(getAssociatedObject(item),
-                        ExtUtilities.getExtEditorUI(component)));
+                resultSet.setDocumentation(new DocItem(getAssociatedObject(item), null));
             }
             resultSet.finish();
         }
@@ -221,15 +216,13 @@ public class JavaCompletionProvider implements CompletionProvider {
         private class DocItem implements CompletionDocumentation {
             
             private String text;
-            private MyJavaDoc doc;
+            private JavaDoc javaDoc;
             private Action goToSource = null;
-            private ExtEditorUI ui;
             private URL url;
             
-            public DocItem(final Object item, ExtEditorUI ui) {
-                this.ui = ui;
-                doc = new MyJavaDoc(ui);
-                doc.setItem(item);
+            public DocItem(final Object item, JavaDoc javaDoc) {
+                this.javaDoc = javaDoc != null ? javaDoc : new JavaDoc(component);
+                this.javaDoc.setItem(item);
                 this.url = getURL(item);
                 Resource res = (item instanceof Element && ((Element)item).isValid()) ? ((Element)item).getResource() : null;
                 if (res != null && res.getName().endsWith(".java")) //NOI18N
@@ -244,8 +237,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             
             public CompletionDocumentation resolveLink(String link) {
-                Object item = doc.parseLink(link, (JavaClass)null);
-                return item != null ? new DocItem(item, ui) : null;
+                Object item = javaDoc.parseLink(link, (JavaClass)null);
+                return item != null ? new DocItem(item, javaDoc) : null;
             }
             
             public String getText() {
@@ -257,19 +250,19 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             
             private URL getURL(Object item){
-                return doc.getURL(item);
+                return javaDoc.getURL(item);
             }
             
             public Action getGotoSourceAction() {
                 return goToSource;
-            }
-            
-            private class MyJavaDoc extends NbJMICompletionJavaDoc {
-                
-                private MyJavaDoc(ExtEditorUI ui) {
-                    super(ui);
-                }
+            }            
 
+            private class JavaDoc extends NbJMICompletionJavaDoc {
+                
+                private JavaDoc(JTextComponent component) {
+                    super(component);
+                }
+                
                 private void setItem(Object item) {
                     new MyJavaDocParser(item).run();
                 }
@@ -285,10 +278,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                     
                     protected void showJavaDoc(final String preparedText) {
-                        text = preparedText;                                
+                        text = preparedText;
                     }
                 }
-            }
+            }            
         }
     }
 
