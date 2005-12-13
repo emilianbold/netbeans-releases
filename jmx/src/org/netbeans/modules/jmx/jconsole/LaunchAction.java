@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.jmx.jconsole;
 
+import java.util.MissingResourceException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -97,7 +98,7 @@ public class LaunchAction extends javax.swing.AbstractAction {
                 
                 Process p =
                         Runtime.getRuntime().exec(cmdLine, null);
-                task.addTaskListener(new RuntimeProcessNodeActionListener(p));
+                task.addTaskListener(new RuntimeProcessNodeActionListener(p, console));
                 //Set err reader;
                 RequestProcessor rp = new RequestProcessor();
                 rp.post(new ErrReader(p.getErrorStream(), console));
@@ -120,7 +121,7 @@ public class LaunchAction extends javax.swing.AbstractAction {
             }catch(Exception e) {
                 System.out.println(e.toString());
             } finally{
-                stopped();
+                stopped(console);
             }
         }
     }
@@ -159,9 +160,12 @@ public class LaunchAction extends javax.swing.AbstractAction {
         }
         
         started();
-        
-        //RequestProcessor rp = new RequestProcessor();
-        console = new OutputConsole(NbBundle.getMessage(LaunchAction.class, "LBL_OutputName"));// NOI18N
+        try {
+            console = new OutputConsole(NbBundle.getMessage(LaunchAction.class, "LBL_OutputName"));// NOI18N
+        } catch (MissingResourceException ex) {
+            ex.printStackTrace();
+        }//NOI18N
+
         RunAction action = new RunAction(console);
         //console = action.getConsole();
         //rp.post(action);
@@ -178,20 +182,23 @@ public class LaunchAction extends javax.swing.AbstractAction {
     private void started() {
         started = true;
     }
-    
-    synchronized void stopped() {
+    /**
+     * We provide a console. On OSX, it seems that listeners are called in a 
+     * very strange ways.
+     */
+    synchronized void stopped(OutputConsole console) {
         if(!started) return;
         started = false;
         String msg = NbBundle.getMessage(LaunchAction.class,"LBL_ActionStoppedMessage");// NOI18N
         console.message(msg);
         console.close();
-        console = null;
+        //console = null;
     }
     
     class RuntimeProcessNodeActionListener implements org.openide.util.TaskListener {
-        Process p;
-        
-        public RuntimeProcessNodeActionListener(Process p) {
+        private Process p;
+        private OutputConsole console;
+        public RuntimeProcessNodeActionListener(Process p, OutputConsole console) {
             this.p = p;
         }
         
@@ -202,7 +209,7 @@ public class LaunchAction extends javax.swing.AbstractAction {
             }catch(IllegalThreadStateException e) {
                 //Not dead, kill it
                 p.destroy();
-                stopped();
+                stopped(console);
             }
         }
     }

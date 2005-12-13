@@ -233,8 +233,11 @@ public class ConfigGenerator
                             (r.getPassword() == null ? "" : r.getPassword()) + "\n");// NOI18N
                 }
             }
+            String filePath = (String) wiz.getProperty(WizardConstants.PROP_CONFIG_FILE_PATH);
+            String rmiPasswordFileName = filePath + File.separator + wiz.getTargetName() + 
+                         "." + WizardConstants.PASSWORD_EXT;// NOI18N
             ManagementDialogs.getDefault().notify(
-                    new NotifyDescriptor.Message(NbBundle.getMessage(ConfigGenerator.class, "MSG_RestrictAccess"), NotifyDescriptor.INFORMATION_MESSAGE)); // NOI18N
+                    new NotifyDescriptor.Message(NbBundle.getMessage(ConfigGenerator.class, "MSG_RestrictAccess")+ "\n" + rmiPasswordFileName, NotifyDescriptor.INFORMATION_MESSAGE)); // NOI18N
             
         }
         
