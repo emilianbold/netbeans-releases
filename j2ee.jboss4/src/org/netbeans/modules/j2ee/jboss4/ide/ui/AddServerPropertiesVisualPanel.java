@@ -230,7 +230,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         hostField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Host"));
         hostField.addKeyListener(new SomeChangesListener());
         
-        
+        hostLabel.setLabelFor(hostField);
         
         portLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Port"));//NOI18N
         portField = new JTextField();
@@ -239,6 +239,8 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         portField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Port"));
         //portField.setEditable(false);
         portField.addKeyListener(new SomeChangesListener());
+
+        portLabel.setLabelFor(portField);
         
         userLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_User"));//NOI18N
         userField = new JTextField();
