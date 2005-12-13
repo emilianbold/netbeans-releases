@@ -16,6 +16,7 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
@@ -59,17 +60,21 @@ public class EntityChildren extends Children.Keys implements PropertyChangeListe
     }
     
     private void updateKeys() {
-        List keys = new ArrayList();
-        if (model.getRemote() != null) {
-            keys.add(REMOTE_KEY);
-        }
-        if (model.getLocal()!=null) {
-            keys.add(LOCAL_KEY);
-        }
-        if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(model.getPersistenceType())) {
-            keys.add(CMP_FIELDS);
-        }
-        setKeys(keys);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                List keys = new ArrayList();
+                if (model.getRemote() != null) {
+                    keys.add(REMOTE_KEY);
+                }
+                if (model.getLocal()!=null) {
+                    keys.add(LOCAL_KEY);
+                }
+                if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(model.getPersistenceType())) {
+                    keys.add(CMP_FIELDS);
+                }
+                setKeys(keys);
+            }
+        });
     }
     
     protected void removeNotify() {

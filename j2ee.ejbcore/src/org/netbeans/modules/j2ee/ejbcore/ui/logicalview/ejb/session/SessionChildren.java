@@ -16,6 +16,7 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
@@ -54,14 +55,18 @@ public class SessionChildren extends Children.Keys implements PropertyChangeList
     }
     
     private void updateKeys() {
-        List keys = new ArrayList();
-        if (model.getRemote() != null) {
-            keys.add(REMOTE_KEY);
-        }
-        if (model.getLocal()!=null) {
-            keys.add(LOCAL_KEY);
-        }
-        setKeys(keys);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                List keys = new ArrayList();
+                if (model.getRemote() != null) {
+                    keys.add(REMOTE_KEY);
+                }
+                if (model.getLocal()!=null) {
+                    keys.add(LOCAL_KEY);
+                }
+                setKeys(keys);
+            }
+        });
     }
     
     protected void removeNotify() {
@@ -90,7 +95,11 @@ public class SessionChildren extends Children.Keys implements PropertyChangeList
     }
     
     public void propertyChange(PropertyChangeEvent ev) {
-        updateKeys();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateKeys();
+            }
+        });
     }
     
 }
