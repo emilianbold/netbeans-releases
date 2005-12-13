@@ -786,7 +786,8 @@ public class DDDataObject extends  DDMultiViewDataObject
             final Object key=target;
             org.netbeans.modules.xml.multiview.Utils.runInAwtDispatchThread(new Runnable() {
                 public void run() {
-                    getActiveMVElement().getSectionView().openPanel(key);
+                    ToolBarMultiViewElement mvEl = getActiveMVElement();
+                    if (mvEl!=null) mvEl.getSectionView().openPanel(key);
                 }
             });
         }
