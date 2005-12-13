@@ -172,8 +172,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(locationTextField, gridBagConstraints);
 
-        //jButton1.setMnemonic(org.openide.util.NbBundle.getMessage(AddServerLocationVisualPanel.class, "Browse_Button_Mnemonic").charAt(0));
-        jButton1.setText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_BrowseButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_BrowseButton"));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -186,7 +185,6 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         add(jButton1, gridBagConstraints);
         jButton1.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_BrowseButton"));
         jButton1.getAccessibleContext().setAccessibleDescription("ACSD_Browse_Button_InstallLoc");
-        jButton1.setMnemonic('b');
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

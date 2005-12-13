@@ -197,9 +197,7 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         add(locationField, gridBagConstraints);
         
         // add server installation directory field browse button
-        locationBrowseButton.setText(NbBundle.getMessage(ServerLocationPanel.class, "LBL_BROWSE_BUTTON")); // NOI18N
-        locationBrowseButton.setMnemonic(KeyEvent.VK_O);
-        locationBrowseButton.setDisplayedMnemonicIndex(2);
+        org.openide.awt.Mnemonics.setLocalizedText(locationBrowseButton, NbBundle.getMessage(ServerLocationPanel.class, "LBL_BROWSE_BUTTON"));
         locationBrowseButton.addActionListener(new BrowseActionListener());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
