@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -13,8 +13,6 @@
 package org.netbeans.modules.apisupport.feedreader;
 
 import java.io.File;
-import java.io.IOException;
-import java.text.MessageFormat;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
@@ -28,11 +26,11 @@ import org.openide.util.NbBundle;
 
 public class FeedReaderPanelVisual extends JPanel implements DocumentListener {
     
-    public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
+    public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     
     private FeedReaderWizardPanel panel;
     private int type;
-        
+    
     /** Creates new form PanelProjectLocationVisual */
     public FeedReaderPanelVisual(FeedReaderWizardPanel panel) {
         initComponents();
@@ -40,18 +38,17 @@ public class FeedReaderPanelVisual extends JPanel implements DocumentListener {
         this.type = type;
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener( this );
-        projectLocationTextField.getDocument().addDocumentListener( this );        
+        projectLocationTextField.getDocument().addDocumentListener( this );
     }
     
-    
-    public String getProjectName () {
-        return this.projectNameTextField.getText ();
+    public String getProjectName() {
+        return this.projectNameTextField.getText();
     }
     
     // <editor-fold defaultstate="collapsed" desc=" UI Code ">
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
-
+        
         projectNameLabel = new javax.swing.JLabel();
         projectNameTextField = new javax.swing.JTextField();
         projectLocationLabel = new javax.swing.JLabel();
@@ -59,32 +56,32 @@ public class FeedReaderPanelVisual extends JPanel implements DocumentListener {
         browseButton = new javax.swing.JButton();
         createdFolderLabel = new javax.swing.JLabel();
         createdFolderTextField = new javax.swing.JTextField();
-
+        
         setLayout(new java.awt.GridBagLayout());
-
+        
         projectNameLabel.setLabelFor(projectNameTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, "Project &Name :");
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, NbBundle.getMessage(FeedReaderPanelVisual.class, "LBL_ProjectName"));
         add(projectNameLabel, gridBagConstraints);
-
-
+        
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(projectNameTextField, gridBagConstraints);
-
+        
         projectLocationLabel.setLabelFor(projectLocationTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, "Project &Location :");
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, NbBundle.getMessage(FeedReaderPanelVisual.class, "LBL_ProjectLocation"));
         add(projectLocationLabel, gridBagConstraints);
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -92,28 +89,28 @@ public class FeedReaderPanelVisual extends JPanel implements DocumentListener {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(projectLocationTextField, gridBagConstraints);
-
+        
         browseButton.setActionCommand("BROWSE");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLocationAction(evt);
             }
         });
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, "Br&owse...");
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(FeedReaderPanelVisual.class, "LBL_Browse"));
         add(browseButton, gridBagConstraints);
-
+        
         createdFolderLabel.setLabelFor(createdFolderTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, "Project Folder :");
+        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, NbBundle.getMessage(FeedReaderPanelVisual.class, "LBL_ProjectFolder"));
         add(createdFolderLabel, gridBagConstraints);
-
+        
         createdFolderTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -123,32 +120,30 @@ public class FeedReaderPanelVisual extends JPanel implements DocumentListener {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(createdFolderTextField, gridBagConstraints);
-
     }
     // </editor-fold>
-
+    
     private void browseLocationAction(java.awt.event.ActionEvent evt) {
-        String command = evt.getActionCommand();        
-        if ( "BROWSE".equals( command ) ) { // NOI18N                
-            JFileChooser chooser = new JFileChooser ();
+        String command = evt.getActionCommand();
+        if ("BROWSE".equals(command)) { // NOI18N
+            JFileChooser chooser = new JFileChooser();
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-            chooser.setDialogTitle("Select Project Location");
-            chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+            chooser.setDialogTitle(NbBundle.getMessage(FeedReaderPanelVisual.class, "LBL_SelectProjectLocation"));
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             String path = this.projectLocationTextField.getText();
             if (path.length() > 0) {
-                File f = new File (path);
-                if (f.exists ()) {
+                File f = new File(path);
+                if (f.exists()) {
                     chooser.setSelectedFile(f);
                 }
             }
-            if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
+            if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
                 File projectDir = chooser.getSelectedFile();
                 projectLocationTextField.setText( FileUtil.normalizeFile(projectDir).getAbsolutePath() );
-            }            
+            }
             panel.fireChangeEvent();
         }
     }
-    
     
     public void addNotify() {
         super.addNotify();
@@ -157,37 +152,32 @@ public class FeedReaderPanelVisual extends JPanel implements DocumentListener {
     }
     
     boolean valid( WizardDescriptor wizardDescriptor ) {
-        
         if ( projectNameTextField.getText().length() == 0 ) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
-                    "Project Name is not a valid folder name.");  
-//            NbBundle.getMessage(FeedReaderPanelVisual.class,"MSG_IllegalProjectName"));
+                    NbBundle.getMessage(FeedReaderPanelVisual.class, "MSG_InvalidProjectFolderName"));
             return false; // Display name not specified
         }
         File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
         if (!f.isDirectory()) {
-            String message = "Project Folder is not a valid path.";
-//NbBundle.getMessage (FeedReaderPanelVisual.class,"MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                    NbBundle.getMessage(FeedReaderPanelVisual.class, "MSG_InvalidProjectFolderPath"));
             return false;
         }
         final File destFolder = FileUtil.normalizeFile(new File(createdFolderTextField.getText()).getAbsoluteFile());
-
+        
         File projLoc = destFolder;
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
-                                    "Project Folder cannot be created.");
-//            NbBundle.getMessage(FeedReaderPanelVisual.class,"MSG_ProjectFolderReadOnly"));
+                    NbBundle.getMessage(FeedReaderPanelVisual.class, "MSG_CanNotCreateProjectFolder"));
             return false;
         }
         
         if (FileUtil.toFileObject(projLoc) == null) {
-            String message = "Project Folder is not a valid path.";
-//NbBundle.getMessage (FeedReaderPanelVisual.class,"MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                    NbBundle.getMessage(FeedReaderPanelVisual.class, "MSG_InvalidProjectFolderPath"));
             return false;
         }
         
@@ -195,47 +185,43 @@ public class FeedReaderPanelVisual extends JPanel implements DocumentListener {
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
-                                     "Project Folder already exists and is not empty.");
-//            NbBundle.getMessage(FeedReaderPanelVisual.class,"MSG_ProjectFolderExists"));
+                    NbBundle.getMessage(FeedReaderPanelVisual.class, "MSG_ProjectFolderAlreadyExists"));
             return false;
         }
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");                
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
         return true;
     }
     
-    void store( WizardDescriptor d ) {        
-        
+    void store( WizardDescriptor d ) {
         String name = projectNameTextField.getText().trim();
-        String location = projectLocationTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
         
         d.putProperty( /*XXX Define somewhere */ "projdir", new File( folder )); // NOI18N
         d.putProperty( /*XXX Define somewhere */ "name", name ); // NOI18N
     }
     
-    void read (WizardDescriptor settings) {
-        File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
-        if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory ()) {
+    void read(WizardDescriptor settings) {
+        File projectLocation = (File) settings.getProperty("projdir");  //NOI18N
+        if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory()) {
             projectLocation = ProjectChooser.getProjectsFolder();
-        }
-        else {
+        } else {
             projectLocation = projectLocation.getParentFile();
         }
-        this.projectLocationTextField.setText (projectLocation.getAbsolutePath());
+        this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
         
-        String projectName = (String) settings.getProperty ("name"); //NOI18N
+        String projectName = (String) settings.getProperty("name"); //NOI18N
         if (projectName == null) {
             projectName = "feedreader-suite";
         }
-        this.projectNameTextField.setText (projectName);                
+        this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();
     }
-        
-    void validate (WizardDescriptor d) throws WizardValidationException {
+    
+    void validate(WizardDescriptor d) throws WizardValidationException {
         // nothing to validate
     }
     
-    // UI Variables declaration - 
+    // UI Variables declaration -
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel createdFolderLabel;
     private javax.swing.JTextField createdFolderTextField;
@@ -245,66 +231,45 @@ public class FeedReaderPanelVisual extends JPanel implements DocumentListener {
     private javax.swing.JTextField projectNameTextField;
     // End of variables declaration
     
-    
-    // Private methods ---------------------------------------------------------
-    
-    private static JFileChooser createChooser() {
-        JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-        chooser.setAcceptAllFileFilterUsed( false );
-        chooser.setName( "Select Project Directory" );
-        return chooser;
-    }
-    
-    private String validFreeProjectName (final File parentFolder, final String formater, final int index) {
-        String name = MessageFormat.format (formater, new Object[]{new Integer (index)});                
-        File file = new File (parentFolder, name);
-        return file.exists() ? null : name;
-    }
-
     // Implementation of DocumentListener --------------------------------------
     
     public void changedUpdate( DocumentEvent e ) {
         updateTexts( e );
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
+            firePropertyChange(PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
     }
     
     public void insertUpdate( DocumentEvent e ) {
         updateTexts( e );
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
+            firePropertyChange(PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
     }
     
     public void removeUpdate( DocumentEvent e ) {
         updateTexts( e );
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
+            firePropertyChange(PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
     }
     
-    
-    /** Handles changes in the Project name and project directory
-     */
+    /** Handles changes in the Project name and project directory. */
     private void updateTexts( DocumentEvent e ) {
-        
         Document doc = e.getDocument();
-                
+        
         if ( doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument() ) {
             // Change in the project name
-        
+            
             String projectName = projectNameTextField.getText();
-            String projectFolder = projectLocationTextField.getText(); 
-
-            //if ( projectFolder.trim().length() == 0 || projectFolder.equals( oldName )  ) {                
+            String projectFolder = projectLocationTextField.getText();
+            
+            //if ( projectFolder.trim().length() == 0 || projectFolder.equals( oldName )  ) {
             createdFolderTextField.setText( projectFolder + File.separatorChar + projectName );
             //}
             
-        }                
-        panel.fireChangeEvent(); // Notify that the panel changed        
+        }
+        panel.fireChangeEvent(); // Notify that the panel changed
     }
-
+    
 }
