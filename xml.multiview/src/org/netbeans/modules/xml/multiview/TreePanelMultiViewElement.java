@@ -78,6 +78,7 @@ public abstract class TreePanelMultiViewElement extends AbstractMultiViewElement
     
     public void componentHidden() {
         editor.componentHidden();
+        dObj.setActiveMultiViewElement(null);
     }
     
     public void componentOpened() {
