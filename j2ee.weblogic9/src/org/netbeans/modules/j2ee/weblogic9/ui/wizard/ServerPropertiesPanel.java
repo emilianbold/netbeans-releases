@@ -264,6 +264,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
 //        add(serverTypeCombo, gridBagConstraints);
         
         // add local instances field label
+        localInstanceLabel.setLabelFor(localInstancesCombo);
         localInstanceLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_LOCAL_INSTANCE")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -280,8 +281,10 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
         add(localInstancesCombo, gridBagConstraints);
+        localInstancesCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerPropertiesPanel.class, "ACSD_ServerPropertiesPanel_localInstancesCombo")); // NOI18N
         
         // add domain path field label
+        domainPathLabel.setLabelFor(domainPathField);
         domainPathLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_DOMAIN_LOCATION")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -301,8 +304,10 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
         add(domainPathField, gridBagConstraints);
+        domainPathField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerPropertiesPanel.class, "ACSD_ServerPropertiesPanel_domainPathField")); // NOI18N
         
         // add host field label
+        hostLabel.setLabelFor(hostField);
         hostLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_HOST")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -322,8 +327,10 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
         add(hostField, gridBagConstraints);
         hostField.setEditable(false);
+        hostField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerPropertiesPanel.class, "ACSD_ServerPropertiesPanel_hostField")); // NOI18N
         
         // add port field label
+        portLabel.setLabelFor(portField);
         portLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_PORT")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -344,8 +351,10 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
         add(portField, gridBagConstraints);
         portField.setEditable(false);
+        portField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerPropertiesPanel.class, "ACSD_ServerPropertiesPanel_portField")); // NOI18N
         
         // add username field label
+        userNameLabel.setLabelFor(usernameField);
         userNameLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_USERNAME")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -365,8 +374,10 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
         add(usernameField, gridBagConstraints);
+        usernameField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerPropertiesPanel.class, "ACSD_ServerPropertiesPanel_usernameField")); // NOI18N
         
         // add password field label
+        passwordLabel.setLabelFor(passwordField);
         passwordLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_PASSWORD")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -385,6 +396,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
         add(passwordField, gridBagConstraints);
+        passwordField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerPropertiesPanel.class, "ACSD_ServerPropertiesPanel_passwordField")); // NOI18N
         
         // add the empty panel, that will take up all the remaining space
         gridBagConstraints = new GridBagConstraints();
