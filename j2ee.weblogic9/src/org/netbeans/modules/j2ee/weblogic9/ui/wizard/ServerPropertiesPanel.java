@@ -243,23 +243,25 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         // set the desired layout
         setLayout(new GridBagLayout());
         
-        // add server type field label
-        serverTypeLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_serverType")); // NOI18N
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = GridBagConstraints.EAST;
-        gridBagConstraints.insets = new Insets(0, 0, 5, 0);
-        add(serverTypeLabel, gridBagConstraints);
+        //temporarily commented for issue #64480 (remote instances not supported in 5.0)
         
-        // add server type combobox
-        serverTypeCombo.addActionListener(new ServerTypeActionListener());
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 10, 5, 0);
-        add(serverTypeCombo, gridBagConstraints);
+        // add server type field label
+//        serverTypeLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_serverType")); // NOI18N
+//        gridBagConstraints = new GridBagConstraints();
+//        gridBagConstraints.gridx = 0;
+//        gridBagConstraints.gridy = 0;
+//        gridBagConstraints.anchor = GridBagConstraints.EAST;
+//        gridBagConstraints.insets = new Insets(0, 0, 5, 0);
+//        add(serverTypeLabel, gridBagConstraints);
+//        
+//        // add server type combobox
+//        serverTypeCombo.addActionListener(new ServerTypeActionListener());
+//        gridBagConstraints = new GridBagConstraints();
+//        gridBagConstraints.gridx = 1;
+//        gridBagConstraints.gridy = 0;
+//        gridBagConstraints.anchor = GridBagConstraints.WEST;
+//        gridBagConstraints.insets = new Insets(0, 10, 5, 0);
+//        add(serverTypeCombo, gridBagConstraints);
         
         // add local instances field label
         localInstanceLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_LOCAL_INSTANCE")); // NOI18N
