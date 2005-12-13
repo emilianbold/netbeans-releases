@@ -355,7 +355,8 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         
         // add username field label
         userNameLabel.setLabelFor(usernameField);
-        userNameLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_USERNAME")); // NOI18N
+//        userNameLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_USERNAME")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(userNameLabel, NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_USERNAME"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -378,7 +379,8 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         
         // add password field label
         passwordLabel.setLabelFor(passwordField);
-        passwordLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_PASSWORD")); // NOI18N
+//        passwordLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_PASSWORD")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_PASSWORD"));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
