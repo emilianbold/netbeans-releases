@@ -102,7 +102,8 @@ public class JSPVariablesFilter implements TreeModelFilter {
             visibleChildrenList.add(0, applicationAttributes);
             visibleChildrenList.add(0, sessionAttributes);
             visibleChildrenList.add(0, requestAttributes);
-            visibleChildrenList.add(0, refThis);
+            if (refThis != null)
+                visibleChildrenList.add(0, refThis);
             visibleChildrenList.add(implicitLocals);
             
             visibleChildren = visibleChildrenList.subList(from, to).toArray();
