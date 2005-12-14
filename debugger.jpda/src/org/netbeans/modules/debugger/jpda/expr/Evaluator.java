@@ -1073,7 +1073,18 @@ public class Evaluator implements JavaParserVisitor {
 
     private List prepareArguments(Value [] args, List argTypes) {
 
-        boolean ellipsis = argTypes.size() > 0 && argTypes.get(argTypes.size() - 1) instanceof ArrayType;
+        boolean ellipsis;
+        try {
+                ellipsis = argTypes.size() > 0 &&
+                           argTypes.get(argTypes.size() - 1) instanceof ArrayType &&
+                           (args.length == 0 ||
+                            args[args.length - 1] == null ||
+                            isConvertible(((ArrayType) argTypes.get(argTypes.size() - 1)).componentType(),
+                                          args[args.length - 1]));
+        } catch (ClassNotLoadedException e) {
+            // TODO: load the offending class?
+            return null;
+        }
         if (ellipsis) {
             if (args.length < argTypes.size() - 1) return null;
         } else {
@@ -1103,7 +1114,7 @@ public class Evaluator implements JavaParserVisitor {
                     return null;
                 }
                 if (args.length == argTypes.size()) {
-                    if (!elipsisType.equals(args[args.length -1].type())) {
+                    if (args[args.length -1] != null && !elipsisType.equals(args[args.length -1].type())) {
                         if (!isConvertible(componentType, args[args.length -1])) return null;
                     }
                     newArgs.add(boxUnboxIfNeeded(args[args.length -1], componentType));
