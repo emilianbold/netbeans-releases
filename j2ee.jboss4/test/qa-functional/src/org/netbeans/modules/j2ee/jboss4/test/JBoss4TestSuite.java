@@ -169,6 +169,9 @@ public class JBoss4TestSuite extends NbTestCase {
             
             inst.refresh();
             
+            if(!inst.isReallyRunning())
+                return;
+            
             ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
             inst.stop(ui);
             
@@ -185,6 +188,9 @@ public class JBoss4TestSuite extends NbTestCase {
             ServerInstance inst = getServerInstance(installLocation);
             
             inst.refresh();
+            
+            if(!inst.isReallyRunning())
+                return;
             
             ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
             inst.restart(ui);
