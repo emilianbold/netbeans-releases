@@ -104,7 +104,13 @@ public final class AddInstanceVisualDirectoryPanel extends JPanel {
     
     private String browseDomainLocation(){
         String insLocation = null;
-        JFileChooser chooser = new DomainChooser();
+        JFileChooser chooser = null;
+        if (createPersonalInstance) {
+            chooser = new JFileChooser();
+        }
+        else {
+            chooser = new DomainChooser();
+        }
         Util.decorateChooser(chooser,instanceDirectory.getText(),
                 NbBundle.getMessage(AddInstanceVisualDirectoryPanel.class, 
                 "LBL_Choose_Domain"));                                          //NOI18N
