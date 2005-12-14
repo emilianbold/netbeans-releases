@@ -534,6 +534,8 @@ public final class Main extends Object {
                     // canceled by user, all is fine
                     if (ex.getTargetException () instanceof org.openide.util.UserCancelException) {
                         executedOk = true;
+                    } else {
+                        ex.printStackTrace();
                     }
                 } catch (Exception e) {
                     // If exceptions are thrown, notify them - something is broken.
