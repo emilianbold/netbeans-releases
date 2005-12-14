@@ -18,8 +18,13 @@ import java.util.Map;
 import javax.swing.ComboBoxModel;
 import javax.swing.KeyStroke;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.ui.UIUtil.LayerItemPresenter;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  * @author Martin Krauskopf
@@ -59,8 +64,26 @@ public class UIUtilTest extends LayerTestBase {
         assertKeyLogicalString("ENTER", "pressed ENTER");
     }
     
-    public void assertKeyLogicalString(String expected, String swingKeyStroke) {
+    private void assertKeyLogicalString(String expected, String swingKeyStroke) {
         assertEquals(swingKeyStroke + " corresponding to " + expected, expected, UIUtil.keyToLogicalString(KeyStroke.getKeyStroke(swingKeyStroke)));
+    }
+    
+    public void testLayerItemPresenterCompareTo() throws Exception {
+        TestBase.initializeBuildProperties(getWorkDir());
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(project);
+        FileObject root = fs.getRoot().getFileObject("Templates/Project/APISupport");
+        FileObject module = root.getFileObject("emptyModule");
+        FileObject suite = root.getFileObject("emptySuite");
+        FileObject library = root.getFileObject("libraryModule");
+        LayerItemPresenter moduleLIP = new LayerItemPresenter(module, root);
+        LayerItemPresenter moduleLIP1 = new LayerItemPresenter(module, root);
+        LayerItemPresenter suiteLIP = new LayerItemPresenter(suite, root);
+        LayerItemPresenter libraryLIP = new LayerItemPresenter(library, root);
+        assertTrue("'Module Project' < 'Module Suite Project'", moduleLIP.compareTo(suiteLIP) < 0);
+        assertTrue("'Module Project' == 'Module Project'", moduleLIP.compareTo(moduleLIP1) == 0);
+        assertTrue("'Library Wrapper Module Project < 'Module Project'", libraryLIP.compareTo(moduleLIP) < 0);
+        assertTrue("'Library Wrapper Module Project < 'Module Suite Project'", libraryLIP.compareTo(suiteLIP) < 0);
     }
     
 }

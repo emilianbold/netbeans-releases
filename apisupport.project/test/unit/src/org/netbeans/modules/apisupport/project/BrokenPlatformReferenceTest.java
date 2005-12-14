@@ -14,9 +14,7 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
-import java.util.jar.Manifest;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
@@ -39,7 +37,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
     public BrokenPlatformReferenceTest(String name) {
         super(name);
     }
-
+    
     /** a fake but valid-looking install dir; the default NB platform */
     private File install;
     /** an alternate valid install dir */
@@ -55,22 +53,14 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         user.mkdirs();
         System.setProperty("netbeans.user", user.getAbsolutePath());
         install = new File(getWorkDir(), "install");
-        makePlatform(install);
+        TestBase.makePlatform(install);
         // Now set up build.properties accordingly:
         InstalledFileLocatorImpl.registerDestDir(install);
         ((Install) SharedClassObject.findObject(Install.class, true)).restored();
         assertEquals("set up run correctly", install.getAbsolutePath(), PropertyUtils.getGlobalProperties().getProperty("nbplatform.default.netbeans.dest.dir"));
         install2 = new File(getWorkDir(), "install2");
-        makePlatform(install2);
+        TestBase.makePlatform(install2);
         NbPlatform.addPlatform("install2", install2, "install2");
-    }
-    
-    private static void makePlatform(File d) throws IOException {
-        // To satisfy NbPlatform.defaultPlatformLocation and NbPlatform.isValid, and make at least one module:
-        Manifest mani = new Manifest();
-        mani.getMainAttributes().putValue("OpenIDE-Module", "core");
-        TestBase.createJar(new File(new File(new File(d, "platform"), "core"), "core.jar"), Collections.EMPTY_MAP, mani);
-        TestBase.dump(new File(new File(d, "harness"), "suite.xml"), "");
     }
     
     /** Make sure everything is working as expected when there are no breakages. */
@@ -114,7 +104,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
         assertEquals(pl, p.getPlatform(false));
     }
-
+    
     /** Test that use of default platform is OK even if platform-private.properties is initially missing; must be created. */
     public void testMissingPlatformPrivatePropertiesDefaultPlatform() throws Exception {
         // Try making a standalone module w/ default platform.
@@ -190,11 +180,11 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
     // - OpenProjectHook fixes, or creates, platform-private.properties to point to current build.properties [in progress; need to test non-default platforms valid in new b.props]
     // - in OPH, platform.properties is fixed to use default if no value for nbplatform.active (and netbeans.dest.dir not independently set!) or points to invalid platform
     // - all problems are notified to user (maybe move ModuleProperties.reportLostPlatform, and change MP.runFromTests)
-
+    
     private static void open(NbModuleProject p) {
         ((NbModuleProject.OpenedHook) p.getLookup().lookup(NbModuleProject.OpenedHook.class)).projectOpened();
     }
-
+    
     private void open(SuiteProject p) {
         ((SuiteProject.OpenedHook) p.getLookup().lookup(SuiteProject.OpenedHook.class)).projectOpened();
     }

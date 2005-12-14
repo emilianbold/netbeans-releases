@@ -90,7 +90,7 @@ public final class ModuleDependency implements Comparable {
         int result = LOC_COLLATOR.compare(
             getModuleEntry().getLocalizedName(),
             ((ModuleDependency) o).getModuleEntry().getLocalizedName());
-        if (result != -1) {
+        if (result != 0) {
             return result;
         } else {
             return getModuleEntry().getCodeNameBase().compareTo(((ModuleDependency) o).getModuleEntry().getCodeNameBase());

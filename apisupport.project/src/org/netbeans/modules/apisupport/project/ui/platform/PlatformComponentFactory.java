@@ -144,7 +144,7 @@ public final class PlatformComponentFactory {
             Arrays.sort(platforms, new Comparator() {
                 public int compare(Object o1, Object o2) {
                     int res = Collator.getInstance().compare(((NbPlatform) o1).getLabel(), ((NbPlatform) o2).getLabel());
-                    if (res != -1) {
+                    if (res != 0) {
                         return res;
                     } else {
                         return System.identityHashCode(o1) - System.identityHashCode(o2);

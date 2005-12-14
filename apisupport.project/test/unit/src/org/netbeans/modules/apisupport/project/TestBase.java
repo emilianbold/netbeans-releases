@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -391,7 +392,15 @@ public abstract class TestBase extends NbTestCase {
             os.close();
         }
     }
-
+    
+    public static void makePlatform(File d) throws IOException {
+        // To satisfy NbPlatform.defaultPlatformLocation and NbPlatform.isValid, and make at least one module:
+        Manifest mani = new Manifest();
+        mani.getMainAttributes().putValue("OpenIDE-Module", "core");
+        TestBase.createJar(new File(new File(new File(d, "platform"), "core"), "core.jar"), Collections.EMPTY_MAP, mani);
+        TestBase.dump(new File(new File(d, "harness"), "suite.xml"), "");
+    }
+    
     public static void delete(File f) throws IOException {
         if (f.isDirectory()) {
             File[] kids = f.listFiles();
