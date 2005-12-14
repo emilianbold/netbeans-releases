@@ -35,7 +35,9 @@ public class Installer extends ModuleInstall {
     public static synchronized Object create() {
         if (facadeDF != null)
             return facadeDF;
-        facadeDF =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory();
+        //this is our JSR88 factory lazy init, only when needed via layer.      
+         PluginProperties.configureDefaultServerInstance();
+         facadeDF =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory();
         
         return facadeDF;
     }
