@@ -207,9 +207,7 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
                                         panel = new NavigatorContentPanel(model);
                                         //use the document dataobject as a key since the document itself is very easily discarded and hence
                                         //harly usable as a key of the WeakHashMap
-                                        DataObject documentDO = NbEditorUtilities.getDataObject(bdoc);
-                                        if(documentDO != null)
-                                            uiCache.put(documentDO, new WeakReference(panel));
+                                        uiCache.put(documentDO, new WeakReference(panel));
                                         if(DEBUG) System.out.println("[xml navigator] panel created");
                                         
                                         //start to listen to the document property changes - we need to get know when the document is being closed
