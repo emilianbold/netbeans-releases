@@ -26,7 +26,7 @@ import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.ErrorManager;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.loaders.DataFolder;
@@ -83,7 +83,7 @@ public final class OpenProjectFolderAction extends AbstractAction implements Con
                 // Ignore folders not corresponding to projects (will not disable action if some correspond to projects).
             }
             // Ignore projects which are already open (will not disable action if some can be opened).
-            projects.removeAll(Arrays.asList(OpenProjects.getDefault().getOpenProjects()));
+            projects.removeAll(Arrays.asList(OpenProjectList.getDefault().getOpenProjects()));
             int size = projects.size();
             if (size == 1) {
                 String name = ProjectUtils.getInformation((Project) projects.iterator().next()).getDisplayName();
@@ -97,7 +97,7 @@ public final class OpenProjectFolderAction extends AbstractAction implements Con
             // Run asynch so that UI is not blocked; might show progress dialog (?).
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    OpenProjects.getDefault().open((Project[]) projects.toArray(new Project[projects.size()]), false);
+                    OpenProjectList.getDefault().open((Project[]) projects.toArray(new Project[projects.size()]), false, true);
                 }
             });
         }
