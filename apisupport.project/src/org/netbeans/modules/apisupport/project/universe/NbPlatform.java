@@ -100,6 +100,9 @@ public final class NbPlatform {
                     platforms.add(new NbPlatform(PLATFORM_ID_DEFAULT, null, loc, new URL[0], new URL[0]));
                 }
             }
+            if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                Util.err.log("NbPlatform initial list: " + platforms);
+            }
         }
         return platforms;
     }
@@ -267,6 +270,9 @@ public final class NbPlatform {
         NbPlatform plaf = new NbPlatform(id, label, FileUtil.normalizeFile(destdir),
                 findURLs(null), findURLs(null));
         getPlatforms().add(plaf);
+        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            Util.err.log("NbPlatform added: " + plaf);
+        }
         return plaf;
     }
     
@@ -288,6 +294,9 @@ public final class NbPlatform {
             throw (IOException) e.getException();
         }
         getPlatforms().remove(plaf);
+        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            Util.err.log("NbPlatform removed: " + plaf);
+        }
     }
     
     private final String id;
@@ -804,7 +813,7 @@ public final class NbPlatform {
     }
     
     public String toString() {
-        return "NbPlatform[" + getID() + ":" + getDestDir() + "]"; // NOI18N;
+        return "NbPlatform[" + getID() + ":" + getDestDir() + ";sources=" + Arrays.asList(getSourceRoots()) + ";javadoc=" + Arrays.asList(getJavadocRoots()) + "]"; // NOI18N;
     }
     
 }
