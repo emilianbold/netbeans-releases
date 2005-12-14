@@ -306,7 +306,12 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 	    }
 	    String arr[] = new String[3];
 	    arr[0]= asadminCmd;
-	    arr[1]= "native";//NOI18N
+            String osType=System.getProperty("os.name");//NOI18N
+            if (osType.startsWith("Mac OS"))//no native for mac
+                arr[1]= "";//NOI18N
+            else
+                arr[1]= "native";//NOI18N
+            
 	    if (debug) {
 		arr[2]= "debug";//NOI18N
 		
