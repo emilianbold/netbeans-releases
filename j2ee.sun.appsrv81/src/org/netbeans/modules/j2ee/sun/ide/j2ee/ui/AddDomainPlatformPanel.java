@@ -84,8 +84,8 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
             component.setDomainsList(new Object[0]);
             return false;
         } else {
-            
-            if (component.getDomainsListModel().getSize() < 1) {
+            Object oldPlatformLoc = wiz.getProperty(AddDomainWizardIterator.PLATFORM_LOCATION);
+            if (!location.equals(oldPlatformLoc) || component.getDomainsListModel().getSize() < 1) {
                 Object[] domainsList = getDomainList(Util.getRegisterableDefaultDomains(location));
                 component.setDomainsList(domainsList);
             }
