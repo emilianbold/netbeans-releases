@@ -157,7 +157,7 @@ public abstract class AbstractModeContainer implements ModeContainer {
                                 ex.printStackTrace();
                             }
                             //#62947 hack finished.
-                            selectedTopComponent.requestFocus();
+                            selectedTopComponent.requestFocusInWindow();
                         }
                     });
                 } else {
