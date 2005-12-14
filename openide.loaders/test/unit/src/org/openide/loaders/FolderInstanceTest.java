@@ -90,12 +90,17 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
         FileSystem lfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
 
         FileObject bb = lfs.findResource("/AA");
+        err.log("Found resource: " + bb);
         if (bb != null) {
             bb.delete ();
         }
+        err.log("Resource deleted");
         FileObject theFile = FileUtil.createData (lfs.getRoot (), "/AA/A.simple");
+        err.log("Found the file: " + theFile);
         bb = FileUtil.createFolder(lfs.getRoot (), "/AA");
+        err.log("Found the folder: " + bb);
         assertTrue("Is file", theFile.isData());
+        err.log("Confirmed, its the data: " + theFile);
         
         
         DataFolder folder = DataFolder.findFolder (bb);
