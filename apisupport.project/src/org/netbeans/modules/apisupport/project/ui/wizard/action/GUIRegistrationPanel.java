@@ -64,7 +64,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     
     private FileSystem sfs;
     
-    private static final ListCellRenderer POSITION_RENDERER = new PositionRenderer();
+    private final ListCellRenderer POSITION_RENDERER = new PositionRenderer();
     private static final String POSITION_HERE = getMessage("CTL_PositionHere");
     private static final String POSITION_SEPARATOR = " - "; // NOI18N
     
@@ -199,7 +199,8 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         setGroupEnabled(editorGroup, editorContext.isSelected());
     }
     
-    private boolean checkValidity() {
+    /** Package private for unit tests only. */
+    boolean checkValidity() {
         boolean result = false;
         if (globalKeyboardShortcut.isSelected() && keyStroke.getText().equals("")) { // NOI18N
             setErrorMessage(getMessage("MSG_YouMustSpecifyShortcut"));
@@ -830,8 +831,8 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JCheckBox edSeparatorAfter;
     private javax.swing.JCheckBox edSeparatorBefore;
     private javax.swing.JPanel edSeparatorPanel;
-    private javax.swing.JCheckBox editorContext;
-    private javax.swing.JCheckBox fileTypeContext;
+    javax.swing.JCheckBox editorContext;
+    javax.swing.JCheckBox fileTypeContext;
     private javax.swing.JLabel filler;
     private javax.swing.JComboBox ftContentType;
     private javax.swing.JLabel ftContentTypeTxt;
@@ -841,8 +842,8 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JCheckBox ftSeparatorBefore;
     private javax.swing.JPanel ftSeparatorPanel;
     private javax.swing.JCheckBox globalKeyboardShortcut;
-    private javax.swing.JCheckBox globalMenuItem;
-    private javax.swing.JCheckBox globalToolbarButton;
+    javax.swing.JCheckBox globalMenuItem;
+    javax.swing.JCheckBox globalToolbarButton;
     private javax.swing.JLabel keyStroke;
     private javax.swing.JButton keyStrokeChange;
     private javax.swing.JLabel keyStrokeTxt;
@@ -929,7 +930,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     }
     
     private static class PositionRenderer extends DefaultListCellRenderer {
-        
+    
         public Component getListCellRendererComponent(
                 JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String text;
