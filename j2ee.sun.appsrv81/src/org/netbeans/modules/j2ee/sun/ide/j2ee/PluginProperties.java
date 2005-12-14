@@ -463,7 +463,7 @@ public class PluginProperties  {
 
 
     
-    private  static String getDefaultInstallRoot() {
+    public  static String getDefaultInstallRoot() {
         String candidate = System.getProperty(INSTALL_ROOT_PROP_NAME); //NOI18N
         if (null != candidate){
 
@@ -612,7 +612,6 @@ public class PluginProperties  {
                     ///  Util.showInformation(e.getLocalizedMessage(), NbBundle.getMessage(RegisterServerAction.class, "LBL_RegServerFailed"));
                 }
             }
-            RegisterPointbase.getDefault().register(platformRoot);
         }
             
             
