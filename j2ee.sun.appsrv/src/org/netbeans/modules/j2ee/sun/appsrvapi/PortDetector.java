@@ -104,7 +104,22 @@ public class PortDetector {
     public static boolean isSecurePort(String hostname, int port) throws IOException, ConnectException, SocketTimeoutException {
 	// Open the socket w/ a 4 second timeout
 	Socket socket = new Socket();
-	socket.connect(new InetSocketAddress(hostname, port), 4000);
+        try{
+            socket.connect(new InetSocketAddress(hostname, port), 4000);
+        } catch (SocketException ex){// this could be bug 70020 due ot SOCKs proxy not having locahost
+            String socksNonProxyHosts=System.getProperty("socksNonProxyHosts");
+            if ((socksNonProxyHosts!=null) && (socksNonProxyHosts.indexOf("localhost")<0)) {
+                String localhost;
+                if (socksNonProxyHosts.length()>0) localhost="| localhost"; else localhost="localhost";
+                System.setProperty("socksNonProxyHosts",  socksNonProxyHosts+localhost);
+                ConnectException ce = new ConnectException();
+                ce.initCause(ex);
+                throw ce; //status unknow at this point
+                //next call, we'll be ok and it will really detect if we are secure or not
+            }
+
+            
+        }
 
 	// Send an https query (w/ trailing http query)
 	java.io.OutputStream ostream = socket.getOutputStream();
