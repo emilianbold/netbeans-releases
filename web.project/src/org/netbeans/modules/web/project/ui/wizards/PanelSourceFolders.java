@@ -24,6 +24,9 @@ import java.util.Iterator;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.modules.web.project.ProjectWebModule;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -58,6 +61,22 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         this.testsPanel.addPropertyChangeListener(this);
         ((FolderList)this.sourcePanel).setRelatedFolderList((FolderList)this.testsPanel);
         ((FolderList)this.testsPanel).setRelatedFolderList((FolderList)this.sourcePanel);        
+	
+        DocumentListener pl = new DocumentListener () {
+            public void changedUpdate(DocumentEvent e) {
+		firer.fireChangeEvent();
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+		firer.fireChangeEvent();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+		firer.fireChangeEvent();
+            }
+        };
+        jTextFieldWebPages.getDocument().addDocumentListener(pl);
+
     }
 
     public void initValues(FileObject fo) {        
@@ -134,9 +153,16 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     
     boolean valid (WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty (WizardProperties.PROJECT_DIR);  //NOI18N
+	
+	if (jTextFieldWebPages.getText().trim().length() == 0) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PanelSourceFolders.class, "MSG_WebPagesMandatory")); //NOI18N
+	    return false;
+	}
+	
+	File webPages = getWebPages();
         File[] sourceRoots = ((FolderList)this.sourcePanel).getFiles();
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
-        String result = checkValidity (projectLocation, sourceRoots, testRoots);
+        String result = checkValidity (projectLocation, webPages, sourceRoots, testRoots);
         if (result == null) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage","");   //NOI18N
             return true;
@@ -147,27 +173,37 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         }
     }
 
-    static String checkValidity (final File projectLocation, final File[] sources, final File[] tests ) {
+    static String checkValidity (final File projectLocation, final File webPages, final File[] sources, final File[] tests ) {
         String ploc = projectLocation.getAbsolutePath ();
         
+	if (projectLocation.equals(webPages))
+	    return NbBundle.getMessage(PanelSourceFolders.class, "MSG_WebPagesFolderOverlapsProjectFolder"); //NOI18N
+	    
+	if (!webPages.exists() || !webPages.isDirectory())
+	    return NbBundle.getMessage(PanelSourceFolders.class, "MSG_WebPagesFolderDoesNotExist"); //NOI18N
+	
+        FileObject webInf = FileUtil.toFileObject(webPages).getFileObject(ProjectWebModule.FOLDER_WEB_INF);
+	if (webInf == null)
+	    return NbBundle.getMessage(PanelSourceFolders.class, "MSG_WebInfCorrupted", webPages.getPath()); //NOI18N
+	
         for (int i=0; i<sources.length;i++) {
             if (!sources[i].isDirectory() || !sources[i].canRead()) {
-                return MessageFormat.format(NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalSources"),
+                return MessageFormat.format(NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalSources"), //NOI18N
                         new Object[] {sources[i].getAbsolutePath()});
             }
             String sloc = sources[i].getAbsolutePath ();
             if (ploc.equals (sloc) || ploc.startsWith (sloc + File.separatorChar)) {
-                return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectFolder");
+                return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectFolder"); //NOI18N
             }
         }
         for (int i=0; i<tests.length; i++) {
             if (!tests[i].isDirectory() || !tests[i].canRead()) {
-                return MessageFormat.format(NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalTests"),
+                return MessageFormat.format(NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalTests"), //NOI18N
                         new Object[] {sources[i].getAbsolutePath()});
             }            
             String tloc = tests[i].getAbsolutePath();
             if (ploc.equals(tloc) || ploc.startsWith(tloc + File.separatorChar)) {
-                return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectFolder");
+                return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectFolder"); //NOI18N
             }
         }
         return null;
@@ -491,5 +527,4 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     public File getLibraries() {
         return getAsFile(jTextFieldLibraries.getText());
     }
-
 }
