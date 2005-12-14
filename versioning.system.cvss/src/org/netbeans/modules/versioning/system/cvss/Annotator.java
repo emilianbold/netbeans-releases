@@ -299,7 +299,7 @@ public class Annotator {
      * @return String HTML-annotated name of the file (without HTML prolog)
      */ 
     String annotateNameHtml(String name, Set files, int includeStatus) {
-        if (files.size() == 0) return name;
+        if (files.size() == 0) return null;
         
         FileInformation mostImportantInfo = null;
         File mostImportantFile = null;
@@ -323,7 +323,7 @@ public class Annotator {
             folderAnnotation = looksLikeLogicalFolder(files);
         }
 
-        if (mostImportantInfo == null) return htmlEncode(name);
+        if (mostImportantInfo == null) return null;
         return folderAnnotation ? 
                 annotateFolderNameHtml(name, mostImportantInfo, mostImportantFile) : 
                 annotateNameHtml(name, mostImportantInfo, mostImportantFile);
@@ -397,7 +397,7 @@ public class Annotator {
             Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/modified-badge.png", true); // NOI18N
             return Utilities.mergeImages(icon, badge, 16, 9);
         } else {
-            return icon;
+            return null;
         }
     }
 

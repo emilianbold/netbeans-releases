@@ -72,7 +72,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
      * @return badged or original icon based on status of files in folders
      */ 
     public Image annotateIcon(Image icon, int iconType, Set files) {
-        if (shutdown) return icon;
+        if (shutdown) return null;
         Set roots = new HashSet();
         boolean folderAnnotation = false;
         if (files instanceof NonRecursiveFolder) {
@@ -94,7 +94,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         }
 
         if (folderAnnotation == false) {
-            return icon;
+            return null;
         }
 
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
@@ -106,7 +106,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
                 break;
             }
         }
-        if (!isVersioned) return icon;
+        if (!isVersioned) return null;
 
         return CvsVersioningSystem.getInstance().getAnnotator().annotateFolderIcon(roots, icon);
     }
