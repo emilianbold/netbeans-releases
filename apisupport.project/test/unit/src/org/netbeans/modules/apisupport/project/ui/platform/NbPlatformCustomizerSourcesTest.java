@@ -1,0 +1,72 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.apisupport.project.ui.platform;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.lang.ref.WeakReference;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+
+/**
+ * @author Martin Krauskopf
+ */
+public class NbPlatformCustomizerSourcesTest extends TestBase {
+    
+    public NbPlatformCustomizerSourcesTest(String testName) {
+        super(testName);
+    }
+
+    public void testMemoryLeak_70032() throws Exception {
+        NbPlatformCustomizerSources sourcesPane = new NbPlatformCustomizerSources();
+        sourcesPane.setPlatform(NbPlatform.getDefaultPlatform());
+        
+        // workaround for inability to GC JFrame/JDialog itself
+        JPanel outerPane = new JPanel();
+        outerPane.add(sourcesPane);
+        
+        final WeakReference sourcesPaneWR = new WeakReference(sourcesPane);
+        final WeakReference outerPaneWR = new WeakReference(outerPane);
+        
+        final JFrame frame = new JFrame("testMemoryLeak_70032");
+        frame.getContentPane().setLayout(new BorderLayout());
+        frame.getContentPane().add(outerPane, BorderLayout.CENTER);
+        frame.pack();
+        // NOTE: we have to show the frame to take combobox renderers into the game
+        frame.setVisible(true);
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                frame.getContentPane().remove((Component) outerPaneWR.get());
+                
+                // prevents KeyboardFocusManager.permanentFocusOwner to hold us
+                JLabel dummyFocusEater = new JLabel();
+                frame.getContentPane().add(dummyFocusEater);
+                dummyFocusEater.requestFocus();
+                
+                frame.setVisible(false);
+                frame.dispose();
+            }
+        });
+        outerPane = null;
+        sourcesPane = null;
+        
+        assertGC("GCing sourcesPane", sourcesPaneWR);
+        assertNull("sanity check", sourcesPaneWR.get());
+    }
+    
+}

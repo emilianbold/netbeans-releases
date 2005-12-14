@@ -84,7 +84,7 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
         javadocLabel.setLabelFor(javadocList);
         org.openide.awt.Mnemonics.setLocalizedText(javadocLabel, org.openide.util.NbBundle.getMessage(NbPlatformCustomizerJavadoc.class, "LBL_PlatformJavadoc"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -93,7 +93,7 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(javadocLabel, gridBagConstraints);
 
-        javadocList.setCellRenderer(PlatformComponentFactory.URL_RENDERER);
+        javadocList.setCellRenderer(PlatformComponentFactory.getURLListRenderer());
         javadocSP.setViewportView(javadocList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -107,7 +107,7 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
 
         buttonPanel.setLayout(new java.awt.GridBagLayout());
 
-        buttonPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 12, 0, 0)));
+        buttonPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 12, 0, 0));
         org.openide.awt.Mnemonics.setLocalizedText(addFolderButton, org.openide.util.NbBundle.getMessage(NbPlatformCustomizerJavadoc.class, "CTL_AddZipOrFolder"));
         addFolderButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -168,8 +168,7 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         add(buttonPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void moveDown(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDown
         int[] selIndices = javadocList.getSelectedIndices();

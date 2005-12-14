@@ -54,8 +54,6 @@ public final class PlatformComponentFactory {
     /** Set of suites added by the user in <em>this</em> IDE session. */
     private static Set/*<String>*/ userSuites = new TreeSet(Collator.getInstance());
     
-    static final ListCellRenderer URL_RENDERER = new URLListRenderer();
-    
     private PlatformComponentFactory() {
         // don't allow instances
     }
@@ -108,6 +106,10 @@ public final class PlatformComponentFactory {
      */
     public static void addUserSuite(String suiteDir) {
         userSuites.add(suiteDir);
+    }
+    
+    public static ListCellRenderer getURLListRenderer() {
+        return new URLListRenderer();
     }
     
     /**

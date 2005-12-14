@@ -97,7 +97,7 @@ final class NbPlatformCustomizerSources extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(sourceLabel, gridBagConstraints);
 
-        sourceList.setCellRenderer(PlatformComponentFactory.URL_RENDERER);
+        sourceList.setCellRenderer(PlatformComponentFactory.getURLListRenderer());
         sourceSP.setViewportView(sourceList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -172,8 +172,7 @@ final class NbPlatformCustomizerSources extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         add(buttonPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void moveDown(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDown
         int[] selIndices = sourceList.getSelectedIndices();
