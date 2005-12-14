@@ -460,7 +460,7 @@ public class BridgeImpl implements BridgeInterface {
         }
     }
     
-    private static boolean doGutProject = true;
+    private static boolean doGutProject = !Boolean.getBoolean("org.apache.tools.ant.module.bridge.impl.BridgeImpl.doNotGutProject");
     /**
      * Try to break up as many references in a project as possible.
      * Helpful to mitigate the effects of unsolved memory leaks: at
@@ -481,23 +481,26 @@ public class BridgeImpl implements BridgeInterface {
                 if (Modifier.isStatic(fs[i].getModifiers())) {
                     continue;
                 }
-                if (Modifier.isFinal(fs[i].getModifiers())) {
-                    Object o = fs[i].get(p);
-                    try {
-                        if (o instanceof Collection) {
-                            ((Collection)o).clear();
-                        } else if (o instanceof Map) {
-                            ((Map)o).clear();
-                        }
-                    } catch (UnsupportedOperationException e) {
-                        // ignore
-                    }
-                    continue;
-                }
                 if (fs[i].getType().isPrimitive()) {
                     continue;
                 }
                 fs[i].setAccessible(true);
+                Object o = fs[i].get(p);
+                try {
+                    if (o instanceof Collection) {
+                        ((Collection) o).clear();
+                        // #69727: do not null out the field (e.g. Project.listeners) in this case.
+                        continue;
+                    } else if (o instanceof Map) {
+                        ((Map) o).clear();
+                        continue;
+                    }
+                } catch (UnsupportedOperationException e) {
+                    // ignore
+                }
+                if (Modifier.isFinal(fs[i].getModifiers())) {
+                    continue;
+                }
                 fs[i].set(p, null);
             }
             // #43113: IntrospectionHelper can hold strong refs to dynamically loaded classes
