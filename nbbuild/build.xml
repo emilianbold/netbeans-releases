@@ -223,7 +223,7 @@ Microsystems, Inc. All Rights Reserved.
       <fail message="Property jnlp.codebase must be set to final location of your JNLP files!" unless="jnlp.codebase" />
       <property name="jnlp.dest.dir" location="build/jnlp" />
       <mkdir dir="${jnlp.dest.dir}" />
-      <for-each startdir=".." target="jnlp" locations="${nb.cluster.platform}"/>
+      <for-each startdir=".." target="jnlp" locations="${config.modules.jnlp}"/>
   </target>
   
   <target name="set-config-to-javadoc" >
