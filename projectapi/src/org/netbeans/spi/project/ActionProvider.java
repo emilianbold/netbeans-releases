@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,7 +20,8 @@ import org.openide.util.Lookup;
  * Ability for a project to have various actions (e.g. Build) invoked on it.
  * Should be registered in a project's lookup and will be used by UI infrastructure.
  * @see org.netbeans.api.project.Project#getLookup
- * @see <a href="@ANT@/org/apache/tools/ant/module/api/support/ActionUtils.html"><code>ActionUtils</code></a>
+ * @see <a href="@org-apache-tools-ant-module@/org/apache/tools/ant/module/api/support/ActionUtils.html"><code>ActionUtils</code></a>
+ * @see <a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/support/ProjectSensitiveActions.html#projectCommandAction(java.lang.String,%20java.lang.String,%20javax.swing.Icon)"><code>ProjectSensitiveActions.projectCommandAction(...)</code></a>
  * @author Jesse Glick
  */
 public interface ActionProvider {
