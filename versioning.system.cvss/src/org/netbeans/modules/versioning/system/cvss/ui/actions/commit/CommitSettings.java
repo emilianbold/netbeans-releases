@@ -96,6 +96,7 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         taMessage.selectAll();
+        taMessage.requestFocus();  // #67106
     }
 
     public void removeNotify() {
