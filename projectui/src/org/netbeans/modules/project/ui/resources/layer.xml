@@ -119,6 +119,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="Window">
             <folder name="SelectDocumentNode">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
                 <!-- Searching nodes in projects/files tab -->
                 
                 <file name="org-netbeans-modules-project-ui-SelectInProjects.instance">
