@@ -25,6 +25,7 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.WeakListeners;
 import java.io.IOException;
+import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.common.DDEditorNavigator;
@@ -55,7 +56,10 @@ public class CMPFieldNode extends AbstractNode implements PropertyChangeListener
         } catch (DataObjectNotFoundException ex) {
             // ignore
         }
-        ic.add(controller.getGetterMethod(controller.getBeanClass(), field.getFieldName())); // for SafeDelete refactoring to find Method element
+        Method getterMethod = controller.getGetterMethod(controller.getBeanClass(), field.getFieldName());
+        if (getterMethod != null) {
+            ic.add(getterMethod); // for SafeDelete refactoring to find Method element
+        }
         this.field = field;
         this.ddFile = ddFile;
         this.controller = controller;
