@@ -141,7 +141,7 @@ final class JUnitOutputReader {
 
         matcher = RegexpUtils.CLASSPATH_ARGS.matcher(msg);
         if (matcher.find()) {
-            setClasspath(matcher.group(1));
+            this.classpath = matcher.group(1);
         }
         // XXX should also probably clear classpath when taskFinished called
         matcher = RegexpUtils.JAVA_EXECUTABLE.matcher(msg);
@@ -149,7 +149,7 @@ final class JUnitOutputReader {
             String executable = matcher.group(1);
             ClassPath platformSrcs = findPlatformSources(executable);
             if (platformSrcs != null) {
-                setPlatformSources(platformSrcs);
+                this.platformSources = platformSrcs;
             }
         }
     }
@@ -287,8 +287,7 @@ final class JUnitOutputReader {
             if (matcher.matches()) {
                 closePreviousReport();
                 
-                report = new Report(null);
-                report.antScript = antScript;
+                report = createReport(null);
                 
                 xmlOutputBuffer = new StringBuffer(4096);
                 xmlOutputBuffer.append(msg);
@@ -304,8 +303,7 @@ final class JUnitOutputReader {
                 closePreviousReport();
                 checkReportStarted();
                 
-                report = new Report(suiteName);
-                report.antScript = antScript;
+                report = createReport(suiteName);
                 
                 final File projectMainDir
                         = session.getOriginatingScript().getParentFile();
@@ -369,21 +367,18 @@ final class JUnitOutputReader {
     
     /**
      */
-    private void setClasspath(String classpath) {
-        this.classpath = classpath;
-        if (report != null) {
-            report.classpathSourceRoots = null;
-        }
+    private Report createReport(final String suiteName) {
+        Report report = new Report(suiteName);
+        report.antScript = antScript;
+        
+        report.classpath = classpath;
+        report.platformSources = platformSources;
+        
+        this.classpath = null;
+        this.platformSources = null;
+        
+        return report;
     }
-    
-    /**
-     */
-    private void setPlatformSources(ClassPath platformSources) {
-        this.platformSources = platformSources;
-        if (report != null) {
-            report.classpathSourceRoots = null;
-        }
-}
     
     /**
      */
@@ -410,6 +405,7 @@ final class JUnitOutputReader {
      * (as reported by logging from Ant when it runs the Java launcher
      * with -cp) and stores it in the current report.
      * <!-- copied from JavaAntLogger -->
+     * <!-- XXX: move to class Report -->
      */
     private void setClasspathSourceRoots() {
         
@@ -423,12 +419,12 @@ final class JUnitOutputReader {
             return;
         }
         
-        if (classpath == null) {
+        if (report.classpath == null) {
             return;
         }
         
         Collection/*<FileObject>*/ sourceRoots = new LinkedHashSet();
-        final StringTokenizer tok = new StringTokenizer(classpath,
+        final StringTokenizer tok = new StringTokenizer(report.classpath,
                                                         File.pathSeparator);
         while (tok.hasMoreTokens()) {
             String binrootS = tok.nextToken();
@@ -450,8 +446,8 @@ final class JUnitOutputReader {
             sourceRoots.addAll(Arrays.asList((Object[]) someRoots));
         }
 
-        if (platformSources != null) {
-            sourceRoots.addAll(Arrays.asList(platformSources.getRoots()));
+        if (report.platformSources != null) {
+            sourceRoots.addAll(Arrays.asList(report.platformSources.getRoots()));
         } else {
             // no platform found. use default one:
             JavaPlatform platform = JavaPlatform.getDefault();
@@ -462,6 +458,13 @@ final class JUnitOutputReader {
             }
         }
         report.classpathSourceRoots = sourceRoots;
+        
+        /*
+         * The following fields are no longer necessary
+         * once the source classpath is defined:
+         */
+        report.classpath = null;
+        report.platformSources = null;
     }
     
     /**

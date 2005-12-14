@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
 
 /**
@@ -35,6 +36,8 @@ final class Report {
     File antScript;
     File resultsDir;
     String suiteClassName;
+    String classpath;
+    ClassPath platformSources;
     Collection/*<FileObject>*/ classpathSourceRoots;
     String[] outputStd;
     String[] outputErr;
