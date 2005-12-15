@@ -51,7 +51,7 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
 
     public void install() {
         super.install();
-        scroll().setMinimumXposition(10);
+        scroll().setMinimumXposition(9);
     }
 
     protected TabCellRenderer createDefaultRenderer() {
@@ -178,21 +178,21 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         }
         g.setColor (lineMiddleColor);
         
-        int rightLineStart = getTabsAreaWidth() - 14;
+        int rightLineStart = getTabsAreaWidth() - 13;
         int rightLineEnd = displayer.getWidth() - 9;
         
         if (displayer.getModel().size() > 0 && !scroll().isLastTabClipped()) {
             //Extend the line out to the edge of the last visible tab
             //if none are clipped
             int idx = scroll().getLastVisibleTab(displayer.getWidth());
-            rightLineStart = scroll().getX(idx) + scroll().getW(idx) + 1;
+            rightLineStart = scroll().getX(idx) + scroll().getW(idx);
         } else if (displayer.getModel().size() == 0) {
             rightLineStart = 6;
         }
         
         if (scroll().getOffset() >= 0) {
             //fill the left edge notch
-            g.drawLine(6, centerY, 13, centerY);
+            g.drawLine(6, centerY, 11, centerY);
         }
         g.drawLine(rightLineStart, centerY, rightLineEnd, centerY);
         
@@ -205,7 +205,7 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         g.drawLine(rightLineStart, centerY+1, rightLineEnd, centerY+1);
         if (scroll().getOffset() > 0) {
             //fill the left edge notch
-            g.drawLine(6, centerY+1, 10, centerY+1);
+            g.drawLine(6, centerY+1, 11, centerY+1);
         }
     }
     
