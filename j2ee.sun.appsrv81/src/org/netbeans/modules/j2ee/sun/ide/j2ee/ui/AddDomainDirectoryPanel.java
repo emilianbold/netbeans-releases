@@ -26,8 +26,6 @@ import org.openide.util.NbBundle;
 
 /** Panel to query for a domain directory.
  * Used to query the user for a local instance's domain directory.
- * 
- * TODO implement "create personal domain" logic.
  */
 class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel, 
         ChangeListener {
@@ -116,8 +114,8 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
             if (domainDir.exists()) {
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(AddDomainDirectoryPanel.class,
-                        "Msg_InValidDomainDir",                                 //NOI18N
-                        parent.getAbsolutePath()));
+                        "Msg_ExistingDomainDir",                                //NOI18N
+                        domainDir.getAbsolutePath()));
                 return false;                
             }
             wiz.putProperty(AddDomainWizardIterator.DOMAIN,domainDir.getName());
