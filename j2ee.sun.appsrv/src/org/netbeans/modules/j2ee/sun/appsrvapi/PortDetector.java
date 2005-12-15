@@ -110,7 +110,7 @@ public class PortDetector {
             String socksNonProxyHosts=System.getProperty("socksNonProxyHosts");
             if ((socksNonProxyHosts!=null) && (socksNonProxyHosts.indexOf("localhost")<0)) {
                 String localhost;
-                if (socksNonProxyHosts.length()>0) localhost="| localhost"; else localhost="localhost";
+                if (socksNonProxyHosts.length()>0) localhost="|localhost"; else localhost="localhost";
                 System.setProperty("socksNonProxyHosts",  socksNonProxyHosts+localhost);
                 ConnectException ce = new ConnectException();
                 ce.initCause(ex);
