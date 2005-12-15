@@ -93,7 +93,6 @@ final class PhadhailEditorSupport extends CloneableEditorSupport implements Open
         private final Phadhail ph;
         private PhadhailEditorSupport supp;
         private final long createTime;
-        private boolean modified;
         private byte[] preloadedContents = null;
         
         public PhadhailEnv(Phadhail ph) {
