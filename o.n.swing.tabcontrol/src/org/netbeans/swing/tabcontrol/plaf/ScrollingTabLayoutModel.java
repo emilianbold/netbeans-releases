@@ -474,11 +474,13 @@ public final class ScrollingTabLayoutModel implements TabLayoutModel {
         int currW = 0;
         boolean isOffBack = false;
         boolean result = changed;
+        boolean switchForward = false;
         //If it's after the last tab, we'll find it's width, then count
         //backward until we're out of tabs or out of space
         if (index >= getLastVisibleTab(width)) {
             int selIdx = sel.getSelectedIndex();
-
+            switchForward = index >= selIdx;
+            
             //Find the width of this tab, and count back
             currW = getWrapped().getW(index);
             if (index == selIdx) {
@@ -497,8 +499,11 @@ public final class ScrollingTabLayoutModel implements TabLayoutModel {
                 }
             } while (currW <= width && firstTab >= -1);
             newOffset = firstTab;
-            if( currW <= width )
+            if( currW <= width || switchForward ) {
                 newOffset++;
+                if( getOffset() == -1 && newOffset == -1 )
+                    newOffset = 0;
+            }
         } else if (index <= getFirstVisibleTab(width)) {
             isOffBack = true;
             newOffset = index-1;
