@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="run" name="performance/threaddemo"
@@ -46,11 +46,14 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="build-openide" depends="init" if="should.build.openide">
-        <ant dir="${nbbuild}" target="all-openide"/>
+        <fail>XXX not yet impl; build platform first</fail>
     </target>
     
     <target name="build-looks" depends="init" unless="looks.and.registry.available">
-        <ant dir="${nbbuild}" target="all-openide/looks"/>
+        <ant dir="${nbroot}/openide/registry"/>
+        <ant dir="${nbroot}/openide/convertor"/>
+        <ant dir="${nbroot}/core/registry"/>
+        <ant dir="${nbroot}/openide/looks"/>
     </target>
     
     <target name="compile" depends="build-openide,build-looks">
@@ -92,8 +95,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="run" depends="build">
-        <available property="xerces.classes" classname="org.apache.xerces.jaxp.DocumentBuilderFactoryImpl" classpath="${run.cp}"/>
-        <fail unless="xerces.classes">Could not find Xerces in ${run.cp}</fail>
         <java classname="threaddemo.Main" fork="true" failonerror="true">
             <classpath path="${run.cp}"/>
             <arg file="${testdir}"/>
