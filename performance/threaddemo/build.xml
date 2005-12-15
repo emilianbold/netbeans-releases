@@ -149,22 +149,21 @@ Microsystems, Inc. All Rights Reserved.
         </nbjpdareload>
     </target>
     
-    <target name="optit" depends="build">
-        <java classname="intuitive.audit.Audit" fork="true" failonerror="true">
-            <classpath>
-                <pathelement path="${run.cp}"/>
-                <pathelement location="${optit}/lib/optit.jar"/>
-            </classpath>
-            <arg value="-startCPUprofiler:type=sampler,samplingPeriod=1,onlyCPU=true"/>
-            <arg value="threaddemo.Main"/>
+    <target name="profile" depends="build">
+        <nbprofiledirect>
+            <classpath path="${run.cp}"/>
+        </nbprofiledirect>
+        <property environment="env"/>
+        <java classname="threaddemo.Main" fork="true" failonerror="true" dir="${profiler.session.working.dir}" jvm="${profiler.info.jvm}">
+            <classpath path="${run.cp}"/>
             <arg file="${testdir}"/>
-            <jvmarg value="-Xmx64m"/>
-            <!--<jvmarg value="-ea"/>-->
-            <sysproperty key="OPTITDIR" file="${optit}"/>
-            <env key="LD_LIBRARY_PATH" path="${optit}/lib"/>
-            <jvmarg value="-Xbootclasspath/a:${optit}/lib/oibcp.jar"/>
-            <jvmarg value="-Xboundthreads"/>
-            <jvmarg value="-Xrunpri"/>
+            <jvmarg value="-Xmx256m"/>
+            <jvmarg value="-ea"/>
+            <sysproperty key="java.util.logging.config.file" file="${logging.properties}"/>
+            <sysproperty key="com.sun.management.jmxremote" value="1"/>
+            <jvmarg value="${profiler.info.jvmargs.agent}"/>
+            <jvmarg line="${profiler.info.jvmargs}"/>
+            <env key="LD_LIBRARY_PATH" path="${profiler.info.agentpath}:${env.LD_LIBRARY_PATH}"/>
         </java>
     </target>
     

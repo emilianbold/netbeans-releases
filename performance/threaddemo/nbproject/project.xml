@@ -110,10 +110,6 @@ Microsystems, Inc. All Rights Reserved.
                     <ide-action name="javadoc"/>
                     <ide-action name="run"/>
                     <ide-action name="debug"/>
-                    <action>
-                        <label>Profile Project</label>
-                        <target>optit</target>
-                    </action>
                     <ide-action name="test"/>
                 </context-menu>
             </view>
