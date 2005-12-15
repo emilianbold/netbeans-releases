@@ -541,7 +541,7 @@ public class FormEditorSupport extends JavaEditor
         if(fm!=null) {            
             FormDesigner fd = FormEditor.getFormDesigner(formDataObject.getFormEditor().getFormModel());
             if(fd!=null) {                
-                if( !fd.isTopRADComponent() && fd.isShowing() ) {                                
+                if( fd.isShowing() && !fd.isTopRADComponent()  ) {                                
                     title = FormUtils.getFormattedBundleString(
                                 "FMT_FormTitleWithContainerName",          // NOI18N
                                 new Object[] {title, fd.getTopDesignComponent().getName()}); 
