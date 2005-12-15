@@ -90,6 +90,13 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
             return true;
         } else {
             File parent = domainDir.getParentFile();
+            if (domainDir.exists()) {
+                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
+                        "Msg_ExistingDomainDir",                                //NOI18N
+                        domainDir.getAbsolutePath()));
+                return false;                
+            }
             if (null == parent) {
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(AddDomainDirectoryPanel.class,
@@ -110,13 +117,6 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
                         "Msg_InValidDomainDirParent",                                 //NOI18N
                         parent.getAbsolutePath()));
                 return false;
-            }
-            if (domainDir.exists()) {
-                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
-                        "Msg_ExistingDomainDir",                                //NOI18N
-                        domainDir.getAbsolutePath()));
-                return false;                
             }
             wiz.putProperty(AddDomainWizardIterator.DOMAIN,domainDir.getName());
             wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION,
