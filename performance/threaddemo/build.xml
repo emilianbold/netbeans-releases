@@ -70,6 +70,14 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
     </target>
 
+    <target name="compile-selected-files-in-src">
+        <fail unless="files">Must set property 'files'</fail>
+        <mkdir dir="${build.classes.dir}"/>
+        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.4" includes="${files}">
+            <classpath path="${build.cp}"/>
+        </javac>
+    </target>
+    
     <target name="build" depends="compile">
         <jar jarfile="${threaddemo.jar}" manifest="manifest.mf" compress="false">
             <fileset dir="${build.classes.dir}"/>
