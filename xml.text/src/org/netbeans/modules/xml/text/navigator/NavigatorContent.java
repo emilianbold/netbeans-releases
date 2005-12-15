@@ -131,7 +131,7 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
         
         EditorCookie ec = (EditorCookie)d.getCookie(EditorCookie.class);
         if(ec == null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "The DataObject " + d.getName() + "(class=" + d.getClass().getName() + ") has no EditorCookie!?");
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The DataObject " + d.getName() + "(class=" + d.getClass().getName() + ") has no EditorCookie!?");
         } else {
             try {
                 if(DEBUG) System.out.println("[xml navigator] navigating to DATAOBJECT " + d.hashCode());
@@ -211,7 +211,12 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
                                         if(DEBUG) System.out.println("[xml navigator] panel created");
                                         
                                         //start to listen to the document property changes - we need to get know when the document is being closed
-                                        ((EditorCookie.Observable)documentDO.getCookie(EditorCookie.class)).addPropertyChangeListener(NavigatorContent.this);
+                                        EditorCookie.Observable eco = (EditorCookie.Observable)documentDO.getCookie(EditorCookie.Observable.class);
+                                        if(eco != null) {
+                                            eco.addPropertyChangeListener(NavigatorContent.this);
+                                        } else {
+                                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The DataObject " + documentDO.getName() + "(class=" + documentDO.getClass().getName() + ") has no EditorCookie.Observable!");
+                                        }
                                     } else {
                                         panel = cachedPanel;
                                         if(DEBUG) System.out.println("[xml navigator] panel gotten from cache");
