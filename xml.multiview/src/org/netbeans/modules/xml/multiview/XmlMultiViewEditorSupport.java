@@ -74,7 +74,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     private int xmlMultiViewIndex;
     private TopComponent mvtc;
     private int lastOpenView = 0;
-    private StyledDocument document;
     private TopComponentsListener topComponentsListener;
     private MultiViewDescription[] multiViewDescriptions;
     private XmlMultiViewEditorSupport.DocumentSynchronizer documentSynchronizer;
@@ -420,6 +419,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
     public void multiviewComponentOpened() {
         synchronized (xmlDocListener) {
+            Document document = getDocument();
             if (document == null) {
                 try {
                     document = openDocument();
@@ -434,6 +434,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     public void multiviewComponentClosed() {
         if (getOpenedPanes() == null) {
             synchronized (xmlDocListener) {
+                Document document = getDocument();
                 if (document != null) {
                     document.removeDocumentListener(xmlDocListener);
                     document = null;
@@ -466,6 +467,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
         private final RequestProcessor.Task reloadUpdatedTask = requestProcessor.create(new Runnable() {
             public void run() {
+                Document document = getDocument();
                 DocumentListener listener = document == null ? null :
                         (DocumentListener) document.getProperty(PROPERTY_MODIFICATION_LISTENER);
                 if (listener != null) {
@@ -534,7 +536,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
         protected void reloadModelFromData() {
             if (loading == 0) {
-                Utils.replaceDocument(document, dObj.getDataCache().getStringData());
+                Utils.replaceDocument((StyledDocument)getDocument(), dObj.getDataCache().getStringData());
             }
         }
     }
