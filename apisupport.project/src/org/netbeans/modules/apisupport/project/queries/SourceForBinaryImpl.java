@@ -109,7 +109,8 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     private String getModuleJarClusterPath() {
         if (clusterPath == null) { // XXX should listen to changes on cluster property?
             File cluster = project.getHelper().resolveFile(project.evaluator().evaluate("${cluster}")); // NOI18N
-            clusterPath = PropertyUtils.relativizeFile(cluster.getParentFile(), project.getModuleJarLocation());
+            clusterPath = PropertyUtils.relativizeFile(cluster.getParentFile(), 
+                   project.getModuleJarLocation()).replace('/', File.separatorChar);
         }
         return clusterPath;
     }
