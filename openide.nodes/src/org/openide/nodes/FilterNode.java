@@ -1605,8 +1605,8 @@ public class FilterNode extends Node {
         public Object lookup(Class clazz) {
             Object result = checkNode().lookup(clazz);
 
-            if (isNodeQuery(clazz) && (result == null)) {
-                result = checkNode().lookup(Node.class);
+            if (result == null && clazz.isInstance(node)) {
+                result = node;
             }
 
             return replaceNodes(result, clazz);
@@ -1624,11 +1624,16 @@ public class FilterNode extends Node {
             boolean nodeQ = isNodeQuery(template.getType());
             Item i = checkNode().lookupItem(template);
 
-            if (nodeQ && (i == null)) {
+            if (
+                nodeQ && 
+                i == null && 
+                template.getType().isInstance(node) &&
+                (template.getInstance() == null || template.getInstance() == node)
+            ) {
                 i = checkNode().lookupItem(new Lookup.Template(Node.class, template.getId(), template.getInstance()));
             }
 
-            return nodeQ ? new FilterItem(i, template.getType()) : i;
+            return nodeQ && i != null ? new FilterItem(i, template.getType()) : i;
         }
 
         /**
@@ -1672,7 +1677,7 @@ public class FilterNode extends Node {
 
                     delegate = l.lookup(template);
 
-                    if (isNodeQuery(template.getType()) && delegate.allItems().isEmpty()) {
+                    if (template.getType().isAssignableFrom(node.getClass()) && delegate.allItems().isEmpty()) {
                         delegate = l.lookup(new Lookup.Template(Node.class, template.getId(), template.getInstance()));
                     }
 

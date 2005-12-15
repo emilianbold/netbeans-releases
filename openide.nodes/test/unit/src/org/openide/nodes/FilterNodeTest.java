@@ -14,13 +14,14 @@
 package org.openide.nodes;
 
 import java.util.*;
-import junit.framework.*;
 import junit.textui.TestRunner;
-import org.openide.nodes.*;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.junit.*;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /** A test to check behaviour of filter node. 
  *
@@ -637,6 +638,41 @@ public class FilterNodeTest extends NbTestCase {
             disableDelegation(mask);
         }
 
+    }
+    
+    public void testLookupNode() {
+        class NodeA extends AbstractNode {
+            public NodeA() {
+                super(Children.LEAF);
+            }
+        }
+        
+        class NodeB extends AbstractNode {
+            public NodeB() {
+                 this(Children.LEAF, new InstanceContent());
+            }
+            
+            NodeB(Children ch, InstanceContent ic) {
+                super(ch, new AbstractLookup(ic));
+                ic.add(this);
+            }
+        }
+        
+        FilterNode n = new FilterNode(new NodeB());
+        Object o = n.getLookup().lookup(NodeA.class);
+        assertNull("There is no instance of NodeA in the lookup, we should get null here:" + o, o);
+
+        Lookup.Item item = n.getLookup().lookupItem(new Lookup.Template(NodeA.class));
+        assertNull("There is no instance of NodeA in the lookup, there shall be no item:" + item, item);
+        
+        Lookup.Result res = n.getLookup().lookup(new Lookup.Template(NodeA.class));
+        Collection c;
+        c = res.allClasses();
+        assertTrue("No classes:" + c, c.isEmpty());
+        c = res.allItems();
+        assertTrue("No items:" + c, c.isEmpty());
+        c = res.allInstances();
+        assertTrue("No instances:" + c, c.isEmpty());
     }
 }
 
