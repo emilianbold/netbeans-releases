@@ -702,7 +702,7 @@ public class WebProjectProperties {
                     ProjectManager.getDefault().saveProject(project);
                 }
                 catch (IOException e) {
-                    ErrorManager.getDefault().notify();
+                    ErrorManager.getDefault().notify(e);
                 }
             }
         });
