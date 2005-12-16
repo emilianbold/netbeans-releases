@@ -14,20 +14,16 @@
 package org.netbeans.modules.db.sql.execute.ui;
 
 import java.awt.CardLayout;
-import java.awt.KeyboardFocusManager;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.text.MessageFormat;
+import java.sql.Timestamp;
+import java.text.DateFormat;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.db.sql.execute.NullValue;
-import org.netbeans.modules.db.sql.execute.ui.ResultSetTableModel.Empty;
 import org.openide.util.Lookup;
-import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.ExClipboard;
@@ -218,6 +214,11 @@ public class SQLResultPanel extends javax.swing.JPanel {
 
     private static final class SQLResultTable extends JTable {
         
+        public SQLResultTable() {
+            // issue 70521: rendering java.sql.Timestamp as date and time
+            setDefaultRenderer(Timestamp.class, new DateTimeRenderer());
+        }
+        
         /**
          * Overrinding in order to provide a valid renderer for NullValue.
          * NullValue can appear in any column and causes formatting exceptions.
@@ -229,6 +230,25 @@ public class SQLResultPanel extends javax.swing.JPanel {
                 return getDefaultRenderer(Object.class);
             } else {
                 return super.getCellRenderer(row, column);
+            }
+        }
+        
+        /**
+         * Renderer which renders both the date and time part of a Date.
+         */
+        private static final class DateTimeRenderer extends DefaultTableCellRenderer.UIResource {
+            
+            DateFormat formatter;
+            
+            public DateTimeRenderer() { 
+                super(); 
+            }
+
+            public void setValue(Object value) {
+                if (formatter == null) {
+                    formatter = DateFormat.getDateTimeInstance();
+                }
+                setText((value == null) ? "" : formatter.format(value)); // NOI18N
             }
         }
     }

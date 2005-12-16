@@ -22,6 +22,7 @@ import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
@@ -80,18 +81,18 @@ public class ResultSetTableModelSupport {
         TYPE_TO_DEF.put(new Integer(Types.DATE), dateTypeDef);
         TYPE_TO_DEF.put(new Integer(Types.TIME), dateTypeDef);
         
-        // TIMESTAMP type -- ensure that it is displayed as a date
-        // issue 64165
+        // TIMESTAMP type -- ensure that it is displayed as date and time
+        // issue 64165, issue 70521
         
         TYPE_TO_DEF.put(new Integer(Types.TIMESTAMP), new ColumnTypeDef() {
             public boolean isWritable() {
                 return true;
             }
             public Class getColumnClass() {
-                return Date.class;
+                return Timestamp.class;
             }
             public Object getColumnValue(ResultSet rs, int column) throws SQLException, IOException {
-                return rs.getDate(column);
+                return rs.getTimestamp(column);
             }
         });
         
