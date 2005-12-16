@@ -69,7 +69,10 @@ Microsystems, Inc. All Rights Reserved.
                 </xsl:choose> 
                 <xsl:text> </xsl:text>
                 <xsl:value-of select="$changes-since-year" /> 
-                <xsl:text>):</xsl:text>
+                <xsl:text>). There are also other documents that list changes 
+                made for </xsl:text>
+                <a href="http://www.netbeans.org/download/release41/javadoc/apichanges.html">release 4.1</a> and 
+                <a href="http://www.netbeans.org/download/5_0/javadoc/apichanges.html">release 5.0</a>.
             <xsl:call-template name="do-the-table" />
             </body>
             </html>
