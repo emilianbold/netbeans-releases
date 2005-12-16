@@ -14,6 +14,8 @@
 package org.netbeans.modules.form.editors2;
 
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.beans.*;
 import java.util.*;
 import javax.swing.*;
@@ -209,7 +211,7 @@ public final class BorderEditor extends PropertyEditorSupport
                                        ExplorerManager.Provider
     {
         private ExplorerManager manager = new ExplorerManager ();
-        
+        private Node selectNode = null;        
         private BorderPanel() {
             getExplorerManager().addPropertyChangeListener(this);
             getExplorerManager().addVetoableChangeListener(this);
@@ -250,9 +252,21 @@ public final class BorderEditor extends PropertyEditorSupport
                 bundle.getString("ACSD_BorderCustomEditor")); // NOI18N
         }
 
+        public void addNotify() {
+            super.addNotify();       
+            EventQueue.invokeLater(new Runnable(){
+                public void run() {
+                    try {					
+                        getExplorerManager().setSelectedNodes(new Node[] { selectNode });
+                    } 
+                    catch (PropertyVetoException e) {} // should not happen            
+                }                
+            });         
+        }
+        
         void setValue(Object border) {
             ArrayList bordersList = new ArrayList(10);
-            Node selectNode = null;
+            selectNode = null;
 
             PaletteItem[] items = PaletteUtils.getAllItems();
             for (int i = 0; i < items.length; i++) {
@@ -317,20 +331,9 @@ public final class BorderEditor extends PropertyEditorSupport
                 selectNode = unknownBorder;
             }	    	    
 	    
-	    getExplorerManager().setRootContext(root);	    
-	    
-            final Node selection = selectNode;
-	    EventQueue.invokeLater(new Runnable() {
-                public void run() {		    
-                    try {					
-			getExplorerManager().setSelectedNodes(new Node[] { selection });
-		    } 
-		    catch (PropertyVetoException e) {} // should not happen
-		} 
-            });
-            
+	    getExplorerManager().setRootContext(root);	    	    	                
         }
-
+        
         // track changes in nodes selection
         public void propertyChange(PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
