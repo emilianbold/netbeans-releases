@@ -14,21 +14,19 @@
 package threaddemo.locking;
 
 /** Action to be executed in a lock, possibly throwing checked exceptions.
- * May throw a checked exception, in which case calling
- * code should catch the encapsulating exception and rethrow the
- * real one.
+ * May throw a checked exception.
  * Unchecked exceptions will be propagated to calling code without encapsulation.
  *
  */
-public interface LockExceptionAction {
+public interface LockExceptionAction<T, E extends Exception> {
     
-    /** Execute the action.
+    /**
+     * Execute the action.
      * Can throw an exception.
      * @return any object, then returned from {@link Lock#read(LockExceptionAction)} or {@link Lock#write(LockExceptionAction)}
-     * @exception Exception any exception the body needs to throw
-     *
+     * @throws E any exception the body needs to throw
      */
-    public Object run() throws Exception;
+    public T run() throws E;
     
 }
 

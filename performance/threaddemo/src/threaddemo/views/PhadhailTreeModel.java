@@ -14,7 +14,8 @@
 package threaddemo.views;
 
 import javax.swing.event.TreeModelListener;
-import javax.swing.tree.*;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 import threaddemo.model.Phadhail;
 
 // XXX listen to changes in display name, delete, rename, new

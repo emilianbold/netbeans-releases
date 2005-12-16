@@ -13,10 +13,11 @@
 
 package threaddemo.model;
 
-import java.io.*;
-import java.lang.ref.*;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
 import threaddemo.locking.Lock;
 import threaddemo.locking.LockAction;
 import threaddemo.locking.LockExceptionAction;
@@ -28,7 +29,7 @@ import threaddemo.locking.Locks;
  */
 final class EventHybridLockedPhadhail extends AbstractPhadhail {
     
-    private static final Factory FACTORY = new Factory() {
+    private static final AbstractPhadhail.Factory FACTORY = new AbstractPhadhail.Factory() {
         public AbstractPhadhail create(File f) {
             return new EventHybridLockedPhadhail(f);
         }
@@ -46,111 +47,87 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
         return FACTORY;
     }
     
-    public List getChildren() {
-        return (List)Locks.eventHybrid().read(new LockAction() {
-            public Object run() {
+    public List<Phadhail> getChildren() {
+        return Locks.eventHybrid().read(new LockAction<List<Phadhail>>() {
+            public List<Phadhail> run() {
                 return EventHybridLockedPhadhail.super.getChildren();
             }
         });
     }
     
     public String getName() {
-        return (String)Locks.eventHybrid().read(new LockAction() {
-            public Object run() {
+        return Locks.eventHybrid().read(new LockAction<String>() {
+            public String run() {
                 return EventHybridLockedPhadhail.super.getName();
             }
         });
     }
     
     public String getPath() {
-        return (String)Locks.eventHybrid().read(new LockAction() {
-            public Object run() {
+        return Locks.eventHybrid().read(new LockAction<String>() {
+            public String run() {
                 return EventHybridLockedPhadhail.super.getPath();
             }
         });
     }
     
     public boolean hasChildren() {
-        return ((Boolean)Locks.eventHybrid().read(new LockAction() {
-            public Object run() {
-                return EventHybridLockedPhadhail.super.hasChildren() ? Boolean.TRUE : Boolean.FALSE;
+        return Locks.eventHybrid().read(new LockAction<Boolean>() {
+            public Boolean run() {
+                return EventHybridLockedPhadhail.super.hasChildren();
             }
-        })).booleanValue();
+        });
     }
     
     public void rename(final String nue) throws IOException {
-        try {
-            Locks.eventHybrid().write(new LockExceptionAction() {
-                public Object run() throws IOException {
-                    EventHybridLockedPhadhail.super.rename(nue);
-                    return null;
-                }
-            });
-        } catch (InvocationTargetException e) {
-            throw (IOException)e.getCause();
-        }
+        Locks.eventHybrid().write(new LockExceptionAction<Void,IOException>() {
+            public Void run() throws IOException {
+                EventHybridLockedPhadhail.super.rename(nue);
+                return null;
+            }
+        });
     }
     
     public Phadhail createContainerPhadhail(final String name) throws IOException {
-        try {
-            return (Phadhail)Locks.eventHybrid().write(new LockExceptionAction() {
-                public Object run() throws IOException {
-                    return EventHybridLockedPhadhail.super.createContainerPhadhail(name);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            throw (IOException)e.getCause();
-        }
+        return Locks.eventHybrid().write(new LockExceptionAction<Phadhail,IOException>() {
+            public Phadhail run() throws IOException {
+                return EventHybridLockedPhadhail.super.createContainerPhadhail(name);
+            }
+        });
     }
     
     public Phadhail createLeafPhadhail(final String name) throws IOException {
-        try {
-            return (Phadhail)Locks.eventHybrid().write(new LockExceptionAction() {
-                public Object run() throws IOException {
-                    return EventHybridLockedPhadhail.super.createLeafPhadhail(name);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            throw (IOException)e.getCause();
-        }
+        return Locks.eventHybrid().write(new LockExceptionAction<Phadhail,IOException>() {
+            public Phadhail run() throws IOException {
+                return EventHybridLockedPhadhail.super.createLeafPhadhail(name);
+            }
+        });
     }
     
     public void delete() throws IOException {
-        try {
-            Locks.eventHybrid().write(new LockExceptionAction() {
-                public Object run() throws IOException {
-                    EventHybridLockedPhadhail.super.delete();
-                    return null;
-                }
-            });
-        } catch (InvocationTargetException e) {
-            throw (IOException)e.getCause();
-        }
+        Locks.eventHybrid().write(new LockExceptionAction<Void,IOException>() {
+            public Void run() throws IOException {
+                EventHybridLockedPhadhail.super.delete();
+                return null;
+            }
+        });
     }
     
     public InputStream getInputStream() throws IOException {
-        try {
-            return (InputStream)Locks.eventHybrid().read(new LockExceptionAction() {
-                public Object run() throws IOException {
-                    return EventHybridLockedPhadhail.super.getInputStream();
-                }
-            });
-        } catch (InvocationTargetException e) {
-            throw (IOException)e.getCause();
-        }
+        return Locks.eventHybrid().read(new LockExceptionAction<InputStream,IOException>() {
+            public InputStream run() throws IOException {
+                return EventHybridLockedPhadhail.super.getInputStream();
+            }
+        });
     }
     
     public OutputStream getOutputStream() throws IOException {
         // See comments in AbstractPhadhail.getOutputStream.
-        try {
-            return (OutputStream)Locks.eventHybrid().read(new LockExceptionAction() {
-                public Object run() throws IOException {
-                    return EventHybridLockedPhadhail.super.getOutputStream();
-                }
-            });
-        } catch (InvocationTargetException e) {
-            throw (IOException)e.getCause();
-        }
+        return Locks.eventHybrid().read(new LockExceptionAction<OutputStream,IOException>() {
+            public OutputStream run() throws IOException {
+                return EventHybridLockedPhadhail.super.getOutputStream();
+            }
+        });
     }
     
     public Lock lock() {

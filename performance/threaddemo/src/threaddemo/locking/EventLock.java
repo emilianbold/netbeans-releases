@@ -18,7 +18,8 @@ import java.awt.Toolkit;
 import java.awt.event.InvocationEvent;
 import java.awt.event.PaintEvent;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import org.openide.util.Utilities;
 
 // XXX could track read vs. write state
@@ -33,16 +34,16 @@ final class EventLock implements Lock {
     
     private EventLock() {}
     
-    public Object read(final LockAction action) {
+    public <T> T read(final LockAction<T> action) {
         if (isDispatchThread()) {
             return action.run();
         } else {
             ReadWriteLock.enteringOther(this);
-            final Object[] result = new Object[1];
+            final List<T> result = new ArrayList<T>(1);
             try {
                 invokeAndWaitLowPriority(this, new Runnable() {
                     public void run() {
-                        result[0] = action.run();
+                        result.add(action.run());
                     }
                 });
             } catch (InterruptedException e) {
@@ -57,28 +58,22 @@ final class EventLock implements Lock {
                     throw new IllegalStateException(t.toString());
                 }
             }
-            return result[0];
+            return result.get(0);
         }
     }
     
-    public Object read(final LockExceptionAction action) throws InvocationTargetException {
+    public <T, E extends Exception> T read(final LockExceptionAction<T,E> action) throws E {
         if (isDispatchThread()) {
-            try {
-                return action.run();
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new InvocationTargetException(e);
-            }
+            return action.run();
         } else {
             ReadWriteLock.enteringOther(this);
             final Throwable[] exc = new Throwable[1];
-            final Object[] result = new Object[1];
+            final List<T> result = new ArrayList<T>(1);
             try {
                 invokeAndWaitLowPriority(this, new Runnable() {
                     public void run() {
                         try {
-                            result[0] = action.run();
+                            result.add(action.run());
                         } catch (Throwable t) {
                             exc[0] = t;
                         }
@@ -95,9 +90,11 @@ final class EventLock implements Lock {
             } else if (exc[0] instanceof Error) {
                 throw (Error)exc[0];
             } else if (exc[0] != null) {
-                throw new InvocationTargetException((Exception)exc[0]);
+                @SuppressWarnings("unchecked")
+                E e = (E) exc[0];
+                throw e;
             } else {
-                return result[0];
+                return result.get(0);
             }
         }
     }
@@ -106,11 +103,11 @@ final class EventLock implements Lock {
         invokeLaterLowPriority(this, action);
     }
     
-    public Object write(LockAction action) {
+    public <T> T write(LockAction<T> action) {
         return read(action);
     }
     
-    public Object write(LockExceptionAction action) throws InvocationTargetException {
+    public <T, E extends Exception> T write(LockExceptionAction<T,E> action) throws E {
         return read(action);
     }
     

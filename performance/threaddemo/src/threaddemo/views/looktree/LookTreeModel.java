@@ -14,13 +14,15 @@
 package threaddemo.views.looktree;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
-import javax.swing.tree.*;
-import org.netbeans.spi.looks.*;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
+import org.netbeans.spi.looks.LookSelector;
 
 /**
  * Tree model displaying a tree of represented objects using looks.
@@ -33,10 +35,10 @@ final class LookTreeModel implements TreeModel {
     private final Object rootObject;
     private final LookSelector sel;
     private LookTreeNode root;
-    private final List listeners; // List<TreeModelListener>
+    private final List<TreeModelListener> listeners;
     
     public LookTreeModel(Object root, LookSelector sel) {
-        listeners = new ArrayList();
+        listeners = new ArrayList<TreeModelListener>();
         this.rootObject = root;
         this.sel = sel;
     }
@@ -104,9 +106,7 @@ final class LookTreeModel implements TreeModel {
         int[] childIndices = parent != null ? new int[] {getIndexOfChild(parent, source)} : null;
         Object[] children = parent != null ? new Object[] {source} : null;
         TreeModelEvent ev = new TreeModelEvent(this, path, childIndices, children);
-        Iterator it = listeners.iterator();
-        while (it.hasNext()) {
-            TreeModelListener l = (TreeModelListener)it.next();
+        for (TreeModelListener l : listeners) {
             l.treeNodesChanged(ev);
         }
     }
@@ -119,9 +119,7 @@ final class LookTreeModel implements TreeModel {
         // XXX this is crude, could try to actually compute added/removed children...
         TreePath path = (source == root) ? null : findPath(source.getParent());
         TreeModelEvent ev = new TreeModelEvent(this, path, null, null);
-        Iterator it = listeners.iterator();
-        while (it.hasNext()) {
-            TreeModelListener l = (TreeModelListener)it.next();
+        for (TreeModelListener l : listeners) {
             logger.log(Level.FINER, "firing: {0} to {1}", new Object[] {ev, l});
             l.treeStructureChanged(ev);
         }

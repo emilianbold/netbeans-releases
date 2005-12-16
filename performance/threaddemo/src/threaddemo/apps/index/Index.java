@@ -46,7 +46,7 @@ interface Index {
      * Values are occurrence counts.
      * <p>Must be called with lock held, and result may only be accessed with it held.
      */
-    Map/*<String,int>*/ getData();
+    Map<String,Integer> getData();
     
     /**
      * Add a listener to changes in the data.

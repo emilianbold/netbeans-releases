@@ -13,12 +13,14 @@
 
 package threaddemo.util;
 
-import java.beans.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.lang.ref.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
-import javax.swing.event.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.StyledDocument;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -33,11 +35,11 @@ import threaddemo.locking.LockAction;
  * writing to the text document from the model.
  * <p>The underlying model is a text document. The deltas to the underlying model
  * in this implementation are document text changes or reload events, though that
- * fact is not visible to subclasses. The derived model must be defined by the
+ * fact should not matter to subclasses. The derived model must be defined by the
  * subclass.
  * @author Jesse Glick
  */
-public abstract class DocumentParseSupport extends TwoWaySupport {
+public abstract class DocumentParseSupport<DM,DMD> extends TwoWaySupport<DM, DocumentParseSupportDelta, DMD> {
     
     private static final Logger logger = Logger.getLogger(DocumentParseSupport.class.getName());
     
@@ -67,18 +69,16 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
      * of {@link org.openide.cookies.EditorCookie.Observable#PROP_DOCUMENT} indicating that the whole
      * document changed (was reloaded, for example), or lists of {@link DocumentEvent}s.
      */
-    protected final Object composeUnderlyingDeltas(Object underlyingDelta1, Object underlyingDelta2) {
-        assert underlyingDelta1 instanceof PropertyChangeEvent || underlyingDelta1 instanceof List;
-        assert underlyingDelta2 instanceof PropertyChangeEvent || underlyingDelta2 instanceof List;
-        if (underlyingDelta1 instanceof PropertyChangeEvent) {
+    protected final DocumentParseSupportDelta composeUnderlyingDeltas(DocumentParseSupportDelta underlyingDelta1, DocumentParseSupportDelta underlyingDelta2) {
+        if (underlyingDelta1.changeEvent != null) {
             // PROP_DOCUMENT that is. Need to recreate the whole thing generally.
             return underlyingDelta1;
-        } else if (underlyingDelta2 instanceof PropertyChangeEvent) {
+        } else if (underlyingDelta2.changeEvent != null) {
             // Ditto.
             return underlyingDelta2;
         } else {
             // Append changes.
-            ((List)underlyingDelta1).addAll((List)underlyingDelta2);
+            underlyingDelta1.documentEvents.addAll(underlyingDelta2.documentEvents);
             return underlyingDelta1;
         }
     }
@@ -132,22 +132,16 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
      * Parse the document.
      * Calls {@link #doDerive(StyledDocument, List, Object)}.
      */
-    protected final DerivationResult doDerive(final Object oldValue, Object underlyingDelta) throws Exception {
+    protected final DerivationResult<DM,DMD> doDerive(final DM oldValue, final DocumentParseSupportDelta underlyingDelta) throws Exception {
         if (document == null) {
             refreshDocument(requiresUnmodifiedDocument());
         }
-        final List documentEvents; // List<DocumentEvent>
-        if (underlyingDelta instanceof List) {
-            documentEvents = (List)underlyingDelta;
-        } else {
-            documentEvents = null;
-        }
-        final DerivationResult[] val = new DerivationResult[1];
+        final List<DerivationResult<DM,DMD>> val = new ArrayList<DerivationResult<DM,DMD>>(1);
         final Exception[] exc = new Exception[1];
         Runnable r = new Runnable() {
             public void run() {
                 try {
-                    val[0] = doDerive(document, documentEvents, oldValue);
+                    val.add(doDerive(document, underlyingDelta != null ? underlyingDelta.documentEvents : null, oldValue));
                 } catch (Exception e) {
                     exc[0] = e;
                 }
@@ -161,7 +155,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         if (exc[0] != null) {
             throw exc[0];
         }
-        return val[0];
+        return val.get(0);
     }
     
     /**
@@ -198,24 +192,24 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
      * @return the new derived model value plus the change made to it
      * @throws Exception (checked) in case of parsing problems
      */
-    protected abstract DerivationResult doDerive(StyledDocument document, List documentEvents, Object oldValue) throws Exception;
+    protected abstract DerivationResult<DM,DMD> doDerive(StyledDocument document, List<DocumentEvent> documentEvents, DM oldValue) throws Exception;
     
     /**
      * Regenerates the document.
      * Calls {@link #doRecreate(StyledDocument, Object, Object)}.
      */
-    protected final Object doRecreate(final Object oldValue, final Object derivedDelta) throws Exception {
+    protected final DM doRecreate(final DM oldValue, final DMD derivedDelta) throws Exception {
         if (document == null) {
             refreshDocument(true);
         }
-        final Object[] val = new Object[1];
+        final List<DM> val = new ArrayList<DM>(1);
         final Exception[] exc = new Exception[1];
         Runnable r = new Runnable() {
             public void run() {
                 document.removeDocumentListener(listener);
                 assert --listenerCount == 0;
                 try {
-                    val[0] = doRecreate(document, oldValue, derivedDelta);
+                    val.add(doRecreate(document, oldValue, derivedDelta));
                 } catch (Exception e) {
                     exc[0] = e;
                 } finally {
@@ -232,7 +226,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         if (exc[0] != null) {
             throw exc[0];
         }
-        return val[0];
+        return val.get(0);
     }
     
     /**
@@ -255,7 +249,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
      * @return the new derived model
      * @see org.openide.text.NbDocument.WriteLockable
      */
-    protected abstract Object doRecreate(StyledDocument document, Object oldValue, Object derivedDelta) throws Exception;
+    protected abstract DM doRecreate(StyledDocument document, DM oldValue, DMD derivedDelta) throws Exception;
     
     /**
      * Listens to changes in identity or content of the text document.
@@ -275,11 +269,11 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         }
         
         private void documentUpdate(DocumentEvent e) {
-            final List l = new ArrayList(1); // List<DocumentEvent>
+            final List<DocumentEvent> l = new ArrayList<DocumentEvent>(1);
             l.add(e);
-            getLock().read(new LockAction() {
-                public Object run() {
-                    invalidate(l);
+            getLock().read(new LockAction<Void>() {
+                public Void run() {
+                    invalidate(new DocumentParseSupportDelta(l));
                     return null;
                 }
             });
@@ -303,7 +297,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
                 // the EQ with CES.open or .openDocument.
                 getLock().readLater(new Runnable() {
                     public void run() {
-                        invalidate(evt);
+                        invalidate(new DocumentParseSupportDelta(evt));
                     }
                 });
             }

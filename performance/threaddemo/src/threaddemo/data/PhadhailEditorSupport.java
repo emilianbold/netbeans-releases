@@ -15,9 +15,17 @@ package threaddemo.data;
 
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Date;
-import org.openide.cookies.*;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.PrintCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -194,9 +202,10 @@ final class PhadhailEditorSupport extends CloneableEditorSupport implements Open
         }
         
         public void unmarkModified() {
-            assert supp.modified != null;
-            PhadhailLookups.saved(ph, supp.modified);
-            supp.modified = null;
+            if (supp.modified != null) {
+                PhadhailLookups.saved(ph, supp.modified);
+                supp.modified = null;
+            }
         }
         
     }

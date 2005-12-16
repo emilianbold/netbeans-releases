@@ -13,9 +13,17 @@
 
 package threaddemo.util;
 
-import java.lang.ref.*;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import threaddemo.locking.Lock;
@@ -151,7 +159,7 @@ import threaddemo.locking.Lock;
  *
  * @author Jesse Glick
  */
-public abstract class TwoWaySupport {
+public abstract class TwoWaySupport<DM, UMD, DMD> {
     
     /** logging support */
     private static final Logger logger = Logger.getLogger(TwoWaySupport.class.getName());
@@ -160,10 +168,10 @@ public abstract class TwoWaySupport {
     private static final Object LOCK = new String("TwoWaySupport");
     
     /** supports which are scheduled to be derived but haven't been yet */
-    private static final SortedSet toDerive = new TreeSet(); // SortedSet<DeriveTask>
+    private static final SortedSet<DeriveTask> toDerive = new TreeSet<DeriveTask>();
     
     /** derivation tasks indexed by support */
-    private static final Map tasks = new WeakHashMap(); // Map<TwoWaySupport,DeriveTask>
+    private static final Map<TwoWaySupport,DeriveTask> tasks = new WeakHashMap<TwoWaySupport,DeriveTask>();
     
     /** derivation thread when it has been started */
     private static boolean startedThread = false;
@@ -172,16 +180,16 @@ public abstract class TwoWaySupport {
     private static ReferenceQueue queue = null;
     
     /** reverse lookup for model field to support queue collector */
-    private static final Map referencesToSupports = new WeakHashMap(); // Map<Reference<Object>,Reference<TwoWaySupport>>
+    private static final Map<Reference<Object>,Reference<TwoWaySupport>> referencesToSupports = new WeakHashMap<Reference<Object>,Reference<TwoWaySupport>>();
     
     /** associated lock */
     private final Lock lock;
     
     /** listener list */
-    private final List listeners; // List<TwoWayListener>
+    private final List<TwoWayListener<DM, UMD, DMD>> listeners;
     
     /** current derived model, if any */
-    private Reference model = null; // Reference<Object>
+    private Reference<DM> model = null;
     
     /** current derivation problem, if any */
     private Exception problem = null; // XXX should perhaps be Reference<Exception>?
@@ -193,7 +201,7 @@ public abstract class TwoWaySupport {
     private boolean active = false;
     
     /** underlying delta, if one is being processed thru initiate + doDerive */
-    private Object underlyingDelta = null;
+    private UMD underlyingDelta = null;
     
     /** currently in doRecreate() */
     private boolean mutating = false;
@@ -208,7 +216,7 @@ public abstract class TwoWaySupport {
      */
     protected TwoWaySupport(Lock lock) {
         this.lock = lock;
-        listeners = new ArrayList();
+        listeners = new ArrayList<TwoWayListener<DM, UMD, DMD>>();
     }
     
     /**
@@ -249,7 +257,7 @@ public abstract class TwoWaySupport {
      *         the old value) plus the derived delta
      * @throws Exception (checked only!) if derivation of the model failed
      */
-    protected abstract DerivationResult doDerive(Object oldValue, Object underlyingDelta) throws Exception;
+    protected abstract DerivationResult<DM, DMD> doDerive(DM oldValue, UMD underlyingDelta) throws Exception;
     
     /**
      * Result of a derivation. Includes both the final resulting value, and the
@@ -257,9 +265,9 @@ public abstract class TwoWaySupport {
      * to pass to {@link TwoWayEvent.Derived}, which may be useful for subclasses
      * firing changes.
      */
-    protected final static class DerivationResult {
-        final Object newValue;
-        final Object derivedDelta;
+    protected final static class DerivationResult<DM, DMD> {
+        final DM newValue;
+        final DMD derivedDelta;
         /**
          * Create a derivation result wrapper object.
          * @param newValue the new value of the derived model
@@ -267,7 +275,7 @@ public abstract class TwoWaySupport {
          *                     model; must be null if the old derived value was null,
          *                     and only then
          */
-        public DerivationResult(Object newValue, Object derivedDelta) {
+        public DerivationResult(DM newValue, DMD derivedDelta) {
             if (newValue == null) throw new NullPointerException();
             this.newValue = newValue;
             this.derivedDelta = derivedDelta;
@@ -286,7 +294,7 @@ public abstract class TwoWaySupport {
      * @param underlyingDelta2 the newer delta
      * @return a delta representing those two changes applied in sequence
      */
-    protected abstract Object composeUnderlyingDeltas(Object underlyingDelta1, Object underlyingDelta2);
+    protected abstract UMD composeUnderlyingDeltas(UMD underlyingDelta1, UMD underlyingDelta2);
     
     /**
      * Recreate the underlying model from the derived model.
@@ -307,7 +315,7 @@ public abstract class TwoWaySupport {
      *         the old value)
      * @throws Exception (checked only!) if recreation of the underlying model failed
      */
-    protected abstract Object doRecreate(Object oldValue, Object derivedDelta) throws Exception;
+    protected abstract DM doRecreate(DM oldValue, DMD derivedDelta) throws Exception;
     
     private void assertStateConsistent() {
         assert Thread.holdsLock(LOCK);
@@ -332,9 +340,9 @@ public abstract class TwoWaySupport {
      *                                   and threw an exception (possibly from an
      *                                   earlier derivation run that is still broken)
      */
-    public final Object getValueBlocking() throws InvocationTargetException {
+    public final DM getValueBlocking() throws InvocationTargetException {
         assert lock.canRead();
-        Object old;
+        DM old;
         synchronized (LOCK) {
             assertStateConsistent();
             assert !mutating;
@@ -346,7 +354,7 @@ public abstract class TwoWaySupport {
                 } catch (InterruptedException e) {/* OK */}
             }
             if (fresh) {
-                Object o = model.get();
+                DM o = model.get();
                 if (o != null) {
                     logger.log(Level.FINER, "fresh value: {0}", o);
                     return o;
@@ -362,8 +370,8 @@ public abstract class TwoWaySupport {
             fresh = false;
         }
         // Getting the value:
-        DerivationResult result;
-        Object newValue = null;
+        DerivationResult<DM, DMD> result;
+        DM newValue = null;
         try {
             result = doDerive(old, null);
             if (result == null) {
@@ -385,7 +393,7 @@ public abstract class TwoWaySupport {
         } catch (Exception e) {
             problem = e;
             fresh = false;
-            fireChange(new TwoWayEvent.Broken(this, old, underlyingDelta, e));
+            fireChange(new TwoWayEvent.Broken<DM, UMD, DMD>(this, old, underlyingDelta, e));
             throw new InvocationTargetException(e);
         } finally {
             synchronized (LOCK) {
@@ -397,7 +405,7 @@ public abstract class TwoWaySupport {
                 deactivate();
             }
         }
-        fireChange(new TwoWayEvent.Derived(this, old, result.newValue, result.derivedDelta, underlyingDelta));
+        fireChange(new TwoWayEvent.Derived<DM, UMD, DMD>(this, old, result.newValue, result.derivedDelta, underlyingDelta));
         return result.newValue;
     }
     
@@ -406,7 +414,7 @@ public abstract class TwoWaySupport {
         if (active) {
             // No longer need to run this.
             active = false;
-            DeriveTask t = (DeriveTask)tasks.remove(this);
+            DeriveTask t = tasks.remove(this);
             assert t != null;
             toDerive.remove(t);
         }
@@ -421,14 +429,16 @@ public abstract class TwoWaySupport {
         }
     }
     
-    private void setModel(Object result) {
+    private void setModel(DM result) {
         assert Thread.holdsLock(LOCK);
         assert result != null;
         if (model != null) {
             referencesToSupports.remove(model);
         }
         model = createEnqueuedReference(result);
-        referencesToSupports.put(model, new WeakReference(this));
+        @SuppressWarnings("unchecked")
+        Reference<Object> _model = (Reference<Object>) model;
+        referencesToSupports.put(_model, new WeakReference<TwoWaySupport>(this));
     }
     
     /**
@@ -437,7 +447,7 @@ public abstract class TwoWaySupport {
      * @return the value of the derived model, or null if it is stale or has never
      *         been computed at all
      */
-    public final Object getValueNonBlocking() {
+    public final DM getValueNonBlocking() {
         assert lock.canRead();
         synchronized (LOCK) {
             assertStateConsistent();
@@ -452,7 +462,7 @@ public abstract class TwoWaySupport {
      * @return the value of the derived model, or null if it has never been
      *         computed at all
      */
-    public final Object getStaleValueNonBlocking() {
+    public final DM getStaleValueNonBlocking() {
         assert lock.canRead();
         synchronized (LOCK) {
             assertStateConsistent();
@@ -474,10 +484,10 @@ public abstract class TwoWaySupport {
      * @throws InvocationTargetException if <code>doRecreate</code> throws an
      *                                   exception
      */
-    public final Object mutate(Object derivedDelta) throws ClobberException, InvocationTargetException {
+    public final DM mutate(DMD derivedDelta) throws ClobberException, InvocationTargetException {
         if (derivedDelta == null) throw new NullPointerException();
         assert lock.canWrite();
-        Object oldValue;
+        DM oldValue;
         synchronized (LOCK) {
             assertStateConsistent();
             assert !mutating;
@@ -488,7 +498,7 @@ public abstract class TwoWaySupport {
             }
             mutating = true;
         }
-        Object result = null;
+        DM result = null;
         try {
             // XXX should also dequeue if necessary to avoid sequence:
             // invalidate -> initiate -> [pause] -> mutate -> [pause] -> invalidate -> [pause] -> derive
@@ -508,9 +518,9 @@ public abstract class TwoWaySupport {
             }
         }
         if (fresh) {
-            fireChange(new TwoWayEvent.Recreated(this, oldValue, result, derivedDelta));
+            fireChange(new TwoWayEvent.Recreated<DM, UMD, DMD>(this, oldValue, result, derivedDelta));
         } else {
-            fireChange(new TwoWayEvent.Clobbered(this, oldValue, result, derivedDelta));
+            fireChange(new TwoWayEvent.Clobbered<DM, UMD, DMD>(this, oldValue, result, derivedDelta));
         }
         return result;
     }
@@ -522,11 +532,11 @@ public abstract class TwoWaySupport {
      * except to call {@link #composeUnderlyingDeltas}.
      * @param underlyingDelta a change to the underlying model
      */
-    public final void invalidate(Object underlyingDelta) {
+    public final void invalidate(UMD underlyingDelta) {
         if (underlyingDelta == null) throw new NullPointerException();
         assert lock.canRead();
         boolean wasInited;
-        Object oldValue;
+        DM oldValue;
         synchronized (LOCK) {
             assertStateConsistent();
             assert !mutating;
@@ -545,7 +555,7 @@ public abstract class TwoWaySupport {
             problem = null;
         }
         if (wasInited && oldValue != null) {
-            fireChange(new TwoWayEvent.Invalidated(this, oldValue, underlyingDelta));
+            fireChange(new TwoWayEvent.Invalidated<DM, UMD, DMD>(this, oldValue, underlyingDelta));
         }
     }
 
@@ -561,8 +571,8 @@ public abstract class TwoWaySupport {
         synchronized (LOCK) {
             assertStateConsistent();
             if (!active && !fresh) {
-                Object oldValue = (model != null) ? model.get() : null;
-                DeriveTask t = new DeriveTask(this, oldValue != null || problem != null);
+                DM oldValue = (model != null) ? model.get() : null;
+                DeriveTask<DM, UMD, DMD> t = new DeriveTask<DM, UMD, DMD>(this, oldValue != null || problem != null);
                 toDerive.add(t);
                 tasks.put(this, t);
                 active = true;
@@ -595,7 +605,7 @@ public abstract class TwoWaySupport {
      * <p>This method may be called from any thread and will not block.
      * @param l a listener to add
      */
-    public final void addTwoWayListener(TwoWayListener l) {
+    public final void addTwoWayListener(TwoWayListener<DM, UMD, DMD> l) {
         synchronized (listeners) {
             listeners.add(l);
         }
@@ -606,7 +616,7 @@ public abstract class TwoWaySupport {
      * <p>This method may be called from any thread and will not block.
      * @param l a listener to remove
      */
-    public final void removeTwoWayListener(TwoWayListener l) {
+    public final void removeTwoWayListener(TwoWayListener<DM, UMD, DMD> l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
@@ -615,30 +625,30 @@ public abstract class TwoWaySupport {
     /**
      * Fire an event to all listeners in the read lock.
      */
-    private void fireChange(final TwoWayEvent e) {
-        final TwoWayListener[] ls;
+    private void fireChange(final TwoWayEvent<DM, UMD, DMD> e) {
+        final List<TwoWayListener<DM, UMD, DMD>> ls;
         synchronized (listeners) {
             if (listeners.isEmpty()) {
                 return;
             }
-            ls = (TwoWayListener[])listeners.toArray(new TwoWayListener[listeners.size()]);
+            ls = new ArrayList<TwoWayListener<DM, UMD, DMD>>(listeners);
         }
         lock.read(new Runnable() {
             public void run() {
-                for (int i = 0; i < ls.length; i++) {
+                for (TwoWayListener<DM, UMD, DMD> l : ls) {
                     if (e instanceof TwoWayEvent.Derived) {
-                        ls[i].derived((TwoWayEvent.Derived)e);
+                        l.derived((TwoWayEvent.Derived<DM, UMD, DMD>) e);
                     } else if (e instanceof TwoWayEvent.Invalidated) {
-                        ls[i].invalidated((TwoWayEvent.Invalidated)e);
+                        l.invalidated((TwoWayEvent.Invalidated<DM, UMD, DMD>) e);
                     } else if (e instanceof TwoWayEvent.Recreated) {
-                        ls[i].recreated((TwoWayEvent.Recreated)e);
+                        l.recreated((TwoWayEvent.Recreated<DM, UMD, DMD>) e);
                     } else if (e instanceof TwoWayEvent.Clobbered) {
-                        ls[i].clobbered((TwoWayEvent.Clobbered)e);
+                        l.clobbered((TwoWayEvent.Clobbered<DM, UMD, DMD>) e);
                     } else if (e instanceof TwoWayEvent.Forgotten) {
-                        ls[i].forgotten((TwoWayEvent.Forgotten)e);
+                        l.forgotten((TwoWayEvent.Forgotten<DM, UMD, DMD>) e);
                     } else {
                         assert e instanceof TwoWayEvent.Broken;
-                        ls[i].broken((TwoWayEvent.Broken)e);
+                        l.broken((TwoWayEvent.Broken<DM, UMD, DMD>) e);
                     }
                 }
             }
@@ -668,8 +678,8 @@ public abstract class TwoWaySupport {
         return false;
     }
     
-    private Reference createEnqueuedReference(Object value) {
-        Reference r = createReference(value, queue);
+    private Reference<DM> createEnqueuedReference(DM value) {
+        Reference<DM> r = createReference(value, queue);
         if (!(r instanceof StrongReference) && queue == null) {
             // Well discard that one; optimistically assumed that
             // createReference is not overridden, in which case we
@@ -692,16 +702,21 @@ public abstract class TwoWaySupport {
                     Reference r = queue.remove();
                     TwoWaySupport s;
                     synchronized (LOCK) {
-                        Reference r2 = (Reference)referencesToSupports.remove(r);
-                        s = (r2 != null) ? (TwoWaySupport)r2.get() : null;
+                        Reference<TwoWaySupport> r2 = referencesToSupports.remove(r);
+                        s = (r2 != null) ? r2.get() : null;
                     }
                     if (s != null) {
-                        s.fireChange(new TwoWayEvent.Forgotten(s));
+                        notify(s);
                     }
                 } catch (InterruptedException e) {
                     assert false : e;
                 }
             }
+        }
+        
+        @SuppressWarnings("unchecked")
+        private void notify(TwoWaySupport s) {
+            s.fireChange(new TwoWayEvent.Forgotten(s));
         }
         
     }
@@ -718,23 +733,23 @@ public abstract class TwoWaySupport {
      * @param q a reference queue supplied by the support
      * @return a reference to the model enqueued on that reference queue
      */
-    protected Reference createReference(Object value, ReferenceQueue q) {
+    protected Reference<DM> createReference(DM value, ReferenceQueue q) {
         // Does not matter what the queue is.
-        return new StrongReference(value);
+        return new StrongReference<DM>(value);
     }
 
     /**
      * A strong reference whose referent will not be collected unless the
      * reference is too.
      */
-    private static final class StrongReference extends WeakReference {
-        private Object value;
-        public StrongReference(Object value) {
+    private static final class StrongReference<DM> extends WeakReference<DM> {
+        private DM value;
+        public StrongReference(DM value) {
             super(value);
             assert value != null;
             this.value = value;
         }
-        public Object get() {
+        public DM get() {
             return value;
         }
         public void clear() {
@@ -743,19 +758,18 @@ public abstract class TwoWaySupport {
         }
     }
     
-    private static final class DeriveTask implements Comparable {
+    static final class DeriveTask<DM, UMD, DMD> implements Comparable<DeriveTask<DM, UMD, DMD>> {
         
-        public final Reference support; // Reference<TwoWaySupport>
+        public final Reference<TwoWaySupport<DM, UMD, DMD>> support;
         
         public final long schedule;
         
-        public DeriveTask(TwoWaySupport support, boolean delay) {
-            this.support = new WeakReference(support);
+        public DeriveTask(TwoWaySupport<DM, UMD, DMD> support, boolean delay) {
+            this.support = new WeakReference<TwoWaySupport<DM, UMD, DMD>>(support);
             schedule = System.currentTimeMillis() + (delay ? support.delay() : 0L);
         }
         
-        public int compareTo(Object o) {
-            DeriveTask t = (DeriveTask)o;
+        public int compareTo(DeriveTask<DM, UMD, DMD> t) {
             if (t == this) return 0;
             if (schedule > t.schedule) return 1;
             if (schedule < t.schedule) return -1;
@@ -792,9 +806,9 @@ public abstract class TwoWaySupport {
                             assert false : e;
                         }
                     }
-                    Iterator it = toDerive.iterator();
-                    DeriveTask t = (DeriveTask)it.next();
-                    s[0] = (TwoWaySupport)t.support.get();
+                    Iterator<DeriveTask> it = toDerive.iterator();
+                    DeriveTask t = it.next();
+                    s[0] = (TwoWaySupport) t.support.get();
                     logger.log(Level.FINER, "derivation thread found: {0}", s[0]);
                     if (s[0] == null) {
                         // Dead - support was collected before we got to it.
@@ -803,7 +817,7 @@ public abstract class TwoWaySupport {
                     }
                     long now = System.currentTimeMillis();
                     if (t.schedule > now) {
-                        logger.log(Level.FINER, "derivation thread deferring: {0} for {1}msec", new Object[] {s[0], new Long(t.schedule - now)});
+                        logger.log(Level.FINER, "derivation thread deferring: {0} for {1}msec", new Object[] {s[0], t.schedule - now});
                         try {
                             LOCK.wait(t.schedule - now);
                         } catch (InterruptedException e) {

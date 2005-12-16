@@ -13,11 +13,13 @@
 
 package threaddemo.views.looktree;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.List;
+import org.netbeans.modules.looks.Accessor;
+import org.netbeans.modules.looks.LookEvent;
+import org.netbeans.modules.looks.LookListener;
 import org.netbeans.spi.looks.Look;
 import org.netbeans.spi.looks.LookSelector;
-import org.netbeans.modules.looks.LookListener;
-import org.netbeans.modules.looks.LookEvent;
 import org.openide.util.Lookup;
 
 /**
@@ -32,7 +34,7 @@ abstract class LookTreeNode implements LookListener {
     
     private final Object representedObject;
     private final Look look;
-    // private Map children = null; // Map<Object,LookTreeNode>
+    // private Map<Object,LookTreeNode> children = null;
     private LookTreeNode[] children;
     private List childrenList;
     protected int index = -1;
@@ -85,7 +87,7 @@ abstract class LookTreeNode implements LookListener {
     private LookTreeNode(Look l, Object o) {
         this.representedObject = o;
         this.look = l;
-        org.netbeans.modules.looks.Accessor.DEFAULT.addLookListener( l, representedObject, this );
+        Accessor.DEFAULT.addLookListener( l, representedObject, this );
     }
     
     private static Look findLook(Object o, LookSelector s) {
@@ -114,9 +116,8 @@ abstract class LookTreeNode implements LookListener {
     void forgetChildren() {
         /*
         if (children != null) {
-            Iterator it = children.values().iterator();
-            while (it.hasNext()) {
-                ((LookTreeNode)it.next()).forgetEverything();
+            for (LookTreeNode child : children) {
+                child.forgetEverything();
             }
             children = null;
         }

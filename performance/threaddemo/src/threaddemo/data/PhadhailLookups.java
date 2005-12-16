@@ -13,11 +13,12 @@
 
 package threaddemo.data;
 
-import java.lang.ref.*;
-import java.util.*;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.*;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import threaddemo.locking.Lock;
 import threaddemo.model.Phadhail;
 
@@ -35,11 +36,11 @@ public class PhadhailLookups {
     /** no instances */
     private PhadhailLookups() {}
     
-    private static final Map lookups = new WeakHashMap(); // Map<Phadhail,PhadhailLookup>
+    private static final Map<Phadhail,PhadhailLookup> lookups = new WeakHashMap<Phadhail,PhadhailLookup>();
     
     // XXX rather than being synch, should be readAccess, and modified/saved should be writeAccess
     public static synchronized Lookup getLookup(Phadhail ph) {
-        Lookup l = (Lookup)lookups.get(ph);
+        PhadhailLookup l = lookups.get(ph);
         if (l == null) {
             l = new PhadhailLookup(ph);
             lookups.put(ph, l);

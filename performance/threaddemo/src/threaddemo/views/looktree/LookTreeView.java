@@ -13,9 +13,9 @@
 
 package threaddemo.views.looktree;
 
-import java.awt.event.*;
 import javax.swing.JTree;
-import javax.swing.event.*;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import org.netbeans.spi.looks.LookSelector;
 
 /**

@@ -13,9 +13,21 @@
 
 package threaddemo.model;
 
-import java.io.*;
-import java.lang.ref.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import threaddemo.locking.Lock;
 
 /**
@@ -28,17 +40,17 @@ import threaddemo.locking.Lock;
  */
 public abstract class AbstractPhadhail implements Phadhail {
     
-    private static final Map instances = new WeakHashMap(); // Map<Factory,Map<File,Reference<AbstractPhadhail>>>
+    private static final Map<Factory, Map<File, Reference<AbstractPhadhail>>> instances = new WeakHashMap<Factory,Map<File,Reference<AbstractPhadhail>>>();
     
     protected interface Factory {
         AbstractPhadhail create(File f);
     }
     
-    private static Map instancesForFactory(Factory y) { // Map<File,Reference<AbstractPhadhail>>
+    private static Map<File, Reference<AbstractPhadhail>> instancesForFactory(Factory y) {
         assert Thread.holdsLock(AbstractPhadhail.class);
-        Map instances2 = (Map)instances.get(y);
+        Map<File,Reference<AbstractPhadhail>> instances2 = instances.get(y);
         if (instances2 == null) {
-            instances2 = new WeakHashMap();
+            instances2 = new WeakHashMap<File,Reference<AbstractPhadhail>>();
             instances.put(y, instances2);
         }
         return instances2;
@@ -46,20 +58,20 @@ public abstract class AbstractPhadhail implements Phadhail {
     
     /** factory */
     protected static synchronized AbstractPhadhail forFile(File f, Factory y) {
-        Map instances2 = instancesForFactory(y);
-        Reference r = (Reference)instances2.get(f);
-        AbstractPhadhail ph = (r != null) ? (AbstractPhadhail)r.get() : null;
+        Map<File,Reference<AbstractPhadhail>> instances2 = instancesForFactory(y);
+        Reference<AbstractPhadhail> r = instances2.get(f);
+        AbstractPhadhail ph = (r != null) ? r.get() : null;
         if (ph == null) {
             // XXX could also yield lock while calling create, but don't bother
             ph = y.create(f);
-            instances2.put(f, new WeakReference(ph));
+            instances2.put(f, new WeakReference<AbstractPhadhail>(ph));
         }
         return ph;
     }
     
     private File f;
-    private List listeners = null; // List<PhadhailListener>
-    private Reference kids; // Reference<List<Phadhail>>
+    private List<PhadhailListener> listeners = null;
+    private Reference<List<Phadhail>> kids;
     private static boolean firing = false;
     
     protected AbstractPhadhail(File f) {
@@ -69,11 +81,11 @@ public abstract class AbstractPhadhail implements Phadhail {
     /** factory to create new instances of this class; should be a constant */
     protected abstract Factory factory();
     
-    public List getChildren() {
+    public List<Phadhail> getChildren() {
         assert lock().canRead();
-        List phs = null; // List<Phadhail>
+        List<Phadhail> phs = null;
         if (kids != null) {
-            phs = (List)kids.get();
+            phs = kids.get();
         }
         if (phs == null) {
             // Need to (re)calculate the children.
@@ -82,14 +94,14 @@ public abstract class AbstractPhadhail implements Phadhail {
                 Arrays.sort(fs);
                 phs = new ChildrenList(fs);
             } else {
-                phs =  Collections.EMPTY_LIST;
+                phs = Collections.emptyList();
             }
-            kids = new WeakReference(phs);
+            kids = new WeakReference<List<Phadhail>>(phs);
         }
         return phs;
     }
     
-    private final class ChildrenList extends AbstractList {
+    private final class ChildrenList extends AbstractList<Phadhail> {
         private final File[] files;
         private final Phadhail[] kids;
         public ChildrenList(File[] files) {
@@ -98,7 +110,7 @@ public abstract class AbstractPhadhail implements Phadhail {
         }
         // These methods need not be called with the read lock held
         // (see Phadhail.getChildren Javadoc).
-        public Object get(int i) {
+        public Phadhail get(int i) {
             Phadhail ph = kids[i];
             if (ph == null) {
                 ph = forFile(files[i], factory());
@@ -133,7 +145,7 @@ public abstract class AbstractPhadhail implements Phadhail {
     public final void addPhadhailListener(PhadhailListener l) {
         synchronized (LISTENER_LOCK) {
             if (listeners == null) {
-                listeners = new ArrayList();
+                listeners = new ArrayList<PhadhailListener>();
             }
             listeners.add(l);
         }
@@ -153,7 +165,7 @@ public abstract class AbstractPhadhail implements Phadhail {
     private final PhadhailListener[] listeners() {
         synchronized (LISTENER_LOCK) {
             if (listeners != null) {
-                return (PhadhailListener[])listeners.toArray(new PhadhailListener[listeners.size()]);
+                return listeners.toArray(new PhadhailListener[listeners.size()]);
             } else {
                 return null;
             }
@@ -168,8 +180,8 @@ public abstract class AbstractPhadhail implements Phadhail {
                     firing = true;
                     try {
                         PhadhailEvent ev = PhadhailEvent.create(AbstractPhadhail.this);
-                        for (int i = 0; i < l.length; i++) {
-                            l[i].childrenChanged(ev);
+                        for (PhadhailListener listener : l) {
+                            listener.childrenChanged(ev);
                         }
                     } finally {
                         firing = false;
@@ -187,8 +199,8 @@ public abstract class AbstractPhadhail implements Phadhail {
                     firing = true;
                     try {
                         PhadhailNameEvent ev = PhadhailNameEvent.create(AbstractPhadhail.this, oldName, newName);
-                        for (int i = 0; i < l.length; i++) {
-                            l[i].nameChanged(ev);
+                        for (PhadhailListener listener : l) {
+                            listener.nameChanged(ev);
                         }
                     } finally {
                         firing = false;
@@ -212,19 +224,18 @@ public abstract class AbstractPhadhail implements Phadhail {
         File oldFile = f;
         f = newFile;
         synchronized (AbstractPhadhail.class) {
-            Map instances2 = instancesForFactory(factory());
+            Map<File,Reference<AbstractPhadhail>> instances2 = instancesForFactory(factory());
             instances2.remove(oldFile);
-            instances2.put(newFile, new WeakReference(this));
+            instances2.put(newFile, new WeakReference<AbstractPhadhail>(this));
         }
         fireNameChanged(oldName, nue);
         if (hasChildren()) {
             // Fire changes in path of children too.
-            List recChildren = new ArrayList(100); // List<AbstractPhadhail>
+            List<AbstractPhadhail> recChildren = new ArrayList<AbstractPhadhail>(100);
             String prefix = oldFile.getAbsolutePath() + File.separatorChar;
             synchronized (AbstractPhadhail.class) {
-                Iterator it = instancesForFactory(factory()).values().iterator();
-                while (it.hasNext()) {
-                    AbstractPhadhail ph = (AbstractPhadhail)((Reference)it.next()).get();
+                for (Reference<AbstractPhadhail> r : instancesForFactory(factory()).values()) {
+                    AbstractPhadhail ph = r.get();
                     if (ph != null && ph != this && ph.getPath().startsWith(prefix)) {
                         recChildren.add(ph);
                     }
@@ -232,9 +243,8 @@ public abstract class AbstractPhadhail implements Phadhail {
             }
             // Do the notification after traversing the instances map, since
             // we cannot mutate the map while an iterator is active.
-            Iterator it = recChildren.iterator();
-            while (it.hasNext()) {
-                ((AbstractPhadhail)it.next()).parentRenamed(oldFile, newFile);
+            for (AbstractPhadhail ph : recChildren) {
+                ph.parentRenamed(oldFile, newFile);
             }
         }
     }
@@ -249,9 +259,9 @@ public abstract class AbstractPhadhail implements Phadhail {
         File oldFile = f;
         f = new File(prefix + suffix);
         synchronized (AbstractPhadhail.class) {
-            Map instances2 = instancesForFactory(factory());
+            Map<File,Reference<AbstractPhadhail>> instances2 = instancesForFactory(factory());
             instances2.remove(oldFile);
-            instances2.put(f, new WeakReference(this));
+            instances2.put(f, new WeakReference<AbstractPhadhail>(this));
         }
         fireNameChanged(null, null);
     }

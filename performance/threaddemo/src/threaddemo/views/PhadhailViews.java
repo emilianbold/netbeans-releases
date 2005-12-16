@@ -114,15 +114,15 @@ public class PhadhailViews {
             super(n, n.isLeaf() ? Children.LEAF : new EQReplannedChildren(n));
         }
         public String getName() {
-            return (String)Locks.event().read(new LockAction() {
-                public Object run() {
+            return Locks.event().read(new LockAction<String>() {
+                public String run() {
                     return EQReplannedNode.super.getName();
                 }
             });
         }
         public String getDisplayName() {
-            return (String)Locks.event().read(new LockAction() {
-                public Object run() {
+            return Locks.event().read(new LockAction<String>() {
+                public String run() {
                     return EQReplannedNode.super.getDisplayName();
                 }
             });
@@ -137,15 +137,15 @@ public class PhadhailViews {
             return new EQReplannedNode(n);
         }
         public Node findChild(final String name) {
-            return (Node)Locks.event().read(new LockAction() {
-                public Object run() {
+            return Locks.event().read(new LockAction<Node>() {
+                public Node run() {
                     return EQReplannedChildren.super.findChild(name);
                 }
             });
         }
         public Node[] getNodes(final boolean optimalResult) {
-            return (Node[])Locks.event().read(new LockAction() {
-                public Object run() {
+            return Locks.event().read(new LockAction<Node[]>() {
+                public Node[] run() {
                     return EQReplannedChildren.super.getNodes(optimalResult);
                 }
             });

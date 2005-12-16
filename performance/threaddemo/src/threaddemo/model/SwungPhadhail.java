@@ -14,9 +14,17 @@
 package threaddemo.model;
 
 import java.awt.EventQueue;
-import java.io.*;
-import java.lang.ref.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -42,16 +50,16 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     
     private static final Logger logger = Logger.getLogger(SwungPhadhail.class.getName());
     
-    private static final Map instances = new WeakHashMap(); // Map<Phadhail,Reference<Phadhail>>
+    private static final Map<Phadhail, Reference<Phadhail>> instances = new WeakHashMap<Phadhail,Reference<Phadhail>>();
     
     /** factory */
     public static Phadhail forPhadhail(Phadhail _ph) {
         assert EventQueue.isDispatchThread();
-        Reference r = (Reference)instances.get(_ph);
-        Phadhail ph = (r != null) ? (Phadhail)r.get() : null;
+        Reference<Phadhail> r = instances.get(_ph);
+        Phadhail ph = (r != null) ? r.get() : null;
         if (ph == null) {
             ph = new SwungPhadhail(_ph);
-            instances.put(_ph, new WeakReference(ph));
+            instances.put(_ph, new WeakReference<Phadhail>(ph));
         }
         return ph;
     }
@@ -60,10 +68,10 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     private String name = null;
     private String path = null;
     private boolean computingName = false;
-    private List children = null; // List<Phadhail>
+    private List<Phadhail> children = null;
     private boolean computingChildren = false;
     private Boolean leaf = null;
-    private List listeners = null; // List<PhadhailListener>
+    private List<PhadhailListener> listeners = null;
     
     private SwungPhadhail(Phadhail ph) {
         this.ph = ph;
@@ -74,9 +82,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         // XXX synch on listeners to get them, then release
         if (listeners != null) {
             PhadhailNameEvent ev = PhadhailNameEvent.create(this, null, null);
-            Iterator it = listeners.iterator();
-            while (it.hasNext()) {
-                PhadhailListener l = (PhadhailListener)it.next();
+            for (PhadhailListener l : listeners) {
                 logger.log(Level.FINER, "fireNameChanged for {0} to {1}", new Object[] {this, l});
                 l.nameChanged(ev);
             }
@@ -123,23 +129,15 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     
     private Phadhail createPhadhail(final String name, final boolean container) throws IOException {
         assert EventQueue.isDispatchThread();
-        Phadhail orig;
-        try {
-            orig = (Phadhail)Worker.block(new LockExceptionAction() {
-                public Object run() throws IOException {
-                    if (container) {
-                        return ph.createContainerPhadhail(name);
-                    } else {
-                        return ph.createLeafPhadhail(name);
-                    }
+        return forPhadhail(Worker.block(new LockExceptionAction<Phadhail,IOException>() {
+            public Phadhail run() throws IOException {
+                if (container) {
+                    return ph.createContainerPhadhail(name);
+                } else {
+                    return ph.createLeafPhadhail(name);
                 }
-            });
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new Error(e);
-        }
-        return forPhadhail(orig);
+            }
+        }));
     }
     
     public Phadhail createContainerPhadhail(String name) throws IOException {
@@ -152,34 +150,22 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     
     public void rename(final String nue) throws IOException {
         assert EventQueue.isDispatchThread();
-        try {
-            Worker.block(new LockExceptionAction() {
-                public Object run() throws IOException {
-                    ph.rename(nue);
-                    return null;
-                }
-            });
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            assert false : e;
-        }
+        Worker.block(new LockExceptionAction<Void,IOException>() {
+            public Void run() throws IOException {
+                ph.rename(nue);
+                return null;
+            }
+        });
     }
     
     public void delete() throws IOException {
         assert EventQueue.isDispatchThread();
-        try {
-            Worker.block(new LockExceptionAction() {
-                public Object run() throws IOException {
-                    ph.delete();
-                    return null;
-                }
-            });
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            assert false : e;
-        }
+        Worker.block(new LockExceptionAction<Void,IOException>() {
+            public Void run() throws IOException {
+                ph.delete();
+                return null;
+            }
+        });
     }
     
     private void fireChildrenChanged() {
@@ -188,14 +174,13 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         if (listeners != null) {
             logger.finer("fireChildrenChanged");
             PhadhailEvent ev = PhadhailEvent.create(this);
-            Iterator it = listeners.iterator();
-            while (it.hasNext()) {
-                ((PhadhailListener)it.next()).childrenChanged(ev);
+            for (PhadhailListener l : listeners) {
+                l.childrenChanged(ev);
             }
         }
     }
     
-    public List getChildren() {
+    public List<Phadhail> getChildren() {
         assert EventQueue.isDispatchThread();
         if (children != null) {
             return children;
@@ -204,7 +189,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
                 computingChildren = true;
                 Worker.start(new Runnable() {
                     public void run() {
-                        final List ch = ph.getChildren();
+                        final List<Phadhail> ch = ph.getChildren();
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
                                 children = new SwungChildrenList(ch);
@@ -215,21 +200,21 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
                     }
                 });
             }
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
     
-    private static final class SwungChildrenList extends AbstractList {
-        private final List orig; // List<Phadhail>
+    private static final class SwungChildrenList extends AbstractList<Phadhail> {
+        private final List<Phadhail> orig;
         private final Phadhail[] kids;
-        public SwungChildrenList(List orig) {
+        public SwungChildrenList(List<Phadhail> orig) {
             this.orig = orig;
             kids = new Phadhail[orig.size()];
         }
-        public Object get(int i) {
+        public Phadhail get(int i) {
             assert EventQueue.isDispatchThread();
             if (kids[i] == null) {
-                kids[i] = forPhadhail((Phadhail)orig.get(i));
+                kids[i] = forPhadhail(orig.get(i));
             }
              return kids[i];
         }
@@ -241,32 +226,20 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     
     public InputStream getInputStream() throws IOException {
         assert EventQueue.isDispatchThread();
-        try {
-            return (InputStream)Worker.block(new LockExceptionAction() {
-                public Object run() throws IOException {
-                    return ph.getInputStream();
-                }
-            });
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new Error(e);
-        }
+        return Worker.block(new LockExceptionAction<InputStream,IOException>() {
+            public InputStream run() throws IOException {
+                return ph.getInputStream();
+            }
+        });
     }
     
     public OutputStream getOutputStream() throws IOException {
         assert EventQueue.isDispatchThread();
-        try {
-            return (OutputStream)Worker.block(new LockExceptionAction() {
-                public Object run() throws IOException {
-                    return ph.getOutputStream();
-                }
-            });
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new Error(e);
-        }
+        return Worker.block(new LockExceptionAction<OutputStream,IOException>() {
+            public OutputStream run() throws IOException {
+                return ph.getOutputStream();
+            }
+        });
     }
     
     public boolean hasChildren() {
@@ -274,10 +247,10 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         logger.log(Level.FINER, "hasChildren on {0}", this);
         if (leaf == null) {
             logger.finer("not cached");
-            leaf = (Boolean)Worker.block(new LockAction() {
-                public Object run() {
+            leaf = Worker.block(new LockAction<Boolean>() {
+                public Boolean run() {
                     logger.finer("hasChildren: working...");
-                    return ph.hasChildren() ? Boolean.FALSE : Boolean.TRUE;
+                    return ph.hasChildren();
                 }
             });
             logger.log(Level.FINER, "leaf={0}", leaf);
@@ -287,7 +260,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     
     public synchronized void addPhadhailListener(PhadhailListener l) {
         if (listeners == null) {
-            listeners = new ArrayList();
+            listeners = new ArrayList<PhadhailListener>();
             ph.addPhadhailListener(SwungPhadhail.this);
         }
         listeners.add(l);

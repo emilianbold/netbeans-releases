@@ -30,48 +30,37 @@ public class EventLockTest extends TestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new TestSuite(EventLockTest.class));
-    }
-    
-    /*
-    protected void setUp() throws Exception {
-    }
-    protected void tearDown() throws Exception {
-    }
-     */
-    
     public void testEventAccess() throws Exception {
         assertTrue("Not starting in AWT", !EventQueue.isDispatchThread());
         // test canRead, canWrite, correct thread used by synch methods
         assertTrue(!Locks.event().canRead());
         assertTrue(!Locks.event().canWrite());
-        assertEquals(Boolean.TRUE, Locks.event().read(new LockAction() {
-            public Object run() {
-                return new Boolean(EventQueue.isDispatchThread() &&
-                                   Locks.event().canRead() &&
-                                   Locks.event().canWrite());
+        assertTrue(Locks.event().read(new LockAction<Boolean>() {
+            public Boolean run() {
+                return EventQueue.isDispatchThread() &&
+                        Locks.event().canRead() &&
+                        Locks.event().canWrite();
             }
         }));
-        assertEquals(Boolean.TRUE, Locks.event().read(new LockExceptionAction() {
-            public Object run() throws Exception {
-                return new Boolean(EventQueue.isDispatchThread() &&
-                                   Locks.event().canRead() &&
-                                   Locks.event().canWrite());
+        assertTrue(Locks.event().read(new LockExceptionAction<Boolean,Exception>() {
+            public Boolean run() throws Exception {
+                return EventQueue.isDispatchThread() &&
+                        Locks.event().canRead() &&
+                        Locks.event().canWrite();
             }
         }));
-        assertEquals(Boolean.TRUE, Locks.event().write(new LockAction() {
-            public Object run() {
-                return new Boolean(EventQueue.isDispatchThread() &&
-                                   Locks.event().canRead() &&
-                                   Locks.event().canWrite());
+        assertTrue(Locks.event().write(new LockAction<Boolean>() {
+            public Boolean run() {
+                return EventQueue.isDispatchThread() &&
+                        Locks.event().canRead() &&
+                        Locks.event().canWrite();
             }
         }));
-        assertEquals(Boolean.TRUE, Locks.event().write(new LockExceptionAction() {
-            public Object run() throws Exception {
-                return new Boolean(EventQueue.isDispatchThread() &&
-                                   Locks.event().canRead() &&
-                                   Locks.event().canWrite());
+        assertTrue(Locks.event().write(new LockExceptionAction<Boolean,Exception>() {
+            public Boolean run() throws Exception {
+                return EventQueue.isDispatchThread() &&
+                        Locks.event().canRead() &&
+                        Locks.event().canWrite();
             }
         }));
         // test that r/wA(Runnable) runs in AWT eventually
@@ -128,32 +117,32 @@ public class EventLockTest extends TestCase {
         assertTrue("Not starting in AWT", !EventQueue.isDispatchThread());
         // test that checked excs from M.EA throw correct ME
         try {
-            Locks.event().read(new LockExceptionAction() {
-                public Object run() throws Exception {
+            Locks.event().read(new LockExceptionAction<Void,IOException>() {
+                public Void run() throws IOException {
                     throw new IOException();
                 }
             });
             fail();
-        } catch (InvocationTargetException e) {
-            assertEquals(IOException.class, e.getCause().getClass());
+        } catch (IOException e) {
+            // OK
         }
         // but that unchecked excs are passed thru
         try {
-            Locks.event().read(new LockExceptionAction() {
-                public Object run() throws Exception {
+            Locks.event().read(new LockExceptionAction<Void,IOException>() {
+                public Void run() throws IOException {
                     throw new IllegalArgumentException();
                 }
             });
             fail();
         } catch (IllegalArgumentException e) {
             // OK
-        } catch (Exception e) {
+        } catch (IOException e) {
             fail(e.toString());
         }
         // similarly for unchecked excs from M.A
         try {
-            Locks.event().read(new LockAction() {
-                public Object run() {
+            Locks.event().read(new LockAction<Void>() {
+                public Void run() {
                     throw new IllegalArgumentException();
                 }
             });

@@ -44,13 +44,12 @@ public interface Phadhail {
     
     /**
      * Get a list of child files.
-     * element type = Phadhail
      * caller cannot mutate list, and it might not be thread-safe
      * implementor cannot change list after creation (i.e. size & identity of elements)
      * it is expected that once the list is obtained, asking for elements is fast and nonblocking
      * (and then the read lock is not required)
      */
-    List getChildren();
+    List<Phadhail> getChildren();
     
     /** delete this phadhail (must not have children) */
     void delete() throws IOException;

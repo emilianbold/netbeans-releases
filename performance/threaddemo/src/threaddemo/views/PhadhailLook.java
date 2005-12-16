@@ -52,10 +52,10 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     
     private static final Logger logger = Logger.getLogger(PhadhailLook.class.getName());
     
-    private static final Map phadhails2Results = new IdentityHashMap(); // Map<Phadhail,Lookup.Result>
-    private static final Map results2Phadhails = new IdentityHashMap(); // Map<Lookup.Result,Phadhail>
-    private static final Map phadhails2DomProviders = new IdentityHashMap(); // Map<Phadhail,DomProvider>
-    private static final Map domProviders2Phadhails = new IdentityHashMap(); // Map<DomProvider,Phadhail>
+    private static final Map<Phadhail,Lookup.Result> phadhails2Results = new IdentityHashMap<Phadhail,Lookup.Result>();
+    private static final Map<Lookup.Result,Phadhail> results2Phadhails = new IdentityHashMap<Lookup.Result,Phadhail>();
+    private static final Map<Phadhail,DomProvider> phadhails2DomProviders = new IdentityHashMap<Phadhail,DomProvider>();
+    private static final Map<DomProvider,Phadhail> domProviders2Phadhails = new IdentityHashMap<DomProvider,Phadhail>();
     
     PhadhailLook() {
         super("PhadhailLook");
@@ -74,13 +74,13 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     protected void detachFrom(Object o) {
         Phadhail ph = (Phadhail)o;
         ph.removePhadhailListener(this);
-        Lookup.Result r = (Lookup.Result)phadhails2Results.remove(ph);
+        Lookup.Result r = phadhails2Results.remove(ph);
         if (r != null) {
             r.removeLookupListener(this);
             assert results2Phadhails.containsKey(r);
             results2Phadhails.remove(r);
         }
-        DomProvider p = (DomProvider)phadhails2DomProviders.remove(ph);
+        DomProvider p = phadhails2DomProviders.remove(ph);
         if (p != null) {
             p.removeChangeListener(this);
             assert domProviders2Phadhails.containsKey(p);
@@ -234,7 +234,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     public void stateChanged(ChangeEvent e) {
         logger.finer("got change");
         DomProvider p = (DomProvider)e.getSource();
-        final Phadhail ph = (Phadhail)domProviders2Phadhails.get(p);
+        final Phadhail ph = domProviders2Phadhails.get(p);
         assert ph != null;
         Locks.event().readLater(new Runnable() {
             public void run() {

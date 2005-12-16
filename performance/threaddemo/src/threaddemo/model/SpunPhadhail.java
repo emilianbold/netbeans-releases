@@ -14,10 +14,15 @@
 package threaddemo.model;
 
 import java.awt.EventQueue;
-import java.lang.ref.*;
-import java.lang.reflect.*;
-import java.util.*;
-import spin.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
+import java.util.AbstractList;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+import spin.Spin;
+import spin.Starter;
 import threaddemo.locking.Locks;
 
 /**
@@ -35,17 +40,17 @@ final class SpunPhadhail extends Spin {
         }
     };
     
-    private static final Map instances = new WeakHashMap(); // Map<Phadhail,Reference<Phadhail>>
+    private static final Map<Phadhail, Reference<Phadhail>> instances = new WeakHashMap<Phadhail,Reference<Phadhail>>();
     
     /** factory */
     public static Phadhail forPhadhail(Phadhail _ph) {
         assert EventQueue.isDispatchThread();
-        Reference r = (Reference)instances.get(_ph);
-        Phadhail ph = (r != null) ? (Phadhail)r.get() : null;
+        Reference<Phadhail> r = instances.get(_ph);
+        Phadhail ph = (r != null) ? r.get() : null;
         if (ph == null) {
             Spin spin = new SpunPhadhail(_ph);
             ph = BufferedPhadhail.forPhadhail((Phadhail)spin.getProxy());
-            instances.put(_ph, new WeakReference(ph));
+            instances.put(_ph, new WeakReference<Phadhail>(ph));
         }
         return ph;
     }
@@ -89,8 +94,9 @@ final class SpunPhadhail extends Spin {
                 return forPhadhail((Phadhail)result);
             } else if (result instanceof List) {
                 // I.e. from getChildren(). Need to wrap result phadhails.
-                List phs = (List)result; // List<Phadhail>
-                return new SpunChildrenList(phs);
+                @SuppressWarnings("unchecked")
+                List<Phadhail> l = (List<Phadhail>) result;
+                return new SpunChildrenList(l);
             } else {
                 // Just pass on the call.
                 return result;
@@ -98,17 +104,17 @@ final class SpunPhadhail extends Spin {
         }
     }
     
-    private static final class SpunChildrenList extends AbstractList {
-        private final List orig; // List<Phadhail>
+    private static final class SpunChildrenList extends AbstractList<Phadhail> {
+        private final List<Phadhail> orig;
         private final Phadhail[] kids;
-        public SpunChildrenList(List orig) {
+        public SpunChildrenList(List<Phadhail> orig) {
             this.orig = orig;
             kids = new Phadhail[orig.size()];
         }
-        public Object get(int i) {
+        public Phadhail get(int i) {
             assert EventQueue.isDispatchThread();
             if (kids[i] == null) {
-                kids[i] = forPhadhail((Phadhail)orig.get(i));
+                kids[i] = forPhadhail(orig.get(i));
             }
             return kids[i];
         }

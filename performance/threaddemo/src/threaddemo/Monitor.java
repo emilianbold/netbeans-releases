@@ -20,7 +20,12 @@ import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.TimerTask;
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.Timer;
 
 /**
  * Displays information about any long pauses in the AWT thread.
@@ -33,7 +38,7 @@ final class Monitor extends JPanel implements ActionListener {
     private static final long GRACE = 500; // msec permitted without access
     
     private long last;
-    private final javax.swing.Timer t1;
+    private final Timer t1;
     private final java.util.Timer t2;
     private final TimerTask task;
     private final JTextField blockageField;
@@ -44,7 +49,7 @@ final class Monitor extends JPanel implements ActionListener {
     
     public Monitor() {
         setLayout(new GridLayout(3, 1));
-        t1 = new javax.swing.Timer(DELAY_CPU, this);
+        t1 = new Timer(DELAY_CPU, this);
         t1.setRepeats(true);
         t2 = new java.util.Timer(true);
         task = new TimerTask() {

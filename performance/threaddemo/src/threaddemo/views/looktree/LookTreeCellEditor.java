@@ -15,8 +15,11 @@ package threaddemo.views.looktree;
 
 import java.awt.Component;
 import java.util.EventObject;
-import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeCellEditor;
+import javax.swing.tree.TreeCellEditor;
 
 /**
  * @author Jesse Glick

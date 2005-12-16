@@ -13,9 +13,16 @@
 
 package threaddemo.model;
 
-import java.io.*;
-import java.lang.ref.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import threaddemo.locking.Lock;
 
 /**
@@ -24,15 +31,15 @@ import threaddemo.locking.Lock;
  */
 final class BufferedPhadhail implements Phadhail, PhadhailListener {
     
-    private static final Map instances = new WeakHashMap(); // Map<Phadhail,Reference<BufferedPhadhail>>
+    private static final Map<Phadhail, Reference<BufferedPhadhail>> instances = new WeakHashMap<Phadhail,Reference<BufferedPhadhail>>();
     
     public static Phadhail forPhadhail(Phadhail ph) {
         if (ph.hasChildren() && !(ph instanceof BufferedPhadhail)) {
-            Reference r = (Reference)instances.get(ph);
-            BufferedPhadhail bph = (r != null) ? (BufferedPhadhail)r.get() : null;
+            Reference<BufferedPhadhail> r = instances.get(ph);
+            BufferedPhadhail bph = (r != null) ? r.get() : null;
             if (bph == null) {
                 bph = new BufferedPhadhail(ph);
-                instances.put(ph, new WeakReference(bph));
+                instances.put(ph, new WeakReference<BufferedPhadhail>(bph));
             }
             return bph;
         } else {
@@ -41,36 +48,36 @@ final class BufferedPhadhail implements Phadhail, PhadhailListener {
     }
     
     private final Phadhail ph;
-    private Reference kids; // Reference<List<Phadhail>>
-    private List listeners = null; // List<PhadhailListener>
+    private Reference<List<Phadhail>> kids;
+    private List<PhadhailListener> listeners = null;
     
     private BufferedPhadhail(Phadhail ph) {
         this.ph = ph;
     }
     
-    public List getChildren() {
-        List phs = null; // List<Phadhail>
+    public List<Phadhail> getChildren() {
+        List<Phadhail> phs = null;
         if (kids != null) {
-            phs = (List)kids.get();
+            phs = kids.get();
         }
         if (phs == null) {
             // Need to (re)calculate the children.
             phs = new BufferedChildrenList(ph.getChildren());
-            kids = new WeakReference(phs);
+            kids = new WeakReference<List<Phadhail>>(phs);
         }
         return phs;
     }
     
-    private static final class BufferedChildrenList extends AbstractList {
-        private final List orig; // List<Phadhail>
+    private static final class BufferedChildrenList extends AbstractList<Phadhail> {
+        private final List<Phadhail> orig;
         private final Phadhail[] kids;
-        public BufferedChildrenList(List orig) {
+        public BufferedChildrenList(List<Phadhail> orig) {
             this.orig = orig;
             kids = new Phadhail[orig.size()];
         }
-        public Object get(int i) {
+        public Phadhail get(int i) {
             if (kids[i] == null) {
-                kids[i] = forPhadhail((Phadhail)orig.get(i));
+                kids[i] = forPhadhail(orig.get(i));
             }
              return kids[i];
         }
@@ -94,7 +101,7 @@ final class BufferedPhadhail implements Phadhail, PhadhailListener {
     public void addPhadhailListener(PhadhailListener l) {
         if (listeners == null) {
             ph.addPhadhailListener(this);
-            listeners = new ArrayList();
+            listeners = new ArrayList<PhadhailListener>();
         }
         listeners.add(l);
     }
@@ -138,9 +145,8 @@ final class BufferedPhadhail implements Phadhail, PhadhailListener {
         kids = null;
         if (listeners != null) {
             PhadhailEvent ev2 = PhadhailEvent.create(this);
-            Iterator it = listeners.iterator();
-            while (it.hasNext()) {
-                ((PhadhailListener)it.next()).childrenChanged(ev2);
+            for (PhadhailListener l : listeners) {
+                l.childrenChanged(ev2);
             }
         }
     }
@@ -148,9 +154,8 @@ final class BufferedPhadhail implements Phadhail, PhadhailListener {
     public void nameChanged(PhadhailNameEvent ev) {
         if (listeners != null) {
             PhadhailNameEvent ev2 = PhadhailNameEvent.create(this, ev.getOldName(), ev.getNewName());
-            Iterator it = listeners.iterator();
-            while (it.hasNext()) {
-                ((PhadhailListener)it.next()).nameChanged(ev2);
+            for (PhadhailListener l : listeners) {
+                l.nameChanged(ev2);
             }
         }
     }

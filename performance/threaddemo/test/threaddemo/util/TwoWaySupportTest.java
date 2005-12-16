@@ -14,11 +14,17 @@
 package threaddemo.util;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
 import junit.framework.TestCase;
 import threaddemo.locking.Lock;
 import threaddemo.locking.Locks;
 import threaddemo.locking.PrivilegedLock;
+import threaddemo.util.TwoWaySupport;
+import threaddemo.util.TwoWaySupport.DerivationResult;
 
 /**
  * Test the two-way support.
@@ -26,10 +32,6 @@ import threaddemo.locking.PrivilegedLock;
  */
 public class TwoWaySupportTest extends TestCase {
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(new junit.framework.TestSuite(TwoWaySupportTest.class));
-    }
-    
     private PrivilegedLock p;
     private SimpleTWS s;
     
@@ -78,12 +80,9 @@ public class TwoWaySupportTest extends TestCase {
     
     /**
      * Underlying model: text string (String)
-     * Derived model: space-tokenized string (List<String>)
-     * Underlying model deltas: same as underlying model (String)
-     * Derived model deltas: same as derived model (List<String>)
      * Broken if underlying model is ""!
      */
-    private static final class SimpleTWS extends TwoWaySupport {
+    private static final class SimpleTWS extends TwoWaySupport<List<String>, String, List<String>> {
         
         private String string = "initial value";
         
@@ -102,36 +101,35 @@ public class TwoWaySupportTest extends TestCase {
         
         // Impl TWS:
         
-        protected Object composeUnderlyingDeltas(Object underlyingDelta1, Object underlyingDelta2) {
+        protected String composeUnderlyingDeltas(String underlyingDelta1, String underlyingDelta2) {
             return underlyingDelta2;
         }
         
-        protected DerivationResult doDerive(Object oldValue, Object underlyingDelta) throws Exception {
-            String undval = (String)underlyingDelta;
+        protected DerivationResult<List<String>,List<String>> doDerive(List<String> oldValue, String undval) throws Exception {
             if (undval == null) {
                 undval = getString();
             }
             if (undval.length() == 0) throw new Exception("empty string");
-            List v = new ArrayList();
+            List<String> v = new ArrayList<String>();
             StringTokenizer tok = new StringTokenizer(undval);
             while (tok.hasMoreTokens()) {
                 v.add(tok.nextToken());
             }
-            return new DerivationResult(v, oldValue != null ? v : null);
+            return new DerivationResult<List<String>,List<String>>(v, oldValue != null ? v : null);
         }
         
-        protected Object doRecreate(Object oldValue, Object derivedDelta) throws Exception {
-            List l = (List)derivedDelta;
+        protected List<String> doRecreate(List<String> oldValue, List<String> l) throws Exception {
             StringBuffer b = new StringBuffer();
-            Iterator i = l.iterator();
+            Iterator<String> i = l.iterator();
             if (i.hasNext()) {
-                b.append((String)i.next());
+                b.append(i.next());
             }
             while (i.hasNext()) {
                 b.append(' ');
-                b.append((String)i.next());
+                b.append(i.next());
             }
-            return b.toString();
+            string = b.toString();
+            return l;
         }
         
     }

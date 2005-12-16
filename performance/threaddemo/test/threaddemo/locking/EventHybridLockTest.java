@@ -30,48 +30,37 @@ public class EventHybridLockTest extends TestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new TestSuite(EventHybridLockTest.class));
-    }
-    
-    /*
-    protected void setUp() throws Exception {
-    }
-    protected void tearDown() throws Exception {
-    }
-     */
-    
     public void testEventHybrid() throws Exception {
         assertTrue("Not starting in AWT", !EventQueue.isDispatchThread());
         // test canRead, canWrite, correct thread used by synch write methods
         assertTrue(!Locks.eventHybrid().canRead());
         assertTrue(!Locks.eventHybrid().canWrite());
-        assertEquals(Boolean.TRUE, Locks.eventHybrid().read(new LockAction() {
-            public Object run() {
-                return new Boolean(!EventQueue.isDispatchThread() &&
-                                   Locks.eventHybrid().canRead() &&
-                                   !Locks.eventHybrid().canWrite());
+        assertTrue(Locks.eventHybrid().read(new LockAction<Boolean>() {
+            public Boolean run() {
+                return !EventQueue.isDispatchThread() &&
+                        Locks.eventHybrid().canRead() &&
+                        !Locks.eventHybrid().canWrite();
             }
         }));
-        assertEquals(Boolean.TRUE, Locks.eventHybrid().read(new LockExceptionAction() {
-            public Object run() throws Exception {
-                return new Boolean(!EventQueue.isDispatchThread() &&
-                                   Locks.eventHybrid().canRead() &&
-                                   !Locks.eventHybrid().canWrite());
+        assertTrue(Locks.eventHybrid().read(new LockExceptionAction<Boolean,Exception>() {
+            public Boolean run() throws Exception {
+                return !EventQueue.isDispatchThread() &&
+                        Locks.eventHybrid().canRead() &&
+                        !Locks.eventHybrid().canWrite();
             }
         }));
-        assertEquals(Boolean.TRUE, Locks.eventHybrid().write(new LockAction() {
-            public Object run() {
-                return new Boolean(EventQueue.isDispatchThread() &&
-                                   Locks.eventHybrid().canRead() &&
-                                   Locks.eventHybrid().canWrite());
+        assertTrue(Locks.eventHybrid().write(new LockAction<Boolean>() {
+            public Boolean run() {
+                return EventQueue.isDispatchThread() &&
+                        Locks.eventHybrid().canRead() &&
+                        Locks.eventHybrid().canWrite();
             }
         }));
-        assertEquals(Boolean.TRUE, Locks.eventHybrid().write(new LockExceptionAction() {
-            public Object run() throws Exception {
-                return new Boolean(EventQueue.isDispatchThread() &&
-                                   Locks.eventHybrid().canRead() &&
-                                   Locks.eventHybrid().canWrite());
+        assertTrue(Locks.eventHybrid().write(new LockExceptionAction<Boolean,Exception>() {
+            public Boolean run() throws Exception {
+                return EventQueue.isDispatchThread() &&
+                        Locks.eventHybrid().canRead() &&
+                        Locks.eventHybrid().canWrite();
             }
         }));
         final boolean[] b = new boolean[1];
@@ -87,25 +76,25 @@ public class EventHybridLockTest extends TestCase {
         // While in AWT, can enter read or write directly.
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
-                b[0] = ((Boolean)Locks.eventHybrid().read(new LockAction() {
-                    public Object run() {
-                        return new Boolean(EventQueue.isDispatchThread() &&
-                                           Locks.eventHybrid().canRead() &&
-                                           !Locks.eventHybrid().canWrite());
+                b[0] = Locks.eventHybrid().read(new LockAction<Boolean>() {
+                    public Boolean run() {
+                        return EventQueue.isDispatchThread() &&
+                                Locks.eventHybrid().canRead() &&
+                                !Locks.eventHybrid().canWrite();
                     }
-                })).booleanValue();
+                });
             }
         });
         assertTrue(b[0]);
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
-                b[0] = ((Boolean)Locks.eventHybrid().write(new LockAction() {
-                    public Object run() {
-                        return new Boolean(EventQueue.isDispatchThread() &&
-                                           Locks.eventHybrid().canRead() &&
-                                           Locks.eventHybrid().canWrite());
+                b[0] = Locks.eventHybrid().write(new LockAction<Boolean>() {
+                    public Boolean run() {
+                        return EventQueue.isDispatchThread() &&
+                                Locks.eventHybrid().canRead() &&
+                                Locks.eventHybrid().canWrite();
                     }
-                })).booleanValue();
+                });
             }
         });
         assertTrue(b[0]);
@@ -117,14 +106,14 @@ public class EventHybridLockTest extends TestCase {
     
     public void testEventHybridReadToWriteForbidden() throws Exception {
         assertTrue("Not starting in AWT", !EventQueue.isDispatchThread());
-        Locks.eventHybrid().read(new LockAction() {
-            public Object run() {
+        Locks.eventHybrid().read(new LockAction<Void>() {
+            public Void run() {
                 assertTrue(!EventQueue.isDispatchThread());
                 assertTrue(Locks.eventHybrid().canRead());
                 assertTrue(!Locks.eventHybrid().canWrite());
                 try {
-                    Locks.eventHybrid().write(new LockAction() {
-                        public Object run() {
+                    Locks.eventHybrid().write(new LockAction<Void>() {
+                        public Void run() {
                             fail();
                             return null;
                         }
@@ -139,14 +128,14 @@ public class EventHybridLockTest extends TestCase {
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
                 try {
-                    Locks.eventHybrid().read(new LockAction() {
-                        public Object run() {
+                    Locks.eventHybrid().read(new LockAction<Void>() {
+                        public Void run() {
                             assertTrue(EventQueue.isDispatchThread());
                             assertTrue(Locks.eventHybrid().canRead());
                             assertTrue(!Locks.eventHybrid().canWrite());
                             try {
-                                Locks.eventHybrid().write(new LockAction() {
-                                    public Object run() {
+                                Locks.eventHybrid().write(new LockAction<Void>() {
+                                    public Void run() {
                                         fail();
                                         return null;
                                     }
@@ -163,16 +152,16 @@ public class EventHybridLockTest extends TestCase {
             }
         });
         if (err[0] != null) throw err[0];
-        Locks.eventHybrid().write(new LockAction() {
-            public Object run() {
+        Locks.eventHybrid().write(new LockAction<Void>() {
+            public Void run() {
                 assertTrue(Locks.eventHybrid().canWrite());
-                Locks.eventHybrid().read(new LockAction() {
-                    public Object run() {
+                Locks.eventHybrid().read(new LockAction<Void>() {
+                    public Void run() {
                         assertTrue(Locks.eventHybrid().canRead());
                         assertTrue(!Locks.eventHybrid().canWrite());
                         try {
-                            Locks.eventHybrid().write(new LockAction() {
-                                public Object run() {
+                            Locks.eventHybrid().write(new LockAction<Void>() {
+                                public Void run() {
                                     fail();
                                     return null;
                                 }
@@ -190,12 +179,12 @@ public class EventHybridLockTest extends TestCase {
     
     public void testEventHybridWriteToReadPermitted() throws Exception {
         assertTrue("Not starting in AWT", !EventQueue.isDispatchThread());
-        Locks.eventHybrid().write(new LockAction() {
-            public Object run() {
+        Locks.eventHybrid().write(new LockAction<Void>() {
+            public Void run() {
                 assertTrue(EventQueue.isDispatchThread());
                 try {
-                    Locks.eventHybrid().read(new LockAction() {
-                        public Object run() {
+                    Locks.eventHybrid().read(new LockAction<Void>() {
+                        public Void run() {
                             // OK.
                             return null;
                         }
@@ -208,12 +197,12 @@ public class EventHybridLockTest extends TestCase {
         });
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
-                Locks.eventHybrid().write(new LockAction() {
-                    public Object run() {
+                Locks.eventHybrid().write(new LockAction<Void>() {
+                    public Void run() {
                         assertTrue(EventQueue.isDispatchThread());
                         try {
-                            Locks.eventHybrid().read(new LockAction() {
-                                public Object run() {
+                            Locks.eventHybrid().read(new LockAction<Void>() {
+                                public Void run() {
                                     // OK.
                                     return null;
                                 }
@@ -236,32 +225,32 @@ public class EventHybridLockTest extends TestCase {
         assertTrue("Not starting in AWT", !EventQueue.isDispatchThread());
         // test that checked excs from M.EA throw correct ME
         try {
-            Locks.eventHybrid().read(new LockExceptionAction() {
-                public Object run() throws Exception {
+            Locks.eventHybrid().read(new LockExceptionAction<Void,IOException>() {
+                public Void run() throws IOException {
                     throw new IOException();
                 }
             });
             fail();
-        } catch (InvocationTargetException e) {
-            assertEquals(IOException.class, e.getCause().getClass());
+        } catch (IOException e) {
+            // OK
         }
         // but that unchecked excs are passed thru
         try {
-            Locks.eventHybrid().read(new LockExceptionAction() {
-                public Object run() throws Exception {
+            Locks.eventHybrid().read(new LockExceptionAction<Void,IOException>() {
+                public Void run() throws IOException {
                     throw new IllegalArgumentException();
                 }
             });
             fail();
         } catch (IllegalArgumentException e) {
             // OK
-        } catch (Exception e) {
+        } catch (IOException e) {
             fail(e.toString());
         }
         // similarly for unchecked excs from M.A
         try {
-            Locks.eventHybrid().read(new LockAction() {
-                public Object run() {
+            Locks.eventHybrid().read(new LockAction<Void>() {
+                public Void run() {
                     throw new IllegalArgumentException();
                 }
             });

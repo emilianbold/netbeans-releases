@@ -16,8 +16,9 @@ package threaddemo.views.looktree;
 import java.awt.Component;
 import java.awt.Image;
 import java.beans.BeanInfo;
-import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.ImageIcon;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import org.netbeans.spi.looks.Look;
 
 /**

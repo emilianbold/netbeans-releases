@@ -14,17 +14,28 @@
 package threaddemo.apps.index;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.WeakListeners;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import threaddemo.data.DomProvider;
 import threaddemo.data.PhadhailLookups;
 import threaddemo.locking.Lock;
-import threaddemo.model.*;
+import threaddemo.model.Phadhail;
+import threaddemo.model.PhadhailEvent;
+import threaddemo.model.PhadhailListener;
+import threaddemo.model.PhadhailNameEvent;
 
 // XXX make an IndexImpl be GCable and not hold onto Phadhail's
 
@@ -37,12 +48,12 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
     private static final Logger logger = Logger.getLogger(IndexImpl.class.getName());
     
     private final Phadhail root;
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private boolean running = false;
-    private final LinkedList/*<Phadhail>*/ toProcess = new LinkedList();
-    private final Map/*<Phadhail,Map<String,int>>*/ processed = new /*Weak*/HashMap();
-    private final Map/*<DomProvider,Phadhail>*/ domProviders2Phadhails = new WeakHashMap();
-    private final Map/*<Phadhail,Phadhail>*/ phadhails2Parents = new WeakHashMap();
+    private final LinkedList<Phadhail> toProcess = new LinkedList<Phadhail>();
+    private final Map<Phadhail, Map<String, Integer>> processed = new /*Weak*/HashMap<Phadhail,Map<String,Integer>>();
+    private final Map<DomProvider, Phadhail> domProviders2Phadhails = new WeakHashMap<DomProvider,Phadhail>();
+    private final Map<Phadhail, Phadhail> phadhails2Parents = new WeakHashMap<Phadhail,Phadhail>();
     
     public IndexImpl(Phadhail root) {
         this.root = root;
@@ -52,13 +63,13 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
         return root.lock();
     }
     
-    public Map getData() {
+    public Map<String,Integer> getData() {
         assert getLock().canRead();
-        Map/*<String,int>*/ data = (Map)processed.get(root);
+        Map<String,Integer> data = processed.get(root);
         if (data != null) {
             return Collections.unmodifiableMap(data);
         } else {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
     }
     
@@ -79,16 +90,16 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
     }
     
     private void fireChange() {
-        ChangeListener[] ls;
+        List<ChangeListener> ls;
         synchronized (listeners) {
             if (listeners.isEmpty()) {
                 return;
             }
-            ls = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+            ls = new ArrayList<ChangeListener>(listeners);
         }
         ChangeEvent ev = new ChangeEvent(this);
-        for (int i = 0; i < ls.length; i++) {
-            ls[i].stateChanged(ev);
+        for (ChangeListener l : ls) {
+            l.stateChanged(ev);
         }
     }
     
@@ -124,7 +135,7 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
                         assert false : e;
                     }
                 }
-                next = (Phadhail)toProcess.removeFirst();
+                next = toProcess.removeFirst();
             }
             process(next);
         }
@@ -141,7 +152,7 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
                     processChildren(ph);
                 } else {
                     // Data, maybe.
-                    final Map computed = compute(ph);
+                    final Map<String,Integer> computed = compute(ph);
                     getLock().writeLater(new Runnable() {
                         public void run() {
                             processed.put(ph, computed);
@@ -156,10 +167,8 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
     }
     
     private void processChildren(Phadhail ph) {
-        Iterator/*<Phadhail>*/ kids = ph.getChildren().iterator();
         synchronized (toProcess) {
-            while (kids.hasNext()) {
-                Phadhail kid = (Phadhail)kids.next();
+            for (Phadhail kid : ph.getChildren()) {
                 phadhails2Parents.put(kid, ph);
                 if (!toProcess.contains(kid)) {
                     toProcess.add(kid);
@@ -173,40 +182,33 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
     }
     
     private int count;
-    private Map compute(Phadhail ph) {
+    private Map<String,Integer> compute(Phadhail ph) {
         assert getLock().canRead();
         assert !ph.hasChildren();
-        logger.log(Level.FINER, "Computing index for {0} [#{1}]", new Object[] {ph, new Integer(++count)});
-        DomProvider p = (DomProvider)domProviders2Phadhails.get(ph);
+        logger.log(Level.FINER, "Computing index for {0} [#{1}]", new Object[] {ph, ++count});
+        // XXX technically should listen to lookup changes...
+        DomProvider p = (DomProvider) PhadhailLookups.getLookup(ph).lookup(DomProvider.class);
         if (p == null) {
-            // XXX technically should listen to lookup changes...
-            p = (DomProvider)PhadhailLookups.getLookup(ph).lookup(DomProvider.class);
-            if (p == null) {
-                logger.finer("no DomProvider here");
-                return Collections.EMPTY_MAP;
-            }
-            domProviders2Phadhails.put(p, ph);
+            logger.finer("no DomProvider here");
+            return Collections.emptyMap();
         }
+        domProviders2Phadhails.put(p, ph);
         Document d;
         try {
             d = p.getDocument();
         } catch (IOException e) {
             logger.log(Level.FINE, "Parsing failed for {0}: {1}", new Object[] {ph.getName(), e.getMessage()});
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
         // Wait till after p.getDocument(), since that will fire stateChanged
         // the first time it is called (not ready -> ready)
         p.addChangeListener(WeakListeners.change(this, p));
-        Map/*<String,int>*/ m = new HashMap();
+        Map<String,Integer> m = new HashMap<String,Integer>();
         NodeList l = d.getElementsByTagName("*");
         for (int i = 0; i < l.getLength(); i++) {
             String name = ((Element)l.item(i)).getTagName();
-            Integer x = (Integer)m.get(name);
-            if (x == null) {
-                m.put(name, new Integer(1));
-            } else {
-                m.put(name, new Integer(x.intValue() + 1));
-            }
+            Integer old = m.get(name);
+            m.put(name, old != null ? old + 1 : 1);
         }
         logger.log(Level.FINER, "Parse succeeded for {0}", ph);
         logger.log(Level.FINEST, "Parse results: {0}", m);
@@ -215,7 +217,7 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
     
     private void bubble(Phadhail ph) {
         assert getLock().canWrite();
-        logger.log(Level.FINER, "bubble: {0} data size: {1}", new Object[] {ph, new Integer(processed.size())});
+        logger.log(Level.FINER, "bubble: {0} data size: {1}", new Object[] {ph, processed.size()});
         logger.log(Level.FINEST, "bubble: {0} data: {1}", new Object[] {ph, processed});
         if (ph == root) {
             getLock().read(new Runnable() {
@@ -227,23 +229,18 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
             Phadhail parent = (Phadhail)phadhails2Parents.get(ph);
             assert parent != null : ph;
             assert parent.hasChildren();
-            Iterator/*<Phadhail>*/ kids = parent.getChildren().iterator();
-            Map/*<String,int>*/ recalc = new HashMap();
-            while (kids.hasNext()) {
-                Phadhail kid = (Phadhail)kids.next();
-                Map/*<String,int>*/ subdata = (Map)processed.get(kid);
+            Map<String,Integer> recalc = new HashMap<String,Integer>();
+            for (Phadhail kid : parent.getChildren()) {
+                Map<String,Integer> subdata = processed.get(kid);
                 if (subdata == null) {
                     // OK, kid is simply not yet calculated, will bubble changes later.
                     continue;
                 }
-                Iterator it = subdata.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry e = (Map.Entry)it.next();
-                    String name = (String)e.getKey();
-                    Integer x1 = (Integer)e.getValue();
+                for (Map.Entry<String, Integer> e : subdata.entrySet()) {
+                    String name = e.getKey();
+                    int x1 = e.getValue();
                     if (recalc.containsKey(name)) {
-                        Integer x2 = (Integer)recalc.get(name);
-                        recalc.put(name, new Integer(x1.intValue() + x2.intValue()));
+                        recalc.put(name, x1 + recalc.get(name));
                     } else {
                         recalc.put(name, x1);
                     }
@@ -280,7 +277,7 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
     
     public void stateChanged(ChangeEvent e) {
         DomProvider p = (DomProvider)e.getSource();
-        Phadhail ph = (Phadhail)domProviders2Phadhails.get(p);
+        Phadhail ph = domProviders2Phadhails.get(p);
         assert ph != null;
         logger.log(Level.FINER, "stateChanged: {0}", ph);
         invalidate(ph);

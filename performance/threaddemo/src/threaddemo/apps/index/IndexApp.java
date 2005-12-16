@@ -15,11 +15,19 @@ package threaddemo.apps.index;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.*;
-import javax.swing.*;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.table.*;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import threaddemo.locking.LockAction;
 import threaddemo.model.Phadhail;
 
@@ -60,9 +68,9 @@ public class IndexApp extends JFrame {
     }
     
     private void refreshTable() {
-        final SortedMap/*<String,int>*/ data = (SortedMap)index.getLock().read(new LockAction() {
-            public Object run() {
-                return new TreeMap(index.getData());
+        final SortedMap<String,Integer> data = index.getLock().read(new LockAction<SortedMap<String,Integer>>() {
+            public SortedMap<String,Integer> run() {
+                return new TreeMap<String,Integer>(index.getData());
             }
         });
         SwingUtilities.invokeLater(new Runnable() {
@@ -72,9 +80,7 @@ public class IndexApp extends JFrame {
                 for (int i = 0; i < rows; i++) {
                     tableModel.removeRow(0);
                 }
-                Iterator it = data.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry entry = (Map.Entry)it.next();
+                for (Map.Entry<String, Integer> entry : data.entrySet()) {
                     tableModel.addRow(new Object[] {
                         entry.getKey(),
                         entry.getValue(),

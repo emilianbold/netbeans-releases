@@ -13,9 +13,10 @@
 
 package threaddemo.locking;
 
-import java.lang.ref.*;
-import java.util.*;
-import junit.framework.*;
+import junit.framework.TestCase;
+import threaddemo.locking.Lock;
+import threaddemo.locking.Locks;
+import threaddemo.locking.PrivilegedLock;
 
 /**
  * Test behavior of Locks.readWrite and PrivilegedLock.
@@ -26,16 +27,8 @@ public class ReadWriteLockTest extends TestCase {
     private PrivilegedLock p;
     private Lock m;
     
-    public ReadWriteLockTest(java.lang.String testName) {
+    public ReadWriteLockTest(String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        return new TestSuite(ReadWriteLockTest.class);
     }
     
     protected void setUp() {

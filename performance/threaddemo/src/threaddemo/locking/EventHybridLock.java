@@ -14,7 +14,10 @@
 package threaddemo.locking;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 // XXX give preference to waiting writers: first to enter after last reader leaves; no new readers
 // XXX handle interactions with other locks
@@ -33,7 +36,7 @@ final class EventHybridLock implements Lock {
     
     private EventHybridLock() {}
     
-    public Object read(LockAction action) {
+    public <T> T read(LockAction<T> action) {
         if (EventLock.isDispatchThread()) {
             // Fine, go ahead.
             if (semaphore == -1) {
@@ -85,29 +88,43 @@ final class EventHybridLock implements Lock {
         }
     }
     
-    private static LockAction convertExceptionAction(final LockExceptionAction action) {
-        return new LockAction() {
-            public Object run() {
+    private static final class Holder<T, E extends Exception> {
+        public final T object;
+        public final E exception;
+        public Holder(T object) {
+            this.object = object;
+            this.exception = null;
+        }
+        public Holder(E exception) {
+            this.object = null;
+            this.exception = exception;
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private static <T, E extends Exception> LockAction<Holder<T,E>> convertExceptionAction(final LockExceptionAction<T,E> action) {
+        return new LockAction<Holder<T,E>>() {
+            public Holder<T,E> run() {
                 try {
-                    return new Object[] {action.run()};
+                    return new Holder<T,E>(action.run());
                 } catch (RuntimeException e) {
                     throw e;
                 } catch (Exception e) {
-                    return e;
+                    return new Holder<T,E>((E) e);
                 }
             }
         };
     }
     
-    private static Object finishExceptionAction(Object result) throws InvocationTargetException {
-        if (result instanceof Object[]) {
-            return ((Object[])result)[0];
+    private static <T, E extends Exception> T finishExceptionAction(Holder<T,E> result) throws E {
+        if (result.exception != null) {
+            throw result.exception;
         } else {
-            throw new InvocationTargetException((Exception)result);
+            return result.object;
         }
     }
     
-    public Object read(LockExceptionAction action) throws InvocationTargetException {
+    public <T, E extends Exception> T read(LockExceptionAction<T,E> action) throws E {
         return finishExceptionAction(read(convertExceptionAction(action)));
     }
     
@@ -115,19 +132,19 @@ final class EventHybridLock implements Lock {
         read(convertRunnable(action));
     }
     
-    public Object write(final LockAction action) {
+    public <T> T write(final LockAction<T> action) {
         if (!EventLock.isDispatchThread()) {
             // Try again in AWT.
             if (canRead()) {
                 throw new IllegalStateException("Cannot go R -> W"); // NOI18N
             }
             try {
-                final Object[] o = new Object[1];
+                final List<T> o = new ArrayList<T>(1);
                 final Error[] err = new Error[1];
                 EventLock.invokeAndWaitLowPriority(this, new Runnable() {
                     public void run() {
                         try {
-                            o[0] = write(action);
+                            o.add(write(action));
                         } catch (Error e) {
                             err[0] = e;
                         }
@@ -136,7 +153,7 @@ final class EventHybridLock implements Lock {
                 if (err[0] != null) {
                     throw err[0];
                 }
-                return o[0];
+                return o.get(0);
             } catch (InterruptedException e) {
                 throw new IllegalStateException(e.toString());
             } catch (InvocationTargetException e) {
@@ -187,7 +204,7 @@ final class EventHybridLock implements Lock {
         }
     }
     
-    public Object write(LockExceptionAction action) throws InvocationTargetException {
+    public <T, E extends Exception> T write(LockExceptionAction<T,E> action) throws E {
         return finishExceptionAction(write(convertExceptionAction(action)));
     }
     
@@ -195,9 +212,9 @@ final class EventHybridLock implements Lock {
         write(convertRunnable(action));
     }
     
-    private static LockAction convertRunnable(final Runnable action) {
-        return new LockAction() {
-            public Object run() {
+    private static <T> LockAction<T> convertRunnable(final Runnable action) {
+        return new LockAction<T>() {
+            public T run() {
                 action.run();
                 return null;
             }
@@ -260,6 +277,6 @@ final class EventHybridLock implements Lock {
     /**
      * Set of readers which are running.
      */
-    private final Set readers = new HashSet(); // Set<Thread>
+    private final Set<Thread> readers = new HashSet<Thread>();
     
 }

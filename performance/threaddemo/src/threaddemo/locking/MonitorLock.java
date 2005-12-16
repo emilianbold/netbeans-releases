@@ -13,8 +13,6 @@
 
 package threaddemo.locking;
 
-import java.lang.reflect.InvocationTargetException;
-
 // XXX could track read vs. write state
 
 /**
@@ -34,19 +32,13 @@ final class MonitorLock implements Lock {
         return Thread.holdsLock(monitor);
     }
     
-    public Object read(LockExceptionAction action) throws InvocationTargetException {
+    public <T, E extends Exception> T read(LockExceptionAction<T,E> action) throws E {
         synchronized (monitor) {
-            try {
-                return action.run();
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new InvocationTargetException(e);
-            }
+            return action.run();
         }
     }
     
-    public Object read(LockAction action) {
+    public <T> T read(LockAction<T> action) {
         synchronized (monitor) {
             return action.run();
         }
@@ -74,11 +66,11 @@ final class MonitorLock implements Lock {
         return canRead();
     }
     
-    public Object write(LockAction action) {
+    public <T> T write(LockAction<T> action) {
         return read(action);
     }
     
-    public Object write(LockExceptionAction action) throws InvocationTargetException {
+    public <T, E extends Exception> T write(LockExceptionAction<T,E> action) throws E {
         return read(action);
     }
     

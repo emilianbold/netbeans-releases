@@ -21,9 +21,9 @@ import java.util.EventObject;
  * @author Jesse Glick
  * @see TwoWaySupport
  */
-public abstract class TwoWayEvent extends EventObject {
+public abstract class TwoWayEvent<DM, UMD, DMD> extends EventObject {
     
-    private TwoWayEvent(TwoWaySupport s) {
+    private TwoWayEvent(TwoWaySupport<DM, UMD, DMD> s) {
         super(s);
         assert s != null;
     }
@@ -32,18 +32,22 @@ public abstract class TwoWayEvent extends EventObject {
      * Get the associated two-way support.
      * @return the support
      */
-    public TwoWaySupport getTwoWaySupport() {
-        return (TwoWaySupport)getSource();
+    public TwoWaySupport<DM, UMD, DMD> getTwoWaySupport() {
+        @SuppressWarnings("unchecked")
+        TwoWaySupport<DM, UMD, DMD> source = (TwoWaySupport<DM, UMD, DMD>) getSource();
+        return source;
     }
     
     /**
      * Event indicating a derived value has been produced.
      */
-    public static final class Derived extends TwoWayEvent {
+    public static final class Derived<DM, UMD, DMD> extends TwoWayEvent<DM, UMD, DMD> {
         
-        private final Object oldValue, newValue, derivedDelta, underlyingDelta;
+        private final DM oldValue, newValue;
+        private final DMD derivedDelta;
+        private final UMD underlyingDelta;
         
-        Derived(TwoWaySupport s, Object oldValue, Object newValue, Object derivedDelta, Object underlyingDelta) {
+        Derived(TwoWaySupport<DM, UMD, DMD> s, DM oldValue, DM newValue, DMD derivedDelta, UMD underlyingDelta) {
             super(s);
             this.oldValue = oldValue;
             assert newValue != null;
@@ -57,7 +61,7 @@ public abstract class TwoWayEvent extends EventObject {
          * Get the old value of the derived model.
          * @return the old value, or null if it was never calculated
          */
-        public Object getOldValue() {
+        public DM getOldValue() {
             return oldValue;
         }
         
@@ -65,7 +69,7 @@ public abstract class TwoWayEvent extends EventObject {
          * Get the new value of the derived model.
          * @return the new value
          */
-        public Object getNewValue() {
+        public DM getNewValue() {
             return newValue;
         }
         
@@ -73,7 +77,7 @@ public abstract class TwoWayEvent extends EventObject {
          * Get the change to the derived model.
          * @return the delta, or null if the old value was null
          */
-        public Object getDerivedDelta() {
+        public DMD getDerivedDelta() {
             return derivedDelta;
         }
         
@@ -84,7 +88,7 @@ public abstract class TwoWayEvent extends EventObject {
          * @return the invalidating change to the underlying model, or null if
          *         the derived model is simply being computed for the first time
          */
-        public Object getUnderlyingDelta() {
+        public UMD getUnderlyingDelta() {
             return underlyingDelta;
         }
         
@@ -97,11 +101,12 @@ public abstract class TwoWayEvent extends EventObject {
     /**
      * Event indicating a derived model has been invalidated.
      */
-    public static final class Invalidated extends TwoWayEvent {
+    public static final class Invalidated<DM, UMD, DMD> extends TwoWayEvent<DM, UMD, DMD> {
         
-        private final Object oldValue, underlyingDelta;
+        private final DM oldValue;
+        private final UMD underlyingDelta;
         
-        Invalidated(TwoWaySupport s, Object oldValue, Object underlyingDelta) {
+        Invalidated(TwoWaySupport<DM, UMD, DMD> s, DM oldValue, UMD underlyingDelta) {
             super(s);
             assert oldValue != null;
             this.oldValue = oldValue;
@@ -113,7 +118,7 @@ public abstract class TwoWayEvent extends EventObject {
          * Get the old value of the derived model that is now invalid.
          * @return the old value
          */
-        public Object getOldValue() {
+        public DM getOldValue() {
             return oldValue;
         }
         
@@ -121,7 +126,7 @@ public abstract class TwoWayEvent extends EventObject {
          * Get the change to the underlying model that triggered this invalidation.
          * @return the invalidating change to the underlying model
          */
-        public Object getUnderlyingDelta() {
+        public UMD getUnderlyingDelta() {
             return underlyingDelta;
         }
         
@@ -134,11 +139,12 @@ public abstract class TwoWayEvent extends EventObject {
     /**
      * Event indicating the derived model was changed and the underlying model recreated.
      */
-    public static final class Recreated extends TwoWayEvent {
+    public static final class Recreated<DM, UMD, DMD> extends TwoWayEvent<DM, UMD, DMD> {
         
-        private final Object oldValue, newValue, derivedDelta;
+        private final DM oldValue, newValue;
+        private final DMD derivedDelta;
         
-        Recreated(TwoWaySupport s, Object oldValue, Object newValue, Object derivedDelta) {
+        Recreated(TwoWaySupport<DM, UMD, DMD> s, DM oldValue, DM newValue, DMD derivedDelta) {
             super(s);
             assert oldValue != null;
             this.oldValue = oldValue;
@@ -152,7 +158,7 @@ public abstract class TwoWayEvent extends EventObject {
          * Get the old value of the derived model that is now invalid.
          * @return the old value
          */
-        public Object getOldValue() {
+        public DM getOldValue() {
             return oldValue;
         }
         
@@ -160,7 +166,7 @@ public abstract class TwoWayEvent extends EventObject {
          * Get the new value of the derived model.
          * @return the new value
          */
-        public Object getNewValue() {
+        public DM getNewValue() {
             return newValue;
         }
         
@@ -169,7 +175,7 @@ public abstract class TwoWayEvent extends EventObject {
          * model as well.
          * @return the delta to the derived model
          */
-        public Object getDerivedDelta() {
+        public DMD getDerivedDelta() {
             return derivedDelta;
         }
         
@@ -183,11 +189,12 @@ public abstract class TwoWayEvent extends EventObject {
      * Event indicating changes in the underlying model were clobbered by changes to
      * the derived model.
      */
-    public static final class Clobbered extends TwoWayEvent {
+    public static final class Clobbered<DM, UMD, DMD> extends TwoWayEvent<DM, UMD, DMD> {
         
-        private final Object oldValue, newValue, derivedDelta;
+        private final DM oldValue, newValue;
+        private final DMD derivedDelta;
         
-        Clobbered(TwoWaySupport s, Object oldValue, Object newValue, Object derivedDelta) {
+        Clobbered(TwoWaySupport<DM, UMD, DMD> s, DM oldValue, DM newValue, DMD derivedDelta) {
             super(s);
             this.oldValue = oldValue;
             assert newValue != null;
@@ -200,7 +207,7 @@ public abstract class TwoWayEvent extends EventObject {
          * Get the old value of the derived model that is now invalid.
          * @return the old value, or null if it was never calculated
          */
-        public Object getOldValue() {
+        public DM getOldValue() {
             return oldValue;
         }
         
@@ -208,7 +215,7 @@ public abstract class TwoWayEvent extends EventObject {
          * Get the new value of the derived model.
          * @return the new value
          */
-        public Object getNewValue() {
+        public DM getNewValue() {
             return newValue;
         }
         
@@ -217,7 +224,7 @@ public abstract class TwoWayEvent extends EventObject {
          * model as well whether it is applicable or not.
          * @return the delta to the derived model
          */
-        public Object getDerivedDelta() {
+        public DMD getDerivedDelta() {
             return derivedDelta;
         }
         
@@ -234,9 +241,9 @@ public abstract class TwoWayEvent extends EventObject {
      * ever fire this event, since the default implementation creates a strong
      * reference that cannot be collected.
      */
-    public static final class Forgotten extends TwoWayEvent {
+    public static final class Forgotten<DM, UMD, DMD> extends TwoWayEvent<DM, UMD, DMD> {
         
-        Forgotten(TwoWaySupport s) {
+        Forgotten(TwoWaySupport<DM, UMD, DMD> s) {
             super(s);
         }
         
@@ -250,13 +257,14 @@ public abstract class TwoWayEvent extends EventObject {
      * Event indicating an attempted derivation failed with an exception.
      * The underlying model is thus considered to be in an inconsistent state.
      */
-    public static final class Broken extends TwoWayEvent {
+    public static final class Broken<DM, UMD, DMD> extends TwoWayEvent<DM, UMD, DMD> {
         
-        private final Object oldValue, underlyingDelta;
+        private final DM oldValue;
+        private final UMD underlyingDelta;
         
         private final Exception exception;
         
-        Broken(TwoWaySupport s, Object oldValue, Object underlyingDelta, Exception exception) {
+        Broken(TwoWaySupport<DM, UMD, DMD> s, DM oldValue, UMD underlyingDelta, Exception exception) {
             super(s);
             this.oldValue = oldValue;
             this.underlyingDelta = underlyingDelta;
@@ -268,7 +276,7 @@ public abstract class TwoWayEvent extends EventObject {
          * Get the old value of the derived model that is now invalid.
          * @return the old value, or null if it was never calculated
          */
-        public Object getOldValue() {
+        public DM getOldValue() {
             return oldValue;
         }
         
@@ -279,7 +287,7 @@ public abstract class TwoWayEvent extends EventObject {
          * @return the invalidating change to the underlying model, or null if
          *         the derived model is simply being computed for the first time
          */
-        public Object getUnderlyingDelta() {
+        public UMD getUnderlyingDelta() {
             return underlyingDelta;
         }
         

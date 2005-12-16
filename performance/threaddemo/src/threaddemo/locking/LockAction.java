@@ -17,13 +17,13 @@ package threaddemo.locking;
  * Unchecked exceptions will be propagated to calling code.
  *
  */
-public interface LockAction {
+public interface LockAction<T> {
     
     /**
      * Execute the action.
      * @return any object, then returned from {@link Lock#read(LockAction)} or {@link Lock#write(LockAction)}
      */
-    public Object run();
+    public T run();
     
 }
 

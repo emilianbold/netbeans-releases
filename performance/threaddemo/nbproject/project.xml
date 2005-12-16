@@ -123,7 +123,7 @@ Microsystems, Inc. All Rights Reserved.
                 <built-to>${threaddemo.jar}</built-to>
                 <built-to>${threaddemo-complete.jar}</built-to>
                 <javadoc-built-to>${build.javadoc.dir}</javadoc-built-to>
-                <source-level>1.4</source-level>
+                <source-level>1.5</source-level>
             </compilation-unit>
             <compilation-unit>
                 <package-root>test</package-root>
@@ -131,7 +131,7 @@ Microsystems, Inc. All Rights Reserved.
                 <classpath mode="compile">${test.build.cp}</classpath>
                 <classpath mode="execute">${test.run.cp}</classpath>
                 <built-to>${build.test.classes.dir}</built-to>
-                <source-level>1.4</source-level>
+                <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
     </configuration>

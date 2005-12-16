@@ -50,16 +50,17 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="build-looks" depends="init" unless="looks.and.registry.available">
-        <ant dir="${nbroot}/openide/registry"/>
-        <ant dir="${nbroot}/openide/convertor"/>
-        <ant dir="${nbroot}/core/registry"/>
-        <ant dir="${nbroot}/openide/looks"/>
+        <ant dir="${nbroot}/openide/registry" inheritall="false" inheritrefs="false"/>
+        <ant dir="${nbroot}/openide/convertor" inheritall="false" inheritrefs="false"/>
+        <ant dir="${nbroot}/core/registry" inheritall="false" inheritrefs="false"/>
+        <ant dir="${nbroot}/openide/looks" inheritall="false" inheritrefs="false"/>
     </target>
     
     <target name="compile" depends="build-openide,build-looks">
         <mkdir dir="${build.classes.dir}"/>
-        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.4">
+        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.5">
             <classpath path="${build.cp}"/>
+            <compilerarg value="-Xlint:unchecked"/>
         </javac>
         <copy todir="${build.classes.dir}">
             <fileset dir="src">
@@ -73,8 +74,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="compile-selected-files-in-src">
         <fail unless="files">Must set property 'files'</fail>
         <mkdir dir="${build.classes.dir}"/>
-        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.4" includes="${files}">
+        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.5" includes="${files}">
             <classpath path="${build.cp}"/>
+            <compilerarg value="-Xlint:unchecked"/>
         </javac>
     </target>
     
@@ -97,8 +99,6 @@ Microsystems, Inc. All Rights Reserved.
             <zipfileset src="${windows.jar}"/>
             <zipfileset src="${looks.jar}"/>
             <zipfileset src="${Spin.jar}"/>
-            <zipfileset src="${xerces.jar}"/>
-            <zipfileset src="${dom-ranges.jar}"/>
         </jar>
     </target>
 
@@ -138,7 +138,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="debug-fix-nb">
-        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.4">
+        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.5">
             <classpath path="${build.cp}"/>
             <include name="${fix.file}.java"/>
         </javac>
@@ -168,20 +168,21 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="javadoc">
-        <property name="javadoc.docs.jdk" value="http://java.sun.com/j2se/1.4.2/docs/api"/>
+        <property name="javadoc.docs.jdk" value="http://java.sun.com/j2se/1.5.0/docs/api"/>
+        <!--
         <property name="javadoc.web.root" value="http://www.netbeans.org/download/dev/javadoc"/>
-        <property name="javadoc.docs.openide" value="${javadoc.web.root}/OpenAPIs"/>
-        <property name="javadoc.docs.openide/looks" value="${javadoc.web.root}/LooksAPI"/>
+        -->
         <mkdir dir="${build.javadoc.dir}"/>
-        <javadoc destdir="${build.javadoc.dir}" source="1.4">
+        <javadoc destdir="${build.javadoc.dir}" source="1.5">
             <classpath path="${build.cp}"/>
             <sourcepath>
                 <pathelement location="src"/>
             </sourcepath>
             <fileset dir="src"/>
-            <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="${nbroot}/openide/api/doc"/>
-            <link href="${javadoc.docs.openide}" offline="true" packagelistloc="${nbroot}/openide/javadoc/OpenAPIs"/>
-            <link href="${javadoc.docs.openide/looks}" offline="true" packagelistloc="${nbroot}/openide/looks/javadoc/LooksAPI"/>
+            <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="${nbroot}/nbbuild/javadoctools"/>
+            <!--
+            <link href="${javadoc.web.root}/org-netbeans-modules-looks" offline="true" packagelistloc="${nbroot}/nbbuild/build/javadoc/org-netbeans-modules-looks"/>
+            -->
         </javadoc>
     </target>
     
@@ -190,9 +191,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="test-build" depends="build">
-        <ant dir="${nbroot}/junit/external"/>
         <mkdir dir="${build.test.classes.dir}"/>
-        <javac srcdir="test" destdir="${build.test.classes.dir}" debug="true" deprecation="true">
+        <javac srcdir="test" destdir="${build.test.classes.dir}" debug="true" deprecation="true" source="1.5">
             <classpath path="${test.build.cp}"/>
         </javac>
         <!-- copy resources if it becomes necessary -->

@@ -15,10 +15,22 @@ package threaddemo.apps.populate;
 
 import java.awt.FlowLayout;
 import java.awt.Frame;
-import java.io.*;
-import javax.swing.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import javax.swing.BoundedRangeModel;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import org.openide.xml.XMLUtil;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 // XXX offer a Cancel button
 
@@ -85,7 +97,7 @@ public class Populate {
                 });
             }
         }, "Populating test files").start();
-        dialog.show();
+        dialog.setVisible(true);
     }
     
     private static void create(File root, int val, final BoundedRangeModel progress) throws IOException {

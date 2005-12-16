@@ -16,13 +16,26 @@ package threaddemo;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
-import javax.swing.*;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.WindowConstants;
 import threaddemo.apps.index.IndexApp;
 import threaddemo.apps.populate.Populate;
 import threaddemo.apps.refactor.Refactor;
-import threaddemo.model.*;
+import threaddemo.model.Phadhail;
+import threaddemo.model.PhadhailEvent;
+import threaddemo.model.PhadhailListener;
+import threaddemo.model.PhadhailNameEvent;
+import threaddemo.model.Phadhails;
 import threaddemo.views.PhadhailViews;
 
 /**
@@ -47,7 +60,7 @@ public final class Main extends JFrame {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 mainFrame.pack();
-                mainFrame.show();
+                mainFrame.setVisible(true);
             }
         });
     }
@@ -212,7 +225,7 @@ public final class Main extends JFrame {
         frame.pack();
         frame.setSize(500, 500);
         frame.setLocation(mainFrame.getX() + mainFrame.getWidth(), 0);
-        frame.show();
+        frame.setVisible(true);
     }
     
     private void viewIndex(Phadhail model) {

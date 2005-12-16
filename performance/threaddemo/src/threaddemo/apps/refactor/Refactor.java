@@ -19,12 +19,26 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.*;
+import javax.swing.BoundedRangeModel;
+import javax.swing.DefaultBoundedRangeModel;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import org.openide.cookies.SaveCookie;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import threaddemo.data.DomProvider;
 import threaddemo.data.PhadhailLookups;
 import threaddemo.locking.LockAction;
@@ -49,7 +63,7 @@ public class Refactor {
      * @param app owner app, or null
      */
     public static void run(final Phadhail root, Frame app) {
-        final Map/*<Phadhail,DomProvider>*/ data = collectData(root);
+        final Map<Phadhail,DomProvider> data = collectData(root);
         final BoundedRangeModel progress = new DefaultBoundedRangeModel();
         progress.setMinimum(0);
         progress.setMaximum(data.size());
@@ -75,18 +89,21 @@ public class Refactor {
         dialog.getContentPane().add(cancel);
         dialog.pack();
         dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        dialog.show();
+        dialog.setVisible(true);
         new Thread(new Runnable() {
             public void run() {
-                final Iterator/*<Map.Entry<Phadhail,DomProvider>>*/ it = data.entrySet().iterator();
-                while (it.hasNext() && !cancelled[0]) {
-                    Map.Entry e = (Map.Entry)it.next();
+                Iterator<Map.Entry<Phadhail, DomProvider>> it = data.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry<Phadhail, DomProvider> e = it.next();
+                    if (cancelled[0]) {
+                        break;
+                    }
                     // Avoid keeping a reference to the old data, since we have
                     // cached DomProvider's and such heavyweight stuff open on them:
                     it.remove();
-                    final Phadhail ph = (Phadhail)e.getKey();
+                    final Phadhail ph = e.getKey();
                     logger.log(Level.FINER, "Refactoring {0}", ph);
-                    final DomProvider p = (DomProvider)e.getValue();
+                    final DomProvider p = e.getValue();
                     ph.lock().read(new Runnable() {
                         public void run() {
                             final String path = ph.getPath();
@@ -125,18 +142,17 @@ public class Refactor {
         }, "Refactoring").start();
     }
     
-    private static Map/*<Phadhail,DomProvider>*/ collectData(final Phadhail root) {
-        return (Map)root.lock().read(new LockAction() {
-            private final Map data = new HashMap(); 
-            public Object run() {
+    private static Map<Phadhail, DomProvider> collectData(final Phadhail root) {
+        return root.lock().read(new LockAction<Map<Phadhail,DomProvider>>() {
+            private final Map<Phadhail, DomProvider> data = new HashMap<Phadhail,DomProvider>(); 
+            public Map<Phadhail, DomProvider> run() {
                 collect(root);
                 return data;
             }
             private void collect(Phadhail ph) {
                 if (ph.hasChildren()) {
-                    Iterator/*<Phadhail>*/ it = ph.getChildren().iterator();
-                    while (it.hasNext()) {
-                        collect((Phadhail)it.next());
+                    for (Phadhail child : ph.getChildren()) {
+                        collect(child);
                     }
                 } else {
                     DomProvider p = (DomProvider)PhadhailLookups.getLookup(ph).lookup(DomProvider.class);
@@ -157,15 +173,13 @@ public class Refactor {
             return;
         }
         NodeList nl = doc.getElementsByTagName("*");
-        List/*<Element>*/ l = new ArrayList();
+        final List<Element> l = new ArrayList<Element>();
         for (int i = 0; i < nl.getLength(); i++) {
-            l.add(nl.item(i));
+            l.add((Element) nl.item(i));
         }
-        final Iterator it = l.iterator();
         p.isolatingChange(new Runnable() {
             public void run() {
-                while (it.hasNext()) {
-                    Element el = (Element)it.next();
+                for (Element el : l) {
                     String tagname = el.getTagName();
                     if (tagname.startsWith("tag-")) {
                         int n = Integer.parseInt(tagname.substring(4));

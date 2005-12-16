@@ -24,8 +24,15 @@ import org.openide.actions.DeleteAction;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.xml.XMLUtil;
-import org.w3c.dom.*;
-import org.w3c.dom.events.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
 
 // XXX could have other operations - insert etc.
 
@@ -120,11 +127,11 @@ public class ElementLook extends Look implements EventListener {
     
     public List getChildObjects(Object o, Lookup env) {
         NodeList nl = ((Element)o).getChildNodes();
-        List l = new ArrayList(Math.max(nl.getLength(), 1));
+        List<Element> l = new ArrayList<Element>(Math.max(nl.getLength(), 1));
         for (int i = 0; i < nl.getLength(); i++) {
             Node n = nl.item(i);
             if (n instanceof Element) {
-                l.add(n);
+                l.add((Element) n);
             }
         }
         return l;

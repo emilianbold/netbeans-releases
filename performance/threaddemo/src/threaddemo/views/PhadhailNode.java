@@ -16,14 +16,24 @@ package threaddemo.views;
 import java.io.IOException;
 import java.util.Collections;
 import javax.swing.Action;
-import org.openide.actions.*;
-import org.openide.cookies.*;
-import org.openide.nodes.*;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.NewAction;
+import org.openide.actions.OpenAction;
+import org.openide.actions.RenameAction;
+import org.openide.actions.SaveAction;
+import org.openide.actions.ToolsAction;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
-import threaddemo.data.*;
-import threaddemo.model.*;
+import threaddemo.data.PhadhailLookups;
+import threaddemo.data.PhadhailNewType;
+import threaddemo.model.Phadhail;
+import threaddemo.model.PhadhailEvent;
+import threaddemo.model.PhadhailListener;
+import threaddemo.model.PhadhailNameEvent;
 
 // XXX view of DOM tree too
 

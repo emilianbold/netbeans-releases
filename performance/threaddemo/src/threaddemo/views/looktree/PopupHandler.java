@@ -43,7 +43,7 @@ class PopupHandler extends MouseAdapter {
     
     private final LookTreeView view;
     private final ActionMap actionMap;
-    private Reference clicked; // Reference<LookTreeNode>
+    private Reference<LookTreeNode> clicked;
     
     public PopupHandler(LookTreeView view) {
         this.view = view;
@@ -58,7 +58,7 @@ class PopupHandler extends MouseAdapter {
             TreePath path = view.getClosestPathForLocation(x, y);
             if (path != null) {
                 LookTreeNode n = (LookTreeNode)path.getLastPathComponent();
-                clicked = new WeakReference(n);
+                clicked = new WeakReference<LookTreeNode>(n);
                 Action[] actions = n.getLook().getActions(n.getData(), n.getLookup() );
                 // XXX handle multiselects...
                 Node selection = makeNode( n );
@@ -87,7 +87,7 @@ class PopupHandler extends MouseAdapter {
         
         public void actionPerformed(ActionEvent e) {
             // XXX should confirm deletion first
-            LookTreeNode n = (LookTreeNode)clicked.get();
+            LookTreeNode n = clicked.get();
             try {
                 n.getLook().destroy(n.getData(), n.getLookup() );
             } catch (IOException ex) {

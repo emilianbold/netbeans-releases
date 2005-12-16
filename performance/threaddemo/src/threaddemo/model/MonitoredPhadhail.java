@@ -13,9 +13,11 @@
 
 package threaddemo.model;
 
-import java.io.*;
-import java.lang.ref.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
 import threaddemo.locking.Lock;
 import threaddemo.locking.Locks;
 
@@ -31,7 +33,7 @@ final class MonitoredPhadhail extends AbstractPhadhail {
     private static final Object LOCK = new LOCK();
     private static final Lock MLOCK = Locks.monitor(LOCK, 0);
     
-    private static final Factory FACTORY = new Factory() {
+    private static final AbstractPhadhail.Factory FACTORY = new AbstractPhadhail.Factory() {
         public AbstractPhadhail create(File f) {
             return new MonitoredPhadhail(f);
         }
@@ -49,7 +51,7 @@ final class MonitoredPhadhail extends AbstractPhadhail {
         return FACTORY;
     }
     
-    public List getChildren() {
+    public List<Phadhail> getChildren() {
         synchronized (LOCK) {
             return super.getChildren();
         }
