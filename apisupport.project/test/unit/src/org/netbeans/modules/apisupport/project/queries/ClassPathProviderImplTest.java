@@ -513,7 +513,9 @@ public class ClassPathProviderImplTest extends TestBase {
     
     public void testBinaryOriginAbsolutePath() throws Exception {
         File jmfhome = new File(getWorkDir(), "jmfhome");
-        File audioviewer = copyFolder(file("platform/samples/audio-files"));
+        File audioFiles = file("platform/samples/audio-files");
+        assertTrue("have 'platform' checked out", audioFiles.isDirectory());
+        File audioviewer = copyFolder(audioFiles);
         // Make it a standalone module so we can copy it:
         File pp = new File(audioviewer, "nbproject/private/private.properties".replace('/', File.separatorChar));
         pp.getParentFile().mkdirs();
