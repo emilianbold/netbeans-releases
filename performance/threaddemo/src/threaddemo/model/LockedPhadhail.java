@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 import threaddemo.locking.Locks;
 import threaddemo.locking.PrivilegedLock;
 
@@ -32,7 +32,7 @@ final class LockedPhadhail extends AbstractPhadhail {
     
     private static final PrivilegedLock PLOCK = new PrivilegedLock();
     static {
-        Locks.readWrite("LP", PLOCK, 0);
+        Locks.readWrite(PLOCK);
     }
     
     private static final AbstractPhadhail.Factory FACTORY = new AbstractPhadhail.Factory() {
@@ -144,7 +144,7 @@ final class LockedPhadhail extends AbstractPhadhail {
         }
     }
     
-    public Lock lock() {
+    public RWLock lock() {
         return PLOCK.getLock();
     }
     

@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import junit.framework.TestCase;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 import threaddemo.locking.Locks;
 import threaddemo.locking.PrivilegedLock;
 import threaddemo.util.TwoWaySupport;
@@ -37,7 +37,7 @@ public class TwoWaySupportTest extends TestCase {
     
     protected void setUp() throws Exception {
         p = new PrivilegedLock();
-        Lock l = Locks.readWrite("test", p, 0);
+        RWLock l = Locks.readWrite(p);
         s = new SimpleTWS(l);
         p.enterWrite();
     }
@@ -86,7 +86,7 @@ public class TwoWaySupportTest extends TestCase {
         
         private String string = "initial value";
         
-        public SimpleTWS(Lock l) {
+        public SimpleTWS(RWLock l) {
             super(l);
         }
         

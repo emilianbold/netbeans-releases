@@ -28,7 +28,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 import threaddemo.locking.LockAction;
 import threaddemo.locking.LockExceptionAction;
 import threaddemo.locking.Locks;
@@ -299,7 +299,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         });
     }
     
-    public Lock lock() {
+    public RWLock lock() {
         return Locks.event();
     }
     

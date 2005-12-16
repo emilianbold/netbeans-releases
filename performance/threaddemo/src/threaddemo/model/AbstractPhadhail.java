@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 
 /**
  * A convenience skeleton for making a phadhail based on files.
@@ -319,6 +319,6 @@ public abstract class AbstractPhadhail implements Phadhail {
         return clazz.substring(i + 1) + "<" + f + ">";
     }
 
-    public abstract Lock lock();
+    public abstract RWLock lock();
     
 }

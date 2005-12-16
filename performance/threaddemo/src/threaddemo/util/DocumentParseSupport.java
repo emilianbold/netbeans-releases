@@ -25,7 +25,7 @@ import javax.swing.text.StyledDocument;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.text.NbDocument;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 import threaddemo.locking.LockAction;
 
 // XXX helper methods to parse/rewrite an entire document atomically using Reader/Writer
@@ -56,7 +56,7 @@ public abstract class DocumentParseSupport<DM,DMD> extends TwoWaySupport<DM, Doc
      * @param edit the container for the document containing some parsable data
      * @param lock a lock
      */
-    protected DocumentParseSupport(EditorCookie.Observable edit, Lock lock) {
+    protected DocumentParseSupport(EditorCookie.Observable edit, RWLock lock) {
         super(lock);
         this.edit = edit;
         listener = new Listener();

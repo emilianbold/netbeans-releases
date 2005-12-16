@@ -13,6 +13,9 @@
 
 package threaddemo.locking;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 // XXX need test
 
 // XXX could track read vs. write state
@@ -21,13 +24,14 @@ package threaddemo.locking;
  * Simple lock that actually just uses a simple synchronization monitor.
  * @author Jesse Glick
  */
-final class MonitorLock implements Lock {
+final class MonitorLock implements RWLock {
+    
+    private static final ExecutorService POOL = Executors.newCachedThreadPool();
     
     private final Object monitor;
     
-    MonitorLock(Object monitor, int level) {
+    MonitorLock(Object monitor) {
         this.monitor = monitor;
-        // XXX handle level
     }
     
     public boolean canRead() {
@@ -53,7 +57,7 @@ final class MonitorLock implements Lock {
     }
     
     public void readLater(final Runnable action) {
-        ReadWriteLock.LATER.post(new Runnable() {
+        POOL.submit(new Runnable() {
             public void run() {
                 read(action);
             }

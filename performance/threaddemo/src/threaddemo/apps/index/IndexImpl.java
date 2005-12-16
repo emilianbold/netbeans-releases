@@ -31,7 +31,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import threaddemo.data.DomProvider;
 import threaddemo.data.PhadhailLookups;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 import threaddemo.model.Phadhail;
 import threaddemo.model.PhadhailEvent;
 import threaddemo.model.PhadhailListener;
@@ -59,7 +59,7 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
         this.root = root;
     }
     
-    public Lock getLock() {
+    public RWLock getLock() {
         return root.lock();
     }
     

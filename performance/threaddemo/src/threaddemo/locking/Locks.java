@@ -51,52 +51,41 @@ public class Locks {
      *     thread, like {@link java.awt.EventQueue#isDispatchThread}.
      * </ol>
      */
-    public static Lock event() {
+    public static RWLock event() {
         return EventLock.DEFAULT;
     }
     
     /**
      * XXX
      */
-    public static synchronized Lock eventHybrid() {
+    public static synchronized RWLock eventHybrid() {
         return EventHybridLock.DEFAULT;
     }
     
     /**
      * XXX
      */
-    public static Lock monitor(Object monitor, int level) {
-        return new MonitorLock(monitor, level);
+    public static RWLock monitor(Object monitor) {
+        return new MonitorLock(monitor);
     }
     
     /**
-     * Create a read/write lock with a defined level.
+     * Create a read/write lock.
      * Allows control over resources that
      * can be read by several readers at once but only written by one writer.
-     * <P>
-     * It is guaranteed that if you are a writer you can also enter the
-     * lock as a reader. But you cannot enter the write lock if you hold
-     * the read lock, since that can cause deadlocks.
-     * <P>
-     * This implementation will probably not starve a writer or reader indefinitely,
-     * but the exact behavior is at the mercy of {@link Object#wait()} and {@link Object#notifyAll()}.
-     * @param name an identifying name to use when debugging
-     * @param level an integer level
+     * Wrapper for {@link java.util.concurrent.locks.ReentrantReadWriteLock}.
      */
-    public static Lock readWrite(String name, int level) {
-        if (name == null) throw new IllegalArgumentException();
-        return new ReadWriteLock(name, level);
+    public static RWLock readWrite() {
+        return new ReadWriteLockWrapper();
     }
     
     /**
-     * Create a lock with a privileged key and a defined level.
-     * @param name an identifying name to use when debugging
+     * Create a lock with a privileged key.
      * @param privileged a key which may be used to call unbalanced entry/exit methods directly
-     * @param level an integer level
-     * @see #readWrite(String, int)
+     * @see #readWrite()
      */
-    public static Lock readWrite(String name, PrivilegedLock privileged, int level) {
-        ReadWriteLock l = (ReadWriteLock)readWrite(name, level);
+    public static RWLock readWrite(PrivilegedLock privileged) {
+        DuplexLock l = (DuplexLock) readWrite();
         privileged.setParent(l);
         return l;
     }

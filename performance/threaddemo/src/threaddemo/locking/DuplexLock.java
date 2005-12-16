@@ -17,7 +17,7 @@ package threaddemo.locking;
  * Lock which supports {@link PrivilegedLock} methods.
  * @author Jesse Glick
  */
-interface DuplexLock extends Lock {
+interface DuplexLock extends RWLock {
     
     void enterRead();
     

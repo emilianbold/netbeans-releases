@@ -28,9 +28,9 @@ import org.openide.util.Utilities;
  * Lock impl that works in the event thread.
  * @author Jesse Glick
  */
-final class EventLock implements Lock {
+final class EventLock implements RWLock {
     
-    public final static Lock DEFAULT = new EventLock();
+    public final static RWLock DEFAULT = new EventLock();
     
     private EventLock() {}
     
@@ -38,7 +38,6 @@ final class EventLock implements Lock {
         if (isDispatchThread()) {
             return action.run();
         } else {
-            ReadWriteLock.enteringOther(this);
             final List<T> result = new ArrayList<T>(1);
             try {
                 invokeAndWaitLowPriority(this, new Runnable() {
@@ -66,7 +65,6 @@ final class EventLock implements Lock {
         if (isDispatchThread()) {
             return action.run();
         } else {
-            ReadWriteLock.enteringOther(this);
             final Throwable[] exc = new Throwable[1];
             final List<T> result = new ArrayList<T>(1);
             try {
@@ -119,7 +117,6 @@ final class EventLock implements Lock {
         if (isDispatchThread()) {
             action.run();
         } else {
-            ReadWriteLock.enteringOther(this);
             try {
                 invokeAndWaitLowPriority(this, action);
             } catch (InterruptedException e) {
@@ -168,7 +165,7 @@ final class EventLock implements Lock {
      * Similar to {@link EventQueue#invokeLater} but posts the event at the same
      * priority as paint requests, to avoid bad visual artifacts.
      */
-    static void invokeLaterLowPriority(Lock m, Runnable r) {
+    static void invokeLaterLowPriority(RWLock m, Runnable r) {
         Toolkit t = Toolkit.getDefaultToolkit();
         EventQueue q = t.getSystemEventQueue();
         q.postEvent(new PaintPriorityEvent(m, t, r, null, false));
@@ -178,7 +175,7 @@ final class EventLock implements Lock {
      * Similar to {@link EventQueue#invokeAndWait} but posts the event at the same
      * priority as paint requests, to avoid bad visual artifacts.
      */
-    static void invokeAndWaitLowPriority(Lock m, Runnable r)
+    static void invokeAndWaitLowPriority(RWLock m, Runnable r)
             throws InterruptedException, InvocationTargetException {
         Toolkit t = Toolkit.getDefaultToolkit();
         EventQueue q = t.getSystemEventQueue();
@@ -195,8 +192,8 @@ final class EventLock implements Lock {
     }
     
     private static final class PaintPriorityEvent extends InvocationEvent {
-        private final Lock m;
-        public PaintPriorityEvent(Lock m, Toolkit source, Runnable runnable, Object notifier, boolean catchExceptions) {
+        private final RWLock m;
+        public PaintPriorityEvent(RWLock m, Toolkit source, Runnable runnable, Object notifier, boolean catchExceptions) {
             super(source, PaintEvent.PAINT, runnable, notifier, catchExceptions);
             this.m = m;
         }

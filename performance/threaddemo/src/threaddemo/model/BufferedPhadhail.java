@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 
 /**
  * Wraps a plain Phadhail and buffers its list of children.
@@ -164,7 +164,7 @@ final class BufferedPhadhail implements Phadhail, PhadhailListener {
         return "BufferedPhadhail<" + ph + ">@" + Integer.toHexString(System.identityHashCode(this));
     }
     
-    public Lock lock() {
+    public RWLock lock() {
         return ph.lock();
     }
     

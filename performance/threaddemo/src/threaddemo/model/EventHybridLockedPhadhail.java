@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 import threaddemo.locking.LockAction;
 import threaddemo.locking.LockExceptionAction;
 import threaddemo.locking.Locks;
@@ -130,7 +130,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
         });
     }
     
-    public Lock lock() {
+    public RWLock lock() {
         return Locks.eventHybrid();
     }
     

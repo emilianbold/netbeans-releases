@@ -16,7 +16,7 @@ package threaddemo.data;
 import java.io.IOException;
 import javax.swing.event.ChangeListener;
 import org.w3c.dom.Document;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 
 /**
  * Cookie for an object with a DOM tree.
@@ -61,7 +61,7 @@ public interface DomProvider {
     /**
      * Lock on which to lock while doing things.
      */
-    Lock lock();
+    RWLock lock();
     
     /**
      * Do an isolated block of operations to the document (must be in the write lock).

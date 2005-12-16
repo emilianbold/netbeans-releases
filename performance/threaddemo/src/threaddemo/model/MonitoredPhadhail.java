@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 import threaddemo.locking.Locks;
 
 /**
@@ -31,7 +31,7 @@ final class MonitoredPhadhail extends AbstractPhadhail {
     
     private static final class LOCK {}
     private static final Object LOCK = new LOCK();
-    private static final Lock MLOCK = Locks.monitor(LOCK, 0);
+    private static final RWLock MLOCK = Locks.monitor(LOCK);
     
     private static final AbstractPhadhail.Factory FACTORY = new AbstractPhadhail.Factory() {
         public AbstractPhadhail create(File f) {
@@ -111,7 +111,7 @@ final class MonitoredPhadhail extends AbstractPhadhail {
         }
     }
     
-    public Lock lock() {
+    public RWLock lock() {
         return MLOCK;
     }
     

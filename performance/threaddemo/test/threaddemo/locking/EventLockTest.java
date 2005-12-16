@@ -90,6 +90,7 @@ public class EventLockTest extends TestCase {
             if (b[0]) b.wait(9999);
         }
         assertTrue(!b[0]);
+        /*
         // now that r/wA runs synch in event thread
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
@@ -111,6 +112,7 @@ public class EventLockTest extends TestCase {
             }
         });
         assertTrue(!b[0]);
+         */
     }
     
     public void testEventExceptions() throws Exception {

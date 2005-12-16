@@ -15,7 +15,7 @@ package threaddemo.apps.index;
 
 import java.util.Map;
 import javax.swing.event.ChangeListener;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 import threaddemo.model.Phadhail;
 
 /**
@@ -61,6 +61,6 @@ interface Index {
     /**
      * Associated lock.
      */
-    Lock getLock();
+    RWLock getLock();
     
 }

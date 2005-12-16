@@ -30,9 +30,9 @@ import java.util.Set;
  * Write access otherwise calls invokeAndWait.
  * @author Jesse Glick
  */
-final class EventHybridLock implements Lock {
+final class EventHybridLock implements RWLock {
     
-    public static final Lock DEFAULT = new EventHybridLock();
+    public static final RWLock DEFAULT = new EventHybridLock();
     
     private EventHybridLock() {}
     

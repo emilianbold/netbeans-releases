@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 
 /**
  * Really, a file.
@@ -78,6 +78,6 @@ public interface Phadhail {
      * Model methods should automatically acquire the relevant lock for you;
      * the view need not bother, unless it needs to do an atomic operation.
      */
-    Lock lock();
+    RWLock lock();
     
 }

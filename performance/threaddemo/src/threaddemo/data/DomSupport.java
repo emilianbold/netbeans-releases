@@ -41,7 +41,7 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 import threaddemo.locking.LockAction;
 import threaddemo.locking.LockExceptionAction;
 import threaddemo.model.Phadhail;
@@ -69,7 +69,7 @@ public final class DomSupport extends DocumentParseSupport<Document,Document> im
     private boolean inIsolatingChange = false;
     private boolean madeIsolatedChanges;
     
-    public DomSupport(Phadhail ph, EditorCookie.Observable edit, Lock lock) {
+    public DomSupport(Phadhail ph, EditorCookie.Observable edit, RWLock lock) {
         super(edit, lock);
         this.ph = ph;
         addTwoWayListener(this);
@@ -125,7 +125,7 @@ public final class DomSupport extends DocumentParseSupport<Document,Document> im
         initiate();
     }
     
-    public Lock lock() {
+    public RWLock lock() {
         return getLock();
     }
     

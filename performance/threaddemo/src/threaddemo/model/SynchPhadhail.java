@@ -14,7 +14,7 @@
 package threaddemo.model;
 
 import java.io.File;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 import threaddemo.locking.Locks;
 
 /**
@@ -43,7 +43,7 @@ public class SynchPhadhail extends AbstractPhadhail {
         return FACTORY;
     }
     
-    public Lock lock() {
+    public RWLock lock() {
         return Locks.event();
     }
     

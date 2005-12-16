@@ -26,7 +26,7 @@ import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import threaddemo.locking.Lock;
+import threaddemo.locking.RWLock;
 
 // XXX possibly need some method which is like getStaleValueNonBlocking but which
 // throws InvocationTargetException, to permit views to display an error marker
@@ -183,7 +183,7 @@ public abstract class TwoWaySupport<DM, UMD, DMD> {
     private static final Map<Reference<Object>,Reference<TwoWaySupport>> referencesToSupports = new WeakHashMap<Reference<Object>,Reference<TwoWaySupport>>();
     
     /** associated lock */
-    private final Lock lock;
+    private final RWLock lock;
     
     /** listener list */
     private final List<TwoWayListener<DM, UMD, DMD>> listeners;
@@ -214,7 +214,7 @@ public abstract class TwoWaySupport<DM, UMD, DMD> {
      * No derivation or recreation is scheduled initially.
      * @param lock the associated lock
      */
-    protected TwoWaySupport(Lock lock) {
+    protected TwoWaySupport(RWLock lock) {
         this.lock = lock;
         listeners = new ArrayList<TwoWayListener<DM, UMD, DMD>>();
     }
@@ -223,7 +223,7 @@ public abstract class TwoWaySupport<DM, UMD, DMD> {
      * Get the associated lock.
      * @return the lock
      */
-    public final Lock getLock() {
+    public final RWLock getLock() {
         return lock;
     }
     

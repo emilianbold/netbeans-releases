@@ -43,7 +43,7 @@ public final class PrivilegedLock {
      */
     public PrivilegedLock() {}
     
-    final void setParent(DuplexLock parent) {
+    final synchronized void setParent(DuplexLock parent) {
         if (this.parent != null) throw new IllegalStateException();
         this.parent = parent;
     }
@@ -53,7 +53,7 @@ public final class PrivilegedLock {
      * You must have already created a lock with this privileged handle.
      * @return the lock associated with this object
      */
-    public Lock getLock() {
+    public RWLock getLock() {
         if (parent == null) throw new IllegalStateException("Unbound PrivilegedLock"); // NOI18N
         return parent;
     }
