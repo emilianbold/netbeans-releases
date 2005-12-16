@@ -50,6 +50,9 @@ public final class Main extends JFrame {
         File root;
         if (args.length == 1) {
             root = new File(args[0]);
+            if (!root.exists()) {
+                root.mkdirs();
+            }
         } else {
             root = File.listRoots()[0];
         }
