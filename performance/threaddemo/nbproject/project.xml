@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
                     <target>debug-nb</target>
                 </action>
                 <action name="test">
-                    <target>test-nb</target>
+                    <target>test</target>
                 </action>
                 <action name="debug.fix">
                     <target>debug-fix-nb</target>

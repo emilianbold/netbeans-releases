@@ -200,25 +200,17 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="test" depends="test-build">
         <mkdir dir="${build.test.results.dir}"/>
-        <junit printsummary="withOutAndErr" failureproperty="test.failed" showoutput="true" fork="true">
+        <junit failureproperty="tests.failed" showoutput="true" fork="true">
             <batchtest todir="${build.test.results.dir}">
                 <fileset dir="test">
                     <include name="**/*Test.java"/>
                 </fileset>
             </batchtest>
             <classpath path="${test.run.cp}"/>
+            <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
         </junit>
-        <junitreport todir="${build.test.results.dir}">
-            <fileset dir="${build.test.results.dir}">
-                <include name="TEST-*.xml"/>
-            </fileset>
-            <report format="noframes" todir="${build.test.results.dir}"/>
-        </junitreport>
-    </target>
-    
-    <target name="test-nb" depends="test">
-        <nbb:nbbrowse file="${build.test.results.dir}/junit-noframes.html"/>
+        <fail if="tests.failed">Some tests failed; see details above.</fail>
     </target>
     
     <target name="clean">
