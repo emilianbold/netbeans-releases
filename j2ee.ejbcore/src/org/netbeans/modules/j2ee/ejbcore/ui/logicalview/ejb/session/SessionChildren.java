@@ -95,11 +95,7 @@ public class SessionChildren extends Children.Keys implements PropertyChangeList
     }
     
     public void propertyChange(PropertyChangeEvent ev) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                updateKeys();
-            }
-        });
+        updateKeys();
     }
     
 }
