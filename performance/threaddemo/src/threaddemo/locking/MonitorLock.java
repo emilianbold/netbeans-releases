@@ -13,6 +13,8 @@
 
 package threaddemo.locking;
 
+// XXX need test
+
 // XXX could track read vs. write state
 
 /**
