@@ -183,6 +183,15 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private Object item;        
         private JTextComponent component;
+        private static Action goToSource = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                DocItem doc = (DocItem)e.getSource();
+                JMIUtils.openElement((Element)doc.item);
+                if (e != null) {
+                    Completion.get().hideDocumentation();
+                }
+            }
+        };
         
         DocQuery(Object item) {
             this.item = item;
@@ -217,23 +226,17 @@ public class JavaCompletionProvider implements CompletionProvider {
             
             private String text;
             private JavaDoc javaDoc;
-            private Action goToSource = null;
+            private Object item;
             private URL url;
             
-            public DocItem(final Object item, JavaDoc javaDoc) {
+            public DocItem(Object item, JavaDoc javaDoc) {
                 this.javaDoc = javaDoc != null ? javaDoc : new JavaDoc(component);
+                this.javaDoc.docItem = this;
                 this.javaDoc.setItem(item);
                 this.url = getURL(item);
                 Resource res = (item instanceof Element && ((Element)item).isValid()) ? ((Element)item).getResource() : null;
                 if (res != null && res.getName().endsWith(".java")) //NOI18N
-                    goToSource = new AbstractAction() {
-                        public void actionPerformed(ActionEvent e) {
-                            JMIUtils.openElement((Element)item);
-                            if (e != null) {
-                                Completion.get().hideDocumentation();
-                            }
-                        }
-                    };
+                    this.item = item;
             }
             
             public CompletionDocumentation resolveLink(String link) {
@@ -254,10 +257,12 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             
             public Action getGotoSourceAction() {
-                return goToSource;
+                return item != null ? goToSource : null;
             }            
 
             private class JavaDoc extends NbJMICompletionJavaDoc {
+                
+                private DocItem docItem;
                 
                 private JavaDoc(JTextComponent component) {
                     super(component);
@@ -278,7 +283,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                     
                     protected void showJavaDoc(final String preparedText) {
-                        text = preparedText;
+                        docItem.text = preparedText;
                     }
                 }
             }            
