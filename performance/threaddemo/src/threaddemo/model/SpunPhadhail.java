@@ -24,6 +24,7 @@ import java.util.WeakHashMap;
 import spin.Spin;
 import spin.Starter;
 import threaddemo.locking.Locks;
+import threaddemo.locking.Worker;
 
 /**
  * An asynchronous Phadhail impl using Spin.

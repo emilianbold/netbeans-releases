@@ -13,8 +13,6 @@
 
 package threaddemo.locking;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -23,9 +21,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 final class ReadWriteLockWrapper implements DuplexLock {
     
-    private static final ExecutorService POOL = Executors.newCachedThreadPool();
-    
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
+    /** workaround needed in Tiger; see {@link #canRead} */
     private final ThreadLocal<Integer> reading = new ThreadLocal<Integer>() {
         protected Integer initialValue() {
             return 0;
@@ -120,7 +117,7 @@ final class ReadWriteLockWrapper implements DuplexLock {
     }
 
     public void readLater(final Runnable action) {
-        POOL.submit(new Runnable() {
+        Worker.start(new Runnable() {
             public void run() {
                 read(action);
             }
@@ -128,7 +125,7 @@ final class ReadWriteLockWrapper implements DuplexLock {
     }
 
     public void writeLater(final Runnable action) {
-        POOL.submit(new Runnable() {
+        Worker.start(new Runnable() {
             public void run() {
                 write(action);
             }

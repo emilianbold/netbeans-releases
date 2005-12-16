@@ -13,9 +13,6 @@
 
 package threaddemo.locking;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 // XXX need test
 
 // XXX could track read vs. write state
@@ -25,8 +22,6 @@ import java.util.concurrent.Executors;
  * @author Jesse Glick
  */
 final class MonitorLock implements RWLock {
-    
-    private static final ExecutorService POOL = Executors.newCachedThreadPool();
     
     private final Object monitor;
     
@@ -57,7 +52,7 @@ final class MonitorLock implements RWLock {
     }
     
     public void readLater(final Runnable action) {
-        POOL.submit(new Runnable() {
+        Worker.start(new Runnable() {
             public void run() {
                 read(action);
             }

@@ -32,6 +32,7 @@ import threaddemo.locking.RWLock;
 import threaddemo.locking.LockAction;
 import threaddemo.locking.LockExceptionAction;
 import threaddemo.locking.Locks;
+import threaddemo.locking.Worker;
 
 /**
  * Phadhail model impl using a technique like SwingWorker.
