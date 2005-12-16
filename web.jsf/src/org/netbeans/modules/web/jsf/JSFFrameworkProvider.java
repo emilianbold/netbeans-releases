@@ -197,6 +197,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     contextParam.setParamName("javax.faces.CONFIG_FILES"); //NOI18N
                     contextParam.setParamValue("/WEB-INF/faces-config.xml"); //NOI18N
                     ddRoot.addContextParam(contextParam);
+                    
+                    contextParam = (InitParam)ddRoot.createBean("InitParam"); //NOI18N
+                    contextParam.setParamName("javax.faces.STATE_SAVING_METHOD"); //NOI18N
+                    contextParam.setParamValue("client"); //NOI18N
+                    ddRoot.addContextParam(contextParam);
+                    
                     ddRoot.write(dd);
                     
                     
