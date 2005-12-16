@@ -63,15 +63,12 @@ public class CompletionScrollPane extends JScrollPane {
     private static final int ACTION_COMPLETION_BEGIN = 5;
     private static final int ACTION_COMPLETION_END = 6;
 
-    private JTextComponent editorComponent;
-
     private CompletionJList view;
     
     private JLabel topLabel;
     
     public CompletionScrollPane(JTextComponent editorComponent,
     ListSelectionListener listSelectionListener, MouseListener mouseListener) {
-        this.editorComponent = editorComponent;
         
         setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_NEVER);
         setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -88,7 +85,7 @@ public class CompletionScrollPane extends JScrollPane {
             view.addListSelectionListener(listSelectionListener);
         }
         setViewportView(view);
-        installKeybindings();
+        installKeybindings(editorComponent);
     }
     
     public void setData(List data, String title) {
@@ -137,15 +134,15 @@ public class CompletionScrollPane extends JScrollPane {
     }
 
     /** Attempt to find the editor keystroke for the given editor action. */
-    private KeyStroke[] findEditorKeys(String editorActionName, KeyStroke defaultKey) {
+    private KeyStroke[] findEditorKeys(String editorActionName, KeyStroke defaultKey, JTextComponent component) {
         // This method is implemented due to the issue
         // #25715 - Attempt to search keymap for the keybinding that logically corresponds to the action
         KeyStroke[] ret = new KeyStroke[] { defaultKey };
-        if (editorComponent != null) {
-            TextUI ui = editorComponent.getUI();
-            Keymap km = editorComponent.getKeymap();
+        if (component != null) {
+            TextUI ui = component.getUI();
+            Keymap km = component.getKeymap();
             if (ui != null && km != null) {
-                EditorKit kit = ui.getEditorKit(editorComponent);
+                EditorKit kit = ui.getEditorKit(component);
                 if (kit instanceof BaseKit) {
                     Action a = ((BaseKit)kit).getActionByName(editorActionName);
                     if (a != null) {
@@ -160,56 +157,49 @@ public class CompletionScrollPane extends JScrollPane {
         return ret;
     }
 
-    private void registerKeybinding(int action, String actionName, KeyStroke stroke, String editorActionName){
-        KeyStroke[] keys = findEditorKeys(editorActionName, stroke);
+    private void registerKeybinding(int action, String actionName, KeyStroke stroke, String editorActionName, JTextComponent component){
+        KeyStroke[] keys = findEditorKeys(editorActionName, stroke, component);
         for (int i = 0; i < keys.length; i++) {
             getInputMap().put(keys[i], actionName);
         }
         getActionMap().put(actionName, new CompletionPaneAction(action));
     }
 
-    private void installKeybindings() {
+    private void installKeybindings(JTextComponent component) {
 	// Register Escape key
         registerKeybinding(ACTION_ESCAPE, ESCAPE,
         KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-        ExtKit.escapeAction
-        );
+        ExtKit.escapeAction, component);
 
         // Register up key
         registerKeybinding(ACTION_COMPLETION_UP, COMPLETION_UP,
         KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
-        BaseKit.upAction
-        );
+        BaseKit.upAction, component);
 
         // Register down key
         registerKeybinding(ACTION_COMPLETION_DOWN, COMPLETION_DOWN,
         KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
-        BaseKit.downAction
-        );
+        BaseKit.downAction, component);
 
         // Register PgDn key
         registerKeybinding(ACTION_COMPLETION_PGDN, COMPLETION_PGDN,
         KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0),
-        BaseKit.pageDownAction
-        );
+        BaseKit.pageDownAction, component);
 
         // Register PgUp key
         registerKeybinding(ACTION_COMPLETION_PGUP, COMPLETION_PGUP,
         KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0),
-        BaseKit.pageUpAction
-        );
+        BaseKit.pageUpAction, component);
 
         // Register home key
         registerKeybinding(ACTION_COMPLETION_BEGIN, COMPLETION_BEGIN,
         KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0),
-        BaseKit.beginLineAction
-        );
+        BaseKit.beginLineAction, component);
 
         // Register end key
         registerKeybinding(ACTION_COMPLETION_END, COMPLETION_END,
         KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
-        BaseKit.endLineAction
-        );
+        BaseKit.endLineAction, component);
     }
 
     private class CompletionPaneAction extends AbstractAction {

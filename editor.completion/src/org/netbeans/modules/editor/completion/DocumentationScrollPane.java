@@ -66,8 +66,6 @@ public class DocumentationScrollPane extends JScrollPane {
     private static final int ACTION_JAVADOC_OPEN_IN_BROWSER = 3;
     private static final int ACTION_JAVADOC_OPEN_SOURCE = 4;
 
-    private JTextComponent editorComponent;
-
     private JButton bBack, bForward, bGoToSource, bShowWeb;    
     private HTMLDocView view;
     
@@ -81,7 +79,6 @@ public class DocumentationScrollPane extends JScrollPane {
     /** Creates a new instance of ScrollJavaDocPane */
     public DocumentationScrollPane(JTextComponent editorComponent) {
         super();
-        this.editorComponent = editorComponent;
  
         // Determine and use fixed preferred size
         documentationPreferredSize = CompletionSettings.INSTANCE.documentationPopupPreferredSize();
@@ -95,7 +92,7 @@ public class DocumentationScrollPane extends JScrollPane {
         setViewportView(view);
         
         installTitleComponent();
-        installKeybindings();
+        installKeybindings(editorComponent);
     }
     
     public void setPreferredSize(Dimension preferredSize) {
@@ -253,19 +250,19 @@ public class DocumentationScrollPane extends JScrollPane {
     private void goToSource() {
         Action action = currentDocumentation.getGotoSourceAction();
         if (action != null)
-            action.actionPerformed(new ActionEvent(editorComponent, 0, null));        
+            action.actionPerformed(new ActionEvent(currentDocumentation, 0, null));        
     }
 
     /** Attempt to find the editor keystroke for the given editor action. */
-    private KeyStroke[] findEditorKeys(String editorActionName, KeyStroke defaultKey) {
+    private KeyStroke[] findEditorKeys(String editorActionName, KeyStroke defaultKey, JTextComponent component) {
         // This method is implemented due to the issue
         // #25715 - Attempt to search keymap for the keybinding that logically corresponds to the action
         KeyStroke[] ret = new KeyStroke[] { defaultKey };
-        if (editorComponent != null) {
-            TextUI ui = editorComponent.getUI();
-            Keymap km = editorComponent.getKeymap();
+        if (component != null) {
+            TextUI ui = component.getUI();
+            Keymap km = component.getKeymap();
             if (ui != null && km != null) {
-                EditorKit kit = ui.getEditorKit(editorComponent);
+                EditorKit kit = ui.getEditorKit(component);
                 if (kit instanceof BaseKit) {
                     Action a = ((BaseKit)kit).getActionByName(editorActionName);
                     if (a != null) {
@@ -280,44 +277,39 @@ public class DocumentationScrollPane extends JScrollPane {
         return ret;
     }
 
-    private void registerKeybinding(int action, String actionName, KeyStroke stroke, String editorActionName){
-        KeyStroke[] keys = findEditorKeys(editorActionName, stroke);
+    private void registerKeybinding(int action, String actionName, KeyStroke stroke, String editorActionName, JTextComponent component){
+        KeyStroke[] keys = findEditorKeys(editorActionName, stroke, component);
         for (int i = 0; i < keys.length; i++) {
             getInputMap().put(keys[i], actionName);
         }
         getActionMap().put(actionName, new DocPaneAction(action));
     }
     
-    private void installKeybindings() {
+    private void installKeybindings(JTextComponent component) {
 	// Register Escape key
         registerKeybinding(ACTION_JAVADOC_ESCAPE, JAVADOC_ESCAPE,
         KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-        ExtKit.escapeAction
-        );
+        ExtKit.escapeAction, component);
 
         // Register javadoc back key
         registerKeybinding(ACTION_JAVADOC_BACK, JAVADOC_BACK,
         KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK),
-        null
-        );
+        null, component);
 
         // Register javadoc forward key
         registerKeybinding(ACTION_JAVADOC_FORWARD, JAVADOC_FORWARD,
         KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK),
-        null
-        );
+        null, component);
 
         // Register open in external browser key
         registerKeybinding(ACTION_JAVADOC_OPEN_IN_BROWSER, JAVADOC_OPEN_IN_BROWSER,
         KeyStroke.getKeyStroke(KeyEvent.VK_F1, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK),
-        null
-        );
+        null, component);
 
         // Register open the source in editor key
         registerKeybinding(ACTION_JAVADOC_OPEN_SOURCE, JAVADOC_OPEN_SOURCE,
         KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK),
-        null
-        );
+        null, component);
         
         // Register movement keystrokes to be reachable through Shift+<orig-keystroke>
         mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0));
