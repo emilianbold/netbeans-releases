@@ -80,7 +80,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
 
     public org.openide.nodes.Node.Cookie createCookie(Class clazz) {
         if (clazz.isAssignableFrom(XmlMultiViewEditorSupport.class)) {
-            return new XmlMultiViewEditorSupport(this);
+            return getEditorSupport();
         } else {
             return null;
         }
@@ -88,7 +88,11 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
 
     /** Gets editor support for this data object. */
     protected synchronized XmlMultiViewEditorSupport getEditorSupport() {
-        return (XmlMultiViewEditorSupport)getCookie(EditorCookie.class);
+        if(editorSupport == null) {
+            editorSupport = new XmlMultiViewEditorSupport(this);
+            editorSupport.getMultiViewDescriptions();
+        }
+        return editorSupport;
     }
 
     /** enables to switch quickly to XML perspective in multi view editor
