@@ -251,13 +251,14 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
     
     /** This will be called before model is changed from this panel
      */
-    protected void signalUIChange() {
-        dObj.modelUpdatedFromUI();
+    protected void startUIChange() {
         dObj.setChangedFromUI(true);
     }
+    
     /** This will be called after model is changed from this panel
      */
     protected void endUIChange() {
+        dObj.modelUpdatedFromUI();
         dObj.setChangedFromUI(false);
     }
 }

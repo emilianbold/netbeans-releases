@@ -248,8 +248,9 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                         rollbackValue(tc);
                         sectionView.checkValidity();
                     } else {
-                        signalUIChange();
+                        startUIChange();
                         setValue(tc, tc.getText());
+                        signalUIChange();
                         endUIChange();
                         sectionView.checkValidity();
                     }
@@ -267,8 +268,9 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                 }
             } else {
                 if (!tc.getText().equals(orgValue)) {
-                    signalUIChange();
+                    startUIChange();
                     setValue(tc, tc.getText());
+                    signalUIChange();
                     endUIChange();
                     sectionView.checkValidity();
                 } else {
@@ -303,8 +305,9 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
 
         public boolean flushData() {
             if (!tc.getText().equals(orgValue)) {
-                signalUIChange();
+                startUIChange();
                 setValue(tc, tc.getText());
+                signalUIChange();
                 endUIChange();
             }
             return true;
@@ -322,10 +325,17 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
             closing = false;
         }
     }
-    /** This will be called before model is changed from this panel
+    /** This will be called after model is changed from this panel
+     * @deprecated use {@link SectionInnerPanel#endUIChange} instead
      */
     protected void signalUIChange() {
     }
+    
+    /** This will be called before model is changed from this panel
+     */
+    protected void startUIChange() {
+    }
+    
     /** This will be called after model is changed from this panel
      */
     protected void endUIChange() {

@@ -81,7 +81,7 @@ public class ChapterPanel extends SectionInnerPanel {
         }
     }
     
-    protected void signalUIChange() {
+    protected void endUIChange() {
         dObj.modelUpdatedFromUI();
     }
 

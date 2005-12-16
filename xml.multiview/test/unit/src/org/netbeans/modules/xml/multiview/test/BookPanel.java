@@ -53,7 +53,7 @@ public class BookPanel extends SectionInnerPanel {
         }
     }
     
-    protected void signalUIChange() {
+    protected void endUIChange() {
         dObj.modelUpdatedFromUI();
     }
 
