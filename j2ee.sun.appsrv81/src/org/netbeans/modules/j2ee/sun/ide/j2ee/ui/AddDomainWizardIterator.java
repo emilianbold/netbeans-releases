@@ -338,9 +338,12 @@ public final class AddDomainWizardIterator implements
             }
             
         }catch (InstanceCreationException e){
-            Util.showInformation(e.getLocalizedMessage(), 
-                    NbBundle.getMessage(AddDomainWizardIterator.class, 
-                    "LBL_RegServerFailed"));                                    //NOI18N
+                NotifyDescriptor d = new NotifyDescriptor.Message(
+                        e.getLocalizedMessage(),
+                        NotifyDescriptor.INFORMATION_MESSAGE);
+                d.setTitle(NbBundle.getMessage(AddDomainWizardIterator.class,
+                        "LBL_RegServerFailed"));                                //NOI18N
+                DialogDisplayer.getDefault().notify(d);
         }
         
         return null;
