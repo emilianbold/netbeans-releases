@@ -979,8 +979,8 @@ public class FormI18nSupport extends JavaI18nSupport {
     /** Factory for <code>FormI18nSupport</code>. */
     public static class Factory extends I18nSupport.Factory {
 
-        /** Instantiated from layer */
-        Factory() {
+        /** Instantiated from META-INF/services */
+        public Factory() {
         }
 
         /** Gets <code>I18nSupport</code> instance for specified data object and document. Overrides superclass method.

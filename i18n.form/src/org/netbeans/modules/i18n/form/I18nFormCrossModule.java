@@ -15,13 +15,11 @@ package org.netbeans.modules.i18n.form;
 
 import org.netbeans.modules.form.FormPropertyEditorManager;
 import org.netbeans.modules.i18n.I18nSupport;
-import org.openide.filesystems.FileObject;
 import org.openide.modules.ModuleInstall;
 
 /** 
  * Installation class for i18n to form cross dependency module.
- * It registers <code>FormI18nStringEditor</code> to form property editors
- * and <code>FormI18nSupport.Factory</code> to i18n module.
+ * It registers <code>FormI18nStringEditor</code> to form property editors.
  *
  * @author Peter Zavadsky
  */
@@ -44,11 +42,4 @@ public class I18nFormCrossModule extends ModuleInstall {
         FormPropertyEditorManager.registerEditor (int.class, newEditorClassMnemonic);
     }
 
-    /**
-     * Used for layer registration. (to keep correct classloader?)
-     * @param fo .settings looks for this signature
-     */
-    public static I18nSupport.Factory createFactory(FileObject fo) {
-        return new FormI18nSupport.Factory();
-    }
 }
