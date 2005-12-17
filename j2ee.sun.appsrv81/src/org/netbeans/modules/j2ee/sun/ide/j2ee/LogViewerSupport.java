@@ -44,6 +44,8 @@ public class LogViewerSupport extends Thread {
         this.url = url;
     }
     
+    // known open logs
+    private static Set openLogs = new HashSet();
     
     public void run() {
         int MAX_LINES = 15000;
@@ -114,8 +116,11 @@ public class LogViewerSupport extends Thread {
                 ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
             }
         }
-        ///System.out.println("end of infinite loop for log viewer\n\n\n\n");
-        stopUpdatingLogViewer();
+        // This viewer thread is about to die. Forget that this log is displayed.
+        synchronized (openLogs) {
+            openLogs.remove(fileName);
+            stopUpdatingLogViewer();
+        }
         
     }
     /* display the log viewer dialog
@@ -123,15 +128,34 @@ public class LogViewerSupport extends Thread {
      **/
     
     public void showLogViewer() throws IOException{
-        shouldStop = false;
         io = UISupport.getServerIO(url);
-        io.getOut().reset();
-        io.select();
-        filestream = new FileInputStream(fileName);
-        // RAVE ins = new BufferedReader(new InputStreamReader(filestream,"UTF-8"));//NOI18N
-                                // Use the default charset!
-        ins = new BufferedReader(new InputStreamReader(filestream));
+        synchronized (openLogs) {
+            if (openLogs.contains(fileName)) {
+                // front the open log and return
+                io.select();
+                return;
+            }
+            // remember that this log is open.
+            openLogs.add(fileName);
+        }
+
+        try {
+            shouldStop = false;
+            io.getOut().reset();
+            io.select();
+            filestream = new FileInputStream(fileName);
+            // RAVE ins = new BufferedReader(new InputStreamReader(filestream,"UTF-8"));//NOI18N
+                                    // Use the default charset!
+            ins = new BufferedReader(new InputStreamReader(filestream));
+        } catch (IOException ioe) {
+            synchronized (openLogs) {
+                openLogs.remove(fileName);
+            }
+            throw ioe;
+        }
         
+        // let ant process know that it doesn't have to wait for me.
+        setDaemon(true);
         start();
     }
     
