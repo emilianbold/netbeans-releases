@@ -14,6 +14,7 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import java.awt.*;
+import javax.swing.JComponent;
 
 /**
  * Special simple layout used in TabbedContainer. Shows component in the
@@ -50,8 +51,13 @@ class StackLayout implements LayoutManager {
                 if (c != null) {
                     visibleComp.setVisible(true);
                 }
-                // trigger re-layout
-                parent.validate(); //XXX revalidate should work!
+		// trigger re-layout
+		if (c instanceof JComponent) {
+		    ((JComponent)c).revalidate();
+		}
+		else {
+		    parent.validate(); //XXX revalidate should work!
+		}
             }
         }
     }
