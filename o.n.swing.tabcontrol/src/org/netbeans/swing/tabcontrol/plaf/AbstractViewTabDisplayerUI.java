@@ -13,15 +13,27 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import javax.swing.event.ListDataEvent;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.TabDisplayerUI;
-import javax.swing.*;
+
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -35,6 +47,19 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.KeyStroke;
+import javax.swing.SingleSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import org.netbeans.swing.tabcontrol.LocationInformer;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
@@ -510,6 +535,8 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     protected final TabState tabState = new ViewTabState();
     
     private class ViewTabState extends TabState {
+	public ViewTabState () {}
+	
         public int getRepaintPolicy(int tab) {
             return createRepaintPolicy();
         }
@@ -899,6 +926,8 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
 
     /** Executes enable / disable auto-hide mode */
     private final class PinAction extends AbstractAction {
+	public PinAction () {} 
+	
         public void actionPerformed(ActionEvent e) {
             performPinAction();
         }
