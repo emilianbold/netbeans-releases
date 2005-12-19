@@ -74,13 +74,19 @@ public class ParseTest extends NbTestCase {
         parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/el/functions.jsp");
     }
     
+    // The test has deferent result for 1.4 jdk and and other. 
+    public void testAnalysisXMLTextRotate4() throws Exception {
+        String javaVersion = System.getProperty("java.version");//NOI18N
+        if (javaVersion.startsWith("1.4")){ //NOI18N
+            parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate4.jspx"); //NOI18N
+        }
+    }
+    
     public void testAnalysisXMLTextRotate() throws Exception {
-        String javaVersion = System.getProperty("java.version");
-        if (javaVersion.startsWith("1.4"))
-            parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate4.jspx");
-        else
-            parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate.jspx");
-            
+        String javaVersion = System.getProperty("java.version"); //NOI18N
+        if (!javaVersion.startsWith("1.4")){ //NOI18N
+            parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate.jspx"); //NOI18N
+        }        
     }
     
     public void testAnalysisTagLibFromTagFiles() throws Exception {
