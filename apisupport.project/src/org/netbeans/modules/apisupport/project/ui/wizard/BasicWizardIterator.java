@@ -120,7 +120,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Instantiat
             // #66339 need to prefetch the packagename and populate data with it..
             FileObject fo = Templates.getTargetFolder(wiz);
             if (fo != null) {
-                Sources srcs = (Sources)project.getLookup().lookup(Sources.class);
+                Sources srcs = ProjectUtils.getSources(project); // #63247: don't use lookup directly
                 SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                 for (int i = 0; i < grps.length; i++) {
                     if (FileUtil.isParentOf(grps[i].getRootFolder(), fo)) {
