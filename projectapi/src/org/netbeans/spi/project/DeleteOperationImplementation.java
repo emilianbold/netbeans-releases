@@ -39,7 +39,7 @@ import java.io.IOException;
 public interface DeleteOperationImplementation extends DataFilesProviderImplementation {
     
     /**Pre-delete notification. The exact meaning is left on the project implementors, but
-     * typically this means to undeloy the application and remove all artifacts
+     * typically this means to undeploy the application and remove all artifacts
      * created by the build project.
      *
      * @throws IOException if an I/O operation fails.
