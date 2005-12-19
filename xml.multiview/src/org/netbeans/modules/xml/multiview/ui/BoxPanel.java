@@ -88,7 +88,7 @@ public class BoxPanel extends SectionNodeInnerPanel {
             remove(n);
         }
     }
-    /** This will be called before model is changed from this panel
+    /** This will be called after model is changed from this panel
      */
     protected void signalUIChange() {
     }
