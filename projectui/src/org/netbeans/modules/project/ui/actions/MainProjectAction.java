@@ -35,6 +35,7 @@ import org.openide.awt.Actions;
 import org.openide.awt.MouseUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /** Invokes command on the main project.
  * 
@@ -67,7 +68,7 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
         
         refreshView();                
         // Start listening on open projects list to correctly enable the action
-        OpenProjectList.getDefault().addPropertyChangeListener( this );
+        OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         // XXX #47160: listen to changes in supported commands on current project, when that becomes possible
     }
 

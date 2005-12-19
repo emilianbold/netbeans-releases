@@ -19,7 +19,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
@@ -29,7 +28,7 @@ import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.api.project.ProjectInformation;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
 public class SetMainProject extends ProjectAction implements Presenter.Menu, PropertyChangeListener {
@@ -53,7 +52,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         // wpcl = WeakListeners.propertyChange( this, OpenProjectList.getDefault() );
         // OpenProjectList.getDefault().addPropertyChangeListener( wpcl );
         if ( context == null ) { 
-            OpenProjectList.getDefault().addPropertyChangeListener( this );
+            OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         }
         refresh( getLookup() );
     }

@@ -42,6 +42,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -61,7 +62,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     
     public RecentProjects() {
         super( NbBundle.getMessage(RecentProjects.class, "LBL_RecentProjectsAction_Name")); // NOI18N
-        OpenProjectList.getDefault().addPropertyChangeListener( this );
+        OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         recreate = true;
     }
     
