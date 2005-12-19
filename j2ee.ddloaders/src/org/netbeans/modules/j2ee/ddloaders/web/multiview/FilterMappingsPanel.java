@@ -52,11 +52,6 @@ public class FilterMappingsPanel extends SectionInnerPanel {
     public void linkButtonPressed(Object obj, String id) {
     }
     
-    /** This will be called before model is changed from this panel
-     */
-    protected void signalUIChange() {
-    }
-    
     void removeRow(int row) {       
         model.removeRow(row);
     }

@@ -52,11 +52,6 @@ public class EjbRefsPanel extends SectionInnerPanel {
     public void linkButtonPressed(Object obj, String id) {
     }
     
-    /** This will be called before model is changed from this panel
-     */
-    protected void signalUIChange() {
-    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
