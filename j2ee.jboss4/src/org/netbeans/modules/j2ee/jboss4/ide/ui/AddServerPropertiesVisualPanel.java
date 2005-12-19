@@ -133,7 +133,6 @@ public class AddServerPropertiesVisualPanel extends JPanel {
     }
    
     private void domainChanged(){
-        String domain = (String)domainField.getSelectedItem();
         DomainComboModel model = (DomainComboModel)domainField.getModel();
         
         String path = model.getCurrentPath();
@@ -146,7 +145,8 @@ public class AddServerPropertiesVisualPanel extends JPanel {
     
     void installLocationChanged() {
         DomainComboModel domainModel = (DomainComboModel) domainField.getModel();
-        domainModel.setDomains(JBPluginUtils.getRegisteredDomains());
+        String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
+        domainModel.setDomains(JBPluginUtils.getRegisteredDomains(serverLocation));
         domainChanged();
     }
             
@@ -210,7 +210,8 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         panel1 = new JPanel();
         
         //Domain combobox
-        domainField = new JComboBox(new DomainComboModel(JBPluginUtils.getRegisteredDomains()));
+        String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
+        domainField = new JComboBox(new DomainComboModel(JBPluginUtils.getRegisteredDomains(serverLocation)));
         domainField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain"));
         domainField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain"));
         //domainField.setEditable(true);

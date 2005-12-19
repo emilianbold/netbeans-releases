@@ -81,9 +81,11 @@ public class JBLogWriter implements Runnable {
                 try {
                     while (reader.ready()) {
                         String line = reader.readLine();
-                        if(line.indexOf("INFO")<0)
-                            continue;
-                        writer.write(line + "\n"); //NOI18N
+                        if (line != null) {
+                            if(line.indexOf("INFO")<0)
+                                continue;
+                            writer.write(line + "\n"); //NOI18N
+                        }
                     }
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -93,11 +95,13 @@ public class JBLogWriter implements Runnable {
             try {
                 if (reader.ready()) {
                     String line = reader.readLine();
-                    if(fromFile ){
-                        if(line.indexOf("INFO")<0)
-                            continue;
+                    if (line != null) {
+                        if(fromFile ){
+                            if(line.indexOf("INFO")<0)
+                                continue;
+                        }
+                        writer.write(line + "\n"); //NOI18N
                     }
-                    writer.write(line + "\n"); //NOI18N
                 }
                 try {
                     Thread.sleep(delay);

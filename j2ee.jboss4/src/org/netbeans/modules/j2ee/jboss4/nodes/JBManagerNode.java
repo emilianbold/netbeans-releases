@@ -76,9 +76,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
             properties = Sheet.createPropertiesSet();
             sheet.put(properties);
         }
-        final InstanceProperties ip = InstanceProperties.getInstanceProperties(((JBDeploymentManager)deploymentManager).getUrl());
-        String serverDir = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR) ;
-        String serverName = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
+        final InstanceProperties ip = ((JBDeploymentManager)deploymentManager).getInstanceProperties();
         
         Node.Property property=null;
         

@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.j2ee.jboss4.ide;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.util.Collections;
@@ -187,8 +188,16 @@ public class JBStartServer extends StartServer implements ProgressObject{
                     if (checkingConfigName.equals("minimal")) { // NOI18N
                         result = true;
                     }
-                } catch(Exception e) {
-                    // no op
+                } catch (IllegalAccessException ex) {
+                    result = false; 
+                } catch (ClassNotFoundException ex) {
+                    result = false; 
+                } catch (NamingException ex) {
+                    result = false; 
+                } catch (NoSuchMethodException ex) {
+                    result = false; 
+                } catch (InvocationTargetException ex) {
+                    result = false; 
                 } finally{
                     if (oldLoader != null) {
                         Thread.currentThread().setContextClassLoader(oldLoader);
@@ -376,15 +385,17 @@ public class JBStartServer extends StartServer implements ProgressObject{
             }
             io.select();
 
-            // read the data from the server's output up
-            LineNumberReader reader = new LineNumberReader(new InputStreamReader(serverProcess.getInputStream()));
-
+            LineNumberReader reader = null;
             try {
+                // read the data from the server's output up
+                reader = new LineNumberReader(new InputStreamReader(serverProcess.getInputStream()));
+
                 int timeout = 900000;
                 int elapsed = 0;
                 while (elapsed < timeout) {
                     while (reader.ready()) {
                         String line = reader.readLine();
+                        if (line == null) continue;
 
                         io.getOut().write(line + "\n"); //NOI18N
 
@@ -417,6 +428,12 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+            finally {
+                try {
+                    if (reader != null)
+                        reader.close();
+                } catch (IOException ex) {}
             }
 
             fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED", serverName)));//NOI18N

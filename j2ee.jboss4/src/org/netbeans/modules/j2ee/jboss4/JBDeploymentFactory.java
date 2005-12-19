@@ -114,7 +114,10 @@ public class JBDeploymentFactory implements DeploymentFactory {
         try {
             jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
         }
-        catch (Exception e) {}; // noop
+        catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        
         return new JBDeploymentManager(df.getDeploymentManager(jbURI, uname, passwd), uri, uname, passwd);
     }
      
@@ -131,7 +134,10 @@ public class JBDeploymentFactory implements DeploymentFactory {
         try {
             jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
         }
-        catch (Exception e) {}; // noop
+        catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+
         return new JBDeploymentManager(df.getDisconnectedDeploymentManager(jbURI), uri, null, null);
     }
     

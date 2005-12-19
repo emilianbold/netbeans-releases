@@ -13,8 +13,11 @@
 package org.netbeans.modules.j2ee.jboss4;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.MissingResourceException;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
@@ -54,9 +57,7 @@ public class JBDeployer implements ProgressObject, Runnable {
     /** timeout for waiting for URL connection */
     private static final int TIMEOUT = 60000;
     
-    Target[] target;
     File file;
-    File file2;
     String uri;
     JBTargetModuleID module_id;
     /** Creates a new instance of JBDeployer */
@@ -98,9 +99,7 @@ public class JBDeployer implements ProgressObject, Runnable {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
 
-        this.target = target;
         this.file = file;
-        this.file2 = file2;
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING", file.getAbsolutePath())));
         RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
         return this;
@@ -108,9 +107,7 @@ public class JBDeployer implements ProgressObject, Runnable {
 
     public ProgressObject redeploy (TargetModuleID module_id[], File file, File file2) {
         //PENDING: distribute all modules!
-        this.target = new Target[] {module_id[0].getTarget()};
         this.file = file;
-        this.file2 = file2;
         this.module_id = (JBTargetModuleID) module_id[0];
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING", file.getAbsolutePath())));
         RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
@@ -161,7 +158,11 @@ public class JBDeployer implements ProgressObject, Runnable {
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
                 //delay to prevent hitting the old content before reload
                 for (int i = 0; i < 3; i++) {
-                    Thread.sleep(1000);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
                 }
                 //wait until the url becomes active
                 long start = System.currentTimeMillis();
@@ -171,7 +172,14 @@ public class JBDeployer implements ProgressObject, Runnable {
                     }
                 }
             }
-        }catch(Exception e){
+        } catch (MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
+        } catch (MissingResourceException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
         }
 

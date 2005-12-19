@@ -44,8 +44,6 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
         
         String host = panel.getHost();
         String port = panel.getPort();
-        String user = panel.getUser();
-        String password = panel.getPassword();
         
         if(panel.isLocalServer()){
             // wrong domain path

@@ -119,7 +119,7 @@ public class WarDeploymentConfiguration extends JBDeploymentConfiguration
     /**
      * Listen to jboss-web.xml document changes.
      */
-    public void propertyChange(PropertyChangeEvent evt) {
+    public synchronized void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName() == DataObject.PROP_MODIFIED &&
                 evt.getNewValue() == Boolean.FALSE) {
             // dataobject has been modified, jbossWeb graph is out of sync

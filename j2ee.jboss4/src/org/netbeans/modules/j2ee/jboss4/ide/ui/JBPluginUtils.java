@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.openide.ErrorManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -43,13 +44,12 @@ public class JBPluginUtils {
      * key = server name
      * value = server folder full path
      */
-    public static Hashtable getRegisteredDomains(){
+    public static Hashtable getRegisteredDomains(String serverLocation){
         Hashtable result = new Hashtable();
         //  String domainListFile = File.separator+"common"+File.separator+"nodemanager"+File.separator+"nodemanager.domains";  // NOI18N
         
-        String serverLoc = JBPluginProperties.getInstance().getInstallLocation();
-        if (isGoodJBServerLocation(new File(serverLoc))){
-            File file = new File(serverLoc+File.separator + "server");  // NOI18N
+        if (isGoodJBServerLocation(new File(serverLocation))){
+            File file = new File(serverLocation + File.separator + "server");  // NOI18N
             
             String[] files = file.list(new FilenameFilter(){
                 public boolean accept(File dir, String name){
@@ -220,8 +220,7 @@ public class JBPluginUtils {
                 }
             }
         }catch(Exception e){
-            // it is ok
-            // it optional functionality so we don't need to look at any exception
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         return "";
     }
@@ -261,8 +260,7 @@ public class JBPluginUtils {
                 }
             }
         }catch(Exception e){
-            // it is ok
-            // it optional functionality so we don't need to look at any exception
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         return "";
     }
@@ -302,8 +300,7 @@ public class JBPluginUtils {
                 }
             }
         }catch(Exception e){
-            // it is ok
-            // it optional functionality so we don't need to look at any exception
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         return "";
     }
