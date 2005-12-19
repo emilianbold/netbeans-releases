@@ -39,18 +39,20 @@ public final class ModuleDependency implements Comparable {
     
     private Set/*<String>*/ filterTokens;
     
-    public static final Comparator CODE_NAME_BASE_COMPARATOR;
+    public static final Comparator LOCALIZED_NAME_COMPARATOR;
     
     static {
-        CODE_NAME_BASE_COMPARATOR = new Comparator() {
+        LOCALIZED_NAME_COMPARATOR = new Comparator() {
             public int compare(Object o1, Object o2) {
-                return ((ModuleDependency) o1).getModuleEntry().getCodeNameBase().compareTo(
-                        ((ModuleDependency) o2).getModuleEntry().getCodeNameBase());
+                ModuleEntry me1 = ((ModuleDependency) o1).getModuleEntry();
+                ModuleEntry me2 = ((ModuleDependency) o2).getModuleEntry();
+                int result = Collator.getInstance().compare(
+                        me1.getLocalizedName(), me2.getLocalizedName());
+                return result != 0 ? result :
+                    me1.getCodeNameBase().compareTo(me2.getCodeNameBase());
             }
         };
     }
-    
-    private static final Collator LOC_COLLATOR = Collator.getInstance();
     
     /**
      * Creates a new instance based on the given entry. The instance will be
@@ -87,14 +89,21 @@ public final class ModuleDependency implements Comparable {
     }
     
     public int compareTo(Object o) {
-        int result = LOC_COLLATOR.compare(
-            getModuleEntry().getLocalizedName(),
-            ((ModuleDependency) o).getModuleEntry().getLocalizedName());
-        if (result != 0) {
-            return result;
-        } else {
-            return getModuleEntry().getCodeNameBase().compareTo(((ModuleDependency) o).getModuleEntry().getCodeNameBase());
+        return getModuleEntry().getCodeNameBase().compareTo(
+                ((ModuleDependency) o).getModuleEntry().getCodeNameBase());
+    }
+    
+    public boolean equals(Object o) {
+        boolean retval = false;
+        if (o instanceof ModuleDependency) {
+            retval = getModuleEntry().getCodeNameBase().equals(
+                    ((ModuleDependency) o).getModuleEntry().getCodeNameBase());
         }
+        return  retval;
+    }
+    
+    public int hashCode() {
+        return getModuleEntry().getCodeNameBase().hashCode();
     }
     
     public boolean hasCompileDependency() {

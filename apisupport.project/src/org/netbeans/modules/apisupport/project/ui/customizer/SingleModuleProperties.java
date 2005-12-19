@@ -391,27 +391,27 @@ public final class SingleModuleProperties extends ModuleProperties {
      * really slow. The {@link AssertionError} will be thrown if you try to do
      * so.
      */
-    SortedSet/*<ModuleDependency>*/ getUniverseDependencies(final boolean filterExcludedModules) {
+    Set/*<ModuleDependency>*/ getUniverseDependencies(final boolean filterExcludedModules) {
         assert !SwingUtilities.isEventDispatchThread() :
             "SingleModuleProperties.getUniverseDependencies() cannot be called from EDT"; // NOI18N
         if (universeDependencies == null) {
             reloadModuleListInfo();
         }
-        SortedSet/*<ModuleDependency>*/ result = null;
+        Set/*<ModuleDependency>*/ result = null;
         if (filterExcludedModules && isSuiteComponent()) {
             SuiteProject suite = getSuite();
             String[] disableModules = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY);
             String[] disableClusters = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
-            SortedSet/*<ModuleDependency>*/ filtered = new TreeSet(universeDependencies);
+            Set/*<ModuleDependency>*/ filtered = new HashSet(universeDependencies);
             for (Iterator it = filtered.iterator(); it.hasNext();) {
                 ModuleDependency dep = (ModuleDependency) it.next();
                 if (isExcluded(dep.getModuleEntry(), disableModules, disableClusters)) {
                     it.remove();
                 }
             }
-            result = Collections.unmodifiableSortedSet(filtered);
+            result = Collections.unmodifiableSet(filtered);
         }
         if (result == null) {
             result = universeDependencies;
@@ -439,7 +439,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                 }
             }
         } else if (isNetBeansOrg()) {
-            SortedSet/*<ModuleDependency>*/ deps = getUniverseDependencies(false);
+            Set/*<ModuleDependency>*/ deps = getUniverseDependencies(false);
             for (Iterator it = deps.iterator(); it.hasNext();) {
                 ModuleDependency dep = (ModuleDependency) it.next();
                 set.add(dep.getModuleEntry().getCodeNameBase());
@@ -561,9 +561,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         // store module dependencies
         DependencyListModel dependencyListModel = getDependenciesListModel();
         if (dependencyListModel.isChanged()) {
-            Set/*<ModuleDependency>*/ depsToSave =
-                    new TreeSet(ModuleDependency.CODE_NAME_BASE_COMPARATOR);
-            depsToSave.addAll(dependencyListModel.getDependencies());
+            Set/*<ModuleDependency>*/ depsToSave = new TreeSet(dependencyListModel.getDependencies());
             
             // process removed modules
             depsToSave.removeAll(dependencyListModel.getRemovedDependencies());

@@ -299,8 +299,7 @@ public final class ProjectXMLManager {
         assert before != null : "There must be " + PUBLIC_PACKAGES + " or " // NOI18N
                 + FRIEND_PACKAGES + " element according to XSD"; // NOI18N
         confData.insertBefore(moduleDependencies, before);
-        SortedSet sortedDeps = new TreeSet(ModuleDependency.CODE_NAME_BASE_COMPARATOR);
-        sortedDeps.addAll(newDeps);
+        SortedSet sortedDeps = new TreeSet(newDeps);
         for (Iterator it = sortedDeps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             createModuleDependencyElement(moduleDependencies, md, null);

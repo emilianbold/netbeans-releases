@@ -17,11 +17,10 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -147,7 +146,7 @@ final class AddModulePanel extends JPanel {
         moduleList.setModel(CustomizerComponentFactory.createListWaitModel());
         ModuleProperties.RP.post(new Runnable() {
             public void run() {
-                final SortedSet universeDeps = props.getUniverseDependencies(true);
+                final Set universeDeps = props.getUniverseDependencies(true);
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         universeModules = CustomizerComponentFactory.createDependencyListModel(universeDeps);
@@ -231,8 +230,8 @@ final class AddModulePanel extends JPanel {
         } else {
             final Runnable compute = new Runnable() {
                 public void run() {
-                    final SortedSet/*<ModuleDependency>*/ matches
-                            = new TreeSet(filterer.getMatches(text));
+                    final Set/*<ModuleDependency>*/ matches
+                            = new HashSet(filterer.getMatches(text));
                     filterTask = null;
                     Mutex.EVENT.readAccess(new Runnable() {
                         public void run() {

@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.SortedSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -316,7 +315,7 @@ public class SingleModulePropertiesTest extends TestBase {
     public void testThatTheModuleDoesNotOfferItself_61232() throws Exception {
         NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         SingleModuleProperties props = loadProperties(p);
-        SortedSet set =  props.getUniverseDependencies(true);
+        Set set =  props.getUniverseDependencies(true);
         for (Iterator it = set.iterator() ; it.hasNext() ; ) {
             ModuleDependency dependency = (ModuleDependency) it.next();
             ModuleEntry me = dependency.getModuleEntry();

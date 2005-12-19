@@ -58,7 +58,7 @@ public final class CustomizerComponentFactory {
     
     private static final String INVALID_PLATFORM =
             "<html><font color=\"!nb.errorForeground\">&lt;" // NOI18N
-            + NbBundle.getMessage(CustomizerComponentFactory.class, "MSG_InvalidPlatform") // NOI18N
+            + NbBundle.getMessage(CustomizerComponentFactory.class, "MSG_InvalidPlatform")
             + "&gt;</font></html>"; // NOI18N
     
     private CustomizerComponentFactory(final Project project) {
@@ -100,14 +100,14 @@ public final class CustomizerComponentFactory {
      * Returns ListModel for the given <code>modules</code> set.
      */
     static CustomizerComponentFactory.DependencyListModel createDependencyListModel(
-            final SortedSet/*<ModuleDependency>*/ deps) {
+            final Set/*<ModuleDependency>*/ deps) {
         assert deps != null;
         return new CustomizerComponentFactory.DependencyListModel(deps);
     }
     
     static CustomizerComponentFactory.DependencyListModel getInvalidDependencyListModel() {
         if (INVALID_DEP_LIST_MODEL == null) {
-            SortedSet s = new TreeSet();
+            Set s = new HashSet();
             s.add(CustomizerComponentFactory.INVALID_PLATFORM);
             INVALID_DEP_LIST_MODEL = createDependencyListModel(s);
         }
@@ -127,15 +127,15 @@ public final class CustomizerComponentFactory {
     
     static final class DependencyListModel extends AbstractListModel {
         
-        private Set/*<ModuleDependency>*/ currentDeps;
+        private Set/*<ModuleDependency>*/ currentDeps = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
         private Set/*<ModuleDependency>*/ addedDeps = new HashSet();
         private Set/*<ModuleDependency>*/ removedDeps = new HashSet();
         private Map/*<ModuleDependency, ModuleDependency>*/ editedDeps = new HashMap();
         
         private boolean changed;
         
-        DependencyListModel(SortedSet/*<ModuleDependency>*/ deps) {
-            this.currentDeps = deps;
+        DependencyListModel(final Set/*<ModuleDependency>*/ deps) {
+            this.currentDeps.addAll(deps);
         }
         
         public int getSize() {

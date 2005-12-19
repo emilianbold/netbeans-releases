@@ -46,7 +46,7 @@ public class ModuleDependencyTest extends TestBase {
                 int locNameResult = Collator.getInstance().compare(
                         deps[i].getModuleEntry().getLocalizedName(),
                         deps[j].getModuleEntry().getLocalizedName());
-                int realResult = deps[i].compareTo(deps[j]);
+                int realResult = ModuleDependency.LOCALIZED_NAME_COMPARATOR.compare(deps[i], deps[j]);
                 assertTrue("ordering works: " + deps[i] + " <--> " + deps[j],
                         locNameResult > 0 ? realResult > 0 :
                             (locNameResult == 0 ? realResult == 0 : realResult < 0));
