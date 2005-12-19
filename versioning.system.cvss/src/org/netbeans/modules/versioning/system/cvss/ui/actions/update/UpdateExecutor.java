@@ -34,13 +34,18 @@ import java.util.*;
  * 
  * @author Maros Sandor
  */
-public class UpdateExecutor extends ExecutorSupport implements FileChangeListener {
+public class UpdateExecutor extends ExecutorSupport {
     
     /**
      * Contains all files that should NOT be set as up-to-date after Update finishes. 
      */ 
     private Set     refreshedFiles = Collections.synchronizedSet(new HashSet());
     private boolean rwUpdate;
+    
+    /**
+     * Files modified afterwards will not be cosidered up-to-date even if server says so.
+     */ 
+    private long updateStartTimestamp;
 
     /**
      * Splits the original command into more commands if the original
@@ -77,38 +82,9 @@ public class UpdateExecutor extends ExecutorSupport implements FileChangeListene
 
     protected void setup() {
         super.setup();
-        Set filesystems = getRootFilesystems();
-        for (Iterator i = filesystems.iterator(); i.hasNext();) {
-            FileSystem fileSystem = (FileSystem) i.next();
-            fileSystem.addFileChangeListener(this);
-        }
+        updateStartTimestamp = System.currentTimeMillis(); 
     }
 
-    protected void cleanup() {
-        Set filesystems = getRootFilesystems();
-        for (Iterator i = filesystems.iterator(); i.hasNext();) {
-            FileSystem fileSystem = (FileSystem) i.next();
-            fileSystem.removeFileChangeListener(this);
-        }
-        super.cleanup();
-    }
-
-    private Set getRootFilesystems() {
-        Set filesystems = new HashSet();
-        File [] roots = ((UpdateCommand) cmd).getFiles();
-        for (int i = 0; i < roots.length; i++) {
-            File root = roots[i];
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(root));
-            if (fo == null) continue;
-            try {
-                filesystems.add(fo.getFileSystem());
-            } catch (FileStateInvalidException e) {
-                // ignore invalid filesystems
-            }
-        }
-        return filesystems;
-    }
-    
     public void fileInfoGenerated(FileInfoEvent e) {
         super.fileInfoGenerated(e);
     }
@@ -236,52 +212,12 @@ public class UpdateExecutor extends ExecutorSupport implements FileChangeListene
     }
 
     private void refreshFile(File file) {
-        if (cache.getStatus(file.getParentFile()).getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
+        long lastModified = file.lastModified();
+        if (cache.getStatus(file.getParentFile()).getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE &&
+                lastModified > 0 && lastModified < updateStartTimestamp) {
             cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UPTODATE);
         } else {
             cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                
         }
-    }
-
-    /**
-     * If some file became modified (or got some other status besides up-to-date), make sure Update command
-     * will NOT reset it to up-to-date.
-     * 
-     * @param file file whose status changed
-     */ 
-    private void onFileChanged(File file) {
-        refreshedFiles.add(file);
-    }
-
-    public void fileFolderCreated(FileEvent fe) {
-        if (CvsVersioningSystem.ignoringFilesystemEvents()) return;
-        onFileChanged(FileUtil.toFile(fe.getFile()));
-    }
-
-    public void fileDataCreated(FileEvent fe) {
-        if (CvsVersioningSystem.ignoringFilesystemEvents()) return;
-        onFileChanged(FileUtil.toFile(fe.getFile()));
-    }
-
-    public void fileChanged(FileEvent fe) {
-        if (CvsVersioningSystem.ignoringFilesystemEvents()) return;
-        onFileChanged(FileUtil.toFile(fe.getFile()));
-    }
-
-    public void fileDeleted(FileEvent fe) {
-        if (CvsVersioningSystem.ignoringFilesystemEvents()) return;
-        onFileChanged(FileUtil.toFile(fe.getFile()));
-    }
-
-    public void fileRenamed(FileRenameEvent fe) {
-        if (CvsVersioningSystem.ignoringFilesystemEvents()) return;
-        onFileChanged(FileUtil.toFile(fe.getFile()));
-        String oldExtension = fe.getExt();
-        if (oldExtension.length() > 0) oldExtension = "." + oldExtension; // NOI18N
-        onFileChanged(new File(FileUtil.toFile(fe.getFile().getParent()), fe.getName() + oldExtension));
-    }
-
-    public void fileAttributeChanged(FileAttributeEvent fe) {
-        // not interested
     }
 }
