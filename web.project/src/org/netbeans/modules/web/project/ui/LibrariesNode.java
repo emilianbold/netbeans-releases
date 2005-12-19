@@ -651,11 +651,12 @@ final class LibrariesNode extends AbstractNode {
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );
             chooser.setDialogTitle( NbBundle.getMessage( LibrariesNode.class, "LBL_AddJar_DialogTitle" ) ); // NOI18N
+            //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
+            chooser.setAcceptAllFileFilterUsed( false );
             FileFilter fileFilter = new SimpleFileFilter (
                     NbBundle.getMessage( WebClassPathUi.class, "LBL_ZipJarFolderFilter" ),                  // NOI18N
                     new String[] {"ZIP","JAR"} );   // NOI18N
             chooser.setFileFilter(fileFilter);
-            chooser.setAcceptAllFileFilterUsed( false );
             File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder();
             chooser.setCurrentDirectory (curDir);
             int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() );

@@ -318,8 +318,9 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             chooser.setApproveButtonText(approveButtonName);
             chooser.setApproveButtonMnemonic (approveButtonNameMne.charAt(0));
             chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
+            chooser.setAcceptAllFileFilterUsed( false );
             chooser.setFileFilter (new SimpleFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
-            chooser.setAcceptAllFileFilterUsed(false);
             if (this.currentDir != null) {
                 chooser.setCurrentDirectory(this.currentDir);
             }

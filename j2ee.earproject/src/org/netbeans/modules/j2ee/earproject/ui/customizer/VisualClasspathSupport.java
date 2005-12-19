@@ -360,9 +360,10 @@ public final class VisualClasspathSupport {
                 chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
                 chooser.setMultiSelectionEnabled( true );
                 chooser.setDialogTitle(getBundleResource("LBL_AddJar_DialogTitle")); //NOI18N
+                //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
+                chooser.setAcceptAllFileFilterUsed( false );
                 chooser.setFileFilter(new SimpleFileFilter(getBundleResource("LBL_ZipJarFolderFilter"), // NOI18N
                         new String[] {"ZIP","JAR"}));                                                // NOI18N
-                chooser.setAcceptAllFileFilterUsed(false);
                 
                 int option = chooser.showOpenDialog( null ); // Sow the chooser
                 if (option == JFileChooser.APPROVE_OPTION) {

@@ -456,8 +456,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         chooser.setApproveButtonToolTipText (NbBundle.getMessage( ProjectChooserAccessory.class, "BTN_PrjChooser_ApproveButtonTooltipText")); // NOI18N
         // chooser.setMultiSelectionEnabled( true );        
         chooser.setDialogTitle( NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_Title" ) ); // NOI18N
-        chooser.setFileFilter( ProjectDirFilter.INSTANCE );        
+        //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
         chooser.setAcceptAllFileFilterUsed( false );
+        chooser.setFileFilter( ProjectDirFilter.INSTANCE );        
         
         // A11Y
         chooser.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "AN_ProjectChooserAccessory"));

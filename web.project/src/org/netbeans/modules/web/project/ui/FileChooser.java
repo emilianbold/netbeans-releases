@@ -150,8 +150,9 @@ public class FileChooser extends JFileChooser {
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(true);
         chooser.setDialogTitle(dialogTitle);
+        //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
+        chooser.setAcceptAllFileFilterUsed( false );
         chooser.setFileFilter(fileFilter);
-        chooser.setAcceptAllFileFilterUsed(false);
         return chooser;
     }
 }

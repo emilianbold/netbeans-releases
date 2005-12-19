@@ -378,10 +378,11 @@ public class WebClassPathUi {
                 chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
                 chooser.setMultiSelectionEnabled( true );
                 chooser.setDialogTitle( NbBundle.getMessage( WebClassPathUi.class, "LBL_AddJar_DialogTitle" ) ); // NOI18N
+                //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
+                chooser.setAcceptAllFileFilterUsed( false );
                 chooser.setFileFilter( new SimpleFileFilter( 
                     NbBundle.getMessage( WebClassPathUi.class, "LBL_ZipJarFolderFilter" ),                  // NOI18N
                     new String[] {"ZIP","JAR"} ) );                                                                 // NOI18N 
-                chooser.setAcceptAllFileFilterUsed( false );
                 File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder(); 
                 chooser.setCurrentDirectory (curDir);
                 int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( list.getComponent() ) ); // Show the chooser

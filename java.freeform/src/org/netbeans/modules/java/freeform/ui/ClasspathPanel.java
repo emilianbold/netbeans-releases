@@ -526,8 +526,9 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         FileFilter fileFilter = new SimpleFileFilter (
             NbBundle.getMessage( ClasspathPanel.class, "LBL_ZipJarFolderFilter" ),   // NOI18N
             new String[] {"ZIP","JAR"} );   // NOI18N
-        chooser.setFileFilter(fileFilter);                                                                 
+        //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
         chooser.setAcceptAllFileFilterUsed( false );
+        chooser.setFileFilter(fileFilter);                                                                 
             
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File files[] = chooser.getSelectedFiles();
