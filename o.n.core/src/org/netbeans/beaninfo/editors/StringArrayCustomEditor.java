@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 
 import javax.swing.*;
 import javax.swing.border.*;
+import org.openide.awt.Mnemonics;
 
 //import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -55,41 +56,20 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
         setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(16, 8, 8, 0)));
         buttonsPanel.setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(0, 5, 5, 5)));
 
-        itemLabel.setText (NbBundle.getMessage(
+        Mnemonics.setLocalizedText (itemLabel, NbBundle.getMessage(
             StringArrayCustomEditor.class, "CTL_Item")); //NOI18N
-        itemListLabel.setText(NbBundle.getMessage(
+        Mnemonics.setLocalizedText (itemListLabel, NbBundle.getMessage(
             StringArrayCustomEditor.class, "CTL_ItemList")); //NOI18N
-        addButton.setText (NbBundle.getMessage(StringArrayCustomEditor.class, 
+        Mnemonics.setLocalizedText (addButton, NbBundle.getMessage(StringArrayCustomEditor.class, 
             "CTL_Add_StringArrayCustomEditor")); //NOI18N
-        changeButton.setText (NbBundle.getMessage(StringArrayCustomEditor.class,
+        Mnemonics.setLocalizedText (changeButton, NbBundle.getMessage(StringArrayCustomEditor.class,
             "CTL_Change_StringArrayCustomEditor")); //NOI18N
-        removeButton.setText (NbBundle.getMessage(StringArrayCustomEditor.class,
+        Mnemonics.setLocalizedText (removeButton, NbBundle.getMessage(StringArrayCustomEditor.class,
             "CTL_Remove")); //NOI18N
-        moveUpButton.setText (NbBundle.getMessage(StringArrayCustomEditor.class,
+        Mnemonics.setLocalizedText (moveUpButton, NbBundle.getMessage(StringArrayCustomEditor.class,
             "CTL_MoveUp")); //NOI18N
-        moveDownButton.setText (NbBundle.getMessage(
+        Mnemonics.setLocalizedText (moveDownButton, NbBundle.getMessage(
             StringArrayCustomEditor.class, "CTL_MoveDown")); //NOI18N
-
-        itemLabel.setDisplayedMnemonic(NbBundle.getMessage(
-            StringArrayCustomEditor.class, "CTL_Item_Mnemonic").charAt(0)); //NOI18N
-        itemListLabel.setDisplayedMnemonic(
-            NbBundle.getMessage(StringArrayCustomEditor.class, 
-            "CTL_ItemList_Mnemonic").charAt(0)); //NOI18N
-        addButton.setMnemonic(NbBundle.getMessage(
-            StringArrayCustomEditor.class, 
-            "CTL_Add_StringArrayCustomEditor_Mnemonic").charAt(0)); //NOI18N
-        changeButton.setMnemonic(NbBundle.getMessage(
-            StringArrayCustomEditor.class, 
-            "CTL_Change_StringArrayCustomEditor_Mnemonic").charAt(0)); //NOI18N
-        removeButton.setMnemonic(
-            NbBundle.getMessage(StringArrayCustomEditor.class, 
-            "CTL_Remove_Mnemonic").charAt(0)); //NOI18N
-        moveUpButton.setMnemonic(NbBundle.getMessage(
-            StringArrayCustomEditor.class, 
-            "CTL_MoveUp_Mnemonic").charAt(0)); //NOI18N
-        moveDownButton.setMnemonic(NbBundle.getMessage(
-            StringArrayCustomEditor.class, 
-            "CTL_MoveDown_Mnemonic").charAt(0)); //NOI18N
 
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
             StringArrayCustomEditor.class, "ACSD_StringArrayCustomEditor")); //NOI18N
