@@ -25,18 +25,18 @@ import org.openide.filesystems.FileObject;
 public interface DataFilesProviderImplementation {
     
     /**
-     * Returns list of {@link FileObject}s the are considered to be metadata files
+     * Returns list of {@link FileObject}s that are considered to be metadata files
      * and folders belonging into this project.
-     * See {@link ProjectOperations#getMetadataFiles()} for more information.
+     * See {@link ProjectOperations#getMetadataFiles(Project)} for more information.
      *
      * @return list of {@link FileObject}s that are considered metadata files and folders.
      */
     public List/*<FileObject>*/ getMetadataFiles();
     
     /**
-     * Returns list of {@link FileObject}s the are considered to be data files and folders
+     * Returns list of {@link FileObject}s that are considered to be data files and folders
      * belonging into this project.
-     * See {@link ProjectOperations#getDataFiles()} for more information.
+     * See {@link ProjectOperations#getDataFiles(Project)} for more information.
      *
      * @return list of {@link FileObject}s that are considered data files and folders.
      */
