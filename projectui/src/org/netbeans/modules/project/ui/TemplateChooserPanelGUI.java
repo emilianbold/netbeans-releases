@@ -92,10 +92,8 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         initComponents();
         setPreferredSize( PREF_DIM );
         setName (org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_Name")); // NOI18N
-        Utilities.attachInitJob (this, this);
      }
-
-
+    
     public void readValues (Project p, String category, String template) {
         assert p != null : "Project can not be null";   //NOI18N
         boolean wf;
@@ -194,6 +192,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     }
     
     public void addNotify () {
+        Utilities.attachInitJob (this, this);
         super.addNotify ();
         if (projectCellRenderer == null) {
             projectCellRenderer = new ProjectCellRenderer ();
