@@ -820,6 +820,8 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     public static final String VALUE_PALETTE = "palette"; // NOI18N
     /** Value of rgb. */
     public static final String VALUE_RGB = "rgb"; // NOI18N
+    /** Null value. */
+    public static final String VALUE_NULL = "null"; // NOI18N
 
     
     /** Called to load property value from specified XML subtree. If succesfully loaded,
@@ -836,15 +838,19 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes ();
         try {
             String type = attributes.getNamedItem (ATTR_TYPE).getNodeValue ();
-            String red = attributes.getNamedItem (ATTR_RED).getNodeValue ();
-            String green = attributes.getNamedItem (ATTR_GREEN).getNodeValue ();
-            String blue = attributes.getNamedItem (ATTR_BLUE).getNodeValue ();
-            if (VALUE_PALETTE.equals (type)) {
-                String id = attributes.getNamedItem (ATTR_ID).getNodeValue ();
-                String palette = attributes.getNamedItem (ATTR_PALETTE).getNodeValue ();
-                setValue (new SuperColor (id, Integer.parseInt (palette), new Color (Integer.parseInt (red, 16), Integer.parseInt (green, 16), Integer.parseInt (blue, 16))));
+            if (VALUE_NULL.equals(type)) {
+                setValue(null);
             } else {
-                setValue (new SuperColor (new Color (Integer.parseInt (red, 16), Integer.parseInt (green, 16), Integer.parseInt (blue, 16))));
+                String red = attributes.getNamedItem (ATTR_RED).getNodeValue ();
+                String green = attributes.getNamedItem (ATTR_GREEN).getNodeValue ();
+                String blue = attributes.getNamedItem (ATTR_BLUE).getNodeValue ();
+                if (VALUE_PALETTE.equals (type)) {
+                    String id = attributes.getNamedItem (ATTR_ID).getNodeValue ();
+                    String palette = attributes.getNamedItem (ATTR_PALETTE).getNodeValue ();
+                    setValue (new SuperColor (id, Integer.parseInt (palette), new Color (Integer.parseInt (red, 16), Integer.parseInt (green, 16), Integer.parseInt (blue, 16))));
+                } else {
+                    setValue (new SuperColor (new Color (Integer.parseInt (red, 16), Integer.parseInt (green, 16), Integer.parseInt (blue, 16))));
+                }
             }
         } catch (NullPointerException e) {
             throw new java.io.IOException ();
@@ -858,23 +864,16 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
      * @return the XML DOM element representing a subtree of XML from which the value should be loaded
      */
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
-        if (color == null) {
-            IllegalArgumentException iae = new IllegalArgumentException();
-            ErrorManager manager = ErrorManager.getDefault();
-            manager.annotate(iae, ErrorManager.EXCEPTION, null, 
-                getString("MSG_ColorIsNotInitialized"), null, null); // NOI18N
-            manager.notify(iae);
-            return null;
-        }
-        
         org.w3c.dom.Element el = doc.createElement (XML_COLOR);
-        el.setAttribute (ATTR_TYPE, (color.getID () == null) ? VALUE_RGB : VALUE_PALETTE);
-        el.setAttribute (ATTR_RED, Integer.toHexString (color.getRed ()));
-        el.setAttribute (ATTR_GREEN, Integer.toHexString (color.getGreen ()));
-        el.setAttribute (ATTR_BLUE, Integer.toHexString (color.getBlue ()));
-        if (color.getID () != null) {
-            el.setAttribute (ATTR_ID, color.getID ());
-            el.setAttribute (ATTR_PALETTE, Integer.toString (color.getPalette ()));
+        el.setAttribute (ATTR_TYPE, (color == null) ? VALUE_NULL : ((color.getID () == null) ? VALUE_RGB : VALUE_PALETTE));
+        if (color != null) {
+            el.setAttribute (ATTR_RED, Integer.toHexString (color.getRed ()));
+            el.setAttribute (ATTR_GREEN, Integer.toHexString (color.getGreen ()));
+            el.setAttribute (ATTR_BLUE, Integer.toHexString (color.getBlue ()));
+            if (color.getID () != null) {
+                el.setAttribute (ATTR_ID, color.getID ());
+                el.setAttribute (ATTR_PALETTE, Integer.toString (color.getPalette ()));
+            }
         }
         return el;
     }
