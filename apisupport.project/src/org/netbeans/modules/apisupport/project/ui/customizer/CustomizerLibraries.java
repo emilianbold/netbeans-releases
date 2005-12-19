@@ -81,7 +81,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     private void refreshPlatforms() {
         platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory.NbPlatformListModel()); // refresh
         platformValue.setSelectedItem(getProperties().getActivePlatform());
-        platformValue.requestFocus();
+        platformValue.requestFocusInWindow();
     }
     
     private void updateEnabled() {
@@ -311,7 +311,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         if (model.getSize() > 0) {
             reqTokenList.setSelectedIndex(0);
         }
-        reqTokenList.requestFocus();
+        reqTokenList.requestFocusInWindow();
     }//GEN-LAST:event_removeToken
     
     private void addToken(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToken
@@ -346,7 +346,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                 model.addToken((String) selected[i]);
             }
         }
-        reqTokenList.requestFocus();
+        reqTokenList.requestFocusInWindow();
     }//GEN-LAST:event_addToken
     
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
@@ -369,7 +369,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
             getDepListModel().editDependency(origDep, editPanel.getEditedDependency());
         }
         d.dispose();
-        dependencyList.requestFocus();
+        dependencyList.requestFocusInWindow();
     }//GEN-LAST:event_editModuleDependency
     
     private void removeModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeModuleDependency
@@ -377,7 +377,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         if (dependencyList.getModel().getSize() > 0) {
             dependencyList.setSelectedIndex(0);
         }
-        dependencyList.requestFocus();
+        dependencyList.requestFocusInWindow();
     }//GEN-LAST:event_removeModuleDependency
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
@@ -403,13 +403,12 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
             for (int i = 0; i < newDeps.length; i++) {
                 if (!getDepListModel().getDependencies().contains(newDeps[i])) {
                     getDepListModel().addDependency(newDeps[i]);
-                    dependencyList.setSelectedValue(newDeps[i], true);
                 }
+                dependencyList.setSelectedValue(newDeps[i], true);
             }
-            dependencyList.requestFocus();
         }
         d.dispose();
-        dependencyList.requestFocus();
+        dependencyList.requestFocusInWindow();
     }//GEN-LAST:event_addModuleDependency
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
