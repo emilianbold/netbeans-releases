@@ -50,8 +50,12 @@ public class ReloadAction extends CallableSystemAction {
     }
 
     public void performAction() {
-        WindowManager wm = WindowManager.getDefault();
+        WindowManager wm = WindowManager.getDefault();        
         TopComponent activeTC = wm.getRegistry().getActivated();
+        if(activeTC==null) {
+            return;
+        }
+        
         FormEditorSupport fes = FormEditorSupport.getFormEditor(activeTC);
         if (fes != null)
             fes.reloadForm();
