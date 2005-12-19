@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,7 +100,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     private static WeakHashMap configurationMap = new WeakHashMap();
 
     public static void addConfiguration(File key, SunONEDeploymentConfiguration config) {
-        configurationMap.put(key, config);
+        configurationMap.put(key, new WeakReference(config));
     }
     
     public static void removeConfiguration(File key) {
@@ -107,7 +108,12 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     }
     
     public static SunONEDeploymentConfiguration getConfiguration(File key) {
-        return (SunONEDeploymentConfiguration) configurationMap.get(key);
+        SunONEDeploymentConfiguration config = null;
+        WeakReference ref = (WeakReference) configurationMap.get(key);
+        if(ref != null) {
+            config = (SunONEDeploymentConfiguration) ref.get();
+        }
+        return config;
     }
     
     private DeployableObject dObj;
@@ -162,15 +168,15 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
      * @param resourceDir Directory that the sun resource files will be created in.
      */
     public void init(File[] configFiles, File resourceDir, boolean keepUpdated) {
-        assert configFiles != null && configFiles.length >= 1 : "No configuration files specified in SunONEDeploymentConfiguration.init()";
+        if(configFiles == null || configFiles.length < 1 || configFiles[0] == null) {
+            throw new IllegalArgumentException("configFiles[] must be non-null and contain at least one non-null member.");
+        }
 
         this.configFiles = configFiles;
         this.resourceDir = resourceDir;
         this.keepUpdated = keepUpdated;
-        
-        if(configFiles != null & configFiles.length > 0) {
-            addConfiguration(configFiles[0], this);
-        }
+
+        addConfiguration(configFiles[0], this);
         
         // !PW FIXME web freeform project does not implement J2eeModulePrvoider.  This section
         // and any related code could be reworked to use WebModule api directly and thereby enable
