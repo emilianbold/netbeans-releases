@@ -80,7 +80,7 @@ public class NbSummaryPanel extends TextDisplayPanel {
                         summaryMessage += "<br><br>"
                         + BUNDLE + "SummaryPanel.errorAS,"
                         + BUNDLE + "AS.shortName),"
-                        + Util.getASInstallDir();
+                        + Util.getASInstallDir() + ")";
                     } else {
                         InstallAction ia = (InstallAction) getWizardTree().getBean("install");
                         RunnableWizardBeanState state = ia.getState();
