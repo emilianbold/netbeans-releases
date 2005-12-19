@@ -178,12 +178,18 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         pleaseWaitTimer = new Timer(PLEASE_WAIT_TIMEOUT, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String waitText = PLEASE_WAIT;
-                for (Iterator it = completionResult.getResultSets().iterator(); it.hasNext();) {
-                    CompletionResultSetImpl resultSet = (CompletionResultSetImpl)it.next();
-                    if (resultSet.getWaitText() != null) {
-                        waitText = resultSet.getWaitText();
-                        break;
-                    }                        
+                Result localCompletionResult;
+                synchronized (this) {
+                    localCompletionResult = completionResult;
+                }
+                if (localCompletionResult != null) {
+                    for (Iterator it = localCompletionResult.getResultSets().iterator(); it.hasNext();) {
+                        CompletionResultSetImpl resultSet = (CompletionResultSetImpl)it.next();
+                        if (resultSet.getWaitText() != null) {
+                            waitText = resultSet.getWaitText();
+                            break;
+                        }
+                    }
                 }
                 layout.showCompletion(Collections.singletonList(waitText),
                         null, -1, CompletionImpl.this);
