@@ -102,6 +102,11 @@ public abstract class MultiFileLoader extends DataLoader {
                 throw ex;
             }
             obj = (MultiDataObject)dataObject;
+        } catch (IOException ex) {
+            if (ERR_WILL_LOG) {
+                ERR.notify(ErrorManager.INFORMATIONAL, ex);
+            }
+            throw ex;
         }
 
         if (obj.getLoader () != this) {

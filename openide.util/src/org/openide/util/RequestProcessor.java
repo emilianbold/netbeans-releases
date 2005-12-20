@@ -398,8 +398,14 @@ public final class RequestProcessor {
      * in the Processor.
      */
     void enqueue(Item item) {
+        ErrorManager em = logger();
+        boolean loggable = em.isLoggable(ErrorManager.INFORMATIONAL);
+        
         synchronized (processorLock) {
             if (item.getTask() == null) {
+                if (loggable) {
+                    em.log("Null task for item " + item); // NOI18N
+                }
                 return;
             }
 
@@ -413,6 +419,9 @@ public final class RequestProcessor {
                 proc.setName(name);
                 proc.attachTo(this);
             }
+        }
+        if (loggable) {
+            em.log("Item enqueued: " + item + " status: " + item.enqueued); // NOI18N
         }
     }
 
