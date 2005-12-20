@@ -43,35 +43,32 @@ public class TopComponentGetLookupOverridenTest extends TopComponentGetLookupTes
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(TopComponentGetLookupOverridenTest.class);
-        
-        return suite;
-    }
-    
     /** Setup component with lookup.
      */
     protected void setUp () {
-        top = new ListingYourComponent ();
-        lookup = top.getLookup ();
+        ListingYourComponent tc = new ListingYourComponent ();
+        top = tc;
+        lookup = tc.delegate.getLookup ();
     }
 
-    private static class ListingYourComponent extends YourComponent 
+    private static class ListingYourComponent extends TopComponent
     implements java.beans.PropertyChangeListener {
+        YourComponent delegate;
+        
         public ListingYourComponent () {
+            delegate = new YourComponent();
+            
             addPropertyChangeListener (this);
-            getExplorerManager ().setRootContext (new AbstractNode (new Children.Array ()));
+            delegate.getExplorerManager ().setRootContext (new AbstractNode (new Children.Array ()));
             java.lang.ref.SoftReference ref = new java.lang.ref.SoftReference (new Object ());
             assertGC ("Trying to simulate issue 40842, to GC TopComponent$SynchronizeNodes", ref);
+            
+            delegate.getExplorerManager().addPropertyChangeListener(this);
         }
         
         private ThreadLocal callbacks = new ThreadLocal ();
         public void propertyChange (java.beans.PropertyChangeEvent ev) {
-            ExplorerManager manager = getExplorerManager ();
+            ExplorerManager manager = delegate.getExplorerManager ();
             
             if ("activatedNodes".equals (ev.getPropertyName())) {
                 if (Boolean.TRUE.equals (callbacks.get ())) {
