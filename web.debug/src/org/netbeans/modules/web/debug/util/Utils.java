@@ -81,12 +81,15 @@ public class Utils {
         if (fo != null) {
             WebModule wm = WebModule.getWebModule(fo);
             if (wm != null) {
-                Project p = FileOwnerQuery.getOwner(wm.getDocumentBase());
-                if (p != null) {
-                    J2eeModuleProvider mp = (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
-                    if (mp != null) {
-                        String serverID = mp.getServerID();
-                        return serverID;
+                FileObject docBase = wm.getDocumentBase();
+                if (docBase != null) {
+                    Project p = FileOwnerQuery.getOwner(docBase);
+                    if (p != null) {
+                        J2eeModuleProvider mp = (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
+                        if (mp != null) {
+                            String serverID = mp.getServerID();
+                            return serverID;
+                        }
                     }
                 }
             }
