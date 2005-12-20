@@ -15,6 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- XXX should download to a subdir; easier to clean that way -->
 
+    <property name="emma.version" value="2.0.5312"/>
     <condition property="skip-download-emma" >
         <and>
             <available file="emma_ant.jar" />
@@ -23,9 +24,9 @@ Microsystems, Inc. All Rights Reserved.
     </condition>
     <target name="emma" unless="skip-download-emma" depends="setup-proxy" >
         <echo message="Going to download emma. If it fails download it from http://emma.sf.net/ (and unpack into ${basedir}) or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
-        <get src="http://voxel.dl.sourceforge.net/sourceforge/emma/emma-2.0.5312-lib.zip" dest="emma-2.0.5312-lib.zip" />
-        <unzip dest="." src="emma-2.0.5312-lib.zip" />
-    </target>
+        <get src="http://ibiblio.org/maven/emma/jars/emma-2.0.5312.jar" dest="emma.jar"/> 
+        <get src="http://ibiblio.org/maven/emma/jars/emma_ant-2.0.5312.jar" dest="emma_ant.jar"/>
+   </target>
     
     <target name="setup-proxy" if="proxy.host" >
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" />
@@ -34,7 +35,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="clean">
         <delete file="emma.jar" />
         <delete file="emma_ant.jar" />
-        <delete file="emma-2.0.5312-lib.zip" />
     </target>
 
 </project>
