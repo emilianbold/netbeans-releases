@@ -56,7 +56,7 @@ public class ClassPathUtils {
     public static Class loadClass(String name, FileObject fileInProject)
         throws ClassNotFoundException
     {
-        return getFormClassLoader(fileInProject).loadClass(name);
+        return Class.forName(name, true, getFormClassLoader(fileInProject));
         // LinkageError left uncaught
     }
 

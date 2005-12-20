@@ -977,7 +977,7 @@ public class FormUtils
         if (loader == null)
             throw new ClassNotFoundException();
 
-        return loader.loadClass(name);
+        return Class.forName(name, true, loader);
     }
 
     // ---------
@@ -996,26 +996,13 @@ public class FormUtils
             throws IOException, ClassNotFoundException
         {
             String name = streamCls.getName();
-            if (name.startsWith("[")) { // NOI18N
-                // load array element class first to avoid failure
-                for (int i=1, n=name.length(); i < n; i++) {
-                    char c = name.charAt(i);
-                    if (c == 'L' && name.endsWith(";")) { // NOI18N
-                        String clsName = name.substring(i+1, n-1);
-                        loadClass(clsName);
-                        break;
-                    }
-                    else if (c != '[')
-                        return super.resolveClass(streamCls);
-                }
-            }
             return loadClass(name);
         }
         
         private Class loadClass(String name) throws ClassNotFoundException {
             if (classLoader != null) {
                 try {
-                    return classLoader.loadClass(name);
+                    return Class.forName(name, true, classLoader);
                 } catch (ClassNotFoundException ex) {}
             }
             return FormUtils.loadClass(name, formModel);
