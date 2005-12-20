@@ -15,6 +15,9 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
     <folder name="Actions">
+        <folder name="Build">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
+        </folder>
         <folder name="Project">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
             <!-- Project operations -->
