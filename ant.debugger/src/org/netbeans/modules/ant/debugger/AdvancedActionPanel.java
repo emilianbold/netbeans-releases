@@ -23,9 +23,10 @@ import javax.swing.KeyStroke;
 import javax.swing.text.EditorKit;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.api.support.TargetLister;
-import org.apache.tools.ant.module.run.TargetExecutor;
 import org.openide.awt.Mnemonics;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -323,10 +324,12 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
             script.setAttribute(ATTR_VERBOSITY, new Integer(verbosity));
         }
         // Actually run the target(s).
-        TargetExecutor exec = new TargetExecutor(project, targets);
-        exec.setProperties(props);
-        exec.setVerbosity(verbosity);
-        exec.execute();
+        DebuggerAntLogger.getDefault ().debugFile (project.getFile ());
+        AntTargetExecutor.Env env = new AntTargetExecutor.Env ();
+        env.setProperties(props);
+        env.setVerbosity(verbosity);
+        AntTargetExecutor executor = AntTargetExecutor.createTargetExecutor(env);
+        executor.execute(project, targets);
     }
     
 }
