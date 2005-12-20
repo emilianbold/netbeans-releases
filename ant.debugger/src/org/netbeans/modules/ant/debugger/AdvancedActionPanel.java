@@ -26,7 +26,6 @@ import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.openide.awt.Mnemonics;
-import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
