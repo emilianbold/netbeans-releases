@@ -35,8 +35,6 @@
     <bind actionName="collapse-fold" key="D-MINUS"/>
     <bind actionName="collapse-all-folds" key="DS-SUBTRACT"/>
     <bind actionName="collapse-fold" key="D-SUBTRACT"/>
-    <bind actionName="completion-show" key="C-SPACE"/>
-    <bind actionName="completion-show" key="D-BACK_SLASH"/>
     <bind actionName="copy-to-clipboard" key="COPY"/>
     <bind actionName="copy-to-clipboard" key="A-W"/>    
     <bind actionName="cut-to-clipboard" key="CUT"/>
@@ -97,6 +95,8 @@
     <bind actionName="selection-up" key="S-UP"/>
     <bind actionName="shift-line-left" key="A-0$C-X$TAB"/>
     <bind actionName="shift-line-right" key="C-X$TAB"/>
+    <bind actionName="show-completion" key="C-SPACE"/>
+    <bind actionName="show-completion" key="D-BACK_SLASH"/>
     <bind actionName="split-line" key="D-ENTER"/>
     <bind actionName="start-macro-recording" key="C-X$S-9"/>
     <bind actionName="start-new-line" key="S-ENTER"/>
