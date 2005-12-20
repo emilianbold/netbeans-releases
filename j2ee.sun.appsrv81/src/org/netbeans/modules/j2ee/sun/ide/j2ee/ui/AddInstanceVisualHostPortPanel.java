@@ -12,7 +12,6 @@
  */
 package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
 
-import com.sun.java.swing.SwingUtilities2;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -23,10 +22,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 
 public final class AddInstanceVisualHostPortPanel extends JPanel {
 
