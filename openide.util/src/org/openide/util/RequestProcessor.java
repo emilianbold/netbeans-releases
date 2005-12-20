@@ -188,13 +188,21 @@ public final class RequestProcessor {
     
     
     /** The getter for the shared instance of the <CODE>RequestProcessor</CODE>.
+     * This instance is shared by anybody who
+     * needs a way of performing sporadic or repeated asynchronous work.
+     * Tasks posted to this instance may be canceled until they start their
+     * execution. If a there is a need to cancel a task while it is running
+     * a seperate request processor needs to be created via 
+     * {@link #RequestProcessor(String, int, boolean)} constructor.
      *
      * @return an instance of RequestProcessor that is capable of performing
      * "unlimited" (currently limited to 50, just for case of misuse) number
-     * of requests in parallel. This instance is shared by anybody who
-     * needs a way of performing sporadic or repeated asynchronous work.
+     * of requests in parallel. 
      *
-     * @since OpenAPI version 2.12
+     * @see #RequestProcessor(String, int, boolean)
+     * @see RequestProcessor.Task#cancel
+     *
+     * @since version 2.12
      */
     public static RequestProcessor getDefault() {
         return UNLIMITED;
