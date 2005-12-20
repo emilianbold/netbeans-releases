@@ -31,7 +31,7 @@ class HeapStorage implements Storage {
     }
 
     public ByteBuffer getReadBuffer(int start, int length) throws IOException {
-        return ByteBuffer.wrap(bytes, start, length);
+        return ByteBuffer.wrap(bytes, start, Math.min(length, bytes.length - start));
     }
 
     public ByteBuffer getWriteBuffer(int length) throws IOException {
@@ -50,7 +50,7 @@ class HeapStorage implements Storage {
         buf.flip();
         buf.get(bytes, oldSize, buf.limit());
         if (addNewLine) {
-            System.arraycopy (OutWriter.lineSepBytes, 0, bytes, size - OutWriter.lineSepBytes.length - 1, OutWriter.lineSepBytes.length);
+            System.arraycopy (OutWriter.lineSepBytes, 0, bytes, size - OutWriter.lineSepBytes.length, OutWriter.lineSepBytes.length);
         }
         return oldSize;
     }
