@@ -7,34 +7,20 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.windows;
 
-import javax.swing.plaf.basic.BasicHTML;
-import org.openide.ErrorManager;
-import org.openide.awt.UndoRedo;
-import org.openide.nodes.*;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
-import org.openide.util.WeakSet;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
-
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-
-import java.beans.*;
-
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -43,26 +29,38 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
-
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.text.Keymap;
-
+import org.openide.ErrorManager;
+import org.openide.awt.UndoRedo;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeListener;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
+import org.openide.util.actions.SystemAction;
 
 /** Embeddable visual component to be displayed in the IDE.
  * This is the basic unit of display in the IDE--windows should not be
@@ -628,7 +626,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      */
     public final void requestAttention(final boolean brief) {
         //Reentrancy issues - always invoke later
-        SwingUtilities.invokeLater(
+        EventQueue.invokeLater(
             new Runnable() {
                 public void run() {
                     if ((attentionGetter != null) && !brief) {
@@ -651,7 +649,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      */
     public final void cancelRequestAttention() {
         //Reentrancy issues - always invoke later
-        SwingUtilities.invokeLater(
+        EventQueue.invokeLater(
             new Runnable() {
                 public void run() {
                     if (attentionGetter != null) {
@@ -1131,7 +1129,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         }
 
         public void reset() {
-            assert SwingUtilities.isEventDispatchThread();
+            assert EventQueue.isDispatchThread();
 
             if (timer != null) {
                 timer.stop();
@@ -1340,9 +1338,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
                 }
 
                 // All others wrap into IOException.
-                IOException newEx = new IOException(th.getMessage());
-                ErrorManager.getDefault().annotate(newEx, th);
-                throw newEx;
+                throw (IOException) new IOException(th.toString()).initCause(th);
             }
         }
 
@@ -1394,12 +1390,12 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         }
 
         public void resultChanged(org.openide.util.LookupEvent ev) {
-            if (TopComponent.this.isVisible() && SwingUtilities.isEventDispatchThread()) {
+            if (TopComponent.this.isVisible() && EventQueue.isDispatchThread()) {
                 // run immediatelly
                 run();
             } else {
                 // replan
-                SwingUtilities.invokeLater(this);
+                EventQueue.invokeLater(this);
             }
         }
 

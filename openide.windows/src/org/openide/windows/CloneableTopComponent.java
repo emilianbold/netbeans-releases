@@ -10,10 +10,8 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.windows;
 
-import org.openide.util.NbBundle;
-import org.openide.util.io.NbMarshalledObject;
+package org.openide.windows;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -21,13 +19,13 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
+import org.openide.util.NbBundle;
+import org.openide.util.io.NbMarshalledObject;
 
 /** A top component which may be cloned.
 * Typically cloning is harmless, i.e. the data contents (if any)
@@ -106,15 +104,11 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
         try {
             // clones the component using serialization
             NbMarshalledObject o = new NbMarshalledObject(this);
-            CloneableTopComponent top = (CloneableTopComponent) o.get();
-
-            return top;
+            return (CloneableTopComponent) o.get();
         } catch (IOException ex) {
-            ex.printStackTrace();
-            throw new InternalError();
+            throw new AssertionError(ex);
         } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
-            throw new InternalError();
+            throw new AssertionError(ex);
         }
     }
 
