@@ -937,14 +937,21 @@ public final class NbModuleProject implements Project {
         private String displayName;
         
         Info() {
-            displayName = bundleInfo != null ? bundleInfo.getDisplayName() : getName();
+            if (bundleInfo != null) {
+                displayName = bundleInfo.getDisplayName();
+            }
+            if (/* #70490 */displayName == null) {
+                displayName = getName();
+            }
         }
         
         public String getName() {
-            return getCodeNameBase();
+            String cnb = getCodeNameBase();
+            return cnb != null ? cnb : /* #70490 */getProjectDirectory().toString();
         }
         
         public String getDisplayName() {
+            assert displayName != null : NbModuleProject.this;
             return displayName;
         }
         

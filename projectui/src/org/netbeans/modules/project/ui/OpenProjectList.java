@@ -967,7 +967,11 @@ public final class OpenProjectList {
 //                return 1;
 //            }
             
-            return COLLATOR.compare(ProjectUtils.getInformation(p1).getDisplayName(), ProjectUtils.getInformation(p2).getDisplayName());
+            String n1 = ProjectUtils.getInformation(p1).getDisplayName();
+            String n2 = ProjectUtils.getInformation(p2).getDisplayName();
+            assert n1 != null : p1;
+            assert n2 != null : p2;
+            return COLLATOR.compare(n1, n2);
         }
         
     }
