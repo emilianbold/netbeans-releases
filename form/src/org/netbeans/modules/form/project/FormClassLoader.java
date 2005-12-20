@@ -100,7 +100,7 @@ final class FormClassLoader extends ClassLoader {
             }
         }
         if (c == null)
-            throw new ClassNotFoundException();
+            throw new ClassNotFoundException(name);
 
         return c;
     }

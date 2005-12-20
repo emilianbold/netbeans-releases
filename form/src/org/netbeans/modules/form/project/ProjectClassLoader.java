@@ -116,7 +116,7 @@ class ProjectClassLoader extends ClassLoader {
             c = systemClassLoader.loadClass(name);
         }
         if (c == null)
-            throw new ClassNotFoundException();
+            throw new ClassNotFoundException(name);
         return c;
     }
 
