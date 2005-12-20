@@ -19,6 +19,7 @@ import javax.accessibility.*;
 import java.beans.PropertyEditor;
 
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  * RADMenuItemComponent represents one menu item component in the Form.
@@ -317,6 +318,10 @@ public class RADMenuItemComponent extends RADComponent {
         public AccessibleParentEditor() {
             super();
             setBeanTypes(new Class[] { Accessible.class });
+        }
+
+        public String getDisplayName() {
+            return NbBundle.getBundle(getClass()).getString("CTL_AccessibleParentEditor_DisplayName"); // NOI18N
         }
     }
 }

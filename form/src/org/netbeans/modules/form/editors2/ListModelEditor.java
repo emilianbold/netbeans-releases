@@ -15,6 +15,7 @@ package org.netbeans.modules.form.editors2;
 
 import javax.swing.*;
 import org.netbeans.modules.form.editors.StringArrayEditor;
+import org.openide.util.NbBundle;
 
 /** A simple property editor for ListModel.
  *
@@ -82,4 +83,10 @@ public class ListModelEditor extends StringArrayEditor {
             model.addElement(data[i]);
         return model;
     }
+    
+    // NamedPropertyEditor implementation
+    public String getDisplayName() {
+        return NbBundle.getBundle(getClass()).getString("CTL_ListModelEditor_DisplayName"); // NOI18N
+    }
+
 }

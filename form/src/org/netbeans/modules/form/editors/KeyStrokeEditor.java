@@ -13,17 +13,20 @@
 
 package org.netbeans.modules.form.editors;
 
-import java.beans.PropertyEditorSupport;
+import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyEditorSupport;
+import java.lang.reflect.*;
 import java.util.*;
 import javax.swing.*;
-import java.lang.reflect.*;
+
+import org.netbeans.modules.form.NamedPropertyEditor;
+
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
-import java.awt.*;
+import org.openide.util.NbBundle;
 
 public class KeyStrokeEditor extends PropertyEditorSupport
-                             implements XMLPropertyEditor
-{
+        implements XMLPropertyEditor, NamedPropertyEditor {
     private String TXT_CTRL;
     private String TXT_ALT;
     private String TXT_SHIFT;
@@ -205,6 +208,11 @@ public class KeyStrokeEditor extends PropertyEditorSupport
 
     public java.awt.Component getCustomEditor() {
         return new CustomEditor();
+    }
+    
+    // NamedPropertyEditor implementation
+    public String getDisplayName() {
+        return NbBundle.getBundle(getClass()).getString("CTL_KeyStrokeEditor_DisplayName"); // NOI18N
     }
 
     private static String[] _virtualKeys;

@@ -15,6 +15,7 @@ package org.netbeans.modules.form.editors2;
 
 import javax.swing.*;
 import org.netbeans.modules.form.editors.StringArrayEditor;
+import org.openide.util.NbBundle;
 
 /** A simple property editor for ComboBoxModel.
  *
@@ -71,4 +72,10 @@ public class ComboBoxModelEditor extends StringArrayEditor {
     static ComboBoxModel getModelForData(String[] data) {
         return new DefaultComboBoxModel(data);
     }
+    
+    // NamedPropertyEditor implementation
+    public String getDisplayName() {
+        return NbBundle.getBundle(getClass()).getString("CTL_ComboBoxModelEditor_DisplayName"); // NOI18N
+    }
+
 }

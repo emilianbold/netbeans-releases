@@ -17,14 +17,17 @@ import java.awt.*;
 import java.beans.*;
 import java.util.*;
 
+import org.netbeans.modules.form.NamedPropertyEditor;
+
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import org.openide.util.NbBundle;
 
 /** A property editor for array of Strings.
 * @author  Ian Formanek
 * @version 0.10, 17 Jun 1998
 */
 public class StringArrayEditor implements XMLPropertyEditor,
-                                          StringArrayCustomizable {
+        StringArrayCustomizable, NamedPropertyEditor {
 
     // constants for XML persistence
     private static final String XML_STRING_ARRAY = "StringArray"; // NOI18N
@@ -207,4 +210,10 @@ public class StringArrayEditor implements XMLPropertyEditor,
 
         setValue(stringArray);
     }
+    
+    // NamedPropertyEditor implementation
+    public String getDisplayName() {
+        return NbBundle.getBundle(getClass()).getString("CTL_StringArrayEditor_DisplayName"); // NOI18N
+    }
+
 }

@@ -14,13 +14,16 @@
 package org.netbeans.modules.form.editors;
 
 import java.beans.*;
+import org.netbeans.modules.form.NamedPropertyEditor;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
+import org.openide.util.NbBundle;
 
 /**
  * Editor for mnemonic property
  * @author  Josef Kozak
  */
-public class MnemonicEditor extends PropertyEditorSupport implements EnhancedPropertyEditor {
+public class MnemonicEditor extends PropertyEditorSupport
+        implements EnhancedPropertyEditor, NamedPropertyEditor {
     
     /** 
      * Converts the char to String by either leaving
@@ -181,4 +184,10 @@ public class MnemonicEditor extends PropertyEditorSupport implements EnhancedPro
     public boolean supportsEditingTaggedValues () {
         return true;
     }
+    
+    // NamedPropertyEditor implementation
+    public String getDisplayName() {
+        return NbBundle.getBundle(getClass()).getString("CTL_MnemonicsEditor_DisplayName"); // NOI18N
+    }
+
 }

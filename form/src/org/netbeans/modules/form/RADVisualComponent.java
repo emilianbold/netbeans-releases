@@ -21,6 +21,7 @@ import org.openide.nodes.*;
 
 import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.layoutsupport.*;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -521,6 +522,10 @@ public class RADVisualComponent extends RADComponent {
         public AccessibleParentEditor() {
             super();
             setBeanTypes(new Class[] { Accessible.class });
+        }
+        
+        public String getDisplayName() {
+            return NbBundle.getBundle(getClass()).getString("CTL_AccessibleParentEditor_DisplayName"); // NOI18N
         }
     }
     

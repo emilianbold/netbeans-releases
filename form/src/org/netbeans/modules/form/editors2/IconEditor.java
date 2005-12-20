@@ -44,6 +44,7 @@ import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormDesignValue;
 import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.NamedPropertyEditor;
 
 /**
  * PropertyEditor for Icons. Depends on existing DataObject for images.
@@ -53,7 +54,8 @@ import org.netbeans.modules.form.FormEditor;
  *
  * @author Jan Jancura, Jan Stola
  */
-public class IconEditor extends PropertyEditorSupport implements PropertyEditor, XMLPropertyEditor, ExPropertyEditor, FormAwareEditor {
+public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
+        XMLPropertyEditor, ExPropertyEditor, FormAwareEditor, NamedPropertyEditor {
     /** Type constant for icons from URL. */
     public static final int TYPE_URL = 1;
     /** Type constant for icons from file. */
@@ -74,7 +76,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
      * @return localized string for the key.
      */
     private static String getString(String key) {
-        return org.openide.util.NbBundle.getBundle(IconEditor.class).getString(key);
+        return NbBundle.getBundle(IconEditor.class).getString(key);
     }
     
     /**
@@ -324,6 +326,11 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
             throw iae;
         }
         return ii;
+    }
+    
+    // NamedPropertyEditor implementation
+    public String getDisplayName() {
+        return NbBundle.getBundle(getClass()).getString("CTL_IconEditor_DisplayName"); // NOI18N
     }
     
     // innerclasses ...............................................................................

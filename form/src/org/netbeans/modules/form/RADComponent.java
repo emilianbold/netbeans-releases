@@ -20,6 +20,7 @@ import org.netbeans.modules.form.RADProperty.FakePropertyDescriptor;
 
 import org.openide.*;
 import org.openide.nodes.*;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
 
 import org.netbeans.modules.form.codestructure.*;
@@ -1421,6 +1422,10 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
             super();
             setBeanTypes(new Class[] { javax.swing.ButtonGroup.class });
             setComponentCategory(OTHER_COMPONENTS);
+        }
+        
+        public String getDisplayName() {
+            return NbBundle.getBundle(getClass()).getString("CTL_ButtonGroupPropertyEditor_DisplayName"); // NOI18N
         }
     }
     

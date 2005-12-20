@@ -21,13 +21,14 @@ import javax.swing.table.*;
 
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import org.netbeans.modules.form.NamedPropertyEditor;
 
 /**
 * A property editor for jjavax.swing.table.TableModel.
 * @author Ian Formanek, Tomas Pavek
 */
 
-public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
+public class TableModelEditor implements PropertyEditor, XMLPropertyEditor, NamedPropertyEditor {
 
     public TableModelEditor() {
         support = new PropertyChangeSupport (this);
@@ -442,6 +443,11 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor {
 
     static Object getDefaultValue (Class c) {
         return null;
+    }
+    
+    // NamedPropertyEditor implementation
+    public String getDisplayName() {
+        return NbBundle.getBundle(getClass()).getString("CTL_TableModelEditor_DisplayName"); // NOI18N
     }
 
     // -----------------------------------------------------------------------------

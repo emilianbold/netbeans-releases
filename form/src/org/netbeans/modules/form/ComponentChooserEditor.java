@@ -16,6 +16,7 @@ package org.netbeans.modules.form;
 import java.beans.*;
 import java.util.*;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import org.openide.util.NbBundle;
 
 /**
  * Property editor allowing to choose a component from all components in form
@@ -26,7 +27,8 @@ import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 
 public class ComponentChooserEditor implements PropertyEditor,
                                                FormAwareEditor,
-                                               XMLPropertyEditor
+                                               XMLPropertyEditor,
+                                               NamedPropertyEditor
 {
     public static final int ALL_COMPONENTS = 0;
     public static final int VISUAL_COMPONENTS = 1;
@@ -262,6 +264,11 @@ public class ComponentChooserEditor implements PropertyEditor,
     protected final void firePropertyChange() {
         if (changeSupport != null)
             changeSupport.firePropertyChange(null, null, null);
+    }
+
+    // NamedPropertyEditor implementation
+    public String getDisplayName() {
+        return NbBundle.getBundle(getClass()).getString("CTL_ComponentChooserEditor_DisplayName"); // NOI18N
     }
 
     // ------------
