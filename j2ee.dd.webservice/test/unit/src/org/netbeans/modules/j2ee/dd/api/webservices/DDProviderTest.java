@@ -57,7 +57,6 @@ public class DDProviderTest extends NbTestCase {
 
     public static Test suite() {
         TestSuite suite = new TestSuite(DDProviderTest.class);
-        
         return suite;
     }
 
@@ -103,8 +102,6 @@ public class DDProviderTest extends NbTestCase {
             result = dd.getDDRoot(fo);
         }
         assertNotNull("Result cannot be null.", result);
-        System.out.println(result);
-        System.out.println(result.getStatus());
         assertEquals(Webservices.STATE_VALID, result.getStatus());
         File dest = new File(getWorkDir(), "webservices.xml");
         File diff = new File(getWorkDir(), "webservices.xml.diff");
