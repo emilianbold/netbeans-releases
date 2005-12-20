@@ -107,6 +107,10 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
     }
 
     public Object lookup(Class clazz) {
+        if (clazz == null) {
+            checkLookup();
+            return null;
+        }
         return checkLookup().lookup(clazz);
     }
 

@@ -63,10 +63,20 @@ class SimpleLookup extends org.openide.util.Lookup {
     }
 
     public Object lookup(Class clazz) {
-        // this can be further tuned to better performance
-        Lookup.Item item = lookupItem(new Lookup.Template(clazz));
+        for (Iterator i = allItems.iterator(); i.hasNext();) {
+            Object o = i.next();
 
-        return (item == null) ? null : item.getInstance();
+            if (o instanceof AbstractLookup.Pair) {
+                AbstractLookup.Pair p = (AbstractLookup.Pair)o;
+                if (p.instanceOf(clazz)) {
+                    Object ret = p.getInstance();
+                    if (clazz.isInstance(ret)) {
+                        return ret;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /** A method that defines matching between Item and Template.
