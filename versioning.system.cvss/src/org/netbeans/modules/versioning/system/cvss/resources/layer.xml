@@ -17,6 +17,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Actions">
         <folder name="Repository">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.system.cvss.resources.Bundle" />
+            
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-ShowTextAnnotationsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.ShowTextAnnotationsAction"/>
             </file>
