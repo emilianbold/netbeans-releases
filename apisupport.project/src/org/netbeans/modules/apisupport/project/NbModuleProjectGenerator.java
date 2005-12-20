@@ -19,15 +19,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -42,7 +43,6 @@ import org.openide.util.MutexException;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.netbeans.modules.apisupport.project.universe.ModuleList;
 
 /**
  * Servers for generating new NetBeans Modules templates.
@@ -134,7 +134,7 @@ public class NbModuleProjectGenerator {
                     
                     EditableProperties props = new EditableProperties(true);
                     props.put(SingleModuleProperties.IS_AUTOLOAD, "true"); // NOI18N
-                    Set packageList = new HashSet(); //list of strings
+                    SortedSet/*<String>*/ packageList = new TreeSet();
                     Map classPathExtensions = new HashMap();
                     
                     File releaseDir = new File(projectDir, "release/modules/ext"); //NOI18N
