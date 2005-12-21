@@ -153,7 +153,7 @@ public class SSHConnection extends AbstractConnection {
     /**
      * Provides JSch with SSH password.
      */ 
-    private class SSHUserInfo implements UserInfo {
+    private class SSHUserInfo implements UserInfo, UIKeyboardInteractive {
         public String getPassphrase() {
             return null;
         }
@@ -175,6 +175,18 @@ public class SSHConnection extends AbstractConnection {
         }
 
         public void showMessage(String message) {
+        }
+
+        public String[] promptKeyboardInteractive(String destination,
+                                                  String name,
+                                                  String instruction,
+                                                  String[] prompt,
+                                                  boolean[] echo){
+          String[] response=new String[prompt.length];
+          if(prompt.length==1){
+            response[0]=password;
+          }
+          return response;                                                
         }
     }
     
