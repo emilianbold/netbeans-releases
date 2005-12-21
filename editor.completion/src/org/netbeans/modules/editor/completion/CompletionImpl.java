@@ -76,7 +76,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private static final String POPUP_HIDE = "popup-hide"; //NOI18N
     private static final String COMPLETION_SHOW = "completion-show"; //NOI18N
     private static final String DOC_SHOW = "doc-show"; //NOI18N
-    private static final String TOOLTIP_SHOW = "tool-tip-show"; //NOI18N
+    private static final String TOOLTIP_SHOW = "tooltip-show"; //NOI18N
     
     private static final int PLEASE_WAIT_TIMEOUT = 250;
     

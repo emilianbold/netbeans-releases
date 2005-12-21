@@ -35,6 +35,8 @@
     <bind actionName="collapse-fold" key="D-MINUS"/>
     <bind actionName="collapse-all-folds" key="DS-SUBTRACT"/>
     <bind actionName="collapse-fold" key="D-SUBTRACT"/>
+    <bind actionName="completion-show" key="C-SPACE"/>
+    <bind actionName="completion-show" key="D-BACK_SLASH"/>
     <bind actionName="copy-to-clipboard" key="COPY"/>
     <bind actionName="copy-to-clipboard" key="A-W"/>    
     <bind actionName="cut-to-clipboard" key="CUT"/>
@@ -44,6 +46,7 @@
     <bind actionName="delete-next" key="DELETE"/>
     <bind actionName="delete-next" key="C-D"/> 
     <bind actionName="delete-previous" key="BACK_SPACE"/>
+    <bind actionName="documentation-show" key="CS-SPACE"/>
     <bind actionName="expand-all-folds" key="DS-ADD"/>
     <bind actionName="expand-all-folds" key="DS-EQUALS"/>
     <bind actionName="expand-all-folds" key="DS-PLUS"/>
@@ -95,8 +98,6 @@
     <bind actionName="selection-up" key="S-UP"/>
     <bind actionName="shift-line-left" key="A-0$C-X$TAB"/>
     <bind actionName="shift-line-right" key="C-X$TAB"/>
-    <bind actionName="show-completion" key="C-SPACE"/>
-    <bind actionName="show-completion" key="D-BACK_SLASH"/>
     <bind actionName="split-line" key="D-ENTER"/>
     <bind actionName="start-macro-recording" key="C-X$S-9"/>
     <bind actionName="start-new-line" key="S-ENTER"/>
@@ -105,6 +106,7 @@
     <bind actionName="to-upper-case" key="C-X$C-U"/>
     <bind actionName="toggle-case-identifier-begin" key="A-C"/>
     <bind actionName="toggle-typing-mode" key="INSERT"/>
+    <bind actionName="tooltip-show" key="A-P"/>
     <bind actionName="try-catch" key="OS-W"/>
     <bind actionName="undo" key="UNDO"/>
     <bind actionName="undo" key="C-X$U"/>
