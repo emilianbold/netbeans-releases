@@ -306,7 +306,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             topComponentsListener = null;
         }
         Document document = getDocument();
-        System.out.println("removingListenerFromDocument "+document);
         if (document!=null) document.removeDocumentListener(docListener);
         super.notifyClosed();
     }
