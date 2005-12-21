@@ -75,6 +75,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Actions">
             <folder name="Build">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="BuildMainProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
                 </file>
@@ -98,6 +99,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="CVS">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Branch.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchAction.instance"/>
                 </file>
@@ -164,6 +166,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="Edit">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Copy.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
                 </file>
@@ -209,6 +212,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="delete-next"/>
             </folder>
             <folder name="File">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Close Project.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CloseProject.instance"/>
                 </file>
@@ -247,6 +251,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="Form">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Customize Layout.shadow">
                     <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-CustomizeLayoutAction.instance"/>
                 </file>
@@ -263,7 +268,8 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-ReloadAction.instance"/>
                 </file>
             </folder>
-            <folder name="Go To">
+            <folder name="GoTo">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Go to Class.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>
                 </file>
@@ -319,6 +325,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="goto-help"/>
             </folder>
             <folder name="Help">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="About.shadow">
                     <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-core-actions-AboutAction.instance"/>
                 </file>
@@ -339,6 +346,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="Refactor">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Rename.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RenameAction.instance"/>
                 </file>
@@ -386,6 +394,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="Run">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Apply Code Changes.shadow">
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-FixAction.instance"/>
                 </file>
@@ -460,6 +469,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="Source">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Correct Javadoc.shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/Correct Javadoc Action.instance"/>
                 </file>
@@ -477,6 +487,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="word-match-prev"/>
             </folder>
             <folder name="Tools">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Add to Palette.shadow">
                     <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-InstallToPaletteAction.instance"/>
                 </file>
@@ -530,6 +541,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="View">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Web Browser.shadow">
                     <attr name="originalFile" stringvalue="Actions/View/org-netbeans-core-actions-HTMLViewAction.instance"/>
                 </file>
@@ -547,6 +559,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="expand-fold"/>
             </folder>
             <folder name="Window">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Local Variables.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-LocalsViewAction.instance"/>
                 </file>
@@ -636,6 +649,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="System">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="Rename.shadow">
                     <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
                 </file>
@@ -668,6 +682,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="XML">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="SAX Document Handler Wizard....shadow">
                     <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance"/>
                 </file>
