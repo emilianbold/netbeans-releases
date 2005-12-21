@@ -7,22 +7,25 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.ref.WeakReference;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-
-import java.io.*;
-
-import java.lang.ref.*;
-
-import java.util.*;
-
 
 /**
  * This class is intended to enhance MIME resolving. This class offers
@@ -70,10 +73,7 @@ final class MIMESupport extends Object {
         try {
             synchronized (lock) {
                 CachedFileObject lcfo = (CachedFileObject)lastCfo.get();
-                if (
-                    (lcfo == null) || (fo != lastFo.get()) ||
-                        (fo.lastModified().getTime() != lcfo.lastModified().getTime())
-                ) {
+                if (lcfo == null || fo != lastFo.get() || timeOf(fo) != timeOf(lcfo)) {
                     cfo = new CachedFileObject(fo);
                 } else {
                     cfo = lcfo;
@@ -90,6 +90,15 @@ final class MIMESupport extends Object {
             }
         }
     }
+    private static long timeOf(FileObject fo) {
+        if (fo == null) {
+            throw new NullPointerException();
+        }
+        Date d = fo.lastModified();
+        assert d != null : "Null lastModified from " + fo;
+        return d.getTime();
+    }
+    
     /** Testing purposes.
      */
     static MIMEResolver[] getResolvers() {

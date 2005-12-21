@@ -7,17 +7,21 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
-import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
-import org.openide.filesystems.*;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Date;
+import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author Radek Matous
@@ -62,7 +66,7 @@ public class ReplaceForSerialization extends Object implements java.io.Serializa
         }
 
         public Date lastModified() {
-            return null;
+            return new Date(0L);
         }
 
         /* Test whether the file is valid. The file can be invalid if it has been deserialized

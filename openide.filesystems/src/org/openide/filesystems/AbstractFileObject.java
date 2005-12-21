@@ -128,7 +128,10 @@ final class AbstractFileObject extends AbstractFolder {
     */
     public Date lastModified() {
         if ((lastModified == null) || !getAbstractFileSystem().isLastModifiedCacheEnabled()) {
-            lastModified = getAbstractFileSystem().info.lastModified(getPath());
+            String path = getPath();
+            AbstractFileSystem.Info i = getAbstractFileSystem().info;
+            lastModified = i.lastModified(path);
+            assert lastModified != null : "Null lastModified from " + i.getClass().getName() + " on " + path;
         }
 
         return lastModified;

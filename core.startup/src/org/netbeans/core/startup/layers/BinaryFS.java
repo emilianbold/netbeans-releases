@@ -7,13 +7,18 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup.layers;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -21,10 +26,19 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 import org.openide.ErrorManager;
-
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 import org.openide.util.actions.SystemAction;
@@ -62,7 +76,7 @@ public class BinaryFS extends FileSystem {
     private FileObject root;
     /** list of urls (String) or Date of their modifications */
     private java.util.List modifications;
-    private Date lastModified = new Date();
+    private final Date lastModified = new Date();
     
     /** Creates a new instance of BinaryFS */
     public BinaryFS(String binaryFile) throws IOException {
