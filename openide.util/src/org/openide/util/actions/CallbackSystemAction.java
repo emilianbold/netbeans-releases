@@ -7,47 +7,30 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util.actions;
 
+import java.awt.Component;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Iterator;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import org.openide.ErrorManager;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
-
-import java.awt.AWTEvent;
-import java.awt.Component;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-
-import java.beans.*;
-
-import java.lang.ref.*;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import javax.swing.Action;
-import javax.swing.ActionMap;
-
-
-/* enabled is old; action perf prop is not public --jglick
-*
-* <P>
-* <TABLE BORDER COLS=3 WIDTH=100%>
-* <TR><TH WIDTH=15%>Property<TH WIDTH=15%>Property Type<TH>Description
-* <TR><TD> Enabled  <TD> boolean   <TD> The explicite enabled/disabled
-*                                       state of the action.
-* <TR><TD> ActionPerformer  <TD> ActionPerformer  <TD> The class that performs the action
-* </TABLE>
-*/
 
 /** Action that can have a performer of the action attached to it at any time,
 * or changed.
@@ -86,6 +69,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
     /** Get the current action performer.
     * @return the current action performer, or <code>null</code> if there is currently no performer
+    * @deprecated use TopComponent.getActionMap() as described in the javadoc
     */
     public ActionPerformer getActionPerformer() {
         return (ActionPerformer) getProperty(PROP_ACTION_PERFORMER);
@@ -211,6 +195,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
     /** Perform the action.
     * This default implementation calls the assigned action performer if it
     * exists, otherwise does nothing.
+     * @deprecated This only uses {@link ActionPerformer}. Use {@link #actionPerformed} instead.
     */
     public void performAction() {
         ActionPerformer ap = getActionPerformer();

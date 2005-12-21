@@ -7,13 +7,41 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.core.output2;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.regex.Matcher;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.BadLocationException;
@@ -23,22 +51,9 @@ import org.openide.actions.FindAction;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.actions.ActionPerformer;
-import org.openide.util.actions.SystemAction;
-import org.openide.windows.*;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.regex.Matcher;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
+import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -1172,7 +1187,7 @@ public class Controller { //XXX public only for debug access to logging code
      * A stateless action which will find the owning OutputTab's controller and call
      * actionPerformed with its ID as an argument.
      */
-    private static class ControllerAction extends AbstractAction implements ActionPerformer {
+    private static class ControllerAction extends AbstractAction {
         private int id;
         /**
          * Create a ControllerAction with the specified action ID (constants defined in Controller),
@@ -1276,18 +1291,6 @@ public class Controller { //XXX public only for debug access to logging code
          */
         public void setEnabled (boolean val) {
             super.setEnabled(val);
-        }
-
-        /**
-         * Generates an action event over the default output window's selected tab and
-         * calls <code>actionPerformed</code> with it.
-         * @param action
-         */
-        public void performAction(SystemAction action) {
-            OutputWindow ow = OutputWindow.findDefault();
-            ActionEvent ae = new ActionEvent(ow, ActionEvent.ACTION_PERFORMED,
-                    "");
-            actionPerformed(ae);
         }
 
     }

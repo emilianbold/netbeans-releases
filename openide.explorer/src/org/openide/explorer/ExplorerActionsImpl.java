@@ -37,8 +37,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.ActionPerformer;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ClipboardEvent;
 import org.openide.util.datatransfer.ClipboardListener;
 import org.openide.util.datatransfer.ExClipboard;
@@ -470,7 +468,7 @@ final class ExplorerActionsImpl {
     }
 
     /** Class which performs copy and cut actions */
-    private class CopyCutActionPerformer extends AbstractAction implements ActionPerformer {
+    private class CopyCutActionPerformer extends AbstractAction {
         /** determine if adapter is used for copy or cut action. */
         private boolean copyCut;
 
@@ -485,8 +483,7 @@ final class ExplorerActionsImpl {
             return super.isEnabled();
         }
 
-        /** Perform copy or cut action. */
-        public void performAction(SystemAction action) {
+        public void actionPerformed(ActionEvent ev) {
             Transferable trans = null;
             Node[] sel = manager.getSelectedNodes();
 
@@ -520,16 +517,10 @@ final class ExplorerActionsImpl {
             }
         }
 
-        /** Invoked when an action occurs.
-         *
-         */
-        public void actionPerformed(ActionEvent e) {
-            performAction(null);
-        }
     }
 
     /** Class which performs delete action */
-    private class DeleteActionPerformer extends AbstractAction implements ActionPerformer, Runnable {
+    private class DeleteActionPerformer extends AbstractAction implements Runnable {
         private boolean confirmDelete;
 
         DeleteActionPerformer(boolean confirmDelete) {
@@ -542,8 +533,7 @@ final class ExplorerActionsImpl {
             return super.isEnabled();
         }
 
-        /** Perform delete action. */
-        public void performAction(SystemAction action) {
+        public void actionPerformed(ActionEvent ev) {
             final Node[] sel = manager.getSelectedNodes();
 
             if ((sel == null) || (sel.length == 0)) {
@@ -618,12 +608,6 @@ final class ExplorerActionsImpl {
             }
         }
 
-        /** Invoked when an action occurs.
-         *
-         */
-        public void actionPerformed(ActionEvent e) {
-            performAction(null);
-        }
     }
 
     /** Class which register changes in manager, and clipboard, coalesces

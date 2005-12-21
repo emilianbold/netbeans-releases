@@ -63,19 +63,15 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Position;
-import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallbackSystemAction;
-import org.openide.util.actions.SystemAction;
 
 /** Explorer view to display items in a list.
 * @author   Ian Formanek, Jan Jancura, Jaroslav Tulach
@@ -190,6 +186,7 @@ public class ListView extends JScrollPane implements Externalizable {
 
         managerListener = new Listener();
         popupSupport = new PopupSupport();
+        list.getActionMap().put("org.openide.actions.PopupAction", popupSupport); // NOI18N
 
         list.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
@@ -475,7 +472,6 @@ public class ListView extends JScrollPane implements Externalizable {
             // bugfix #23974, model doesn't reflect an explorer context change
             // because any listener was not active
             model.setNode(manager.getExploredContext());
-            list.addFocusListener(popupSupport);
             list.addMouseListener(popupSupport);
         }
     }
@@ -494,7 +490,6 @@ public class ListView extends JScrollPane implements Externalizable {
         }
 
         model.removeListDataListener(managerListener);
-        list.removeFocusListener(popupSupport);
         list.removeMouseListener(popupSupport);
     }
 
@@ -596,7 +591,7 @@ public class ListView extends JScrollPane implements Externalizable {
         JPopupMenu popup;
 
         if (contextMenu) {
-            popup = Utilities.actionsToPopup(manager.getExploredContext().getContextActions(), this);
+            popup = Utilities.actionsToPopup(manager.getExploredContext().getActions(true), this);
         } else {
             Action[] actions = NodeOp.findActions(manager.getSelectedNodes());
             popup = Utilities.actionsToPopup(actions, this);
@@ -1038,8 +1033,11 @@ public class ListView extends JScrollPane implements Externalizable {
         // end of navigator
     }
 
-    final class PopupSupport extends MouseUtils.PopupMouseAdapter implements ActionPerformer, Runnable, FocusListener {
+    private final class PopupSupport extends MouseUtils.PopupMouseAdapter implements Action, Runnable {
+        
         CallbackSystemAction csa;
+        
+        public PopupSupport() {}
 
         public void mouseClicked(MouseEvent e) {
             if (MouseUtils.isDoubleClick(e)) {
@@ -1063,7 +1061,8 @@ public class ListView extends JScrollPane implements Externalizable {
             createPopup(e.getX(), e.getY(), contextMenu);
         }
 
-        public void performAction(SystemAction act) {
+        public void actionPerformed(ActionEvent e) {
+            // XXX why later?
             SwingUtilities.invokeLater(this);
         }
 
@@ -1084,36 +1083,25 @@ public class ListView extends JScrollPane implements Externalizable {
             createPopup(p.x, p.y, false);
         }
 
-        public void focusGained(FocusEvent ev) {
-            if (csa == null) {
-                try {
-                    ClassLoader l = (ClassLoader)Lookup.getDefault().lookup (ClassLoader.class);
-                    if (l == null) {
-                        l = getClass ().getClassLoader ();
-                    }
-                    Class popup = Class.forName("org.openide.actions.PopupAction", true, l); // NOI18N
-                    csa = (CallbackSystemAction) CallbackSystemAction.get(popup);
-                } catch (ClassNotFoundException e) {
-                    Error err = new NoClassDefFoundError();
-                    ErrorManager.getDefault().annotate(err, e);
-                    throw err;
-                }
-            }
-
-            csa.setActionPerformer(this);
-
-            //ev.consume();
+        public Object getValue(String key) {
+            return null;
         }
 
-        public void focusLost(FocusEvent ev) {
-            if ((csa != null) && (csa.getActionPerformer() instanceof PopupSupport)) {
-                csa.setActionPerformer(null);
-            }
+        public void putValue(String key, Object value) {}
+
+        public void setEnabled(boolean b) {}
+
+        public boolean isEnabled() {
+            // XXX should maybe use logic in {@link #run}?
+            return true;
         }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {}
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {}
+
     }
 
-    /**
-    */
     private final class Listener implements ListDataListener, ListSelectionListener, PropertyChangeListener,
         VetoableChangeListener {
         Listener() {
