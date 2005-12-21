@@ -105,11 +105,6 @@ public class NbSearchAction extends CancelableWizardAction {
                System.out.println("arr[" + i + "]: " + arr[i]);
             }*/
             
-            SoftwareVersion jseVersionMin = new SoftwareVersion(resolveString(BUNDLE + "JSE.versionMin)"));
-            SoftwareVersion jseVersionMax = new SoftwareVersion(resolveString(BUNDLE + "JSE.versionMax)"));
-            logEvent(this, Log.DBG,"jseVersionMin:'" + resolveString(BUNDLE + "JSE.versionMin)") + "'");
-            logEvent(this, Log.DBG,"jseVersionMax:'" + resolveString(BUNDLE + "JSE.versionMax)") + "'");
-            
             //Look for any profiler installation
             SoftwareObject [] soArr = null;
             //System.out.println("substring:" + nbUID.substring(26,32));
@@ -136,11 +131,8 @@ public class NbSearchAction extends CancelableWizardAction {
                         + " name: " + soArr[j].getName()
                         + " productNumber: " + soArr[j].getProductNumber()
                         + " installLocation: " + soArr[j].getInstallLocation()
-                        + " version:" + version
-                        + " major:" + version.getMajor()
-                        + " version.compareTo(jseVersionMin):" + version.compareTo(jseVersionMin)
-                        + " version.compareTo(jseVersionMax):" + version.compareTo(jseVersionMax));
-                        if ((version.compareTo(jseVersionMin) >= 0) && (version.compareTo(jseVersionMax) <= 0)) {
+                        + " version:" + version);
+                        if (acceptJSEVersion(version)) {
                             nbHomeList.add(soArr[j]);
                         }
                     }
@@ -150,6 +142,19 @@ public class NbSearchAction extends CancelableWizardAction {
         } catch (ServiceException exc) {
             logEvent(this, Log.ERROR, exc);
         }
+    }
+    
+    private boolean acceptJSEVersion (SoftwareVersion version) {
+        if (version.getMajor().equals("8") && version.getMinor().equals("1")) {
+            return true;
+        }
+        if (version.getMajor().equals("9") && version.getMinor().equals("0") && version.getMaintenance().equals("1")) {
+            return true;
+        }
+        if (version.getMajor().equals("9") && version.getMinor().equals("0") && version.getMaintenance().equals("2")) {
+            return true;
+        }
+        return false;
     }
     
     private static void orderList (Vector nbHomeList) {
