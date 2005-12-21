@@ -77,7 +77,6 @@ public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
     }
     
     public void componentClosed() {
-        super.componentClosed();
         editor.componentClosed();
     }
     
@@ -91,7 +90,6 @@ public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
     }
     
     public void componentOpened() {
-        super.componentOpened();
         editor.componentOpened();
     }
     

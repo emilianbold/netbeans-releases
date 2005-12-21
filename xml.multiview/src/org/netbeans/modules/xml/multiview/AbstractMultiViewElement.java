@@ -63,11 +63,9 @@ public abstract class AbstractMultiViewElement implements MultiViewElement, Seri
     }
 
     public void componentOpened() {
-        dObj.getEditorSupport().multiviewComponentOpened();
     }
 
     public void componentClosed() {
-        dObj.getEditorSupport().multiviewComponentClosed();
     }
 
     public org.openide.awt.UndoRedo getUndoRedo() {

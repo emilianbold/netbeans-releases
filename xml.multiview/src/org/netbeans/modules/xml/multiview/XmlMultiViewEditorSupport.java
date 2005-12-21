@@ -70,7 +70,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         EditorCookie.Observable, PrintCookie {
 
     private XmlMultiViewDataObject dObj;
-    private final XmlDocumentListener xmlDocListener = new XmlDocumentListener();
+    private DocumentListener docListener;
     private int xmlMultiViewIndex;
     private TopComponent mvtc;
     private int lastOpenView = 0;
@@ -94,6 +94,38 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
         // Set a MIME type as needed, e.g.:
         setMIMEType("text/xml");   // NOI18N
+        
+        docListener = new DocumentListener() {
+                public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                    doUpdate();
+                }
+
+                public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                    doUpdate();
+                }
+
+                public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                    doUpdate();
+                }
+
+                private void doUpdate() {
+                    if (saveLock == null) {
+                        documentSynchronizer.requestUpdateData();
+                    }
+                }
+            };
+            
+        // the document listener is added when the document is loaded
+        addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())) {
+                    Document document = getDocument();
+                    if (document != null) {
+                        document.addDocumentListener(docListener);
+                    }
+                }
+            }
+        });
     }
 
     /** providing an UndoRedo object for XMLMultiViewElement
@@ -273,6 +305,9 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             TopComponent.getRegistry().removePropertyChangeListener(topComponentsListener);
             topComponentsListener = null;
         }
+        Document document = getDocument();
+        System.out.println("removingListenerFromDocument "+document);
+        if (document!=null) document.removeDocumentListener(docListener);
         super.notifyClosed();
     }
 
@@ -415,52 +450,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
     void setLastOpenView(int index) {
         lastOpenView = index;
-    }
-
-    public void multiviewComponentOpened() {
-        synchronized (xmlDocListener) {
-            Document document = getDocument();
-            if (document == null) {
-                try {
-                    document = openDocument();
-                    document.addDocumentListener(xmlDocListener);
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
-            }
-        }
-    }
-
-    public void multiviewComponentClosed() {
-        if (getOpenedPanes() == null) {
-            synchronized (xmlDocListener) {
-                Document document = getDocument();
-                if (document != null) {
-                    document.removeDocumentListener(xmlDocListener);
-                    document = null;
-                }
-            }
-        }
-    }
-
-    private class XmlDocumentListener implements javax.swing.event.DocumentListener {
-        public void changedUpdate(javax.swing.event.DocumentEvent e) {
-            doUpdate();
-        }
-
-        public void insertUpdate(javax.swing.event.DocumentEvent e) {
-            doUpdate();
-        }
-
-        public void removeUpdate(javax.swing.event.DocumentEvent e) {
-            doUpdate();
-        }
-
-        private void doUpdate() {
-            if (saveLock == null) {
-                documentSynchronizer.requestUpdateData();
-            }
-        }
     }
 
     private class DocumentSynchronizer extends XmlMultiViewDataSynchronizer {
