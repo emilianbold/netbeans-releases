@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -66,8 +66,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
-    
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test" default="true"/>
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     
 </mconfig>

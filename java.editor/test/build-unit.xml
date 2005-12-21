@@ -14,119 +14,39 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="java/editor/test/unit" basedir="." default="all">
     
-    <target name="init">
-        <path id="compiletest.classpath">
-            <!-- editor -->
-            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
-            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
-            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar"/>
-            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-util.jar"/>
-            <pathelement location="${java/editor/lib.dir}/modules/org-netbeans-modules-java-editor-lib.jar" /> 
-            <pathelement location="${java/editor.dir}/modules/org-netbeans-modules-java-editor.jar" />       
-            <pathelement location="../../../editor/build/test/unit/classes" />
+    <!-- Imports default default-compiler and run-unit-test executor. -->
+    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
 
-            <!-- openide -->
-            <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>          
-            <pathelement location="${openide/loaders.dir}/modules/org-openide-loaders.jar" />
-            <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
-
-            <!-- projects -->
-            <pathelement location="${projects/queries.dir}/modules/org-netbeans-modules-queries.jar"/>
-
-            <!-- java -->
-            <pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
-            <pathelement location="${java/javacore.dir}/modules/org-netbeans-modules-javacore.jar"/>  
-            <pathelement location="${java/api.dir}/modules/org-netbeans-api-java.jar"/>
-            <pathelement location="${mdr/jmi.dir}/modules/ext/jmi.jar"/>
-            <pathelement location="${mdr/jmi.dir}/modules/javax-jmi-reflect.jar"/>
-            <pathelement location="${mdr/jmi.dir}/modules/org-netbeans-jmi-javamodel.jar"/>
-
-            <!-- other -->
-            <pathelement path="${xerces.path}"/>
-        </path>
-    
-        <path id="codetest.classpath">
-            <!-- editor -->
-            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
-            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
-            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar"/>
-            <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-util.jar"/>
-            <pathelement location="${java/editor/lib.dir}/modules/org-netbeans-modules-java-editor-lib.jar" /> 
-            <pathelement location="${java/editor.dir}/modules/org-netbeans-modules-java-editor.jar" />       
-            <pathelement location="../../../editor/build/test/unit/classes" />
-
-            <!-- openide -->
-            <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>          
-            <pathelement location="${openide/loaders.dir}/modules/org-openide-loaders.jar" />
-            <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
-            <pathelement location="${openide/modules.dir}/lib/org-openide-modules.jar"/>          
-            <pathelement location="${openide/awt.dir}/modules/org-openide-awt.jar"/>
-            <pathelement location="${openide/options.dir}/modules/org-openide-options.jar"/>
-            <pathelement location="${openide/actions.dir}/modules/org-openide-actions.jar"/>            
-            <pathelement location="${openide/dialogs.dir}/modules/org-openide-dialogs.jar"/>
-            <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar"/>            
-            <pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
-            <pathelement location="${openide/text.dir}/modules/org-openide-text.jar"/>
-            <pathelement location="${openide/windows.dir}/modules/org-openide-windows.jar"/>            
-            <pathelement location="${openide/execution.dir}/modules/org-openide-execution.jar"/>
-            <pathelement location="${openide/execution/deprecated.dir}/modules/org-openide-execution-deprecated.jar"/>
-            <pathelement location="${openide/io.dir}/modules/org-openide-io.jar"/>
-            
-            <!-- core -->
-            <pathelement location="${core/output2.dir}/modules/org-netbeans-core-output2.jar"/>
-
-            <!-- projects -->
-            <pathelement location="${projects/queries.dir}/modules/org-netbeans-modules-queries.jar"/>
-
-            <!-- java -->
-            <pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
-            <pathelement location="${java/api.dir}/modules/org-netbeans-api-java.jar"/>
-            <pathelement location="${java.dir}/modules/org-netbeans-modules-java.jar"/>
-            <pathelement location="${java.dir}/modules/org-netbeans-modules-javacore.jar"/>
-            <pathelement location="${classfile.dir}/modules/org-netbeans-modules-classfile.jar"/>
-            <pathelement location="${clazz.dir}/modules/org-netbeans-modules-clazz.jar"/>
-            <pathelement location="${java/platform.dir}/modules/org-netbeans-modules-java-platform.jar"/>
-            <pathelement location="${mdr/jmi.dir}/modules/ext/jmi.jar"/>
-            <pathelement location="${mdr/jmi.dir}/modules/javax-jmi-reflect.jar"/>
-            <pathelement location="${mdr/jmi.dir}/modules/org-netbeans-jmi-javamodel.jar"/>
-
-            <!-- other -->
-            <pathelement path="${xerces.path}"/>
-        </path>
-    
-    </target>
-    
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target name="unit-compiler" depends="init">
-        <buildTests srcDir="unit/src" compileExcludes="**/data/**">
-            <classpath refid="compiletest.classpath"/>
-        </buildTests>
+    <!-- Pre-build openide/text tests -->
+    <target name="pre-build">
+        <!--  Cannot use
+              <ant dir="../../openide/text/test" target="buildtests" inheritall="false"/>
+              because inheritAll="false" doesn't work for all properties. -->
+        <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
+            <arg value="-f"/>
+            <arg value="../../../editor/test/build.xml"/>
+            <arg value="-Dxtest.testtype=${xtest.testtype}"/>
+            <arg value="-Dxtest.attribs=${xtest.attribs}"/>
+            <arg value="buildtests"/>
+        </java>
     </target>
-
+    
+    <target name="default-compiler" depends="pre-build,xtest-unit.default-compiler">
+    </target>
+    
     <!-- ========= -->
     <!-- Executors -->
     <!-- ========= -->
     
-    <!-- This target is executed from test-executor in newly created Project -->
-    <!-- Name of this task is defined in cfg-xxx.xml -->
-    <!-- This target executes tests inside IDE -->
-    <target name="runidetest" depends="init">
-        <executeTests  pluginName="ide">
-            <classpath refid="codetest.classpath"/>
+    <!-- Override if you need something special. 
+    <target name="run-unit-test" depends="init-cp">
+        <executeTests pluginname="jvm">
+            <classpath refid="test.unit.run.cp"/>
         </executeTests>
     </target>
-    
-    <!-- This target is executed from test-executor in newly created Project -->
-    <!-- Name of this task is defined in cfg-xxx.xml -->
-    <!-- This target executes standalone tests -->
-    <target name="runcodetest" depends="init">
-        <executeTests  pluginName="jvm">
-            <classpath refid="codetest.classpath"/>
-        </executeTests>
-    </target>
-
-    
+    -->
 </project>
