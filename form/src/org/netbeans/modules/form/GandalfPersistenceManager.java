@@ -694,7 +694,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (visualContainer != null)
             visualContainer.setOldLayoutSupport(true);
 
-        int convIndex = LAYOUT_FROM_CODE;
+        int convIndex = LAYOUT_UNKNOWN;
         if (visualContainer != null && layoutNode != null) {
             // load container layout properties saved in NB 3.1 format;
             // these properties are loaded before subcomponents
@@ -730,6 +730,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (visualContainer != null && layoutCodeNode != null) {
             // load complete layout code (both for container and components);
             // this container doesn't use NB 3.1 format for saving layout data
+            convIndex = LAYOUT_FROM_CODE;
             loadLayoutCode(layoutCodeNode);
         }
 
@@ -767,6 +768,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     layoutEx = ex;
                 }
             } else if (layoutNode == null) { // Issue 63394, 68753: Bean form that is container
+                                             // Issue 70369: Container saved with unknown layout
                 try {
                     layoutInitialized = layoutSupport.prepareLayoutDelegate(false, true);
                     if (!layoutInitialized) { // not known to the old support
@@ -784,8 +786,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                 new LayoutComponent(visualContainer.getId(), true, w, h));
                             layoutSupport = null;
                             newLayout = true;
-                            layoutInitialized = true;
                         }
+                        else {
+                            layoutSupport.setUnknownLayoutDelegate(true);
+                            System.err.println("[WARNING] Unknown layout in "+createLoadingErrorMessage((String)null, node) // NOI18N
+                                +" ("+component.getBeanClass().getName()+")"); // NOI18N
+                        }
+                        layoutInitialized = true;
                     }
                 } catch (Exception ex) {
                     layoutEx = ex;
@@ -793,7 +800,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
 
             if (!layoutInitialized) {
-                if (layoutEx != null) { // no LayoutSupportDelegate found
+                if (layoutEx != null) { // layout initialization failed
                     org.w3c.dom.Node errNode;
                     if (layoutNode != null)
                         errNode = layoutNode;
@@ -808,7 +815,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     ErrorManager.getDefault().annotate(layoutEx, msg);
                     nonfatalErrors.add(layoutEx);
                 }
-                else { // layout initialization failed
+                else { // no LayoutSupportDelegate found
                     org.w3c.dom.Node errNode;
                     if (layoutNode != null)
                         errNode = layoutNode;
@@ -5328,6 +5335,20 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (path.isEmpty())
             return errMsg;
 
+        String link = null;
+        StringBuffer pathBuf = new StringBuffer();
+        for (int i=path.size()-1; i >= 0; i--) {
+            pathBuf.append(path.get(i));
+            if (i > 0) {
+                if (link == null)
+                    link = FormUtils.getBundleString("CTL_PathLink"); // NOI18N
+                pathBuf.append(link);
+            }
+        }
+
+        if (errMsg == null)
+            return pathBuf.toString();
+
         boolean property = XML_PROPERTY.equals(nodeName)
                            || XML_SYNTHETIC_PROPERTY.equals(nodeName)
                            || XML_AUX_VALUE.equals(nodeName);
@@ -5343,17 +5364,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
         else
             format = property ? "FMT_ERR_LoadingLayoutConstraintsProperty" : // NOI18N
                                 "FMT_ERR_LoadingLayoutConstraints"; // NOI18N
-
-        String link = null;
-        StringBuffer pathBuf = new StringBuffer();
-        for (int i=path.size()-1; i >= 0; i--) {
-            pathBuf.append(path.get(i));
-            if (i > 0) {
-                if (link == null)
-                    link = FormUtils.getBundleString("CTL_PathLink"); // NOI18N
-                pathBuf.append(link);
-            }
-        }
 
         StringBuffer buf = new StringBuffer();
         buf.append(FormUtils.getFormattedBundleString(

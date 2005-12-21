@@ -788,11 +788,8 @@ public class MetaComponentCreator {
             if (!knownLayout) {
                 if (layoutEx == null) {
                     // no LayoutSupportDelegate found for the container
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                            FormUtils.getBundleString(
-                                        "MSG_ERR_NoLayoutSupportFound2"), // NOI18N
-                        NotifyDescriptor.WARNING_MESSAGE));
+                    System.err.println("[WARNING] No layout support found for "+compClass.getName()); // NOI18N
+                    System.err.println("          Just a limited basic support will be used."); // NOI18N
                 }
                 else { // layout support initialization failed
                     ErrorManager em = ErrorManager.getDefault();
