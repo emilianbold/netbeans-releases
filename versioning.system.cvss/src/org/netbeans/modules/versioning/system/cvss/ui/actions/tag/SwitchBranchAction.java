@@ -18,6 +18,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.add.AddExecutor;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
@@ -103,58 +104,83 @@ public class SwitchBranchAction extends AbstractSystemAction {
         List newFolders = new ArrayList();
         List others = new ArrayList();
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        
-        File [] roots = context.getRootFiles();
-        for (int i = 0; i < roots.length; i++) {
-            File root = roots[i];
-            // FIXME this check fails on workdir root, it's incorectly recognides as locally new
-            // console: cvs [add aborted]: there is no version here; do 'cvs checkout' first
-            // see #64103
-            if (root.isDirectory() && cache.getStatus(root).getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-                newFolders.add(root);
-            } else {
-                others.add(root);
-            }
-        }
 
-        // Special treatment for Locally New folders. Ww cannot switch them to branch with the Update command.
-        // Workaround: add the folder to CVS, then manually create CVS/Tag inside
         ExecutorGroup group = new ExecutorGroup(getRunningName(nodes));
-        if (newFolders.size() > 0) {
-            AddCommand acmd = new AddCommand();
-            final File [] files = (File[]) newFolders.toArray(new File[newFolders.size()]);
-            acmd.setFiles(files);
-            group.addExecutors(AddExecutor.splitCommand(acmd, CvsVersioningSystem.getInstance(), null));
-            Runnable action = new Runnable() {
-                public void run() {
-                    if (settings.isSwitchToTrunk()) {
-                        setSticky(files, null);
-                    } else {
-                        setSticky(files, settings.getBranchName());
-                    }
-                }
-            };
-            group.addBarrier(action);
-        }
-
-        if (others.size() > 0) {
+        File [][] flatRecursive = Utils.splitFlatOthers(context.getRootFiles());
+        if (flatRecursive[0].length > 0) {
+            File[] flat = flatRecursive[0];
             UpdateCommand cmd = new UpdateCommand();
             if (settings.isSwitchToTrunk()) {
                 cmd.setResetStickyOnes(true);
             } else {
                 cmd.setUpdateByRevision(settings.getBranchName());
             }
-            
+
             cmd.setBuildDirectories(true);
             cmd.setPruneDirectories(true);
-            cmd.setFiles((File[]) others.toArray(new File[others.size()]));
-            
+            cmd.setRecursive(false);
+            cmd.setFiles(flat);
+
             GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
             if (context.getExclusions().size() > 0) {
                 options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
             }
-            
+
             group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options));
+
+        }
+        if (flatRecursive[1].length > 0) {
+            File [] roots = flatRecursive[1];
+            for (int i = 0; i < roots.length; i++) {
+                File root = roots[i];
+                // FIXME this check fails on workdir root, it's incorectly recognides as locally new
+                // console: cvs [add aborted]: there is no version here; do 'cvs checkout' first
+                // see #64103
+                if (root.isDirectory() && cache.getStatus(root).getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+                    newFolders.add(root);
+                } else {
+                    others.add(root);
+                }
+            }
+
+            // Special treatment for Locally New folders. Ww cannot switch them to branch with the Update command.
+            // Workaround: add the folder to CVS, then manually create CVS/Tag inside
+            if (newFolders.size() > 0) {
+                AddCommand acmd = new AddCommand();
+                final File [] files = (File[]) newFolders.toArray(new File[newFolders.size()]);
+                acmd.setFiles(files);
+                group.addExecutors(AddExecutor.splitCommand(acmd, CvsVersioningSystem.getInstance(), null));
+                Runnable action = new Runnable() {
+                    public void run() {
+                        if (settings.isSwitchToTrunk()) {
+                            setSticky(files, null);
+                        } else {
+                            setSticky(files, settings.getBranchName());
+                        }
+                    }
+                };
+                group.addBarrier(action);
+            }
+
+            if (others.size() > 0) {
+                UpdateCommand cmd = new UpdateCommand();
+                if (settings.isSwitchToTrunk()) {
+                    cmd.setResetStickyOnes(true);
+                } else {
+                    cmd.setUpdateByRevision(settings.getBranchName());
+                }
+
+                cmd.setBuildDirectories(true);
+                cmd.setPruneDirectories(true);
+                cmd.setFiles((File[]) others.toArray(new File[others.size()]));
+
+                GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
+                if (context.getExclusions().size() > 0) {
+                    options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
+                }
+
+                group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options));
+            }
         }
         group.execute();
     }
