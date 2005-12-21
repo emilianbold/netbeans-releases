@@ -25,6 +25,7 @@ import org.netbeans.modules.projectimport.ProjectImporterException;
 import org.netbeans.modules.projectimport.eclipse.ProjectFactory;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Iterates on the sequence of Eclipse wizard panels.
@@ -61,8 +62,8 @@ final class EclipseWizardIterator implements
         } else {
             Set prjs = new HashSet();
             try {
-                prjs.add(ProjectFactory.getInstance().load(
-                        new File(workspacePanel.getProjectDir())));
+                File projectDirF = FileUtil.normalizeFile(new File(workspacePanel.getProjectDir()));
+                prjs.add(ProjectFactory.getInstance().load(projectDirF));
             } catch (ProjectImporterException e) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR,
                         "ProjectImporterException catched: " + e); // NOI18N

@@ -173,7 +173,7 @@ final class Importer {
         nOfProcessed++;
         progressInfo = NbBundle.getMessage(Importer.class,
                 "MSG_Progress_ProcessingProject", eclProject.getName()); // NOI18N
-        File nbProjectDir = new File(destination + "/" + eclProject.getName());
+        File nbProjectDir = FileUtil.normalizeFile(new File(destination + "/" + eclProject.getName())); // NOI18N
         Map eclRoots = eclProject.getAllSourceRoots();
         File[] testDirs = new File[0];
         File[] srcFiles = new File[eclRoots.size()];
