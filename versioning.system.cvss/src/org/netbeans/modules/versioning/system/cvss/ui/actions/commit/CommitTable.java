@@ -54,7 +54,8 @@ class CommitTable implements AncestorListener, TableModelListener {
         table.setDefaultEditor(CommitOptions.class, new CommitOptionsCellEditor());
         table.getTableHeader().setReorderingAllowed(true);
         sorter.setTableHeader(table.getTableHeader());
-        table.setRowHeight(table.getRowHeight() * 6 / 5);
+        int height = new JLabel("FONTSIZE").getPreferredSize().height * 6 / 5;  // NOI18N
+        table.setRowHeight(height);
         table.addAncestorListener(this);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         label.setLabelFor(table);
