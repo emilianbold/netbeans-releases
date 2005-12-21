@@ -26,32 +26,30 @@ import org.openide.util.Lookup;
  * @author Jan Jancura
  */
 public final class FontAndColorsPanelController extends OptionsPanelController {
-
-    private FontAndColorsPanel fontAndColorsPanel = new FontAndColorsPanel ();
     
     
     public void update () {
-        fontAndColorsPanel.update ();
+        getFontAndColorsPanel ().update ();
     }
     
     public void applyChanges () {
-        fontAndColorsPanel.applyChanges ();
+        getFontAndColorsPanel ().applyChanges ();
     }
     
     public void cancel () {
-        fontAndColorsPanel.cancel ();
+        getFontAndColorsPanel ().cancel ();
     }
     
     public boolean isValid () {
-        return fontAndColorsPanel.dataValid ();
+        return getFontAndColorsPanel ().dataValid ();
     }
     
     public boolean isChanged () {
-        return fontAndColorsPanel.isChanged ();
+        return getFontAndColorsPanel ().isChanged ();
     }
     
     public JComponent getComponent (Lookup masterLookup) {
-        return fontAndColorsPanel;
+        return getFontAndColorsPanel ();
     }
     
     public HelpCtx getHelpCtx () {
@@ -59,10 +57,18 @@ public final class FontAndColorsPanelController extends OptionsPanelController {
     }
 
     public void addPropertyChangeListener (PropertyChangeListener l) {
-        fontAndColorsPanel.addPropertyChangeListener (l);
+        getFontAndColorsPanel ().addPropertyChangeListener (l);
     }
 
     public void removePropertyChangeListener (PropertyChangeListener l) {
-        fontAndColorsPanel.removePropertyChangeListener (l);
+        getFontAndColorsPanel ().removePropertyChangeListener (l);
+    }
+
+    private FontAndColorsPanel fontAndColorsPanel = new FontAndColorsPanel ();
+    
+    private FontAndColorsPanel getFontAndColorsPanel () {
+        if (fontAndColorsPanel == null)
+            fontAndColorsPanel = new FontAndColorsPanel ();
+        return fontAndColorsPanel;
     }
 }

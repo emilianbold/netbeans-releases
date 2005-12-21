@@ -27,28 +27,26 @@ import org.openide.util.Lookup;
  * @author Jan Jancura
  */
 public final class IndentationPanelController extends OptionsPanelController {
-
-    private IndentationPanel indentationPanel = new IndentationPanel ();
     
     
     public void update () {
-        indentationPanel.update ();
+        getIndentationPanel ().update ();
     }
     
     public void applyChanges () {
-        indentationPanel.applyChanges ();
+        getIndentationPanel ().applyChanges ();
     }
     
     public void cancel () {
-        indentationPanel.cancel ();
+        getIndentationPanel ().cancel ();
     }
     
     public boolean isValid () {
-        return indentationPanel.dataValid ();
+        return getIndentationPanel ().dataValid ();
     }
     
     public boolean isChanged () {
-        return indentationPanel.isChanged ();
+        return getIndentationPanel ().isChanged ();
     }
     
     public HelpCtx getHelpCtx () {
@@ -56,14 +54,22 @@ public final class IndentationPanelController extends OptionsPanelController {
     }
     
     public JComponent getComponent (Lookup masterLookup) {
-        return indentationPanel;
+        return getIndentationPanel ();
     }
 
     public void addPropertyChangeListener (PropertyChangeListener l) {
-        indentationPanel.addPropertyChangeListener (l);
+        getIndentationPanel ().addPropertyChangeListener (l);
     }
 
     public void removePropertyChangeListener (PropertyChangeListener l) {
-        indentationPanel.removePropertyChangeListener (l);
+        getIndentationPanel ().removePropertyChangeListener (l);
+    }
+
+    private IndentationPanel indentationPanel = new IndentationPanel ();
+    
+    private IndentationPanel getIndentationPanel () {
+        if (indentationPanel == null)
+            indentationPanel = new IndentationPanel ();
+        return indentationPanel;
     }
 }

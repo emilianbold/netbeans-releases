@@ -27,47 +27,53 @@ import org.openide.util.Lookup;
  */
 public final class AdvancedPanelController extends OptionsPanelController {
 
-    private AdvancedPanel advancedPanel = new AdvancedPanel ();
-
         
     public void update () {
-        advancedPanel.update ();
+        getAdvancedPanel ().update ();
     }
     
     public void applyChanges () {
-        advancedPanel.applyChanges ();
+        getAdvancedPanel ().applyChanges ();
     }
     
     public void cancel () {
-        advancedPanel.cancel ();
+        getAdvancedPanel ().cancel ();
     }
     
     public boolean isValid () {
-        return advancedPanel.dataValid ();
+        return getAdvancedPanel ().dataValid ();
     }
     
     public boolean isChanged () {
-        return advancedPanel.isChanged ();
+        return getAdvancedPanel ().isChanged ();
     }
         
     public Lookup getLookup () {
-        return advancedPanel.getLookup ();
+        return getAdvancedPanel ().getLookup ();
     }
     
     public JComponent getComponent (Lookup masterLookup) {
-        advancedPanel.setLoookup (masterLookup);
-        return advancedPanel;
+        getAdvancedPanel ().setLoookup (masterLookup);
+        return getAdvancedPanel ();
     }
     
     public HelpCtx getHelpCtx () {
-        return advancedPanel.getHelpCtx ();
+        return getAdvancedPanel ().getHelpCtx ();
     }
     
     public void addPropertyChangeListener (PropertyChangeListener l) {
-        advancedPanel.addPropertyChangeListener (l);
+        getAdvancedPanel ().addPropertyChangeListener (l);
     }
 
     public void removePropertyChangeListener (PropertyChangeListener l) {
-        advancedPanel.removePropertyChangeListener (l);
+        getAdvancedPanel ().removePropertyChangeListener (l);
+    }
+
+    private AdvancedPanel advancedPanel = new AdvancedPanel ();
+    
+    private AdvancedPanel getAdvancedPanel () {
+        if (advancedPanel == null)
+            advancedPanel = new AdvancedPanel ();
+        return advancedPanel;
     }
 }

@@ -27,27 +27,25 @@ import org.openide.util.Lookup;
  */
 public final class GeneralEditorPanelController extends OptionsPanelController {
 
-    private GeneralEditorPanel generalEditorPanel = new GeneralEditorPanel ();
-    
     
     public void update () {
-        generalEditorPanel.update ();
+        getGeneralEditorPanel ().update ();
     }
     
     public void applyChanges () {
-        generalEditorPanel.applyChanges ();
+        getGeneralEditorPanel ().applyChanges ();
     }
     
     public void cancel () {
-        generalEditorPanel.cancel ();
+        getGeneralEditorPanel ().cancel ();
     }
     
     public boolean isValid () {
-        return generalEditorPanel.dataValid ();
+        return getGeneralEditorPanel ().dataValid ();
     }
     
     public boolean isChanged () {
-        return generalEditorPanel.isChanged ();
+        return getGeneralEditorPanel ().isChanged ();
     }
     
     public HelpCtx getHelpCtx () {
@@ -55,14 +53,24 @@ public final class GeneralEditorPanelController extends OptionsPanelController {
     }
     
     public JComponent getComponent (Lookup masterLookup) {
-        return generalEditorPanel;
+        return getGeneralEditorPanel ();
     }
 
     public void addPropertyChangeListener (PropertyChangeListener l) {
-        generalEditorPanel.addPropertyChangeListener (l);
+        getGeneralEditorPanel ().addPropertyChangeListener (l);
     }
 
     public void removePropertyChangeListener (PropertyChangeListener l) {
-        generalEditorPanel.removePropertyChangeListener (l);
+        getGeneralEditorPanel ().removePropertyChangeListener (l);
+    }
+    
+    
+    private GeneralEditorPanel generalEditorPanel = new GeneralEditorPanel ();
+    
+    private GeneralEditorPanel getGeneralEditorPanel () {
+        if (generalEditorPanel == null)
+            generalEditorPanel = new GeneralEditorPanel ();
+        return generalEditorPanel;
     }
 }
+
