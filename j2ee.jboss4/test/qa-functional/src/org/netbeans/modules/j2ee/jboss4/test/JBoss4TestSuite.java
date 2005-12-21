@@ -138,6 +138,8 @@ public class JBoss4TestSuite extends NbTestCase {
             ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
             inst.start(ui);
             
+            sleep();
+            
             if(!inst.isReallyRunning())
                 throw new Exception("JBoss4 server start failed");
         } catch(Exception e) {
@@ -154,6 +156,8 @@ public class JBoss4TestSuite extends NbTestCase {
             
             ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
             inst.startDebug(ui);
+            
+            sleep();
             
             if(!inst.isReallyRunning())
                 throw new Exception("JBoss4 server start debug failed");
@@ -175,6 +179,8 @@ public class JBoss4TestSuite extends NbTestCase {
             ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
             inst.stop(ui);
             
+            sleep();
+            
             if(inst.isReallyRunning())
                 throw new Exception("JBoss4 server stop failed");
         } catch(Exception e) {
@@ -194,6 +200,8 @@ public class JBoss4TestSuite extends NbTestCase {
             
             ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
             inst.restart(ui);
+            
+            sleep();
             
             if(!inst.isReallyRunning())
                 throw new Exception("JBoss4 server stop failed");
