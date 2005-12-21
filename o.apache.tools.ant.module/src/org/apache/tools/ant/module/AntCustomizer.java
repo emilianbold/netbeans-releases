@@ -13,10 +13,6 @@
 
 package org.apache.tools.ant.module;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -24,142 +20,44 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.Properties;
-import javax.swing.AbstractButton;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.border.TitledBorder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor.Message;
-import org.openide.awt.Mnemonics;
+import org.openide.NotifyDescriptor;
 import org.openide.execution.NbClassPath;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.NbBundle;
 
 /**
  * Implementation of one panel in Options Dialog.
- *
- * @author Jan Jancura
+ * @author Jan Jancura, Jesse Glick
  */
-public final class AntCustomizer extends JPanel implements 
-ActionListener {
-
-    private JTextField      tfAntHome = new JTextField ();
-    private JButton         bAntHome = new JButton ();
-    private JCheckBox       cbSaveFiles = new JCheckBox ();
-    private JCheckBox       cbReuseOutput = new JCheckBox ();
-    private JCheckBox       cbAlwaysShowOutput = new JCheckBox();
-    private JComboBox       cbVerbosity = new JComboBox ();
-    private JButton         bProperties = new JButton ();
-    private JButton         bClasspath = new JButton ();
-    protected JLabel        lAntVersion = new JLabel ();
+public class AntCustomizer extends JPanel implements ActionListener {
     
     private NbClassPath     classpath;
     private Properties      properties;
     private boolean         changed = false;
     private boolean         listen = false;
     private File            originalAntHome;
-    
-    
-    public AntCustomizer () {
-        tfAntHome.setColumns (30);
-        loc (bAntHome, "Ant_Home_Button");
+
+    public AntCustomizer() {
+        initComponents();
         bAntHome.addActionListener (this);
-        loc (cbSaveFiles, "Save_Files");
-        cbSaveFiles.setBackground (Color.white);
-        cbReuseOutput.setBackground (Color.white);
-        loc (cbReuseOutput, "Reuse_Output");
-        loc(cbAlwaysShowOutput, "Always_Show_Output");
-        cbAlwaysShowOutput.setBackground(Color.white);
+        ((DefaultComboBoxModel) cbVerbosity.getModel()).removeAllElements(); // just have prototype for form editor
         cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_warn"));
         cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_info"));
         cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_verbose"));
         cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_debug"));
-        loc (bProperties, "Properties_Button");
         bProperties.addActionListener (this);
-        loc (bClasspath, "Classpath_Button");
         bClasspath.addActionListener (this);
         cbSaveFiles.addActionListener (this);
         cbReuseOutput.addActionListener (this);
         cbAlwaysShowOutput.addActionListener (this);
         cbVerbosity.addActionListener (this);
-        
-        FormLayout layout = new FormLayout (
-            "p:g", // cols
-            "p, 3dlu, p, 3dlu, p"
-        );      // rows
-        PanelBuilder builder = new PanelBuilder (layout, this);
-        CellConstraints cc = new CellConstraints ();
-        CellConstraints lc = new CellConstraints ();
-
-            FormLayout layout1 = new FormLayout (
-                "p, 5dlu, p:g, 5dlu, p", // cols
-                "p, 5dlu, p, 5dlu, p, 5dlu, p, 5dlu, p, 5dlu, p"
-            );      // rows
-            PanelBuilder builder1 = new PanelBuilder (layout1);
-            builder1.addLabel ( loc ("Ant_Home"),       lc.xy (1, 1), 
-                                tfAntHome,              cc.xy (3, 1));
-            builder1.add (      bAntHome,               cc.xy (5, 1));
-            builder1.add (      lAntVersion,            lc.xyw (3, 3, 3));
-            builder1.add (      cbSaveFiles,            cc.xy (3, 5));
-            builder1.add (      cbReuseOutput,          cc.xy (3, 7));
-            builder1.add (      cbAlwaysShowOutput,     cc.xy (3, 9));
-            builder1.addLabel ( loc ("Verbosity"),      lc.xy (1, 11), 
-                                cbVerbosity,            cc.xy (3, 11, "l, d"));   
-            builder1.getPanel ().setBackground (Color.white);
-            //setBorder (new TitledBorder (loc ("Ant_Settings")));
-        builder.add (builder1.getPanel (),              cc.xy (1, 1));
-        
-            layout1 = new FormLayout (
-                "50dlu:g, 5dlu, p", // cols
-                "p"
-            );      // rows
-            builder1 = new PanelBuilder (layout1);
-            builder1.addLabel ("<html>" + loc ("Properties_Text_Area"), 
-                                                        cc.xy (1, 1));
-            builder1.add (bProperties,                  cc.xy (3, 1));
-            builder1.getPanel ().setBackground (Color.white);
-            builder1.getPanel ().setBorder 
-                (new TitledBorder (loc ("Properties_Panel")));
-        builder.add (builder1.getPanel (),              cc.xy (1, 3));
-        
-            layout1 = new FormLayout (
-                "50dlu:g, 5dlu, p", // cols
-                "p"
-            );      // rows
-            builder1 = new PanelBuilder (layout1);
-            builder1.addLabel ("<html>" + loc ("Classpath_Text_Area"), 
-                                                        cc.xy (1, 1));
-            builder1.add (bClasspath,                   cc.xy (3, 1));
-            builder1.getPanel ().setBackground (Color.white);
-            builder1.getPanel ().setBorder 
-                (new TitledBorder (loc ("Classpath_Panel")));
-        builder.add (builder1.getPanel (),              cc.xy (1, 5));
-    }
-    
-    private static String loc (String key) {
-        return NbBundle.getMessage (AntCustomizer.class, key);
-    }
-    
-    private static void loc (Component c, String key) {
-        if (c instanceof AbstractButton)
-            Mnemonics.setLocalizedText (
-                (AbstractButton) c, 
-                loc (key)
-            );
-        else
-            Mnemonics.setLocalizedText (
-                (JLabel) c, 
-                loc (key)
-            );
     }
     
     void update () {
@@ -237,17 +135,14 @@ ActionListener {
             chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
             int r = chooser.showDialog (
                 SwingUtilities.getWindowAncestor (this),
-                loc ("Select_Directory")
+                NbBundle.getMessage(AntCustomizer.class, "Select_Directory")
             );
             if (r == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile ();
                 if (!new File (new File (file, "lib"), "ant.jar").isFile ()) {
-                    DialogDisplayer.getDefault ().notify (new Message (
-                        MessageFormat.format (
-                            loc ("Not_a_ant_home"),
-                            new Object[] {file}
-                        ),
-                        Message.WARNING_MESSAGE
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(AntCustomizer.class, "Not_a_ant_home", file),
+                        NotifyDescriptor.Message.WARNING_MESSAGE
                     ));
                     return;
                 }
@@ -265,11 +160,11 @@ ActionListener {
             Component customEditor = editor.getCustomEditor ();
             DialogDescriptor dd = new DialogDescriptor (
                 customEditor,
-                loc ("Classpath_Editor_Title")
+                NbBundle.getMessage(AntCustomizer.class, "Classpath_Editor_Title")
             );
             Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
             dialog.setVisible (true);
-            if (dd.getValue () == dd.OK_OPTION) {
+            if (dd.getValue () == NotifyDescriptor.OK_OPTION) {
                 classpath = (NbClassPath) editor.getValue ();
                 changed = true;
             }
@@ -281,11 +176,11 @@ ActionListener {
             Component customEditor = editor.getCustomEditor ();
             DialogDescriptor dd = new DialogDescriptor (
                 customEditor,
-                loc ("Properties_Editor_Title")
+                NbBundle.getMessage(AntCustomizer.class, "Properties_Editor_Title")
             );
             Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
             dialog.setVisible (true);
-            if (dd.getValue () == dd.OK_OPTION) {
+            if (dd.getValue () == NotifyDescriptor.OK_OPTION) {
                 if (customEditor instanceof EnhancedCustomPropertyEditor)
                     properties = (Properties) ((EnhancedCustomPropertyEditor) customEditor).getPropertyValue ();
                 else
@@ -294,4 +189,178 @@ ActionListener {
             }
         }
     }
+    
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        javax.swing.JLabel antHomeLabel;
+        javax.swing.JLabel classpathLabel;
+        javax.swing.JPanel classpathPanel;
+        javax.swing.JLabel propertiesLabel;
+        javax.swing.JPanel propertiesPanel;
+        javax.swing.JLabel verbosityLabel;
+
+        antHomeLabel = new javax.swing.JLabel();
+        tfAntHome = new javax.swing.JTextField();
+        bAntHome = new javax.swing.JButton();
+        lAntVersion = new javax.swing.JLabel();
+        cbSaveFiles = new javax.swing.JCheckBox();
+        cbReuseOutput = new javax.swing.JCheckBox();
+        cbAlwaysShowOutput = new javax.swing.JCheckBox();
+        cbVerbosity = new javax.swing.JComboBox();
+        verbosityLabel = new javax.swing.JLabel();
+        propertiesPanel = new javax.swing.JPanel();
+        propertiesLabel = new javax.swing.JLabel();
+        bProperties = new javax.swing.JButton();
+        classpathPanel = new javax.swing.JPanel();
+        classpathLabel = new javax.swing.JLabel();
+        bClasspath = new javax.swing.JButton();
+
+        setBackground(java.awt.Color.white);
+        antHomeLabel.setLabelFor(tfAntHome);
+        org.openide.awt.Mnemonics.setLocalizedText(antHomeLabel, NbBundle.getMessage(AntCustomizer.class, "Ant_Home"));
+
+        org.openide.awt.Mnemonics.setLocalizedText(bAntHome, NbBundle.getMessage(AntCustomizer.class, "Ant_Home_Button"));
+
+        lAntVersion.setBackground(java.awt.Color.white);
+        org.openide.awt.Mnemonics.setLocalizedText(lAntVersion, "<Ant version here...>");
+
+        cbSaveFiles.setBackground(java.awt.Color.white);
+        org.openide.awt.Mnemonics.setLocalizedText(cbSaveFiles, NbBundle.getMessage(AntCustomizer.class, "Save_Files"));
+        cbSaveFiles.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cbSaveFiles.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        cbReuseOutput.setBackground(java.awt.Color.white);
+        org.openide.awt.Mnemonics.setLocalizedText(cbReuseOutput, NbBundle.getMessage(AntCustomizer.class, "Reuse_Output"));
+        cbReuseOutput.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cbReuseOutput.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        cbAlwaysShowOutput.setBackground(java.awt.Color.white);
+        org.openide.awt.Mnemonics.setLocalizedText(cbAlwaysShowOutput, NbBundle.getMessage(AntCustomizer.class, "Always_Show_Output"));
+        cbAlwaysShowOutput.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cbAlwaysShowOutput.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        cbVerbosity.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Normal" }));
+
+        verbosityLabel.setLabelFor(cbVerbosity);
+        org.openide.awt.Mnemonics.setLocalizedText(verbosityLabel, NbBundle.getMessage(AntCustomizer.class, "Verbosity"));
+
+        propertiesPanel.setBackground(java.awt.Color.white);
+        propertiesPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(NbBundle.getMessage(AntCustomizer.class, "Properties_Panel")));
+        org.openide.awt.Mnemonics.setLocalizedText(propertiesLabel, NbBundle.getMessage(AntCustomizer.class, "Properties_Text_Area"));
+
+        org.openide.awt.Mnemonics.setLocalizedText(bProperties, NbBundle.getMessage(AntCustomizer.class, "Properties_Button"));
+
+        org.jdesktop.layout.GroupLayout propertiesPanelLayout = new org.jdesktop.layout.GroupLayout(propertiesPanel);
+        propertiesPanel.setLayout(propertiesPanelLayout);
+        propertiesPanelLayout.setHorizontalGroup(
+            propertiesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(propertiesPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(propertiesLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 25, Short.MAX_VALUE)
+                .add(bProperties)
+                .addContainerGap())
+        );
+        propertiesPanelLayout.setVerticalGroup(
+            propertiesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(propertiesPanelLayout.createSequentialGroup()
+                .add(propertiesPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(propertiesLabel)
+                    .add(bProperties))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        classpathPanel.setBackground(java.awt.Color.white);
+        classpathPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(NbBundle.getMessage(AntCustomizer.class, "Classpath_Panel")));
+        org.openide.awt.Mnemonics.setLocalizedText(classpathLabel, NbBundle.getMessage(AntCustomizer.class, "Classpath_Text_Area"));
+
+        org.openide.awt.Mnemonics.setLocalizedText(bClasspath, NbBundle.getMessage(AntCustomizer.class, "Classpath_Button"));
+
+        org.jdesktop.layout.GroupLayout classpathPanelLayout = new org.jdesktop.layout.GroupLayout(classpathPanel);
+        classpathPanel.setLayout(classpathPanelLayout);
+        classpathPanelLayout.setHorizontalGroup(
+            classpathPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(classpathPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(classpathLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(bClasspath)
+                .addContainerGap())
+        );
+        classpathPanelLayout.setVerticalGroup(
+            classpathPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.BASELINE, classpathLabel)
+            .add(org.jdesktop.layout.GroupLayout.BASELINE, bClasspath)
+        );
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(propertiesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(antHomeLabel)
+                    .add(verbosityLabel))
+                .add(16, 16, 16)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(cbAlwaysShowOutput)
+                        .addContainerGap())
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(lAntVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                        .add(layout.createSequentialGroup()
+                            .add(cbVerbosity, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .addContainerGap())
+                        .add(layout.createSequentialGroup()
+                            .add(cbReuseOutput)
+                            .addContainerGap())
+                        .add(layout.createSequentialGroup()
+                            .add(cbSaveFiles)
+                            .addContainerGap())
+                        .add(layout.createSequentialGroup()
+                            .add(tfAntHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(bAntHome)))))
+            .add(classpathPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE, false)
+                    .add(antHomeLabel)
+                    .add(bAntHome)
+                    .add(tfAntHome, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(lAntVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbSaveFiles)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbReuseOutput)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbAlwaysShowOutput)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(cbVerbosity, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(verbosityLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(propertiesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(classpathPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 59, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+    }// </editor-fold>//GEN-END:initComponents
+        
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton bAntHome;
+    private javax.swing.JButton bClasspath;
+    private javax.swing.JButton bProperties;
+    private javax.swing.JCheckBox cbAlwaysShowOutput;
+    private javax.swing.JCheckBox cbReuseOutput;
+    private javax.swing.JCheckBox cbSaveFiles;
+    private javax.swing.JComboBox cbVerbosity;
+    private javax.swing.JLabel lAntVersion;
+    private javax.swing.JTextField tfAntHome;
+    // End of variables declaration//GEN-END:variables
+    
 }
