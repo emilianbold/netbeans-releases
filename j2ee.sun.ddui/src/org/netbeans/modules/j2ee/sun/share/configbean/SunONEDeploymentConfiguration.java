@@ -332,42 +332,39 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 if(o instanceof ResourceRef) {
                     ResourceRef theResRefDCB = (ResourceRef) o;
                     final String refName = getField(ddBean, "res-ref-name"); //NOI18N
-                    
-                    try {
-                        theResRefDCB.setJndiName(refName);
-                    } catch(PropertyVetoException ex) {
-                        // !PW Should never happen.
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-
-                    if(resourceDir == null) {
-                        // Unable to create JDBC data source for resource ref.
-                        postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
-                                "ERR_NoRefJdbcDataSource", theResRefDCB.getResRefName())); // NOI18N
-                        return;
-                    }
-                    
                     final String description = getField(ddBean, "description"); //NOI18N
                     final File targetDir = resourceDir;
-                    
-                    /** !PW This mechanism is from the original incarnation of this code from
-                     *  appsrv plugin module in NB 4.1.  There should be a more stable
-                     *  way to solve any such timing issue.  This method is likelky
-                     *  unstable.
-                     */
-                    /* Creating a RequestProcessor to create resources seperately to
-                     * prevent NPE while initial loading of IDE because of call to
-                     * access DatabaseRuntimeManager.getConnection(). This NPE
-                     * causes failure while loading WebServices Registry in Runtime Tab
-                     */
-                    resourceProcessor.post(new Runnable() {
-                        public void run() {
-                            ResourceConfiguratorInterface rci = getResourceConfigurator();
-                            if(rci != null) {
-                                rci.createJDBCDataSourceFromRef(refName, description, targetDir);
-                            }
+
+                    // Only execute resource autocreation code if the description field has contents
+                    // (Note the contents might still fail to parse, but the parser is not accessible
+                    // from here in the current code base.)
+                    if(Utils.notEmpty(description)) {
+                        if(resourceDir == null) {
+                            // Unable to create JDBC data source for resource ref.
+                            postResourceError(NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                                    "ERR_NoRefJdbcDataSource", theResRefDCB.getResRefName())); // NOI18N
+                            return;
                         }
-                    }, 500);
+
+                        /** !PW This mechanism is from the original incarnation of this code from
+                         *  appsrv plugin module in NB 4.1.  There should be a more stable
+                         *  way to solve any such timing issue.  This method is likelky
+                         *  unstable.
+                         */
+                        /* Creating a RequestProcessor to create resources seperately to
+                         * prevent NPE while initial loading of IDE because of call to
+                         * access DatabaseRuntimeManager.getConnection(). This NPE
+                         * causes failure while loading WebServices Registry in Runtime Tab
+                         */
+                        resourceProcessor.post(new Runnable() {
+                            public void run() {
+                                ResourceConfiguratorInterface rci = getResourceConfigurator();
+                                if(rci != null) {
+                                    rci.createJDBCDataSourceFromRef(refName, description, targetDir);
+                                }
+                            }
+                        }, 500);
+                    }
                 } else {
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "No ResourceRef DConfigBean found bound to resource-ref DDBean: " + ddBean); // NOI18N
                 }
