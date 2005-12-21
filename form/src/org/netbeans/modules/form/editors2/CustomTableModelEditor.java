@@ -15,7 +15,6 @@ package org.netbeans.modules.form.editors2;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.*;
 import java.util.ResourceBundle;
 
 
@@ -939,11 +938,16 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
             enableButtons();
         }
     }
-
+        
     // a custom JTable class solving some accessibility issues of JTable
     private static class CustomJTable extends JTable {
         Component edComp;
 
+        public CustomJTable() {
+            super();                       
+            initEditors();
+        }
+        
         protected boolean processKeyBinding(KeyStroke ks, KeyEvent e,
                                             int condition, boolean pressed)
         {
@@ -980,6 +984,27 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         public Component prepareEditor(TableCellEditor editor, int row, int column) {
             edComp = super.prepareEditor(editor, row, column);
             return edComp;
+        }                
+        
+        private void initEditors() {
+            initEditor(Object.class);
+            initEditor(Number.class);
+        }        
+        
+        private void initEditor(Class type) {
+            TableCellEditor cellEditor = getDefaultEditor(type);
+            if(cellEditor instanceof DefaultCellEditor) {
+                final DefaultCellEditor defaultEditor = (DefaultCellEditor) cellEditor;
+                Component editorComponent = defaultEditor.getComponent();                
+                if(editorComponent instanceof JTextField) {
+                    editorComponent.addFocusListener(new FocusListener() {                        
+                        public void focusLost(FocusEvent e) {                    
+                            defaultEditor.stopCellEditing();                
+                        }
+                        public void focusGained(FocusEvent e) {}
+                    });                  
+                }
+            }             
         }
     }
 }
