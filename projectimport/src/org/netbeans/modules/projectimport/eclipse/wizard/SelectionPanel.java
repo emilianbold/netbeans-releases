@@ -25,7 +25,7 @@ import org.netbeans.modules.projectimport.eclipse.EclipseUtils;
 /**
  * Represent "Selection" step(panel) in the Eclipse importer wizard.
  *
- * @author  mkrauskopf
+ * @author mkrauskopf
  */
 final class SelectionPanel extends JPanel {
     
@@ -75,21 +75,21 @@ final class SelectionPanel extends JPanel {
     
     private void projectChanged() {
         // check Eclipse project directory
-        String project = projectDir.getText().trim();
+        String project = getProjectDir();
         if ("".equals(project)) {
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_ChooseProject")); // NOI18N
             return;
         }
-        File projectDirFile = new File(projectDir.getText());
+        File projectDirFile = new File(project);
         if (!EclipseUtils.isRegularProject(projectDirFile)) {
             setErrorMessage(ProjectImporterWizard.getMessage(
-                    "MSG_NotRegularProject", projectDir.getText())); // NOI18N
+                    "MSG_NotRegularProject", project)); // NOI18N
             return;
         }
         
         // check destination directory
-        String projectDest = projectDestDir.getText().trim();
+        String projectDest = getProjectDestinationDir();
         if ("".equals(projectDest)) {
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_ChooseProjectDestination")); // NOI18N
@@ -118,12 +118,12 @@ final class SelectionPanel extends JPanel {
     
     /** Returns project directory of single-selected project. */
     public String getProjectDir() {
-        return projectDir.getText();
+        return projectDir.getText().trim();
     }
     
     /** Returns destination directory for single-selected project. */
     public String getProjectDestinationDir() {
-        return projectDestDir.getText();
+        return projectDestDir.getText().trim();
     }
     
     /** This method is called from within the constructor to
@@ -143,9 +143,7 @@ final class SelectionPanel extends JPanel {
         projectBrowse = new javax.swing.JButton();
         projectLBL = new javax.swing.JLabel();
         projectButton = new javax.swing.JRadioButton();
-        projectButtonLBL = new javax.swing.JLabel();
         workspaceButton = new javax.swing.JRadioButton();
-        workspaceButtonLBL = new javax.swing.JLabel();
         projectDestLBL = new javax.swing.JLabel();
         projectDestDir = new javax.swing.JTextField();
         projectDestBrowse = new javax.swing.JButton();
@@ -155,14 +153,13 @@ final class SelectionPanel extends JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(workspaceDir, gridBagConstraints);
 
-        worskpaceBrowse.setMnemonic(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "CTL_BrowseButton_Mnem").charAt(0));
-        worskpaceBrowse.setText(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "CTL_BrowseButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(worskpaceBrowse, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "CTL_BrowseButton_B"));
         worskpaceBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 worskpaceBrowseActionPerformed(evt);
@@ -170,31 +167,30 @@ final class SelectionPanel extends JPanel {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         add(worskpaceBrowse, gridBagConstraints);
 
-        workSpaceLBL.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "LBL_Workspace_Mnem").charAt(0));
         workSpaceLBL.setLabelFor(workspaceDir);
-        workSpaceLBL.setText(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "LBL_Workspace"));
+        org.openide.awt.Mnemonics.setLocalizedText(workSpaceLBL, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "LBL_Workspace"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 14, 0, 12);
         add(workSpaceLBL, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(projectDir, gridBagConstraints);
 
-        projectBrowse.setMnemonic(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "CTL_BrowseButtonProject_Mnem").charAt(0));
-        projectBrowse.setText(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "CTL_BrowseButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(projectBrowse, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "CTL_BrowseButton_R"));
         projectBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 projectBrowseActionPerformed(evt);
@@ -202,24 +198,26 @@ final class SelectionPanel extends JPanel {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         add(projectBrowse, gridBagConstraints);
 
-        projectLBL.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "LBL_Project_Mnem").charAt(0));
         projectLBL.setLabelFor(projectDir);
-        projectLBL.setText(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "LBL_Project"));
+        org.openide.awt.Mnemonics.setLocalizedText(projectLBL, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "LBL_Project"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 14, 0, 12);
         add(projectLBL, gridBagConstraints);
 
         buttonGroup.add(projectButton);
-        projectButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/eclipse/wizard/Bundle").getString("CTL_ProjectButton_Mnem").charAt(0));
+        org.openide.awt.Mnemonics.setLocalizedText(projectButton, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "CTL_ProjectButton"));
+        projectButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        projectButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         projectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 projectButtonActionPerformed(evt);
@@ -229,28 +227,16 @@ final class SelectionPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
-        add(projectButton, gridBagConstraints);
-
-        projectButtonLBL.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/eclipse/wizard/Bundle").getString("CTL_ProjectButton_Mnem").charAt(0));
-        projectButtonLBL.setLabelFor(projectButton);
-        projectButtonLBL.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/eclipse/wizard/Bundle").getString("CTL_ProjectButton"));
-        projectButtonLBL.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                projectButtonLBLMouseClicked(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
-        add(projectButtonLBL, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 6, 0);
+        add(projectButton, gridBagConstraints);
 
         buttonGroup.add(workspaceButton);
         workspaceButton.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(workspaceButton, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "CTL_WorkspaceButton"));
+        workspaceButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        workspaceButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         workspaceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 workspaceButtonActionPerformed(evt);
@@ -260,44 +246,29 @@ final class SelectionPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(workspaceButton, gridBagConstraints);
 
-        workspaceButtonLBL.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/eclipse/wizard/Bundle").getString("CTL_WorkspaceButton_Mnem").charAt(0));
-        workspaceButtonLBL.setLabelFor(workspaceButton);
-        workspaceButtonLBL.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/projectimport/eclipse/wizard/Bundle").getString("CTL_WorkspaceButton"));
-        workspaceButtonLBL.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                workspaceButtonLBLMouseClicked(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(workspaceButtonLBL, gridBagConstraints);
-
-        projectDestLBL.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "LBL_ProjectDestination_Mnem").charAt(0));
         projectDestLBL.setLabelFor(projectDestDir);
-        projectDestLBL.setText(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "LBL_ProjectDestination"));
+        org.openide.awt.Mnemonics.setLocalizedText(projectDestLBL, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "LBL_ProjectDestination"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 14, 0, 12);
         add(projectDestLBL, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(projectDestDir, gridBagConstraints);
 
-        projectDestBrowse.setMnemonic(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "CTL_BrowseButtonProjectDest_Mnem").charAt(0));
-        projectDestBrowse.setText(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "CTL_BrowseButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(projectDestBrowse, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "CTL_BrowseButton_S"));
         projectDestBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 projectDestBrowseActionPerformed(evt);
@@ -305,8 +276,9 @@ final class SelectionPanel extends JPanel {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         add(projectDestBrowse, gridBagConstraints);
 
@@ -317,7 +289,7 @@ final class SelectionPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
         add(wsDescription, gridBagConstraints);
@@ -329,15 +301,13 @@ final class SelectionPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(note, gridBagConstraints);
 
-    }
-    // </editor-fold>                        
-//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     private void projectDestBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectDestBrowseActionPerformed
         JFileChooser chooser = new JFileChooser(projectDestDir.getText());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -346,18 +316,7 @@ final class SelectionPanel extends JPanel {
             projectDestDir.setText(chooser.getSelectedFile().getAbsolutePath());
         }
     }//GEN-LAST:event_projectDestBrowseActionPerformed
-    
-    private void projectButtonLBLMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_projectButtonLBLMouseClicked
-        projectButton.setSelected(true);
-        projectButtonActionPerformed(null);
-    }//GEN-LAST:event_projectButtonLBLMouseClicked
-    
-    private void workspaceButtonLBLMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_workspaceButtonLBLMouseClicked
-        workspaceButton.setSelected(true);
-        workspaceButtonActionPerformed(null);
-        workspaceDir.requestFocusInWindow();
-    }//GEN-LAST:event_workspaceButtonLBLMouseClicked
-    
+            
     private void projectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectButtonActionPerformed
         setWorkspaceEnabled(false);
         projectChanged();
@@ -407,7 +366,6 @@ final class SelectionPanel extends JPanel {
     private javax.swing.JTextArea note;
     private javax.swing.JButton projectBrowse;
     private javax.swing.JRadioButton projectButton;
-    private javax.swing.JLabel projectButtonLBL;
     private javax.swing.JButton projectDestBrowse;
     private javax.swing.JTextField projectDestDir;
     private javax.swing.JLabel projectDestLBL;
@@ -415,7 +373,6 @@ final class SelectionPanel extends JPanel {
     private javax.swing.JLabel projectLBL;
     private javax.swing.JLabel workSpaceLBL;
     private javax.swing.JRadioButton workspaceButton;
-    private javax.swing.JLabel workspaceButtonLBL;
     private javax.swing.JTextField workspaceDir;
     private javax.swing.JButton worskpaceBrowse;
     private javax.swing.JTextArea wsDescription;

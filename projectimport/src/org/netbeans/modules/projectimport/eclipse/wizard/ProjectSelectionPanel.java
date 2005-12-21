@@ -367,7 +367,7 @@ final class ProjectSelectionPanel extends JPanel {
 
         setLayout(new java.awt.BorderLayout(0, 12));
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         choosePanel.setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -377,8 +377,7 @@ final class ProjectSelectionPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         choosePanel.add(destination, gridBagConstraints);
 
-        chooseDestButton.setMnemonic(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "CTL_BrowseButton_Mnem").charAt(0));
-        chooseDestButton.setText(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "CTL_BrowseButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(chooseDestButton, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "CTL_BrowseButton_B"));
         chooseDestButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 chooseDestButtonActionPerformed(evt);
@@ -392,9 +391,8 @@ final class ProjectSelectionPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         choosePanel.add(chooseDestButton, gridBagConstraints);
 
-        prjLocationLBL.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_LocationOfNBProjects_Mnem").charAt(0));
         prjLocationLBL.setLabelFor(destination);
-        prjLocationLBL.setText(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_LocationOfNBProjects"));
+        org.openide.awt.Mnemonics.setLocalizedText(prjLocationLBL, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_LocationOfNBProjects"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -405,9 +403,8 @@ final class ProjectSelectionPanel extends JPanel {
 
         projectPanel.setLayout(new java.awt.GridBagLayout());
 
-        projectListLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "CTL_ProjectSelectionStep_Mnem").charAt(0));
         projectListLabel.setLabelFor(projectTable);
-        projectListLabel.setText(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_ProjectsToImport"));
+        org.openide.awt.Mnemonics.setLocalizedText(projectListLabel, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_ProjectsToImport"));
         projectListLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -431,9 +428,7 @@ final class ProjectSelectionPanel extends JPanel {
 
         add(projectPanel, java.awt.BorderLayout.CENTER);
 
-    }
-    // </editor-fold>                        
-//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDestButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -453,6 +448,5 @@ final class ProjectSelectionPanel extends JPanel {
     private javax.swing.JPanel projectPanel;
     private javax.swing.JTable projectTable;
     private javax.swing.JScrollPane projectTableSP;
-    // End of variables declaration                   
-//GEN-END:variables
+    // End of variables declaration//GEN-END:variables
 }

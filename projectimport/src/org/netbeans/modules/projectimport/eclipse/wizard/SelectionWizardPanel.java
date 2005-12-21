@@ -80,13 +80,13 @@ final class SelectionWizardPanel extends ImporterWizardPanel implements
     
     public void validate() throws WizardValidationException {
         if (!panel.isWorkspaceChosen()) {
-            String dest = panel.getProjectDestinationDir();
+            String dest = getProjectDestinationDir();
 
             String message = null;
             if ((!new File(dest).isAbsolute()) || !EclipseUtils.isWritable(dest)) {
                 message = ProjectImporterWizard.getMessage(
                         "MSG_CannotCreateProjectInFolder", dest); // NOI18N
-            } else if (!EclipseUtils.isRegularJavaProject(panel.getProjectDir())) {
+            } else if (!EclipseUtils.isRegularJavaProject(getProjectDir())) {
                 message = ProjectImporterWizard.getMessage(
                         "MSG_CannotImportNonJavaProject"); // NOI18N
             }
