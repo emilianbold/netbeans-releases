@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.junit.output;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,7 +28,7 @@ import org.openide.nodes.Node;
 final class RootNodeChildren extends Children.Array {
     
     /** */
-    private volatile boolean filtered = false;
+    private volatile boolean filtered;
     /** */
     private Collection/*<Report>*/ reports;
     /** */
@@ -35,44 +36,93 @@ final class RootNodeChildren extends Children.Array {
     /** */
     private volatile int failedSuites;
     /** */
-    private volatile boolean live = false;  //PENDING - temporary (shld be 'false')
+    private volatile boolean live = false;
+    /** */
+    private String runningSuiteName;
+    /** */
+    private TestsuiteNode runningSuiteNode;
     
     /**
      * Creates a new instance of ReportRootNode
      */
-    RootNodeChildren() {
+    RootNodeChildren(final boolean filtered) {
         super();
+        this.filtered = filtered;
     }
     
     /**
      */
-    void displayReport(final Report report) {
+    void displaySuiteRunning(final String suiteName) {
         
         /*
-         * May be called from various threads but is always called from
-         * a synchronized block of RootNode.
+         * Called from the EventDispatch thread.
          */
+        
+        assert EventQueue.isDispatchThread();
+        assert runningSuiteName == null;
+        assert runningSuiteNode == null;
+        
+        runningSuiteName = suiteName;
+        
+        if (live) {
+            runningSuiteNode = new TestsuiteNode(suiteName, filtered);
+            add(new Node[] {runningSuiteNode});
+        }
+        
+        assert runningSuiteName != null;
+        assert (runningSuiteNode != null) == live;
+    }
+    
+    /**
+     */
+    TestsuiteNode displayReport(final Report report) {
+        assert EventQueue.isDispatchThread();
+        assert (runningSuiteNode != null)
+               == (live && (runningSuiteName != null));
+        
+        TestsuiteNode correspondingNode;
         
         if (reports == null) {
             reports = new ArrayList(10);
         }
         reports.add(report);
+
+        final boolean isPassedSuite = updateStatistics(report);
         
-        boolean isPassedSuite = updateStatistics(report);
-        
-        if (live && !(filtered && isPassedSuite)) {
-            add(new Node[] {createNode(report)});
+        if (runningSuiteName != null) {
+            runningSuiteName = null;
+            
+            if (live) {
+                if (filtered && isPassedSuite) {
+                    remove(new Node[] {runningSuiteNode});
+                    correspondingNode = null;
+                } else {
+                    runningSuiteNode.displayReport(report);
+                    correspondingNode = runningSuiteNode;
+                }
+                runningSuiteNode = null;
+            } else {
+                correspondingNode = null;
+            }
+        } else {
+            if (live && !(filtered && isPassedSuite)) {
+                add(new Node[] {
+                    correspondingNode = createNode(report)});
+            } else {
+                correspondingNode = null;
+            }
         }
+        
+        assert runningSuiteName == null;
+        assert runningSuiteNode == null;
+        
+        return correspondingNode;
     }
     
     /**
      */
     void displayReports(final Collection/*<Report>*/ newReports) {
-        
-        /*
-         * May be called from various threads but is always called from
-         * a synchronized block of RootNode.
-         */
+        assert EventQueue.isDispatchThread();
         
         if (reports == null) {
             reports = new ArrayList(newReports);
@@ -81,31 +131,33 @@ final class RootNodeChildren extends Children.Array {
         }
         
         if (!live) {
-            return;
-        }
-        
-        Node[] nodesToAdd;
-        if (!filtered) {
-            nodesToAdd = new Node[newReports.size()];
-            int index = 0;
-            for (Iterator it = newReports.iterator(); it.hasNext(); index++) {
-                Report report = (Report) it.next();
-                updateStatistics(report);
-                nodesToAdd[index] = createNode(report);
+            for (Iterator it = reports.iterator(); it.hasNext(); ) {
+                updateStatistics((Report) it.next());
             }
-            add(nodesToAdd);
         } else {
-            List toAdd = new ArrayList(newReports.size());
-            for (Iterator it = newReports.iterator(); it.hasNext(); ) {
-                Report report = (Report) it.next();
-                boolean isFailed = updateStatistics(report);
-                if (isFailed) {
-                    toAdd.add(createNode(report));
+            Node[] nodesToAdd;
+            if (!filtered) {
+                nodesToAdd = new Node[newReports.size()];
+                int index = 0;
+                for (Iterator it = newReports.iterator(); it.hasNext(); index++) {
+                    Report report = (Report) it.next();
+                    updateStatistics(report);
+                    nodesToAdd[index] = createNode(report);
                 }
-            }
-            if (!toAdd.isEmpty()) {
-                nodesToAdd = (Node[]) toAdd.toArray(new Node[toAdd.size()]);
                 add(nodesToAdd);
+            } else {
+                List toAdd = new ArrayList(newReports.size());
+                for (Iterator it = newReports.iterator(); it.hasNext(); ) {
+                    Report report = (Report) it.next();
+                    boolean isFailed = updateStatistics(report);
+                    if (isFailed) {
+                        toAdd.add(createNode(report));
+                    }
+                }
+                if (!toAdd.isEmpty()) {
+                    nodesToAdd = (Node[]) toAdd.toArray(new Node[toAdd.size()]);
+                    add(nodesToAdd);
+                }
             }
         }
     }
@@ -120,10 +172,7 @@ final class RootNodeChildren extends Children.Array {
      */
     private boolean updateStatistics(final Report report) {
         
-        /*
-         * May be called from various threads but is always called from
-         * a synchronized block of RootNode.
-         */
+        /* Called from the EventDispatch thread */
         
         final boolean isPassedSuite = !report.containsFailed();
         if (isPassedSuite) {
@@ -139,9 +188,6 @@ final class RootNodeChildren extends Children.Array {
     /**
      */
     protected void addNotify() {
-        
-        /* May be called from arbitrary thread. */
-        
         super.addNotify();
         
         live = true;                      //PENDING
@@ -151,9 +197,6 @@ final class RootNodeChildren extends Children.Array {
     /**
      */
     protected void removeNotify() {
-        
-        /* May be called from arbitrary thread. */
-        
         super.removeNotify();
         
         remove(getNodes());               //PENDING
@@ -166,17 +209,23 @@ final class RootNodeChildren extends Children.Array {
      */
     private void addAllMatchingNodes() {
         final boolean filterOn = filtered;
-        final int nodesCount = filterOn ? failedSuites
-                                        : failedSuites + passedSuites;
+        final int matchingNodesCount = filterOn ? failedSuites
+                                                : failedSuites + passedSuites;
+        final int nodesCount = (runningSuiteNode != null)
+                               ? matchingNodesCount + 1
+                               : matchingNodesCount;
         if (nodesCount != 0) {
             final Node[] nodes = new Node[nodesCount];
             final Iterator i = reports.iterator();
-            int remainder = nodesCount;
-            for (int index = 0; index < nodesCount; ) {
+            int index = 0;
+            while (index < matchingNodesCount) {
                 Report report = (Report) i.next();
                 if (!filterOn || report.containsFailed()) {
                     nodes[index++] = createNode(report);
                 }
+            }
+            if (runningSuiteNode != null) {
+                nodes[index++] = runningSuiteNode;
             }
             add(nodes);
         }
@@ -190,87 +239,75 @@ final class RootNodeChildren extends Children.Array {
     
     /**
      */
-    private Node createNode(final Report report) {
-        return new TestsuiteNode(report);
+    private TestsuiteNode createNode(final Report report) {
+        return new TestsuiteNode(report, filtered);
     }
     
     /**
      */
     void setFiltered(final boolean filtered) {
+        assert EventQueue.isDispatchThread();
         
-        /* May be called from arbitrary thread. */
+        if (filtered == this.filtered) {
+            return;
+        }
+        this.filtered = filtered;
         
-        synchronized (((RootNode) getNode()).getLock()) {
-            if (filtered == this.filtered) {
-                return;
-            }
-            this.filtered = filtered;
+        if (!live) {
+            return;
+        }
+        if (passedSuites == 0) {
+            return;
+        }
 
-            if (!live) {
-                return;
-            }
-            if (filtered && (failedSuites == 0)) {
-                return;
-            }
-            if (!filtered && (passedSuites == 0)) {
-                return;
-            }
-
-            if (filtered) {
-                removePassedSuites();
-            } else {
-                addPassedSuites();
-            }
+        if (filtered) {
+            removePassedSuites();
+        } else {
+            addPassedSuites();
         }
     }
     
     /**
      */
     private void removePassedSuites() {
-        
-        /*
-         * May be called from various threads but is always called from
-         * a synchronized block of RootNode.
-         */
-
+        assert EventQueue.isDispatchThread();
         assert live;
         
         final Node[] nodesToRemove = new Node[passedSuites];
-        final Iterator i = reports.iterator();
-        
-        Children.MUTEX.readAccess(new Runnable() {
-            public void run() {
-                final Node[] nodes = getNodes();
-                for (int index = 0, nodesIndex = 0;
-                            index < nodesToRemove.length;
-                            nodesIndex++) {
-                    Report report = (Report) i.next();
-                    if (!report.containsFailed()) {
-                        nodesToRemove[index++] = nodes[nodesIndex];
-                    }
-                }
-                remove(nodesToRemove);
+        final Node[] nodes = getNodes();
+        int nodesIndex = 0;
+        for (int index = 0;
+                    index < nodesToRemove.length;
+                    nodesIndex++) {
+            TestsuiteNode node = (TestsuiteNode) nodes[nodesIndex];
+            Report report = node.getReport();
+            if (report == null) {
+                continue;
             }
-        });
+            if (!report.containsFailed()) {
+                nodesToRemove[index++] = node;
+            } else {
+                node.setFiltered(filtered);
+            }
+        }
+        while (nodesIndex < nodes.length) {
+            Report report;
+            assert (report = ((TestsuiteNode) nodes[nodesIndex]).getReport())
+                           == null
+                   || report.containsFailed();
+            ((TestsuiteNode) nodes[nodesIndex++]).setFiltered(filtered);
+        }
+        remove(nodesToRemove);
     }
     
     /**
      */
     private void addPassedSuites() {
-        
-        /*
-         * May be called from various threads but is always called from
-         * a synchronized block of RootNode.
-         */
-
+        assert EventQueue.isDispatchThread();
         assert live;
         
-        Children.MUTEX.readAccess(new Runnable() {
-            public void run() {
-                removeAllNodes();
-                addAllMatchingNodes();
-            }
-        });
+        removeAllNodes();
+        addAllMatchingNodes();
     }
     
 }

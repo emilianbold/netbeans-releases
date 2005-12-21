@@ -16,18 +16,15 @@ package org.netbeans.modules.junit.output;
 import java.awt.EventQueue;
 import java.util.Collection;
 import java.util.Iterator;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Marian Petras
  */
-final class RootNode extends AbstractNode implements ChangeListener {
+final class RootNode extends AbstractNode {
     
     /** */
     static final String name = "JUnit results root node";               //NOI18N
@@ -42,12 +39,10 @@ final class RootNode extends AbstractNode implements ChangeListener {
     /**
      */
     private final RootNodeChildren children;
-    /** */
-    private final Object lock = new Object();
     
     /**
      */
-    private volatile boolean filtered = false;
+    private volatile boolean filtered;
     /** */
     private volatile String message;
     
@@ -61,8 +56,9 @@ final class RootNode extends AbstractNode implements ChangeListener {
     /**
      * Creates a new instance of RootNode
      */
-    public RootNode() {
-        super(new RootNodeChildren());
+    public RootNode(final boolean filtered) {
+        super(new RootNodeChildren(filtered));
+        this.filtered = filtered;
         children = (RootNodeChildren) getChildren();
         setName(name);   //used by tree cell renderer to recognize the root node
         setIconBaseWithExtension(
@@ -71,54 +67,50 @@ final class RootNode extends AbstractNode implements ChangeListener {
     
     /**
      */
-    Object getLock() {
-        return lock;
-    }
-    
-    /**
-     */
     void displayMessage(final String msg) {
-        synchronized (lock) {
-            this.message = msg;
-            updateDisplayName();
-        }
+        assert EventQueue.isDispatchThread();
+        
+        /* Called from the EventDispatch thread */
+        
+        this.message = msg;
+        updateDisplayName();
     }
     
     /**
      */
-    void displayReport(final Report report) {
+    void displaySuiteRunning(final String suiteName) {
+        assert EventQueue.isDispatchThread();
         
-        /* May be called from various threads. */
+        /* Called from the EventDispatch thread */
         
-        synchronized (lock) {
-            if (report.isClosed()) {
-                updateStatistics(report);
-                updateDisplayName();
-            } else {
-                report.addChangeListener(WeakListeners.change(this, report));
-            }
-            children.displayReport(report);
-        }
+        children.displaySuiteRunning(suiteName);
+    }
+    
+    /**
+     */
+    TestsuiteNode displayReport(final Report report) {
+        assert EventQueue.isDispatchThread();
+        
+        /* Called from the EventDispatch thread */
+        
+        updateStatistics(report);
+        updateDisplayName();
+        return children.displayReport(report);
     }
     
     /**
      */
     void displayReports(final Collection/*<Report>*/ reports) {
+        assert EventQueue.isDispatchThread();
         
-        /* May be called from various threads. */
+        /* Called from the EventDispatch thread */
         
-        synchronized (lock) {
-            for (Iterator i = reports.iterator(); i.hasNext(); ) {
-                final Report report = (Report) i.next();
-                if (report.isClosed()) {
-                   updateStatistics((Report) i.next());
-                } else {
-                   report.addChangeListener(WeakListeners.change(this, report));
-                }
-            }
-            updateDisplayName();
-            children.displayReports(reports);
+        for (Iterator i = reports.iterator(); i.hasNext(); ) {
+            final Report report = (Report) i.next();
+            updateStatistics(report);
         }
+        updateDisplayName();
+        children.displayReports(reports);
     }
     
     /**
@@ -129,21 +121,6 @@ final class RootNode extends AbstractNode implements ChangeListener {
         errors += report.errors;
         detectedPassedTests += report.detectedPassedTests;
         elapsedTimeMillis += report.elapsedTimeMillis;
-    }
-    
-    /**
-     */
-    public void stateChanged(final ChangeEvent e) {
-        
-        /* May be called from various threads. */
-        
-        final Report report = (Report) e.getSource();
-        assert report.isClosed();
-        
-        synchronized (lock) {
-            updateStatistics(report);
-            updateDisplayName();
-        }
     }
     
     /**
@@ -165,6 +142,8 @@ final class RootNode extends AbstractNode implements ChangeListener {
     /**
      */
     private void updateDisplayName() {
+        assert EventQueue.isDispatchThread();
+        
         final Class bundleRefClass = getClass();
         String msg;
 
@@ -172,7 +151,7 @@ final class RootNode extends AbstractNode implements ChangeListener {
             msg = null;
         } else if ((failures == 0) && (errors == 0)) {
             msg = NbBundle.getMessage(bundleRefClass,
-                                      "MSG_TestsInfoAllOK",
+                                      "MSG_TestsInfoAllOK",             //NOI18N
                                       new Integer(totalTests));
         } else {
             String passedTestsInfo = NbBundle.getMessage(
@@ -250,15 +229,13 @@ final class RootNode extends AbstractNode implements ChangeListener {
      *                           <code>ALL_PASSED_ABSENT</code>
      */
     int getSuccessDisplayedLevel() {
-        synchronized (lock) {
-            int reportedPassedTestsCount = totalTests - failures - errors;
-            if (detectedPassedTests >= reportedPassedTestsCount) {
-                return ALL_PASSED_DISPLAYED;
-            } else if (detectedPassedTests == 0) {
-                return ALL_PASSED_ABSENT;
-            } else {
-                return SOME_PASSED_ABSENT;
-            }
+        int reportedPassedTestsCount = totalTests - failures - errors;
+        if (detectedPassedTests >= reportedPassedTestsCount) {
+            return ALL_PASSED_DISPLAYED;
+        } else if (detectedPassedTests == 0) {
+            return ALL_PASSED_ABSENT;
+        } else {
+            return SOME_PASSED_ABSENT;
         }
     }
     

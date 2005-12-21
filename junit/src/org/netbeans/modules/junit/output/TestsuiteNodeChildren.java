@@ -30,7 +30,7 @@ final class TestsuiteNodeChildren extends Children.Keys {
     /** */
     private final Report report;
     /** */
-    private boolean filtered = false;
+    private boolean filtered;
     /** */
     private boolean live = true;         //PENDING - temporary (should be false)
     
@@ -41,8 +41,9 @@ final class TestsuiteNodeChildren extends Children.Keys {
     /**
      * Creates a new instance of TestsuiteNodeChildren
      */
-    TestsuiteNodeChildren(final Report report) {
+    TestsuiteNodeChildren(final Report report, final boolean filtered) {
         this.report = report;
+        this.filtered = filtered;
     }
     
     /**
@@ -50,7 +51,9 @@ final class TestsuiteNodeChildren extends Children.Keys {
     protected void addNotify() {
         super.addNotify();
         
-        update();
+        if (live) {
+            setKeys(report.getTests());
+        }
         //live = true;                          //PENDING
     }
     
@@ -61,15 +64,6 @@ final class TestsuiteNodeChildren extends Children.Keys {
         
         setKeys(Collections.EMPTY_SET);
         //live = false;                         //PENDING
-    }
-    
-    /**
-     */
-    void update() {
-        if (live) {
-            setKeys(report.isClosed() ? report.getTests()
-                                      : Collections.EMPTY_SET);
-        }
     }
     
     /**
@@ -90,6 +84,10 @@ final class TestsuiteNodeChildren extends Children.Keys {
         }
         this.filtered = filtered;
         
+        if ((report.errors + report.failures) == report.totalTests) {
+            return;
+        }
+                
         if (isInitialized()) {
             for (Iterator i = report.getTests().iterator(); i.hasNext(); ) {
                 Report.Testcase testcase = (Report.Testcase) i.next();

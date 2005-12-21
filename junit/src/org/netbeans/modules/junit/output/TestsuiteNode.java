@@ -13,44 +13,67 @@
 
 package org.netbeans.modules.junit.output;
 
-import java.io.IOException;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Marian Petras
  */
-final class TestsuiteNode extends AbstractNode implements ChangeListener {
+final class TestsuiteNode extends AbstractNode {
     
-    /** */
-    final Report report;
-    final TestsuiteNodeChildren children;
-    boolean containsFailed;
+    private final String suiteName;
+    private Report report;
+    private boolean filtered;
+    
+    /**
+     */
+    TestsuiteNode(final String suiteName, final boolean filtered) {
+        this(null, suiteName, filtered);
+    }
     
     /**
      * Creates a new instance of TestsuiteNode
      */
-    TestsuiteNode(final Report report) {
-        super(new TestsuiteNodeChildren(report));
+    TestsuiteNode(final Report report, final boolean filtered) {
+        this(report, null, filtered);
+    }
+    
+    /**
+     */
+    private TestsuiteNode(final Report report,
+                          final String suiteName,
+                          final boolean filtered) {
+        super(report != null ? new TestsuiteNodeChildren(report, filtered)
+                             : Children.LEAF);
         
-        this.children = (TestsuiteNodeChildren) getChildren();
         this.report = report;
+        this.suiteName = (report != null) ? report.suiteClassName : suiteName;
+        this.filtered = filtered;
         
         setDisplayName();
         setIconBaseWithExtension(
                 "org/netbeans/modules/junit/output/res/class.gif");     //NOI18N
-        
-        if (!report.isClosed()) {
-            report.addChangeListener(WeakListeners.change(this, report));
-        }
     }
     
     /**
+     */
+    void displayReport(final Report report) {
+        assert (this.report == null) && (report != null);
+        assert report.suiteClassName.equals(this.suiteName);
+        
+        this.report = report;
+        
+        setDisplayName();
+        setChildren(new TestsuiteNodeChildren(report, filtered));
+    }
+    
+    /**
+     * Returns a report represented by this node.
+     *
+     * @return  the report, or <code>null</code> if this node represents
+     *          a running test suite (no report available yet)
      */
     Report getReport() {
         return report;
@@ -59,27 +82,26 @@ final class TestsuiteNode extends AbstractNode implements ChangeListener {
     /**
      */
     private void setDisplayName() {
-        containsFailed = (report.failures + report.errors != 0);
-        
         String displayName;
-        if (!report.isClosed()) {
-            if (report.suiteClassName != null) {
+        if (report == null) {
+            if (suiteName != null) {
                 displayName = NbBundle.getMessage(
                                           getClass(),
                                           "MSG_TestsuiteRunning",       //NOI18N
-                                          report.suiteClassName);
+                                          suiteName);
             } else {
                 displayName = NbBundle.getMessage(
                                           getClass(),
                                           "MSG_TestsuiteRunningNoname");//NOI18N
             }
         } else {
+            boolean containsFailed = containsFailed();
             displayName = containsFailed
                           ? NbBundle.getMessage(
                                           getClass(),
                                           "MSG_TestsuiteFailed",        //NOI18N
-                                          report.suiteClassName)
-                          : report.suiteClassName;
+                                          suiteName)
+                          : suiteName;
         }
         setDisplayName(displayName);
     }
@@ -87,10 +109,7 @@ final class TestsuiteNode extends AbstractNode implements ChangeListener {
     /**
      */
     public String getHtmlDisplayName() {
-        final boolean closed = report.isClosed();
-
         StringBuffer buf = new StringBuffer(60);
-        String suiteName = report.suiteClassName;
         if (suiteName != null) {
             buf.append(suiteName);
             buf.append("&nbsp;&nbsp;");                                 //NOI18N
@@ -99,7 +118,9 @@ final class TestsuiteNode extends AbstractNode implements ChangeListener {
                                            "MSG_TestsuiteNoname"));     //NOI18N
             buf.append("&nbsp;");
         }
-        if (closed) {
+        if (report != null) {
+            final boolean containsFailed = containsFailed();
+
             buf.append("<font color='#");                               //NOI18N
             buf.append(containsFailed ? "FF0000'>" : "00CC00'>");       //NOI18N
             buf.append(NbBundle.getMessage(
@@ -119,6 +140,11 @@ final class TestsuiteNode extends AbstractNode implements ChangeListener {
     /**
      */
     void setFiltered(final boolean filtered) {
+        if (filtered == this.filtered) {
+            return;
+        }
+        this.filtered = filtered;
+        
         Children children = getChildren();
         if (children != Children.LEAF) {
             ((TestsuiteNodeChildren) children).setFiltered(filtered);
@@ -127,11 +153,8 @@ final class TestsuiteNode extends AbstractNode implements ChangeListener {
     
     /**
      */
-    public void stateChanged(ChangeEvent e) {
-        if (report.isClosed()) {
-            setDisplayName();
-            children.update();
-        }
+    private boolean containsFailed() {
+        return (report != null) && (report.failures + report.errors != 0);
     }
     
 }

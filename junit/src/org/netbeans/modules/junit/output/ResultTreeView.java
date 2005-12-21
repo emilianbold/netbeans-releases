@@ -93,24 +93,12 @@ final class ResultTreeView extends BeanTreeView implements Runnable {
     
     /**
      */
-    void expandNodes(RootNode rootNode) {
+    void expandReportNode(TestsuiteNode node) {
         final boolean wasScrollsOnExpand = tree.getScrollsOnExpand();
         
         tree.setScrollsOnExpand(false);
         try {
-            expandNode(rootNode);
-
-            final Node[] childNodes = rootNode.getChildren().getNodes(true);
-            for (int i = 0; i < childNodes.length; i++) {
-                //if (childNodes[i].getClass() != TestsuiteNode.class) {
-                //    /* It is a TestMethodNode - do not expand it. */
-                //    continue;
-                //}
-                TestsuiteNode testsuiteNode = (TestsuiteNode) childNodes[i];
-                if (testsuiteNode.getReport().containsFailed()) {
-                    expandNode(testsuiteNode);
-                }
-            }
+            expandNode(node);
         } finally {
             if (wasScrollsOnExpand) {
                 

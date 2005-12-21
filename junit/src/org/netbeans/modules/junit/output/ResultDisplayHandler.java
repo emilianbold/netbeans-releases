@@ -13,11 +13,16 @@
 
 package org.netbeans.modules.junit.output;
 
+import java.awt.EventQueue;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
@@ -229,25 +234,50 @@ final class ResultDisplayHandler {
     //-----------------------------------------------------------//
     //------------------- DISPLAYING TREE -----------------------//
     
+    private static final String ANONYMOUS_SUITE = new String();
+    private String runningSuite;
     private List reports;
     private String message;
-
-    // PENDING - synchronization
     
+    /**
+     */
+    void displaySuiteRunning(final String suiteName) {
+        
+        /* Called from the AntLogger's thread */
+        
+        assert runningSuite == null;
+        
+        synchronized (this) {
+            if (treePanel == null) {
+                runningSuite = (suiteName != null) ? suiteName
+                                                   : ANONYMOUS_SUITE;
+                return;
+            }
+        }
+        
+        displayInDispatchThread("displaySuiteRunning", suiteName);      //NOI18N
+    }
+
     /**
      */
     void displayReport(final Report report) {
         
         /* Called from the AntLogger's thread */
         
-        if (treePanel == null) {
-            if (reports == null) {
-                reports = new ArrayList(10);
+        synchronized (this) {
+            if (treePanel == null) {
+                if (reports == null) {
+                    reports = new ArrayList(10);
+                }
+                reports.add(report);
+                runningSuite = null;
+                return;
             }
-            reports.add(report);
-        } else {
-            treePanel.displayReport(report);
         }
+        
+        displayInDispatchThread("displayReport", report);               //NOI18N
+        
+        assert runningSuite == null;
     }
     
     /**
@@ -256,24 +286,92 @@ final class ResultDisplayHandler {
 
         /* Called from the AntLogger's thread */
 
-        if (treePanel == null) {
-            message = msg;
-        } else {
-            treePanel.displayMsg(msg);
+        synchronized (this) {
+            if (treePanel == null) {
+                message = msg;
+                return;
+            }
         }
+        
+        displayInDispatchThread("displayMsg", msg);                     //NOI18N
     }
+    
+    /** */
+    private Map/*<String, Method>*/ methodsMap;
+    
+    /**
+     */
+    private void displayInDispatchThread(final String methodName,
+                                         final Object param) {
+        assert methodName != null;
+        assert treePanel != null;
+        
+        final Method method = prepareMethod(methodName);
+        if (method == null) {
+            return;
+        }
+        
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    method.invoke(treePanel, new Object[] {param});
+                } catch (InvocationTargetException ex) {
+                    ErrorManager.getDefault().notify(ex.getTargetException());
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+                }
+            }
+        });
+    }
+    
+    /**
+     */
+    private Method prepareMethod(final String methodName) {
+        Method method;
+        
+        if (methodsMap == null) {
+            methodsMap = new HashMap/*<String, Method>*/(4);
+            method = null;
+        } else {
+            method = (Method) methodsMap.get(methodName);
+        }
+        
+        if ((method == null) && !methodsMap.containsKey(methodName)) {
+            final Class paramType;
+            if (methodName.equals("displayReport")) {                   //NOI18N
+                paramType = Report.class;
+            } else {
+                assert methodName.equals("displayMsg")                  //NOI18N
+                       || methodName.equals("displaySuiteRunning");     //NOI18N
+                paramType = String.class;
+            }
+            try {
+                method = ResultPanelTree.class
+                         .getDeclaredMethod(methodName, new Class[] {paramType});
+            } catch (Exception ex) {
+                method = null;
+                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            }
+            methodsMap.put(methodName, method);
+        }
+        
+        return method;
+    }
+    
     
     /**
      */
     void setTreePanel(final ResultPanelTree treePanel) {
         
-        // called from EventDispatch thread
+        /* Called from the EventDispatch thread */
         
-        if (this.treePanel != null) {
-            return;
+        synchronized (this) {
+            if (this.treePanel != null) {
+                return;
+            }
+
+            this.treePanel = treePanel;
         }
-        
-        this.treePanel = treePanel;
         
         if (message != null) {
             treePanel.displayMsg(message);
@@ -282,6 +380,11 @@ final class ResultDisplayHandler {
         if (reports != null) {
             treePanel.displayReports(reports);
             reports = null;
+        }
+        if (runningSuite != null) {
+            treePanel.displaySuiteRunning(runningSuite != ANONYMOUS_SUITE
+                                          ? runningSuite
+                                          : null);
         }
     }
 

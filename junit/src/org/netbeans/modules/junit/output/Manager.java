@@ -283,6 +283,19 @@ final class Manager {
     
     /**
      */
+    void displaySuiteRunning(final AntSession session,
+                             final int sessionType,
+                             final String suiteName) {
+
+        /* Called from the AntLogger's thread */
+        
+        final ResultDisplayHandler displayHandler = getDisplayHandler(session);
+        displayHandler.displaySuiteRunning(suiteName);
+        displayInWindow(session, sessionType, displayHandler);
+    }
+    
+    /**
+     */
     void displayReport(final AntSession session,
                        final int sessionType,
                        final Report report) {

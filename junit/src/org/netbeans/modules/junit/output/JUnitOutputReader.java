@@ -24,7 +24,6 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -285,14 +284,10 @@ final class JUnitOutputReader {
         else if (msg.startsWith(RegexpUtils.XML_DECL_PREFIX)) {
             Matcher matcher = regexp.getXmlDeclPattern().matcher(msg.trim());
             if (matcher.matches()) {
-                closePreviousReport();
-                
-                report = createReport(null);
+                suiteStarted(null);
                 
                 xmlOutputBuffer = new StringBuffer(4096);
                 xmlOutputBuffer.append(msg);
-                
-                suiteStarted();
             }
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="TESTSUITE_PREFIX">
@@ -300,10 +295,7 @@ final class JUnitOutputReader {
             suiteName = msg.substring(RegexpUtils.TESTSUITE_PREFIX
                                              .length());
             if (regexp.getFullJavaIdPattern().matcher(suiteName).matches()){
-                closePreviousReport();
-                checkReportStarted();
-                
-                report = createReport(suiteName);
+                suiteStarted(suiteName);
                 
                 final File projectMainDir
                         = session.getOriginatingScript().getParentFile();
@@ -320,8 +312,6 @@ final class JUnitOutputReader {
                         }
                     }
                 }
-                
-                suiteStarted();
             }
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="TESTSUITE_STATS_PREFIX">
@@ -490,9 +480,20 @@ final class JUnitOutputReader {
     
     /**
      */
-    private void suiteStarted() {
-        assert report != null;
-        
+    private Report suiteStarted(final String suiteName) {
+        closePreviousReport();
+        report = createReport(suiteName);
+        checkReportStarted();
+                
+        Manager.getInstance().displaySuiteRunning(session,
+                                                  sessionType,
+                                                  suiteName);
+        return report;
+    }
+    
+    /**
+     */
+    private void suiteFinished(final Report report) {
         Manager.getInstance().displayReport(session, sessionType, report);
     }
     
@@ -681,7 +682,7 @@ final class JUnitOutputReader {
             }
         }
         if (report != null) {
-            report.close();
+            suiteFinished(report);
         }
         
         callstackBuffer = null;

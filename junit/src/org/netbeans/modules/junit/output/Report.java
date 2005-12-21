@@ -17,10 +17,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
 
@@ -51,12 +47,6 @@ final class Report {
     int detectedPassedTests;
     private Collection/*<Testcase>*/ tests;
     private boolean closed = false;
-    /**
-     * listeners which listens for this report to be closed
-     *
-     * @see  #setChangeListener
-     */
-    private List/*<ChangeListener>*/ changeListeners;
     
     /**
      */
@@ -91,59 +81,6 @@ final class Report {
         this.elapsedTimeMillis = report.elapsedTimeMillis;
         this.detectedPassedTests = report.detectedPassedTests;
         this.tests = report.tests;
-    }
-    
-    /**
-     */
-    void close() {
-        if (closed) {
-            ErrorManager.getDefault().log(
-                    ErrorManager.WARNING,
-                    "Closing an already closed report: " + suiteClassName);
-            return;
-        }
-        
-        closed = true;
-        
-        fireChange();
-    }
-    
-    /**
-     */
-    boolean isClosed() {
-        return closed;
-    }
-    
-    /**
-     */
-    void addChangeListener(ChangeListener l) {
-        if (changeListeners == null) {
-            changeListeners = new ArrayList/*<ChangeListener>*/(2);
-        }
-        changeListeners.add(l);
-    }
-    
-    /**
-     */
-    void removeChangeListener(ChangeListener l) {
-        if ((changeListeners != null)
-                && changeListeners.remove(l)
-                && changeListeners.isEmpty()) {
-            changeListeners = null;
-        }
-    }
-    
-    /**
-     */
-    private void fireChange() {
-        if (changeListeners != null) {
-            final ChangeEvent event = new ChangeEvent(this);
-            for (Iterator/*<ChangeListener>*/ i = changeListeners.iterator();
-                    i.hasNext(); ) {
-                ((ChangeListener) i.next()).stateChanged(event);
-            }
-        }
-        changeListeners = null;
     }
     
     /**

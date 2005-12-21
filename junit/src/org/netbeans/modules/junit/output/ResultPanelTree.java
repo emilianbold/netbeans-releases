@@ -71,7 +71,7 @@ final class ResultPanelTree extends JPanel
         add(treeView = new ResultTreeView(), java.awt.BorderLayout.CENTER);
         
         explorerManager = new ExplorerManager();
-        explorerManager.setRootContext(rootNode = createRootNode());
+        explorerManager.setRootContext(rootNode = new RootNode(filtered));
         explorerManager.addPropertyChangeListener(this);
 
         initFilter();
@@ -89,10 +89,9 @@ final class ResultPanelTree extends JPanel
                     true)));
         btnFilter.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(getClass(), "ACSN_FilterButton"));  //NOI18N
-        btnFilter.setEnabled(false);
-        
-        updateFilter();
         btnFilter.addItemListener(this);
+        
+        updateBtnFilterLabel();
     }
     
     /**
@@ -126,12 +125,10 @@ final class ResultPanelTree extends JPanel
     
     /**
      */
-    private void updateFilter() {
-        final boolean filtered = btnFilter.isSelected();
+    private void updateBtnFilterLabel() {
         String key = filtered
                      ? "MultiviewPanel.btnFilter.showAll.tooltip"       //NOI18N
                      : "MultiviewPanel.btnFilter.showFailures.tooltip"; //NOI18N
-        setFiltered(filtered);
         btnFilter.setToolTipText(NbBundle.getMessage(getClass(), key));
     }
     
@@ -139,12 +136,17 @@ final class ResultPanelTree extends JPanel
      */
     public void itemStateChanged(ItemEvent e) {
         /* called when the Filter button is toggled. */
-        updateFilter();
+        setFiltered(btnFilter.isSelected());
+        updateBtnFilterLabel();
     }
     
     /**
      */
     void displayMsg(String msg) {
+        assert EventQueue.isDispatchThread();
+        
+        /* Called from the EventDispatch thread */
+        
         rootNode.displayMessage(msg);
     }
     
@@ -160,10 +162,24 @@ final class ResultPanelTree extends JPanel
     
     /**
      */
+    void displaySuiteRunning(final String suiteName) {
+        assert EventQueue.isDispatchThread();
+        
+        /* Called from the EventDispatch thread */
+        
+        rootNode.displaySuiteRunning(suiteName);
+    }
+    
+    /**
+     */
     void displayReport(final Report report) {
-        rootNode.displayReport(report);
+        assert EventQueue.isDispatchThread();
+        
+        /* Called from the EventDispatch thread */
+        
+        TestsuiteNode node = rootNode.displayReport(report);
         if (report.containsFailed()) {
-            treeView.expandNodes(rootNode);     //PENDING - is it what you want?
+            treeView.expandReportNode(node);
         }
         
         btnFilter.setEnabled(
@@ -173,6 +189,10 @@ final class ResultPanelTree extends JPanel
     /**
      */
     void displayReports(final List/*<Report>*/ reports) {
+        assert EventQueue.isDispatchThread();
+        
+        /* Called from the EventDispatch thread */
+        
         final int count = reports.size();
         if (count == 0) {
             return;
@@ -183,6 +203,9 @@ final class ResultPanelTree extends JPanel
         } else {
             rootNode.displayReports(reports);
         }
+        
+        btnFilter.setEnabled(
+             rootNode.getSuccessDisplayedLevel() != RootNode.ALL_PASSED_ABSENT);
     }
     
     /**
@@ -196,12 +219,6 @@ final class ResultPanelTree extends JPanel
 
     /**
      */
-    private RootNode createRootNode() {
-        return new RootNode();
-    }
-    
-    /**
-     */
     void setFiltered(final boolean filtered) {
         if (filtered == this.filtered) {
             return;
@@ -209,9 +226,7 @@ final class ResultPanelTree extends JPanel
         
         this.filtered = filtered;
         
-        if (rootNode != null) {
-            rootNode.setFiltered(filtered);
-        }
+        rootNode.setFiltered(filtered);
     }
 
     /**
