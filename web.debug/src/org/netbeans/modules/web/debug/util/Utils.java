@@ -79,18 +79,12 @@ public class Utils {
 
     public static String getTargetServerID(FileObject fo) {
         if (fo != null) {
-            WebModule wm = WebModule.getWebModule(fo);
-            if (wm != null) {
-                FileObject docBase = wm.getDocumentBase();
-                if (docBase != null) {
-                    Project p = FileOwnerQuery.getOwner(docBase);
-                    if (p != null) {
-                        J2eeModuleProvider mp = (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
-                        if (mp != null) {
-                            String serverID = mp.getServerID();
-                            return serverID;
-                        }
-                    }
+            Project p = FileOwnerQuery.getOwner(fo);
+            if (p != null) {
+                J2eeModuleProvider mp = (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
+                if (mp != null) {
+                    String serverID = mp.getServerID();
+                    return serverID;
                 }
             }
         }
