@@ -220,6 +220,7 @@ public class FileStatusCache {
             entry = cvs.getAdminHandler().getEntry(file);
         } catch (IOException e) {
             // no entry for this file
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         FileInformation fi = createFileInformation(file, entry, repositoryStatus);
         if (equivalent(fi, current)) return fi;
@@ -611,7 +612,7 @@ public class FileStatusCache {
             // CVS reports: cvs.exe update: move away THIS_FILE; it is in the way
             return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, false);
         }
-        throw new IllegalArgumentException("Unknown repository status: " + (char)repositoryStatus); // NOI18N
+        throw new IllegalArgumentException("Unknown repository status: " + (char)repositoryStatus + " for: " + file.getAbsolutePath()); // NOI18N
     }
 
     private boolean isInsideCvsMetadata(File file) {

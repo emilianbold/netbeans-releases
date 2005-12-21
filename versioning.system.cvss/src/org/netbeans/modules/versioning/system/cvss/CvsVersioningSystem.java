@@ -57,7 +57,8 @@ public class CvsVersioningSystem {
     public static final Object PARAM_BATCH_REFRESH_RUNNING = new Object();
 
     private static final String FILENAME_CVS_REPOSITORY = FILENAME_CVS + "/Repository"; // NOI18N
-    
+    private static final String FILENAME_CVS_ENTRIES = FILENAME_CVS + "/Entries"; // NOI18N
+
     /**
      * Extensions to be treated as text although MIME type may suggest otherwise.
      */ 
@@ -352,7 +353,8 @@ public class CvsVersioningSystem {
         if (file.isFile()) file = file.getParentFile();
         for (; file != null; file = file.getParentFile()) {
             File repository = new File(file, FILENAME_CVS_REPOSITORY);
-            if (repository.canRead()) return true;
+            File entries = new File(file, FILENAME_CVS_ENTRIES);
+            if (repository.canRead() && entries.canRead()) return true;
         }
         return false;
     }
