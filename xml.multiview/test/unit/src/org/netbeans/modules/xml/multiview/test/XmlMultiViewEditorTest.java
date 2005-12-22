@@ -101,6 +101,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         } catch (Exception ex) {
             throw new AssertionFailedErrorException("Failed to set the title for Chapter: ", ex);
         }
+        Helper.waitForDispatchThread();
         // open XML View
         ((EditCookie) bookDO.getCookie(EditCookie.class)).edit();
         // handle consequent calls of SwingUtilities.invokeLater();
