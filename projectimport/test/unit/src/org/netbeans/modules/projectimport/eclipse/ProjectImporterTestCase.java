@@ -30,7 +30,7 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author mkrauskopf
  */
-class ProjectImporterTestCase extends NbTestCase {
+public class ProjectImporterTestCase extends NbTestCase {
     
     private static final int BUFFER = 2048;
     
@@ -39,9 +39,6 @@ class ProjectImporterTestCase extends NbTestCase {
      * console.
      */
     private static boolean verbose;
-    
-    private File jars;
-    private File workDir;
     
     /** Creates a new instance of ProjectImporterTestCase */
     public ProjectImporterTestCase(String name) {
@@ -53,8 +50,6 @@ class ProjectImporterTestCase extends NbTestCase {
         /* comment this out to see verbose info */
         // setVerbose(true);
         clearWorkDir();
-        workDir = getWorkDir();
-        jars = new File(ProjectImporterTestCase.class.getResource("jars").getFile());
     }
     
     protected void tearDown() throws Exception {
@@ -70,16 +65,16 @@ class ProjectImporterTestCase extends NbTestCase {
      * XXX - doesn't similar method already exist somewhere in the API?
      * XXX - If not replace with JarFileSystem as hinted by Radek :)
      */
-    protected File extractJARToWorkDir(String jarFile) throws IOException {
+    protected File extractToWorkDir(String archiveFile) throws IOException {
         ZipInputStream zis = null;
         BufferedOutputStream dest = null;
         try {
-            FileInputStream fis = new FileInputStream(new File(jars, jarFile));
+            FileInputStream fis = new FileInputStream(new File(getDataDir(), archiveFile));
             zis = new ZipInputStream(new BufferedInputStream(fis));
             ZipEntry entry;
             while((entry = zis.getNextEntry()) != null) {
                 byte data[] = new byte[BUFFER];
-                File entryFile = new File(workDir, entry.getName());
+                File entryFile = new File(getWorkDir(), entry.getName());
                 if (entry.isDirectory()) {
                     entryFile.mkdirs();
                 } else {
@@ -96,8 +91,8 @@ class ProjectImporterTestCase extends NbTestCase {
             if (zis != null) { zis.close(); }
             if (dest != null) { dest.close(); }
         }
-        // return the directory (without ".jar" - convention used here)
-        return new File(workDir, jarFile.substring(0, jarFile.length() - 4));
+        // return the directory (without ".zip" - convention used here)
+        return new File(getWorkDir(), archiveFile.substring(0, archiveFile.length() - 4));
     }
     
     protected static void printMessage(String message, boolean newLine) {

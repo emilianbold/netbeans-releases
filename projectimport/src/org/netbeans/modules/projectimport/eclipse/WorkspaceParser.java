@@ -13,12 +13,10 @@
 
 package org.netbeans.modules.projectimport.eclipse;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -33,12 +31,12 @@ import org.netbeans.modules.projectimport.ProjectImporterException;
  */
 final class WorkspaceParser {
     
-    private static final String VM_XML = "org.eclipse.jdt.launching.PREF_VM_XML";
+    private static final String VM_XML = "org.eclipse.jdt.launching.PREF_VM_XML"; // NOI18N
     
-    private static final String VARIABLE_PREFIX = "org.eclipse.jdt.core.classpathVariable.";
+    private static final String VARIABLE_PREFIX = "org.eclipse.jdt.core.classpathVariable."; // NOI18N
     private static final int VARIABLE_PREFIX_LENGTH = VARIABLE_PREFIX.length();
     
-    private static final String USER_LIBRARY_PREFIX = "org.eclipse.jdt.core.userLibrary.";
+    private static final String USER_LIBRARY_PREFIX = "org.eclipse.jdt.core.userLibrary."; // NOI18N
     private static final int USER_LIBRARY_PREFIX_LENGTH = USER_LIBRARY_PREFIX.length();
     
     //    private static final String CP_CONTAINER_PREFIX =
@@ -63,12 +61,12 @@ final class WorkspaceParser {
             parseWorkspaceProjects();
         } catch (IOException e) {
             throw new ProjectImporterException(
-                    "Cannot load workspace properties", e);
+                    "Cannot load workspace properties", e); // NOI18N
         }
     }
     
     private void parseLaunchingPreferences() throws IOException, ProjectImporterException {
-        Properties launchProps = loadProperties(workspace.getLaunchingPrefsFile());
+        Properties launchProps = EclipseUtils.loadProperties(workspace.getLaunchingPrefsFile());
         for (Iterator it = launchProps.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry entry = (Map.Entry) it.next();
             String key = (String) entry.getKey();
@@ -81,7 +79,7 @@ final class WorkspaceParser {
     }
     
     private void parseCorePreferences() throws IOException, ProjectImporterException {
-        Properties coreProps = loadProperties(workspace.getCorePreferenceFile());
+        Properties coreProps = EclipseUtils.loadProperties(workspace.getCorePreferenceFile());
         for (Iterator it = coreProps.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry entry = (Map.Entry) it.next();
             String key = (String) entry.getKey();
@@ -163,7 +161,7 @@ final class WorkspaceParser {
     
     /** Loads location of external project. */
     private File getLocation(File prjDir) throws ProjectImporterException {
-        File locationFile = new File(prjDir, ".location");
+        File locationFile = new File(prjDir, ".location"); // NOI18N
         if (locationFile.isFile()) {
             FileInputStream fis = null;
             try {
@@ -178,10 +176,10 @@ final class WorkspaceParser {
                 // follows path itself
                 byte[] path = new byte[pathLength];
                 fis.read(path);
-                return new File(new String(path, "ISO-8859-1"));
+                return new File(new String(path, "ISO-8859-1")); // NOI18N
             } catch (IOException e) {
-                throw new ProjectImporterException("Error during reading " +
-                        ".location file", e);
+                throw new ProjectImporterException("Error during reading " + // NOI18N
+                        ".location file", e); // NOI18N
             } finally {
                 if (fis != null) {
                     try {
@@ -193,19 +191,6 @@ final class WorkspaceParser {
             }
         }
         return null;
-    }
-    
-    /**
-     * Load properties from a given <code>file</code>.
-     *
-     * @throws IOException when reading file failed
-     */
-    private Properties loadProperties(File file) throws IOException {
-        InputStream propsIS = new BufferedInputStream(new FileInputStream(file));
-        Properties properties = new Properties();
-        properties.load(propsIS);
-        propsIS.close();
-        return properties;
     }
     
 }

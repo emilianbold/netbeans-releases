@@ -13,7 +13,12 @@
 
 package org.netbeans.modules.projectimport.eclipse;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -97,4 +102,23 @@ public class EclipseUtils {
         }
         return false;
     }
+    
+    /**
+     * Load properties from a given <code>file</code>.
+     * <p>
+     * <strong>Note: package private for unit tests only.</strong>
+     * 
+     * @throws IOException when reading file failed
+     */
+    static Properties loadProperties(File file) throws IOException {
+        InputStream propsIS = new BufferedInputStream(new FileInputStream(file));
+        Properties properties = new Properties();
+        try {
+            properties.load(propsIS);
+        } finally {
+            propsIS.close();
+        }
+        return properties;
+    }
+    
 }

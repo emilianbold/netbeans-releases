@@ -54,7 +54,6 @@ public class EqualityAndHashCodeTest extends NbTestCase {
     
     /** tests ClassPathContent.Link.equals() */
     public void testLinksEquality() {
-        System.out.println("testLinksEquality");
         assertNotSame("link2 and theSameAsLink2 shouldn't be the same " +
                 "(link2 == theSameAsLink2)", link2, theSameAsLink2);
         assertEquals("link2 should be equal to theSameAsLink2",
@@ -66,7 +65,6 @@ public class EqualityAndHashCodeTest extends NbTestCase {
     
     /** tests ClassPathContent.Link.hashCode() */
     public void testLinksHashCodes() {
-        System.out.println("testLinksHashCodes");
         assertEquals("link2 and theSameAsLink2 should generate the same hashCode",
                 link2.hashCode(), theSameAsLink2.hashCode());
         theSameAsLink2.setType(ClassPath.Link.TYPE_FOLDER);
@@ -75,7 +73,6 @@ public class EqualityAndHashCodeTest extends NbTestCase {
     }
     /** tests ClassPathContent.Variable.equals() */
     public void testVariablesEquality() {
-        System.out.println("testVariablesEquality");
         assertNotSame("var2 and theSameAsVar2 shouldn't be the same " +
                 "(var2 == theSameAsVar2)", var2, theSameAsVar2);
         assertEquals("var2 should be equal to theSameAsVar2",
@@ -87,11 +84,11 @@ public class EqualityAndHashCodeTest extends NbTestCase {
     
     /** tests ClassPathContent.Variable.hashCode() */
     public void testVariablesHashCodes() {
-        System.out.println("testVariablesHashCodes");
         assertEquals("var2 and theSameAsVar2 should generate the same hashCode",
                 var2.hashCode(), theSameAsVar2.hashCode());
         theSameAsVar2.setLocation(theSameAsVar2.getLocation() + "a");
         assertFalse("var2 and theSameAsVar2 shouldn't generate the same hashCode",
                 var2.hashCode() == theSameAsLink2.hashCode());
     }
+
 }
