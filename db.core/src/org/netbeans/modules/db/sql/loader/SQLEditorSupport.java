@@ -267,7 +267,10 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
                 return;
             }
 
+            // this causes the CloneableEditors to be initialized after deserialization, 
+            // avoiding the NPE in issue 70695
             JEditorPane[] panes = getOpenedPanes();
+            
             if (panes.length <= 0) {
                 throw new IllegalStateException("Cannot execute if the DataObject is not open in an editor."); // NOI18N
             }
@@ -325,7 +328,13 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
                 Enumeration editors = allEditors.getComponents();
                 while (editors.hasMoreElements()) {
                     SQLCloneableEditor editor = (SQLCloneableEditor)editors.nextElement();
-                    editor.getResultComponent().setModel(model);
+                    SQLResultPanel resultComponent = editor.getResultComponent();
+                    
+                    // resultComponent will be null for a deserialized 
+                    // and not initialized CloneableEditor
+                    if (resultComponent != null) {
+                        resultComponent.setModel(model);
+                    }
                 }
             }
         });
@@ -446,6 +455,12 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
 
         private void createResultComponent() {
             JPanel container = findContainer(this);
+            if (container == null) {
+                // the editor has just been deserialized and has not been initialized yet
+                // thus CES.wrapEditorComponent() has not been called yet
+                return;
+            }
+            
             Component editor = container.getComponent(0);
             resultComponent = new SQLResultPanel();
             splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editor, resultComponent);
