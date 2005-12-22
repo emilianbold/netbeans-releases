@@ -51,7 +51,7 @@ function fail {
 processParams $@
 
 if [ -z "$WORKSPACE" -o -z "$PROJECTS" ]; then
-  echo "Workspace and projects must be defined."
+  echo "Usage: `basename $0` --workspace|-w <workspace> --projects|-p <project>..."
   exit 3
 fi
 
