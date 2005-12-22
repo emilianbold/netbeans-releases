@@ -29,99 +29,17 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/explorer/propertysheet/*"/>
-                <exclude name="org/openide/explorer/propertysheet/DefaultPropertyModelTest.class"/>
-                <exclude name="org/openide/explorer/propertysheet/PropertySheetTest.class"/>
-        		</patternset>
-    		</testset>
+            </patternset>
+        </testset>
     </testbag>
         
     
     <testbag testattribs="stable" executor="code" name="all openide code unit tests">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/openide/awt/*Test.class"/>
-                <include name="org/openide/execution/*Test.class"/>
-                <include name="org/openide/explorer/*Test.class"/>
-                <!-- Under development: -->
-                <exclude name="org/openide/explorer/*Test.class/testSelectedNodesInDeserializedPanel"/>
-                <!-- testGlobalStateInExplorerActionsIsImportant sometimes fails, have to be investigated -->
-                <exclude name="org/openide/explorer/ExplorerActionsTest.class/testGlobalStateInExplorerActionsIsImportant"/>
-                <!-- following test was excluded because of issue #22629 --> 
-                <exclude name="org/openide/explorer/FindHelpTest.class"/>
-                <!-- filesystems tests should be stable. If not file a bug: -->                
-                <include name="org/openide/filesystems/*.class"/>
-                <exclude name="org/openide/filesystems/JarFileSystemTest.class/testForSpaces"/>
-                <!-- Under development: -->
-                <exclude  name="org/openide/filesystems/MultiFileSystemMaskTest.class"/>                                         
-                <!-- #39613, nbfs protocol is internally inconsistent: -->
-                <exclude name="org/openide/filesystems/XMLFileSystemTest.class/testGetURL"/>
-                <include name="org/openide/loaders/*.class"/>                
-                <!-- pending fix template wizard -->
-                <exclude name="org/openide/loaders/TemplateWizardTest.class/testNextOnIterImplWithNotification"/>
-                <!-- #28118 in faling testbag yet -->
-                <exclude name="org/openide/loaders/InstanceDataObjectTest.class/testFiringEventWhenDeleted"/>
-                <!-- Under development: -->
-                <exclude name="org/openide/loaders/CreateFromTemplateTest.class"/>
-                <!-- Don't worry about these, cannot be fixed currently: -->
-                <exclude name="org/openide/loaders/DataFolderTest.class/testSortMode"/> <!-- failing in cont. test -->
-                <exclude name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/> <!-- failing in cont. test -->
-                <!-- following was disabled because of issue #20179 -->
-                <exclude name="org/openide/loaders/DataFolderMoveTest.class"/>
-                <!-- x -->
-                <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart1"/>
-                <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart3"/>
-                <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart4"/>
-                <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart5"/>
-                <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart7"/>
-                <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart8"/>
-                
-                <!-- If #2, #3, or #4 are seen to fail, just add them above, no big deal. -->
-                <!-- But if #6 is seen failing, please file a bug report, that is more serious. -->
-                <include name="org/openide/nodes/*.class"/>
-                <include name="org/openide/options/*Test.class"/>
-                <include name="org/openide/util/*.class"/>
-                <include name="org/openide/util/lookup/*.class"/>
-                <!-- excluded, needs an ide executor -->
-                <exclude name="org/openide/util/UtilProgressCursorTest.class"/>
-                <include name="org/openide/util/actions/*Test.class"/>
-                <!-- following test was excluded because of issue #22629 
-                <include name="org/openide/explorer/FindHelpTest.class"/>
-                -->                
-                
-                <include name="org/openide/compiler/*Test.class"/>
-                
-                <!-- run text package tests -->
-                <include name="org/openide/text/*Test.class"/>
-                
-                <!-- run also wizard's tests -->
-                <include name="org/openide/WizardDescTest.class"/>
-                <include name="org/openide/InstantiatingIteratorTest.class"/>
-                <include name="org/openide/WizardDescriptorOrderTest.class"/>
-
-                <!-- temporary excluded becase issue 49347 -->
-                <exclude name="org/openide/InstantiatingIteratorTest.class/testCleanChangeListenerAfterFinish"/>
-                <exclude name="org/openide/InstantiatingIteratorTest.class/testCleanChangeListenerAfterCancel"/>
-
-                <!-- #49333: Call WD.II.instantiate() outside AWT queue -->
-                <exclude name="org/openide/InstantiatingIteratorTest.class/testInstantiateOutsideAWTQueue"/>
-                
-                <!-- run also window system tests -->
-                <include name="org/openide/windows/*Test.class"/>
-                <!-- the TopComponentTest excluded because of issue # -->
-                <exclude name="org/openide/windows/TopComponentTest.class"/>                
-                <!-- originally part of ide mode -->
-                <include name="org/openide/explorer/propertysheet/DefaultPropertyModelTest.class"/>
-                <include name="org/openide/explorer/propertysheet/PropertySheetTest.class"/>
-
-                <include name="org/openide/explorer/view/*.class"/>
-                <!-- the ListViews excluded because of issue #29423 -->
-                <exclude name="org/openide/explorer/view/ListViewTest.class"/>
-
-                <include name="org/openide/util/UtilProgressCursorTest.class"/>
-                <!-- excluded, a problem in infrastructure, the component is not showed -->
-                <exclude name="org/openide/explorer/view/DefaultActionTest.class"/>
-                <include name="org/openide/explorer/view/TTVTest.class"/>
-                
+                <include name="**/*"/>
+                <!-- part of sheet test suite -->
+                <exclude name="org/openide/explorer/propertysheet/*"/>
             </patternset>
         </testset>
     </testbag>
@@ -129,26 +47,6 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="failing" executor="code" name="testbag_3">
         <testset dir="unit/src">
             <patternset>
-                <!-- See above. -->
-                <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart1"/>
-                <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart3"/>
-                <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart4"/>
-                <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart5"/>
-                <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart7"/>
-                <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart8"/>
-                <!-- failing in cont. test -->
-                <include name="org/openide/loaders/DataFolderTest.class/testSortMode"/>
-                <include name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/>
-                <!-- #28118 -->
-                <include name="org/openide/loaders/InstanceDataObjectTest.class/testFiringEventWhenDeleted"/>
-                <!-- Nodes -->
-                <!-- include name="org/openide/nodes/FilterNodeTest.class"/ -->
-                <include name="org/openide/nodes/CookieSetTest*class"/>
-                <!-- #24851: -->
-                <include name="org/openide/nodes/ChildrenArrayTest.class/testNodeEventsFiredAtOnce"/>
-                <!-- Implementation was apparently killed during a refactoring (see #16430): -->
-                <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetRow"/>
-                <include name="org/openide/explorer/ExplorerPanelTest.class/testSelectedNodesInDeserializedPanel"/>
             </patternset>
         </testset>
     </testbag>
@@ -158,14 +56,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
     <testbag testattribs="empty" executor="code" name="testbag_empty">
         <testset dir="unit/src"/>
-    </testbag>
-    
-    <testbag testattribs="dev" executor="code" name="testbag_dev">
-        <testset dir="unit/src">
-            <patternset>
-                <!-- Add your own code tests -->
-            </patternset>
-        </testset>
     </testbag>
     
     <!--<executor name="code" antfile="build.xml" target="runcodetest"/>
