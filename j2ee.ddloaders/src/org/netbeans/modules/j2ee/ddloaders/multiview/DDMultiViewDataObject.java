@@ -33,6 +33,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.Reader;
 import java.util.Date;
 import java.lang.ref.WeakReference;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author pfiala
@@ -64,7 +65,11 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
                     NbBundle.getMessage(DDMultiViewDataObject.class, "TXT_DocumentUnparsable",
                             getPrimaryFile().getNameExt()), NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
-            goToXmlView();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    goToXmlView();
+                }
+            },200);
         }
     }
 
