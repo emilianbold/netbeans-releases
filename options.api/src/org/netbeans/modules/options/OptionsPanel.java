@@ -102,7 +102,7 @@ public class OptionsPanel extends JPanel {
     private Color                   iconViewBorder = new Color (127, 157, 185);
     private ControllerListener      coltrollerListener = new ControllerListener ();
     
-    private final boolean           isMac = UIManager.getLookAndFeel().getID().equals("Aqua");
+    private final boolean           isMac = UIManager.getLookAndFeel ().getID ().equals ("Aqua");
     private final Color             selectedMac = new Color(221, 221, 221);
     private final Color             selectedBMac = new Color(183, 183, 183);
     private final Color             borderMac = new Color(141, 141, 141);
@@ -553,13 +553,10 @@ public class OptionsPanel extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
-        if (isMac) {
-            gbc.gridx = gbc.gridx + 1;
+        if (isMac)
             gbc.gridy = 0;
-        } else {
+        else
             gbc.gridx = 0;
-            gbc.gridy = gbc.gridy + 1;
-        }
         pCategories2.add (new javax.swing.JLabel (""), gbc);
     }
     
