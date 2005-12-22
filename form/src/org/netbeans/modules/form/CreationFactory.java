@@ -697,10 +697,16 @@ public class CreationFactory {
         // AWT --------
 
         // Dialog
+        constrParamTypes = new Class[][] {
+            { java.awt.Frame.class },
+        };
+        constrPropertyNames = new String[][] {
+            { "owner" },
+        };
         defaultConstrParams = new Object[] { new java.awt.Frame() };
         registerDescriptor(new CreationDescriptor(
             java.awt.Dialog.class,
-            null, null, defaultConstrParams));
+            constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // other -------
 
