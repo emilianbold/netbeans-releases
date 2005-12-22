@@ -69,7 +69,7 @@ public final class AdvancedPanelController extends OptionsPanelController {
         getAdvancedPanel ().removePropertyChangeListener (l);
     }
 
-    private AdvancedPanel advancedPanel = new AdvancedPanel ();
+    private AdvancedPanel advancedPanel;
     
     private AdvancedPanel getAdvancedPanel () {
         if (advancedPanel == null)
