@@ -96,12 +96,13 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         try {
             JTextField titleTF = Helper.getChapterTitleTF(bookDO, bookDO.getBook().getChapter()[1]);
             titleTF.requestFocus();
-            titleTF.getDocument().remove(0, titleTF.getDocument().getLength());
-            titleTF.getDocument().insertString(0, "The garden full of beans", null);
+            Helper.waitForDispatchThread();
+            javax.swing.text.Document doc = titleTF.getDocument();
+            doc.remove(0, doc.getLength());
+            doc.insertString(0, "The garden full of beans", null);
         } catch (Exception ex) {
             throw new AssertionFailedErrorException("Failed to set the title for Chapter: ", ex);
         }
-        Helper.waitForDispatchThread();
         // open XML View
         ((EditCookie) bookDO.getCookie(EditCookie.class)).edit();
         // handle consequent calls of SwingUtilities.invokeLater();
