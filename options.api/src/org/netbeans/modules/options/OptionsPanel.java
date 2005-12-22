@@ -28,6 +28,7 @@ import java.awt.BorderLayout;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.SystemColor;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -37,6 +38,7 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -59,6 +61,7 @@ import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import org.netbeans.modules.options.advanced.Advanced;
 import org.netbeans.modules.options.ui.LoweredBorder;
 import org.netbeans.modules.options.ui.VariableBorder;
 import org.netbeans.spi.options.OptionsCategory;
@@ -80,12 +83,14 @@ import org.openide.util.lookup.ProxyLookup;
 public class OptionsPanel extends JPanel {
     
     private JPanel                  pCategories;
+    private JPanel                  pCategories2;
     private JPanel                  pOptions;
     private JLabel                  lTitle;
     //                              List (OptionsCategory)
-    private List                    optionCategories;
+    private List                    optionCategories = Collections.EMPTY_LIST;
     private int                     currentCategory = -1;
-    private Button[]                buttons;
+    //                              List (Button)
+    private List                    buttons = new ArrayList ();
     private Map                     categoryToPanel = new HashMap ();
     private Map                     categoryToController = new HashMap ();
     private Set                     updatedCategories = new HashSet ();
@@ -112,220 +117,48 @@ public class OptionsPanel extends JPanel {
     /** Creates new form OptionsPanel */
     public OptionsPanel () {
 
-        // 1) Load panels.
-        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().
-            findResource ("OptionsDialog");
-        if (fo != null) {
-            Lookup lookup = new FolderLookup (DataFolder.findFolder (fo)).
-                getLookup ();
-            optionCategories = new ArrayList (lookup.lookup (
-                new Lookup.Template (OptionsCategory.class)
-            ).allInstances ());
-        }
-
-        pOptions = new JPanel ();
-        pOptions.setLayout (new BorderLayout ());
+        // 1) init UI components, layout and actions, and add some default values
+        initUI ();
         
-        // size of options panel shoud be max of all nested panels
-        int maxW = 0, maxH = 0;
-        List lookups = new ArrayList ();
-        int i, k = optionCategories.size ();
-        for (i = 0; i < k; i++) {
-            OptionsCategory category = (OptionsCategory) optionCategories.
-                get (i);
-            OptionsPanelController controller = category.create ();
-            lookups.add (controller.getLookup ());
-            categoryToController.put (category, controller);
-            controller.addPropertyChangeListener (coltrollerListener);
-        }
-        Lookup masterLookup = new ProxyLookup 
-            ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
-        k = optionCategories.size ();
-        for (i = 0; i < k; i++) {
-            OptionsCategory category = (OptionsCategory) optionCategories.
-                get (i);
-            OptionsPanelController controller = (OptionsPanelController) 
-                categoryToController.get (category);
-            JComponent component = controller.getComponent (masterLookup);
-            categoryToPanel.put (category, component);
-            maxW = Math.max (maxW, component.getPreferredSize ().width);
-            maxH = Math.max (maxH, component.getPreferredSize ().height);
-            //S ystem.out.println (category.getCategoryName () + " : " + component.getPreferredSize ());
-        }
-        pOptions.setPreferredSize (new Dimension (maxW, maxH));
-
-        // title bar
-        JPanel pTitle = new JPanel (new BorderLayout ());
-        lTitle = new JLabel ();
-        if (Utilities.isWindows ()) {
-            lTitle.setBackground (SystemColor.activeCaption);
-            lTitle.setForeground (SystemColor.activeCaptionText);
-        } else {
-            lTitle.setBackground (Color.white);
-            lTitle.setForeground (Color.black);
-        }
-        Font f = lTitle.getFont ();
-        lTitle.setFont (new Font (f.getName (), Font.BOLD, 16));
-        lTitle.setIconTextGap (8);
-        lTitle.setOpaque (true);
-        if (Utilities.isWindows ()) {
-            pTitle.setBorder (new CompoundBorder (
-                new LoweredBorder (),
-                new LineBorder (SystemColor.activeCaption, 1)
-            ));
-        } else {
-            pTitle.setBorder (new CompoundBorder (
-                new LineBorder (iconViewBorder, 1),
-                new LineBorder (Color.white, 2)
-            ));
-        }
-        pTitle.add ("Center", lTitle);
-
-        // icon view
-        pCategories = new JPanel (new BorderLayout ());
-        JPanel pCategories2 = new JPanel (new GridBagLayout());
-        pCategories.add ("North", pCategories2);
-        if(isMac) {
-            pCategories.setBorder(new CompoundBorder (
-                    new VariableBorder(null, null, borderMac, null),
-                    BorderFactory.createEmptyBorder(0, 4, 0, 4)
-                ));
-        } else {
-            pCategories.setBorder(new LineBorder (iconViewBorder));
-        }
-        pCategories.setBackground (Color.white);
-        pCategories2.setBackground (Color.white);
-        pCategories2.setBorder (null);
-        
-        // add buttons
-        k = optionCategories.size ();
-        buttons = new Button [k];
-        InputMap inputMap = getInputMap 
-            (JComponent.WHEN_IN_FOCUSED_WINDOW);
-        inputMap.put (
-            isMac ? KeyStroke.getKeyStroke (KeyEvent.VK_LEFT, 0) : 
-                    KeyStroke.getKeyStroke (KeyEvent.VK_UP, 0), 
-            "UP"
-        );
-        getActionMap ().put ("UP", new UpAction ());
-        inputMap.put (
-            KeyStroke.getKeyStroke (KeyEvent.VK_SPACE, 0), 
-            "SPACE"
-        );
-        getActionMap ().put ("SPACE", new SelectCurrentAction ());
-        inputMap.put (
-            isMac ? KeyStroke.getKeyStroke (KeyEvent.VK_RIGHT, 0) :
-                    KeyStroke.getKeyStroke (KeyEvent.VK_DOWN, 0), 
-            "DOWN"
-        );
-        getActionMap ().put ("DOWN", new DownAction ());
-        
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        if (isMac) {
-            gbc.fill = GridBagConstraints.VERTICAL;
-            gbc.weightx = 0.0;
-            gbc.weighty = 1.0;
-        } else {
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 1.0;
-            gbc.weighty = 0.0;
-        }
-        
-        for (i = 0; i < k; i++) {
-            final OptionsCategory category = (OptionsCategory) 
-                optionCategories.get (i);
-            Button b = new Button (category, i);
-            buttons [i] = b;
-            int mnemonic = b.getDisplayedMnemonic ();
-            KeyStroke keyStroke = KeyStroke.getKeyStroke 
-                (mnemonic, KeyEvent.ALT_MASK);
-            inputMap.put (keyStroke, b);
-            getActionMap ().put (b, new SelectAction (i));
-            
-            if (isMac) {
-                gbc.gridx = i;
-                gbc.gridy = 0;
-            } else {
-                gbc.gridx = 0;
-                gbc.gridy = i;
-            }
-            
-            pCategories2.add (b, gbc);
-        }
-        
-        /* i don't know a better workaround */
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        if (isMac) {
-            gbc.gridx = gbc.gridx + 1;
-            gbc.gridy = 0;
-        } else {
-            gbc.gridx = 0;
-            gbc.gridy = gbc.gridy + 1;
-        }
-        pCategories2.add (new javax.swing.JLabel(""), gbc);
-        
-        
-        // layout
-        FormLayout layout;
-        if (isMac) {
-            layout = new FormLayout(
-                "p:g", // cols
-                "p, 5dlu, p:g");      // rows
-        } else {
-            layout = new FormLayout(
-                "p, 5dlu, p:g", // cols
-                "p, 5dlu, p:g");      // rows
-        }
-        PanelBuilder builder = new PanelBuilder (layout, this);
-        if (isMac) {
-            pOptions.setBorder(new CompoundBorder (
-                    new VariableBorder(null, null, borderMac, null),
-                    BorderFactory.createEmptyBorder(0, 20, 5, 20)
-                    ));
-        } else {
-            builder.setDefaultDialogBorder ();
-        }
-        CellConstraints cc = new CellConstraints ();
-        if (isMac) {
-            builder.add (    pCategories, cc.xy  (1, 1));
-            builder.add (    pOptions,     cc.xy    (1, 3, "f,f"));
-        } else {
-            builder.add (    pCategories, cc.xywh  (1, 1, 1, 3));
-            builder.add (    pTitle,       cc.xy    (3, 1));
-            builder.add (    pOptions,     cc.xy    (3, 3, "f,f"));
-        }
-        
-        if (k < 1) return;
-        OptionsCategory category = (OptionsCategory) optionCategories.get (0);
-        OptionsPanelController controller = (OptionsPanelController) 
-            categoryToController.get (category);
-        try {
-            controller.update ();
-            updatedCategories.add (category);
-        } catch (Throwable t) {
-            ErrorManager.getDefault ().notify (t);
-        }
-        setCurrentIndex (0);
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                Iterator it = optionCategories.iterator ();
-                it.next ();
-                int i = 1;
-                while (it.hasNext ())
-                    try {
-                        OptionsCategory category = (OptionsCategory) it.next ();
-                        ((OptionsPanelController) categoryToController.get (category)).
-                            update ();
-                        updatedCategories.add (category);
-                        if (getCurrentIndex () == i)
-                            setCurrentIndex (i);
-                        i++;
-                    } catch (Throwable t) {
-                        ErrorManager.getDefault ().notify (t);
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+        
+                        // 2) Load OptionsCategory instances from layers
+                        optionCategories = loadOptionsCategories ();
+
+                        // 3) add buttons to icon view & inits buttons
+                        refreshButtons ();
+        
+                        // 4) init OptionsPanelControllers
+                        //    inits categoryToController
+                        initControllers ();
+
+                        // 5) create master lookup
+                        Lookup masterLookup = createMasterLookup ();
+
+                        // 6) init option panels & categoryToPanel map
+                        Dimension maxSize = initPanels (masterLookup);
+                        checkSize (maxSize);
+
+                        int i, k = optionCategories.size ();
+                        for (i = 0; i < k; i++)
+                            try {
+                                OptionsCategory category = (OptionsCategory) 
+                                    optionCategories.get (i);
+                                OptionsPanelController controller = (OptionsPanelController) categoryToController.get (category);
+                                controller.update ();
+                                updatedCategories.add (category);
+                                if (getCurrentIndex () == i)
+                                    setCurrentIndex (i);
+                            } catch (Throwable t) {
+                                ErrorManager.getDefault ().notify (t);
+                            }
+                        if (getCurrentIndex () < 0 && k > 0)
+                            setCurrentIndex (0);
                     }
+                });
             }
         });
     }
@@ -336,15 +169,45 @@ public class OptionsPanel extends JPanel {
     
     void setCurrentIndex (final int i) {
         if (currentCategory != -1)
-            buttons [currentCategory].setNormal ();
+            ((Button) buttons.get (currentCategory)).setNormal ();
         if (i != -1)
-            buttons [i].setSelected ();
+            ((Button) buttons.get (i)).setSelected ();
         currentCategory = i;
+        if (i >= optionCategories.size ()) {
+            switch (i) {
+            case 0:
+                lTitle.setIcon (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/options/resources/generalOptions.png")));
+                lTitle.setText (NbBundle.getMessage (OptionsPanel.class, "CTL_General_Options_Title"));
+                break;
+            case 1:
+                lTitle.setIcon (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/options/resources/editor.png")));
+                lTitle.setText (NbBundle.getMessage (OptionsPanel.class, "CTL_Editor_Title"));
+                break;
+            case 2:
+                lTitle.setIcon (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/options/resources/colors.png")));
+                lTitle.setText (NbBundle.getMessage (OptionsPanel.class, "CTL_Font_And_Color_Options_Title"));
+                break;
+            case 3:
+                lTitle.setIcon (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/options/resources/keymap.png")));
+                lTitle.setText (NbBundle.getMessage (OptionsPanel.class, "CTL_Keymap_Options_Title"));
+                break;
+            case 4:
+                lTitle.setIcon (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/options/resources/advanced.png")));
+                lTitle.setText (NbBundle.getMessage (Advanced.class, "CTL_Advanced_Options_Title"));
+                break;
+            }
+            return;
+        }
+        
         OptionsCategory category = (OptionsCategory) 
             optionCategories.get (i);
+        
+        // refresh central panel
         pOptions.removeAll ();
+        final Dimension size;
         if (updatedCategories.contains (category)) {
             JComponent component = (JComponent) categoryToPanel.get (category);
+            size = component.getSize ();
             pOptions.add (
                 "Center",
                 component
@@ -353,29 +216,39 @@ public class OptionsPanel extends JPanel {
         } else {
             JLabel label = new JLabel (loc ("CTL_Loading_Options"));
             label.setHorizontalAlignment (label.CENTER);
+            size = label.getSize ();
             pOptions.add ("Center", label);
         }
+        
+        // set title
         Icon icon = category.getIcon ();
         if (icon != null)
             lTitle.setIcon (icon);
         lTitle.setText (category.getTitle ());
+        
+        // repaint
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                invalidate ();
-                validate ();
-                repaint ();
+                if (!checkSize (size)) {
+                    invalidate ();
+                    validate ();
+                    repaint ();
+                }
                 if (i != -1)
-                    buttons [i].requestFocus ();
+                    ((Button) buttons.get (i)).requestFocus ();
             }
         });
         firePropertyChange ("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
     }
     
     HelpCtx getHelpCtx () {
+        if (getCurrentIndex () < 0) return null;
+        if (getCurrentIndex () >= optionCategories.size ()) return null;
         OptionsCategory category = (OptionsCategory) 
             optionCategories.get (getCurrentIndex ());
         OptionsPanelController controller = (OptionsPanelController) categoryToController.
             get (category);
+        if (controller == null) return null;
         return controller.getHelpCtx ();
     }
     
@@ -413,6 +286,308 @@ public class OptionsPanel extends JPanel {
         while (it.hasNext ())
             if (((OptionsPanelController) it.next ()).isChanged ()) return true;
         return false;
+    }
+
+    
+    // private methods .........................................................
+
+    private void initUI () {
+
+        // central panel
+        pOptions = new JPanel ();
+        pOptions.setLayout (new BorderLayout ());
+        pOptions.setPreferredSize (new Dimension (500, 500));
+        JLabel label = new JLabel (loc ("CTL_Loading_Options"));
+        label.setHorizontalAlignment (label.CENTER);
+        pOptions.add ("Center", label);
+        
+        // title bar
+        JPanel pTitle = new JPanel (new BorderLayout ());
+        lTitle = new JLabel ();
+        if (Utilities.isWindows ()) {
+            lTitle.setBackground (SystemColor.activeCaption);
+            lTitle.setForeground (SystemColor.activeCaptionText);
+        } else {
+            lTitle.setBackground (Color.white);
+            lTitle.setForeground (Color.black);
+        }
+        Font f = lTitle.getFont ();
+        lTitle.setFont (new Font (f.getName (), Font.BOLD, 16));
+        lTitle.setIconTextGap (8);
+        lTitle.setOpaque (true);
+        if (Utilities.isWindows ()) {
+            pTitle.setBorder (new CompoundBorder (
+                new LoweredBorder (),
+                new LineBorder (SystemColor.activeCaption, 1)
+            ));
+        } else {
+            pTitle.setBorder (new CompoundBorder (
+                new LineBorder (iconViewBorder, 1),
+                new LineBorder (Color.white, 2)
+            ));
+        }
+        lTitle.setIcon (getIcon (
+            "org/netbeans/modules/options/resources/generalOptions.png"
+        ));
+        lTitle.setText (NbBundle.getMessage (OptionsPanel.class, "CTL_General_Options_Title"));
+        pTitle.add ("Center", lTitle);
+
+        // icon view
+        pCategories2 = new JPanel (new GridBagLayout());
+        pCategories2.setBackground (Color.white);
+        pCategories2.setBorder (null);
+        addFakeButtons ();
+        pCategories = new JPanel (new BorderLayout ());
+        if (isMac) {
+            pCategories.setBorder (new CompoundBorder (
+                    new VariableBorder (null, null, borderMac, null),
+                    BorderFactory.createEmptyBorder (0, 4, 0, 4)
+                ));
+        } else {
+            pCategories.setBorder (new LineBorder (iconViewBorder));
+        }
+        pCategories.setBackground (Color.white);
+        pCategories.add ("North", pCategories2);
+        
+        // layout
+        FormLayout layout;
+        if (isMac) {
+            layout = new FormLayout(
+                "p:g", // cols
+                "p, 5dlu, p:g");      // rows
+        } else {
+            layout = new FormLayout(
+                "p, 5dlu, p:g", // cols
+                "p, 5dlu, p:g");      // rows
+        }
+        PanelBuilder builder = new PanelBuilder (layout, this);
+        if (isMac) {
+            pOptions.setBorder (new CompoundBorder (
+                new VariableBorder (null, null, borderMac, null),
+                BorderFactory.createEmptyBorder (0, 20, 5, 20)
+            ));
+        } else {
+            builder.setDefaultDialogBorder ();
+        }
+        CellConstraints cc = new CellConstraints ();
+        if (isMac) {
+            builder.add (    pCategories,  cc.xy    (1, 1));
+            builder.add (    pOptions,     cc.xy    (1, 3, "f,f"));
+        } else {
+            builder.add (    pCategories,  cc.xywh  (1, 1, 1, 3));
+            builder.add (    pTitle,       cc.xy    (3, 1));
+            builder.add (    pOptions,     cc.xy    (3, 3, "f,f"));
+        }
+        
+        initActions ();
+    }
+    
+    private void initActions () {
+        InputMap inputMap = getInputMap 
+            (JComponent.WHEN_IN_FOCUSED_WINDOW);
+        inputMap.put (
+            isMac ? KeyStroke.getKeyStroke (KeyEvent.VK_LEFT, 0) : 
+                    KeyStroke.getKeyStroke (KeyEvent.VK_UP, 0), 
+            "UP"
+        );
+        getActionMap ().put ("UP", new UpAction ());
+        inputMap.put (
+            KeyStroke.getKeyStroke (KeyEvent.VK_SPACE, 0), 
+            "SPACE"
+        );
+        getActionMap ().put ("SPACE", new SelectCurrentAction ());
+        inputMap.put (
+            isMac ? KeyStroke.getKeyStroke (KeyEvent.VK_RIGHT, 0) :
+                    KeyStroke.getKeyStroke (KeyEvent.VK_DOWN, 0), 
+            "DOWN"
+        );
+        getActionMap ().put ("DOWN", new DownAction ());
+    }
+    
+    private static List loadOptionsCategories () {
+        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().
+            findResource ("OptionsDialog");                            // NOI18N
+        if (fo != null) {
+            Lookup lookup = new FolderLookup (DataFolder.findFolder (fo)).
+                getLookup ();
+            return Collections.unmodifiableList (new ArrayList (lookup.lookup (
+                new Lookup.Template (OptionsCategory.class)
+            ).allInstances ()));
+        }
+        return Collections.EMPTY_LIST;
+    }
+    
+    private void initControllers () {
+        Iterator it = optionCategories.iterator ();
+        while (it.hasNext ()) {
+            OptionsCategory category = (OptionsCategory) it.next ();
+            OptionsPanelController controller = category.create ();
+            categoryToController.put (category, controller);
+            controller.addPropertyChangeListener (coltrollerListener);
+        }
+    }
+    
+    private Lookup createMasterLookup () {
+        List lookups = new ArrayList ();
+        Iterator it = categoryToController.values ().iterator ();
+        while (it.hasNext ()) {
+            OptionsPanelController controller = (OptionsPanelController) 
+                it.next ();
+            lookups.add (controller.getLookup ());
+        }
+        return new ProxyLookup 
+            ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
+    }
+
+    /**
+     * Inits options panels adn categoryToPanel map.
+     */
+    private Dimension initPanels (Lookup masterLookup) {
+        // size of options panel shoud be max of all nested panels
+        int maxW = 0, maxH = 0;
+        Iterator it = optionCategories.iterator ();
+        while (it.hasNext ()) {
+            OptionsCategory category = (OptionsCategory) it.next ();
+            OptionsPanelController controller = (OptionsPanelController) 
+                categoryToController.get (category);
+            JComponent component = controller.getComponent (masterLookup);
+            categoryToPanel.put (category, component);
+            maxW = Math.max (maxW, component.getPreferredSize ().width);
+            maxH = Math.max (maxH, component.getPreferredSize ().height);
+            //S ystem.out.println (category.getCategoryName () + " : " + component.getPreferredSize ());
+        }
+        return new Dimension (maxW, maxH);
+    }
+
+    private void addFakeButtons () {
+        // init icon view
+        addButton (
+            getIcon ("org/netbeans/modules/options/resources/generalOptions.png"),
+            NbBundle.getMessage (OptionsPanel.class, "CTL_General_Options")
+        );
+        addButton (
+            getIcon ("org/netbeans/modules/options/resources/editor.png"),
+            NbBundle.getMessage (OptionsPanel.class, "CTL_Editor")
+        );
+        addButton (
+            getIcon ("org/netbeans/modules/options/resources/colors.png"),
+            NbBundle.getMessage (OptionsPanel.class, "CTL_Font_And_Color_Options")
+        );
+        addButton (
+            getIcon ("org/netbeans/modules/options/resources/keymap.png"),
+            NbBundle.getMessage (OptionsPanel.class, "CTL_Keymap_Options")
+        );
+        addButton (
+            getIcon ("org/netbeans/modules/options/resources/advanced.png"),
+            NbBundle.getMessage (Advanced.class, "CTL_Advanced_Options")
+        );
+        addFakeButton ();
+    }
+    
+    private void refreshButtons () {
+        // remove old buttons
+        Iterator it = buttons.iterator ();
+        while (it.hasNext ())
+            removeButton ((Button) it.next ());
+        pCategories2.removeAll ();
+        buttons = new ArrayList ();
+        
+        // add new buttons
+        it = optionCategories.iterator ();
+        while (it.hasNext ()) {
+            final OptionsCategory category = (OptionsCategory) it.next ();
+            addButton (
+                category.getIcon (),
+                category.getCategoryName ()
+            );
+        }
+        
+        addFakeButton ();
+    }
+    
+    private void addButton (
+        Icon icon,
+        String name
+    ) {
+        int index = buttons.size ();
+        Button button = new Button (index, icon, name);
+
+        // add shortcut
+        KeyStroke keyStroke = KeyStroke.getKeyStroke 
+            (button.getDisplayedMnemonic (), KeyEvent.ALT_MASK);
+        getInputMap ().put (keyStroke, button);
+        getActionMap ().put (button, new SelectAction (index));
+
+        if (isMac) {
+            GridBagConstraints gbc = new GridBagConstraints ();
+            gbc.anchor = GridBagConstraints.NORTHWEST;
+            gbc.fill = GridBagConstraints.VERTICAL;
+            gbc.weightx = 0.0;
+            gbc.weighty = 1.0;
+            gbc.gridx = index;
+            gbc.gridy = 0;
+            pCategories2.add (button, gbc);
+        } else {
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.anchor = GridBagConstraints.NORTHWEST;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1.0;
+            gbc.weighty = 0.0;
+            gbc.gridx = 0;
+            gbc.gridy = index;
+            pCategories2.add (button, gbc);
+        }
+        buttons.add (button);
+    }
+    
+    private void removeButton (Button button) {
+        KeyStroke keyStroke = KeyStroke.getKeyStroke 
+            (button.getDisplayedMnemonic (), KeyEvent.ALT_MASK);
+        getInputMap ().remove (keyStroke);
+        getActionMap ().remove (button);
+    }
+    
+    private void addFakeButton () {
+        /* i don't know a better workaround */
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        if (isMac) {
+            gbc.gridx = gbc.gridx + 1;
+            gbc.gridy = 0;
+        } else {
+            gbc.gridx = 0;
+            gbc.gridy = gbc.gridy + 1;
+        }
+        pCategories2.add (new javax.swing.JLabel (""), gbc);
+    }
+    
+    private boolean checkSize (Dimension maxSize) {
+        if (pOptions.getPreferredSize ().width < maxSize.width ||
+            pOptions.getPreferredSize ().height < maxSize.height
+        ) {
+            pOptions.setPreferredSize (new Dimension (
+                Math.max (pOptions.getPreferredSize ().width, maxSize.width),
+                Math.max (pOptions.getPreferredSize ().height, maxSize.height)
+            ));
+            Window w = (Window) SwingUtilities.getAncestorOfClass 
+                (Window.class, this);
+            invalidate ();
+            w.pack ();
+            return true;
+        }
+        return false;
+    }
+
+    private Map iconsCache = new HashMap ();
+    private Icon getIcon (String resourceName) {
+        if (!iconsCache.containsKey (resourceName))
+            iconsCache.put (
+                resourceName,
+                new ImageIcon (Utilities.loadImage (resourceName))
+            );
+        return (Icon) iconsCache.get (resourceName);
     }
     
     
@@ -473,10 +648,14 @@ public class OptionsPanel extends JPanel {
         
         private int index;
         
-        Button (OptionsCategory category, int index) {
-            super (category.getIcon ());
+        Button (
+            int index, 
+            Icon icon,
+            String name
+        ) {
+            super (icon);
             this.index = index;
-            Mnemonics.setLocalizedText (this, category.getCategoryName ());
+            Mnemonics.setLocalizedText (this, name);
             setOpaque (true);
             setVerticalTextPosition (BOTTOM);
             setHorizontalTextPosition (CENTER);
