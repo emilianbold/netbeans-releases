@@ -178,7 +178,7 @@ final class ResultPanelTree extends JPanel
         /* Called from the EventDispatch thread */
         
         TestsuiteNode node = rootNode.displayReport(report);
-        if (report.containsFailed()) {
+        if ((node != null) && report.containsFailed()) {
             treeView.expandReportNode(node);
         }
         
