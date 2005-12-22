@@ -673,11 +673,11 @@ public class OptionsPanel extends JPanel {
                 setNormal ();
             addFocusListener (new FocusListener () {
                 public void focusGained (FocusEvent e) {
-                    if (Button.this.index != currentCategory)
+                    if (Button.this.index != currentCategory && !isMac)
                         setHighlighted ();
                 }
                 public void focusLost (FocusEvent e) {
-                    if (Button.this.index != currentCategory)
+                    if (Button.this.index != currentCategory && !isMac)
                         setNormal ();
                 }
             });
