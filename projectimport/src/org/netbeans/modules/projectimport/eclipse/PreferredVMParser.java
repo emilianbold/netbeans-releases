@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
+import org.netbeans.modules.projectimport.LoggerFactory;
 import org.openide.ErrorManager;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -34,22 +36,30 @@ import org.xml.sax.XMLReader;
  */
 final class PreferredVMParser extends DefaultHandler {
     
+    /** Logger for this class. */
+    private static final Logger logger =
+            LoggerFactory.getDefault().createLogger(PreferredVMParser.class);
+    
     // elements names
-    private static final String VM_SETTINGS = "vmSettings";
-    private static final String VM_TYPE = "vmType";
-    private static final String VM = "vm";
+    private static final String VM_SETTINGS = "vmSettings"; // NOI18N
+    private static final String VM_TYPE = "vmType"; // NOI18N
+    private static final String VM = "vm"; // NOI18N
+    private static final String LIBRARY_LOCATIONS = "libraryLocations"; // NOI18N
+    private static final String LIBRARY_LOCATION = "libraryLocation"; // NOI18N
     
     // attributes names
-    private static final String DEFAULT_VM_ATTR = "defaultVM";
-    private static final String ID_ATTR = "id";
-    private static final String NAME_ATTR = "name";
-    private static final String PATH_ATTR = "path";
+    private static final String DEFAULT_VM_ATTR = "defaultVM"; // NOI18N
+    private static final String ID_ATTR = "id"; // NOI18N
+    private static final String NAME_ATTR = "name"; // NOI18N
+    private static final String PATH_ATTR = "path"; // NOI18N
     
     // indicates current position in a xml document
     private static final int POSITION_NONE = 0;
     private static final int POSITION_VM_SETTINGS = 1;
     private static final int POSITION_VM_TYPE = 2;
     private static final int POSITION_VM = 3;
+    private static final int POSITION_LIBRARY_LOCATIONS = 4;
+    private static final int POSITION_LIBRARY_LOCATION = 5;
     
     private int position = POSITION_NONE;
     private StringBuffer chars;
@@ -98,8 +108,8 @@ final class PreferredVMParser extends DefaultHandler {
                     defaultId = defaultVMAttr.substring(defaultVMAttr.lastIndexOf(',') + 1);
                     jdks = new HashMap();
                 } else {
-                    throw (new SAXException("First element has to be "
-                            + VM_SETTINGS + ", but is " + localName));
+                    throw (new SAXException("First element has to be " // NOI18N
+                            + VM_SETTINGS + ", but is " + localName)); // NOI18N
                 }
                 break;
             case POSITION_VM_SETTINGS:
@@ -115,12 +125,33 @@ final class PreferredVMParser extends DefaultHandler {
                             attributes.getValue(PATH_ATTR));
                 }
                 break;
+            case POSITION_VM:
+                if (localName.equals(LIBRARY_LOCATIONS)) {
+                    position = POSITION_LIBRARY_LOCATIONS;
+                    logger.info("JRE used by your project presuambly contains additional jars. This is not supported (imported) yet. " + // NOI18N
+                            "CC yourself to issue http://www.netbeans.org/issues/show_bug.cgi?id=57661 to watch a progress."); // NOI18N
+                    // XXX this means that additional jars were added to the
+                    // JDK used by a project.
+                    // See Preferences --> Java --> Installed JREs --> Choose
+                    // JDK --> Edit --> Uncheck "Use default system libraries"
+                    // --> Add External Jar
+                    // Than take a look at .metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.jdt.launching.prefs
+                }
+                break;
+            case POSITION_LIBRARY_LOCATIONS:
+                if (localName.equals(LIBRARY_LOCATION)) {
+                    position = POSITION_LIBRARY_LOCATION;
+                    // XXX See comment above - "case POSITION_VM"
+                }
+                break;
             default:
-                throw (new SAXException("Unknown position reached: "
-                        + position + " (element: " + localName + ")"));
+                throw (new SAXException("Unknown position reached: " // NOI18N
+                        + position + " (element: " + localName + ")")); // NOI18N
         }
     }
     
+    // XXX use array[x] array[x-1] or 1.5 enumerations(?) here and for similar
+    // cases or consider DOM
     public void endElement(String uri, String localName, String qName) throws
             SAXException {
         switch (position) {
@@ -134,21 +165,27 @@ final class PreferredVMParser extends DefaultHandler {
             case POSITION_VM:
                 position = POSITION_VM_TYPE;
                 break;
+            case POSITION_LIBRARY_LOCATIONS:
+                position = POSITION_VM;
+                break;
+            case POSITION_LIBRARY_LOCATION:
+                position = POSITION_LIBRARY_LOCATIONS;
+                break;
             default:
                 ErrorManager.getDefault().log(ErrorManager.WARNING,
-                        "Unknown state reached in ClassPathParser, " +
-                        "position: " + position);
+                        "Unknown state reached in ClassPathParser, " + // NOI18N
+                        "position: " + position); // NOI18N
         }
         chars.setLength(0);
     }
     
     public void error(SAXParseException e) throws SAXException {
-        ErrorManager.getDefault().log(ErrorManager.WARNING, "Error occurres: " + e);
+        ErrorManager.getDefault().log(ErrorManager.WARNING, "Error occurres: " + e); // NOI18N
         throw e;
     }
     
     public void fatalError(SAXParseException e) throws SAXException {
-        ErrorManager.getDefault().log(ErrorManager.WARNING, "Fatal error occurres: " + e);
+        ErrorManager.getDefault().log(ErrorManager.WARNING, "Fatal error occurres: " + e); // NOI18N
         throw e;
     }
     
