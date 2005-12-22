@@ -124,7 +124,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
                 // [temporary hack for new layout: always set the size according to the form designer]
                 if (formContainer != null) {
                     Dimension size = formContainer.getDesignerSize();
-                    Dimension diffDim = RADVisualFormContainer.getWindowContentDimensionDiff();
+                    Dimension diffDim = RADVisualFormContainer.getDecoratedWindowContentDimensionDiff();
                     size = new Dimension(size.width + diffDim.width,
                                          size.height + diffDim.height);
                     frame.setSize(size);

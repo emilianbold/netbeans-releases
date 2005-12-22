@@ -14,6 +14,7 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
+import java.beans.*;
 
 import org.openide.nodes.*;
 
@@ -103,6 +104,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         setDesignerSizeImpl(designerSize, false);
 
         getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE, old, value);
+        getFormModel().fireSyntheticPropertyChanged(this, FormDesigner.PROP_DESIGNER_SIZE, null, null);
     }
 
     private Dimension setFormSizeImpl(Dimension value) {
@@ -200,8 +202,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         int old = formSizePolicy;
         formSizePolicy = value;
         if (value == GEN_BOUNDS) {
-            if (formSize == null)
-                setFormSizeImpl(getDesignerSize());
+            setDesignerSize(getDesignerSize()); // Force recalculation of formSize
             // designer size should not be persistent if form size is defined
             setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, null);
         }
@@ -423,7 +424,18 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
     private static Dimension windowContentDimensionDiff;
 
-    public static Dimension getWindowContentDimensionDiff() {
+    public Dimension getWindowContentDimensionDiff() {
+        boolean undecorated = true;
+        Object beanInstance = getBeanInstance();
+        if (beanInstance instanceof java.awt.Frame) {
+            undecorated = ((java.awt.Frame)beanInstance).isUndecorated();
+        } else if (beanInstance instanceof java.awt.Dialog) {
+            undecorated = ((java.awt.Dialog)beanInstance).isUndecorated();
+        }
+        return undecorated ? new Dimension(0, 0) : getDecoratedWindowContentDimensionDiff();
+    }
+
+    public static Dimension getDecoratedWindowContentDimensionDiff() {
         if (windowContentDimensionDiff == null) {
             javax.swing.JFrame frame = new javax.swing.JFrame();
             frame.pack();
@@ -433,6 +445,26 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 new Dimension(d1.width - d2.width, d1.height - d2.height);
         }
         return windowContentDimensionDiff;
+    }
+
+    void setNodeReference(RADComponentNode node) {
+        super.setNodeReference(node);
+        if (node != null) {
+            Object beanInstance = getBeanInstance();
+            if ((beanInstance instanceof java.awt.Frame)
+                || (beanInstance instanceof java.awt.Dialog)) {
+                // undecorated is not a bound property => it is not possible to
+                // listen on the beanInstance => we have to listen on the node
+                node.addPropertyChangeListener(new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if ("undecorated".equals(evt.getPropertyName())) { // NOI18N
+                            // Keep current designer size and force update of form size
+                            setDesignerSize(getDesignerSize());
+                        }
+                    }
+                });
+            }
+        }
     }
 
     // ------------------------------------------------------------------------------------------
