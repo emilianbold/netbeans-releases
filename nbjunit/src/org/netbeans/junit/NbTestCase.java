@@ -91,6 +91,17 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         return false;
     }
     
+    /** Provides support for tests that can have problems with terminating.
+     * Runs the test in a "watchdog" that measures the time the test shall
+     * take and if it does not terminate it reports a failure.
+     *
+     * @return amount ms to give one test to finish or 0 (default) to disable time outs
+     * @since 1.20
+     */
+    protected int timeOut() {
+        return 0;
+    }
+    
     /**
      * Runs the test case and collects the results in TestResult.
      * overrides JUnit run, because filter check
@@ -98,28 +109,61 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      */
     public void run(final TestResult result) {
         if (canRun()) {
-            if (runInEQ()) {
-                try {
-                    EventQueue.invokeAndWait(new Runnable() {
-                        public void run() {
-                            NbTestCase.super.run(result);
+            class Guard implements Runnable {
+                private boolean finished;
+                private Throwable t;
+                
+                public void run() {
+                    try {
+                        NbTestCase.super.run(result);
+                    } catch (Throwable t) {
+                        this.t = t;
+                    } finally {
+                        synchronized (this) {
+                            finished = true;
+                            notifyAll();
                         }
-                    });
-                } catch (InterruptedException e) {
-                    result.addError(this, e);
-                } catch (InvocationTargetException e) {
-                    Throwable t = e.getCause();
-                    if (t instanceof AssertionFailedError) {
-                        result.addFailure(this, (AssertionFailedError)t);
-                    } else if (t instanceof ThreadDeath) {
-                        throw (ThreadDeath)t;
-                    } else {
-                        result.addError(this, t);
                     }
                 }
+                
+                public synchronized void waitFinished() {
+                    int time = timeOut();
+                    if (!finished) {
+                        try {
+                            wait(time);
+                        } catch (InterruptedException ex) {
+                            result.addError(NbTestCase.this, ex);
+                        }
+                    }
+                    if (t instanceof AssertionFailedError) {
+                        result.addFailure(NbTestCase.this, (AssertionFailedError)t);
+                    } else if (t instanceof ThreadDeath) {
+                        throw (ThreadDeath)t;
+                    } else if (t != null) {
+                        result.addError(NbTestCase.this, t);
+                    }
+                    
+                    if (!finished) {
+                        result.addFailure(NbTestCase.this, new AssertionFailedError ("The test " + getName() + " did not finish in " + time + "ms"));
+                    }
+                }
+            }
+            
+            Guard run = new Guard();
+            
+            if (runInEQ()) {
+                EventQueue.invokeLater(run);
+                run.waitFinished();
             } else {
-                // Regular test.
-                super.run(result);
+                if (timeOut() == 0) {
+                    // Regular test.
+                    super.run(result);
+                } else {
+                    // Regular test with time out
+                    Thread watchDog = new Thread(run, "Test Watch Dog: " + getName());
+                    watchDog.start();
+                    run.waitFinished();
+                }
             }
         }
     }

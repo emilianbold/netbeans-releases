@@ -27,9 +27,9 @@ public class WeakListenersTest extends NbTestCase {
     public WeakListenersTest(java.lang.String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite(WeakListenersTest.class));
+
+    protected int timeOut() {
+        return 5000;
     }
     
     protected void setUp () throws Exception {
