@@ -65,7 +65,7 @@ public final class IndentationPanelController extends OptionsPanelController {
         getIndentationPanel ().removePropertyChangeListener (l);
     }
 
-    private IndentationPanel indentationPanel = new IndentationPanel ();
+    private IndentationPanel indentationPanel;
     
     private IndentationPanel getIndentationPanel () {
         if (indentationPanel == null)

@@ -65,7 +65,7 @@ public final class GeneralEditorPanelController extends OptionsPanelController {
     }
     
     
-    private GeneralEditorPanel generalEditorPanel = new GeneralEditorPanel ();
+    private GeneralEditorPanel generalEditorPanel;
     
     private GeneralEditorPanel getGeneralEditorPanel () {
         if (generalEditorPanel == null)

@@ -26,28 +26,26 @@ import org.openide.util.Lookup;
  * @author Jan Jancura
  */
 public final class AntPanelController extends OptionsPanelController {
-
-    private AntCustomizer antCustomizer = new AntCustomizer ();
     
     
     public void update () {
-        antCustomizer.update ();
+        getAntCustomizer ().update ();
     }
     
     public void applyChanges () {
-        antCustomizer.applyChanges ();
+        getAntCustomizer ().applyChanges ();
     }
     
     public void cancel () {
-        antCustomizer.cancel ();
+        getAntCustomizer ().cancel ();
     }
     
     public boolean isValid () {
-        return antCustomizer.dataValid ();
+        return getAntCustomizer ().dataValid ();
     }
     
     public boolean isChanged () {
-        return antCustomizer.isChanged ();
+        return getAntCustomizer ().isChanged ();
     }
     
     public HelpCtx getHelpCtx () {
@@ -55,14 +53,23 @@ public final class AntPanelController extends OptionsPanelController {
     }
     
     public JComponent getComponent (Lookup lookup) {
-        return antCustomizer;
+        return getAntCustomizer ();
     }
 
     public void addPropertyChangeListener (PropertyChangeListener l) {
-        antCustomizer.addPropertyChangeListener (l);
+        getAntCustomizer ().addPropertyChangeListener (l);
     }
 
     public void removePropertyChangeListener (PropertyChangeListener l) {
-        antCustomizer.removePropertyChangeListener (l);
+        getAntCustomizer ().removePropertyChangeListener (l);
+    }
+
+    
+    private AntCustomizer antCustomizer;
+    
+    private AntCustomizer getAntCustomizer () {
+        if (antCustomizer == null)
+            antCustomizer = new AntCustomizer ();
+        return antCustomizer;
     }
 }

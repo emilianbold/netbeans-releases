@@ -64,7 +64,7 @@ public final class FontAndColorsPanelController extends OptionsPanelController {
         getFontAndColorsPanel ().removePropertyChangeListener (l);
     }
 
-    private FontAndColorsPanel fontAndColorsPanel = new FontAndColorsPanel ();
+    private FontAndColorsPanel fontAndColorsPanel;
     
     private FontAndColorsPanel getFontAndColorsPanel () {
         if (fontAndColorsPanel == null)
