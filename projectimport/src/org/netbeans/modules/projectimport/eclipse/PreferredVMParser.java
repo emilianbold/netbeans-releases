@@ -129,7 +129,7 @@ final class PreferredVMParser extends DefaultHandler {
                 if (localName.equals(LIBRARY_LOCATIONS)) {
                     position = POSITION_LIBRARY_LOCATIONS;
                     logger.info("JRE used by your project presuambly contains additional jars. This is not supported (imported) yet. " + // NOI18N
-                            "CC yourself to issue http://www.netbeans.org/issues/show_bug.cgi?id=57661 to watch a progress."); // NOI18N
+                            "CC yourself to issue http://www.netbeans.org/issues/show_bug.cgi?id=70733 to watch a progress."); // NOI18N
                     // XXX this means that additional jars were added to the
                     // JDK used by a project.
                     // See Preferences --> Java --> Installed JREs --> Choose
