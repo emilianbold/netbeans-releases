@@ -186,18 +186,23 @@ final class AddModulePanel extends JPanel {
                 match.addAttribute(StyleConstants.Background, new Color(246, 248, 139));
                 Set/*<String>*/ matches = filterer.getMatchesFor(filterText, deps[0]);
                 Iterator it = matches.iterator();
+                boolean isOdd = true;
+                Style odd = doc.addStyle(null, null);
+                odd.addAttribute(StyleConstants.Background, Color.WHITE);
+                Style even = doc.addStyle(null, null);
+                even.addAttribute(StyleConstants.Background, new Color(235, 235, 235));
                 while (it.hasNext()) {
                     String hit = (String) it.next();
                     int loc = doc.getLength();
                     doc.insertString(loc, hit, null);
+                    doc.setCharacterAttributes(loc, hit.length(), (isOdd ? odd : even), true);
+                    isOdd =! isOdd;
                     int start = hit.toLowerCase(Locale.US).indexOf(filterTextLC);
                     while (start != -1) {
                         doc.setCharacterAttributes(loc + start, filterTextLC.length(), match, true);
                         start = hit.toLowerCase(Locale.US).indexOf(filterTextLC, start + 1);
                     }
-                    if (it.hasNext()) {
-                        doc.insertString(doc.getLength(), "; ", null); // NOI18N
-                    }
+                    doc.insertString(doc.getLength(), ";\n", null); // NOI18N
                 }
             } else {
                 Style italics = doc.addStyle(null, null);
