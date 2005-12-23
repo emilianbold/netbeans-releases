@@ -69,7 +69,16 @@ import org.openide.util.RequestProcessor;
 
 
 /**
- * Implements a property sheet for a set of nodes.
+ * Implements a property sheet for a set of nodes. Can be used as a 
+ * standalone component (e.g. without a connection to {@link org.openide.explorer.ExplorerManager}).
+ * For example to display properties of a JavaBean one could use:
+ * <pre>
+ * Object bean = ...;
+ * JPanel container = ...;
+ * PropertySheet ps = new PropertySheet();
+ * ps.setNodes(new Node[] { new {@link org.openide.nodes.BeanNode}(bean) });
+ * container.add(ps);
+ * </pre>
  *
  * <strong>Note that this class should be final, but for backward compatibility,
  * cannot be.  Subclassing this class is strongly discouraged</strong>
