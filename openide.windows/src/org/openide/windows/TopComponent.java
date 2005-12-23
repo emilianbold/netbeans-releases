@@ -175,15 +175,23 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         // #27731 TopComponent itself shouldn't get the focus.
         // XXX What to do in case nothing in TopComponent is focusable?
         setFocusable(false);
-        initActionMap();
+        initActionMap(lookup);
     }
 
     // It is necessary so the old actions (clone and close from org.openide.actions package) remain working.
 
     /** Initialized <code>ActionMap</code> of this <code>TopComponent</code>.
      * @since 4.13 */
-    private void initActionMap() {
-        javax.swing.ActionMap am = new DelegateActionMap(this, new ActionMap());
+    private void initActionMap(Lookup lookup) {
+        ActionMap inner = null;
+        if (lookup != null) {
+            inner = (ActionMap)lookup.lookup(ActionMap.class);
+        }
+        if (inner == null) {
+            inner = new ActionMap();
+        }
+        
+        javax.swing.ActionMap am = new DelegateActionMap(this, inner);
 
         if (this instanceof TopComponent.Cloneable) {
             am.put(
