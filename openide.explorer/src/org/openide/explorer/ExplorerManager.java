@@ -31,13 +31,22 @@ import java.util.*;
  * Manages a selection and root context for a (set of) Explorer view(s).  The
  * views should register their {@link java.beans.VetoableChangeListener}s and
  * {@link java.beans.PropertyChangeListener}s at the
- * <code>ExplorerManager</code> of the Explorer they belong to. The manager
- * listens on changes to the node hierarchy and updates the selection and root
- * node.
+ * <code>ExplorerManager</code> of the Explorer they belong to 
+ * (usually found in AWT hierarchy using {@link ExplorerManager#find}. 
+ * The manager is then the mediator that keeps the shared state, 
+ * notifies {@link PropertyChangeListener}s and {@link VetoableChangeListener}s
+ * about changes and allows views to call its setter methods to incluence
+ * the root of the visible hierarchy using {@link #setRootContext}, the 
+ * set of selected nodes using {@link #setSelectedNodes} and also the 
+ * explored context (useful for {@link org.openide.explorer.view.ListView} for 
+ * example) using {@link #setExploredContext}.
  * <p>
  * This class interacts with Swing components in the
  * <code>org.openide.explorer.view</code> package and as such it shall be
  * used according to Swing threading model.
+ * <p>
+ * To provide an {@link ExplorerManager} from your component just let your
+ * component implement {@link Provider} as described at {@link ExplorerUtils}.
  *
  * <P>Deserialization may throw {@link SafeException} if the contexts cannot be
  * restored correctly, but the stream is uncorrupted.
@@ -784,6 +793,7 @@ bigloop:
 
     /** Interface for components wishing to provide their own <code>ExplorerManager</code>.
     * @see ExplorerManager#find
+    * @see ExplorerUtils
     */
     public static interface Provider {
         /** Get the explorer manager.

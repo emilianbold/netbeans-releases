@@ -102,7 +102,9 @@ import javax.swing.tree.TreeSelectionModel;
 
 
 /**
- * Base class for tree-style explorer views.
+ * Base class for tree-style explorer views. 
+ * @see BeanTreeView
+ * @see ContextTreeView
  */
 public abstract class TreeView extends JScrollPane {
     static {
