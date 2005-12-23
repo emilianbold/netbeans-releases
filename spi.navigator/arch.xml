@@ -125,7 +125,7 @@ Microsystems, Inc. All Rights Reserved.
       <h4>Writing NavigatorPanel implementation</h4>
         <p>Implementing <a href="@TOP@/org/netbeans/spi/navigator/NavigatorPanel.html">NavigatorPanel</a>
          interface is easy, you can copy from template basic implementation 
-        <a href="@TOP@/org/netbeans/spi/navigator/doc-files/BasicNavPanelImpl.java">BasicNavPanelImpl.java</a>.</p>
+        <a href="@TOP@/org/netbeans/spi/navigator/doc-files/BasicNavPanelImpl_java">BasicNavPanelImpl.java</a>.</p>
         
         Advices on important part of panel implementation:
 
