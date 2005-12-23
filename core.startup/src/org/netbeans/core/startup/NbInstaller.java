@@ -1426,8 +1426,9 @@ final class NbInstaller extends ModuleInstaller {
                             String clazz = name.substring(0, name.length() - 6).replace('/', '.'); // NOI18N
                             try {
                                 Class.forName(clazz, false, m.getClassLoader());
-                            } catch (ClassNotFoundException cnfe) {
-                                Util.err.notify(cnfe); // huh?
+                            } catch (ClassNotFoundException cnfe) { // e.g. "Will not load classes from default package" from ProxyClassLoader
+                                Util.err.annotate(cnfe, ErrorManager.UNKNOWN, "From " + clazz + " in " + m.getCodeNameBase() + " with effective classpath " + getEffectiveClasspath(m), null, null, null); // NOI18N
+                                Util.err.notify(ErrorManager.INFORMATIONAL, cnfe);
                             } catch (LinkageError le) {
                                 Util.err.annotate(le, ErrorManager.UNKNOWN, "From " + clazz + " in " + m.getCodeNameBase() + " with effective classpath " + getEffectiveClasspath(m), null, null, null); // NOI18N
                                 Util.err.notify(ErrorManager.INFORMATIONAL, le);
