@@ -7,19 +7,28 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.util;
 
-import junit.framework.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import junit.textui.TestRunner;
-import java.net.*;
-import java.io.*;
-import java.lang.reflect.*;
-import java.beans.*;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.SharedClassObject;
 
 /** Test SharedClassObject singletons: esp. initialization semantics.
  * @author Jesse Glick
@@ -29,17 +38,6 @@ public class SharedClassObjectTest extends NbTestCase {
     public SharedClassObjectTest(String name) {
         super(name);
     }
-    
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(SharedClassObjectTest.class));
-    }
-    
-    /*
-    protected void setUp() throws Exception {
-    }
-    protected void tearDown() throws Exception {
-    }
-     */
     
     public void testSimpleSCO() throws Exception {
         Class c = makeClazz("SimpleSCO");
@@ -66,10 +64,9 @@ public class SharedClassObjectTest extends NbTestCase {
         SharedClassObject o = SharedClassObject.findObject(c, true);
         o.putProperty("inited", Boolean.TRUE);
         assertEquals("DCSD has been initialized", Boolean.TRUE, o.getProperty("inited"));
+        Reference r = new WeakReference(o);
         o = null;
-        System.gc();
-        System.runFinalization();
-        // XXX should use assertGC here, it is more reliable and helpful...
+        assertGC("collected SCO instance", r);
         assertNull("findObject(Class,false) gives nothing after running GC + finalization #1", SharedClassObject.findObject(c));
         o = SharedClassObject.findObject(c, true);
         assertEquals("has still been initialized", Boolean.TRUE, o.getProperty("inited"));
@@ -77,9 +74,9 @@ public class SharedClassObjectTest extends NbTestCase {
         o = SharedClassObject.findObject(c, true);
         o.putProperty("inited", Boolean.TRUE);
         assertEquals("CSD has been initialized", Boolean.TRUE, o.getProperty("inited"));
+        r = new WeakReference(o);
         o = null;
-        System.gc();
-        System.runFinalization();
+        assertGC("collected SCO instance", r);
         assertNull("findObject(Class,false) gives nothing after running GC + finalization #2", SharedClassObject.findObject(c));
         o = SharedClassObject.findObject(c, true);
         assertEquals("is no longer initialized", null, o.getProperty("inited"));
