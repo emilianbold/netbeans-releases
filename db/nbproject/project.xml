@@ -124,6 +124,10 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <public-packages>
+                <package>org.netbeans.api.db.explorer</package>
+                <package>org.netbeans.spi.db.explorer</package>
+            </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/ddl.jar</runtime-relative-path>
             </class-path-extension>
@@ -133,10 +137,6 @@ Microsystems, Inc. All Rights Reserved.
                 <built-to>build/lib-classes</built-to>
                 <built-to>${cluster}/modules/ext/ddl.jar</built-to>
             </extra-compilation-unit>
-            <public-packages>
-                <package>org.netbeans.api.db.explorer</package>
-                <package>org.netbeans.spi.db.explorer</package>
-            </public-packages>
         </data>
     </configuration>
 </project>

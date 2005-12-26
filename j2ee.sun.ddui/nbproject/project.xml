@@ -211,10 +211,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <class-path-extension>
-                <runtime-relative-path>ext/persistence-tool-support.jar</runtime-relative-path>
-                <binary-origin>../../external/persistence-tool-support.jar</binary-origin>
-            </class-path-extension>
             <friend-packages>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv90</friend>
@@ -224,6 +220,10 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.j2ee.sun.share.configbean</package>
                 <package>org.netbeans.modules.j2ee.sun.share.plan</package>
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/persistence-tool-support.jar</runtime-relative-path>
+                <binary-origin>../../external/persistence-tool-support.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>
