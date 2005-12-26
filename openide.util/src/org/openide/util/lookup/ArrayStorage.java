@@ -359,9 +359,13 @@ final class ArrayStorage extends Object implements AbstractLookup.Storage {
                         throw new UnsupportedOperationException();
                     } else {
                         // ensure we have allocated enough space
-                        if (arr[arr.length - 2] != null) {
+                        if (arr.length < 2 || arr[arr.length - 2] != null) {
                             // double the array
                             int newSize = (arr.length - 1) * 2;
+                            
+                            if (newSize <= 1) {
+                                newSize = 2;
+                            }
 
                             if (newSize > maxSize) {
                                 newSize = maxSize;

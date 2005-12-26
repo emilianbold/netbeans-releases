@@ -1270,6 +1270,14 @@ public class AbstractLookupBaseHid extends NbTestCase {
             }
         }
     }
+    
+    public void testSomeProblemWithDVBFrameworkSeemsToBeInLookup() {
+        for (int i = 0; i < 5; i++) {
+            ic.add(lookup);
+            assertEquals("Can be found", lookup, lookup.lookup(lookup.getClass()));
+            ic.set(Collections.EMPTY_LIST, null);
+        }        
+    }
 
     public void testListeningAndQueryingByTwoListenersInstances() {
         doListeningAndQueryingByTwoListeners(0);
