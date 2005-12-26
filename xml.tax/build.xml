@@ -15,17 +15,13 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <target name="lib-init">
-        <available property="do-not-generate-user-handler" classname="org.w3c.dom.UserDataHandler" />
-        <mkdir dir="build/domhack/org/w3c/dom"/>
-    </target>
-
     <!--
     Workaround for new DOM3 interfaces that are not avalable on JDK 1.4
     At runtime on JDK 1.4 we are happy because we do not call any DOM3 methods
                on JDK 1.5 we are happy because system DOM3 interfaces prevail
     -->    
-    <target name="generate-user-handler" depends="lib-init" unless="do-not-generate-user-handler">
+    <target name="generate-user-handler">
+        <mkdir dir="build/domhack/org/w3c/dom"/>
         <echo file="build/domhack/org/w3c/dom/UserDataHandler.java">
         package org.w3c.dom; public interface UserDataHandler {}
         </echo>
@@ -37,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         </echo>
     </target>
 
-    <target name="lib-compile" depends="build-init,lib-init,generate-user-handler">
+    <target name="lib-compile" depends="build-init,generate-user-handler">
         <mkdir dir="build/libclasses"/>
         <javac destdir="build/libclasses" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" includeantruntime="false">
             <src path="lib/src"/>

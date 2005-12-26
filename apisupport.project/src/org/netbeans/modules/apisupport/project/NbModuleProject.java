@@ -23,21 +23,28 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -64,11 +71,12 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.queries.AccessibilityQueryImpl;
@@ -490,6 +498,14 @@ public final class NbModuleProject implements Project {
             }
             providers.add(new DestDirProvider(baseEval));
         }
+        if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+            // For local definitions of nbjdk.* properties:
+            File nbbuild = new File(nbroot, "nbbuild"); // NOII18N
+            providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(nbbuild, "user.build.properties"))); // NOI18N
+            providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(nbbuild, "site.build.properties"))); // NOI18N
+        }
+        PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+        providers.add(new NbJdkProvider(baseEval));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         Map/*<String,String>*/ defaults = new HashMap();
@@ -512,7 +528,7 @@ public final class NbModuleProject implements Project {
             buildDefaults.put("cp.extra", ""); // NOI18N
             buildDefaults.put("cp", "${module.classpath}:${cp.extra}"); // NOI18N
             buildDefaults.put("run.cp", "${cp}:${build.classes.dir}"); // NOI18N
-            PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+            baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
             buildDefaults.put("test.unit.cp.extra", ""); // NOI18N
             String testJars; // #68685 - follow Ant script
             if (type == NbModuleTypeProvider.NETBEANS_ORG) {
@@ -565,6 +581,141 @@ public final class NbModuleProject implements Project {
         }
         // skip a bunch of properties irrelevant here - NBM stuff, etc.
         return PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+    }
+    private final class NbJdkProvider implements PropertyProvider, PropertyChangeListener { // #63541: JDK selection
+        private final PropertyEvaluator eval;
+        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        private final PropertyChangeListener weakListener = WeakListeners.propertyChange(this, null);
+        public NbJdkProvider(PropertyEvaluator eval) {
+            this.eval = eval;
+            eval.addPropertyChangeListener(weakListener);
+            JavaPlatformManager.getDefault().addPropertyChangeListener(weakListener);
+        }
+        public final Map/*<String,String>*/ getProperties() {
+            Map/*<String,String>*/ props = new HashMap();
+            String home = eval.getProperty("nbjdk.home"); // NOI18N
+            if (home == null) {
+                String active = eval.getProperty("nbjdk.active"); // NOI18N
+                if (active != null && !active.equals("default")) { // NOI18N
+                    home = eval.getProperty("platforms." + active + ".home"); // NOI18N
+                    if (home != null) {
+                        props.put("nbjdk.home", home); // NOI18N
+                    }
+                }
+            }
+            if (home == null) {
+                JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
+                if (platform != null) {
+                    Collection/*<FileObject>*/ installs = platform.getInstallFolders();
+                    if (installs.size() == 1) {
+                        home = FileUtil.toFile((FileObject) installs.iterator().next()).getAbsolutePath();
+                    }
+                }
+            }
+            String bootcp = null;
+            if (home != null) {
+                FileObject homeFO = FileUtil.toFileObject(new File(home));
+                if (homeFO != null) {
+                    JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+                    for (int i = 0; i < platforms.length; i++) {
+                        if (new HashSet(platforms[i].getInstallFolders()).equals(Collections.singleton(homeFO))) {
+                            // Matching JDK is registered, so look up its real bootcp.
+                            StringBuffer bootcpSB = new StringBuffer();
+                            ClassPath boot = platforms[i].getBootstrapLibraries();
+                            boot.removePropertyChangeListener(weakListener);
+                            boot.addPropertyChangeListener(weakListener);
+                            Iterator/*<ClassPath.Entry>*/ entries = boot.entries().iterator();
+                            while (entries.hasNext()) {
+                                ClassPath.Entry entry = (ClassPath.Entry) entries.next();
+                                URL u = entry.getURL();
+                                if (u.toExternalForm().endsWith("!/")) { // NOI18N
+                                    URL nested = FileUtil.getArchiveFile(u);
+                                    if (nested != null) {
+                                        u = nested;
+                                    }
+                                }
+                                if ("file".equals(u.getProtocol())) {
+                                    File f = new File(URI.create(u.toExternalForm()));
+                                    if (bootcpSB.length() > 0) {
+                                        bootcpSB.append(File.pathSeparatorChar);
+                                    }
+                                    bootcpSB.append(f.getAbsolutePath());
+                                }
+                            }
+                            bootcp = bootcpSB.toString();
+                            break;
+                        }
+                    }
+                }
+                if (bootcp == null) {
+                    bootcp = "${nbjdk.home}/jre/lib/rt.jar".replace('/', File.separatorChar); // NOI18N
+                }
+            }
+            if (bootcp == null) {
+                // Real fallback...
+                bootcp = "${sun.boot.class.path}"; // NOI18N
+            }
+            props.put("nbjdk.bootclasspath", bootcp); // NOI18N
+            props.put("tools.jar", "${nbjdk.home}/lib/tools.jar".replace('/', File.separatorChar)); // NOI18N
+            if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                Map/*<String,String>*/ _props = new TreeMap(eval.getProperties());
+                Iterator it = _props.entrySet().iterator();
+                while (it.hasNext()) {
+                    String k = (String) ((Map.Entry) it.next()).getKey();
+                    if (!k.startsWith("nbjdk.") && !k.startsWith("platforms.")) { // NOI18N
+                        it.remove();
+                    }
+                }
+                _props.putAll(props);
+                Util.err.log("JDK-related properties of " + NbModuleProject.this + ": " + _props);
+            }
+            return props;
+        }
+        public final void addChangeListener(ChangeListener l) {
+            synchronized (listeners) {
+                listeners.add(l);
+            }
+        }
+        public final void removeChangeListener(ChangeListener l) {
+            synchronized (listeners) {
+                listeners.remove(l);
+            }
+        }
+        public final void propertyChange(PropertyChangeEvent evt) {
+            String p = evt.getPropertyName();
+            if (p != null && !p.startsWith("nbjdk.") && !p.startsWith("platforms.") && // NOI18N
+                    !p.equals(ClassPath.PROP_ENTRIES) && !p.equals(JavaPlatformManager.PROP_INSTALLED_PLATFORMS)) {
+                return;
+            }
+            final ChangeEvent ev = new ChangeEvent(this);
+            final Iterator it;
+            synchronized (listeners) {
+                if (listeners.isEmpty()) {
+                    return;
+                }
+                it = new HashSet(listeners).iterator();
+            }
+            final Mutex.Action action = new Mutex.Action() {
+                public Object run() {
+                    while (it.hasNext()) {
+                        ((ChangeListener) it.next()).stateChanged(ev);
+                    }
+                    return null;
+                }
+            };
+            // See ProjectProperties.PP.fireChange for explanation of this threading stuff:
+            if (ProjectManager.mutex().isWriteAccess()) {
+                ProjectManager.mutex().readAccess(action);
+            } else if (ProjectManager.mutex().isReadAccess()) {
+                action.run();
+            } else {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        ProjectManager.mutex().readAccess(action);
+                    }
+                });
+            }
+        }
     }
     
     /**

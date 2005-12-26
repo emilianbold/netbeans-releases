@@ -370,6 +370,7 @@ Microsystems, Inc. All Rights Reserved.
             <compilation-unit>
                 <package-root>antsrc</package-root>
                 <classpath mode="compile">${ant.home}/lib/ant.jar</classpath>
+                <!-- XXX specify mode="boot" if feasible (see jdk.xml) -->
                 <built-to>build/antclasses</built-to>
                 <built-to>nbantext.jar</built-to>
                 <source-level>1.4</source-level>

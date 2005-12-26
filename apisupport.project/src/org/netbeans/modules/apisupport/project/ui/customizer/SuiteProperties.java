@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.SuiteSubModulesListModel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -36,8 +37,10 @@ public final class SuiteProperties extends ModuleProperties {
     public static final String DISABLED_CLUSTERS_PROPERTY = "disabled.clusters"; // NOI18N
     
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
+    public static final String JAVA_PLATFORM_PROPERTY = "nbjdk.active"; // NOI18N
     
     private NbPlatform activePlatform;
+    private JavaPlatform activeJavaPlatform;
     
     /** Project the current properties represents. */
     private SuiteProject project;
@@ -80,6 +83,7 @@ public final class SuiteProperties extends ModuleProperties {
         this.subModules = subModules;
         this.moduleListModel = null;
         activePlatform = project.getPlatform(true);
+        activeJavaPlatform = ModuleProperties.findJavaPlatformByID(getEvaluator().getProperty("nbjdk.active")); // NOI18N
         firePropertiesRefreshed();
     }
     
@@ -99,6 +103,18 @@ public final class SuiteProperties extends ModuleProperties {
         NbPlatform oldPlaf = this.activePlatform;
         this.activePlatform = newPlaf;
         firePropertyChange(NB_PLATFORM_PROPERTY, oldPlaf, newPlaf);
+    }
+    
+    JavaPlatform getActiveJavaPlatform() {
+        return activeJavaPlatform;
+    }
+    
+    void setActiveJavaPlatform(JavaPlatform nue) {
+        JavaPlatform old = activeJavaPlatform;
+        if (nue != old) {
+            activeJavaPlatform = nue;
+            firePropertyChange(JAVA_PLATFORM_PROPERTY, old, nue);
+        }
     }
     
     String[] getDisabledModules() {
@@ -145,6 +161,7 @@ public final class SuiteProperties extends ModuleProperties {
      */
     void storeProperties() throws IOException {
         ModuleProperties.storePlatform(getHelper(), getActivePlatform());
+        ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), false);
         getBrandingModel().store();
         
         // store submodules if they've changed

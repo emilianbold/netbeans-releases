@@ -75,7 +75,7 @@ public abstract class TestBase extends NbTestCase {
         assertTrue("there is a dir " + nbrootF, nbrootF.isDirectory());
         assertTrue("nbbuild exists", new File(nbrootF, "nbbuild").isDirectory());
         nbroot = FileUtil.toFileObject(nbrootF);
-        assertNotNull("have a file object for nbroot", nbroot);
+        assertNotNull("have a file object for nbroot when using " + System.getProperty("java.class.path"), nbroot);
         
         destDirF = file(nbrootF, "nbbuild/netbeans").getAbsoluteFile();
         assertTrue("Directory really exists: " + destDirF, destDirF.isDirectory());
@@ -124,6 +124,7 @@ public abstract class TestBase extends NbTestCase {
      * For {@link PropertyUtils#userBuildProperties()}.
      * Called automatically by {@link #setUp}.
      * @param workDir use getWorkDir()
+     * @return resulting properties file
      */
     public static File initializeBuildProperties(File workDir) throws Exception {
         return initializeBuildProperties(workDir, null);

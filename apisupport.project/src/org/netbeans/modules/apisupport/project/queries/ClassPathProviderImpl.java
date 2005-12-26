@@ -25,9 +25,6 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
@@ -37,7 +34,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.SpecificationVersion;
 import org.w3c.dom.Element;
 
 public final class ClassPathProviderImpl implements ClassPathProvider {
@@ -64,13 +60,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(ClassPath.BOOT)) {
             if (boot == null) {
-                JavaPlatform jdk = findJdk(project.getJavacSource());
-                if (jdk != null) {
-                    boot = jdk.getBootstrapLibraries();
-                } else {
-                    // Maybe running in a unit test that did not set up Java platforms.
-                    boot = ClassPathSupport.createClassPath(new URL[0]);
-                }
+                boot = ClassPathFactory.createClassPath(createPathFromProperty("nbjdk.bootclasspath")); // NOI18N
             }
             return boot;
         }
@@ -193,32 +183,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
         // Something not supported.
         return null;
-    }
-    
-    /**
-     * Find a 1.4 JDK if there is one. Failing that, the default platform.
-     */
-    private static JavaPlatform findJdk(String specificationVersion) {
-        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
-        Specification spec = new Specification("j2se", new SpecificationVersion(specificationVersion)); // NOI18N
-        JavaPlatform[] matchingPlatforms = jpm.getPlatforms(null, spec);
-        if (matchingPlatforms.length > 0) {
-            // Pick one. Prefer one with sources if there is a choice.
-            for (int i = 0; i < matchingPlatforms.length; i++) {
-                if (matchingPlatforms[i].getSourceFolders().getRoots().length > 0) {
-                    return matchingPlatforms[i];
-                }
-            }
-            // Javadoc better than nothing, too.
-            for (int i = 0; i < matchingPlatforms.length; i++) {
-                if (!matchingPlatforms[i].getJavadocFolders().isEmpty()) {
-                    return matchingPlatforms[i];
-                }
-            }
-            // OK, binaries only; just pick any of them.
-            return matchingPlatforms[0];
-        }
-        return jpm.getDefaultPlatform();
     }
     
     private ClassPathImplementation createPathFromProperty(String prop) {

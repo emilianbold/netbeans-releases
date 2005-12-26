@@ -110,7 +110,7 @@ $${jnlp.resources}
             depends="build-jnlp-nowar"
             description="Build JNLP files and signed JARs for all modules in the suite."
     >
-        <property name="jnlp.servlet.jar" location="${java.home}/../sample/jnlp/servlet/jnlp-servlet.jar"/>
+        <property name="jnlp.servlet.jar" location="${nbjdk.home}/sample/jnlp/servlet/jnlp-servlet.jar"/>
         <fail message="Point -Djnlp.servlet.jar to your jnlp-servlet.jar, usually in $$JDKHOME/sample/jnlp/servlet/jnlp-servlet.jar">
             <condition>
                 <not>
@@ -250,8 +250,11 @@ $${jnlp.resources}
     </target>
     
     <target name="run" depends="build-jnlp-local" description="Executes this suite as JNLP application">
-        <condition property="run.javaws" value="${java.home}/javaws/javaws">
-            <available file="${java.home}/javaws/javaws"/>
+        <condition property="run.javaws" value="${nbjdk.home}/jre/javaws/javaws">
+            <available file="${nbjdk.home}/jre/javaws/javaws"/>
+        </condition>
+        <condition property="run.javaws" value="${nbjdk.home}/javaws/javaws">
+            <available file="${nbjdk.home}/javaws/javaws"/>
         </condition>
         <property name="run.javaws" value="javaws"/>
         <property name="run.args" value=""/>

@@ -404,7 +404,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="debug-test-single" depends="init,test-init,test-build,do-debug-test-single"/>
 
-    <target name="debug-test-single-nb" depends="init,test-init,test-build" if="netbeans.home">
+    <target name="debug-test-single-nb" depends="init,test-init,test-build,-jdk-presetdef-nbjpdastart" if="netbeans.home">
         <fail unless="test.class">Must set test.class</fail>
         <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
             <classpath>
@@ -432,7 +432,7 @@ Microsystems, Inc. All Rights Reserved.
         </nbjpdareload>
     </target>
 
-    <target name="profile-test-single-nb" depends="init,test-init,test-build">
+    <target name="profile-test-single-nb" depends="init,test-init,test-build,-jdk-presetdef-nbprofiledirect">
         <fail unless="profile.class">Must set profile.class</fail>
         <mkdir dir="${build.test.unit.results.dir}"/>
         <nbprofiledirect

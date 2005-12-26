@@ -26,6 +26,8 @@ import java.util.TreeSet;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
@@ -58,7 +60,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     public SuiteCustomizerLibraries(final SuiteProperties suiteProps) {
         super(suiteProps, SuiteCustomizerLibraries.class);
         initComponents();
-        initAccesibility();
+        initAccessibility();
         manager = new ExplorerManager();
         refresh();
         
@@ -75,9 +77,12 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 }
             }
         });
+        
+        javaPlatformCombo.setRenderer(JavaPlatformComponentFactory.javaPlatformListCellRenderer());
     }
     
     void refresh() {
+        refreshJavaPlatforms();
         refreshPlatforms();
         refreshModules();
     }
@@ -86,6 +91,11 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         ModuleEntry[] entry = getProperties().getActivePlatform().getModules();
         Node root = createModuleNode(entry);
         manager.setRootContext(root);
+    }
+    
+    private void refreshJavaPlatforms() {
+        javaPlatformCombo.setModel(JavaPlatformComponentFactory.javaPlatformListModel());
+        javaPlatformCombo.setSelectedItem(getProperties().getActiveJavaPlatform());
     }
     
     private void refreshPlatforms() {
@@ -131,17 +141,20 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        platformPanel = new javax.swing.JPanel();
+        platformsPanel = new javax.swing.JPanel();
         platformValue = org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory.getNbPlatformsComboxBox();
         platform = new javax.swing.JLabel();
         managePlafsButton = new javax.swing.JButton();
+        javaPlatformLabel = new javax.swing.JLabel();
+        javaPlatformCombo = new javax.swing.JComboBox();
+        javaPlatformButton = new javax.swing.JButton();
         filler = new javax.swing.JLabel();
         view = new org.openide.explorer.view.TreeTableView();
         viewLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        platformPanel.setLayout(new java.awt.GridBagLayout());
+        platformsPanel.setLayout(new java.awt.GridBagLayout());
 
         platformValue.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -151,21 +164,21 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        platformPanel.add(platformValue, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
+        platformsPanel.add(platformValue, gridBagConstraints);
 
         platform.setLabelFor(platformValue);
         org.openide.awt.Mnemonics.setLocalizedText(platform, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_NetBeansPlatform"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        platformPanel.add(platform, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
+        platformsPanel.add(platform, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(managePlafsButton, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "CTL_ManagePlatform_a"));
         managePlafsButton.addActionListener(new java.awt.event.ActionListener() {
@@ -176,16 +189,56 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        platformsPanel.add(managePlafsButton, gridBagConstraints);
+
+        javaPlatformLabel.setLabelFor(javaPlatformCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_Java_Platform"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        platformPanel.add(managePlafsButton, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        platformsPanel.add(javaPlatformLabel, gridBagConstraints);
+
+        javaPlatformCombo.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                javaPlatformComboItemStateChanged(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        platformsPanel.add(javaPlatformCombo, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformButton, NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_Manage_Java_Platforms"));
+        javaPlatformButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                javaPlatformButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        platformsPanel.add(javaPlatformButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        add(platformPanel, gridBagConstraints);
+        add(platformsPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -213,8 +266,16 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 2, 0);
         add(viewLabel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void javaPlatformButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaPlatformButtonActionPerformed
+        PlatformsCustomizer.showCustomizer((JavaPlatform) javaPlatformCombo.getSelectedItem());
+    }//GEN-LAST:event_javaPlatformButtonActionPerformed
+
+    private void javaPlatformComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_javaPlatformComboItemStateChanged
+        getProperties().setActiveJavaPlatform((JavaPlatform) javaPlatformCombo.getSelectedItem());
+        refreshJavaPlatforms();
+    }//GEN-LAST:event_javaPlatformComboItemStateChanged
     
     private void platformValueItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_platformValueItemStateChanged
         getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
@@ -228,10 +289,13 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel filler;
+    private javax.swing.JButton javaPlatformButton;
+    private javax.swing.JComboBox javaPlatformCombo;
+    private javax.swing.JLabel javaPlatformLabel;
     private javax.swing.JButton managePlafsButton;
     private javax.swing.JLabel platform;
-    private javax.swing.JPanel platformPanel;
     private javax.swing.JComboBox platformValue;
+    private javax.swing.JPanel platformsPanel;
     private org.openide.explorer.view.TreeTableView view;
     private javax.swing.JLabel viewLabel;
     // End of variables declaration//GEN-END:variables
@@ -488,7 +552,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return NbBundle.getMessage(CustomizerDisplay.class, key);
     }
     
-    private void initAccesibility() {
+    private void initAccessibility() {
         managePlafsButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_ManagePlafsButton"));
         platformValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformValue"));
     }

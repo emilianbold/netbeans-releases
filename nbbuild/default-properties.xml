@@ -28,4 +28,9 @@ Microsystems, Inc. All Rights Reserved.
 
   <property file="${clusters.list.file}"/>
   <property file="${moduleCluster.file}"/>
+
+  <!-- Have to be read here, so that they will affect even module builds (e.g. when setting JDK): -->
+  <property file="${nb_all}/nbbuild/user.build.properties"/>
+  <property file="${nb_all}/nbbuild/site.build.properties"/>
+  
 </project>

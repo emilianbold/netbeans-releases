@@ -13,6 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="default" default="init" basedir=".">
   <import file="default-properties.xml"/>
+  <import file="jdk.xml"/>
 
   <target name="init-tasks" unless="tasks-already-set">
     <taskdef name="jhindexer"
@@ -63,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="tasks-already-set" value="true"/>
   </target>
   
-  <target name="init" depends="init-tasks,setup-jdkhome">
+  <target name="init" depends="init-tasks">
     <!-- Gets the module name -->
     <getmodulename name="module.name" root="${nb_all}"/>
     
@@ -80,31 +81,5 @@ Microsystems, Inc. All Rights Reserved.
       <entry  key="${module.name}.dir" value="$${netbeans.dest.dir}/${cluster.dir}"/>
     </propertyfile>
   </target>
-
-  <target name="setup-jdkhome-1">
-    <!-- Note: user-configured -Djavahome=... will always override this: -->
-    <property name="javahome" location="${java.home}"/>
-    <condition property="jdkhome" value="${javahome}">
-        <or>
-            <available file="${javahome}/lib/tools.jar"/>
-            <!-- on Mac -->
-            <available file="${javahome}/../Classes/classes.jar"/>
-        </or>
-    </condition>
-  </target>
   
-  <target name="setup-jdkhome-2" unless="jdkhome">
-    <property name="javahomeParent" location="${java.home}/.."/>
-    <condition property="jdkhome" value="${javahomeParent}">
-        <or>
-            <available file="${javahomeParent}/lib/tools.jar"/>
-            <!-- on Mac -->
-            <available file="${javahomeParent}/../Classes/classes.jar"/>
-        </or>
-    </condition>
-  </target>
-
-  <target name="setup-jdkhome" depends="setup-jdkhome-1,setup-jdkhome-2" unless="jdkhome">
-    <fail message="No tools.jar or classes.jar found in ${javahome}! Set -Djavahome=... as needed."/>
-  </target>
 </project>

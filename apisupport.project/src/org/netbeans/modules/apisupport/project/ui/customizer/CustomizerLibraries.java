@@ -26,9 +26,11 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.RequiredTokenListModel;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
+import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -36,7 +38,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * Represents <em>Libraries</em> panel in Netbeans Module customizer.
+ * Represents <em>Libraries</em> panel in NetBeans Module customizer.
  *
  * @author mkrauskopf
  */
@@ -46,7 +48,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     public CustomizerLibraries(final SingleModuleProperties props) {
         super(props, CustomizerLibraries.class);
         initComponents();
-        initAccesibility();
+        initAccessibility();
         refresh();
         dependencyList.setCellRenderer(CustomizerComponentFactory.getDependencyCellRenderer(false));
         platformValue.addItemListener(new ItemListener() {
@@ -67,19 +69,37 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                 }
             }
         });
+        javaPlatformCombo.setRenderer(JavaPlatformComponentFactory.javaPlatformListCellRenderer());
+        javaPlatformCombo.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    // set new platform
+                    getProperties().setActiveJavaPlatform((JavaPlatform) javaPlatformCombo.getSelectedItem());
+                }
+            }
+        });
     }
     
     void refresh() {
+        refreshJavaPlatforms();
         refreshPlatforms();
         platformValue.setEnabled(getProperties().isStandalone());
         managePlafsButton.setEnabled(getProperties().isStandalone());
+        boolean javaEnabled = getProperties().isStandalone() || getProperties().isNetBeansOrg();
+        javaPlatformCombo.setEnabled(javaEnabled);
+        javaPlatformButton.setEnabled(javaEnabled);
         updateEnabled();
         reqTokenList.setModel(getProperties().getRequiredTokenListModel());
         dependencyList.setModel(getProperties().getDependenciesListModel());
     }
     
+    private void refreshJavaPlatforms() {
+        javaPlatformCombo.setModel(JavaPlatformComponentFactory.javaPlatformListModel());
+        javaPlatformCombo.setSelectedItem(getProperties().getActiveJavaPlatform());
+    }
+    
     private void refreshPlatforms() {
-        platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory.NbPlatformListModel()); // refresh
+        platformValue.setModel(new PlatformComponentFactory.NbPlatformListModel()); // refresh
         platformValue.setSelectedItem(getProperties().getActivePlatform());
         platformValue.requestFocusInWindow();
     }
@@ -117,10 +137,13 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         editDepButton = new javax.swing.JButton();
         dependencySP = new javax.swing.JScrollPane();
         dependencyList = new javax.swing.JList();
-        platformPanel = new javax.swing.JPanel();
+        platformsPanel = new javax.swing.JPanel();
         platformValue = org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory.getNbPlatformsComboxBox();
         platform = new javax.swing.JLabel();
         managePlafsButton = new javax.swing.JButton();
+        javaPlatformLabel = new javax.swing.JLabel();
+        javaPlatformCombo = new javax.swing.JComboBox();
+        javaPlatformButton = new javax.swing.JButton();
         reqTokens = new javax.swing.JLabel();
         reqTokenSP = new javax.swing.JScrollPane();
         reqTokenList = new javax.swing.JList();
@@ -204,25 +227,25 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(dependencySP, gridBagConstraints);
 
-        platformPanel.setLayout(new java.awt.GridBagLayout());
+        platformsPanel.setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        platformPanel.add(platformValue, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
+        platformsPanel.add(platformValue, gridBagConstraints);
 
         platform.setLabelFor(platformValue);
         org.openide.awt.Mnemonics.setLocalizedText(platform, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_NetBeansPlatform"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        platformPanel.add(platform, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
+        platformsPanel.add(platform, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(managePlafsButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_ManagePlatform"));
         managePlafsButton.addActionListener(new java.awt.event.ActionListener() {
@@ -233,16 +256,50 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        platformsPanel.add(managePlafsButton, gridBagConstraints);
+
+        javaPlatformLabel.setLabelFor(javaPlatformCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, NbBundle.getMessage(CustomizerLibraries.class, "LBL_Java_Platform"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        platformPanel.add(managePlafsButton, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        platformsPanel.add(javaPlatformLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        platformsPanel.add(javaPlatformCombo, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformButton, NbBundle.getMessage(CustomizerLibraries.class, "LBL_Manage_Java_Platforms"));
+        javaPlatformButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                javaPlatformButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        platformsPanel.add(javaPlatformButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        add(platformPanel, gridBagConstraints);
+        add(platformsPanel, gridBagConstraints);
 
         reqTokens.setLabelFor(reqTokenList);
         org.openide.awt.Mnemonics.setLocalizedText(reqTokens, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_RequiredTokens"));
@@ -299,11 +356,15 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(tokenButtonPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void javaPlatformButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaPlatformButtonActionPerformed
+        PlatformsCustomizer.showCustomizer((JavaPlatform) javaPlatformCombo.getSelectedItem());
+        refreshJavaPlatforms();
+    }//GEN-LAST:event_javaPlatformButtonActionPerformed
     
     private void removeToken(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeToken
-        RequiredTokenListModel model = (RequiredTokenListModel) reqTokenList.getModel();
+        CustomizerComponentFactory.RequiredTokenListModel model = (CustomizerComponentFactory.RequiredTokenListModel) reqTokenList.getModel();
         Object[] selected = reqTokenList.getSelectedValues();
         for (int i = 0; i < selected.length; i++) {
             model.removeToken((String) selected[i]);
@@ -341,7 +402,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         d.dispose();
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
             Object[] selected = tokenList.getSelectedValues();
-            RequiredTokenListModel model = (RequiredTokenListModel) reqTokenList.getModel();
+            CustomizerComponentFactory.RequiredTokenListModel model = (CustomizerComponentFactory.RequiredTokenListModel) reqTokenList.getModel();
             for (int i = 0; i < selected.length; i++) {
                 model.addToken((String) selected[i]);
             }
@@ -418,11 +479,14 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     private javax.swing.JList dependencyList;
     private javax.swing.JScrollPane dependencySP;
     private javax.swing.JButton editDepButton;
+    private javax.swing.JButton javaPlatformButton;
+    private javax.swing.JComboBox javaPlatformCombo;
+    private javax.swing.JLabel javaPlatformLabel;
     private javax.swing.JButton managePlafsButton;
     private javax.swing.JLabel modDepLabel;
     private javax.swing.JLabel platform;
-    private javax.swing.JPanel platformPanel;
     private javax.swing.JComboBox platformValue;
+    private javax.swing.JPanel platformsPanel;
     private javax.swing.JButton removeDepButton;
     private javax.swing.JButton removeTokenButton;
     private javax.swing.JList reqTokenList;
@@ -432,7 +496,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     private javax.swing.JPanel tokenButtonPanel;
     // End of variables declaration//GEN-END:variables
     
-    private void initAccesibility() {
+    private void initAccessibility() {
         addTokenButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_SrcLevelValue"));
         dependencyList.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_DependencyList"));
         editDepButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_EditDepButton"));

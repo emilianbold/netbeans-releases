@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 <project name="run" basedir=".">
 
     <target name="-init">
-        <property name="run.jdkhome" location="${java.home}/.."/>
+        <property name="run.jdkhome" location="${nbjdk.home}"/>
         <condition property="test.user.dir" value="${suite.dir}/build/testuserdir">
             <isset property="suite.dir"/>
         </condition>
@@ -106,19 +106,10 @@ Microsystems, Inc. All Rights Reserved.
             <arg line="${run.args}"/>
             <arg line="${run.args.extra}"/>
         </exec>
-        <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes">
+        <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes">
             <arg value="${run.sh}"/>
             <arg value="--jdkhome"/>
             <arg file="${run.jdkhome}"/>
-            <arg line="${run.args.common}"/>
-            <arg line="${run.args.prepared}"/>
-            <arg line="${run.args}"/>
-            <arg line="${run.args.extra}"/>
-        </exec>
-        <exec os="Mac OS X" dir="." executable="sh" failonerror="yes">
-            <arg value="${run.sh}"/>
-            <arg value="--jdkhome"/>
-            <arg file="/Library/Java/Home"/>
             <arg line="${run.args.common}"/>
             <arg line="${run.args.prepared}"/>
             <arg line="${run.args}"/>

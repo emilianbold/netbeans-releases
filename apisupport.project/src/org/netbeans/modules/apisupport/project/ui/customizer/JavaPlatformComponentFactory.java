@@ -1,0 +1,143 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.apisupport.project.ui.customizer;
+
+import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.openide.util.WeakListeners;
+
+/**
+ * GUI tools for working with the Java platform.
+ * @author Jesse Glick
+ */
+public class JavaPlatformComponentFactory {
+    
+    private JavaPlatformComponentFactory() {}
+    
+    private static final ComboBoxModel MODEL = new Model();
+    public static ComboBoxModel/*<JavaPlatform>*/ javaPlatformListModel() {
+        return MODEL;
+    }
+    
+    private static final ListCellRenderer RENDERER = new Renderer();
+    public static ListCellRenderer/*<JavaPlatform>*/ javaPlatformListCellRenderer() {
+        return RENDERER;
+    }
+    
+    private static final class Model implements ComboBoxModel/*<JavaPlatform>*/, PropertyChangeListener, Comparator/*<JavaPlatform>*/ {
+        
+        private static final Collator COLL = Collator.getInstance();
+        private static final JavaPlatformManager mgr = JavaPlatformManager.getDefault();
+        private final SortedSet/*<JavaPlatform>*/ platforms = new TreeSet(this);
+        private final List/*<ListDataListener>*/ listeners = new ArrayList();
+        private JavaPlatform selected;
+        
+        public Model() {
+            refresh();
+            mgr.addPropertyChangeListener(WeakListeners.propertyChange(this, mgr));
+        }
+        
+        private void refresh() {
+            platforms.clear();
+            platforms.addAll(Arrays.asList(mgr.getInstalledPlatforms()));
+        }
+
+        public int getSize() {
+            return platforms.size();
+        }
+
+        public Object getElementAt(int index) {
+            return (JavaPlatform) new ArrayList(platforms).get(index);
+        }
+
+        public void addListDataListener(ListDataListener l) {
+            listeners.add(l);
+        }
+
+        public void removeListDataListener(ListDataListener l) {
+            listeners.remove(l);
+        }
+        
+        public void setSelectedItem(Object sel) {
+            if (sel != selected) {
+                selected = (JavaPlatform) sel;
+                fireChange();
+            }
+        }
+
+        public Object getSelectedItem() {
+            return selected;
+        }
+        
+        private void fireChange() {
+            ListDataEvent ev = new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, 0, 0);
+            Iterator it = new ArrayList(listeners).iterator();
+            while (it.hasNext()) {
+                ((ListDataListener) it.next()).contentsChanged(ev);
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            refresh();
+            fireChange();
+        }
+
+        public int compare(Object o1, Object o2) {
+            JavaPlatform p1 = (JavaPlatform) o1;
+            JavaPlatform p2 = (JavaPlatform) o2;
+            int res = COLL.compare(p1.getDisplayName(), p2.getDisplayName());
+            if (res != 0) {
+                return res;
+            } else {
+                String id1 = ModuleProperties.getPlatformID(p1);
+                String id2 = ModuleProperties.getPlatformID(p2);
+                if (id1 != null && id2 != null) {
+                    return id1.compareTo(id2);
+                } else {
+                    return System.identityHashCode(p1) - System.identityHashCode(p2);
+                }
+            }
+        }
+
+    }
+    
+    private static final class Renderer extends DefaultListCellRenderer/*<JavaPlatform>*/ {
+        
+        public Renderer() {}
+        
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            String name = value != null ? ((JavaPlatform) value).getDisplayName() : null;
+            return super.getListCellRendererComponent(list, name, index, isSelected, cellHasFocus);
+        }
+
+    }
+    
+}

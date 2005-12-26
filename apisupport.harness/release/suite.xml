@@ -13,6 +13,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="suite" basedir=".">
 
+    <import file="jdk.xml"/>
+    
     <target name="-taskdefs" unless="harness.taskdefs.done">
         <dirname property="harness.dir" file="${suite.file}"/>
         <echo level="verbose">Using build harness in ${harness.dir}</echo>
@@ -159,27 +161,27 @@ Microsystems, Inc. All Rights Reserved.
         <branding cluster="${cluster}" overrides="${branding.dir}" token="${branding.token}"/>
     </target>
 
-    <target name="run" depends="build" description="Runs this suite in place.">
+    <target name="run" depends="build,-jdk-init" description="Runs this suite in place.">
         <ant antfile="${harness.dir}/run.xml" target="run"/>
     </target>
         
-    <target name="debug" depends="build" description="Runs this suite in place in the debugger.">
+    <target name="debug" depends="build,-jdk-init,-jdk-presetdef-nbjpdastart" description="Runs this suite in place in the debugger.">
         <ant antfile="${harness.dir}/run.xml" target="debug"/>
     </target>
 
-    <target name="profile" depends="build" description="Runs this suite in place in the profiler.">
+    <target name="profile" depends="build,-jdk-init,-jdk-presetdef-nbprofiledirect" description="Runs this suite in place in the profiler.">
         <ant antfile="${harness.dir}/run.xml" target="profile"/>
     </target>
     
-    <target name="build-jnlp" depends="build" description="Packages this suite as a JNLP application.">
+    <target name="build-jnlp" depends="build,-jdk-init" description="Packages this suite as a JNLP application.">
         <ant antfile="${harness.dir}/jnlp.xml" target="build"/>
     </target>
     
-    <target name="run-jnlp" depends="build" description="Runs this suite as a JNLP application.">
+    <target name="run-jnlp" depends="build,-jdk-init" description="Runs this suite as a JNLP application.">
         <ant antfile="${harness.dir}/jnlp.xml" target="run"/>
     </target>
     
-    <target name="debug-jnlp" depends="build" description="Runs this suite as a JNLP application in the debugger.">
+    <target name="debug-jnlp" depends="build,-jdk-init,-jdk-presetdef-nbjpdastart" description="Runs this suite as a JNLP application in the debugger.">
         <ant antfile="${harness.dir}/jnlp.xml" target="debug"/>
     </target>
     

@@ -11,8 +11,6 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
-
 <project name="testtools" default="netbeans" basedir=".">
   <import file="../nbbuild/default.xml"/> 
   
@@ -54,8 +52,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nbroot}/jemmy/jemmy.jar" />
         <pathelement location="${nbroot}/jellytools/jelly2-nb.jar" />
         <pathelement location="${jemmysupport.dir}/modules/org-netbeans-modules-jemmysupport.jar" />
-        <!-- Hopefully set up by nbbuild/build.xml: -->
-        <pathelement location="${jdkhome}/lib/tools.jar"/>
+        <pathelement location="${tools.jar}"/>
         <fileset dir="${nbroot}/libs/external">
           <include name="xerces*.jar"/>
           <include name="xml-apis*.jar"/>

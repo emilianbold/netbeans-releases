@@ -14,6 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 <project name="harness" basedir="." default="netbeans">
 
     <import file="common.xml"/>
+    <import file="jdk.xml"/>
     
     <target name="taskdefs" unless="harness.taskdefs.done">
         <dirname property="harness.dir" file="${harness.file}"/>
@@ -40,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo file="${license.file}">[NO LICENSE SPECIFIED]</echo>
     </target>
 
-    <target name="build-init" depends="basic-init,nbm-license-init">
+    <target name="build-init" depends="basic-init,-jdk-init,nbm-license-init">
         <!-- Similar to projectized.xml but does not try to set NBM homepage/distribution, nor is javahelp.excludes predefined, but javadoc.title is defaulted. -->
         <parseprojectxml project="." publicpackagesproperty="public.packages" friendsproperty="friends" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" moduleclasspathproperty="module.classpath" classpathextensionsproperty="class.path.extensions"/>
         <condition property="is.regular">
@@ -148,11 +149,11 @@ Microsystems, Inc. All Rights Reserved.
         <ant antfile="${harness.dir}/run.xml" target="run"/>
     </target>
 
-    <target name="profile" depends="netbeans" >
+    <target name="profile" depends="netbeans,-jdk-presetdef-nbprofiledirect">
         <ant antfile="${harness.dir}/run.xml" target="profile"/>
     </target>
     
-    <target name="debug" depends="netbeans">
+    <target name="debug" depends="netbeans,-jdk-presetdef-nbjpdastart">
         <ant antfile="${harness.dir}/run.xml" target="debug"/>
     </target>
     

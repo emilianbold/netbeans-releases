@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -127,6 +128,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private SortedSet requiredTokens;
     private NbPlatform activePlatform;
     private NbPlatform originalPlatform;
+    private JavaPlatform activeJavaPlatform;
     
     /** package name / selected */
     private SortedSet/*<String>*/ availablePublicPackages;
@@ -146,6 +148,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private RequiredTokenListModel requiredTokensListModel;
     
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
+    public static final String JAVA_PLATFORM_PROPERTY = "nbjdk.active"; // NOI18N
     public static final String DEPENDENCIES_PROPERTY = "moduleDependencies"; // NOI18N
     
     /**
@@ -183,6 +186,13 @@ public final class SingleModuleProperties extends ModuleProperties {
         provTokensString = manifestManager.getProvidedTokensString();
         originalPlatform = activePlatform = NbPlatform.getPlatformByID(
                 getEvaluator().getProperty("nbplatform.active")); // NOI18N
+        String activeJdk = getEvaluator().getProperty("nbjdk.active"); // NOI18N
+        if (activeJdk != null) {
+            activeJavaPlatform = ModuleProperties.findJavaPlatformByID(activeJdk); // NOI18N
+        } else {
+            String activeJdkHome = getEvaluator().getProperty("nbjdk.home"); // NOI18N
+            activeJavaPlatform = ModuleProperties.findJavaPlatformByLocation(activeJdkHome);
+        }
         getPublicPackagesModel().reloadData(loadPublicPackages());
         requiredTokens = Collections.unmodifiableSortedSet(
                 new TreeSet(Arrays.asList(manifestManager.getRequiredTokens())));
@@ -265,6 +275,18 @@ public final class SingleModuleProperties extends ModuleProperties {
             this.universeDependencies = null;
             this.modCategories = null;
             firePropertyChange(NB_PLATFORM_PROPERTY, oldPlaf, newPlaf);
+        }
+    }
+    
+    JavaPlatform getActiveJavaPlatform() {
+        return activeJavaPlatform;
+    }
+    
+    void setActiveJavaPlatform(JavaPlatform nue) {
+        JavaPlatform old = activeJavaPlatform;
+        if (nue != old) {
+            activeJavaPlatform = nue;
+            firePropertyChange(JAVA_PLATFORM_PROPERTY, old, nue);
         }
     }
     
@@ -591,6 +613,9 @@ public final class SingleModuleProperties extends ModuleProperties {
         
         if (isStandalone()) {
             ModuleProperties.storePlatform(getHelper(), getActivePlatform());
+            ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), false);
+        } else if (isNetBeansOrg()) {
+            ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), true);
         }
     }
     

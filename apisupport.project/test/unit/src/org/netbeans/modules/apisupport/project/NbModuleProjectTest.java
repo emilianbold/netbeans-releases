@@ -39,10 +39,11 @@ public class NbModuleProjectTest extends TestBase {
     
     private NbModuleProject javaProjectProject;
     private NbModuleProject loadersProject;
+    private File userPropertiesFile;
     
     protected void setUp() throws Exception {
         super.setUp();
-        TestBase.initializeBuildProperties(getWorkDir());
+        userPropertiesFile = TestBase.initializeBuildProperties(getWorkDir());
         FileObject dir = nbroot.getFileObject("java/project");
         assertNotNull("have java/project checked out", dir);
         Project p = ProjectManager.getDefault().findProject(dir);
@@ -201,6 +202,35 @@ public class NbModuleProjectTest extends TestBase {
         Sources sources = ProjectUtils.getSources(module);
         SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         assertEquals("two generic source group", 2, sourceGroups.length); // prjFolder and unitFolder
+    }
+
+    /** @see "#63541" */
+    public void testJdkProperties() throws Exception {
+        File testjdk = new File(getWorkDir(), "testjdk");
+        EditableProperties ep = Util.loadProperties(FileUtil.toFileObject(userPropertiesFile));
+        ep.setProperty("platforms.testjdk.home", testjdk.getAbsolutePath());
+        Util.storeProperties(FileUtil.toFileObject(userPropertiesFile), ep);
+        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        PropertyEvaluator eval = p.evaluator();
+        TestBase.TestPCL l = new TestBase.TestPCL();
+        eval.addPropertyChangeListener(l);
+        String bootcp = eval.getProperty("nbjdk.bootclasspath");
+        String origbootcp = bootcp;
+        assertNotNull(bootcp); // who knows what actual value will be inside a unit test - probably empty
+        ep = p.getHelper().getProperties("nbproject/platform.properties");
+        ep.setProperty("nbjdk.active", "testjdk");
+        p.getHelper().putProperties("nbproject/platform.properties", ep);
+        assertTrue("got a change in bootcp", l.changed.contains("nbjdk.bootclasspath"));
+        l.reset();
+        bootcp = eval.getProperty("nbjdk.bootclasspath");
+        assertEquals("correct bootcp", new File(testjdk, "jre/lib/rt.jar".replace('/', File.separatorChar)).getAbsolutePath(), bootcp);
+        ep = p.getHelper().getProperties("nbproject/platform.properties");
+        ep.setProperty("nbjdk.active", "default");
+        p.getHelper().putProperties("nbproject/platform.properties", ep);
+        assertTrue("got a change in bootcp", l.changed.contains("nbjdk.bootclasspath"));
+        l.reset();
+        bootcp = eval.getProperty("nbjdk.bootclasspath");
+        assertEquals(origbootcp, bootcp);
     }
     
 }

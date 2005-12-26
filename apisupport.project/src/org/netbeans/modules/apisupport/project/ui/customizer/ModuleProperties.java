@@ -17,7 +17,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -26,7 +30,10 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -221,6 +228,89 @@ abstract class ModuleProperties {
             System.err.println(message);
         }
     }
+
+    static String getPlatformID(JavaPlatform platform) {
+        // XXX why isn't there a real API for this??
+        return (String) platform.getProperties().get("platform.ant.name"); // NOI18N
+    }
+    
+    static JavaPlatform findJavaPlatformByID(String id) {
+        if (id == null || id.equals("default")) { // NOI18N
+            return JavaPlatform.getDefault();
+        }
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        for (int i = 0; i < platforms.length; i++) {
+            if (id.equals(getPlatformID(platforms[i]))) {
+                return platforms[i];
+            }
+        }
+        return null;
+    }
+
+    static void storeJavaPlatform(AntProjectHelper helper, PropertyEvaluator eval, JavaPlatform platform, boolean isNetBeansOrg) throws IOException {
+        if (isNetBeansOrg) {
+            final boolean isDefault = platform == null || platform == JavaPlatform.getDefault();
+            final File home = isDefault ? null : getPlatformLocation(platform);
+            if (home != null || isDefault) {
+                final FileObject nbbuild = helper.resolveFileObject(eval.evaluate("${nb_all}/nbbuild")); // NOI18N
+                if (nbbuild != null) {
+                    try {
+                        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                            public Object run() throws IOException {
+                                FileObject userBuildProperties = nbbuild.getFileObject("user.build.properties"); // NOI18N
+                                if (userBuildProperties == null) {
+                                    userBuildProperties = nbbuild.createData("user.build.properties"); // NOI18N
+                                }
+                                EditableProperties ep = Util.loadProperties(userBuildProperties);
+                                if (isDefault) {
+                                    // Have to remove it; no default value.
+                                    ep.remove("nbjdk.home");
+                                } else {
+                                    ep.setProperty("nbjdk.home", home.getAbsolutePath());
+                                }
+                                Util.storeProperties(userBuildProperties, ep);
+                                return null;
+                            }
+                        });
+                    } catch (MutexException e) {
+                        throw (IOException) e.getException();
+                    }
+                }
+            }
+        } else {
+            EditableProperties props = helper.getProperties(NbModuleProjectGenerator.PLATFORM_PROPERTIES_PATH);
+            if (platform == null || platform == JavaPlatform.getDefault()) {
+                if (props.containsKey("nbjdk.active")) { // NOI18N
+                    // Could also just remove it, but probably nicer to set it explicitly to 'default'.
+                    props.put("nbjdk.active", "default"); // NOI18N
+                }
+            } else {
+                props.put("nbjdk.active", getPlatformID(platform)); // NOI18N
+            }
+            helper.putProperties(NbModuleProjectGenerator.PLATFORM_PROPERTIES_PATH, props);
+        }
+    }
+    
+    private static File getPlatformLocation(JavaPlatform platform) {
+        Collection/*<FileObject>*/ installs = platform.getInstallFolders();
+        if (installs.size() == 1) {
+            return FileUtil.toFile((FileObject) installs.iterator().next());
+        } else {
+            return null;
+        }
+    }
+
+    static JavaPlatform findJavaPlatformByLocation(String home) {
+        if (home == null) {
+            return JavaPlatform.getDefault();
+        }
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        for (int i = 0; i < platforms.length; i++) {
+            if (new File(home).equals(getPlatformLocation(platforms[i]))) {
+                return platforms[i];
+            }
+        }
+        return null;
+    }
     
 }
-

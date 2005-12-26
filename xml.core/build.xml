@@ -20,14 +20,13 @@ Microsystems, Inc. All Rights Reserved.
     <property name="tax_root" location="${xml_root}/tax"/>
     <property name="tax_lib_root" location="${tax_root}/lib"/>
     -->
-    <available property="do-not-generate-user-handler" classname="org.w3c.dom.UserDataHandler" />
     
     <!-- 
      - Workaround for new DOM3 interfaces that are not avalable on JDK 1.4 
      - At runtime on JDK 1.4 we are happy because we do not call any DOM3 methods
      -            on JDK 1.5 we are happy because system DOM3 interfaces prevail
     -->
-    <target name="generate-user-handler" unless="do-not-generate-user-handler" >
+    <target name="generate-user-handler">
         <mkdir dir="src/org/w3c/dom" />
         <echo file="src/org/w3c/dom/UserDataHandler.java" >
         package org.w3c.dom; public interface UserDataHandler {}

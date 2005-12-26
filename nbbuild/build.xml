@@ -29,33 +29,19 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="assure-ant">
       <condition property="ant.version.is.good">
-          <!-- this is in 1.6 only -->
-          <available classname="org.apache.tools.ant.util.FileUtils"/>
+          <!-- this is in 1.6.3 only -->
+          <!-- actually needed for 'executable' attr on <javadoc>, at least -->
+          <available classname="org.apache.tools.ant.types.mappers.FilterMapper"/>
     </condition>
     <fail unless="ant.version.is.good">
-        You need to have ant 1.6 at least to build NetBeans.
+        You need to have ant 1.6.3 at least to build NetBeans.
     </fail>
   </target>
   
-  <target name="check-for-jdk-1.4">
-    <available property="have-jdk-1.4" classname="java.lang.CharSequence"/>
-    <available property="have-jdk-1.5" classname="java.lang.StringBuilder"/>
-  </target>
-  <target name="assure-jdk-1.4" depends="check-for-jdk-1.4" unless="have-jdk-1.4">
-    <fail>You need JDK 1.4 or higher to build NetBeans.</fail>
-  </target>
-
   <target name="bootstrap"
           description="Bootstrap NetBeans-specific Ant extensions."
-          depends="assure-jdk-1.4,assure-ant">
-    <!-- First things first: read the user's and/or -->
-    <!-- the site's build properties files.         -->
-    <property file="user.build.properties"/>
-    <property file="site.build.properties"/>
-    
-    <!-- Now read the standard properties file. -->
+          depends="-jdk-init,-assure-jdk-1.4,assure-ant">
     <property file="build.properties"/>
-
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
     <property name="ant.jar" value="${ant.home}/lib/ant.jar"/>
     <path id="bootstrap-cp">
@@ -97,7 +83,7 @@ Microsystems, Inc. All Rights Reserved.
     </jar>
   </target>
 
-  <target name="init-module-list" depends="bootstrap,setup-jdkhome">
+  <target name="init-module-list" depends="bootstrap">
     <!-- Define modules. -->
     <resolve name="modules" value="config.modules.${moduleconfig}"/>
     <resolve name="fixedmodules" value="config.fixedmodules.${moduleconfig}"/>
@@ -424,8 +410,7 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
     <echo message="Starting a build for NetBeans (build ${buildnum}, config '${moduleconfig}') ..."/>
     <echo message="Selected modules: ${modules}"/>
     <echo message="OS: ${os.name} ${os.version}  Locale: ${user.language}_${user.region}"/>
-    <echo message="Java: ${java.vendor} ${java.version} in ${java.home}; for NetBeans: ${jdkhome}"/>
-    <echo message="Classpath: ${java.class.path}"/>
+    <echo message="Java: ${nbjdk.home}"/>
   </target>
   
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
@@ -756,7 +741,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
       <fail>Will not delete ${test.user.dir} because ${test.user.dir.lock} still exists; kill any running process and delete lock file if necessary</fail>
     </target>
   <target name="testuserdir-delete" depends="-testuserdir-delete-ok,-testuserdir-delete-fail"/>
-  <target name="sanity-start" depends="init,maybe-build-nozip">
+  <target name="sanity-start" depends="init,maybe-build-nozip,-jdk-init">
     <mkdir dir="${test.user.dir}"/>
     <echo>Starting the IDE as a sanity check...</echo>
     <echo>WARNING - the sanity-start target is deprecated. Use commit-validation instead.</echo>
@@ -766,7 +751,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <!-- a deadlock from hanging an automated build: -->
     <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes" timeout="600000">
       <arg value="--jdkhome"/>
-      <arg file="${jdkhome}"/>
+      <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${sanitystart.args}"/>
@@ -774,7 +759,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes" timeout="600000">
       <arg value="${netbeans.dest.abs}/bin/netbeans"/>
       <arg value="--jdkhome"/>
-      <arg file="${jdkhome}"/>
+      <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${sanitystart.args}"/>
@@ -801,7 +786,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <property name="tryme.debug.args" value="-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=${debug.server},address=${debug.port}" />
   </target>
           
-  <target name="tryme-debug" description="Start IDE in debugger. May only be called from within IDE.">
+  <target name="tryme-debug" depends="-jdk-presetdef-nbjpdastart" description="Start IDE in debugger. May only be called from within IDE.">
     <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
       <classpath>
         <fileset dir="${netbeans.dest.dir}">
@@ -813,7 +798,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <antcall target="tryme"/>
   </target>
     
-  <target name="tryme-profile" description="Start IDE in debugger. May only be called from within IDE.">
+  <target name="tryme-profile" depends="-jdk-presetdef-nbprofiledirect" description="Start IDE in debugger. May only be called from within IDE.">
     <property name="profiler.roots.path" value="profiler.roots.all" />
     <fileset id="profiler.roots.all" dir="${netbeans.dest.dir}">
         <include name="**/*.jar"/>
@@ -838,7 +823,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     </antcall>
   </target>
   
-  <target name="tryme" depends="init,maybe-build-nozip,tryme-setup-debug-args"
+  <target name="tryme" depends="init,maybe-build-nozip,tryme-setup-debug-args,-jdk-init"
           description="Try running the IDE interactively (build it first if needed).
 It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in debug mode" 
    >
@@ -846,25 +831,16 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
     <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes">
       <arg value="--jdkhome"/>
-      <arg file="${jdkhome}"/>
+      <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
       <arg line="${tryme.debug.args}" />
     </exec>
-    <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes">
+    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes">
       <arg value="${netbeans.dest}/bin/netbeans"/>
       <arg value="--jdkhome"/>
-      <arg file="${jdkhome}"/>
-      <arg value="--userdir"/>
-      <arg file="${test.user.dir}"/>
-      <arg line="${tryme.args}"/>
-      <arg line="${tryme.debug.args}" />
-    </exec>
-    <exec os="Mac OS X" dir="." executable="sh" failonerror="yes">
-      <arg value="${netbeans.dest}/bin/netbeans"/>
-      <arg value="--jdkhome"/>
-      <arg file="/Library/Java/Home"/>
+      <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
@@ -985,7 +961,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <ant dir="test" target="runtests"/>
     <nbbrowse file="test/results/index.html"/>
   </target>
-  <target name="localtest-single-nb-debug" depends="bootstrap">
+  <target name="localtest-single-nb-debug" depends="bootstrap,-jdk-presetdef-nbjpdastart">
     <property name="unit.test.base" location="test/unit/src"/>
     <pathconvert property="xtest.includes" pathsep=",">
         <path path="${includes}"/>
@@ -1419,7 +1395,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </fail>
   </target>
   
-  <target name="check-shared-packages" depends="generate-golden-files" unless="have-jdk-1.5" >
+  <target name="check-shared-packages" depends="generate-golden-files,-jdk-init" unless="have-jdk-1.5" >
     <property name="check.shared.packages.golden" location="${golden.files.dir}/shared-packages.txt" />
     <property name="check.shared.packages.template" location="${template.files.dir}/shared-packages.txt" />
     <property name="check.shared.packages.generated" location="${generated.files.dir}/shared-packages.txt" />

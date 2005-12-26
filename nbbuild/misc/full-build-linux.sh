@@ -272,7 +272,8 @@ then
     echo "----------BUILDING NETBEANS----------" 1>&2
     # Intentionally skipping check-commit-validation.
     # Running sanity-start just so you have a good chance to see deprecation messages etc.
-    $antcmd -f $sources/nbbuild/build.xml nozip-check commit-verification
+    # Make sure to explicitly set JDK (ignore any definition in user.build.properties).
+    $antcmd -f $sources/nbbuild/build.xml -Dnbjdk.home=$nbjdk nozip-check commit-verification
     status=$?
     if [ $status != 0 ]
     then
