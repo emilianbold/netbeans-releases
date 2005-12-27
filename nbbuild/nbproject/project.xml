@@ -17,7 +17,10 @@ Microsystems, Inc. All Rights Reserved.
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
             <name>NetBeans Build System</name>
             <properties>
-                <property name="ant.script">build.xml</property>
+                <property-file>user.build.properties</property-file>
+                <property-file>site.build.properties</property-file>
+                <property name="nbjdk.home">${java.home}/..</property>
+                <property name="nbjdk.bootclasspath">${nbjdk.home}/jre/lib/rt.jar</property>
             </properties>
             <folders>
                 <source-folder>
@@ -41,24 +44,19 @@ Microsystems, Inc. All Rights Reserved.
             </folders>
             <ide-actions>
                 <action name="build">
-                    <script>${ant.script}</script>
                     <target>bootstrap</target>
                 </action>
                 <action name="rebuild">
-                    <script>${ant.script}</script>
                     <target>localclean</target>
                     <target>bootstrap</target>
                 </action>
                 <action name="clean">
-                    <script>${ant.script}</script>
                     <target>localclean</target>
                 </action>
                 <action name="test">
-                    <script>${ant.script}</script>
                     <target>localtest-nb</target>
                 </action>
                 <action name="run.single">
-                    <script>${ant.script}</script>
                     <target>localtest-single-nb</target>
                     <context>
                         <property>includes</property>
@@ -71,7 +69,6 @@ Microsystems, Inc. All Rights Reserved.
                     </context>
                 </action>
                 <action name="debug.single">
-                    <script>${ant.script}</script>
                     <target>localtest-single-nb-debug</target>
                     <context>
                         <property>includes</property>
@@ -84,15 +81,12 @@ Microsystems, Inc. All Rights Reserved.
                     </context>
                 </action>
                 <action name="javadoc">
-                    <script>${ant.script}</script>
                     <target>bootstrap-javadoc</target>
                 </action>
                 <action name="run">
-                    <script>${ant.script}</script>
                     <target>tryme</target>
                 </action>
                 <action name="debug">
-                    <script>${ant.script}</script>
                     <target>tryme-debug</target>
                 </action>
             </ide-actions>
@@ -124,12 +118,10 @@ Microsystems, Inc. All Rights Reserved.
                     <ide-action name="javadoc"/>
                     <separator/>
                     <action>
-                        <script>${ant.script}</script>
                         <label>Build IDE (no ZIP file)</label>
                         <target>build-nozip</target>
                     </action>
                     <action>
-                        <script>${ant.script}</script>
                         <label>Clean Everything</label>
                         <target>real-clean</target>
                     </action>
@@ -137,18 +129,15 @@ Microsystems, Inc. All Rights Reserved.
                     <ide-action name="run"/>
                     <ide-action name="debug"/>
                     <action>
-                        <script>${ant.script}</script>
                         <label>Run Commit Validation</label>
                         <target>commit-validation</target>
                     </action>
                     <separator/>
                     <action>
-                        <script>${ant.script}</script>
                         <label>Build All API Javadoc</label>
                         <target>build-javadoc</target>
                     </action>
                     <action>
-                        <script>${ant.script}</script>
                         <label>Build Daily Alpha NBMs</label>
                         <target>merge</target>
                         <target>build-nbms</target>
@@ -370,7 +359,7 @@ Microsystems, Inc. All Rights Reserved.
             <compilation-unit>
                 <package-root>antsrc</package-root>
                 <classpath mode="compile">${ant.home}/lib/ant.jar</classpath>
-                <!-- XXX specify mode="boot" if feasible (see jdk.xml) -->
+                <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
                 <built-to>build/antclasses</built-to>
                 <built-to>nbantext.jar</built-to>
                 <source-level>1.4</source-level>
@@ -379,6 +368,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package-root>test/unit/src</package-root>
                 <unit-tests/>
                 <classpath mode="compile">../junit/external/junit-3.8.1.jar:netbeans/testtools/modules/ext/nbjunit.jar:../ant/external/lib/ant.jar:nbantext.jar</classpath>
+                <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
                 <source-level>1.4</source-level>
             </compilation-unit>
         </java-data>
