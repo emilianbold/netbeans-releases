@@ -66,7 +66,7 @@ public class AntLoggerTest extends NbTestCase {
     private static void run(FileObject script) throws Exception {
         int res = AntTargetExecutor.createTargetExecutor(new AntTargetExecutor.Env()).execute(new AntProjectSupport(script), null).result();
         if (res != 0) {
-            throw new IOException("Nonzero exit code: " + res);
+            throw new IOException("Nonzero exit code: " + res + "; messages: " + LOGGER.messages);
         }
     }
 
@@ -206,6 +206,13 @@ public class AntLoggerTest extends NbTestCase {
                 toadd = taskname + ":" + toadd;
             }
             messages.add(toadd);
+        }
+
+        public void buildFinished(AntEvent event) {
+            Throwable t = event.getException();
+            if (t != null) {
+                messages.add("EXC:" + t);
+            }
         }
         
     }
