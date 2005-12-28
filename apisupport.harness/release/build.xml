@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo file="${license.file}">[NO LICENSE SPECIFIED]</echo>
     </target>
 
-    <target name="build-init" depends="basic-init,-jdk-init,nbm-license-init">
+    <target name="build-init" depends="basic-init,nbm-license-init">
         <!-- Similar to projectized.xml but does not try to set NBM homepage/distribution, nor is javahelp.excludes predefined, but javadoc.title is defaulted. -->
         <parseprojectxml project="." publicpackagesproperty="public.packages" friendsproperty="friends" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" moduleclasspathproperty="module.classpath" classpathextensionsproperty="class.path.extensions"/>
         <condition property="is.regular">
