@@ -28,7 +28,12 @@ Microsystems, Inc. All Rights Reserved.
                         <equals arg1="${nbjdk.active}" arg2="default"/>
                     </not>
                 </and>
-                <isset property="nbjdk.home"/>
+                <and>
+                    <isset property="nbjdk.home"/>
+                    <not>
+                        <isset property="nbjdk.home.defaulted"/>
+                    </not>
+                </and>
             </or>
         </condition>
     </target>
@@ -174,6 +179,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="nbjdk.home" location="${java.home.parent}"/>
         <available property="have-jdk-1.4" classname="java.lang.CharSequence"/>
         <available property="have-jdk-1.5" classname="java.lang.StringBuilder"/>
+        <property name="nbjdk.home.defaulted" value="true"/>
     </target>
 
     <target name="-jdk-init" depends="-jdk-preinit,-jdk-warn,-jdk-presetdef-basic,-jdk-default">

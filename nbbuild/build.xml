@@ -40,8 +40,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="bootstrap"
           description="Bootstrap NetBeans-specific Ant extensions."
-          depends="-jdk-init,-assure-jdk-1.4,assure-ant"
-          unless="bootstrap.done">
+          depends="-jdk-init,-assure-jdk-1.4,assure-ant">
     <property file="build.properties"/>
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
     <property name="ant.jar" value="${ant.home}/lib/ant.jar"/>
@@ -82,7 +81,6 @@ Microsystems, Inc. All Rights Reserved.
         <exclude name="package-list"/>
       </fileset>
     </jar>
-    <property name="bootstrap.done" value="true"/>
   </target>
 
   <target name="init-module-list" depends="bootstrap">
