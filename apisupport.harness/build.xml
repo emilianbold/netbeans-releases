@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="build/jnlp-launcher-classes"/>
         <javac srcdir="jnlp-src" destdir="build/jnlp-launcher-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4" includeantruntime="false">
             <classpath>
-                <path path="${module.classpath}"/>
+                <path path="${jnlp.cp}"/>
             </classpath>
         </javac>
         <copy todir="build/jnlp-launcher-classes">

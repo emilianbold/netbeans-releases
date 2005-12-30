@@ -113,7 +113,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>4</release-version>
-                        <specification-version>1.10</specification-version>
+                        <implementation-version/>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -173,22 +173,7 @@
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.jmxri</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
-
-            <!-- This section exposes packages that can be used
-                 by other modules which depend on this one.
-                 If you don't do this, and attempt to access a class
-                 in this module from another module, you'll
-                 get a NoClassDefFoundException at runtime.
-            -->
             <public-packages/>
         </data>
     </configuration>

@@ -65,6 +65,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
+                        <implementation-version/>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -247,13 +248,14 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
            </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.websvc.dev</friend>
-                <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.j2ee.ddloaders</friend>
                 <friend>org.netbeans.modules.j2ee.ejbcore</friend>
-                <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
+                <friend>org.netbeans.modules.web.jsf</friend>
+                <friend>org.netbeans.modules.web.struts</friend>
+                <friend>org.netbeans.modules.websvc.core</friend>
+                <friend>org.netbeans.modules.websvc.dev</friend>
 		<package>org.netbeans.modules.j2ee.common</package>
                 <package>org.netbeans.modules.j2ee.common.ui.nodes</package>
             </friend-packages>

@@ -21,7 +21,9 @@ Microsystems, Inc. All Rights Reserved.
                     <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <implementation-version/>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.javacore</code-name-base>
@@ -59,7 +61,9 @@ Microsystems, Inc. All Rights Reserved.
                     <code-name-base>org.netbeans.modules.projectui</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <implementation-version/>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>

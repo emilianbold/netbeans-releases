@@ -34,11 +34,13 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <!-- core, utilities 
+            <friend-packages>
+                <friend>org.netbeans.core</friend>
+                <friend>org.netbeans.core.execution</friend>
+                <friend>org.netbeans.core.startup</friend>
+                <friend>org.netbeans.modules.autoupdate</friend>
                 <package>org.netbeans</package>
-                -->
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
