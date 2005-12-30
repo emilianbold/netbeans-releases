@@ -83,7 +83,7 @@ public final class DDProvider {
         try {
             DataObject dataObject = DataObject.find(fo);
             if(dataObject instanceof DDProviderDataObject){
-                return getDDRoot((DDProviderDataObject) dataObject);
+                return getDDRoot0((DDProviderDataObject) dataObject);
             }
         } catch (DataObjectNotFoundException e) {
             return null; // should not occur
@@ -103,7 +103,7 @@ public final class DDProvider {
         return ejbJarProxy;
     }
 
-    private synchronized EjbJar getDDRoot(final DDProviderDataObject ddProviderDataObject) throws java.io.IOException {
+    private synchronized EjbJar getDDRoot0(final DDProviderDataObject ddProviderDataObject) throws java.io.IOException {
         EjbJarProxy ejbJarProxy = null;
         synchronized (ddMap) {
             ejbJarProxy = getFromCache(ddProviderDataObject) ;
