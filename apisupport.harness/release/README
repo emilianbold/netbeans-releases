@@ -477,8 +477,8 @@ harness.dir - location of the build harness (for external modules). Usually
 is.autoload and is.eager - default false, but if true, make this module an
 autoload or eager module.
 
-javac.compilerargs - default none; additional arguments to pass to the Java
-compiler, e.g. "-Xlint:unchecked".
+javac.compilerargs [since 5.1 M1] - default none; additional arguments to pass
+to the Java compiler, e.g. "-Xlint:unchecked".
 
 javac.source - default "1.4"; to use JDK 1.5 features like generics:
 
