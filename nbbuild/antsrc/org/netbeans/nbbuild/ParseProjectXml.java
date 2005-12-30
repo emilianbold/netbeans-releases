@@ -640,6 +640,9 @@ public final class ParseProjectXml extends Task {
             File depJar = computeClasspathModuleLocation(modules, cnb, excludedClusters, excludedModules);
             
             Attributes attr;
+            if (!depJar.isFile()) {
+                throw new BuildException("No such classpath entry: " + depJar, getLocation());
+            }
             JarFile jarFile = new JarFile(depJar, false);
             try {
                 attr = jarFile.getManifest().getMainAttributes();
@@ -771,15 +774,22 @@ public final class ParseProjectXml extends Task {
         OutputStream os = new FileOutputStream(ppjar);
         try {
             ZipOutputStream zos = new ZipOutputStream(os);
+            Set/*<String>*/ addedPaths = new HashSet();
             Iterator it = jars.iterator();
             while (it.hasNext()) {
                 File jar = (File) it.next();
+                if (!jar.isFile()) {
+                    log("Classpath entry " + jar + " does not exist; skipping", Project.MSG_WARN);
+                }
                 InputStream is = new FileInputStream(jar);
                 try {
                     ZipInputStream zis = new ZipInputStream(is);
                     ZipEntry inEntry;
                     while ((inEntry = zis.getNextEntry()) != null) {
                         String path = inEntry.getName();
+                        if (!addedPaths.add(path)) {
+                            continue;
+                        }
                         if (!p.matcher(path).matches()) {
                             continue;
                         }
