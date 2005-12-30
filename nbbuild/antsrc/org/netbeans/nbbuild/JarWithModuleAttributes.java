@@ -29,7 +29,6 @@ import org.apache.tools.ant.taskdefs.Manifest;
 
 /**
  * Task just like <jar> but predefines various module attributes.
- * Would not be necessary if this were implemented: http://issues.apache.org/bugzilla/show_bug.cgi?id=34366
  * Cf. projectized.xml#jar
  * @author Jesse Glick
  */
@@ -71,10 +70,6 @@ public class JarWithModuleAttributes extends Jar {
             }
             if (cp != null) {
                 added.addConfiguredAttribute(new Manifest.Attribute("Class-Path", cp));
-            }
-            String ideDeps = getProject().getProperty("ide.dependencies");
-            if (ideDeps != null) {
-                added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-IDE-Dependencies", ideDeps));
             }
             String moduleDeps = getProject().getProperty("module.dependencies");
             if (moduleDeps != null) {
@@ -130,13 +125,8 @@ public class JarWithModuleAttributes extends Jar {
                     }
                 }
                 SortedMap/*<String,Integer>*/ additions = new TreeMap();
-                String[] deps = {ideDeps, moduleDeps};
-                for (int i = 0; i < 2; i++) {
-                    String dep = deps[i];
-                    if (dep == null) {
-                        continue;
-                    }
-                    String[] individualDeps = COMMA_SPACE.split(dep);
+                if (moduleDeps != null) {
+                    String[] individualDeps = COMMA_SPACE.split(moduleDeps);
                     for (int j = 0; j < individualDeps.length; j++) {
                         Matcher m = IMPL_DEP.matcher(individualDeps[j]);
                         if (m.matches()) {
@@ -170,7 +160,7 @@ public class JarWithModuleAttributes extends Jar {
                 } else {
                     added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Specification-Version", specVersBase));
                 }
-            } else if ((ideDeps != null && ideDeps.indexOf('=') != -1) || (moduleDeps != null && moduleDeps.indexOf('=') != -1)) {
+            } else if (moduleDeps != null && moduleDeps.indexOf('=') != -1) {
                 getProject().log("Warning: in " + ownCnb + ", not using spec.version.base, yet declaring implementation dependencies; may lead to problems with Auto Update", Project.MSG_WARN);
             } else if (implVers != null) {
                 try {

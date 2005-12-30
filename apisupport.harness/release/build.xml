@@ -42,8 +42,22 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="build-init" depends="basic-init,nbm-license-init">
+        <condition property="public.package.jar.dir" value="${suite.dir}/build/public-package-jars">
+            <isset property="suite.dir"/>
+        </condition>
+        <property name="public.package.jar.dir" location="build/public-package-jars"/>
+        <mkdir dir="${public.package.jar.dir}"/>
         <!-- Similar to projectized.xml but does not try to set NBM homepage/distribution, nor is javahelp.excludes predefined, but javadoc.title is defaulted. -->
-        <parseprojectxml project="." publicpackagesproperty="public.packages" friendsproperty="friends" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" moduleclasspathproperty="module.classpath" classpathextensionsproperty="class.path.extensions"/>
+        <parseprojectxml
+            project="."
+            publicpackagesproperty="public.packages"
+            friendsproperty="friends"
+            javadocpackagesproperty="module.javadoc.packages"
+            moduledependenciesproperty="module.dependencies"
+            moduleclasspathproperty="module.classpath"
+            publicpackagejardir="${public.package.jar.dir}"
+            modulerunclasspathproperty="module.run.classpath"
+            classpathextensionsproperty="class.path.extensions"/>
         <condition property="is.regular">
             <not>
                 <or>

@@ -128,7 +128,7 @@ abstract class ModuleProperties {
         if (def == null) {
             def = ""; // NOI18N
         }
-        if (def.equals(value)) {
+        if (value == null || def.equals(value)) {
             getProjectProperties().remove(key);
         } else {
             getProjectProperties().setProperty(key, value);

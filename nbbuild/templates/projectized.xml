@@ -20,7 +20,19 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init" depends="basic-init,files-init,build-init"/>
     
     <target name="build-init" depends="basic-init">
-        <parseprojectxml project="." publicpackagesproperty="public.packages" friendsproperty="friends" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" moduleclasspathproperty="module.classpath" domainproperty="nbm.domain" classpathextensionsproperty="class.path.extensions"/>
+        <property name="public.package.jar.dir" location="${nb_all}/nbbuild/build/public-package-jars"/>
+        <mkdir dir="${public.package.jar.dir}"/>
+        <parseprojectxml
+            project="."
+            publicpackagesproperty="public.packages"
+            friendsproperty="friends"
+            javadocpackagesproperty="module.javadoc.packages"
+            moduledependenciesproperty="module.dependencies"
+            moduleclasspathproperty="module.classpath"
+            publicpackagejardir="${public.package.jar.dir}"
+            modulerunclasspathproperty="module.run.classpath"
+            domainproperty="nbm.domain"
+            classpathextensionsproperty="class.path.extensions"/>
         <condition property="is.regular">
             <not>
                 <or>

@@ -280,7 +280,9 @@ Microsystems, Inc. All Rights Reserved.
         <property name="build.test.unit.results.dir" location="${build.test.unit.dir}/results"/>
         <property name="test.filter.trace" value="true"/>
         <path id="test.unit.cp">
-            <path refid="cp"/>
+            <!-- Cannot use <path refid="cp"/> since that uses ${module.classpath} and we want ${module.run.classpath}: -->
+            <pathelement path="${module.run.classpath}"/>
+            <pathelement path="${cp.extra}"/>
             <pathelement location="${cluster}/${module.jar}"/>
             <path refid="test.unit.lib.cp"/>
             <pathelement path="${test.unit.cp.extra}"/>

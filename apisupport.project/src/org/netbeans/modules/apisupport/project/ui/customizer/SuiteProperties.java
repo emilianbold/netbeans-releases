@@ -24,6 +24,7 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.SuiteSubModulesListModel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 /**
@@ -170,20 +171,26 @@ public final class SuiteProperties extends ModuleProperties {
             SuiteUtils.replaceSubModules(this);
         }
         
-        if (changedDisabledModules) {
-            String[] separated = (String[])disabledModules.clone();
-            for (int i = 0; i < disabledModules.length - 1; i++) {
-                separated[i] = disabledModules[i] + ',';
+        if (changedDisabledModules || changedDisabledClusters) {
+            EditableProperties ep = getHelper().getProperties("nbproject/platform.properties"); // NOI18N
+            if (changedDisabledModules) {
+                String[] separated = (String[]) disabledModules.clone();
+                for (int i = 0; i < disabledModules.length - 1; i++) {
+                    separated[i] = disabledModules[i] + ',';
+                }
+                ep.setProperty(DISABLED_MODULES_PROPERTY, separated);
+                // Do not want it left in project.properties if it was there before (from 5.0):
+                setProperty(DISABLED_MODULES_PROPERTY, (String) null);
             }
-            setProperty(DISABLED_MODULES_PROPERTY, separated);
-        }
-        
-        if (changedDisabledClusters) {
-            String[] separated = (String[])disabledClusters.clone();
-            for (int i = 0; i < disabledClusters.length - 1; i++) {
-                separated[i] = disabledClusters[i] + ',';
+            if (changedDisabledClusters) {
+                String[] separated = (String[]) disabledClusters.clone();
+                for (int i = 0; i < disabledClusters.length - 1; i++) {
+                    separated[i] = disabledClusters[i] + ',';
+                }
+                ep.setProperty(DISABLED_CLUSTERS_PROPERTY, separated);
+                setProperty(DISABLED_CLUSTERS_PROPERTY, (String) null);
             }
-            setProperty(DISABLED_CLUSTERS_PROPERTY, separated);
+            getHelper().putProperties("nbproject/platform.properties", ep); // NOI18N
         }
         
         super.storeProperties();

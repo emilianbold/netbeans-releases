@@ -20,13 +20,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
+import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -98,16 +106,6 @@ public final class ParseProjectXml extends Task {
         javadocPackagesProperty = s;
     }
 
-    private String ideDependenciesProperty;
-    /**
-     * Set the property to set a list of
-     * OpenIDE-Module-IDE-Dependencies to, based on the list of stated
-     * run-time dependencies.
-     */
-    public void setIdeDependenciesProperty(String s) {
-        ideDependenciesProperty = s;
-    }
-
     private String moduleDependenciesProperty;
     /**
      * Set the property to set a list of
@@ -152,6 +150,29 @@ public final class ParseProjectXml extends Task {
      */
     public void setModuleClassPathProperty(String s) {
         moduleClassPathProperty = s;
+    }
+
+    private String moduleRunClassPathProperty;
+    /**
+     * Set the property to set the computed module runtime class path to.
+     * Currently identical to the regular class path with the exception
+     * that original JARs are used, never public-package-only JARs.
+     * XXX In the future should however reflect &lt;run-dependency/&gt;
+     * rather than &lt;compile-dependency/&gt; and should also include
+     * transitive dependencies.
+     */
+    public void setModuleRunClassPathProperty(String s) {
+        moduleRunClassPathProperty = s;
+    }
+    
+    private File publicPackageJarDir;
+    /**
+     * Set the location of a directory in which to look for and create
+     * JARs containing just the public packages of appropriate
+     * compile-time dependencies.
+     */
+    public void setPublicPackageJarDir(File d) {
+        publicPackageJarDir = d;
     }
     
     private String classPathExtensionsProperty;
@@ -248,36 +269,25 @@ public final class ParseProjectXml extends Task {
                 }
             }
             ModuleListParser modules = null;
-            if (moduleDependenciesProperty != null || moduleClassPathProperty != null) {
+            Dep[] deps = null;
+            if (moduleDependenciesProperty != null || moduleClassPathProperty != null || moduleRunClassPathProperty != null) {
                 String nball = getProject().getProperty("nb_all");
                 Hashtable properties = getProject().getProperties();
                 properties.put("project", project.getAbsolutePath());
                 modules = new ModuleListParser(properties, getModuleType(pDoc), getProject());
+                deps = getDeps(pDoc, modules);
             }
-            if (ideDependenciesProperty != null || moduleDependenciesProperty != null) {
-                Dep[] deps = getDeps(pDoc);
-                if (ideDependenciesProperty != null) {
-                    Dep ide = null;
-                    for (int i = 0; i < deps.length; i++) {
-                        if (deps[i].codenamebase.equals("IDE")) {
-                            ide = deps[i];
-                            break;
-                        }
-                    }
-                    if (ide != null) {
-                        define(ideDependenciesProperty, ide.toString(modules));
-                    }
-                }
+            if (moduleDependenciesProperty != null) {
                 if (moduleDependenciesProperty != null) {
                     StringBuffer b = new StringBuffer();
                     for (int i = 0; i < deps.length; i++) {
-                        if (deps[i].codenamebase.equals("IDE")) {
+                        if (!deps[i].run) {
                             continue;
                         }
                         if (b.length() > 0) {
                             b.append(", ");
                         }
-                        b.append(deps[i].toString(modules));
+                        b.append(deps[i]);
                     }
                     if (b.length() > 0) {
                         define(moduleDependenciesProperty, b.toString());
@@ -293,10 +303,12 @@ public final class ParseProjectXml extends Task {
                 define(codeNameBaseSlashesProperty, cnb.replace('.', '/'));
             }
             if (moduleClassPathProperty != null) {
-                String cp = computeClasspath(pDoc, modules);
-                if (cp != null) {
-                    define(moduleClassPathProperty, cp);
-                }
+                String cp = computeClasspath(pDoc, modules, deps, false);
+                define(moduleClassPathProperty, cp);
+            }
+            if (moduleRunClassPathProperty != null) {
+                String cp = computeClasspath(pDoc, modules, deps, true);
+                define(moduleRunClassPathProperty, cp);
             }
             if (domainProperty != null) {
                 if (getModuleType(pDoc) != TYPE_NB_ORG) {
@@ -419,12 +431,20 @@ public final class ParseProjectXml extends Task {
     }
 
     private final class Dep {
-        /** will be e.g. org.netbeans.modules.form or IDE */
+        private final ModuleListParser modules;
+        /** will be e.g. org.netbeans.modules.form */
         public String codenamebase;
         public String release = null;
         public String spec = null;
         public boolean impl = false;
-        public String toString(ModuleListParser modules) throws IOException, BuildException {
+        public boolean compile = false;
+        public boolean run = false;
+        
+        public Dep(ModuleListParser modules) {
+            this.modules = modules;
+        }
+        
+        public String toString() throws BuildException {
             StringBuffer b = new StringBuffer(codenamebase);
             if (release != null) {
                 b.append('/');
@@ -445,21 +465,87 @@ public final class ParseProjectXml extends Task {
             }
             return b.toString();
         }
-        private String implementationVersionOf(ModuleListParser modules, String cnb) throws IOException {
-            File jar = computeClasspathModuleLocation(modules, cnb);
+        
+        private String implementationVersionOf(ModuleListParser modules, String cnb) throws BuildException {
+            File jar = computeClasspathModuleLocation(modules, cnb, null, null);
             if (!jar.isFile()) {
                 throw new BuildException("No such classpath entry: " + jar, getLocation());
             }
-            JarFile jarFile = new JarFile(jar, false);
             try {
-                return jarFile.getManifest().getMainAttributes().getValue("OpenIDE-Module-Implementation-Version");
-            } finally {
-                jarFile.close();
+                JarFile jarFile = new JarFile(jar, false);
+                try {
+                    return jarFile.getManifest().getMainAttributes().getValue("OpenIDE-Module-Implementation-Version");
+                } finally {
+                    jarFile.close();
+                }
+            } catch (IOException e) {
+                throw new BuildException(e, getLocation());
             }
         }
+
+        private boolean matches(Attributes attr) {
+            if (release != null) {
+                String givenCodeName = attr.getValue("OpenIDE-Module");
+                int slash = givenCodeName.indexOf('/');
+                int givenRelease = -1;
+                if (slash != -1) {
+                    assert codenamebase.equals(givenCodeName.substring(0, slash));
+                    givenRelease = Integer.parseInt(givenCodeName.substring(slash + 1));
+                }
+                int dash = release.indexOf('-');
+                if (dash == -1) {
+                    if (Integer.parseInt(release) != givenRelease) {
+                        return false;
+                    }
+                } else {
+                    int lower = Integer.parseInt(release.substring(0, dash));
+                    int upper = Integer.parseInt(release.substring(dash + 1));
+                    if (givenRelease < lower || givenRelease > upper) {
+                        return false;
+                    }
+                }
+            }
+            if (spec != null) {
+                String givenSpec = attr.getValue("OpenIDE-Module-Specification-Version");
+                if (givenSpec == null) {
+                    return false;
+                }
+                // XXX cannot use org.openide.modules.SpecificationVersion from here
+                int[] specVals = digitize(spec);
+                int[] givenSpecVals = digitize(givenSpec);
+                int len1 = specVals.length;
+                int len2 = givenSpecVals.length;
+                int max = Math.max(len1, len2);
+                for (int i = 0; i < max; i++) {
+                    int d1 = ((i < len1) ? specVals[i] : 0);
+                    int d2 = ((i < len2) ? givenSpecVals[i] : 0);
+                    if (d1 < d2) {
+                        break;
+                    } else if (d1 > d2) {
+                        return false;
+                    }
+                }
+            }
+            if (impl) {
+                if (attr.getValue("OpenIDE-Module-Implementation-Version") == null) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        private int[] digitize(String spec) throws NumberFormatException {
+            StringTokenizer tok = new StringTokenizer(spec, ".");
+            int len = tok.countTokens();
+            int[] digits = new int[len];
+            for (int i = 0; i < len; i++) {
+                digits[i] = Integer.parseInt(tok.nextToken());
+            }
+            return digits;
+        }
+        
     }
 
-    private Dep[] getDeps(Document pDoc) throws BuildException {
+    private Dep[] getDeps(Document pDoc, ModuleListParser modules) throws BuildException {
         Element cfg = getConfig(pDoc);
         Element md = XMLUtil.findElement(cfg, "module-dependencies", NBM_NS);
         if (md == null) {
@@ -470,7 +556,7 @@ public final class ParseProjectXml extends Task {
         Iterator it = l.iterator();
         while (it.hasNext()) {
             Element dep = (Element)it.next();
-            Dep d = new Dep();
+            Dep d = new Dep(modules);
             Element cnb = XMLUtil.findElement(dep, "code-name-base", NBM_NS);
             if (cnb == null) {
                 throw new BuildException("No <code-name-base>", getLocation());
@@ -479,12 +565,10 @@ public final class ParseProjectXml extends Task {
             if (t == null) {
                 throw new BuildException("No text in <code-name-base>", getLocation());
             }
-            if (t.equals("org.openide")) {
-                t = "IDE";
-            }
             d.codenamebase = t;
             Element rd = XMLUtil.findElement(dep, "run-dependency", NBM_NS);
             if (rd != null) {
+                d.run = true;
                 Element rv = XMLUtil.findElement(rd, "release-version", NBM_NS);
                 if (rv != null) {
                     t = XMLUtil.findText(rv);
@@ -501,13 +585,13 @@ public final class ParseProjectXml extends Task {
                     }
                     d.spec = t;
                 }
-                // <implementation-version> added in /2:
                 Element iv = XMLUtil.findElement(rd, "implementation-version", NBM_NS);
                 if (iv != null) {
                     d.impl = true;
                 }
-                deps.add(d);
             }
+            d.compile = XMLUtil.findElement(dep, "compile-dependency", NBM_NS) != null;
+            deps.add(d);
         }
         return (Dep[])deps.toArray(new Dep[deps.size()]);
     }
@@ -536,73 +620,73 @@ public final class ParseProjectXml extends Task {
         }
     }
 
-    private String computeClasspath(Document pDoc, ModuleListParser modules) throws BuildException, IOException, SAXException {
-        Element data = getConfig(pDoc);
-        Element moduleDependencies = XMLUtil.findElement(data, "module-dependencies", NBM_NS);
-        List/*<Element>*/ deps = XMLUtil.findSubElements(moduleDependencies);
+    private String computeClasspath(Document pDoc, ModuleListParser modules, Dep[] deps, boolean runtime) throws BuildException, IOException, SAXException {
+        String myCnb = getCodeNameBase(pDoc);
         StringBuffer cp = new StringBuffer();
-        Iterator it = deps.iterator();
-        while (it.hasNext()) {
-            Element dep = (Element)it.next();
-            if (XMLUtil.findElement(dep, "compile-dependency", NBM_NS) == null) {
+        String excludedClustersProp = getProject().getProperty("disabled.clusters");
+        Set/*<String>*/ excludedClusters = excludedClustersProp != null ?
+            new HashSet(Arrays.asList(excludedClustersProp.split(" *, *"))) :
+            null;
+        String excludedModulesProp = getProject().getProperty("disabled.modules");
+        Set/*<String>*/ excludedModules = excludedModulesProp != null ?
+            new HashSet(Arrays.asList(excludedModulesProp.split(" *, *"))) :
+            null;
+        for (int i = 0; i < deps.length; i++) { // XXX should operative transitively if runtime
+            Dep dep = deps[i];
+            if (!dep.compile) { // XXX should be sensitive to runtime
                 continue;
             }
-            if (cp.length() > 0) {
-                cp.append(':');
-            }
-            Element cnbEl = XMLUtil.findElement(dep, "code-name-base", NBM_NS);
-            String cnb = XMLUtil.findText(cnbEl);
+            String cnb = dep.codenamebase;
+            File depJar = computeClasspathModuleLocation(modules, cnb, excludedClusters, excludedModules);
             
-            if ("org.openide".equals (cnb)) {
-                // XXX special handling of splited openide, can be removed
-                // after 5.0 release or when apisupport improved
-                getProject ().log ("Do not depend on org.openide anymore, depend on its libraries. Update " + getProjectFile (), getProject().MSG_WARN);
-                
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.util").getAbsolutePath ());
-                cp.append(File.pathSeparatorChar);
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.util.enumerations").getAbsolutePath ());
-                cp.append(File.pathSeparatorChar);
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.filesystems").getAbsolutePath ());
-                cp.append(File.pathSeparatorChar);
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.modules").getAbsolutePath ());
-                cp.append(File.pathSeparatorChar);
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.awt").getAbsolutePath ());
-                cp.append(File.pathSeparatorChar);
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.dialogs").getAbsolutePath ());
-                cp.append(File.pathSeparatorChar);
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.loaders").getAbsolutePath ());
-                cp.append(File.pathSeparatorChar);
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.nodes").getAbsolutePath ());
-                cp.append(File.pathSeparatorChar);
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.explorer").getAbsolutePath ());
-                cp.append(File.pathSeparatorChar);
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.actions").getAbsolutePath ());
-                cp.append(File.pathSeparatorChar);
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.text").getAbsolutePath ());
-                cp.append(File.pathSeparatorChar);
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.windows").getAbsolutePath ());
-                cp.append(File.pathSeparatorChar);
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.options").getAbsolutePath ());
-                cp.append(File.pathSeparatorChar);
-                cp.append (computeClasspathModuleLocation (modules, "org.openide.compat").getAbsolutePath ());
-                
-                continue;
+            Attributes attr;
+            JarFile jarFile = new JarFile(depJar, false);
+            try {
+                attr = jarFile.getManifest().getMainAttributes();
+            } finally {
+                jarFile.close();
             }
-                        
-            cp.append(computeClasspathModuleLocation(modules, cnb).getAbsolutePath());
+            
+            if (!dep.matches(attr)) { // #68631
+                throw new BuildException("Cannot compile against a module: " + depJar + " because of dependency: " + dep, getLocation());
+            }
+
+            List/*<File>*/ additions = new ArrayList();
+            additions.add(depJar);
             // #52354: look for <class-path-extension>s in dependent modules.
             ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);
             if (entry != null) {
                 File[] exts = entry.getClassPathExtensions();
-                for (int i = 0; i < exts.length; i++) {
-                    cp.append(':');
-                    cp.append(exts[i].getAbsolutePath());
+                for (int j = 0; j < exts.length; j++) {
+                    additions.add(exts[j]);
                 }
+            }
+            
+            if (!dep.impl) {
+                String friends = attr.getValue("OpenIDE-Module-Friends");
+                if (friends != null && !Arrays.asList(friends.split(" *, *")).contains(myCnb)) {
+                    throw new BuildException("The module " + myCnb + " is not a friend of " + depJar, getLocation());
+                }
+                String pubpkgs = attr.getValue("OpenIDE-Module-Public-Packages");
+                if ("-".equals(pubpkgs)) {
+                    throw new BuildException("The module " + depJar + " has no public packages and so cannot be compiled against", getLocation());
+                } else if (pubpkgs != null && !runtime) {
+                    File splitJar = createPublicPackageJar(additions, pubpkgs, publicPackageJarDir, cnb);
+                    additions.clear();
+                    additions.add(splitJar);
+                }
+            }
+            
+            Iterator it = additions.iterator();
+            while (it.hasNext()) {
+                if (cp.length() > 0) {
+                    cp.append(':');
+                }
+                cp.append(((File) it.next()).getAbsolutePath());
             }
         }
         // Also look for <class-path-extension>s for myself and put them in my own classpath.
-        String cnb = getCodeNameBase(pDoc);
-        ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);
+        ModuleListParser.Entry entry = modules.findByCodeNameBase(myCnb);
         assert entry != null;
         File[] exts = entry.getClassPathExtensions();
         for (int i = 0; i < exts.length; i++) {
@@ -612,14 +696,17 @@ public final class ParseProjectXml extends Task {
         return cp.toString();
     }
     
-    private File computeClasspathModuleLocation(ModuleListParser modules, String cnb) throws BuildException {
+    private File computeClasspathModuleLocation(ModuleListParser modules, String cnb, Set/*<String>*/ excludedClusters, Set/*<String>*/ excludedModules) throws BuildException {
         ModuleListParser.Entry module = modules.findByCodeNameBase(cnb);
         if (module == null) {
             throw new BuildException("No dependent module " + cnb, getLocation());
         }
-        // XXX if that module is projectized, check its public
-        // packages; if it has none, halt the build, unless we are
-        // declaring an impl dependency
+        if (excludedClusters != null && excludedClusters.contains(module.getClusterName())) { // #68716
+            throw new BuildException("Module " + cnb + " part of cluster " + module.getClusterName() + " which is excluded from the target platform", getLocation());
+        }
+        if (excludedModules != null && excludedModules.contains(cnb)) { // again #68716
+            throw new BuildException("Module " + cnb + " excluded from the target platform", getLocation());
+        }
         return module.getJar();
     }
     
@@ -646,6 +733,80 @@ public final class ParseProjectXml extends Task {
             list.append(reltext);
         }
         return list != null ? list.toString() : null;
+    }
+
+    /**
+     * Create a compact JAR containing only classes in public packages.
+     * Forces the compiler to honor public package restrictions.
+     * @see "#59792"
+     */
+    private File createPublicPackageJar(List/*<File>*/ jars, String pubpkgs, File dir, String cnb) throws IOException {
+        File ppjar = new File(dir, cnb.replace('.', '-') + ".jar");
+        if (ppjar.exists()) {
+            // Check if it is up to date first. Must be as new as any input JAR.
+            boolean uptodate = true;
+            long stamp = ppjar.lastModified();
+            Iterator it = jars.iterator();
+            while (it.hasNext()) {
+                File jar = (File) it.next();
+                if (jar.lastModified() > stamp) {
+                    uptodate = false;
+                    break;
+                }
+            }
+            if (uptodate) {
+                log("Distilled " + ppjar + " was already up to date", Project.MSG_VERBOSE);
+                return ppjar;
+            }
+        }
+        log("Distilling " + ppjar + " from " + jars);
+        String corePattern = pubpkgs.
+                replaceAll(" +", "").
+                replaceAll("\\.", "/").
+                replaceAll(",", "|").
+                replaceAll("\\*\\*", "(.+/)?").
+                replaceAll("\\*", "");
+        Pattern p = Pattern.compile("(" + corePattern + ")[^/]+\\.class");
+        // E.g.: (org/netbeans/api/foo/|org/netbeans/spi/foo/)[^/]+\.class
+        OutputStream os = new FileOutputStream(ppjar);
+        try {
+            ZipOutputStream zos = new ZipOutputStream(os);
+            Iterator it = jars.iterator();
+            while (it.hasNext()) {
+                File jar = (File) it.next();
+                InputStream is = new FileInputStream(jar);
+                try {
+                    ZipInputStream zis = new ZipInputStream(is);
+                    ZipEntry inEntry;
+                    while ((inEntry = zis.getNextEntry()) != null) {
+                        String path = inEntry.getName();
+                        if (!p.matcher(path).matches()) {
+                            continue;
+                        }
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        byte[] buf = new byte[4096];
+                        int read;
+                        while ((read = zis.read(buf)) != -1) {
+                            baos.write(buf, 0, read);
+                        }
+                        byte[] data = baos.toByteArray();
+                        ZipEntry outEntry = new ZipEntry(path);
+                        outEntry.setSize(data.length);
+                        CRC32 crc = new CRC32();
+                        crc.update(data);
+                        outEntry.setCrc(crc.getValue());
+                        zos.putNextEntry(outEntry);
+                        zos.write(data);
+                    }
+                } finally {
+                    is.close();
+                }
+            }
+            zos.close();
+        } finally {
+            os.close();
+        }
+        return ppjar;
     }
 
 }

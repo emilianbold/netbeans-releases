@@ -526,7 +526,12 @@ module.auto.deps.xml - "module-auto-deps.xml" in your project directory by
 default. Optional configuration file.
 
 module.classpath - your main module source's compile-time classpath, according
-to <module-dependencies>.
+to <module-dependencies>. Since 5.1 M1 uses public-package-only JARs where
+appropriate.
+
+module.run.classpath [since 5.1 M1] - your main module source's run-time
+classpath, according to <module-dependencies>. Currently identical to
+${module.classpath} except does not use public-package-only JARs.
 
 module.jar - location of module JAR relative to cluster directory. Do not
 override directly; override ${module.jar.basename} (default
@@ -561,8 +566,8 @@ modules).
 netbeans.home - location of "platform*" cluster of the NetBeans IDE installation
 you are running. *Only defined* when you run an Ant script *inside* the IDE.
 
-nbjdk.active - name of a Java platform (JDK) to use when building and
-running. Will try to load (e.g. from ${userdir}/build.properties, where Java
+nbjdk.active [since 5.1 M1] - name of a Java platform (JDK) to use when building
+and running. Will try to load (e.g. from ${userdir}/build.properties, where Java
 Platform Manager stores its information) the properties
 
     nbjdk.home=${platforms.${nbjdk.active}.home}
@@ -637,8 +642,8 @@ src.dir - "src", module source directory. Avoid overriding.
 
 test.unit.cp.extra - any additional classpath you might need to compile your
 unit tests. If left empty, you can compile against JUnit; the NB test extensions
-in nbjunit.jar; your module; and anything your module compiled against
-(${module.classpath}).
+in nbjunit.jar; your module; and anything your module compiled against (since
+5.1 M1, ${module.run.classpath}).
 
     test.unit.cp.extra=\
         ${netbeans.dest.dir}/ide6/modules/some-module-used-in-tests.jar:
@@ -662,8 +667,9 @@ test.unit.src.dir - "test/unit/src"; avoid overriding.
 test-unit-sys-prop.<NAME> - will set a system property <NAME> when running your
 unit tests.
 
-tools.jar - set to location of tools.jar in active JDK. Useful in case your module
-needs to compile against JDK-only classes. Meaningless on Mac OS X.
+tools.jar [since 5.1 M1] - set to location of tools.jar in active JDK. Useful in
+case your module needs to compile against JDK-only classes. Meaningless on Mac
+OS X.
 
 To support builds of JNLP based applications (described at 
 http://installer.netbeans.org/docs/jnlpInstaller.html) additional may be used 
@@ -819,12 +825,14 @@ overrides.
 branding.token - optional token defining an application branding.
 
 disabled.clusters - comma-separated list of cluster names in the target platform
-(e.g. "ide6") which should be completely excluded from the application.
+(e.g. "ide6") which should be completely excluded from the application. Since 5.1 M1,
+should be stored in platform.properties, not project.properties.
 
 disabled.modules - comma-separated list of code name bases of modules in the
 target platform (e.g. "org.netbeans.modules.autoupdate") which should be
 excluded from the application. There is no need to specify modules already
-excluded by ${disabled.clusters}.
+excluded by ${disabled.clusters}. Since 5.1 M1, should be stored in
+platform.properties, not project.properties.
 
 modules - list of contained modules. Path format; entries resolved against the
 suite directory as needed.

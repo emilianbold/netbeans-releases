@@ -81,7 +81,7 @@ TODO:
              classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <parseprojectxml project=".."
             codenamebasedashesproperty="code.name.base.dashes"
-            moduleclasspathproperty="module.classpath"/>
+            modulerunclasspathproperty="module.run.classpath"/>
     </target>
     
     <target name="emma-init" depends="buildtests,emma-init-parse-project-xml,emma-init-read-property-files,emma-init-coverage-path,emma-init-coverage-source-path"/>

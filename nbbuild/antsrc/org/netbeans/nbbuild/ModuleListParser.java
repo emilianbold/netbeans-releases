@@ -294,7 +294,8 @@ final class ModuleListParser {
             String cnb2 = XMLUtil.findText(cnbEl2);
             prereqs.add(cnb2);
         }
-        Entry entry = new Entry(cnb, jar, (File[]) exts.toArray(new File[exts.size()]), dir, path, (String[]) prereqs.toArray(new String[prereqs.size()]));
+        String cluster = fakeproj.getProperty("cluster.dir"); // may be null
+        Entry entry = new Entry(cnb, jar, (File[]) exts.toArray(new File[exts.size()]), dir, path, (String[]) prereqs.toArray(new String[prereqs.size()]), cluster);
         if (entries.containsKey(cnb)) {
             throw new IOException("Duplicated module " + cnb + ": found in " + entries.get(cnb) + " and " + entry);
         } else {
@@ -390,7 +391,7 @@ final class ModuleListParser {
                                 exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
                             }
                         }
-                        Entry entry = new Entry(codenamebase, m, exts, dir, null, null);
+                        Entry entry = new Entry(codenamebase, m, exts, dir, null, null, clusters[i].getName());
                         if (entries.containsKey(codenamebase)) {
                             throw new IOException("Duplicated module " + codenamebase + ": found in " + entries.get(codenamebase) + " and " + entry);
                         } else {
@@ -550,14 +551,16 @@ final class ModuleListParser {
         private final File sourceLocation;
         private final String netbeansOrgPath;
         private final String[] buildPrerequisites;
+        private final String clusterName;
         
-        Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation, String netbeansOrgPath, String[] buildPrerequisites) {
+        Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation, String netbeansOrgPath, String[] buildPrerequisites, String clusterName) {
             this.cnb = cnb;
             this.jar = jar;
             this.classPathExtensions = classPathExtensions;
             this.sourceLocation = sourceLocation;
             this.netbeansOrgPath = netbeansOrgPath;
             this.buildPrerequisites = buildPrerequisites;
+            this.clusterName = clusterName;
         }
         
         /**
@@ -594,6 +597,18 @@ final class ModuleListParser {
          */
         public String[] getBuildPrerequisites() {
             return buildPrerequisites;
+        }
+        
+        /**
+         * Return the name of the cluster in which this module resides.
+         * If this entry represents an external module in source form,
+         * then the cluster will be null. If the module represents a netbeans.org
+         * module or a binary module in a platform, then the cluster name will
+         * be the (base) name of the directory containing the "modules" subdirectory
+         * (sometimes "lib" or "core") where the JAR is.
+         */
+        public String getClusterName() {
+            return clusterName;
         }
         
         public String toString() {
