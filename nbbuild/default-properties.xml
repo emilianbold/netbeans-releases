@@ -14,8 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 <project name="default-properties" default="netbeans" basedir=".">
   <dirname property="nb_all" file="${ant.file.default-properties}/.."/>
 
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="dist.base" value="http://www.netbeans.org/download/nbms/alpha/dev/1.16"/>
   <property name="license.file" location="${nb_all}/nbbuild/standard-nbm-license.txt"/>
   <property name="nbm_alias" value="nb_ide"/>
   <property name="build.sysclasspath" value="ignore"/>
