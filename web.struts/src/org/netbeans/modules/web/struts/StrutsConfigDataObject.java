@@ -16,7 +16,6 @@ package org.netbeans.modules.web.struts;
 //import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
 import java.io.IOException;
 import java.io.InputStream;
-import org.apache.xml.resolver.apps.resolver;
 import org.netbeans.modules.web.struts.config.model.StrutsConfig;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;

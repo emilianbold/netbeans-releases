@@ -22,7 +22,6 @@ import java.util.Set;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
-import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -50,7 +49,7 @@ public class JavaProjectGenerator {
     private static final String[] folderElementsOrder = new String[]{"source-folder", "build-folder"}; // NOI18N
     private static final String[] viewItemElementsOrder = new String[]{"source-folder", "source-file"}; // NOI18N
     
-    private static final String NS_GENERAL = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
+    static final String NS_GENERAL = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
     
     /**
      * Structure describing source folder.
@@ -787,7 +786,7 @@ public class JavaProjectGenerator {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element genldata = helper.getPrimaryConfigurationData(true);
-        Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element actionsEl = Util.findElement(genldata, "ide-actions", NS_GENERAL); // NOI18N
         if (actionsEl == null) {
             return list;
         }
@@ -833,7 +832,7 @@ public class JavaProjectGenerator {
                             continue;
                         }
                         if (contextSubEl.getLocalName().equals("arity")) { // NOI18N
-                            Element sepFilesEl = Util.findElement(contextSubEl, "separated-files", FreeformProjectType.NS_GENERAL); // NOI18N
+                            Element sepFilesEl = Util.findElement(contextSubEl, "separated-files", NS_GENERAL); // NOI18N
                             if (sepFilesEl != null) {
                                 ctx.separator = Util.findText(sepFilesEl);
                             }

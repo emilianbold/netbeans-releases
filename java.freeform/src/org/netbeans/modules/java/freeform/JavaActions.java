@@ -33,7 +33,6 @@ import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.ui.ProjectModel;
 import org.netbeans.spi.project.ActionProvider;
@@ -768,7 +767,7 @@ final class JavaActions implements ActionProvider {
         Element ideActions = Util.findElement(data, "ide-actions", NS_GENERAL); // NOI18N
         if (ideActions == null) {
             //fix for #58442:
-            ideActions = data.getOwnerDocument().createElementNS(FreeformProjectType.NS_GENERAL, "ide-actions"); // NOI18N
+            ideActions = data.getOwnerDocument().createElementNS(JavaProjectGenerator.NS_GENERAL, "ide-actions"); // NOI18N
             Util.appendChildElement(data, ideActions, rootElementsOrder);
         }
         Document doc = data.getOwnerDocument();

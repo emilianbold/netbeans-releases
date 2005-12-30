@@ -16,8 +16,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.ejbcore.api.ui.CallEjb;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddFinderMethodAction;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddSelectMethodAction;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityAndSessionGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityGenerator;

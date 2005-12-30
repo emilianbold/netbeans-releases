@@ -31,8 +31,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.spi.support.NewJavaFreeformProjectSupport;
-import org.netbeans.modules.java.freeform.ui.NewJ2SEFreeformProjectWizardIterator;
-import org.netbeans.modules.java.freeform.ui.ProjectModel;
 import org.netbeans.modules.web.freeform.WebProjectGenerator;
 import org.netbeans.modules.web.freeform.WebProjectNature;
 import org.netbeans.spi.project.AuxiliaryConfiguration;

@@ -35,7 +35,6 @@ import org.netbeans.modules.web.struts.config.model.MessageResources;
 import org.netbeans.modules.web.struts.config.model.StrutsConfig;
 import org.netbeans.modules.web.struts.config.model.FormBeans;
 import org.netbeans.modules.web.struts.config.model.FormBean;
-import org.netbeans.modules.xml.core.lib.FileUtilities;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
