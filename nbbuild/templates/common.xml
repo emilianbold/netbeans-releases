@@ -42,6 +42,7 @@ Microsystems, Inc. All Rights Reserved.
             <isset property="has.javahelp"/>
         </condition>
 	<property name="javac.source" value="1.4"/>
+        <property name="javac.compilerargs" value=""/>
         <property name="module.auto.deps.xml" location="module-auto-deps.xml"/>
         <condition property="has.module.auto.deps">
             <available file="${module.auto.deps.xml}"/>
@@ -84,6 +85,7 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
         <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
             <classpath refid="cp"/>
+            <compilerarg line="${javac.compilerargs}"/>
         </javac>
         <!-- Sanity check: -->
         <pathconvert pathsep=":" property="class.files.in.src">
@@ -128,6 +130,7 @@ Microsystems, Inc. All Rights Reserved.
                debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}"
                source="${javac.source}" includes="${javac.includes}" optimize="${build.compiler.optimize}" includeantruntime="false">
             <classpath refid="cp"/>
+            <compilerarg line="${javac.compilerargs}"/>
         </javac>
     </target>
 
@@ -308,6 +311,7 @@ Microsystems, Inc. All Rights Reserved.
                <exclude name="**/jars/**"/><!-- XXX for core only; fix in core, not here -->
                <exclude name="**/data/**"/><!-- XXX for openide/util and co. -->
             <classpath refid="test.unit.cp"/>
+            <compilerarg line="${javac.compilerargs}"/>
         </javac>
         <copy todir="${build.test.unit.classes.dir}">
             <fileset dir="${test.unit.src.dir}">
@@ -330,6 +334,7 @@ Microsystems, Inc. All Rights Reserved.
                debug="true" deprecation="${build.compiler.deprecation}"
                source="${javac.source}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
             <classpath refid="test.unit.cp"/>
+            <compilerarg line="${javac.compilerargs}"/>
         </javac>
         <copy todir="${build.test.unit.classes.dir}">
             <fileset dir="${test.unit.src.dir}">

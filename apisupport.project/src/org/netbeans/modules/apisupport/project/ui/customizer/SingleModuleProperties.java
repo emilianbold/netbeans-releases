@@ -90,6 +90,8 @@ public final class SingleModuleProperties extends ModuleProperties {
     public static final String NBM_MODULE_AUTHOR = "nbm.module.author"; // NOI18N
     public static final String NBM_NEEDS_RESTART = "nbm.needs.restart"; // NOI18N
     public static final String SPEC_VERSION_BASE = "spec.version.base"; // NOI18N
+    /** @see "#66278" */
+    public static final String JAVAC_COMPILERARGS = "javac.compilerargs"; // NOI18N
     
     static final String[] SOURCE_LEVELS = {"1.4", "1.5"}; // NOI18N
     

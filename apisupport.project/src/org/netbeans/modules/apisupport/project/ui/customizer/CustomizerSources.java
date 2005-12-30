@@ -13,7 +13,15 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 
 /**
@@ -23,12 +31,57 @@ import org.openide.util.NbBundle;
  */
 final class CustomizerSources extends NbPropertyPanel.Single {
     
-    /** Creates new form CustomizerSources */
-    CustomizerSources(final SingleModuleProperties props) {
+    private boolean srcLevelValueBeingUpdated;
+    private final CustomizerCompiling compilingPanel;
+    
+    CustomizerSources(final SingleModuleProperties props, CustomizerCompiling compilingPanel) {
         super(props, CustomizerSources.class);
+        this.compilingPanel = compilingPanel;
         initComponents();
-        initAccesibility();
+        initAccessibility();
         refresh();
+        srcLevelValue.addActionListener(new ActionListener() { // #66278
+            public void actionPerformed(ActionEvent e) {
+                if (srcLevelValueBeingUpdated) {
+                    return;
+                }
+                final String oldLevel = getProperty(SingleModuleProperties.JAVAC_SOURCES);
+                final String newLevel = (String) srcLevelValue.getSelectedItem();
+                SpecificationVersion jdk5 = new SpecificationVersion("1.5"); // NOI18N
+                if (new SpecificationVersion(oldLevel).compareTo(jdk5) < 0 && new SpecificationVersion(newLevel).compareTo(jdk5) >= 0) {
+                    EventQueue.invokeLater(new Runnable() { // wait for combo to close, at least
+                        public void run() {
+                            DialogDescriptor d = new DialogDescriptor(
+                                    getMessage("CustomizerSources.text.enable_lint_unchecked"),
+                                    getMessage("CustomizerSources.title.enable_lint_unchecked"));
+                            d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+                            d.setModal(true);
+                            JButton enable = new JButton(getMessage("CustomizerSources.button.enable_lint_unchecked"));
+                            enable.setDefaultCapable(true);
+                            d.setOptions(new Object[] {
+                                enable,
+                                new JButton(getMessage("CustomizerSources.button.skip_lint_unchecked")),
+                            });
+                            if (!DialogDisplayer.getDefault().notify(d).equals(enable)) {
+                                return;
+                            }
+                            String options = getProperty(SingleModuleProperties.JAVAC_COMPILERARGS);
+                            String added = "-Xlint:unchecked"; // NOI18N
+                            if (options == null || options.length() == 0) {
+                                options = added;
+                            } else {
+                                options = options + " " + added; // NOI18N
+                            }
+                            setProperty(SingleModuleProperties.JAVAC_COMPILERARGS, options);
+                            // XXX don't know of any cleaner way to do this; setProperty fires no changes
+                            // that CustomizerCompiling could listen to; refreshProperties is protected,
+                            // and even if made accessible, refreshes JAVAC_SOURCES too and messes up combo!
+                            CustomizerSources.this.compilingPanel.refresh();
+                        }
+                    });
+                }
+            }
+        });
     }
     
     void refresh() {
@@ -38,11 +91,17 @@ final class CustomizerSources extends NbPropertyPanel.Single {
         } else {
             UIUtil.setText(moduleSuiteValue, getProperties().getSuiteDirectoryPath());
         }
-        srcLevelValue.removeAllItems();
-        for (int i = 0; i < SingleModuleProperties.SOURCE_LEVELS.length; i++) {
-            srcLevelValue.addItem(SingleModuleProperties.SOURCE_LEVELS[i]);
+        assert !srcLevelValueBeingUpdated;
+        srcLevelValueBeingUpdated = true;
+        try {
+            srcLevelValue.removeAllItems();
+            for (int i = 0; i < SingleModuleProperties.SOURCE_LEVELS.length; i++) {
+                srcLevelValue.addItem(SingleModuleProperties.SOURCE_LEVELS[i]);
+            }
+            srcLevelValue.setSelectedItem(getProperty(SingleModuleProperties.JAVAC_SOURCES));
+        } finally {
+            srcLevelValueBeingUpdated = false;
         }
-        srcLevelValue.setSelectedItem(getProperty(SingleModuleProperties.JAVAC_SOURCES));
         UIUtil.setText(prjFolderValue, getProperties().getProjectDirectory());
     }
     
@@ -147,7 +206,7 @@ final class CustomizerSources extends NbPropertyPanel.Single {
         return NbBundle.getMessage(CustomizerSources.class, key);
     }
     
-    private void initAccesibility() {
+    private void initAccessibility() {
         srcLevelValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_SrcLevelValue"));
         moduleSuiteValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_ModuleSuiteValue"));
         prjFolderValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_PrjFolderValue"));

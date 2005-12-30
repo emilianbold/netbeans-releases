@@ -22,22 +22,23 @@ import org.openide.util.NbBundle;
  */
 final class CustomizerCompiling extends NbPropertyPanel.Single {
     
-    /** Creates new form CustomizerCompiling */
     CustomizerCompiling(final SingleModuleProperties props) {
         super(props, CustomizerCompiling.class);
         initComponents();
-        initAccesibility();
+        initAccessibility();
         refresh();
     }
     
     void refresh() {
         debug.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEBUG));
         deprecation.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEPRECATION));
+        options.setText(getProperty(SingleModuleProperties.JAVAC_COMPILERARGS));
     }
     
     public void store() {
         setBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEBUG, debug.isSelected());
         setBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEPRECATION, deprecation.isSelected());
+        setProperty(SingleModuleProperties.JAVAC_COMPILERARGS, options.getText());
     }
     
     /** This method is called from within the constructor to
@@ -47,37 +48,59 @@ final class CustomizerCompiling extends NbPropertyPanel.Single {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        innerPane = new javax.swing.JPanel();
-        debug = new javax.swing.JCheckBox();
         deprecation = new javax.swing.JCheckBox();
-
-        setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
-
-        innerPane.setLayout(new java.awt.GridLayout(2, 1));
-
-        org.openide.awt.Mnemonics.setLocalizedText(debug, org.openide.util.NbBundle.getMessage(CustomizerCompiling.class, "CTL_GenerateDebugInfo"));
-        innerPane.add(debug);
+        debug = new javax.swing.JCheckBox();
+        optionsLabel = new javax.swing.JLabel();
+        options = new javax.swing.JTextField();
 
         org.openide.awt.Mnemonics.setLocalizedText(deprecation, org.openide.util.NbBundle.getMessage(CustomizerCompiling.class, "CTL_ReportDeprecation"));
-        innerPane.add(deprecation);
 
-        add(innerPane);
+        org.openide.awt.Mnemonics.setLocalizedText(debug, org.openide.util.NbBundle.getMessage(CustomizerCompiling.class, "CTL_GenerateDebugInfo"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        optionsLabel.setLabelFor(options);
+        org.openide.awt.Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(CustomizerCompiling.class, "LBL_additional_compiler_options"));
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(debug)
+                    .add(deprecation)
+                    .add(layout.createSequentialGroup()
+                        .add(optionsLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(options, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(debug)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(deprecation)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(optionsLabel)
+                    .add(options, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(233, Short.MAX_VALUE))
+        );
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox debug;
     private javax.swing.JCheckBox deprecation;
-    private javax.swing.JPanel innerPane;
+    private javax.swing.JTextField options;
+    private javax.swing.JLabel optionsLabel;
     // End of variables declaration//GEN-END:variables
     
     private static String getMessage(String key) {
         return NbBundle.getMessage(CustomizerCompiling.class, key);
     }
     
-    private void initAccesibility() {
+    private void initAccessibility() {
         debug.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_Debug"));
         deprecation.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_Deprecation"));
     }
