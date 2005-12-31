@@ -327,7 +327,7 @@ final class ModuleListParser {
             entries = new HashMap();
             doScanBinaries(build, entries);
             if (project != null) {
-                project.log("Found modules: " + entries.keySet());
+                project.log("Found modules: " + entries.keySet(), Project.MSG_VERBOSE);
             }
             BINARY_SCAN_CACHE.put(build, entries);
         }
