@@ -107,7 +107,8 @@ public class NbExecutor extends Task {
               File outputfile = null;
               String debug_level = "";
               try {  
-                Java  callee = (Java) getProject().createTask( "java" );
+                Java  callee = new Java(); // do not use Project.createTask: CCE with presetdefs
+                callee.setProject(getProject());
                 
                 callee.setOwningTarget(getOwningTarget());
                 callee.setTaskName(getTaskName());
@@ -171,6 +172,9 @@ public class NbExecutor extends Task {
               }
               catch (BuildException e) {
                   String er = findErrorMessage(outputfile);
+                  if (er == null) {
+                      er = e.toString();
+                  }
                   logError(test.getModule(), test.getType(), outputfile, er);
               }
             }
@@ -185,7 +189,7 @@ public class NbExecutor extends Task {
     } 
     
     private String findErrorMessage(File f) {
-        if (f == null) return "";
+        if (f == null) return null;
         StringBuffer buff = new StringBuffer();
         try { 
             BufferedReader r = new BufferedReader(new FileReader(f));
@@ -200,7 +204,7 @@ public class NbExecutor extends Task {
             }
             r.close();
         }
-        catch (IOException e) { return ""; }
+        catch (IOException e) { return null; }
         return buff.toString();
     }
     
