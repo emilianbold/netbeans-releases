@@ -17,6 +17,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
+                <exclude name="**/NbPlatformCustomizerSourcesTest.class"/> <!-- XXX #70652 -->
             </patternset>
         </testset>
     </testbag>
