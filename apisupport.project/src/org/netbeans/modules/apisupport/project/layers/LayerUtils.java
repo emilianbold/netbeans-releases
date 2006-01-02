@@ -545,7 +545,7 @@ public class LayerUtils {
     public static FileSystem getEffectiveSystemFilesystem(Project project) throws IOException {
         if (project instanceof NbModuleProject) {
             NbModuleProject p = (NbModuleProject) project;
-            NbModuleTypeProvider.NbModuleType type = ((NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
+            NbModuleTypeProvider.NbModuleType type = Util.getModuleType(p);
             FileSystem projectLayer = layerForProject(p).layer(false);
             if (type == NbModuleTypeProvider.STANDALONE) {
                 Set/*<File>*/ jars = getPlatformJarsForStandaloneProject(p);

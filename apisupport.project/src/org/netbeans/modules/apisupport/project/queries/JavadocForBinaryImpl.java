@@ -63,8 +63,8 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
                 candidates.add(new URL(roots[i], cnbdashes + "/")); // NOI18N
             }
             File dir;
-            NbModuleTypeProvider typeProv = (NbModuleTypeProvider) project.getLookup().lookup(NbModuleTypeProvider.class);
-            if (typeProv.getModuleType() == NbModuleTypeProvider.NETBEANS_ORG) {
+            NbModuleTypeProvider.NbModuleType type = Util.getModuleType(project);
+            if (type == NbModuleTypeProvider.NETBEANS_ORG) {
                 dir = project.getNbrootFile(NB_ALL_INFIX + cnbdashes);
             } else {
                 dir = new File(FileUtil.toFile(project.getProjectDirectory()), EXT_INFIX + cnbdashes);

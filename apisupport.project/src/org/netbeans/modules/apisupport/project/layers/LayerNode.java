@@ -234,7 +234,7 @@ public final class LayerNode extends FilterNode {
      * Make a runtime classpath indicative of what is accessible from a sample resource.
      */
     private static ClassPath createClasspath(NbModuleProject p) throws IOException {
-        NbModuleTypeProvider.NbModuleType type = ((NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
+        NbModuleTypeProvider.NbModuleType type = Util.getModuleType(p);
         if (type == NbModuleTypeProvider.STANDALONE) {
             return LayerUtils.createLayerClasspath(Collections.singleton(p), LayerUtils.getPlatformJarsForStandaloneProject(p));
         } else if (type == NbModuleTypeProvider.SUITE_COMPONENT) {

@@ -178,9 +178,8 @@ public final class SuiteUtils {
      * </p>
      */
     private void removeModule(final NbModuleProject subModule) {
-        NbModuleTypeProvider nmtp = (NbModuleTypeProvider) subModule.
-                getLookup().lookup(NbModuleTypeProvider.class);
-        assert nmtp.getModuleType() == NbModuleTypeProvider.SUITE_COMPONENT : "Not a suite component"; // NOI18N
+        NbModuleTypeProvider.NbModuleType type = Util.getModuleType(subModule);
+        assert type == NbModuleTypeProvider.SUITE_COMPONENT : "Not a suite component";
         try {
             subModule.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {

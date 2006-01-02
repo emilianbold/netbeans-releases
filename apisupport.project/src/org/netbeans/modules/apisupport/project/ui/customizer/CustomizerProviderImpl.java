@@ -15,8 +15,10 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.io.IOException;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -61,14 +63,13 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
     protected void prepareData() {
         Lookup lookup = getProject().getLookup();
         SuiteProvider sp = (SuiteProvider) lookup.lookup(SuiteProvider.class);
-        NbModuleTypeProvider nmtp = (NbModuleTypeProvider) lookup.lookup(NbModuleTypeProvider.class);
+        NbModuleTypeProvider.NbModuleType type = Util.getModuleType((NbModuleProject) getProject());;
         if (moduleProps == null) { // first initialization
-            moduleProps = new SingleModuleProperties(helper, evaluator,
-                    sp, nmtp.getModuleType(),
+            moduleProps = new SingleModuleProperties(helper, evaluator, sp, type,
                     (LocalizedBundleInfo.Provider) lookup.lookup(LocalizedBundleInfo.Provider.class));
             init();
         } else {
-            moduleProps.refresh(nmtp.getModuleType(), sp);
+            moduleProps.refresh(type, sp);
         }
     }
     
