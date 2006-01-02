@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
                 <xsd:element name="minimum-ant-version" minOccurs="0">
                     <xsd:simpleType>
                         <xsd:restriction base="xsd:NMTOKEN">
-                            <xsd:enumeration value="1.6"/>
+                            <xsd:pattern value="1\.[0-9]+(\.[0-9]+)?"/>
                         </xsd:restriction>
                     </xsd:simpleType>
                 </xsd:element>
