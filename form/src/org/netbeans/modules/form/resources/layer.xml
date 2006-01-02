@@ -344,7 +344,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Applet.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/applet.gif"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
-                    <attr name="templateCategory" stringvalue="java-forms"/>
+                    <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
                 </file>
                 <file name="Applet.form" url="templates/AWTForms/Applet_form">
                     <attr name="template" boolvalue="true" />
@@ -356,7 +356,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialog.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/dialog.gif"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
-                    <attr name="templateCategory" stringvalue="java-forms"/>
+                    <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
                 </file>
                 <file name="Dialog.form" url="templates/AWTForms/Dialog_form">
                     <attr name="template" boolvalue="true" />
@@ -368,7 +368,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Frame.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/frame.gif"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
-                    <attr name="templateCategory" stringvalue="java-forms"/>
+                    <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
                 </file>
                 <file name="Frame.form" url="templates/AWTForms/Frame_form">
                     <attr name="template" boolvalue="true" />
@@ -380,7 +380,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Panel.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/beaninfo/awt/panel.gif"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
-                    <attr name="templateCategory" stringvalue="java-forms"/>
+                    <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
                 </file>
                 <file name="Panel.form" url="templates/AWTForms/Panel_form">
                     <attr name="template" boolvalue="true" />
