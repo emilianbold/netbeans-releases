@@ -265,7 +265,7 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
         Sources srcs = ProjectUtils.getSources(project);
         SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (int i = 0; i < grps.length; i++) {
-            if (grps[i].contains(fo)) {
+            if (FileUtil.isParentOf(grps[i].getRootFolder(), fo) && grps[i].contains(fo)) {
                 return FileUtil.getRelativePath(grps[i].getRootFolder(), fo);
             }
         }
