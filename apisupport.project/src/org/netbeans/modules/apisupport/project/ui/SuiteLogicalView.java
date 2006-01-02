@@ -18,7 +18,6 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.text.Collator;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -185,14 +184,12 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         private static final class ModuleChildren extends Children.Keys/*<NbModuleProject>*/ implements AntProjectListener {
             
-            private static final Collator COLLATOR = Collator.getInstance();
-            
             private final SuiteProject suite;
             
             public ModuleChildren(SuiteProject suite) {
                 this.suite = suite;
             }
-
+            
             protected void addNotify() {
                 updateKeys();
                 suite.getHelper().addAntProjectListener(this);
@@ -204,22 +201,35 @@ public final class SuiteLogicalView implements LogicalViewProvider {
                 subModules.addAll(SuiteUtils.getSubProjects(suite));
                 setKeys(subModules);
             }
-
+            
             protected void removeNotify() {
                 suite.getHelper().removeAntProjectListener(this);
                 setKeys(Collections.EMPTY_SET);
             }
-
+            
             protected Node[] createNodes(Object key) {
                 return new Node[] {new SuiteComponentNode((NbModuleProject) key)};
             }
-
+            
             public void configurationXmlChanged(AntProjectEvent ev) {
                 // ignore
             }
-
+            
             public void propertiesChanged(AntProjectEvent ev) {
-                updateKeys();
+                // e.g.(?) Explorer view under Children.MUTEX subsequently calls e.g.
+                // SuiteProject$Info.getSimpleName() which acquires ProjectManager.mutex(). And
+                // since this method might be called under ProjectManager.mutex() write access
+                // and updateKeys() --> setKeys() in turn calls Children.MUTEX write access,
+                // deadlock is here, so preventing it...
+                if (ProjectManager.mutex().isWriteAccess()) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            updateKeys();
+                        }
+                    });
+                } else {
+                    updateKeys();
+                }
             }
             
         }
