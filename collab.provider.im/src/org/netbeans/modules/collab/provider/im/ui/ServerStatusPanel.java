@@ -97,9 +97,11 @@ public class ServerStatusPanel extends javax.swing.JPanel {
         connectionInterruptedLabel.setForeground(java.awt.Color.red);
         org.openide.awt.Mnemonics.setLocalizedText(connectionInterruptedLabel, org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "LBL_ConnectionInterrupted"));
         labelPanel.add(connectionInterruptedLabel);
+        connectionInterruptedLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "A11Y_DESC_CONNECTIONLABEL"));
 
         org.openide.awt.Mnemonics.setLocalizedText(attemptToReconnectLabel, org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "LBL_AttemptingToReconnect", new Object[] {server}));
         labelPanel.add(attemptToReconnectLabel);
+        attemptToReconnectLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "A11Y_DESC_ATTEMPTTOCONNECTLABEL"));
 
         centerPanel.add(labelPanel, java.awt.BorderLayout.NORTH);
 
@@ -115,9 +117,11 @@ public class ServerStatusPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(doNotReconnect, org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "LBL_DoNotReconnect"));
         checkBoxesPanel.add(doNotReconnect);
+        doNotReconnect.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "A11Y_DESC_NOTRECONNECTCKBOX"));
 
         org.openide.awt.Mnemonics.setLocalizedText(doNotShow, org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "LBL_DoNotShow"));
         checkBoxesPanel.add(doNotShow);
+        doNotShow.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "A11Y_DESC_NOTSHOWCKBOX"));
 
         workPanel.add(checkBoxesPanel, java.awt.BorderLayout.CENTER);
 
@@ -127,11 +131,13 @@ public class ServerStatusPanel extends javax.swing.JPanel {
         startButton.addActionListener(formListener);
 
         startStopPanel.add(startButton);
+        startButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "A11Y_DESC_STARTBTN"));
 
         org.openide.awt.Mnemonics.setLocalizedText(stopButton, org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "LBL_Stop"));
         stopButton.addActionListener(formListener);
 
         startStopPanel.add(stopButton);
+        stopButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "A11Y_DESC_STOPBTN"));
 
         buttonPanel.add(startStopPanel, java.awt.BorderLayout.WEST);
 
@@ -139,11 +145,13 @@ public class ServerStatusPanel extends javax.swing.JPanel {
         okButton.addActionListener(formListener);
 
         okCancelPanel.add(okButton);
+        okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "A11Y_DESC_OKBTN"));
 
         org.openide.awt.Mnemonics.setLocalizedText(cancelButtton, org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "LBL_Cancel"));
         cancelButtton.addActionListener(formListener);
 
         okCancelPanel.add(cancelButtton);
+        cancelButtton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerStatusPanel.class, "A11Y_DESC_CANCELBTN"));
 
         buttonPanel.add(okCancelPanel, java.awt.BorderLayout.EAST);
 
@@ -217,7 +225,7 @@ public class ServerStatusPanel extends javax.swing.JPanel {
         descriptor.setOptionsAlign(DialogDescriptor.BOTTOM_ALIGN);
         
         dialog=DialogDisplayer.getDefault().createDialog(descriptor);
-        
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerStatusPanel.class, "A11Y_DESC_NbDialog"));
         Frame mainWindow=WindowManager.getDefault().getMainWindow();
         int windowX=mainWindow.getX();
         int windowY=mainWindow.getY();
