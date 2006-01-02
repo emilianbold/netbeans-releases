@@ -15,3 +15,5 @@
 
 1.0.8:	Filesharing fixes for 3 users editing (JSE issue #6318138)
         Jumping focus (#62871, JSE issue #6317025)
+
+1.0.9:	Integrated JSE INF#76430 (NB#70523)

@@ -1080,11 +1080,11 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
 
                     //Seperate conf files, usually in WebApps have src/conf/MANIFEST.mf
                     if (pkgName.equals(CONF_NODE)) {
-                        destNode = ((ProjectNode) projectNode).getChildNode(CONF_NODE);
-
-                        if (destNode.getChildren().findChild(dragNode.getName()) == null) {
-                            destNode.getChildren().add(new Node[] { dragNode });
-                        }
+			//fix bug#6284927
+                        //destNode = ((ProjectNode) projectNode).getChildNode(CONF_NODE);
+                        //if (destNode.getChildren().findChild(dragNode.getName()) == null) {
+                        //    destNode.getChildren().add(new Node[] { dragNode });
+                        //}
                     } else {
                         if (pkgName.startsWith(JAVA_PKG)) {
                             if (pkgName.length() == 4) {

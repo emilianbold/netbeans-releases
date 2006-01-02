@@ -127,11 +127,12 @@ public class UnShareFileAction extends SystemAction {
             if (fileChangeNotifier != null) {
                 fileChangeNotifier.notify(ce);
             }
-        }
-        /*catch(IOException iox){
-                iox.printStackTrace(Debug.out);
-        }*/
-        catch (CollabException e) {
+
+            //node detroy
+            node.destroy();
+        } catch (IOException iox) {
+            iox.printStackTrace(Debug.out);
+        } catch (CollabException e) {
             e.printStackTrace(Debug.out);
         }
     }
