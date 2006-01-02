@@ -26,3 +26,6 @@
 1.0.13: Integrated a bunch of JSE fixes, mainly A11Y and I18N related
 
 1.0.14: Remove dependency on deprecated module openide/compat (#64716)
+
+1.0.15: Fixed options panel - caused false "settings modified" warning.
+	Implemented API for switching view mode needed for reconnect dialog.

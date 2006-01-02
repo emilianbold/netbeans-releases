@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.collab.provider.im;
@@ -634,13 +634,9 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
      *
      */
     public void onError(CollaborationException e) {
-        // At this point, the session is no good anymore
-        try {
-            //Workaround for bug#
-            if ((e != null) && (e.getMessage() != null) &&
-                   (e.getMessage().indexOf("Server Disconnected") != -1)) { //NoI18n	
-                criticalServerError = true;
-            }
+        if (e!=null && e.getMessage()!=null &&  e.getMessage().contains("Server Disconnected")) {//NoI18n
+            criticalServerError = true;
+	    ((IMCollabManager)getManager()).getReconnect().startReconnect(this);
 
             javax.swing.SwingUtilities.invokeLater(
                 new Runnable() {
@@ -649,7 +645,7 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
                     }
                 }
             );
-        } finally {
+        } else {
             e.printStackTrace(); // System.err -> ide.log
             Debug.logDebugException("onError called with exception", e, true);
 

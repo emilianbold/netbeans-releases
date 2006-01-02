@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.collab.provider.im;
@@ -51,6 +51,8 @@ public class IMCollabManager extends CollabManager {
     private static final String SOCKS_KEEPALIVE = "org.netbeans.lib.collab.socks.keepalive";
     private static final String DEFAULT_KEEPALIVE = "30"; // 30 seconds
 
+    private IMReconnect reconnect = new IMReconnect();
+    
     ////////////////////////////////////////////////////////////////////////////
     // Instance fields
     ////////////////////////////////////////////////////////////////////////////
@@ -846,4 +848,9 @@ public class IMCollabManager extends CollabManager {
             CollabManager.getDefault().getUserInterface().notifyAccountPasswordChangeFailed(getAccount(), reason);
         }
     }
+    
+    protected IMReconnect getReconnect() {
+        return reconnect;
+    }
+    
 }

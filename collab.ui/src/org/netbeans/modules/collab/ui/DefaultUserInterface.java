@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.collab.ui;
@@ -1307,6 +1307,19 @@ public class DefaultUserInterface extends UserInterface {
                     }
                 }
             );
+        }
+    }
+
+    /**
+     *
+     *
+     */
+    public void changeUI(int change) {
+        switch (change) {
+            case SHOW_COLLAB_SESSION_PANEL:
+                CollabExplorerPanel.getInstance().showComponent(CollabExplorerPanel.COMPONENT_EXPLORER);
+                break;
+            default:
         }
     }
 

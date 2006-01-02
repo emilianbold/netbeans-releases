@@ -5,3 +5,5 @@
 1.0.6:	Add default keepalive for direct connection, #67659
 
 1.0.7:	Some JSE fixes integrated
+
+1.0.8:  Reconnect dialog (JSE INF#77326)
