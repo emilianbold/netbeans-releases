@@ -33,7 +33,6 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
-import org.netbeans.modules.apisupport.project.NbModuleTypeProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
@@ -45,6 +44,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -76,7 +76,7 @@ public final class ModuleActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, NbBundle.getMessage(ModuleActions.class, "ACTION_rebuild"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, NbBundle.getMessage(ModuleActions.class, "ACTION_clean"), null));
         actions.add(null);
-        boolean isNetBeansOrg = ((NbModuleTypeProvider) project.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType() == NbModuleTypeProvider.NETBEANS_ORG;
+        boolean isNetBeansOrg = Util.getModuleType(project) == NbModuleTypeProvider.NETBEANS_ORG;
         if (isNetBeansOrg) {
             String path = project.getPathWithinNetBeansOrg();
             actions.add(createMasterAction(project, new String[] {"init", "all-" + path}, NbBundle.getMessage(ModuleActions.class, "ACTION_build_with_deps")));
@@ -134,10 +134,8 @@ public final class ModuleActions implements ActionProvider {
         actions.add(CommonProjectActions.closeProjectAction());
         actions.add(null);
         actions.add(SystemAction.get(FindAction.class));
-        /*
         actions.add(null);
-        actions.add(SystemAction.get(DeleteAction.class));
-         */
+        actions.add(CommonProjectActions.deleteProjectAction());
         
         // Honor #57874 contract:
         try {
@@ -176,7 +174,7 @@ public final class ModuleActions implements ActionProvider {
     private final Map/*<String,String>*/ globalCommands = new HashMap();
     private final String[] supportedActions;
     
-    public ModuleActions(NbModuleProject project, NbModuleTypeProvider.NbModuleType moduleType) {
+    public ModuleActions(NbModuleProject project) {
         this.project = project;
         Set/*<String>*/ supportedActionsSet = new HashSet();
         globalCommands.put(ActionProvider.COMMAND_BUILD, new String[] {"netbeans"}); // NOI18N
@@ -204,6 +202,7 @@ public final class ModuleActions implements ActionProvider {
         if (project.getPerformanceTestSourceDirectory() != null) {
             supportedActionsSet.add(ActionProvider.COMMAND_RUN_SINGLE);
         }
+        supportedActionsSet.add(ActionProvider.COMMAND_DELETE);
         supportedActions = (String[])supportedActionsSet.toArray(new String[supportedActionsSet.size()]);
     }
     
@@ -224,7 +223,9 @@ public final class ModuleActions implements ActionProvider {
     }
     
     public boolean isActionEnabled(String command, Lookup context) {
-        if (command.equals(COMMAND_COMPILE_SINGLE)) {
+        if (ActionProvider.COMMAND_DELETE.equals(command)) {
+            return true;
+        } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
             return findBuildXml(project) != null &&
                     (findSources(context) != null || findTestSources(context, false) != null);
         } else if (command.equals(COMMAND_TEST_SINGLE)) {
@@ -333,6 +334,10 @@ public final class ModuleActions implements ActionProvider {
     }
     
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        if (ActionProvider.COMMAND_DELETE.equals(command)) {
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            return;
+        }
         Properties p;
         String[] targetNames;
         FileObject buildScript = null;
@@ -522,7 +527,7 @@ public final class ModuleActions implements ActionProvider {
                 if (findBuildXml(project) == null) {
                     return false;
                 }
-                NbModuleTypeProvider.NbModuleType type = ((NbModuleTypeProvider) project.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
+                NbModuleTypeProvider.NbModuleType type = Util.getModuleType(project);
                 if (type == NbModuleTypeProvider.NETBEANS_ORG) {
                     return true;
                 } else if (type == NbModuleTypeProvider.STANDALONE) {

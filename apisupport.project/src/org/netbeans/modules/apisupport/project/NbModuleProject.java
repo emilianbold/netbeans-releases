@@ -92,6 +92,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.ui.ModuleActions;
 import org.netbeans.modules.apisupport.project.ui.ModuleLogicalView;
+import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 
@@ -108,7 +109,7 @@ public final class NbModuleProject implements Project {
             Utilities.loadImage(NB_PROJECT_ICON_PATH));
     
     private final AntProjectHelper helper;
-    private final PropertyEvaluator eval;
+    private final Eval eval;
     private final Lookup lookup;
     private Map/*<FileObject,Element>*/ extraCompilationUnits;
     private final GeneratedFilesHelper genFilesHelper;
@@ -223,7 +224,7 @@ public final class NbModuleProject implements Project {
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
             new OpenedHook(),
-            new ModuleActions(this, typeProvider.getModuleType()),
+            new ModuleActions(this),
             new ClassPathProviderImpl(this),
             new SourceForBinaryImpl(this),
             new JavadocForBinaryImpl(this),
@@ -245,6 +246,7 @@ public final class NbModuleProject implements Project {
             new PrivilegedTemplatesImpl(),
             new ModuleProjectClassPathExtender(this),
             new LocalizedBundleInfoProvider(),
+            new ModuleOperations(this),
         });
     }
     
@@ -417,6 +419,11 @@ public final class NbModuleProject implements Project {
         }
 
         public void propertiesChanged(AntProjectEvent ev) {}
+        
+        public void removeListeners() {
+            getHelper().removeAntProjectListener(this);
+            delegate.removePropertyChangeListener(this);
+        }
         
     }
     
@@ -1143,7 +1150,7 @@ public final class NbModuleProject implements Project {
     final class OpenedHook extends ProjectOpenedHook {
         
         private ClassPath[] boot, source, compile;
-        
+
         OpenedHook() {}
         
         protected void projectOpened() {
@@ -1217,6 +1224,10 @@ public final class NbModuleProject implements Project {
             compile = null;
         }
         
+    }
+    
+    public void notifyDeleting() {
+        eval.removeListeners();
     }
     
     private final class SavedHook extends ProjectXmlSavedHook {

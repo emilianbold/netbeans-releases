@@ -760,4 +760,13 @@ public final class Util {
         };
     }
     
+    /**
+     * Returns {@link NbModuleTypeProvider.NbModuleType} from a project's lookup.
+     */
+    public static NbModuleTypeProvider.NbModuleType getModuleType(final NbModuleProject project) {
+        NbModuleTypeProvider provider = (NbModuleTypeProvider) project.getLookup().lookup(NbModuleTypeProvider.class);
+        assert provider != null : "has NbModuleTypeProvider in the lookup";
+        return provider.getModuleType();
+    }
+    
 }
