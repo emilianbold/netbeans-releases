@@ -183,29 +183,34 @@ class EjbJarActionProvider implements ActionProvider {
         
         //EXECUTION PART
         if (command.equals(COMMAND_RUN_SINGLE)) {
-            // run Java
-            FileObject[] javaFiles = findJavaSources(context);
-            if ((javaFiles != null) && (javaFiles.length>0)) {
-                FileObject file = javaFiles[0];
-                String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
-                p.setProperty("javac.includes", clazz); // NOI18N
-                // Convert foo/FooTest.java -> foo.FooTest
-                if (clazz.endsWith(".java")) { // NOI18N
-                    clazz = clazz.substring(0, clazz.length() - 5);
-                }
-                clazz = clazz.replace('/','.');
+            FileObject[] files = findTestSources(context, false);
+            if (files != null) {
+                targetNames = setupTestSingle(p, files);
+            } else {
+                // run Java
+                FileObject[] javaFiles = findJavaSources(context);
+                if ((javaFiles != null) && (javaFiles.length>0)) {
+                    FileObject file = javaFiles[0];
+                    String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
+                    p.setProperty("javac.includes", clazz); // NOI18N
+                    // Convert foo/FooTest.java -> foo.FooTest
+                    if (clazz.endsWith(".java")) { // NOI18N
+                        clazz = clazz.substring(0, clazz.length() - 5);
+                    }
+                    clazz = clazz.replace('/','.');
 
-                if (hasMainMethod(file)) {
+                    if (hasMainMethod(file)) {
 
-                    p.setProperty("run.class", clazz); // NOI18N
-                    targetNames = (String[]) commands.get(COMMAND_RUN_SINGLE);
+                        p.setProperty("run.class", clazz); // NOI18N
+                        targetNames = (String[]) commands.get(COMMAND_RUN_SINGLE);
+                    } else {
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                        DialogDisplayer.getDefault().notify(nd);
+                        return null;
+                    }
                 } else {
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
                     return null;
                 }
-            } else {
-                return null;
             }
         } else if (command.equals (COMMAND_RUN) || command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) {
             if (!isSelectedServer ()) {
@@ -337,6 +342,10 @@ class EjbJarActionProvider implements ActionProvider {
             return true; // findJavaSources( context ) != null || findJsps (context) != null;
         }
         if ( command.equals( COMMAND_RUN_SINGLE ) ) {
+            FileObject[] javaFiles = findTestSources(context,false);
+            if ((javaFiles != null) && (javaFiles.length > 0)) {
+                return true;
+            }
             FileObject files[] = findJavaSources(context);
             return files != null && files.length == 1;
         }
@@ -394,6 +403,33 @@ class EjbJarActionProvider implements ActionProvider {
             FileObject[] result = findSourcesAndPackages(context, srcRoots[i]);
             if (result != null) {
                 return result;
+            }
+        }
+        return null;
+    }
+    
+    /** Find either selected tests or tests which belong to selected source files
+     */
+    private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
+        //XXX: Ugly, should be rewritten
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        for (int i=0; i< testSrcPath.length; i++) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcPath[i], ".java", true); // NOI18N
+            if (files != null) {
+                return files;
+            }
+        }
+        if (checkInSrcDir && testSrcPath.length>0) {
+            FileObject[] files = findSources (context);
+            if (files != null) {
+                //Try to find the test under the test roots
+                FileObject srcRoot = getRoot(project.getSourceRoots().getRoots(),files[0]);
+                for (int i=0; i<testSrcPath.length; i++) {
+                    FileObject[] files2 = ActionUtils.regexpMapFiles(files,srcRoot, SRCDIRJAVA, testSrcPath[i], SUBST, true);
+                    if (files2 != null) {
+                        return files2;
+                    }
+                }
             }
         }
         return null;
