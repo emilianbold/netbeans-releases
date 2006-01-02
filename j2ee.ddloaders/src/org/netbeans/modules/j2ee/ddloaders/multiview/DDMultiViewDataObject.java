@@ -65,6 +65,8 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
                     NbBundle.getMessage(DDMultiViewDataObject.class, "TXT_DocumentUnparsable",
                             getPrimaryFile().getNameExt()), NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
+            // enable to finish action (multiview component opening),
+            // then switch to XML View
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     goToXmlView();
