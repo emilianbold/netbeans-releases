@@ -252,6 +252,9 @@ class LayoutOperations implements LayoutConstants {
         }
         else if (interval.isParallel() && target.isParallel()) {
             int align = interval.getAlignment();
+            if (align == DEFAULT) {
+                align = target.getGroupAlignment();
+            }
             boolean sameAlign = true;
             Iterator it = interval.getSubIntervals();
             while (it.hasNext()) {
@@ -260,10 +263,7 @@ class LayoutOperations implements LayoutConstants {
                     sameAlign = true;
                     break;
                 }
-                if (align == DEFAULT) {
-                    align = li.getAlignment();
-                }
-                else if (li.getAlignment() != align) {
+                if (li.getAlignment() != align) {
                     sameAlign = false;
                 }
             }
