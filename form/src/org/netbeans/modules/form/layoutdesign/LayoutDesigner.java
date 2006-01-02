@@ -640,6 +640,13 @@ public class LayoutDesigner implements LayoutConstants {
                         // container size needs to be defined from inside in advance
                         imposeCurrentContainerSize(components[0], dragger.getSizes(), true);
                     }
+                    else if (dragger.isResizing() && !components[0].isLayoutContainer()) {
+                        // component might be resized to default size
+                        for (int i=0; i < DIM_COUNT; i++) {
+                            if (dragger.snappedToDefaultSize(i))
+                               operations.resizeInterval(components[0].getLayoutInterval(i), NOT_EXPLICITLY_DEFINED);
+                        }
+                    }
 
                     updateDesignModifications(targetContainer);
                 }

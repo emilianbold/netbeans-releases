@@ -304,6 +304,15 @@ class LayoutDragger implements LayoutConstants {
         return sizing;
     }
 
+    boolean snappedToDefaultSize(int dimension) {
+        if (isResizing(dimension) && bestPositions[dimension] == null) {
+            int size = movingSpace.size(dimension);
+            return size == sizing[dimension].preferredSize
+                || size == sizing[dimension].zeroPreferredSize;
+        }
+        return false;
+    }
+
     // -----
     // moving & painting
 
@@ -473,26 +482,20 @@ class LayoutDragger implements LayoutConstants {
                 }
                 g.setStroke(oldStroke);
             }
-            else { // check for resizing snapped to preferred size
-                int resAlign = movingEdges[i];
-                if (resAlign == LEADING || resAlign == TRAILING) { // resizing in this dimension
-                    int size = movingSpace.size(i);
-                    if (size == sizing[i].preferredSize || size == sizing[i].zeroPreferredSize) { // snapped
-                        int align = movingEdges[i];
-                        int x1 = movingSpace.positions[i][align];
-                        int x2 = movingSpace.positions[i][align^1];
-                        int y = movingSpace.positions[i^1][CENTER];
-                        Stroke oldStroke = g.getStroke();
-                        g.setStroke(dashedStroke);
-                        if (i == HORIZONTAL) {
-                            g.drawLine(x1, y, x2, y);
-                        }
-                        else {
-                            g.drawLine(y, x1, y, x2);
-                        }
-                        g.setStroke(oldStroke);
-                    }
+            else if (snappedToDefaultSize(i)) { // resizing snapped to default preferred size
+                int align = movingEdges[i];
+                int x1 = movingSpace.positions[i][align];
+                int x2 = movingSpace.positions[i][align^1];
+                int y = movingSpace.positions[i^1][CENTER];
+                Stroke oldStroke = g.getStroke();
+                g.setStroke(dashedStroke);
+                if (i == HORIZONTAL) {
+                    g.drawLine(x1, y, x2, y);
                 }
+                else {
+                    g.drawLine(y, x1, y, x2);
+                }
+                g.setStroke(oldStroke);
             }
         }
     }
