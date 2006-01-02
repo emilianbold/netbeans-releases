@@ -393,7 +393,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     
     private void highlightTopDesignComponentName(boolean bl) {
         if(topDesignComponent!=null) {
-            topDesignComponent.getNodeReference().highlightDisplayName(bl);
+            RADComponentNode node = topDesignComponent.getNodeReference();
+            if(node!=null) {
+                node.highlightDisplayName(bl);
+            }
         }        
     }
     
