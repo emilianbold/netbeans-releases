@@ -23,6 +23,7 @@ import org.openide.util.*;
 import org.openide.util.actions.*;
 
 import java.awt.event.*;
+import java.io.IOException;
 
 import org.netbeans.modules.collab.channel.filesharing.FilesharingContext;
 import org.netbeans.modules.collab.channel.filesharing.FilesharingEventNotifierFactory;
