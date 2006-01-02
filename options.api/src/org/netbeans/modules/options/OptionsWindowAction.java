@@ -83,7 +83,7 @@ public class OptionsWindowAction extends AbstractAction {
             optionsPanel = new OptionsPanel ();
             descriptor = new DialogDescriptor (
                 optionsPanel,
-                "Options",
+                loc ("CTL_Options_Dialog_Title"),
                 false,
                 Utilities.getOperatingSystem () == Utilities.OS_MAC ?
                     new Object[] {
