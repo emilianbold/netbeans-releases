@@ -105,6 +105,10 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
             String label = NbBundle.getMessage( SetMainProject.class, "LBL_SetMainProjectAction_Name" ); // NOI18N
             subMenu = new JMenu( label );
             subMenu.setMnemonic (NbBundle.getMessage (SetMainProject.class, "MNE_SetMainProjectAction_Name").charAt (0)); // NOI18N
+            //#70835: the menu bar holds only subMenu not this action. As this action listens only weakly on OPL, noone holds this action.
+            //The action is the garbage collected and the sub menu does not react on changes of opened projects.
+            //The action instance has to exists as long as the subMenu:
+            subMenu.putClientProperty(SetMainProject.class, this);
         }
         
         subMenu.removeAll();
