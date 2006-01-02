@@ -52,9 +52,6 @@ public class ModuleOperationsTest extends TestBase {
         };
         assertEquals("correct data files", Arrays.asList(expectedDataFiles), ProjectOperations.getDataFiles(project));
         
-        System.err.println("ProjectOperations.getDataFiles(project) = \"" + ProjectOperations.getDataFiles(project) + "\"");
-        System.err.println("ProjectOperations.getMetadataFiles(project) = \"" + ProjectOperations.getMetadataFiles(project) + "\"");
-        
 //        ap.invokeAction(ActionProvider.COMMAND_DELETE, null);
     }
 }
