@@ -12,7 +12,6 @@
  */
 package org.netbeans.modules.collab.channel.output;
 
-import org.apache.tools.ant.module.AntModule;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -56,6 +55,8 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
     private final int line2;
     private final int col2;
     private boolean dead = false;
+
+    private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.apache.tools.ant.module"); // NOI18N
 
     public Hyperlink(URL url, String message, int line1, int col1, int line2, int col2) {
         this.url = url;
@@ -119,7 +120,7 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                     ed.open();
                 } else {
                     ed.openDocument(); // XXX getLineSet does not do it for you!
-                    AntModule.err.log("opened document for " + file);
+                    err.log("opened document for " + file);
 
                     try {
                         Line l = ed.getLineSet().getOriginal(line1 - 1);
@@ -174,12 +175,12 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                 if (ed.getDocument() == null) {
                     // The document is not opened, don't bother with it.
                     // The Line.Set will be corrupt anyway, currently.
-                    AntModule.err.log("no document for " + file);
+                    err.log("no document for " + file);
 
                     return;
                 }
 
-                AntModule.err.log("got document for " + file);
+                err.log("got document for " + file);
 
                 if (line1 != -1) {
                     Line l = ed.getLineSet().getOriginal(line1 - 1);
@@ -204,14 +205,14 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
 
     private synchronized void attachAsNeeded(Line l) {
         if (getAttachedAnnotatable() == null) {
-            boolean log = AntModule.err.isLoggable(ErrorManager.INFORMATIONAL);
+            boolean log = err.isLoggable(ErrorManager.INFORMATIONAL);
             Annotatable ann;
 
             // Text of the line, incl. trailing newline.
             String text = l.getText();
 
             if (log) {
-                AntModule.err.log(
+                err.log(
                     "Attaching to line " + l.getDisplayName() + " text=`" + text + "' line1=" + line1 + " line2=" +
                     line2 + " col1=" + col1 + " col2=" + col2
                 );
@@ -222,31 +223,31 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
                 int new_col2 = convertTabColumnsToCharacterColumns(text, col2 - 1, 8);
 
                 if (log) {
-                    AntModule.err.log("\tfits on one line");
+                    err.log("\tfits on one line");
                 }
 
                 if ((new_col2 != -1) && (new_col2 >= new_col1) && (new_col2 < text.length())) {
                     if (log) {
-                        AntModule.err.log("\tspecified section of the line");
+                        err.log("\tspecified section of the line");
                     }
 
                     ann = l.createPart(new_col1, new_col2 - new_col1 + 1);
                 } else if (new_col1 < text.length()) {
                     if (log) {
-                        AntModule.err.log("\tspecified column to end of line");
+                        err.log("\tspecified column to end of line");
                     }
 
                     ann = l.createPart(new_col1, text.length() - new_col1 - 1);
                 } else {
                     if (log) {
-                        AntModule.err.log("\tcolumn numbers are bogus");
+                        err.log("\tcolumn numbers are bogus");
                     }
 
                     ann = l;
                 }
             } else {
                 if (log) {
-                    AntModule.err.log("\tmultiple lines, something wrong with line, or no column given");
+                    err.log("\tmultiple lines, something wrong with line, or no column given");
                 }
 
                 ann = l;
@@ -294,8 +295,8 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
         Annotatable ann = getAttachedAnnotatable();
 
         if (ann != null) {
-            if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                AntModule.err.log("Detaching from " + ann + " `" + ann.getText() + "'");
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                err.log("Detaching from " + ann + " `" + ann.getText() + "'");
             }
 
             ann.removePropertyChangeListener(this);
@@ -317,8 +318,8 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
         if ((prop == null) || prop.equals(Annotatable.PROP_TEXT) || prop.equals(Annotatable.PROP_DELETED)) {
             // Affected line has changed.
             // Assume user has edited & corrected the error.
-            if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                AntModule.err.log("Received Annotatable property change: " + prop);
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                err.log("Received Annotatable property change: " + prop);
             }
 
             doDetach();
