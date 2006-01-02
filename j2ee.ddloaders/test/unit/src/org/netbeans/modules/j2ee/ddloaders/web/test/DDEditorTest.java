@@ -101,7 +101,6 @@ public class DDEditorTest extends NbTestCase {
 
         XmlMultiViewEditorSupport editor = (XmlMultiViewEditorSupport) dObj.getCookie(EditorCookie.class);
         final Document document = editor.getDocument();
-
         new StepIterator() {
             public boolean step() throws Exception {
                 return document.getText(0, document.getLength()).indexOf("<param-value>Blue</param-value>") >= 0;
@@ -130,10 +129,6 @@ public class DDEditorTest extends NbTestCase {
                 assertNotNull("Data Object Not Modified", saveCookie);
             }
         }.saveCookie.save();
-
-        // compare to golden file
-        compareGoldenFile("AddInitParam1.pass");
-
     }
 
     public void testAddParamValueInXmlView() throws IOException {
@@ -143,10 +138,6 @@ public class DDEditorTest extends NbTestCase {
         XmlMultiViewEditorSupport editor = (XmlMultiViewEditorSupport)dObj.getCookie(EditorCookie.class);
         final Document document = editor.getDocument();
         Helper.waitForDispatchThread();
-
-        // check context params table in Design View
-        final DDBeanTableModel model = getDDBeanModel();
-        final int n = model.getRowCount();
 
         // wait to see the changes in XML view
         new StepIterator() {
@@ -161,7 +152,6 @@ public class DDEditorTest extends NbTestCase {
 
             public void finalCheck() {
                 assertEquals("Cannot find new context param element in XML view (editor document)", true, index > 0);
-                Helper.waitForDispatchThread();
                 try {
                     document.insertString(index + 16, CONTEXT_PARAM_CYLINDERS, null);
                 } catch (BadLocationException ex) {
@@ -170,9 +160,14 @@ public class DDEditorTest extends NbTestCase {
             }
         };
 
+
         openInDesignView(dObj);
         Helper.waitForDispatchThread();
-
+        
+        // check context params table in Design View
+        final DDBeanTableModel model = getDDBeanModel();
+        final int n = model.getRowCount();
+        
         new StepIterator() {
             private String paramValue;
 
@@ -196,9 +191,6 @@ public class DDEditorTest extends NbTestCase {
         SaveCookie cookie = (SaveCookie) dObj.getCookie(SaveCookie.class);
         assertNotNull("Data Object Not Modified",cookie);
         cookie.save();
-
-        // compare to golden file
-        compareGoldenFile("AddInitParam2.pass");
     }
 
     public void testReplaceParamValueFromDDAPI2() throws IOException {
@@ -208,8 +200,23 @@ public class DDEditorTest extends NbTestCase {
         WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
         webApp.getContextParam()[0].setParamValue(CAR_AUDI);
         webApp.write(fo);
+        
+        XmlMultiViewEditorSupport editor = (XmlMultiViewEditorSupport) dObj.getCookie(EditorCookie.class);
+        final Document document = editor.getDocument();
 
-        compareGoldenFile("ReplaceParamValue2.pass");
+        new StepIterator() {
+            public boolean step() throws Exception {
+                return document.getText(0, document.getLength()).indexOf("<param-value>Audi</param-value>") >= 0;
+            }
+            
+            public void finalCheck() {
+                final Exception error = getError();
+                if (error != null) {
+                    throw new AssertionFailedErrorException("Failed to read the document: ", error);
+                }
+                assertEquals("Cannot find new context param element in XML view (editor document)", true, isSuccess());
+            }
+        };
     }
 
     public void testCheckParamValueInDesignView2() throws IOException {
@@ -223,7 +230,7 @@ public class DDEditorTest extends NbTestCase {
                 paramValue = (String) getDDBeanModel().getValueAt(0, 1);
                 return CAR_AUDI.equals(paramValue);
             }
-
+            
             public void finalCheck() {
                 assertEquals("Context Params Table wasn't changed: ", CAR_AUDI, paramValue);
             }
