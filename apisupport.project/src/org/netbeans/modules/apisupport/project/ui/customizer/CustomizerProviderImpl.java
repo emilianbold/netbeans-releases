@@ -93,12 +93,11 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
             sources, libraries, display, versioning, build
         });
 
-        CustomizerCompiling compilingPanel = new CustomizerCompiling(moduleProps);
-        createPanel(sources, new CustomizerSources(moduleProps, compilingPanel));
+        createPanel(sources, new CustomizerSources(moduleProps));
         createPanel(libraries, new CustomizerLibraries(moduleProps));
         createPanel(display, new CustomizerDisplay(moduleProps));
         createPanel(versioning, new CustomizerVersioning(moduleProps));
-        createPanel(compiling, compilingPanel);
+        createPanel(compiling, new CustomizerCompiling(moduleProps));
         createPanel(packaging, new CustomizerPackaging(moduleProps));
         createPanel(documenting, new CustomizerDocumenting(moduleProps));
         

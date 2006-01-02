@@ -133,6 +133,7 @@ abstract class ModuleProperties {
         } else {
             getProjectProperties().setProperty(key, value);
         }
+        firePropertyChange(key, null, value);
     }
     
     /**
@@ -150,10 +151,12 @@ abstract class ModuleProperties {
         } else {
             getPrivateProperties().setProperty(key, value);
         }
+        firePropertyChange(key, null, value);
     }
     
     void setProperty(String key, String[] value) {
         getProjectProperties().setProperty(key, value);
+        firePropertyChange(key, null, null);
     }
     
     final void setBooleanProperty(String key, boolean bProp) {

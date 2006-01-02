@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.beans.PropertyChangeEvent;
 import org.openide.util.NbBundle;
 
 /**
@@ -28,11 +29,18 @@ final class CustomizerCompiling extends NbPropertyPanel.Single {
         initAccessibility();
         refresh();
     }
-    
+
     void refresh() {
         debug.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEBUG));
         deprecation.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEPRECATION));
         options.setText(getProperty(SingleModuleProperties.JAVAC_COMPILERARGS));
+    }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        super.propertyChange(evt);
+        if (SingleModuleProperties.JAVAC_COMPILERARGS.equals(evt.getPropertyName())) {
+            options.setText(getProperty(SingleModuleProperties.JAVAC_COMPILERARGS));
+        }
     }
     
     public void store() {

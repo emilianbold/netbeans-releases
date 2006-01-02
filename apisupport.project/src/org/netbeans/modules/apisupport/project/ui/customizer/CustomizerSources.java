@@ -32,11 +32,9 @@ import org.openide.util.NbBundle;
 final class CustomizerSources extends NbPropertyPanel.Single {
     
     private boolean srcLevelValueBeingUpdated;
-    private final CustomizerCompiling compilingPanel;
     
-    CustomizerSources(final SingleModuleProperties props, CustomizerCompiling compilingPanel) {
+    CustomizerSources(final SingleModuleProperties props) {
         super(props, CustomizerSources.class);
-        this.compilingPanel = compilingPanel;
         initComponents();
         initAccessibility();
         refresh();
@@ -73,10 +71,6 @@ final class CustomizerSources extends NbPropertyPanel.Single {
                                 options = options + " " + added; // NOI18N
                             }
                             setProperty(SingleModuleProperties.JAVAC_COMPILERARGS, options);
-                            // XXX don't know of any cleaner way to do this; setProperty fires no changes
-                            // that CustomizerCompiling could listen to; refreshProperties is protected,
-                            // and even if made accessible, refreshes JAVAC_SOURCES too and messes up combo!
-                            CustomizerSources.this.compilingPanel.refresh();
                         }
                     });
                 }
