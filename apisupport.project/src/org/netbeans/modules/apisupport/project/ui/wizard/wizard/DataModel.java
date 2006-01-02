@@ -92,10 +92,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 panelsDefinitionBlock.append(',' + newLine);
             }
         }
-        
-        // add dependency on util to project.xml
+
+        // XXX what if these deps are already there? (cf. other wizards)
         cmf.add(cmf.addModuleDependency("org.openide.util", -1, null, true)); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.dialogs", -1, null, true)); // NOI18N
+        cmf.add(cmf.addModuleDependency("org.openide.awt", -1, null, true)); // NOI18N
         
         // generate .java for wizard iterator
         if (fileTemplateType || branching) {

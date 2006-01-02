@@ -187,6 +187,7 @@ final class NewTCIterator extends BasicWizardIterator {
                 Iterator it = set.iterator();
                 boolean windows = false;
                 boolean util = false;
+                boolean awt = false;
                 while (it.hasNext()) {
                     ModuleDependency dep = (ModuleDependency)it.next();
                     if ("org.openide.windows".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
@@ -195,12 +196,18 @@ final class NewTCIterator extends BasicWizardIterator {
                     if ("org.openide.util".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
                         util = true;
                     }
+                    if ("org.openide.awt".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
+                        awt = true;
+                    }
                 }
                 if (!windows) {
                     fileChanges.add(fileChanges.addModuleDependency("org.openide.windows", -1, null, true)); //NOI18N
                 }
                 if (!util) {
                     fileChanges.add(fileChanges.addModuleDependency("org.openide.util", -1, null, true)); //NOI18N
+                }
+                if (!awt) {
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.awt", -1, null, true)); //NOI18N
                 }
             }
         } catch (IOException e) {
