@@ -80,21 +80,19 @@ public class AntLoggerTest extends NbTestCase {
     }
     
     public void testLocationOfImportedTargetsWithoutLineNumbers() throws Exception {
-        System.err.println("NOTE: testLocationOfImportedTargetsWithoutLineNumbers will fail unless you use Ant 1.6.0+!");
         LOGGER.interestedInSessionFlag = true;
         LOGGER.interestedInAllScriptsFlag = true;
         LOGGER.interestingTargets = AntLogger.ALL_TARGETS;
         run(testdirFO.getFileObject("importing.xml"));
         File importing = new File(testdir, "importing.xml");
         File imported = new File(testdir, "imported.xml");
-        assertEquals("correct 2 targets run", Arrays.asList(new String[] {
+        assertEquals("correct 2 targets run (NOTE: you need Ant 1.6.0+)", Arrays.asList(new String[] {
             imported + "#subtarget",
             importing + "#main",
         }), LOGGER.targetsStarted);
     }
     
     public void testLocationOfImportedTargetsWithLineNumbers() throws Exception {
-        System.err.println("NOTE: testLocationOfImportedTargetsWithLineNumbers will fail unless you use Ant 1.6.3+!");
         LOGGER.interestedInSessionFlag = true;
         LOGGER.interestedInAllScriptsFlag = true;
         LOGGER.interestingTargets = AntLogger.ALL_TARGETS;
@@ -102,7 +100,7 @@ public class AntLoggerTest extends NbTestCase {
         run(testdirFO.getFileObject("importing.xml"));
         File importing = new File(testdir, "importing.xml");
         File imported = new File(testdir, "imported.xml");
-        assertEquals("correct 2 targets run", Arrays.asList(new String[] {
+        assertEquals("correct 2 targets run (NOTE: you need Ant 1.6.3+)", Arrays.asList(new String[] {
             imported + ":3#subtarget",
             importing + ":4#main",
         }), LOGGER.targetsStarted);
