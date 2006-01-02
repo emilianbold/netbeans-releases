@@ -53,7 +53,7 @@ final class CollabOptionPanel extends javax.swing.JPanel {
             return true;
         if (cbAutoLogin.isSelected() != model.getAutoLogin())
             return true;
-        if (spIdleTimeout.getValue().equals(model.getIdleTimeout()))
+        if (!spIdleTimeout.getValue().equals(model.getIdleTimeout()))
             return true;
         if (cbPlayAudioNotifications.isSelected() != model.getPlayAudioNotifications())
             return true;
