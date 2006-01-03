@@ -226,7 +226,7 @@ public class EntityMethodController extends AbstractMethodController {
 
     public MethodType getMethodTypeFromImpl(Method implView) {
         MethodType mt = null;
-        if (implView.getName().startsWith("ejbCreate")) { //NOI18N
+        if (implView.getName().startsWith("ejbCreate") || implView.getName().startsWith("ejbPostCreate")) { //NOI18N
             mt = new MethodType.CreateMethodType(implView);
         } else if (!implView.getName().startsWith("ejb")) { //NOI18N
             mt = new MethodType.BusinessMethodType(implView);

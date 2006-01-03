@@ -65,9 +65,15 @@ class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Abs
     public void visit(CreateMethodType cmt) {
         intfMethod = JMIUtils.duplicate(cmt.getMethodElement());
         String origName = intfMethod.getName();
-        String newName = chopAndUpper(origName,"ejb"); //NOI18N
-        intfMethod.setName(newName);
-        intfMethod.setType(JMIUtils.resolveType(component.getName()));
+        if (origName.startsWith("ejbPostCreate")) {
+            String newName = chopAndUpper(origName,"ejbPost"); //NOI18N
+            intfMethod.setName(newName);
+            intfMethod.setName("create");
+        } else {
+            String newName = chopAndUpper(origName,"ejb"); //NOI18N
+            intfMethod.setName(newName);
+            intfMethod.setType(JMIUtils.resolveType(component.getName()));
+        }
         destination = home;
     }
     
