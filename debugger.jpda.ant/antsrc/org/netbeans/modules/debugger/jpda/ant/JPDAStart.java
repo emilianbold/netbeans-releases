@@ -158,7 +158,7 @@ public class JPDAStart extends Task implements Runnable {
 
     public void execute () throws BuildException {
         verifyPaths(getProject(), classpath);
-        verifyPaths(getProject(), bootclasspath);
+        //verifyPaths(getProject(), bootclasspath); Do not check the paths on bootclasspath (see issue #70930).
         verifyPaths(getProject(), sourcepath);
         try {
             if (startVerbose)

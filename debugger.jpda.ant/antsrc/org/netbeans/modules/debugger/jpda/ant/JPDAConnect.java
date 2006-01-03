@@ -112,7 +112,7 @@ public class JPDAConnect extends Task {
             System.out.println("\nS JPDAConnect.execute ()");
 
         JPDAStart.verifyPaths(getProject(), classpath);
-        JPDAStart.verifyPaths(getProject(), bootclasspath);
+        //JPDAStart.verifyPaths(getProject(), bootclasspath); Do not check the paths on bootclasspath (see issue #70930).
         JPDAStart.verifyPaths(getProject(), sourcepath);
         
         if (name == null)
