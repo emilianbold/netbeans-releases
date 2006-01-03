@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
             <os family="unix"/>
         </condition>
         <property name="sjsas.server.path"  value="${xtest.optional}/sjsas"/>
-        <property name="xtest.ide.commandline.suffix" value="-J-Dsjsas.server.path=${sjsas.server.path} -J-Dnetbeans.dest.dir=${netbeans.dest.dir}"/>-->
+        <property name="xtest.ide.commandline.suffix" value="-J-Dsjsas.server.path=${sjsas.server.path} -J-Dnetbeans.dest.dir=${netbeans.dest.dir}"/>
         <!--<property name="xtest.ide.commandline.suffix" value="-J-Dsjsas.server.path=${sjsas.server.path} -J-Dnetbeans.dest.dir=${netbeans.dest.dir} -J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8765"/>-->
         <property name="test.classpath" value=""/>
     </target>
