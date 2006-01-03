@@ -240,7 +240,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * May return null if no html name is needed or available.
      *
      * @return html name of the editor component or null
-     * @since 6.9
+     * @since 6.8
      */
     protected String messageHtmlName() {
         return null;
