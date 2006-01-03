@@ -264,7 +264,11 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
             CvsMetadata data = MetadataAttic.getMetadata(file);
             if (data != null) {
                 try {
-                    data.save(new File(file, CvsVersioningSystem.FILENAME_CVS));
+                    // do not overwrite existing metadata on disk
+                    File metadataDir = new File(file, CvsVersioningSystem.FILENAME_CVS);
+                    if (!metadataDir.exists()) {
+                        data.save(metadataDir);
+                    }
                     MetadataAttic.setMetadata(file, null);
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
