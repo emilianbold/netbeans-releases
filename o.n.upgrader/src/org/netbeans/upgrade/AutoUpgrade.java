@@ -377,9 +377,14 @@ public final class AutoUpgrade {
                 FileObject newDestDir = destDir.createFolder (fo.getName ());
                 copy (fo, newDestDir);
             } else {
-                FileObject destFile = FileUtil.copyFile 
-                        (fo, destDir, fo.getName (), fo.getExt ());
-                FileUtil.copyAttributes (fo, destFile);
+                try {
+                    FileObject destFile = FileUtil.copyFile 
+                            (fo, destDir, fo.getName (), fo.getExt ());
+                    FileUtil.copyAttributes (fo, destFile);
+                } catch (IOException ex) {    
+                    if (!fo.getNameExt ().endsWith ("_hidden"))
+                        throw ex;    
+                }
             }
         }
     }
