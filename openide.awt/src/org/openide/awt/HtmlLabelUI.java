@@ -41,12 +41,13 @@ import javax.swing.plaf.LabelUI;
 class HtmlLabelUI extends LabelUI {
 
     /** System property to automatically turn on antialiasing for html strings */
-    static final boolean GTK = "GTK".equals(UIManager.getLookAndFeel().getID());
+    static final boolean GTK = "GTK".equals(UIManager.getLookAndFeel().getID());//NOI18N
+    static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID());//NOI18N
     
     private static final boolean antialias = Boolean.getBoolean("nb.cellrenderer.antialiasing") // NOI18N
          ||Boolean.getBoolean("swing.aatext") // NOI18N
          ||(GTK && gtkShouldAntialias()) // NOI18N
-         ||"Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+         ||AQUA; 
     
     private static HtmlLabelUI uiInstance;
     
@@ -191,7 +192,7 @@ class HtmlLabelUI extends LabelUI {
                 focus = Color.BLUE;
             }
 
-            if (!GTK) {
+            if (!GTK && !AQUA) {
                 int x = ((h.getIcon() == null) ? 0 : (h.getIcon().getIconWidth() + h.getIconTextGap()));
                 g.setColor(focus);
                 g.drawRect(x, 0, c.getWidth() - (x + 1), c.getHeight() - 1);
