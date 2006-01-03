@@ -77,8 +77,36 @@ public class StringArrayEditor implements XMLPropertyEditor,
 
         StringBuffer buf = new StringBuffer ();
         for (int i = 0; i < strings.length; i++) {
-            // XXX handles in-string escapes if quoted                                                            
-            buf.append(quoted ? "\"" + strings[i].replaceAll("\\\"","\\\\\"") + "\"" : strings[i]); // NOI18N
+            // Handles in-string escapes if quoted
+            if (quoted) {
+                buf.append("\""); // NOI18N
+                char[] chars = strings[i].toCharArray();
+                for (int j = 0; j < chars.length; j++) {
+                    char c = chars[j];
+                    switch (c) {
+                    case '\b': buf.append("\\b"); break; // NOI18N
+                    case '\t': buf.append("\\t"); break; // NOI18N
+                    case '\n': buf.append("\\n"); break; // NOI18N
+                    case '\f': buf.append("\\f"); break; // NOI18N
+                    case '\r': buf.append("\\r"); break; // NOI18N
+                    case '\"': buf.append("\\\""); break; // NOI18N
+                    case '\\': buf.append("\\\\"); break; // NOI18N
+                    default:
+                        if (c >= 0x0020 && c <= 0x007f)
+                            buf.append(c);
+                        else {
+                            buf.append("\\u"); // NOI18N
+                            String hex = Integer.toHexString(c);
+                            for (int k = 0; k < 4 - hex.length(); k++)
+                                buf.append('0');
+                            buf.append(hex);
+                        }
+                    }
+                }
+                buf.append("\""); // NOI18N
+            } else {
+                buf.append(strings[i]);
+            }
             if (i != strings.length - 1)
                 buf.append (", "); // NOI18N
         }
