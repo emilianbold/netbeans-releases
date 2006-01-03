@@ -143,6 +143,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             + File.separator
             + resolveString(BUNDLE + "Product.installDirMacOSX)");
         }
+        logEvent(this, Log.DBG, "nbInstallDir: " + nbInstallDir);
         
 	nbLabel = resolveString(BUNDLE + "InstallLocationPanel.nbInstallDirectoryLabel)");
         MnemonicString nbInputLabelMn = new MnemonicString(nbLabel);
@@ -215,12 +216,14 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    String sysDrive = drive.toString();
 	    asInstallDir = sysDrive + resolveString(BUNDLE + "AS.defaultInstallDirectoryWindows)");
         } else {
-            if (Util.isAdmin()) {
-                asInstallDir = resolveString("$D(install)$J(file.separator)" + BUNDLE + "AS.defaultInstallDirectory)");
+            File f = new File(nbInstallDir);
+            if (f.getParent() != null) {
+                asInstallDir = f.getParent() + resolveString("$J(file.separator)" + BUNDLE + "AS.defaultInstallDirectory)");
             } else {
                 asInstallDir = resolveString("$D(home)$J(file.separator)" + BUNDLE + "AS.defaultInstallDirectory)");
             }
         }
+        logEvent(this, Log.DBG, "asInstallDir: " + asInstallDir);
         
         asLabel = resolveString(BUNDLE + "InstallLocationPanel.asInstallDirectoryLabel)");
         MnemonicString asInputLabelMn = new MnemonicString(asLabel);
