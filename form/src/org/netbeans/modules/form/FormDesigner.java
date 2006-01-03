@@ -251,7 +251,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         // not very nice hack - it's better FormEditorSupport has its
         // listener registered after FormDesigner
         formEditor.reinstallListener();
-        
+
+        if (formEditor.getFormDesigner() == null) {
+            // 70940: Make sure some form designer is registered
+            formEditor.setFormDesigner(this);
+        }
     }
     
     void reset(FormEditor formEditor) {
