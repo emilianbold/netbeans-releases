@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.nbbuild;
@@ -603,7 +603,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         w.write ("http://www.sun.com/\n");
         w.write ("\n");
         w.write ("The Original Code is NetBeans. The Initial Developer of the Original\n");
-        w.write ("Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun\n");
+        w.write ("Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun\n");
         w.write ("Microsystems, Inc. All Rights Reserved.\n");
         w.write ("-->\n");
         w.write ("<!DOCTYPE api-answers PUBLIC \"-//NetBeans//DTD Arch Answers//EN\" \""); w.write (nbRoot); w.write ("nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd\" [\n");
