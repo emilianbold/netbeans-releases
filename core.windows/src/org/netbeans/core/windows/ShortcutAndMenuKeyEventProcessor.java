@@ -199,12 +199,10 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
             return true;
         }
 
-        skipNextTyped = false;
+        if (ev.getID() == KeyEvent.KEY_RELEASED) {
+            skipNextTyped = false;
+        }
         
-//        if (ev.getID() == KeyEvent.KEY_PRESSED && StatusDisplayer.getDefault().getContext().length != 0) {
-//            skipNextTyped = true;
-//        }
-
         if (ev.getID() == KeyEvent.KEY_PRESSED) {
             // decompose to primitive fields to avoid memory profiler confusion (keyEvent keeps source reference)
             lastKeyChar = ev.getKeyChar();
