@@ -68,7 +68,6 @@ class EntityGenerateFromImplVisitor implements MethodType.MethodTypeVisitor, Abs
         if (origName.startsWith("ejbPostCreate")) {
             String newName = chopAndUpper(origName,"ejbPost"); //NOI18N
             intfMethod.setName(newName);
-            intfMethod.setName("create");
         } else {
             String newName = chopAndUpper(origName,"ejb"); //NOI18N
             intfMethod.setName(newName);
