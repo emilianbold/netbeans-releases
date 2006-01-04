@@ -507,7 +507,7 @@ public class LayerUtils {
          * Resource path in which to make a new XML layer.
          */
         private String newLayerPath() {
-            return project.getCodeNameBase().replace('.', '/') + "/resources/layer.xml"; // NOI18N
+            return project.getCodeNameBase().replace('.', '/') + "/layer.xml"; // NOI18N
         }
         
     }
