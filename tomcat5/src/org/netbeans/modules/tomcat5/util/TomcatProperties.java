@@ -460,8 +460,24 @@ public class TomcatProperties {
         return -1;
     }
     
+    /**
+     * Return server.xml file from the catalina base folder if the base folder is used 
+     * or from the catalina home folder otherwise.
+     * <p>
+     * <b>BEWARE</b>: If the catalina base folder is used but has not bee generated yet,
+     * the server.xml file from the catalina home folder will be returned.
+     * </p>
+     */
     public File getServerXml() {
-        return new File(getCatalinaDir(), "conf/server.xml"); // NIO18N
+        String confServerXml = "conf/server.xml"; // NIO18N
+        File serverXml = null;
+        if (baseDir != null) {
+            serverXml = new File(baseDir, confServerXml);
+        }
+        if (serverXml == null || !serverXml.exists()) {
+            serverXml = new File(getCatalinaHome(), confServerXml);
+        }
+        return serverXml;
     }
     
     public String getHost () {
