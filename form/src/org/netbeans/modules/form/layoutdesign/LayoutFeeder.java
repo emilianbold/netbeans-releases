@@ -317,8 +317,10 @@ class LayoutFeeder implements LayoutConstants {
                 if (alignment < 0)
                     alignment = LEADING;
             }
-            else if (alignment < 0) {
-                alignment = interval.getAlignment();
+            else {
+                int currentAlign = interval.getAlignment();
+                if (alignment < 0 || (currentAlign != LEADING && currentAlign != TRAILING))
+                    alignment = currentAlign;
             }
             if (nonEmptyCount <= 2 && parent.getParent() != null) {
                 // parallel group will not survive when the interval is removed
