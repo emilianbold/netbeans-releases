@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,6 +32,7 @@ import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView;
+import org.netbeans.modules.apisupport.project.ui.SuiteOperations;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -86,7 +87,8 @@ public final class SuiteProject implements Project {
             new SuiteActions(this),
             new SuiteLogicalView(this),
             new SuiteCustomizer(this, helper, eval),
-            new PrivilegedTemplatesImpl()
+            new PrivilegedTemplatesImpl(),
+            new SuiteOperations(this),
         });
     }
     
@@ -187,7 +189,7 @@ public final class SuiteProject implements Project {
         public String getName() {
             return PropertyUtils.getUsablePropertyName(getSimpleName());
         }
-
+        
         public String getDisplayName() {
             String appTitle = getEvaluator().getProperty("app.title"); // NOI18N
             if (appTitle != null) {
@@ -196,7 +198,7 @@ public final class SuiteProject implements Project {
                 return getSimpleName();
             }
         }
-
+        
         public Icon getIcon() {
             return new ImageIcon(Utilities.loadImage(SUITE_ICON_PATH));
         }
@@ -212,15 +214,15 @@ public final class SuiteProject implements Project {
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
-
+        
         public void configurationXmlChanged(AntProjectEvent ev) {
             fireNameChange();
         }
-
+        
         public void propertiesChanged(AntProjectEvent ev) {
             fireNameChange();
         }
-
+        
         private void fireNameChange() {
             pcs.firePropertyChange(ProjectInformation.PROP_NAME, null, getName());
             pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, getDisplayName());
@@ -252,13 +254,13 @@ public final class SuiteProject implements Project {
             // refresh build.xml and build-impl.xml
             try {
                 genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    SuiteProject.class.getResource("resources/build-impl.xsl"),
-                    true);
+                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                        SuiteProject.class.getResource("resources/build-impl.xsl"),
+                        true);
                 genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_XML_PATH,
-                    SuiteProject.class.getResource("resources/build.xsl"),
-                    true);
+                        GeneratedFilesHelper.BUILD_XML_PATH,
+                        SuiteProject.class.getResource("resources/build.xsl"),
+                        true);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -281,13 +283,13 @@ public final class SuiteProject implements Project {
         protected void projectXmlSaved() throws IOException {
             // refresh build.xml and build-impl.xml
             genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                SuiteProject.class.getResource("resources/build-impl.xsl"),
-                false);
+                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                    SuiteProject.class.getResource("resources/build-impl.xsl"),
+                    false);
             genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_XML_PATH,
-                SuiteProject.class.getResource("resources/build.xsl"),
-                false);
+                    GeneratedFilesHelper.BUILD_XML_PATH,
+                    SuiteProject.class.getResource("resources/build.xsl"),
+                    false);
         }
         
     }
@@ -299,7 +301,7 @@ public final class SuiteProject implements Project {
         }
         
     }
-
+    
     private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates, RecommendedTemplates {
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
@@ -307,7 +309,7 @@ public final class SuiteProject implements Project {
             "Templates/Other/properties.properties", // NOI18N
         };
         
-        private static final String[] RECOMMENDED_TYPES = new String[] {         
+        private static final String[] RECOMMENDED_TYPES = new String[] {
             "oasis-XML-catalogs",   // NOI18N
             "XML",                  // NOI18N
             "ant-script",           // NOI18N
@@ -317,10 +319,10 @@ public final class SuiteProject implements Project {
         public String[] getPrivilegedTemplates() {
             return PRIVILEGED_NAMES;
         }
-
+        
         public String[] getRecommendedTypes() {
             return RECOMMENDED_TYPES;
         }
-    }    
+    }
     
 }

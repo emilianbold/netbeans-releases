@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,6 +28,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -75,10 +76,8 @@ public final class SuiteActions implements ActionProvider {
         actions.add(CommonProjectActions.closeProjectAction());
         actions.add(null);
         actions.add(SystemAction.get(FindAction.class));
-        /*
         actions.add(null);
         actions.add(CommonProjectActions.deleteProjectAction());
-         */
         try {
             FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
             FileObject fo = sfs.findResource("Projects/Actions"); // NOI18N
@@ -115,7 +114,7 @@ public final class SuiteActions implements ActionProvider {
     public SuiteActions(SuiteProject project) {
         this.project = project;
     }
-
+    
     public String[] getSupportedActions() {
         return new String[] {
             ActionProvider.COMMAND_BUILD,
@@ -127,23 +126,30 @@ public final class SuiteActions implements ActionProvider {
             "build-jnlp", // NOI18N
             "run-jnlp", // NOI18N
             "debug-jnlp", // NOI18N
-            "profile" // NOI18N
+            "profile", // NOI18N
+            ActionProvider.COMMAND_DELETE
         };
     }
     
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        if (Arrays.asList(getSupportedActions()).contains(command)) {
+        if (ActionProvider.COMMAND_DELETE.equals(command)) {
+            return true;
+        } else if (Arrays.asList(getSupportedActions()).contains(command)) {
             return findBuildXml(project) != null;
         } else {
             throw new IllegalArgumentException(command);
         }
     }
-
+    
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        try {
-            invokeActionImpl(command, context);
-        } catch (IOException e) {
-            Util.err.notify(e);
+        if (ActionProvider.COMMAND_DELETE.equals(command)) {
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
+        } else {
+            try {
+                invokeActionImpl(command, context);
+            } catch (IOException e) {
+                Util.err.notify(e);
+            }
         }
     }
     
@@ -186,7 +192,7 @@ public final class SuiteActions implements ActionProvider {
             targetNames = new String[] {"profile"}; // NOI18N
         } else {
             throw new IllegalArgumentException(command);
-        } 
+        }
         
         return ActionUtils.runTarget(findBuildXml(project), targetNames, null);
     }
@@ -194,7 +200,7 @@ public final class SuiteActions implements ActionProvider {
     private static FileObject findBuildXml(SuiteProject project) {
         return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
     }
-
+    
     private static final int PROMPT_FOR_APP_NAME_MODE_JNLP = 0;
     private static final int PROMPT_FOR_APP_NAME_MODE_ZIP = 1;
     /** @return true if the dialog is shown */
