@@ -13,8 +13,12 @@
 package org.netbeans.modules.collab.ui;
 
 import java.awt.Dialog;
+import java.awt.GridBagConstraints;
 import java.util.*;
+import javax.swing.JComponent;
 import javax.swing.event.*;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 
 import org.openide.*;
 import org.openide.util.*;
@@ -31,6 +35,7 @@ import org.netbeans.modules.collab.core.Debug;
 public class AddConversationForm extends javax.swing.JPanel implements ListSelectionListener {
     // End of variables declaration                   
     private static boolean _isSearching = false;
+    private boolean visible;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseBtn;
@@ -48,6 +53,10 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
     private CollabSession session;
     private Vector result = new Vector();
     private DialogDescriptor descriptor;
+    
+    private ProgressHandle progress;
+    private JComponent progressComponent;
+    private GridBagConstraints progressSpace;
 
     /** Creates new form AddConversationForm */
     public AddConversationForm(CollabSession session) {
@@ -62,6 +71,14 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
 
         descriptor.setValid(false);
         initComponents();
+        
+        progressSpace = new GridBagConstraints();
+        progressSpace.gridx = 2;
+        progressSpace.gridy = 1;
+        progressSpace.gridwidth = GridBagConstraints.RELATIVE;
+        progressSpace.gridheight = GridBagConstraints.REMAINDER;
+        progressSpace.anchor = GridBagConstraints.WEST;
+        progressSpace.insets = new java.awt.Insets(0, 5, 5, 5);
 
         ListModel model = new ListModel(resultJList, result, false, true, false);
 
@@ -96,7 +113,9 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
 
         try {
-            dialog.show();
+            visible = true;
+            dialog.setVisible(true);
+            visible = false;
 
             if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
                 Iterator it = result.iterator();
@@ -115,49 +134,91 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
             dialog.dispose();
         }
     }
+    
+    private void prepareProgress() {
+        browseBtn.setEnabled(false);
+        conferenceNameField.setEditable(false);
+        findBtn.setEnabled(false);
+        removeBtn.setEnabled(false);
+        resultJList.setEnabled(false);
+        
+        searchMessageLabel.setText(NbBundle.getMessage(AddConversationForm.class, "LBL_AddConversationForm_Searching"));
+        progress = ProgressHandleFactory.createHandle("");
+        progressComponent = ProgressHandleFactory.createProgressComponent(progress);
+        progress.start();
+        jPanel1.add(progressComponent, progressSpace);
+        revalidate();
+    }
+
+    private void finishProgress() {
+        progress.finish();
+        jPanel1.remove(progressComponent);
+        searchMessageLabel.setText("");
+        progressComponent = null;
+        progress = null;
+
+        
+        browseBtn.setEnabled(true);
+        conferenceNameField.setEditable(true);
+        findBtn.setEnabled(conferenceNameField.getText().length() > 0);
+        updateRemoveButtonState();
+        resultJList.setEnabled(true);
+    }
 
     private void getAllConferences() {
         if (!sessionExists()) {
             return;
         }
+        
+        prepareProgress();
 
-        try {
-            String[] conversations = session.getPublicConversations();
-
-            if ((conversations == null) || (conversations.length == 0)) {
-                String msg = NbBundle.getMessage(
-                        AddConversationForm.class, "LBL_AddConversationForm_No_Conferences_Found"
-                    ); // NOI18N
-                searchMessageLabel.setText(msg);
-                findBtn.setEnabled(true);
-                _isSearching = false;
-
-                return;
-            }
-
-            SelectConferenceForm f = new SelectConferenceForm(conversations);
-            String[] ip = f.getSelectedConversations();
-            Vector selectedConv = new Vector(result.size());
-
-            if (ip != null) {
-                for (int n = 0; n < ip.length; n++) {
-                    Debug.out.println("selected conference id = " + ip[n]);
-
-                    if (!selectedConv.contains(ip[n])) {
-                        selectedConv.addElement(ip[n]);
-                        result.addElement(ip[n]);
+        Runnable listRunnable = new Runnable() {
+            String[] conversations = null;
+            
+            public void run() {
+                if (conversations == null) {
+                    try {
+                        conversations = session.getPublicConversations();
+                    } catch (CollabException e) {
+                        ErrorManager.getDefault().notify(e);
                     }
-                }
+                    if (conversations == null) conversations = new String[0];
+                    javax.swing.SwingUtilities.invokeLater(this);
+                } else {
+                    finishProgress();
+                    
+                    if (!visible) return; // dialog canceled
+                    
+                    if (conversations.length == 0) {
+                        searchMessageLabel.setText(NbBundle.getMessage(
+                                AddConversationForm.class, "LBL_AddConversationForm_No_Conferences_Found" // NOI18N
+                        ));
+                        return;
+                    }
 
-                resultJList.setListData(result);
-                updateValidStatus();
-            } else {
-                Debug.out.println("No search result selected");
+                    String[] ip = new SelectConferenceForm(conversations).getSelectedConversations();
+                    Vector selectedConv = new Vector(result.size());
+
+                    if (ip != null) {
+                        for (int n = 0; n < ip.length; n++) {
+                            Debug.out.println("selected conference id = " + ip[n]);
+
+                            if (!selectedConv.contains(ip[n])) {
+                                selectedConv.addElement(ip[n]);
+                                result.addElement(ip[n]);
+                            }
+                        }
+
+                        resultJList.setListData(result);
+                        updateValidStatus();
+                    } else {
+                        Debug.out.println("No search result selected");
+                    }                   
+                }
             }
-        } catch (CollabException e) {
-            // TODO: Nice exception dialog here
-            Debug.debugNotify(e);
-        }
+        };
+        
+        RequestProcessor.getDefault().post(listRunnable);
     }
 
     private void findConference() {
@@ -206,68 +267,76 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
 
         findBtn.setEnabled(false);
 
-        if (_isSearching) {
-            return;
-        }
+        final String txt = conferenceNameField.getText();
 
-        _isSearching = true;
+        prepareProgress();
 
-        String txt = conferenceNameField.getText();
-
-        try {
-            String[] conversations = session.findPublicConversations(CollabSession.SEARCHTYPE_CONTAINS, txt);
-
-            if ((conversations == null) || (conversations.length == 0)) {
-                final String msg = NbBundle.getMessage(AddConversationForm.class, "No_Matches_Found"); // NOI18N
-                searchMessageLabel.setText(msg);
-            } else if (conversations != null) {
-                Vector selectedConv = new Vector(result.size());
-
-                for (int i = 0; i < result.size(); i++) {
-                    selectedConv.add(((String) result.get(i)));
-                }
-
-                if (conversations.length == 1) {
-                    Debug.out.println("Search result: " + conversations[0]);
-
-                    if (!selectedConv.contains(conversations[0])) {
-                        selectedConv.addElement(conversations[0]);
-                        result.addElement(conversations[0]);
+        Runnable listRunnable = new Runnable() {
+            String[] conversations = null;
+            
+            public void run() {
+                if (conversations == null) {
+                    try {
+                        conversations = session.findPublicConversations(CollabSession.SEARCHTYPE_CONTAINS, txt);
+                    } catch (CollabException e) {
+                        ErrorManager.getDefault().notify(e);
                     }
+                    if (conversations == null) conversations = new String[0];
+                    javax.swing.SwingUtilities.invokeLater(this);
+                } else {
+                    finishProgress();
+                    
+                    if (!visible) return; // dialog canceled
+                    
+                    if (conversations.length == 0) {
+                        final String msg = NbBundle.getMessage(AddConversationForm.class, "No_Matches_Found"); // NOI18N
+                        searchMessageLabel.setText(msg);
+                    } else if (conversations != null) {
+                        Vector selectedConv = new Vector(result.size());
 
-                    // Cleans the text input field whe search has been successful
-                    conferenceNameField.setText("");
-                    conferenceNameField.requestFocus();
-                    conferenceNameField.setCaretPosition(0);
-
-                    resultJList.setListData(result);
-                    updateValidStatus();
-                } else if (conversations.length > 1) {
-                    SelectConferenceForm f = new SelectConferenceForm(conversations);
-                    String[] ip = f.getSelectedConversations();
-
-                    if (ip != null) {
-                        for (int n = 0; n < ip.length; n++) {
-                            if (!selectedConv.contains(ip[n])) {
-                                selectedConv.addElement(ip[n]);
-                                result.addElement(ip[n]);
-                            }
+                        for (int i = 0; i < result.size(); i++) {
+                            selectedConv.add(((String) result.get(i)));
                         }
 
-                        resultJList.setListData(result);
-                        updateValidStatus();
-                    } else {
-                        Debug.out.println("No search result selected");
+                        if (conversations.length == 1) {
+                            Debug.out.println("Search result: " + conversations[0]);
+
+                            if (!selectedConv.contains(conversations[0])) {
+                                selectedConv.addElement(conversations[0]);
+                                result.addElement(conversations[0]);
+                            }
+
+                            // Cleans the text input field whe search has been successful
+                            conferenceNameField.setText("");
+                            conferenceNameField.requestFocus();
+                            conferenceNameField.setCaretPosition(0);
+
+                            resultJList.setListData(result);
+                            updateValidStatus();
+                        } else if (conversations.length > 1) {
+                            SelectConferenceForm f = new SelectConferenceForm(conversations);
+                            String[] ip = f.getSelectedConversations();
+
+                            if (ip != null) {
+                                for (int n = 0; n < ip.length; n++) {
+                                    if (!selectedConv.contains(ip[n])) {
+                                        selectedConv.addElement(ip[n]);
+                                        result.addElement(ip[n]);
+                                    }
+                                }
+
+                                resultJList.setListData(result);
+                                updateValidStatus();
+                            } else {
+                                Debug.out.println("No search result selected");
+                            }
+                        }
                     }
                 }
             }
-        } catch (CollabException e) {
-            // TODO: Nice exception dialog here
-            Debug.debugNotify(e);
-        } finally {
-            _isSearching = false;
-            findBtn.setEnabled(true);
-        }
+        };
+        
+        RequestProcessor.getDefault().post(listRunnable);
     }
 
     /**
@@ -343,6 +412,7 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
         conferenceNameField.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -365,6 +435,7 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
         browseBtn.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
@@ -375,8 +446,9 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
         jPanel1.add(searchMessageLabel, gridBagConstraints);
@@ -437,8 +509,7 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
                 AddConversationForm.this.removeBtnActionPerformed(evt);
             }
         }
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeBtnActionPerformed
 
@@ -463,9 +534,10 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
     }//GEN-LAST:event_removeBtnActionPerformed
 
     private void conferenceNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_conferenceNameFieldActionPerformed
-        findConference();
+        searchMessageLabel.setText("");
         conferenceNameField.selectAll();
         conferenceNameField.requestFocus();
+        findConference();
     }//GEN-LAST:event_conferenceNameFieldActionPerformed
 
     private void browseBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseBtnActionPerformed
@@ -474,9 +546,10 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
     }//GEN-LAST:event_browseBtnActionPerformed
 
     private void findBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findBtnActionPerformed
-        findConference();
+        searchMessageLabel.setText("");
         conferenceNameField.selectAll();
         conferenceNameField.requestFocus();
+        findConference();
     }//GEN-LAST:event_findBtnActionPerformed
 
     public void valueChanged(ListSelectionEvent e) {
