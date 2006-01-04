@@ -13,32 +13,4 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="options.api">
     <import file="../../nbbuild/templates/projectized.xml"/>
-    
-    <!--temporary compatibility hack to allow core/options clients built against
-        NB5.0beta2 build work in the trunk build. The hack does not allow
-        to built old clients, only to run them. See also issue #69746.-->
-    <target name="compile" depends="projectized-common.compile">
-        <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-
-        <enhanceclass basedir="${build.classes.dir}" >
-            <classpath>
-                <pathelement location="${core/bootstrap.dir}/lib/boot.jar"/>
-            </classpath>
-
-            <patch class="org/netbeans/spi/options/AdvancedOption">
-                <member name="create" rename="createAbstractImpl" />
-                <member name="createNewImpl" rename="create" />
-                <member name="createOldImpl" rename="create" />
-            </patch>
-            
-            <patch class="org/netbeans/spi/options/OptionsCategory">
-                <member name="create" rename="createAbstractImpl" />
-                <member name="createNewImpl" rename="create" />
-                <member name="createOldImpl" rename="create" />
-            </patch>
-            
-            <patch class="org/netbeans/spi/options/OptionsCategory$$PanelController" />
-            
-        </enhanceclass>
-    </target>
 </project>

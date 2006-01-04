@@ -66,30 +66,4 @@ public abstract class AdvancedOption {
      */
     public abstract OptionsPanelController create ();
 
-    //compatibility hack, see core/options/build.xml for more details:
-    private OptionsCategory.PanelController createOldImpl () {
-        return null;
-    }
-    
-    private OptionsPanelController createNewImpl () {
-        Class clazz = getClass();
-        Method[] methods = clazz.getDeclaredMethods();
-        
-        for (int cntr = 0; cntr < methods.length; cntr++) {
-            Method m = methods[cntr];
-            
-            if ("create".equals(m.getName()) && m.getReturnType() == OptionsCategory.PanelController.class) {
-                try {
-                    return (OptionsCategory.PanelController) m.invoke(this, new Object[0]);
-                } catch (RuntimeException e) {
-                    throw e;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        
-        return null;
-    }
-    
 }
