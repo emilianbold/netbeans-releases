@@ -329,11 +329,12 @@ public class FormEditorSupport extends JavaEditor
                     formEditor.reportErrors(FormEditor.LOADING);
                     if (!formEditor.isFormLoaded()) { // there was a loading error
                         formDesigner.removeAll();
-                        formDesigner.repaint();
                     } else {
                         formDesigner.initialize();
                     }
                     ComponentInspector.getInstance().focusForm(formEditor);
+                    formDesigner.revalidate();
+                    formDesigner.repaint();
                 }
             }
         });

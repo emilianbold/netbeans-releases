@@ -239,6 +239,7 @@ public class ComponentInspector extends TopComponent
             // swing memory leak workaround
             removeAll();
             createComponents();
+            revalidate();
 
             getExplorerManager().setRootContext(emptyInspectorNode);
         }
