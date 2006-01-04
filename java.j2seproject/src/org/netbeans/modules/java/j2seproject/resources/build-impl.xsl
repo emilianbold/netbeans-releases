@@ -163,6 +163,8 @@ is divided into following sections:
                         <istrue value="${{no.dependencies}}"/>
                     </and>
                 </condition>
+                <property name="javac.debug" value="true"/>
+                <property name="javadoc.preview" value="true"/>
             </target>
 
             <target name="-post-init">

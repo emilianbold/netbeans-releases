@@ -28,6 +28,7 @@ import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
@@ -60,6 +61,14 @@ import org.openide.util.NbBundle;
  * @author Petr Hrebejk
  */
 public class J2SEProjectProperties {
+    
+    //Hotfix of the issue #70058
+    //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+    private static final Integer BOOLEAN_KIND_TF = new Integer( 0 );
+    private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
+    private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
+    private Integer javacDebugBooleanKind;
+    private Integer javadocPreviewBooleanKind;
     
     // Special properties of the project
     public static final String J2SE_PROJECT_NAME = "j2se.project.name"; // NOI18N
@@ -242,7 +251,13 @@ public class J2SEProjectProperties {
                 
         // CustomizerCompile
         JAVAC_DEPRECATION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVAC_DEPRECATION );
-        JAVAC_DEBUG_MODEL = privateGroup.createToggleButtonModel( evaluator, JAVAC_DEBUG );
+                
+        //Hotfix of the issue #70058
+        //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+        Integer[] kind = new Integer[1];
+        JAVAC_DEBUG_MODEL = createToggleButtonModel( evaluator, JAVAC_DEBUG, kind);
+        javacDebugBooleanKind = kind[0];
+        
         NO_DEPENDENCIES_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, NO_DEPENDENCIES );
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
         
@@ -261,7 +276,11 @@ public class J2SEProjectProperties {
         JAVADOC_AUTHOR_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_AUTHOR );
         JAVADOC_VERSION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_VERSION );
         JAVADOC_WINDOW_TITLE_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_WINDOW_TITLE );
-        JAVADOC_PREVIEW_MODEL = privateGroup.createToggleButtonModel( evaluator, JAVADOC_PREVIEW );
+        //Hotfix of the issue #70058
+        //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel        
+        JAVADOC_PREVIEW_MODEL = createToggleButtonModel ( evaluator, JAVADOC_PREVIEW, kind);
+        javadocPreviewBooleanKind = kind[0];
+        
         JAVADOC_ADDITIONALPARAM_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_ADDITIONALPARAM );
         // CustomizerRun
         MAIN_CLASS_MODEL = projectGroup.createStringDocument( evaluator, MAIN_CLASS ); 
@@ -337,6 +356,16 @@ public class J2SEProjectProperties {
         // Standard store of the properties
         projectGroup.store( projectProperties );        
         privateGroup.store( privateProperties );
+        
+        //Hotfix of the issue #70058
+        //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+        //Save javac.debug
+        privateProperties.setProperty(JAVAC_DEBUG, encodeBoolean (JAVAC_DEBUG_MODEL.isSelected(), javacDebugBooleanKind));
+                
+        //Hotfix of the issue #70058
+        //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+        //Save javadoc.preview
+        privateProperties.setProperty(JAVADOC_PREVIEW, encodeBoolean (JAVADOC_PREVIEW_MODEL.isSelected(), javadocPreviewBooleanKind));
                 
         // Save all paths
         projectProperties.setProperty( JAVAC_CLASSPATH, javac_cp );
@@ -524,6 +553,52 @@ public class J2SEProjectProperties {
         d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         d.setOptions(new Object[] {regenerateButton, NotifyDescriptor.CANCEL_OPTION});        
         return DialogDisplayer.getDefault().notify(d) == regenerateButton;
+    }
+    
+    //Hotfix of the issue #70058
+    //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+    private static String encodeBoolean (boolean value, Integer kind) {
+        if ( kind == BOOLEAN_KIND_ED ) {
+            return value ? "on" : "off"; // NOI18N
+        }
+        else if ( kind == BOOLEAN_KIND_YN ) { // NOI18N
+            return value ? "yes" : "no";
+        }
+        else {
+            return value ? "true" : "false"; // NOI18N
+        }
+    }
+    
+    //Hotfix of the issue #70058
+    //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+    private static JToggleButton.ToggleButtonModel createToggleButtonModel (final PropertyEvaluator evaluator, final String propName, Integer[] kind) {
+        assert evaluator != null && propName != null && kind != null && kind.length == 1;
+        String value = evaluator.getProperty( propName );
+        boolean isSelected = false;
+        if (value == null) {
+            isSelected = true;
+        }
+        else {
+           String lowercaseValue = value.toLowerCase();
+           if ( lowercaseValue.equals( "yes" ) || lowercaseValue.equals( "no" ) ) { // NOI18N
+               kind[0] = BOOLEAN_KIND_YN;
+           }
+           else if ( lowercaseValue.equals( "on" ) || lowercaseValue.equals( "off" ) ) { // NOI18N
+               kind[0] = BOOLEAN_KIND_ED;
+           }
+           else {
+               kind[0] = BOOLEAN_KIND_TF;
+           }
+
+           if ( lowercaseValue.equals( "true") || // NOI18N
+                lowercaseValue.equals( "yes") ||  // NOI18N
+                lowercaseValue.equals( "on") ) {  // NOI18N
+               isSelected = true;                   
+           } 
+        }
+        JToggleButton.ToggleButtonModel bm = new JToggleButton.ToggleButtonModel();
+        bm.setSelected(isSelected );
+        return bm;
     }
     
 }
