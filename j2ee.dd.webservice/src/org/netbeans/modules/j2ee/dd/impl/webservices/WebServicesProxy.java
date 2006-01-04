@@ -361,6 +361,13 @@ public class WebServicesProxy implements Webservices {
     public void write(java.io.OutputStream os) throws java.io.IOException {
         if (webSvc != null) {
             writing = true;
+            if (webSvc instanceof org.netbeans.modules.j2ee.dd.impl.webservices.model_1_1.Webservices) {
+                org.netbeans.modules.j2ee.dd.impl.webservices.model_1_1.Webservices webSvcImpl = 
+                    (org.netbeans.modules.j2ee.dd.impl.webservices.model_1_1.Webservices)webSvc;
+                if (webSvcImpl._getSchemaLocation()==null) {
+                    webSvcImpl._setSchemaLocation("http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/j2ee_web_services_1_1.xsd");
+                }
+            }
             webSvc.write(os);
         }
     }

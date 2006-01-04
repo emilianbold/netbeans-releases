@@ -32,7 +32,6 @@ Microsystems, Inc. All Rights Reserved.
      <echo message="generating code generation input file information" />
 
 	<schema2beans schema="${s2b_res_root}/j2ee_web_services_1_1.xsd"
-      readBeanGraph="src/org/netbeans/modules/j2ee/dd/impl/resources/beangraph.xml" 
  	  mddFile="${s2b_res_root}/j2ee_web_services_1_1.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.webservices.model_1_1"
       schemaType="xmlschema"

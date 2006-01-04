@@ -57,14 +57,12 @@
 		<bean-name>PortComponentType</bean-name>
                 <implements>org.netbeans.modules.j2ee.dd.api.webservices.PortComponent</implements>
 	</meta-element>
-   <!--
 	<meta-element>
 		<dtd-name>xsdQNameType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>XsdQNameType</bean-name>
-		<wrapper-class>java.lang.String</wrapper-class>
+		<wrapper-class>org.netbeans.modules.schema2beans.QName</wrapper-class>
 	</meta-element>
-    -->
 
 	<meta-element>
 		<dtd-name>fully-qualified-classType</dtd-name>
