@@ -55,7 +55,10 @@ public class ProxyClassPathImplementation implements ClassPathImplementation {
         if (this.resourcesCache == null) {
             ArrayList result = new ArrayList (classPaths.length*10);
             for (int i = 0; i < classPaths.length; i++) {
-                result.addAll (classPaths[i].getResources());
+                List/*<? extends PathResourceImplementation>*/ subPath = classPaths[i].getResources();
+                assert subPath != null : "ClassPathImplementation.getResources() returned null. ClassPathImplementation.class: " 
+                       + classPaths[i].getClass().toString() + " ClassPathImplementation: " + classPaths[i].toString();
+                result.addAll (subPath);
             }
             resourcesCache = Collections.unmodifiableList (result);
         }
