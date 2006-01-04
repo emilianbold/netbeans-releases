@@ -19,9 +19,12 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardPanel;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePanel, ChangeListener {
 
@@ -31,6 +34,8 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
     
     private WizardDescriptor wizardDescriptor;
     
+    private boolean isWaitingForScan = false;
+
     public void addChangeListener(javax.swing.event.ChangeListener l) {
         changeListeners.add(l);
     }
@@ -61,6 +66,19 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
         }
         if (p.getPrimaryKeyClassName().trim().equals("")) { //NOI18N
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"ERR_PrimaryKeyNotEmpty")); //NOI18N
+            return false;
+        }
+        if (JavaMetamodel.getManager().isScanInProgress()) {
+            if (!isWaitingForScan) {
+                isWaitingForScan = true;
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        JavaMetamodel.getManager().waitScanFinished();
+                        fireChangeEvent();
+                    }
+                });
+            }
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SessionEJBWizardPanel.class,"scanning-in-progress")); //NOI18N
             return false;
         }
         String errorMessage = (String) wizardDescriptor.getProperty("WizardPanel_errorMessage");
