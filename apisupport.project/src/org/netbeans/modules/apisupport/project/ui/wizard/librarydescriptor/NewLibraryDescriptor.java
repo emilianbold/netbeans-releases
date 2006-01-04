@@ -116,8 +116,7 @@ final class NewLibraryDescriptor extends BasicWizardIterator {
             FileSystem layerFs = null;
             LayerUtils.LayerHandle handle  = LayerUtils.layerForProject(getProject());
             layerFs = handle.layer(false);
-            assert layerFs != null;
-            return (layerFs.findResource(CreatedModifiedFilesProvider.getLibraryDescriptorEntryPath(getLibraryName())) != null);
+            return (layerFs != null) ? (layerFs.findResource(CreatedModifiedFilesProvider.getLibraryDescriptorEntryPath(getLibraryName())) != null) : false;
         }
                         
         public NewLibraryDescriptor.DataModel cloneMe(WizardDescriptor wiz) {
