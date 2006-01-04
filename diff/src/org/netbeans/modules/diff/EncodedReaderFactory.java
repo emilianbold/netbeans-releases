@@ -427,7 +427,7 @@ public class EncodedReaderFactory {
             }
         }
 
-        if (name.endsWith(".xml") || name.endsWith(".dtd") || name.endsWith(".xsd")) {  // NOI18N
+        if (name.endsWith(".xml") || name.endsWith(".dtd") || name.endsWith(".xsd") || name.endsWith(".xsl")) {  // NOI18N
             InputStream in = null;
             try {
                 in = new BufferedInputStream(new FileInputStream(file), 2048);
