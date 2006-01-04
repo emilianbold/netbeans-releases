@@ -14,15 +14,9 @@
 package org.netbeans.spi.options;
 
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
-import java.lang.reflect.Method;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-
 
 /**
  * Implementation of this class represents one category (like "Fonts & Colors" 

@@ -13,9 +13,6 @@
 
 package org.netbeans.spi.options;
 
-import java.lang.reflect.Method;
-
-
 /**
  * Implementation of this class represents one category (like "Ant" 
  * or "Form Editor") in Miscellaneous Panel of Options Dialog. It should 
