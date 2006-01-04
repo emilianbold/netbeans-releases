@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,16 +22,16 @@ import java.util.*;
 import org.openide.filesystems.FileUtil;
 
 public class ${CLASS_NAME} extends LayoutTestCase {
-        
+
     public ${CLASS_NAME}(String name) {
         super(name);
         try {
 	    className = this.getClass().getName();
-	    className = className.substring(className.lastIndexOf('.') + 1, className.length());	    
+	    className = className.substring(className.lastIndexOf('.') + 1, className.length());
             startingFormFile = FileUtil.toFileObject(new File(url.getFile() + goldenFilesPath + className + "-StartingForm.form").getCanonicalFile());
         } catch (IOException ioe) {
             fail(ioe.toString());
         }
     }
-    
+
 }
