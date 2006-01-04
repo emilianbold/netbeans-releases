@@ -137,8 +137,9 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
 
         setLayout(new java.awt.GridBagLayout());
 
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServersCustomizer.class, "ACSD_ServerManager"));
-        servers.setBorder(new javax.swing.border.EtchedBorder());
+        getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/deployment/impl/ui/Bundle").getString("ASCN_ServerManager"));
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_ServerCustomizer"));
+        servers.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         servers.setPreferredSize(new java.awt.Dimension(220, 400));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -150,8 +151,8 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 12, 6, 6);
         add(servers, gridBagConstraints);
-        servers.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ServersCustomizer.class, "ACSN_ServerList"));
-        servers.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServersCustomizer.class, "ACSD_ServerList"));
+        servers.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_InstalledServers"));
+        servers.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_InstalledServers"));
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(ServersCustomizer.class, "CTL_AddServer"));
         addButton.addActionListener(new java.awt.event.ActionListener() {
@@ -165,7 +166,8 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 0);
         add(addButton, gridBagConstraints);
-        addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServersCustomizer.class, "ACSD_AddServer"));
+        addButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_AddServer"));
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_AddServer"));
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(ServersCustomizer.class, "CTL_Remove"));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -179,7 +181,8 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 6);
         add(removeButton, gridBagConstraints);
-        removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServersCustomizer.class, "ACSD_Remove"));
+        removeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_Remove"));
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_Remove"));
 
         cards.setLayout(new java.awt.CardLayout());
 
@@ -190,6 +193,8 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         jPanel1.add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_ServerName"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_ServerName"));
 
         serverName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -199,7 +204,8 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(serverName, gridBagConstraints);
-        serverName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServersCustomizer.class, "ACSD_ServerName"));
+        serverName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_ServerName"));
+        serverName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_ServerName"));
 
         jLabel2.setLabelFor(serverType);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(ServersCustomizer.class, "CTL_ServerType"));
@@ -207,6 +213,8 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 0);
         jPanel1.add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_ServerType"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_Server Type"));
 
         serverType.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -216,7 +224,8 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 0);
         jPanel1.add(serverType, gridBagConstraints);
-        serverType.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServersCustomizer.class, "ACSD_ServerType"));
+        serverType.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_ServerType"));
+        serverType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_Server Type"));
 
         clientArea.setLayout(new java.awt.GridBagLayout());
 
@@ -254,9 +263,10 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(serversLabel, gridBagConstraints);
+        serversLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "LBL_Servers"));
+        serversLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/deployment/impl/ui/Bundle").getString("ACSD_ServerList"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void removeServer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeServer
         Node[] nodes = getExplorerManager().getSelectedNodes();
@@ -277,6 +287,8 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
     private void addServer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServer
         AddServerInstanceWizard wizard = new AddServerInstanceWizard();
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(wizard);
+        dialog.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ServersCustomizer.class, "ACSD_Add_Server_Instance"));
         dialog.setVisible(true);
         if (wizard.getValue() == WizardDescriptor.FINISH_OPTION) {
             getChildren().refreshServers();

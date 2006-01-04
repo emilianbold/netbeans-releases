@@ -33,6 +33,8 @@ public class AddServerInstanceAction extends NodeAction {
         Dialog dialog = null;
         try {
             dialog = DialogDisplayer.getDefault().createDialog(wizard);
+            dialog.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(AddServerInstanceAction.class, "ACSD_Add_Server_Instance"));
             dialog.setVisible(true);
         } finally {
             if (dialog != null) {
