@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,10 +22,6 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.JEditorPane;
@@ -36,6 +32,7 @@ import javax.swing.text.StyledDocument;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
+import org.openide.ErrorManager;
 
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.CloseCookie;
@@ -84,15 +81,9 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     /** New lines in this file was delimited by '\r\n'. */
     private static final byte NEW_LINE_RN = 2;
     
-    /** set of opened <code>PropertiesEditorSupport</code>s */
-    private static Set/*<PropertiesEditorSupport>*/ opened
-	    = Collections.synchronizedSet(
-		    new HashSet/*<PropertiesEditorSupport>*/());
+    /** */
+    private FileStatusListener fsStatusListener;
     
-    /** registry of <code>FileStatusListener</code>s for filesystems */
-    private static Map/*<FileSystem, FileStatusListener>*/ fileStatusListeners
-							   = new HashMap();
-
     /** The type of new lines. Default is <code>NEW_LINE_N</code>. */
     private byte newLineType = NEW_LINE_N;
     
@@ -139,92 +130,62 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @return the {@link CloneableEditor} for this support
      */
     protected CloneableEditor createCloneableEditor() {
-        PropertiesEditor editor = new PropertiesEditor(this);
-	
-	try {
-            attachStatusListener(myEntry.getFile().getFileSystem());
-        } catch (FileStateInvalidException ex) {
-            ex.printStackTrace();
-        }
-
-	return editor;
+        return new PropertiesEditor(this);
     }
     
     /**
      *
      */
-    static final class FsStatusListener implements FileStatusListener, Runnable {
-        
-        /** */
-        private final PropertiesEditorSupport supp;
-        
-        /**
-         */
-        private FsStatusListener() {
-            this(null);
-        }
-        
-        /**
-         */
-        private FsStatusListener(PropertiesEditorSupport supp) {
-            this.supp = supp;
-        }
+    final class FsStatusListener implements FileStatusListener, Runnable {
         
 	/**
 	 */
 	public void annotationChanged(FileStatusEvent ev) {
-	    Iterator iter = opened.iterator();
-	    while (iter.hasNext()) {
-		PropertiesEditorSupport supp = (PropertiesEditorSupport)
-					       iter.next();
-		if (ev.hasChanged(supp.myEntry.getFile())) {
-		    Mutex.EVENT.writeAccess(new FsStatusListener(supp));
-		}
-	    }
+            if (ev.isNameChange() && ev.hasChanged(myEntry.getFile())) {
+                Mutex.EVENT.writeAccess(this);
+            }
 	}
         
 	/**
 	 */
 	public void run() {
-	    supp.updateEditorDisplayNames();
+	    updateEditorDisplayNames();
 	}
     }
     
     /**
      */
-    private void attachStatusListener(FileSystem fs) {
-        FileStatusListener l = (FileStatusListener) fileStatusListeners.get(fs);
-        if (l == null) {
-            l = new FsStatusListener();
-            fs.addFileStatusListener(l);
-            fileStatusListeners.put(fs, l);
-        } // else do nothing - the listener is already added
-    }
-    
-    /**
-     */
-    private void detachStatusListeners() {
-        Iterator i = fileStatusListeners.entrySet().iterator();
-        while (i.hasNext()) {
-            Map.Entry entry = (Map.Entry) i.next();
-            FileSystem fs = (FileSystem) entry.getKey();
-            FileStatusListener l = (FileStatusListener) entry.getValue();
-            fs.removeFileStatusListener(l);
+    private void attachStatusListener() {
+        if (fsStatusListener != null) {
+            return;                 //already attached
         }
-        fileStatusListeners.clear();
+        
+        FileSystem fs;
+        try {
+            fs = myEntry.getFile().getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            return;
+        }
+        
+        fsStatusListener = new FsStatusListener();
+        fs.addFileStatusListener(
+                FileUtil.weakFileStatusListener(fsStatusListener, fs));
     }
     
     /**
      */
     private void updateEditorDisplayNames() {
-	assert EventQueue.isDispatchThread();
-	
-	final String title = messageName();
-	Enumeration en = allEditors.getComponents();
-	while (en.hasMoreElements()) {
-	    TopComponent tc = (TopComponent) en.nextElement();
-	    tc.setDisplayName(title);
-	}
+        assert EventQueue.isDispatchThread();
+        
+        final String title = messageName();
+        final String htmlTitle = messageHtmlName();
+        Enumeration en = allEditors.getComponents();
+        while (en.hasMoreElements()) {
+            TopComponent tc = (TopComponent) en.nextElement();
+            tc.setDisplayName(title);
+            tc.setHtmlDisplayName(htmlTitle);
+        }
     }
     
     /**
@@ -347,16 +308,11 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      */
     public void open() {
 	super.open();
-	opened.add(this);
+	attachStatusListener();
     }
     
     /** Overrides superclass method. Adds checking for opened Table panel. */
     protected void notifyClosed() {
-	opened.remove(this);
-	if (opened.isEmpty()) {
-	    detachStatusListeners();
-	}
-
         // Close document only in case there is not open table editor.
         if(!hasOpenedTableComponent()) {
             boolean wasModified = isModified();
@@ -399,7 +355,25 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             name
        );
     }
-
+    
+    /**
+     */
+    private String getRawMessageName() {
+        return myEntry.getDataObject().getName()        
+               + '(' + Util.getLocaleLabel(myEntry) + ')';
+    }
+    
+    /**
+     */
+    private String addModifiedInfo(String name) {
+        int version = isModified() ? (myEntry.getFile().canWrite() ? 1 : 2)
+                                   : (myEntry.getFile().canWrite() ? 3 : 0);
+        return NbBundle.getMessage(PropertiesEditorSupport.class,
+                                   "LBL_EditorName",                    //NOI18N
+                                   new Integer(version),
+                                   name);
+    }
+    
     /** 
      * Overrides superclass abstract method. 
      * Constructs message that should be used to name the editor component.
@@ -409,44 +383,46 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         if (!myEntry.getDataObject().isValid()) {
             return "";                                                  //NOI18N       
         }
+        
+        return addModifiedInfo(getRawMessageName());
+    }
 
-        String rawName = myEntry.getDataObject().getName()        
-                      + '(' + Util.getLocaleLabel(myEntry) + ')';
+    /** */
+    protected String messageHtmlName () {
+        if (!myEntry.getDataObject().isValid()) {
+            return null;
+        }
+
+        String rawName = getRawMessageName();
         
         String annotatedName = null;
         final FileObject entry = myEntry.getFile();
         try {
             FileSystem.Status status = entry.getFileSystem().getStatus();
-            if (status == null) {
-                return rawName;
-            }
-            
-            Set files = Collections.singleton(entry);
-            if (status instanceof FileSystem.HtmlStatus) {
-                FileSystem.HtmlStatus hStatus = (FileSystem.HtmlStatus) status;
-                annotatedName = hStatus.annotateNameHtml(rawName, files);
-                if (rawName.equals(annotatedName)) {
-                    annotatedName = null;
+            if (status != null) {
+                Set files = Collections.singleton(entry);
+                if (status instanceof FileSystem.HtmlStatus) {
+                    FileSystem.HtmlStatus hStatus = (FileSystem.HtmlStatus)
+                                                    status;
+                    annotatedName = hStatus.annotateNameHtml(rawName, files);
+                    if (rawName.equals(annotatedName)) {
+                        annotatedName = null;
+                    }
+                    if ((annotatedName != null)
+                            && (!annotatedName.startsWith("<html>"))) { //NOI18N
+                        annotatedName = "<html>" + annotatedName;       //NOI18N
+                    }
                 }
-                if ((annotatedName != null)
-                        && (!annotatedName.startsWith("<html>"))) {     //NOI18N
-                    annotatedName = "<html>" + annotatedName;           //NOI18N
+                if (annotatedName == null) {
+                    annotatedName = status.annotateName(rawName, files);
                 }
-            }
-            if (annotatedName == null) {
-                annotatedName = status.annotateName(rawName, files);
             }
         } catch (FileStateInvalidException ex) {
             //do nothing and fall through
         }
         
         String name = (annotatedName != null) ? annotatedName : rawName;
-        int version = isModified() ? (myEntry.getFile().canWrite() ? 1 : 2)
-                                   : (myEntry.getFile().canWrite() ? 3 : 0);
-        return NbBundle.getMessage(PropertiesEditorSupport.class,
-                                   "LBL_EditorName",                    //NOI18N
-                                   new Integer(version),
-                                   name);
+        return addModifiedInfo(name);
     }
     
     /** 

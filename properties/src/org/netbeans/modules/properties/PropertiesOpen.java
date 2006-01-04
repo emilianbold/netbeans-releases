@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -555,15 +555,6 @@ public class PropertiesOpen extends CloneableOpenSupport
     /** Cloneable top component which represents table view of resource bundles. */
     public static class PropertiesCloneableTopComponent extends CloneableTopComponent {
 
-        /** set of opened <code>PropertiesCloneableTopComponent</code>s */
-        private static Set/*<PropertiesCloneableTopComponent>*/ opened
-                = Collections.synchronizedSet(
-                        new HashSet/*<PropertiesCloneableTopComponent>*/());
-
-        /** registry of <code>FileStatusListener</code>s for filesystems */
-        private static Map/*<FileSystem, FileStatusListener>*/ fileStatusListeners
-                                                               = new HashMap();
-
         /** Reference to underlying <code>PropertiesDataObject</code>. */
         private PropertiesDataObject propDataObject;
         
@@ -574,32 +565,6 @@ public class PropertiesOpen extends CloneableOpenSupport
         /** Generated serial version UID. */
         static final long serialVersionUID =2836248291419024296L;
         
-        
-        /**
-         */
-        private static void attachStatusListener(FileSystem fs) {
-            FileStatusListener l = (FileStatusListener)
-                                   fileStatusListeners.get(fs);
-            if (l == null) {
-                l = new StatusUpdater();
-                fs.addFileStatusListener(l);
-                fileStatusListeners.put(fs, l);
-            } // else do nothing - the listener is already added
-        }
-
-        /**
-         */
-        private static void detachStatusListeners() {
-            Iterator i = fileStatusListeners.entrySet().iterator();
-            while (i.hasNext()) {
-                Map.Entry entry = (Map.Entry) i.next();
-                FileSystem fs = (FileSystem) entry.getKey();
-                FileStatusListener l = (FileStatusListener) entry.getValue();
-                fs.removeFileStatusListener(l);
-            }
-            fileStatusListeners.clear();
-        }
-
         
         /** Default constructor for deserialization. */
         public PropertiesCloneableTopComponent() {
@@ -636,18 +601,18 @@ public class PropertiesOpen extends CloneableOpenSupport
         private void initialize() {
             initComponents();
             setupActions();
-            updateName();
 
             dataObjectListener = new NameUpdater();
             propDataObject.addPropertyChangeListener(
                     WeakListeners.propertyChange(dataObjectListener,
                                                  propDataObject));
+            
+            updateName();
         }
         
-        /**
-         *
-         */
+        /* Based on class DataNode.PropL. */
         final class NameUpdater implements PropertyChangeListener,
+                                           FileStatusListener,
                                            Runnable {
             
             /** */
@@ -657,6 +622,11 @@ public class PropertiesOpen extends CloneableOpenSupport
             /** */
             private static final int ACTION_UPDATE_DISPLAY_NAME = 2;
             
+            /** weak version of this listener */
+            private FileStatusListener weakL;
+            /** previous filesystem we were attached to */
+            private FileSystem previous;
+            
             /** */
             private final int action;
             
@@ -664,12 +634,53 @@ public class PropertiesOpen extends CloneableOpenSupport
              */
             NameUpdater() {
                 this(NO_ACTION);
+                updateStatusListener();
             }
             
             /**
              */
             NameUpdater(int action) {
                 this.action = action;
+            }
+            
+            /** Updates listening on a status of filesystem. */
+            private void updateStatusListener() {
+                if (previous != null) {
+                    previous.removeFileStatusListener(weakL);
+                }
+                try {
+                    previous = propDataObject.getPrimaryFile().getFileSystem();
+                    if (weakL == null) {
+                        weakL = org.openide.filesystems.FileUtil
+                                .weakFileStatusListener(this, previous);
+                    }
+                    previous.addFileStatusListener(weakL);
+                } catch (FileStateInvalidException ex) {
+                    previous = null;
+                }
+            }
+            
+            /**
+             * Notifies listener about change in annotataion of a few files.
+             */
+            public void annotationChanged(FileStatusEvent ev) {
+                if (!ev.isNameChange()) {
+                    return;
+                }
+                
+                boolean thisChanged = false;
+                Iterator it = propDataObject.files().iterator();
+                while (it.hasNext()) {
+                    FileObject fo = (FileObject)it.next();
+                    if (ev.hasChanged(fo)) {
+                        thisChanged = true;
+                        break;
+                    }
+                }
+                if (thisChanged) {
+                    Mutex.EVENT.writeAccess(
+                            new NameUpdater(ACTION_UPDATE_DISPLAY_NAME));
+                }
             }
             
             /**
@@ -680,6 +691,10 @@ public class PropertiesOpen extends CloneableOpenSupport
                     return;
                 }
                 if (property.equals(DataObject.PROP_NAME)) {
+                    Mutex.EVENT.writeAccess(
+                            new NameUpdater(ACTION_UPDATE_NAME));
+                } else if (property.equals(DataObject.PROP_PRIMARY_FILE)) {
+                    updateStatusListener();
                     Mutex.EVENT.writeAccess(
                             new NameUpdater(ACTION_UPDATE_NAME));
                 } else if (property.equals(DataObject.PROP_COOKIE)
@@ -706,55 +721,6 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
         
         /**
-         *
-         */
-        static final class StatusUpdater implements FileStatusListener,
-                                                    Runnable {
-            
-            /** */
-            private final PropertiesCloneableTopComponent tc;
-            
-            /**
-             */
-            private StatusUpdater() {
-                this(null);
-            }
-            
-            /**
-             */
-            private StatusUpdater(PropertiesCloneableTopComponent tc) {
-                this.tc = tc;
-            }
-            
-            /**
-             */
-            public void annotationChanged(FileStatusEvent e) {
-                for (Iterator i = opened.iterator(); i.hasNext(); ) {
-                    PropertiesCloneableTopComponent topComp
-                            = (PropertiesCloneableTopComponent) i.next();
-                    PropertiesDataObject propDO = topComp.propDataObject;
-                    final Set/*<FileObject>*/ files = propDO.files();
-                    for (Iterator j = files.iterator(); j.hasNext(); ) {
-                        if (e.hasChanged((FileObject) j.next())) {
-                            Mutex.EVENT.writeAccess(
-                                  new StatusUpdater(topComp));
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            /**
-             */
-            public void run() {
-                assert EventQueue.isDispatchThread();
-                
-                tc.updateDisplayName();
-            }
-            
-        }
-        
-        /**
          * Sets up action Find that it is activated/deactivated appropriately
          * and so that it does what it should do.
          */
@@ -769,8 +735,11 @@ public class PropertiesOpen extends CloneableOpenSupport
         /**
          */
         private void updateName() {
+            assert EventQueue.isDispatchThread();
+            
             final String name = propDataObject.getName();
             final String displayName = displayName();
+            final String htmlDisplayName = htmlDisplayName();
             final String toolTip = messageToolTip();
             
             Enumeration en = getReference().getComponents();
@@ -778,6 +747,7 @@ public class PropertiesOpen extends CloneableOpenSupport
                 TopComponent tc = (TopComponent) en.nextElement();
                 tc.setName(name);
                 tc.setDisplayName(displayName);
+                tc.setHtmlDisplayName(htmlDisplayName);
                 tc.setToolTipText(toolTip);
             }
         }
@@ -788,11 +758,13 @@ public class PropertiesOpen extends CloneableOpenSupport
             assert EventQueue.isDispatchThread();
             
             final String displayName = displayName();
+            final String htmlDisplayName = htmlDisplayName();
             
             Enumeration en = getReference().getComponents();
             while (en.hasMoreElements()) {
                 TopComponent tc = (TopComponent) en.nextElement();
                 tc.setDisplayName(displayName);
+                tc.setHtmlDisplayName(htmlDisplayName);
             }
         }
         
@@ -800,8 +772,19 @@ public class PropertiesOpen extends CloneableOpenSupport
          * Builds a display name for this component.
          *
          * @return  the created display name
+         * @see  #htmlDisplayName
          */
         private String displayName() {
+            return  propDataObject.getNodeDelegate().getDisplayName();
+        }
+        
+        /**
+         * Builds a HTML display name for this component.
+         *
+         * @return  the created display name
+         * @see  #displayName()
+         */
+        private String htmlDisplayName() {
             final Node node = propDataObject.getNodeDelegate();
             String displayName = node.getHtmlDisplayName();
             if (displayName != null) {
@@ -819,20 +802,6 @@ public class PropertiesOpen extends CloneableOpenSupport
             FileObject fo = propDataObject.getPrimaryFile();
             return FileUtil.getFileDisplayName(fo);
         }
-
-        /**
-         */
-        protected void componentOpened() {
-            super.componentOpened();
-            
-            opened.add(this);
-            try {
-                attachStatusListener(
-                        propDataObject.getPrimaryFile().getFileSystem());
-            } catch (FileStateInvalidException ex) {
-                ex.printStackTrace();
-            }
-        }
         
         /** 
          * Overrides superclass method. When closing last view, also close the document.
@@ -843,12 +812,6 @@ public class PropertiesOpen extends CloneableOpenSupport
                 // if we cannot close the last window
                 return false;
             }
-
-            opened.remove(this);
-            if (opened.isEmpty()) {
-                detachStatusListeners();
-            }
-
             propDataObject.getOpenSupport().closeDocuments();
 
             return true;
