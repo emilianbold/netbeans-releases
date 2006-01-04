@@ -673,7 +673,7 @@ public final class ParseProjectXml extends Task {
                 String pubpkgs = attr.getValue("OpenIDE-Module-Public-Packages");
                 if ("-".equals(pubpkgs)) {
                     throw new BuildException("The module " + depJar + " has no public packages and so cannot be compiled against", getLocation());
-                } else if (pubpkgs != null && !runtime) {
+                } else if (pubpkgs != null && !runtime && publicPackageJarDir != null) {
                     File splitJar = createPublicPackageJar(additions, pubpkgs, publicPackageJarDir, cnb);
                     additions.clear();
                     additions.add(splitJar);
@@ -744,6 +744,9 @@ public final class ParseProjectXml extends Task {
      * @see "#59792"
      */
     private File createPublicPackageJar(List/*<File>*/ jars, String pubpkgs, File dir, String cnb) throws IOException {
+        if (!dir.isDirectory()) {
+            throw new IOException("No such directory " + dir);
+        }
         File ppjar = new File(dir, cnb.replace('.', '-') + ".jar");
         if (ppjar.exists()) {
             // Check if it is up to date first. Must be as new as any input JAR.
