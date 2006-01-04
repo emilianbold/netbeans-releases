@@ -98,8 +98,6 @@ public class FormModel
         if (java.awt.Component.class.isAssignableFrom(formClass)) {
             if (FormUtils.isContainer(formClass)) {
                 topComp = new RADVisualFormContainer();
-                layoutModel = new LayoutModel();
-                layoutModel.setChangeRecording(false);
             }
             else {
                 topComp = new RADVisualComponent() {
@@ -124,6 +122,8 @@ public class FormModel
 
         formBaseClass = formClass;
 //        topRADComponent = topComp;
+        layoutModel = new LayoutModel();
+        layoutModel.setChangeRecording(false);
     }
 
     public Class getFormBaseClass() {

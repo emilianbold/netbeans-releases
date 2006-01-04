@@ -153,7 +153,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private String formatVersion; // format version for saving the form file
 
-    private boolean newLayout; // whether a new layout support was loaded
+    private Boolean newLayout; // whether a new layout support was loaded
     
     /** This method is used to check if the persistence manager can read the
      * given form (if it understands the form file format).
@@ -408,7 +408,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         this.formModel = formModel;
         this.nonfatalErrors = nonfatalErrors;
-        this.newLayout = false;
+        this.newLayout = null;
 
         formModel.setName(javaFile.getName());
 
@@ -424,8 +424,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
            connectedProperties = null;    
         }        
                 
-        if ((newLayout) && (!underTest)) { // for sure update project classpath with layout extensions library
+        if (Boolean.TRUE.equals(newLayout) && (!underTest)) { // for sure update project classpath with layout extensions library
             FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
+        }
+        if (!Boolean.FALSE.equals(newLayout)) {
+            formModel.setFreeDesignDefaultLayout(true);
         }
 
         // final cleanup
@@ -736,7 +739,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if ((visualContainer != null) && (convIndex == LAYOUT_NATURAL)) {
             visualContainer.setOldLayoutSupport(false);
-            formModel.setFreeDesignDefaultLayout(true);
             LayoutModel layoutModel = formModel.getLayoutModel();
             Map nameToIdMap = new HashMap();
             for (int i=0; i<childComponents.length; i++) {
@@ -744,7 +746,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 nameToIdMap.put(comp.getName(), comp.getId());
             }
             layoutModel.loadModel(visualContainer.getId(), layoutNode.getChildNodes(), nameToIdMap);
-            newLayout = true;
+            newLayout = Boolean.TRUE;
         }
 
         // initialize layout support from restored code
@@ -777,7 +779,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         if (SwingLayoutBuilder.isRelevantContainer(cont)) {
                             // acknowledged by SwingLayoutBuilder - this is new layout
                             visualContainer.setOldLayoutSupport(false);
-                            formModel.setFreeDesignDefaultLayout(true);
                             java.awt.Dimension prefSize = cont.getPreferredSize();
                             java.awt.Insets insets = cont.getInsets();
                             int w = prefSize != null ? prefSize.width - insets.left - insets.right : 100;
@@ -785,7 +786,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             formModel.getLayoutModel().addRootComponent(
                                 new LayoutComponent(visualContainer.getId(), true, w, h));
                             layoutSupport = null;
-                            newLayout = true;
+                            newLayout = Boolean.TRUE;
                         }
                         else {
                             layoutSupport.setUnknownLayoutDelegate(true);
@@ -840,6 +841,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
             visualContainer.initSubComponents(childComponents);
             if (layoutSupport != null) {
+                if (newLayout == null) {
+                    newLayout = Boolean.FALSE;
+                }
                 try { // some weird problems might occur - see issue 67890
                     layoutSupport.updatePrimaryContainer();
                 }

@@ -226,7 +226,10 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             Rectangle visible = new Rectangle(0, 0, parent.getWidth(), parent.getHeight());
             visible = convertVisibleRectangleFromComponent(visible, parent);
 
-            if (inLayout) {
+            if (inLayout && formDesigner.isInDesignedTree(metacont)
+                && metacont instanceof RADVisualContainer
+                && ((RADVisualContainer)metacont).getLayoutSupport() == null)
+            {   // component in free design container - layout designer may want to paint something
                 Container topCont = formDesigner.getTopVisualContainer();
                 Point convertPoint = convertPointFromComponent(0, 0, topCont);
                 g.translate(convertPoint.x, convertPoint.y);
