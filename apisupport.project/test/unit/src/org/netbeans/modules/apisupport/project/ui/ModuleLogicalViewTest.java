@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -47,7 +47,7 @@ public class ModuleLogicalViewTest extends TestBase {
     }
     
     public void testImportantFilesListening() throws Exception {
-        Project p = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        Project p = generateStandaloneModule("module");
         LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
         Node root = lvp.createLogicalView();

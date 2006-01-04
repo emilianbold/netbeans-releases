@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project.suite;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -100,6 +101,16 @@ public class SuiteProjectTest extends NbTestCase {
         
         assertEquals("nbplatform.active change took effect", "default", eval.getProperty("nbplatform.active"));
         assertEquals("#67628: netbeans.dest.dir change did as well", NbPlatform.getDefaultPlatform().getDestDir(), suite.getHelper().resolveFile(eval.getProperty("netbeans.dest.dir")));
+    }
+    
+    /**
+     * Accessor method for those who wish to simulate open of a project and in
+     * case of suite for example generate the build.xml.
+     */
+    public static void openSuite(final Project p) {
+        SuiteProject.OpenedHook hook = (SuiteProject.OpenedHook) p.getLookup().lookup(SuiteProject.OpenedHook.class);
+        assertNotNull("has an OpenedHook", hook);
+        hook.projectOpened(); // protected but can use package-private access
     }
     
 }

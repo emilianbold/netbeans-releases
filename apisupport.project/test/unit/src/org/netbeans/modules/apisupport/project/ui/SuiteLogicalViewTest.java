@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.suite.SuiteProjectGeneratorTest;
+import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
 import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView.SuiteRootNode;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -46,7 +46,7 @@ public class SuiteLogicalViewTest extends TestBase {
     }
     
     public void testModulesNode() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        SuiteProject suite1 = generateSuite("suite1");
         TestBase.generateSuiteComponent(suite1, "module1a");
         Node modulesNode = new SuiteLogicalView.ModulesNode(suite1);
         assertEquals("one children", 1, modulesNode.getChildren().getNodes(true).length);
@@ -56,7 +56,7 @@ public class SuiteLogicalViewTest extends TestBase {
     }
     
     public void testNameAndDisplayName() throws Exception {
-        SuiteProject p = TestBase.generateSuite(getWorkDir(), "Sweet Stuff");
+        SuiteProject p = generateSuite("Sweet Stuff");
         Node n = ((LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class)).createLogicalView();
         assertEquals("Sweet_Stuff", n.getName());
         assertEquals("Sweet Stuff", n.getDisplayName());
@@ -72,9 +72,9 @@ public class SuiteLogicalViewTest extends TestBase {
     }
     
     public void testProjectFiles() throws Exception {
-        SuiteProject suite = TestBase.generateSuite(getWorkDir(), "suite");
+        SuiteProject suite = generateSuite("suite");
         TestBase.generateSuiteComponent(suite, "module");
-        SuiteProjectGeneratorTest.openProject(suite);
+        SuiteProjectTest.openSuite(suite);
         SuiteLogicalView.SuiteRootNode rootNode = (SuiteRootNode) ((LogicalViewProvider)
             suite.getLookup().lookup(LogicalViewProvider.class)).createLogicalView();
         Set expected = new HashSet(Arrays.asList(

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -194,7 +194,7 @@ public class UtilTest extends TestBase {
         File index = new File(oneModuleDoc, "index.html");
         assertTrue(index.createNewFile());
         
-        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject project = generateStandaloneModule("module1");
         NbPlatform platform = project.getPlatform(false);
         URL oneModuleDocURL = Util.urlForDir(oneModuleDoc);
         platform.addJavadocRoot(oneModuleDocURL);

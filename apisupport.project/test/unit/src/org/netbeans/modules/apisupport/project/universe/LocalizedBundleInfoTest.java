@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,7 +28,7 @@ public class LocalizedBundleInfoTest extends TestBase {
     }
     
     public void testIsModified() throws Exception {
-        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject p = generateStandaloneModule("module1");
         LocalizedBundleInfo.Provider provider = (LocalizedBundleInfo.Provider) p.getLookup().lookup(LocalizedBundleInfo.Provider.class);
         LocalizedBundleInfo info = provider.getLocalizedBundleInfo();
         assertFalse("just loaded", info.isModified());

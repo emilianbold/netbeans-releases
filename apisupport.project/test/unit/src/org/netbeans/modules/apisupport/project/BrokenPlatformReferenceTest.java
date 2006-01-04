@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,6 +19,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
+import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -111,14 +112,14 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         File d = new File(getWorkDir(), "standalone");
         NbModuleProjectGenerator.createStandAloneModule(d, "x", "X", null, null, NbPlatform.PLATFORM_ID_DEFAULT);
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(d));
-        open(p);
+        p.open();
         assertEquals(Collections.singletonMap("user.properties.file", new File(user, "build.properties").getAbsolutePath()),
                 Util.loadProperties(p.getProjectDirectory().getFileObject("nbproject/private/platform-private.properties")));
         // Same for suite.
         File sd = new File(getWorkDir(), "suite");
         SuiteProjectGenerator.createSuiteProject(sd, NbPlatform.PLATFORM_ID_DEFAULT);
         SuiteProject s = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(sd));
-        open(s);
+        SuiteProjectTest.openSuite(s);
         assertEquals(Collections.singletonMap("user.properties.file", new File(user, "build.properties").getAbsolutePath()),
                 Util.loadProperties(s.getProjectDirectory().getFileObject("nbproject/private/platform-private.properties")));
     }
@@ -134,7 +135,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         NbPlatform pl = p.getPlatform(true); // with fallback=false, who knows what it will be
         assertNotNull(pl);
         assertEquals(install, pl.getDestDir());
-        open(p);
+        p.open();
         assertEquals(Collections.singletonMap("user.properties.file", new File(user, "build.properties").getAbsolutePath()),
                 Util.loadProperties(props));
         assertEquals(pl, p.getPlatform(true));
@@ -152,8 +153,8 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         assertNotNull(pl);
         assertEquals(install, pl.getDestDir());
         assertEquals(pl, p.getPlatform(true));
-        open(s);
-        open(p); // just in case
+        SuiteProjectTest.openSuite(s);
+        p.open(); // just in case
         assertEquals(Collections.singletonMap("user.properties.file", new File(user, "build.properties").getAbsolutePath()),
                 Util.loadProperties(props));
         assertEquals(pl, s.getPlatform(true));
@@ -172,7 +173,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         ModuleEntry e = p.getModuleList().getEntry("core");
         assertNotNull("#67148: can find core.jar from default platform", e);
         assertEquals("correct JAR path", new File(new File(new File(install, "platform"), "core"), "core.jar"), e.getJarLocation());
-        open(p); // check for errors
+        p.open(); // check for errors
     }
     
     // XXX to test, for suite projects, suite component module projects, and standalone projects:
@@ -180,13 +181,5 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
     // - OpenProjectHook fixes, or creates, platform-private.properties to point to current build.properties [in progress; need to test non-default platforms valid in new b.props]
     // - in OPH, platform.properties is fixed to use default if no value for nbplatform.active (and netbeans.dest.dir not independently set!) or points to invalid platform
     // - all problems are notified to user (maybe move ModuleProperties.reportLostPlatform, and change MP.runFromTests)
-    
-    private static void open(NbModuleProject p) {
-        ((NbModuleProject.OpenedHook) p.getLookup().lookup(NbModuleProject.OpenedHook.class)).projectOpened();
-    }
-    
-    private void open(SuiteProject p) {
-        ((SuiteProject.OpenedHook) p.getLookup().lookup(SuiteProject.OpenedHook.class)).projectOpened();
-    }
     
 }

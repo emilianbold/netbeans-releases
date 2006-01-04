@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -67,7 +67,7 @@ public class SingleModulePropertiesTest extends TestBase {
     
     /** Tests few basic properties to be sure that loading works. */
     public void testThatBasicPropertiesAreLoaded() throws Exception {
-        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject p = generateStandaloneModule("module1");
         SingleModuleProperties props = loadProperties(p);
         assertNotNull(props.getActivePlatform());
         assertNotNull("loading bundle info", props.getBundleInfo());
@@ -80,7 +80,7 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     public void testThatPropertiesAreRefreshed() throws Exception {
-        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject p = generateStandaloneModule("module1");
         SingleModuleProperties props = loadProperties(p);
         assertEquals("spec. version", "1.0", props.getSpecificationVersion());
         assertEquals("display name", "Testing Module", props.getBundleInfo().getDisplayName());
@@ -141,7 +141,7 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     public void testThatPropertiesListen() throws Exception {
-        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject p = generateStandaloneModule("module1");
         SingleModuleProperties props = loadProperties(p);
         assertEquals("display name from ProjectInformation", "Testing Module",
                 ProjectUtils.getInformation(p).getDisplayName());
@@ -162,7 +162,7 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     public void testGetPublicPackages() throws Exception {
-        final NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        final NbModuleProject p = generateStandaloneModule("module1");
         FileUtil.createData(p.getSourceDirectory(), "org/example/module1/One.java");
         FileUtil.createData(p.getSourceDirectory(), "org/example/module1/resources/Two.java");
         
@@ -202,7 +202,7 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     public void testThatManifestFormattingIsNotMessedUp_61248() throws Exception {
-        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject p = generateStandaloneModule("module1");
         EditableManifest em = Util.loadManifest(p.getManifestFile());
         em.setAttribute(ManifestManager.OPENIDE_MODULE_REQUIRES, "\n" +
                 "  org.openide.execution.ExecutionEngine,\n" +
@@ -222,7 +222,7 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     public void testNiceFormattingForRequiredTokensInManifest_63516() throws Exception {
-        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject p = generateStandaloneModule("module1");
         EditableManifest em = Util.loadManifest(p.getManifestFile());
         em.setAttribute(ManifestManager.OPENIDE_MODULE_REQUIRES, "\n" +
                 "  org.openide.execution.ExecutionEngine,\n" +
@@ -282,7 +282,7 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     public void testPublicPackagesAreUpToDate_63561() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        SuiteProject suite1 = generateSuite("suite1");
         final NbModuleProject p = TestBase.generateSuiteComponent(suite1, "module1a");
         FileUtil.createData(p.getSourceDirectory(), "org/example/module1a/Dummy.java");
         SingleModuleProperties props = loadProperties(p);
@@ -313,7 +313,7 @@ public class SingleModulePropertiesTest extends TestBase {
     
     /** Test that a module doesn't offer itself in its dependency list. */
     public void testThatTheModuleDoesNotOfferItself_61232() throws Exception {
-        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject p = generateStandaloneModule("module1");
         SingleModuleProperties props = loadProperties(p);
         Set set =  props.getUniverseDependencies(true);
         for (Iterator it = set.iterator() ; it.hasNext() ; ) {
@@ -326,12 +326,12 @@ public class SingleModulePropertiesTest extends TestBase {
     
     public void testGetAvailableFriends() throws Exception {
         // standalone
-        NbModuleProject standAlone = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject standAlone = generateStandaloneModule("module1");
         SingleModuleProperties props = loadProperties(standAlone);
         assertEquals("There are no friends for standalone module.", 0, props.getAvailableFriends().length);
         
         // suitecomponent
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        SuiteProject suite1 = generateSuite("suite1");
         TestBase.generateSuiteComponent(suite1, "component1");
         NbModuleProject component2 = TestBase.generateSuiteComponent(suite1, "component2");
         TestBase.generateSuiteComponent(suite1, "component3");
@@ -345,7 +345,7 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     public void testSimulateLocalizedBundlePackageRefactoring() throws Exception {
-        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject p = generateStandaloneModule("module1");
         SingleModuleProperties props = loadProperties(p);
         assertEquals("display name from ProjectInformation", "Testing Module",
                 ProjectUtils.getInformation(p).getDisplayName());
@@ -375,7 +375,7 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     public void testSimulateIllLocalizedBundlePackageRefactoring_67961() throws Exception {
-        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject p = generateStandaloneModule("module1");
         SingleModuleProperties props = loadProperties(p);
         assertEquals("display name from ProjectInformation", "Testing Module",
                 ProjectUtils.getInformation(p).getDisplayName());
@@ -405,7 +405,7 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     public void testResolveFile() throws Exception {
-        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject p = generateStandaloneModule("module1");
         SingleModuleProperties props = loadProperties(p);
         assertTrue("manifest exist", props.evaluateFile("manifest.mf").exists());
         assertTrue("manifest exist", props.evaluateFile(props.getProjectDirectory() + "/manifest.mf").exists());
@@ -415,7 +415,7 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     public void testThatFilesAreNotTouched_67249() throws Exception {
-        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject p = generateStandaloneModule("module1");
         FileUtil.createData(p.getSourceDirectory(), "org/example/module1/One.java");
         FileUtil.createData(p.getSourceDirectory(), "org/example/module1/resources/Two.java");
         SingleModuleProperties props = loadProperties(p);

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,7 @@ public class ModuleDependencyTest extends TestBase {
     }
     
     public void testCompareTo() throws Exception {
-        NbModuleProject module = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        NbModuleProject module = generateStandaloneModule("module");
         ModuleList ml = ModuleList.getModuleList(FileUtil.toFile(module.getProjectDirectory()));
         ModuleDependency[] deps = new ModuleDependency[] {
             new ModuleDependency(ml.getEntry("org.apache.tools.ant.module")),

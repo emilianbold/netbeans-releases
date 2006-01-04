@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,8 +35,8 @@ public class SuiteUtilsTest extends TestBase {
     }
     
     public void testAddModule() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        NbModuleProject module1 = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        SuiteProject suite1 = generateSuite("suite1");
+        NbModuleProject module1 = generateStandaloneModule("module1");
         SuiteProvider suiteProvider = (SuiteProvider) module1.getLookup().lookup(SuiteProvider.class);
         assertNull("module1 is standalone module - doesn't have valid SuiteProvider", suiteProvider.getSuiteDirectory());
         
@@ -46,8 +46,8 @@ public class SuiteUtilsTest extends TestBase {
         suiteProvider = (SuiteProvider) module1.getLookup().lookup(SuiteProvider.class);
         assertNotNull("module1 became suite component - has valid SuiteProvider", suiteProvider.getSuiteDirectory());
         
-        NbModuleProject module2 = TestBase.generateStandaloneModule(getWorkDir(), "module2");
-        NbModuleProject module3 = TestBase.generateStandaloneModule(getWorkDir(), "module3");
+        NbModuleProject module2 = generateStandaloneModule("module2");
+        NbModuleProject module3 = generateStandaloneModule("module3");
         SuiteUtils.addModule(suite1, module2);
         SuiteUtils.addModule(suite1, module3);
         
@@ -55,7 +55,7 @@ public class SuiteUtilsTest extends TestBase {
     }
     
     public void testRemoveModuleFromSuite() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        SuiteProject suite1 = generateSuite("suite1");
         NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
         SubprojectProvider spp = SuitePropertiesTest.getSubProjectProvider(suite1);
         assertEquals("one module suite component", 1, spp.getSubprojects().size());
@@ -76,15 +76,15 @@ public class SuiteUtilsTest extends TestBase {
     
     /** Simulates scenario when deadlock occurs when playing with 64582. */
     public void testPreventDeadLockWhenAddThenRemoveModule_64582() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        SuiteProject suite1 = generateSuite("suite1");
         NbModuleProject module1 = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         SuiteUtils.addModule(suite1, module1);
         SuiteUtils.removeModuleFromSuite(module1);
     }
     
     public void testAddTwoModulesWithTheSameCNB_62819() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        NbModuleProject module1a = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        SuiteProject suite1 = generateSuite("suite1");
+        NbModuleProject module1a = generateStandaloneModule("module1");
         File otherDir = new File(getWorkDir(), "otherDir");
         otherDir.mkdir();
         NbModuleProject module1b = TestBase.generateStandaloneModule(otherDir, "module1");
@@ -101,9 +101,9 @@ public class SuiteUtilsTest extends TestBase {
     }
     
     public void testGeneratingOfUniqAntProperty_62819() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        NbModuleProject module1 = TestBase.generateStandaloneModule(getWorkDir(), "module1");
-        NbModuleProject module2 = TestBase.generateStandaloneModule(getWorkDir(), "module2");
+        SuiteProject suite1 = generateSuite("suite1");
+        NbModuleProject module1 = generateStandaloneModule("module1");
+        NbModuleProject module2 = generateStandaloneModule("module2");
         
         SuiteUtils.addModule(suite1, module1);
         FileObject propsFO = suite1.getProjectDirectory().getFileObject("nbproject/project.properties");

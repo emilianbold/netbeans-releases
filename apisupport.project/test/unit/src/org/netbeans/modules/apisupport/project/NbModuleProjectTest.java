@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -210,7 +210,7 @@ public class NbModuleProjectTest extends TestBase {
         EditableProperties ep = Util.loadProperties(FileUtil.toFileObject(userPropertiesFile));
         ep.setProperty("platforms.testjdk.home", testjdk.getAbsolutePath());
         Util.storeProperties(FileUtil.toFileObject(userPropertiesFile), ep);
-        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        NbModuleProject p = generateStandaloneModule("module");
         PropertyEvaluator eval = p.evaluator();
         TestBase.TestPCL l = new TestBase.TestPCL();
         eval.addPropertyChangeListener(l);

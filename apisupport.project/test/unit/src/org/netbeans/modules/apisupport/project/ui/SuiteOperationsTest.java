@@ -50,7 +50,7 @@ public class SuiteOperationsTest extends TestBase {
     }
     
     public void testDeleteOfEmptySuite() throws Exception {
-        SuiteProject suite = TestBase.generateSuite(getWorkDir(), "suite");
+        SuiteProject suite = generateSuite("suite");
         SuiteProjectTest.openSuite(suite);
         SuiteActions ap = (SuiteActions) suite.getLookup().lookup(ActionProvider.class);
         assertNotNull("have an action provider", ap);
@@ -76,7 +76,7 @@ public class SuiteOperationsTest extends TestBase {
     }
     
     public void testDeleteOfNonEmptySuite() throws Exception {
-        SuiteProject suite = TestBase.generateSuite(getWorkDir(), "suite");
+        SuiteProject suite = generateSuite("suite");
         NbModuleProject module1 = TestBase.generateSuiteComponent(suite, "module1");
         NbModuleProject module2 = TestBase.generateSuiteComponent(suite, "module2");
         assertEquals("module1 is suite component", NbModuleTypeProvider.SUITE_COMPONENT, Util.getModuleType(module1));

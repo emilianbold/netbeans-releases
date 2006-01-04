@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -47,7 +47,7 @@ public class ModuleOperationsTest extends TestBase {
     }
     
     public void testDelete() throws Exception {
-        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        NbModuleProject project = generateStandaloneModule("module");
         project.open();
         ActionProvider ap = (ActionProvider) project.getLookup().lookup(ActionProvider.class);
         assertNotNull("have an action provider", ap);

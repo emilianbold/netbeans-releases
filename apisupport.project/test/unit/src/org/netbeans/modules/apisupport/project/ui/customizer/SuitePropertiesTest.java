@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -66,7 +66,7 @@ public class SuitePropertiesTest extends TestBase {
     }
     
     public void testPropertiesAreLoaded() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        SuiteProject suite1 = generateSuite("suite1");
         assert suite1 != null;
         NbModuleProject module1a = TestBase.generateSuiteComponent(suite1, "module1a");
         assert module1a != null;
@@ -87,9 +87,9 @@ public class SuitePropertiesTest extends TestBase {
     }
     
     public void testRemoveAllSubModules() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        NbModuleProject module1a = TestBase.generateSuiteComponent(suite1, "module1a");
-        NbModuleProject module1b = TestBase.generateSuiteComponent(suite1, "module1b");
+        SuiteProject suite1 = generateSuite("suite1");
+        TestBase.generateSuiteComponent(suite1, "module1a");
+        TestBase.generateSuiteComponent(suite1, "module1b");
         SuiteProperties suite1Props = getSuiteProperties(suite1);
         
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
@@ -108,8 +108,8 @@ public class SuitePropertiesTest extends TestBase {
     }
     
     public void testAddModule() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
+        SuiteProject suite1 = generateSuite("suite1");
+        TestBase.generateSuiteComponent(suite1, "module1");
         
         SubprojectProvider spp = getSubProjectProvider(suite1);
         SuiteProperties suiteProps = getSuiteProperties(suite1);
@@ -117,8 +117,8 @@ public class SuitePropertiesTest extends TestBase {
         SuiteSubModulesListModel model = suiteProps.getModulesListModel();
         assertEquals("one module suite component", 1, model.getSize());
         
-        NbModuleProject module2ToAdd = TestBase.generateStandaloneModule(getWorkDir(), "module2");
-        NbModuleProject module3ToAdd = TestBase.generateStandaloneModule(getWorkDir(), "module3");
+        NbModuleProject module2ToAdd = generateStandaloneModule("module2");
+        NbModuleProject module3ToAdd = generateStandaloneModule("module3");
         SuiteProvider suiteProvider = (SuiteProvider) module2ToAdd.getLookup().lookup(SuiteProvider.class);
         assertNull("module2ToAdd is standalone module - doesn't have valid SuiteProvider", suiteProvider.getSuiteDirectory());
         model.addModule(module2ToAdd);
@@ -134,9 +134,9 @@ public class SuitePropertiesTest extends TestBase {
     }
     
     public void testRemoveOneSubModule() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        SuiteProject suite1 = generateSuite("suite1");
         NbModuleProject module1a = TestBase.generateSuiteComponent(suite1, "module1a");
-        NbModuleProject module1b = TestBase.generateSuiteComponent(suite1, "module1b");
+        TestBase.generateSuiteComponent(suite1, "module1b");
         SuiteProperties suite1Props = getSuiteProperties(suite1);
         
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
@@ -168,12 +168,12 @@ public class SuitePropertiesTest extends TestBase {
     }
     
     public void testMoveSubModuleBetweenSuites() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        NbModuleProject module1a = TestBase.generateSuiteComponent(suite1, "module1a");
-        NbModuleProject module1b = TestBase.generateSuiteComponent(suite1, "module1b");
-        NbModuleProject module1c = TestBase.generateSuiteComponent(suite1, "module1c");
+        SuiteProject suite1 = generateSuite("suite1");
+        TestBase.generateSuiteComponent(suite1, "module1a");
+        TestBase.generateSuiteComponent(suite1, "module1b");
+        TestBase.generateSuiteComponent(suite1, "module1c");
         
-        SuiteProject suite2 = TestBase.generateSuite(getWorkDir(), "suite2");
+        SuiteProject suite2 = generateSuite("suite2");
         NbModuleProject module2a = TestBase.generateSuiteComponent(suite2, "module2a");
         
         // simulate addition of module2a to the suite1
@@ -201,10 +201,10 @@ public class SuitePropertiesTest extends TestBase {
     }
     
     public void testRemovingSecondModuleFromThree_63307() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
+        SuiteProject suite1 = generateSuite("suite1");
+        TestBase.generateSuiteComponent(suite1, "module1");
         NbModuleProject module2 = TestBase.generateSuiteComponent(suite1, "module2");
-        NbModuleProject module3 = TestBase.generateSuiteComponent(suite1, "module3");
+        TestBase.generateSuiteComponent(suite1, "module3");
         
         SubprojectProvider spp = getSubProjectProvider(suite1);
         SuiteProperties suiteProps = getSuiteProperties(suite1);
@@ -220,7 +220,7 @@ public class SuitePropertiesTest extends TestBase {
     }
     
     public void testRefreshing_63307() throws Exception {
-        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        SuiteProject suite1 = generateSuite("suite1");
         TestBase.generateSuiteComponent(suite1, "module1");
         SubprojectProvider spp = getSubProjectProvider(suite1);
         SuiteProperties suiteProps = getSuiteProperties(suite1);
@@ -242,10 +242,10 @@ public class SuitePropertiesTest extends TestBase {
     }
     
     public void testCustomPropertiesReferences_61318() throws Exception {
-        final SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
-        NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
+        final SuiteProject suite1 = generateSuite("suite1");
+        TestBase.generateSuiteComponent(suite1, "module1");
         NbModuleProject module2 = TestBase.generateSuiteComponent(suite1, "module2");
-        NbModuleProject module3 = TestBase.generateSuiteComponent(suite1, "module3");
+        TestBase.generateSuiteComponent(suite1, "module3");
         
         SubprojectProvider spp = getSubProjectProvider(suite1);
         final SuiteProperties suiteProps = getSuiteProperties(suite1);

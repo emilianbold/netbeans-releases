@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -292,6 +292,14 @@ public abstract class TestBase extends NbTestCase {
     }
     
     /**
+     * Calls in turn {@link TestBase#generateStandaloneModule(File, String)}
+     * with the {@link #getWorkDir()} as a first parameter.
+     */
+    public NbModuleProject generateStandaloneModule(String prjDir) throws IOException {
+        return generateStandaloneModule(getWorkDir(), prjDir);
+    }
+    
+    /**
      * Returns {@link NbModuleProject} created in the {@link
      * #getWorkDir()}/prjDir with code name base default to <em>org.example +
      * dotted prjDir</em> which is also used as the <em>default</em> package so
@@ -329,6 +337,14 @@ public abstract class TestBase extends NbTestCase {
                 "org/example/" + prjDir + "/resources/layer.xml",
                 NbPlatform.PLATFORM_ID_DEFAULT); // platform id
         return FileUtil.toFileObject(prjDirF);
+    }
+    
+    /**
+     * Calls in turn {@link TestBase#generateSuite(File, String)} with the
+     * {@link #getWorkDir()} as a first parameter.
+     */
+    public SuiteProject generateSuite(String prjDir) throws IOException {
+        return generateSuite(getWorkDir(), prjDir);
     }
     
     /** Generates an empty suite which has the default platform set. */

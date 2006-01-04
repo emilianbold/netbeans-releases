@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -71,7 +71,7 @@ public class SourceForBinaryImplTest extends TestBase {
     }
     
     public void testCompletionWorks_69735() throws Exception {
-        SuiteProject suite = TestBase.generateSuite(getWorkDir(), "suite");
+        SuiteProject suite = generateSuite("suite");
         NbModuleProject project = TestBase.generateSuiteComponent(suite, "module");
         File library = new File(getDataDir(), "test-library-0.1_01.jar");
         FileObject libraryFO = FileUtil.toFileObject(library);
