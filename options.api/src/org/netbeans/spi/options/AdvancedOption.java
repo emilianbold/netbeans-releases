@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,7 +27,7 @@ import java.lang.reflect.Method;
  *         &lt;file name="FooAdvancedPanel.instance"&gt;
  *             &lt;attr name="instanceClass" stringvalue="org.foo.FooAdvancedPanel"/&gt;
  *         &lt;/file&gt;
- *     &lt;/file&gt;
+ *     &lt;/folder&gt;
  * &lt;/folder&gt;</pre>
  * 
  * Use standard way how to sort items registered in layers:
@@ -37,7 +37,7 @@ import java.lang.reflect.Method;
  * </pre>
  *
  * @see OptionsCategory
- * @see OptionsCategory.PanelController 
+ * @see OptionsPanelController 
  * @author Jan Jancura
  */
 public abstract class AdvancedOption {
@@ -58,10 +58,10 @@ public abstract class AdvancedOption {
     public abstract String getTooltip ();
     
     /**
-     * Returns {@link PanelController} for this category. PanelController 
+     * Returns {@link OptionsPanelController} for this category. PanelController 
      * creates visual component to be used inside of Advanced Panel.
      *
-     * @return new instance of PanelController for this advanced options 
+     * @return new instance of {@link OptionsPanelController} for this advanced options 
      *         category
      */
     public abstract OptionsPanelController create ();

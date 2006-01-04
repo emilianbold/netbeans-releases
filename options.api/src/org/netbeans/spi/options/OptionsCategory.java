@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -42,7 +42,7 @@ import org.openide.util.Utilities;
  * </pre>
  *
  * @see AdvancedOption
- * @see OptionsCategory.PanelController 
+ * @see OptionsPanelController 
  *
  * @author Jan Jancura
  */
@@ -91,7 +91,7 @@ public abstract class OptionsCategory {
     public abstract String getTitle ();
     
     /**
-     * Returns new {@link PanelController} for this category. PanelController 
+     * Returns new {@link OptionsPanelController} for this category. PanelController 
      * creates visual component to be used inside of the Options Dialog.
      * You should not do any time-consuming operations inside 
      * the constructor, because it blocks initialization of OptionsDialog. 
