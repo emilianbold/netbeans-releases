@@ -13,13 +13,16 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
+import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView.ModulesNode.ModuleChildren;
 import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView.SuiteRootNode;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -27,6 +30,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
+import org.openide.util.Mutex;
 
 /**
  * Test functionality of {@link SuiteLogicalView}.
@@ -51,8 +55,21 @@ public class SuiteLogicalViewTest extends TestBase {
         Node modulesNode = new SuiteLogicalView.ModulesNode(suite1);
         assertEquals("one children", 1, modulesNode.getChildren().getNodes(true).length);
         
+        final ModuleChildren children = (ModuleChildren) modulesNode.getChildren();
+        
         TestBase.generateSuiteComponent(suite1, "module1b");
-        assertEquals("two children", 2, modulesNode.getChildren().getNodes(true).length);
+        children.propertiesChanged(null); // #70914
+        assertEquals("two children", 2, children.getNodes(true).length);
+        
+        TestBase.generateSuiteComponent(suite1, "module1c");
+        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            public Object run() {
+                children.propertiesChanged(null); // #70914
+                return null; // #70914
+            }
+        });
+        EventQueue.invokeAndWait(new Runnable() { public void run() {} });
+        assertEquals("three children", 3, children.getNodes(true).length);
     }
     
     public void testNameAndDisplayName() throws Exception {

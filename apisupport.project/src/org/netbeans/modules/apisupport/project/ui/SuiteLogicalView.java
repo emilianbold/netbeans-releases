@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -182,7 +183,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             return Utilities.loadImage(SUITE_MODULES_OPENED_ICON_PATH);
         }
         
-        private static final class ModuleChildren extends Children.Keys/*<NbModuleProject>*/ implements AntProjectListener {
+        static final class ModuleChildren extends Children.Keys/*<NbModuleProject>*/ implements AntProjectListener {
             
             private final SuiteProject suite;
             
@@ -222,7 +223,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
                 // and updateKeys() --> setKeys() in turn calls Children.MUTEX write access,
                 // deadlock is here, so preventing it...
                 if (ProjectManager.mutex().isWriteAccess()) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             updateKeys();
                         }
