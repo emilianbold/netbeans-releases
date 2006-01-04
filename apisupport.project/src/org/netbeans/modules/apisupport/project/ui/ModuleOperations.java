@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -24,7 +25,9 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.DeleteOperationImplementation;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -41,10 +44,14 @@ public final class ModuleOperations implements DeleteOperationImplementation {
     }
     
     public void notifyDeleting() throws IOException {
+        FileObject buildXML = projectDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+        ActionUtils.runTarget(buildXML, new String[] { ActionProvider.COMMAND_CLEAN }, null).waitFinished();
+        
         NbModuleTypeProvider.NbModuleType type = Util.getModuleType(project);
         if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
             SuiteUtils.removeModuleFromSuite(project);
         }
+        
         project.notifyDeleting();
     }
     
@@ -53,9 +60,10 @@ public final class ModuleOperations implements DeleteOperationImplementation {
     
     public List/*<FileObject>*/ getMetadataFiles() {
         List/*<FileObject>*/ files = new ArrayList();
-        addFile("build.xml", files); // NOI18N
+        addFile(GeneratedFilesHelper.BUILD_XML_PATH, files);
         addFile("manifest.mf", files); // NOI18N
         addFile("nbproject", files); // NOI18N
+        addFile(".cvsignore", files); // NOI18N
         return files;
     }
     

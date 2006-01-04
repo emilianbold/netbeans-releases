@@ -14,10 +14,14 @@
 package org.netbeans.modules.apisupport.project.ui;
 
 import java.util.Arrays;
+import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ProjectOperations;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -27,8 +31,19 @@ import org.openide.filesystems.FileObject;
  */
 public class ModuleOperationsTest extends TestBase {
     
+    static {
+        // #65461: do not try to load ModuleInfo instances from ant module
+        System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
+        LayerTestBase.Lkp.setLookup(new Object[0]);
+    }
+    
     public ModuleOperationsTest(String name) {
         super(name);
+    }
+    
+    protected void setUp() throws Exception {
+        super.setUp();
+        InstalledFileLocatorImpl.registerDestDir(destDirF);
     }
     
     public void testDelete() throws Exception {
@@ -39,10 +54,19 @@ public class ModuleOperationsTest extends TestBase {
         assertTrue("delete action is enabled", ap.isActionEnabled(ActionProvider.COMMAND_DELETE, null));
         
         FileObject prjDir = project.getProjectDirectory();
+        
+        FileObject buildXML = prjDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+        prjDir.createData(".cvsignore");
+        
+        // build project
+        ActionUtils.runTarget(buildXML, new String[] { "compile" }, null).waitFinished();
+        assertNotNull("project was build", prjDir.getFileObject("build"));
+        
         FileObject[] expectedMetadataFiles = new FileObject[] {
-            prjDir.getFileObject("build.xml"),
+            buildXML,
             prjDir.getFileObject("manifest.mf"),
             prjDir.getFileObject("nbproject"),
+            prjDir.getFileObject(".cvsignore"),
         };
         assertEquals("correct metadata files", Arrays.asList(expectedMetadataFiles), ProjectOperations.getMetadataFiles(project));
         
@@ -52,6 +76,10 @@ public class ModuleOperationsTest extends TestBase {
         };
         assertEquals("correct data files", Arrays.asList(expectedDataFiles), ProjectOperations.getDataFiles(project));
         
-//        ap.invokeAction(ActionProvider.COMMAND_DELETE, null);
+        // It is hard to simulate exact scenario invoked by user. Let's test at least something.
+        ProjectOperations.notifyDeleting(project);
+        prjDir.getFileSystem().refresh(true);
+        assertNull(prjDir.getFileObject("build"));
     }
+    
 }
