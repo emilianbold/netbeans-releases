@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -137,7 +137,7 @@ public class LineBreakpointTest extends NbTestCase {
             support.doContinue ();
             support.waitState (JPDADebugger.STATE_DISCONNECTED);
         } finally {
-            support.doFinish ();
+            if (support != null) support.doFinish ();
         }
     }
 
@@ -186,7 +186,7 @@ public class LineBreakpointTest extends NbTestCase {
             }
             DebuggerManager.getDebuggerManager ().removeBreakpoint (lb);
         } finally {
-            support.doFinish();
+            if (support != null) support.doFinish();
         }
     }
 
