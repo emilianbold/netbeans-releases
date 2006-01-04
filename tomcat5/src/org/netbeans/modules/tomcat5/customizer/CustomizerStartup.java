@@ -232,8 +232,6 @@ public class CustomizerStartup extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jSpinner1, gridBagConstraints);
-        jSpinner1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSN_SocketPortNum"));
-        jSpinner1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSD_SocketPortNum"));
 
     }// </editor-fold>//GEN-END:initComponents
 
