@@ -29,3 +29,7 @@
 
 1.0.15: Fixed options panel - caused false "settings modified" warning.
 	Implemented API for switching view mode needed for reconnect dialog.
+
+1.0.16:	Perform both find and browse public conference out of AWT thread
+        with a progress bar (#61978)
+	 
