@@ -634,7 +634,7 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
      *
      */
     public void onError(CollaborationException e) {
-        if (e!=null && e.getMessage()!=null &&  e.getMessage().contains("Server Disconnected")) {//NoI18n
+        if (e!=null && e.getMessage()!=null && e.getMessage().indexOf("Server Disconnected") != -1) { //NOI18N
             criticalServerError = true;
 	    ((IMCollabManager)getManager()).getReconnect().startReconnect(this);
 
