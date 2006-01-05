@@ -55,6 +55,8 @@ public class JBoss4TestSuite extends NbTestCase {
     private static final String EJB_PROJECT_PATH = System.getProperty("xtest.tmpdir") + File.separator + EJB_PROJECT_NAME;
     private static final String WEB_PROJECT_PATH = System.getProperty("xtest.tmpdir") + File.separator + WEB_PROJECT_NAME;
     
+    private static String URL = null;
+    
     public JBoss4TestSuite(String testName) {
         super(testName);
     }
@@ -67,11 +69,11 @@ public class JBoss4TestSuite extends NbTestCase {
         suite.addTest(new JBoss4TestSuite("addJBossDefaultInstance"));
         suite.addTest(new JBoss4TestSuite("sleep"));
         suite.addTest(new JBoss4TestSuite("startServer"));
-        suite.addTest(new JBoss4TestSuite("restartServer"));
-        suite.addTest(new JBoss4TestSuite("stopServer"));
-        suite.addTest(new JBoss4TestSuite("startServerDebug"));
-        suite.addTest(new JBoss4TestSuite("restartServer"));
-        suite.addTest(new JBoss4TestSuite("stopServer"));
+//        suite.addTest(new JBoss4TestSuite("restartServer"));
+//        suite.addTest(new JBoss4TestSuite("stopServer"));
+//        suite.addTest(new JBoss4TestSuite("startServerDebug"));
+//        suite.addTest(new JBoss4TestSuite("restartServer"));
+//        suite.addTest(new JBoss4TestSuite("stopServer"));
         suite.addTest(new JBoss4TestSuite("deployWebModule"));
         suite.addTest(new JBoss4TestSuite("deployEjbModule"));
         suite.addTest(new JBoss4TestSuite("stopServer"));
@@ -90,6 +92,8 @@ public class JBoss4TestSuite extends NbTestCase {
             String serverPath = installLocation+SEP+"server"+SEP+domain;
             String displayName = DISPLAY_NAME;
             
+            URL = "jboss-deployer:"+host+":"+port+"#"+domain+"&"+installLocation;
+            
             JBInstantiatingIterator inst = new JBInstantiatingIterator();
             WizardDescriptor wizard = new WizardDescriptor(new Panel[] {inst.current()});
             wizard.putProperty(org.netbeans.modules.j2ee.deployment.impl.ui.wizard.AddServerInstanceWizard.PROP_DISPLAY_NAME, displayName);
@@ -104,8 +108,7 @@ public class JBoss4TestSuite extends NbTestCase {
             inst.initialize(wizard);
             inst.instantiate();
             
-            if(!isAdded(installLocation))
-                throw new Exception("JBoss4 server wasn't added correctly");
+            ServerRegistry.getInstance().checkInstanceExists(URL);
         } catch(Exception e) {
             fail(e.getMessage());
         }
@@ -117,21 +120,16 @@ public class JBoss4TestSuite extends NbTestCase {
     
     public void removeJBossInstance() {
         try {
-            String installLocation = System.getProperty("jboss.server.path");
-            ServerInstance inst = getServerInstance(installLocation);
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
             inst.remove();
-            
-            if(isAdded(installLocation))
-                throw new Exception("JBoss4 server wasn't removed correctly");
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
+            ServerRegistry.getInstance().checkInstanceExists(URL);
+            fail("JBoss instance still exists !");
+        } catch(Exception e) {}
     }
     
     public void startServer() {
         try {
-            String installLocation = System.getProperty("jboss.server.path");
-            ServerInstance inst = getServerInstance(installLocation);
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
             
             inst.refresh();
             
@@ -149,8 +147,7 @@ public class JBoss4TestSuite extends NbTestCase {
     
     public void startServerDebug() {
         try {
-            String installLocation = System.getProperty("jboss.server.path");
-            ServerInstance inst = getServerInstance(installLocation);
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
             
             inst.refresh();
             
@@ -168,8 +165,7 @@ public class JBoss4TestSuite extends NbTestCase {
     
     public void stopServer() {
         try {
-            String installLocation = System.getProperty("jboss.server.path");
-            ServerInstance inst = getServerInstance(installLocation);
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
             
             inst.refresh();
             
@@ -190,8 +186,7 @@ public class JBoss4TestSuite extends NbTestCase {
     
     public void restartServer() {
         try {
-            String installLocation = System.getProperty("jboss.server.path");
-            ServerInstance inst = getServerInstance(installLocation);
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
             
             inst.refresh();
             
@@ -304,34 +299,6 @@ public class JBoss4TestSuite extends NbTestCase {
         } catch(Exception e) {
             fail(e.getMessage());
         }
-    }
-    
-    private boolean isAdded(String installLocation) {
-        String[] servers = ServerRegistry.getInstance().getInstanceURLs();
-        for(int i=0;i<servers.length;i++) {
-            String current = servers[i];
-            if(current.indexOf(installLocation) > -1)
-                return true;
-        }
-        
-        return false;
-    }
-    
-    private ServerInstance getServerInstance(String installLocation) {
-        String[] servers =  ServerRegistry.getInstance().getInstanceURLs();
-        String serverUrl = null;
-        for(int i=0;i<servers.length;i++) {
-            String current = servers[i];
-            if(current.indexOf(installLocation) > -1) {
-                serverUrl = servers[i];
-                break;
-            }
-        }
-        
-        if(null == serverUrl)
-            return null;
-        
-        return ServerRegistry.getInstance().getServerInstance(serverUrl);
     }
     
     private Object openProject(File projectDir) {
