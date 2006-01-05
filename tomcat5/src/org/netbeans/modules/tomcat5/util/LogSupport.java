@@ -118,6 +118,11 @@ public class LogSupport {
         public boolean isAccessible() {
             return accessible;
         }
+        
+        public String toString() {
+            return "path=" + path + " line=" + line + " message=" + message 
+                    + " isError=" + error + " isAccessible=" + accessible;
+        }
     }    
     
     /**

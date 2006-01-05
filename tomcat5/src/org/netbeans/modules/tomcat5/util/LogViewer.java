@@ -305,7 +305,7 @@ public class LogViewer extends Thread {
      * Support class for context log line analyzation and for creating links in 
      * the output window.
      */
-    private static class ContextLogSupport extends LogSupport {
+    static class ContextLogSupport extends LogSupport {
         private final String CATALINA_WORK_DIR;
         private String context = null;
         private String prevMessage = null;
@@ -374,7 +374,8 @@ public class LogViewer extends Thread {
                     }
                 }
             }
-            // look for stacktrace links (e.g. at java.lang.Thread.run(Thread.java:595))
+            // look for stacktrace links (e.g. at java.lang.Thread.run(Thread.java:595)
+            //                                 at t.HyperlinkTest$1.run(HyperlinkTest.java:24))
             else if (logLine.startsWith("at ") && lineLenght > 3) {
                 error = true;
                 int parenthIdx = logLine.indexOf('(');
@@ -392,7 +393,8 @@ public class LogViewer extends Thread {
                             }
                             message = prevMessage;
                         }
-                        String className = classWithMethod.substring(0, lastDotIdx);
+                        int firstDolarIdx = classWithMethod.indexOf('$'); // > -1 for inner classes
+                        String className = classWithMethod.substring(0, firstDolarIdx > -1 ? firstDolarIdx : lastDotIdx);
                         path = className.replace('.','/') + ".java"; // NOI18N              
                         accessible = globalPathReg.findResource(path) != null;
                         if (className.startsWith("org.apache.jsp.") && context != null) { // NOI18N

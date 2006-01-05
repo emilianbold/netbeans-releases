@@ -224,7 +224,8 @@ class ServerLog extends Thread {
                     }
                 }
             }
-            // look for stacktrace links (e.g. at java.lang.Thread.run(Thread.java:595))
+            // look for stacktrace links (e.g. at java.lang.Thread.run(Thread.java:595)
+            //                                 at t.HyperlinkTest$1.run(HyperlinkTest.java:24))
             else if (logLine.startsWith("at ") && lineLenght > 3) {
                 error = true;
                 int parenthIdx = logLine.indexOf('(');
@@ -242,7 +243,8 @@ class ServerLog extends Thread {
                             }
                             message = prevMessage;
                         }
-                        String className = classWithMethod.substring(0, lastDotIdx);
+                        int firstDolarIdx = classWithMethod.indexOf('$'); // > -1 for inner classes
+                        String className = classWithMethod.substring(0, firstDolarIdx > -1 ? firstDolarIdx : lastDotIdx);
                         path = className.replace('.','/') + ".java"; // NOI18N
                         accessible = globalPathRegistry.findResource(path) != null;
                     }
