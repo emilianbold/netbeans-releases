@@ -39,7 +39,6 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "nbproject/build-impl.xml",
         "nbproject/project.xml",
         "nbproject/project.properties",
-        "nbproject/private/private.properties",
         "src",
         "test",
     };
@@ -53,7 +52,6 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
     };
 
     private static final String[] createdProperties = {
-        "application.args",
         "build.classes.dir",
         "build.classes.excludes",
         "build.dir",
@@ -96,7 +94,6 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
     };
 
     private static final String[] createdPropertiesExtSources = {
-        "application.args",
         "build.classes.dir",
         "build.classes.excludes",
         "build.dir",

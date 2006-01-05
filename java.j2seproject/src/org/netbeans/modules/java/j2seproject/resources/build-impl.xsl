@@ -165,6 +165,7 @@ is divided into following sections:
                 </condition>
                 <property name="javac.debug" value="true"/>
                 <property name="javadoc.preview" value="true"/>
+                <property name="application.args" value=""/>
             </target>
 
             <target name="-post-init">

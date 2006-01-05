@@ -194,8 +194,7 @@ public class J2SEProjectGenerator {
         });
         ep.setProperty("debug.classpath", new String[] { // NOI18N
             "${run.classpath}", // NOI18N
-        });
-        ep.setProperty("application.args", ""); // NOI18N
+        });        
         ep.setProperty("jar.compress", "false"); // NOI18N
         if (!isLibrary) {
             ep.setProperty("main.class", mainClass == null ? "" : mainClass); // NOI18N
@@ -256,13 +255,7 @@ public class J2SEProjectGenerator {
         if (manifestFile != null) {
             ep.setProperty("manifest.file", manifestFile); // NOI18N
         }
-
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty("application.args", ""); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVAC_DEBUG, "true");  // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N
-        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
         return h;
     }
 
