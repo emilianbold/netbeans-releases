@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -74,7 +74,8 @@ public final class OpenFile {
         FileObject fileObject;
         OpenFileImpl impl = getImpl();
         if ((fileObject = impl.findFileObject(file)) != null) {
-            return impl.open(fileObject, line, waiter);
+            impl.open(fileObject, line, waiter);
+            return true;
         } else {
             return false;
         }

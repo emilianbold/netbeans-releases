@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.openfile;
@@ -56,7 +56,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Jaroslav Tulach, Jesse Glick, Marian Petras, David Konecny
  */
-public class DefaultOpenFileImpl implements OpenFileImpl {
+public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
     
     /** extenstion for .java files (including the dot) */
     static final String JAVA_EXT = ".JAVA";                             //NOI18N
@@ -80,8 +80,51 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
     private static final String ZIP_EXT = "zip"; //NOI18N
     private static final String JAR_EXT = "jar"; //NOI18N
 
+    /**
+     * parameter of this <code>Runnable</code>
+     * - file to open
+     */
+    private final FileObject fileObject;
+    /**
+     * parameter of this <code>Runnable</code>
+     * - line number to open the {@link #fileObject file} at, or <code>-1</code>
+     *   to ignore
+     */
+    private final int line;
+    /**
+     * parameter of this <code>Runnable</code>
+     * - callback
+     */
+    private final Callback.Waiter waiter;
+    
+    /**
+     * Creates an instance of this class.
+     * It is used only as an instance of <code>Runnable</code>
+     * used for rescheduling to the AWT thread.
+     * The arguments are stored to local variables and when the
+     * <code>run()</code> method gets executed (in the AWT thread),
+     * they are passed to the <code>open(...)</code> method.
+     *
+     * @param  file  file to open (must exist)
+     * @param  line  line number to try to open to (starting at zero),
+     *               or <code>-1</code> to ignore
+     * @param  waiter  double-callback or <code>null</code>
+     */
+    private DefaultOpenFileImpl(FileObject fileObject,
+                                int line,
+                                Callback.Waiter waiter) {
+        this.fileObject = fileObject;
+        this.line = line;
+        this.waiter = waiter;
+    }
+
     /** Creates a new instance of OpenFileImpl */
     public DefaultOpenFileImpl() {
+        
+        /* These fields are not used in the default instance. */
+        this.fileObject = null;
+        this.line = -1;
+        this.waiter = null;
     }
     
     /**
@@ -125,6 +168,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
      * @param  fileName  name of file that could not be opened
      */
     protected void notifyCannotOpen(String fileName) {
+        assert EventQueue.isDispatchThread();
+        
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                 NbBundle.getMessage(OpenFileImpl.class,
                                     "MSG_cannotOpenWillClose",          //NOI18N
@@ -145,6 +190,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
      */
     private boolean openEditor(final EditorCookie editorCookie,
                                final int line) {
+        assert EventQueue.isDispatchThread();
         
         /* if the editor is already open, just set the cursor and activate it */
         JEditorPane[] openPanes = editorCookie.getOpenedPanes();
@@ -211,6 +257,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
     private void openDocAtLine(final EditorCookie editorCookie,
                                final StyledDocument doc,
                                final int line) {
+        assert EventQueue.isDispatchThread();
         assert line >= 0;
         assert editorCookie.getDocument() == doc;
         
@@ -311,6 +358,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
      * @return  cursor offset of the beginning of the given line
      */
     private int getCursorOffset(StyledDocument doc, int line) {
+        assert EventQueue.isDispatchThread();
         assert line >= 0;
         
         try {
@@ -353,6 +401,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
     protected boolean openByCookie(Node.Cookie cookie,
                                    Class cookieClass,
                                    final int line) {
+        assert EventQueue.isDispatchThread();
+        
         if ((cookieClass == EditorCookie.Observable.class)
                 || (cookieClass == EditorCookie.Observable.class)) {
             return openEditor((EditorCookie) cookie, line);
@@ -411,11 +461,29 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
     }
     
     /**
+     * This method is called when it is rescheduled to the AWT thread.
+     * (from a different thread). It is always run in the AWT thread.
+     */
+    public void run() {
+        assert EventQueue.isDispatchThread();
+        
+        open(fileObject, line, waiter);
+    }
+    
+    /**
      * Opens the <code>FileObject</code> either by calling {@link EditorCookie}
      * (or {@link OpenCookie} or {@link ViewCookie}),
      * or by showing it in the Explorer.
      */
     public boolean open(final FileObject fileObject, int line, Callback.Waiter waiter) {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(
+                    new DefaultOpenFileImpl(fileObject, line, waiter));
+            return true;
+        }
+        
+        
+        assert EventQueue.isDispatchThread();
 
         String fileName = fileObject.getNameExt();
                   
