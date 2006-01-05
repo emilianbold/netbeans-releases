@@ -29,8 +29,8 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
         <!-- <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**" debug="true"></buildTests> -->
         <property name="jboss.server.path"  value="${xtest.optional}/jboss4"/>
-        <property name="xtest.ide.commandline.suffix" value="-J-Djboss.server.path=${jboss.server.path}"/>
-        <!-- <property name="xtest.ide.commandline.suffix" value="-J-Djboss.server.path=${jboss.server.path} -J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8765"/> -->
+        <!-- <property name="xtest.ide.commandline.suffix" value="-J-Djboss.server.path=${jboss.server.path}"/> -->
+        <property name="xtest.ide.commandline.suffix" value="-J-Djboss.server.path=${jboss.server.path} -J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8765"/>
         <property name="test.classpath" value=""/>
     </target>
 
