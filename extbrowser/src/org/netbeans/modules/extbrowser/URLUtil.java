@@ -47,7 +47,7 @@ public class URLUtil {
             return null;
 
         // return if the protocol is fine
-        if (isAcceptableProtocol(url.getProtocol().toLowerCase(), allowJar))
+        if (isAcceptableProtocol(url, allowJar))
             return url;
         
         // remove the anchor
@@ -96,7 +96,7 @@ public class URLUtil {
         while (instances.hasNext()) {
             URLMapper mapper = (URLMapper) instances.next();
             retVal = mapper.getURL (fo, URLMapper.EXTERNAL);
-            if ((retVal != null) && isAcceptableProtocol(retVal.getProtocol().toLowerCase(), allowJar)) {
+            if ((retVal != null) && isAcceptableProtocol(retVal, allowJar)) {
                 // return if this is a 'file' or 'jar' URL
                 String p = retVal.getProtocol().toLowerCase();
                 if ("file".equals(p) || "jar".equals(p)) { // NOI18N
@@ -117,13 +117,17 @@ public class URLUtil {
     /** Returns true if the protocol is acceptable for usual web browsers.
      * Specifically, returns true for file, http and ftp protocols.
      */
-    private static boolean isAcceptableProtocol(String protocol, boolean allowJar) {
+    private static boolean isAcceptableProtocol(URL url, boolean allowJar) {
+        String protocol = url.getProtocol().toLowerCase();
         if ("http".equals(protocol)          // NOI18N
         ||  "ftp".equals(protocol)           // NOI18N
         ||  "file".equals(protocol))         // NOI18N
             return true;
-        if (allowJar && "jar".equals(protocol)) 
-            return true;
+        if (allowJar && "jar".equals(protocol)) { // NOI18N
+            String urlString = url.toString();
+            if (!urlString.toLowerCase().startsWith("jar:nbinst:")) // NOI18N
+                return true;
+        }
         
         return false;
     }
