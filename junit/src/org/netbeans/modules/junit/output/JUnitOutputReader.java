@@ -346,9 +346,8 @@ final class JUnitOutputReader {
      *          determined
      */
     private static File determineResultsDir(final AntEvent event) {
-        assert event.getTaskName().equals("junit");                     //NOI18N
-        
         File resultsDir = null;
+        String dirName = null;
         
         TaskStructure taskStruct = event.getTaskStructure();
         if (taskStruct != null) {
@@ -359,27 +358,28 @@ final class JUnitOutputReader {
                     String taskChildName = taskChild.getName();
                     if (taskChildName.equals("batchtest")               //NOI18N
                             || taskChildName.equals("test")) {          //NOI18N
-                        String dirName =taskChild.getAttribute("todir");//NOI18N
-                        if (dirName != null) {
-                            resultsDir = new File(event.evaluate(dirName));
-                        } else {
+                        String dirAttr =taskChild.getAttribute("todir");//NOI18N
+                        dirName = (dirAttr != null)
+                                  ? event.evaluate(dirAttr)
+                                  : ".";                                //NOI18N
                             /* default is the current directory (Ant manual) */
-                            resultsDir = new File(".");                 //NOI18N
-                        }
                         break;
                     }
                 }
             }
         }
         
-        if (resultsDir != null) {
+        if (dirName != null) {
+            resultsDir = new File(dirName);
             if (!resultsDir.isAbsolute()) {
                 resultsDir = new File(event.getProperty("basedir"),     //NOI18N
-                                      resultsDir.getPath());
+                                      dirName);
             }
             if (!resultsDir.exists() || !resultsDir.isDirectory()) {
                 resultsDir = null;
             }
+        } else {
+            resultsDir = null;
         }
         
         return resultsDir;
