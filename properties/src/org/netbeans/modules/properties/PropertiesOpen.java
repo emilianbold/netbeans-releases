@@ -601,6 +601,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         private void initialize() {
             initComponents();
             setupActions();
+            setActivatedNodes(new Node[] {propDataObject.getNodeDelegate()});
 
             dataObjectListener = new NameUpdater();
             propDataObject.addPropertyChangeListener(
@@ -686,6 +687,10 @@ public class PropertiesOpen extends CloneableOpenSupport
             /**
              */
             public void propertyChange(PropertyChangeEvent e) {
+                if (!propDataObject.isValid()) {
+                    return;
+                }
+                
                 final String property = e.getPropertyName();
                 if (property == null) {
                     return;
@@ -769,13 +774,26 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
         
         /**
+         */
+        private String addModifiedInfo(String name) {
+            boolean modified
+                    = propDataObject.getCookie(SaveCookie.class) != null;
+            int version = modified ? 1 : 3;
+            return NbBundle.getMessage(PropertiesCloneableTopComponent.class,
+                                       "LBL_EditorName",                //NOI18N
+                                       new Integer(version),
+                                       name);
+        }
+
+        /**
          * Builds a display name for this component.
          *
          * @return  the created display name
          * @see  #htmlDisplayName
          */
         private String displayName() {
-            return  propDataObject.getNodeDelegate().getDisplayName();
+            String nameBase = propDataObject.getNodeDelegate().getDisplayName();
+            return addModifiedInfo(nameBase);
         }
         
         /**
@@ -794,7 +812,7 @@ public class PropertiesOpen extends CloneableOpenSupport
             } else {
                 displayName = node.getDisplayName();
             }
-            return displayName;
+            return addModifiedInfo(displayName);
         }
         
         /** Gets string for tooltip. */
@@ -836,7 +854,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         public HelpCtx getHelpCtx () {
             return new HelpCtx(Util.HELP_ID_MODIFYING);
         }
-
+        
         protected String preferredID() {
             return getName();
         }
