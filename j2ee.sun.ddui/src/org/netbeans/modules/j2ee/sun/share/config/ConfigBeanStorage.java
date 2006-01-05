@@ -74,7 +74,9 @@ public class ConfigBeanStorage implements PropertyChangeListener {
             }
         }
         if (DConfigBeanProperties.PROP_DISPLAY_NAME.equalsIgnoreCase(pce.getPropertyName())) {
-            getNode().setDisplayName((String) pce.getNewValue());
+            if(node != null) {
+                node.setDisplayName((String) pce.getNewValue());
+            }
         }
     }
     
