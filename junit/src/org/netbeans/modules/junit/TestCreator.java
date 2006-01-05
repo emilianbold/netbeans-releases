@@ -1052,104 +1052,98 @@ public final class TestCreator {
                 // generate default bodies, printing the name of method
                 newBody.append("System.out.println(\"")                 //NOI18N
                        .append(srcMethod.getName())
-                       .append("\");\n");                               //NOI18N
+                       .append("\");\n\n");                             //NOI18N
+
+                final List/*<Parameter>*/ params = srcMethod.getParameters();
+                final String[] varNames = getTestSkeletonVarNames(params);
+
+                Iterator i = params.iterator();
+                for (int j = 0; j < varNames.length; j++) {
+                    Parameter param = ((Parameter) i.next());
+                    Type paramType = param.getType();
+                    String paramTypeName = getTypeNameString(paramType);
+                    newBody.append(paramTypeName).append(' ')
+                           .append(varNames[j]).append(" = ")           //NOI18N
+                           .append(getDefaultValue(paramType))
+                           .append(";\n");                              //NOI18N
+                }
+                assert !i.hasNext();
+                needsEmptyLine |= (varNames.length != 0);
+
+                if (!isStatic) {
+                    boolean hasDefConstr = false;
+
+                    Constructor constructor = srcClass.getConstructor(
+                            Collections.EMPTY_LIST, false);
+                    if (constructor == null) {
+                        /*
+                         * No no-arguments constructor found. But if there is no
+                         * constructor defined in the class, we can count with the
+                         * automatically generated public no-argument constructor.
+                         */
+                        boolean constrFound = false;
+                        Iterator/*<ClassMember>*/ j = srcClass.getContents()
+                                                      .iterator();
+                        while (j.hasNext()) {
+                            if (j.next() instanceof Constructor) {
+                                constrFound = true;
+                                break;
+                            }
+                        }
+                        hasDefConstr = !constrFound;
+                    } else {
+                        hasDefConstr
+                         = (constructor.getModifiers() & Modifier.PRIVATE) == 0;
+                    }
+
+                    newBody.append(shortClsName).append(' ')
+                           .append(INSTANCE_VAR_NAME).append(" = ");    //NOI18N
+                    if (hasDefConstr) {
+                       newBody.append("new ")                           //NOI18N
+                              .append(shortClsName).append("()");       //NOI18N
+                    } else {
+                       newBody.append("null");                          //NOI18N
+                    }
+                    newBody.append(";\n");                              //NOI18N
+                    needsEmptyLine |= true;
+                }   //if (isStatic)
+
+                if (needsEmptyLine) {
+                    newBody.append('\n');
+                    needsEmptyLine = false;
+                }
+
+                final Type returnType = srcMethod.getType();
+                String returnTypeName = getTypeNameString(returnType);
+                final String defaultRetValue = getDefaultValue(returnType);
+                final boolean isVoid = (defaultRetValue == null);
+
+                if (!isVoid) {
+                    newBody.append(returnTypeName).append(' ')
+                           .append(EXP_RESULT_VAR_NAME).append(" = ")   //NOI18N
+                           .append(defaultRetValue)
+                           .append(";\n");                              //NOI18N
+                    newBody.append(returnTypeName).append(' ')
+                           .append(RESULT_VAR_NAME).append(" = ");      //NOI18N
+                }
+                newBody.append(isStatic ? shortClsName : INSTANCE_VAR_NAME)
+                       .append('.').append(srcMethod.getName()).append('(');
+                if (varNames.length != 0) {
+                    newBody.append(varNames[0]);
+                    for (int j = 1; j < varNames.length; j++) {
+                        newBody.append(", ").append(varNames[j]);       //NOI18N
+                    }
+                }
+                newBody.append(");\n");                                 //NOI18N
+                if (!isVoid) {
+                    newBody.append("assertEquals(")                     //NOI18N
+                           .append(EXP_RESULT_VAR_NAME)
+                           .append(", ")                                //NOI18N
+                           .append(RESULT_VAR_NAME)
+                           .append(");\n");                             //NOI18N
+                }
                 needsEmptyLine = true;
             }
-
-            if (needsEmptyLine) {
-                newBody.append('\n');
-                needsEmptyLine = false;
-            }
-
-            final List/*<Parameter>*/ params = srcMethod.getParameters();
-            final String[] varNames = getTestSkeletonVarNames(params);
-
-            Iterator i = params.iterator();
-            for (int j = 0; j < varNames.length; j++) {
-                Parameter param = ((Parameter) i.next());
-                Type paramType = param.getType();
-                String paramTypeName = getTypeNameString(paramType);
-                newBody.append(paramTypeName).append(' ')
-                       .append(varNames[j]).append(" = ")               //NOI18N
-                       .append(getDefaultValue(paramType))
-                       .append(";\n");                                  //NOI18N
-            }
-            assert !i.hasNext();
-            needsEmptyLine |= (varNames.length != 0);
-
-            if (!isStatic) {
-                boolean hasDefConstr = false;
-
-                Constructor constructor = srcClass.getConstructor(
-                        Collections.EMPTY_LIST, false);
-                if (constructor == null) {
-                    /*
-                     * No no-arguments constructor found. But if there is no
-                     * constructor defined in the class, we can count with the
-                     * automatically generated public no-argument constructor.
-                     */
-                    boolean constrFound = false;
-                    Iterator/*<ClassMember>*/ j = srcClass.getContents()
-                                                  .iterator();
-                    while (j.hasNext()) {
-                        if (j.next() instanceof Constructor) {
-                            constrFound = true;
-                            break;
-                        }
-                    }
-                    hasDefConstr = !constrFound;
-                } else {
-                    hasDefConstr
-                        = (constructor.getModifiers() & Modifier.PRIVATE) == 0;
-                }
-
-                newBody.append(shortClsName).append(' ')
-                       .append(INSTANCE_VAR_NAME).append(" = ");        //NOI18N
-                if (hasDefConstr) {
-                   newBody.append("new ")                               //NOI18N
-                          .append(shortClsName).append("()");           //NOI18N
-                } else {
-                   newBody.append("null");                              //NOI18N
-                }
-                newBody.append(";\n");                                  //NOI18N
-                needsEmptyLine |= true;
-            }   //if (isStatic)
-
-            if (needsEmptyLine) {
-                newBody.append('\n');
-                needsEmptyLine = false;
-            }
-
-            final Type returnType = srcMethod.getType();
-            String returnTypeName = getTypeNameString(returnType);
-            final String defaultRetValue = getDefaultValue(returnType);
-            final boolean isVoid = (defaultRetValue == null);
-
-            if (!isVoid) {
-                newBody.append(returnTypeName).append(' ')
-                       .append(EXP_RESULT_VAR_NAME).append(" = ")       //NOI18N
-                       .append(defaultRetValue)
-                       .append(";\n");                                  //NOI18N
-                newBody.append(returnTypeName).append(' ')
-                       .append(RESULT_VAR_NAME).append(" = ");          //NOI18N
-            }
-            newBody.append(isStatic ? shortClsName : INSTANCE_VAR_NAME)
-                   .append('.').append(srcMethod.getName()).append('(');
-            if (varNames.length != 0) {
-                newBody.append(varNames[0]);
-                for (int j = 1; j < varNames.length; j++) {
-                    newBody.append(", ").append(varNames[j]);           //NOI18N
-                }
-            }
-            newBody.append(");\n");                                     //NOI18N
-            if (!isVoid) {
-                newBody.append("assertEquals(")                         //NOI18N
-                       .append(EXP_RESULT_VAR_NAME)
-                       .append(", ")                                    //NOI18N
-                       .append(RESULT_VAR_NAME)
-                       .append(");\n");                                 //NOI18N
-            }
-            needsEmptyLine = true;
 
             if (generateSourceCodeHints) {
                 // generate comments to bodies
@@ -1158,8 +1152,10 @@ public final class TestCreator {
                     needsEmptyLine = false;
                 }
                 newBody.append(NbBundle.getMessage(
-                           TestCreator.class,
-                           "TestCreator.variantMethods.defaultComment"))//NOI18N
+                    TestCreator.class,
+                    generateDefMethodBody
+                           ? "TestCreator.variantMethods.defaultComment"//NOI18N
+                           : "TestCreator.variantMethods.onlyComment")) //NOI18N
                        .append('\n');
             }
             
