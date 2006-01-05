@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -90,10 +90,12 @@ public final class JUnitAntLogger extends AntLogger {
             final String origTarget = originatingTargets[0];
             if (origTarget.startsWith("test")                           //NOI18N
                 && ((origTarget.length() == 4)
-                    || !Character.isLetter(origTarget.charAt(4)))) {
+                    || !Character.isLetter(origTarget.charAt(4)))
+                || origTarget.equals("run-tests")) {                    //NOI18N
                 /*
                  * Target names:
                  *    "test", "test-single"  (J2SE projects, NB module projects)
+                 *    "run-tests"            (many freeform projects)
                  */
                 return AntSessionInfo.SESSION_TYPE_TEST;
             } else if (origTarget.startsWith("debug-test")              //NOI18N

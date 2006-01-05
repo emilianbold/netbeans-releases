@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntSession;
+import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -50,10 +51,6 @@ import org.xml.sax.SAXException;
  */
 final class JUnitOutputReader {
     
-    /** name of Ant property holding path to the test results directory */
-    private static final String[] PROP_RESULTS_DIRS
-                                    = {"build.test.unit.results.dir",   //NOI18N
-                                       "build.test.results.dir"};       //NOI18N
     private static final int MAX_REPORT_FILE_SIZE = 1 << 19;    //512 kBytes
     /** */
     private static final int UPDATE_DELAY = 300;    //milliseconds
@@ -296,22 +293,7 @@ final class JUnitOutputReader {
                                              .length());
             if (regexp.getFullJavaIdPattern().matcher(suiteName).matches()){
                 suiteStarted(suiteName);
-                
-                final File projectMainDir
-                        = session.getOriginatingScript().getParentFile();
-                for (int i = 0; i < PROP_RESULTS_DIRS.length; i++) {
-                    String path = event.getProperty(PROP_RESULTS_DIRS[i]);
-                    if (path != null) {
-                        File resultsDir = new File(path);
-                        if (!resultsDir.isAbsolute()) {
-                            resultsDir = new File(projectMainDir, path);
-                        }
-                        if (resultsDir.exists() && resultsDir.isDirectory()) {
-                            report.resultsDir = resultsDir;
-                            break;
-                        }
-                    }
-                }
+                report.resultsDir = determineResultsDir(event);
             }
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="TESTSUITE_STATS_PREFIX">
@@ -353,6 +335,54 @@ final class JUnitOutputReader {
                           event.getLogLevel() == AntEvent.LOG_WARN);
         }
         //</editor-fold>
+    }
+    
+    /**
+     * Tries to determine test results directory.
+     *
+     * @param  event  Ant event serving as a source of information
+     * @return  <code>File<code> object representing the results directory,
+     *          or <code>null</code> if the results directory could not be
+     *          determined
+     */
+    private static File determineResultsDir(final AntEvent event) {
+        assert event.getTaskName().equals("junit");                     //NOI18N
+        
+        File resultsDir = null;
+        
+        TaskStructure taskStruct = event.getTaskStructure();
+        if (taskStruct != null) {
+            final TaskStructure[] taskChildren = taskStruct.getChildren();
+            if (taskChildren.length != 0) {
+                for (int i = 0; i < taskChildren.length; i++) {
+                    TaskStructure taskChild = taskChildren[i];
+                    String taskChildName = taskChild.getName();
+                    if (taskChildName.equals("batchtest")               //NOI18N
+                            || taskChildName.equals("test")) {          //NOI18N
+                        String dirName =taskChild.getAttribute("todir");//NOI18N
+                        if (dirName != null) {
+                            resultsDir = new File(event.evaluate(dirName));
+                        } else {
+                            /* default is the current directory (Ant manual) */
+                            resultsDir = new File(".");                 //NOI18N
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (resultsDir != null) {
+            if (!resultsDir.isAbsolute()) {
+                resultsDir = new File(event.getProperty("basedir"),     //NOI18N
+                                      resultsDir.getPath());
+            }
+            if (!resultsDir.exists() || !resultsDir.isDirectory()) {
+                resultsDir = null;
+            }
+        }
+        
+        return resultsDir;
     }
     
     /**
