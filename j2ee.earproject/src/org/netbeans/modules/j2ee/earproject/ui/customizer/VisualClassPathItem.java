@@ -49,7 +49,7 @@ public class VisualClassPathItem {
     private static String RESOURCE_ICON_JAR = "org/netbeans/modules/j2ee/earproject/ui/resources/jar.gif"; //NOI18N
     private static String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/j2ee/earproject/ui/resources/libraries.gif"; //NOI18N
     private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/j2ee/earproject/ui/resources/projectDependencies.gif"; //NOI18N
-    private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/j2ee/earproject/ui/resources/j2seProject.gif"; //NOI18N
+    private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/j2ee/earproject/ui/resources/referencedClasspath.gif"; //NOI18N
     
     private static Icon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
     private static Icon ICON_FOLDER = null; 
