@@ -67,7 +67,11 @@ public class ConfigBeanStorage implements PropertyChangeListener {
     
     public void propertyChange(PropertyChangeEvent pce) {
         if (storage != null) {
-            storage.setChanged();
+            // Only set changed on true change events (as opposed to DISPLAY_NAME, which can
+            // be changed by a validation event and is not associated with a change of persistable data.)
+            if(!DConfigBeanProperties.PROP_DISPLAY_NAME.equalsIgnoreCase(pce.getPropertyName())) {
+                storage.setChanged();
+            }
         }
         if (DConfigBeanProperties.PROP_DISPLAY_NAME.equalsIgnoreCase(pce.getPropertyName())) {
             getNode().setDisplayName((String) pce.getNewValue());
