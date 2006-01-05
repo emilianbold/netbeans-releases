@@ -83,6 +83,7 @@ public class TomcatProperties {
                                                                               : DEBUG_TYPE_SOCKET;
     private static final boolean DEF_VALUE_MONITOR       = true;
     private static final int     DEF_VALUE_DEBUG_PORT    = 11555;
+    public  static final int     DEF_VALUE_SHUTDOWN_PORT = 8005;
     private static final String  DEF_VALUE_SHARED_MEM    = "tomcat_shared_memory_id"; // NOI18N
     private static final boolean DEF_VALUE_OPEN_LOG      = true;
     private static final String  DEF_VALUE_HOST          = "localhost"; // NOI18N
@@ -343,7 +344,7 @@ public class TomcatProperties {
             } catch (NumberFormatException nfe) {
             }
         }
-        return -1;
+        return DEF_VALUE_SHUTDOWN_PORT;
     }
     
     /** this needs to be kept in sync with value in the server.xml conf file */

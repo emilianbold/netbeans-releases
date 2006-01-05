@@ -403,7 +403,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
                 : "<html>" + errorMessage.replaceAll("<",  "&lt;").replaceAll(">",  "&gt;") + "</html>"; // NIO18N
     }
     
-    private boolean isServerXmlValid(File file) {
+    boolean isServerXmlValid(File file) {
         try {
             Server server = Server.createGraph(file);
             serverPort = TomcatInstallUtil.getPort(server);
@@ -415,9 +415,12 @@ class InstallPanelVisual extends javax.swing.JPanel {
                 return true;
             }
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
         } catch (NumberFormatException nfe) {
-            ErrorManager.getDefault().notify(nfe);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, nfe);
+        } catch (RuntimeException e) {
+            // catch any runtime exception that may occur during graph parsing
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         return false;
     }

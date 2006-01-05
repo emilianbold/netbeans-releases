@@ -4,8 +4,8 @@ Therefore, it must be the single outermost element in the conf/server.xml config
 Its attributes represent the characteristics of the servlet container as a whole.
 -->
 <!ELEMENT Server (Service+) >
-<!ATTLIST Server port CDATA #REQUIRED>
-<!ATTLIST Server shutdown CDATA #REQUIRED>
+<!ATTLIST Server port CDATA #IMPLIED>
+<!ATTLIST Server shutdown CDATA #IMPLIED>
 <!ATTLIST Server className CDATA #IMPLIED>
 <!ATTLIST Server debug CDATA #IMPLIED>
 

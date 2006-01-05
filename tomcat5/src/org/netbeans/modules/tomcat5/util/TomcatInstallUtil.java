@@ -75,7 +75,7 @@ public class TomcatInstallUtil {
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
             TomcatFactory.getEM ().log ("T5Util.getAdminPort: " + port);             // NOI18N
         }
-        return port;
+        return port != null ? port : String.valueOf(TomcatProperties.DEF_VALUE_SHUTDOWN_PORT);
     }
     
     public static String getPort(Server server) {
