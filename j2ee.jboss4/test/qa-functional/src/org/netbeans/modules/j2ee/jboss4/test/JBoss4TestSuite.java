@@ -70,7 +70,7 @@ public class JBoss4TestSuite extends NbTestCase {
         NbTestSuite suite = new NbTestSuite("JBoss4TestSuite");
         suite.addTest(new JBoss4TestSuite("addJBossDefaultInstance"));
         suite.addTest(new JBoss4TestSuite("sleep"));
-        suite.addTest(new JBoss4TestSuite("startServer"));
+//        suite.addTest(new JBoss4TestSuite("startServer"));
 //        suite.addTest(new JBoss4TestSuite("restartServer"));
 //        suite.addTest(new JBoss4TestSuite("stopServer"));
 //        suite.addTest(new JBoss4TestSuite("startServerDebug"));
@@ -78,8 +78,8 @@ public class JBoss4TestSuite extends NbTestCase {
 //        suite.addTest(new JBoss4TestSuite("stopServer"));
 //        suite.addTest(new JBoss4TestSuite("deployWebModule"));
 //        suite.addTest(new JBoss4TestSuite("deployEjbModule"));
-        suite.addTest(new JBoss4TestSuite("stopServer"));
-        suite.addTest(new JBoss4TestSuite("sleep"));
+//        suite.addTest(new JBoss4TestSuite("stopServer"));
+//        suite.addTest(new JBoss4TestSuite("sleep"));
         suite.addTest(new JBoss4TestSuite("removeJBossInstance"));
         return suite;
     }
