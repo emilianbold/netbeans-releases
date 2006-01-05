@@ -375,7 +375,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     boolean isTopRADComponent() {
-        return formModel.getTopRADComponent().equals(topDesignComponent);
+        RADComponent topMetaComp = formModel.getTopRADComponent();
+        return topMetaComp != null && topMetaComp == topDesignComponent;
     }
     
     public void setTopDesignComponent(RADVisualComponent component,
@@ -665,6 +666,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     private void checkDesignerSize() {
         if ((formModel.isFreeDesignDefaultLayout() || isFreeDesignContainer())
+            && topDesignComponent instanceof RADVisualComponent
             && (!(topDesignComponent instanceof RADVisualFormContainer)
                 || ((RADVisualFormContainer)topDesignComponent).getFormSizePolicy() != RADVisualFormContainer.GEN_BOUNDS))
         {   // new layout container defining designer size
