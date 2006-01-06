@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,6 +25,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
@@ -91,6 +93,11 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         updateEnabled();
         reqTokenList.setModel(getProperties().getRequiredTokenListModel());
         dependencyList.setModel(getProperties().getDependenciesListModel());
+        dependencyList.getModel().addListDataListener(new ListDataListener() {
+            public void contentsChanged(ListDataEvent e) { updateEnabled(); }
+            public void intervalAdded(ListDataEvent e) { updateEnabled(); }
+            public void intervalRemoved(ListDataEvent e) { updateEnabled(); }
+        });
     }
     
     private void refreshJavaPlatforms() {
@@ -106,7 +113,8 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     
     private void updateEnabled() {
         // if there is no selection disable edit/remove buttons
-        boolean enabled = getProperties().isActivePlatformValid() && dependencyList.getSelectedIndex() != -1;
+        boolean enabled = dependencyList.getModel().getSize() > 0 &&
+                getProperties().isActivePlatformValid() && dependencyList.getSelectedIndex() != -1;
         editDepButton.setEnabled(enabled);
         removeDepButton.setEnabled(enabled);
         addDepButton.setEnabled(getProperties().isActivePlatformValid());
@@ -357,7 +365,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         add(tokenButtonPanel, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
-
+    
     private void javaPlatformButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaPlatformButtonActionPerformed
         PlatformsCustomizer.showCustomizer((JavaPlatform) javaPlatformCombo.getSelectedItem());
         refreshJavaPlatforms();
@@ -505,5 +513,5 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         addDepButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_AddDepButton"));
         reqTokenList.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_ReqTokenList"));
     }
-
+    
 }
