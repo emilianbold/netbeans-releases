@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -99,6 +99,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         implVerValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 updateAppendImpl();
+                checkForm();
             }
         });
     }
@@ -125,6 +126,8 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
             setErrorMessage(getMessage("MSG_MajorReleaseVersionIsInvalid")); // NOI18N
         } else if (exportOnlyToFriend.isSelected() && getPublicPackagesModel().getSelectedPackages().length < 1) {
             setErrorMessage(getMessage("MSG_PublicPackageMustBeSelected"));
+        } else if (implVerValue.getText().matches(".*[^0-9].*")) { // NOI18N
+            setWarning(getMessage("MSG_integer_impl_version_recommended"));
         } else {
             setErrorMessage(null);
         }
