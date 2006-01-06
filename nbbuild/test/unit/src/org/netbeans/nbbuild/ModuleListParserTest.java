@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -95,9 +95,9 @@ public class ModuleListParserTest extends TestCase {
         e = p.findByCodeNameBase("org.netbeans.modules.xml.tax");
         assertNotNull("found xml/tax", e);
         assertEquals("org.netbeans.modules.xml.tax", e.getCnb());
-        assertEquals(file(build, "extra/modules/autoload/xml-tax.jar"), e.getJar());
+        assertEquals(file(build, "extra/modules/org-netbeans-modules-xml-tax.jar"), e.getJar());
         assertEquals("correct CP extensions (using runtime-relative-path)", Arrays.asList(new File[] {
-            file(build, "extra/modules/autoload/ext/tax.jar"),
+            file(build, "extra/modules/ext/org-netbeans-tax.jar"),
         }), Arrays.asList(e.getClassPathExtensions()));
     }
     
@@ -152,14 +152,14 @@ public class ModuleListParserTest extends TestCase {
         assertEquals("org.netbeans.bootstrap", e.getCnb());
         assertEquals(file(nball, "nbbuild/netbeans/platform6/lib/boot.jar"), e.getJar());
         assertEquals(Collections.EMPTY_LIST, Arrays.asList(e.getClassPathExtensions()));
-        jar = file(nball, "nbbuild/netbeans/ide6/modules/autoload/xml-tax.jar");
+        jar = file(nball, "nbbuild/netbeans/ide6/modules/org-netbeans-modules-xml-tax.jar");
         assertTrue("Build all-xml/tax first!", jar.isFile());
         e = p.findByCodeNameBase("org.netbeans.modules.xml.tax");
         assertNotNull(e);
         assertEquals("org.netbeans.modules.xml.tax", e.getCnb());
         assertEquals(jar, e.getJar());
         assertEquals(Arrays.asList(new File[] {
-            file(nball, "nbbuild/netbeans/ide6/modules/autoload/ext/tax.jar"),
+            file(nball, "nbbuild/netbeans/ide6/modules/ext/org-netbeans-tax.jar"),
         }), Arrays.asList(e.getClassPathExtensions()));
     }
     
