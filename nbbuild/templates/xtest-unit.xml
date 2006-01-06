@@ -14,8 +14,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="xtest-unit" basedir="." default="all">
 
-    <import file="../jdk.xml"/> <!-- #70919 -->
-
     <condition property="do.we.need.to.parse.project.xml.file" >
         <or>
             <not><isset property="code.name.base.dashes" /></not>
@@ -24,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     </condition>
     <available file="../nbproject/project.properties" property="do.we.need.to.process.properties.file" />
     
-    <target name="init-nbproject-property-files" depends="-jdk-init">
+    <target name="init-nbproject-property-files">
         <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
         <property file="../nbproject/private/private.properties"/>
         <property file="../nbproject/project.properties"/>
@@ -51,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
         <parseprojectxml project=".." codenamebasedashesproperty="code.name.base.dashes" modulerunclasspathproperty="module.run.classpath"/>
     </target>
         
-    <target name="init" depends="init-parse-project-xml,init-read-property-files,-jdk-init">
+    <target name="init" depends="init-parse-project-xml,init-read-property-files">
         <property name="module.jar.dir" value="modules"/>
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -94,8 +94,13 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="jar-finder" classname="org.netbeans.xtest.JarFinder"/>
         </nbtaskdef>
         
-        <!-- set jdkhome to a real valid value -->
+        <!-- In NetBeans project can be set nbjdk.home - #70919 -->
+        <condition property="jdkhome" value="${nbjdk.home}">
+            <isset property="nbjdk.home"/>
+        </condition>
+        <!-- If jdkhome not set, set it to a real valid value -->
         <nbpath jdkHomePropertyName="jdkhome"/>        
+        <property name="tools.jar" location="${jdkhome}/lib/tools.jar"/>
         <!-- set junit.classpath to contain also nbjunit -->
         <!-- Add also nbjunit-ide.jar to be available in compiler of base plugin.
             Ideally it should be added in compiler of ide plugin only. -->
