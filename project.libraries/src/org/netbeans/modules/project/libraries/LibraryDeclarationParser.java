@@ -225,11 +225,21 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
     }
     
     private static void parse(final InputSource input, final LibraryDeclarationParser recognizer) throws SAXException, javax.xml.parsers.ParserConfigurationException, java.io.IOException {
-        XMLReader parser = XMLUtil.createXMLReader(false, false);
-        parser.setContentHandler(recognizer);
-        parser.setErrorHandler(recognizer.getDefaultErrorHandler());
-        parser.setEntityResolver(recognizer);
-        parser.parse(input);
+        try {
+            XMLReader parser = XMLUtil.createXMLReader(false, false);
+            parser.setContentHandler(recognizer);
+            parser.setErrorHandler(recognizer.getDefaultErrorHandler());
+            parser.setEntityResolver(recognizer);
+            parser.parse(input);
+        } finally {
+            //Recover recognizer internal state from exceptions to be reusable
+            if (!recognizer.context.empty()) {
+                recognizer.context.clear();
+            }
+            if (recognizer.buffer.length() > 0) {
+                recognizer.buffer.delete(0, recognizer.buffer.length());
+            }
+        }
     }
     
     /**
