@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.dd.impl.common.DDProviderDataObject;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.common.TransactionSupport;
@@ -65,13 +66,14 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
                     NbBundle.getMessage(DDMultiViewDataObject.class, "TXT_DocumentUnparsable",
                             getPrimaryFile().getNameExt()), NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
-            // enable to finish action (multiview component opening),
-            // then switch to XML View
-            RequestProcessor.getDefault().post(new Runnable() {
+            // postpone the "Switch to XML View" action to the end of event dispatching thread
+            // this enables to finish the current action first (e.g. painting particular view)
+            // see the issue 67580
+            SwingUtilities.invokeLater(new Runnable(){
                 public void run() {
                     goToXmlView();
                 }
-            },200);
+            });
         }
     }
 
