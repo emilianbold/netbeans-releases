@@ -71,6 +71,8 @@ public final class SuiteActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction("run-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_jnlp"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction("debug-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_jnlp"), null));
         actions.add(null);
+        actions.add(ProjectSensitiveActions.projectCommandAction("nbms", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_nbms"), null)); // #64426
+        actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
         actions.add(CommonProjectActions.openSubprojectsAction());
         actions.add(CommonProjectActions.closeProjectAction());
@@ -126,6 +128,7 @@ public final class SuiteActions implements ActionProvider {
             "build-jnlp", // NOI18N
             "run-jnlp", // NOI18N
             "debug-jnlp", // NOI18N
+            "nbms", // NOI18N
             "profile", // NOI18N
             ActionProvider.COMMAND_DELETE
         };
@@ -188,6 +191,8 @@ public final class SuiteActions implements ActionProvider {
                 return null;
             }
             targetNames = new String[] {"debug-jnlp"}; // NOI18N
+        } else if (command.equals("nbms")) { // NOI18N
+            targetNames = new String[] {"nbms"}; // NOI18N
         } else if (command.equals("profile")) { // NOI18N
             targetNames = new String[] {"profile"}; // NOI18N
         } else {

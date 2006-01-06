@@ -869,6 +869,9 @@ IDE.)
 
 debug-jnlp - starts debuging of your JNLP application (works only from NetBeans IDE)
 
+nbms [since 5.1 M1] - creates NBMs for all modules in the suite, and generates
+an XML descriptor listing them suitable for use from Auto Update.
+
 profile - used from inside the NetBeans IDE to profile the entire suite
 
 run - start application for testing.

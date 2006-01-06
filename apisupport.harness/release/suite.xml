@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="suite" basedir=".">
@@ -45,7 +45,19 @@ Microsystems, Inc. All Rights Reserved.
             </hidden>
         </createmodulexml>
     </target>
-    
+
+    <target name="nbms" depends="build" description="Build NBMs and an Auto Update site descriptor for all modules in the suite.">
+        <property name="build.updates.dir" location="build/updates"/>
+        <mkdir dir="${build.updates.dir}"/>
+        <subant target="nbm" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false">
+            <property name="nbm.target.dir" location="${build.updates.dir}"/>
+        </subant>
+        <makeupdatedesc desc="${build.updates.dir}/updates.xml" distbase=".">
+            <fileset dir="${build.updates.dir}">
+                <include name="*.nbm"/>
+            </fileset>
+        </makeupdatedesc>
+    </target>
     
     <target name="build-launchers" depends="-init">
         <fail unless="app.name">Must have set at least an application name ('app.name')</fail>
