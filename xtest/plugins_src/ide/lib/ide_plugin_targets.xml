@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -250,8 +250,10 @@ It can cause problems when temp files are not deleted if test crashes
         <condition property="is.windows">
             <os family="windows"/>
         </condition>
+        <antcall target="ideWatchdog"/>
         <antcall target="ideRunnerWindows"/>
         <antcall target="ideRunner"/>
+        <antcall target="finishWatchdog"/>
         
         <delete dir="${xtest.userdir}/xtest"/>
                                 
@@ -265,6 +267,26 @@ It can cause problems when temp files are not deleted if test crashes
         <antcall target="testbag-failure"/>
         
     </target>
+
+    <!-- Starts watchdog in separate VM. -->
+    <target name="ideWatchdog">
+        <java classname="org.netbeans.xtest.plugin.ide.IdeWatchdog" 
+              classpath="${xtest.plugin.home}/lib/xtest-ide-plugin.jar:${xtest.home}/lib/xtest.jar"
+              fork="true" spawn="true">
+            <arg value="${xtest.ide.timeout}"/>
+            <arg value="${xtest.home}"/>
+            <arg value="${xtest.workdir}"/>
+            <arg value="${xtest.userdir}"/>
+        </java>
+    </target>
+    
+    <!-- Stops watchdog or prints a message when IDE was killed by watchdog -->
+    <target name="finishWatchdog">
+        <java classname="org.netbeans.xtest.plugin.ide.IdeWatchdog" 
+              classpath="${xtest.plugin.home}/lib/xtest-ide-plugin.jar:${xtest.home}/lib/xtest.jar">
+            <arg value="${xtest.workdir}"/>
+        </java>
+    </target>
     
     <target name="ideRunnerWindows" if="is.windows">
         <!-- If nb.exe is available, run it because it prints log messages to the 
@@ -277,7 +299,7 @@ It can cause problems when temp files are not deleted if test crashes
                 enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
             <arg line="${args}"/>
             <syspropertyfile file="${_ideplugin.test.propertyfile}"/>
-        </ideTestRunner>        
+        </ideTestRunner>
     </target>
     
     <target name="ideRunner" unless="is.windows">

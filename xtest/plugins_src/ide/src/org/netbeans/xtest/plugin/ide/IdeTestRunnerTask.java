@@ -8,7 +8,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -70,6 +70,8 @@ protected ExecuteWatchdog watchdog;
     /**
      * Create IdeWatchdog to kill a IDE     
      */
+    /* #70954 - Used IdeWatchdog run in separate VM instead of this ant's watchdog.
+     * If IdeWatchdog is OK, this method and IdeExecWatchdog can be removed.
     protected ExecuteWatchdog createWatchdog() throws BuildException {
         if ( ideTimeout == null)  return null;
         IdeExecWatchdog ideWatchdog = new IdeExecWatchdog(ideTimeout.longValue(), getProject());
@@ -77,6 +79,7 @@ protected ExecuteWatchdog watchdog;
         watchdog =  ideWatchdog;        
         return watchdog;
     }
+     */
     
     /**
     * Timeout in milliseconds after which the process will be killed.
