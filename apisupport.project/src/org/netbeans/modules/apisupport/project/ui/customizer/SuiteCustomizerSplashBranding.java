@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -222,7 +222,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     
     private void resetSplashPreview() throws NumberFormatException {
         splashImage.setSplashImageIcon(splashSource);
-        Rectangle tRectangle = (Rectangle)runningTextBounds.getValue();;
+        Rectangle tRectangle = (Rectangle)runningTextBounds.getValue();
         Rectangle pRectangle = (Rectangle)progressBarBounds.getValue();
         splashImage.setTextColor(textColor.getColor());
         splashImage.setColorBar(barColor.getColor());
@@ -481,7 +481,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
                 double xRatio = newImage.getWidth(null)/((double)oldImage.getWidth(null));
                 double yRatio = newImage.getHeight(null)/((double)oldImage.getHeight(null));
                 if (xRatio != 1.0 || yRatio != 1.0) {
-                    Rectangle tRectangle = (Rectangle)runningTextBounds.getValue();;
+                    Rectangle tRectangle = (Rectangle)runningTextBounds.getValue();
                     Rectangle pRectangle = (Rectangle)progressBarBounds.getValue();
                     
                     int x = ((int)(tRectangle.x*xRatio));

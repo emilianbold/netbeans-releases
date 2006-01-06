@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -246,7 +246,7 @@ public final class ModuleList {
         EXCLUDED_DIR_NAMES.add("build"); // NOI18N
         EXCLUDED_DIR_NAMES.add("src"); // NOI18N
         EXCLUDED_DIR_NAMES.add("org"); // NOI18N
-    };
+    }
     private static void doScanNetBeansOrgSources(Map/*<String,ModuleEntry>*/ entries, File dir, int depth,
             File root, File nbdestdir, String pathPrefix, boolean warnReDuplicates) {
         File[] kids = dir.listFiles();

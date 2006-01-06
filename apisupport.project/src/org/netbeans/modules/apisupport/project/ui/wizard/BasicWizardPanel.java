@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -74,9 +74,9 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
         return null;
     }
     
-    public void storeSettings(Object settings) {;}
+    public void storeSettings(Object settings) {}
     
-    public void readSettings(Object settings) {;}
+    public void readSettings(Object settings) {}
     
     protected void setValid(boolean valid) {
         this.valid = valid;

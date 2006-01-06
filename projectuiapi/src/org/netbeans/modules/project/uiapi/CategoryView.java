@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -105,7 +105,7 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
 
     private Node findNode( ProjectCustomizer.Category category, Node node ) {
 
-        Children ch = node.getChildren();;
+        Children ch = node.getChildren();
 
         if ( ch != null && ch != Children.LEAF ) {
             Node nodes[] = ch.getNodes( true );

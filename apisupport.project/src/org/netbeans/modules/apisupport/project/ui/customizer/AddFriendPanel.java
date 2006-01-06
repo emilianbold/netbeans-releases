@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -48,7 +48,7 @@ public class AddFriendPanel extends JPanel {
                     checkValidity();
                 }
             });
-        };
+        }
         friends.setEnabled(false);
         friends.setModel(CustomizerComponentFactory.createComboWaitModel());
         friends.setSelectedItem(CustomizerComponentFactory.WAIT_VALUE);
