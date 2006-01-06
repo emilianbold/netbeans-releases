@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.actions.EditAction;
 import org.openide.actions.FindAction;
@@ -254,7 +255,7 @@ class ActionFilterNode extends FilterNode {
                        String[] entries = PropertyUtils.tokenizePath(cp);
                        List/*<String>*/ result = new ArrayList ();                       
                        for (int i=0; i<entries.length; i++) {
-                           if (!entryId.equals(J2SEProjectProperties.getAntPropertyName(entries[i]))) {
+                           if (!entryId.equals(ClassPathSupport.getAntPropertyName(entries[i]))) {
                                int size = result.size();
                                if (size>0) {
                                    result.set (size-1,(String)result.get(size-1) + ':'); //NOI18N

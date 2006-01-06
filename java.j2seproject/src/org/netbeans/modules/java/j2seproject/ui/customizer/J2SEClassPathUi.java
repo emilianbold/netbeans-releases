@@ -140,7 +140,7 @@ public class J2SEClassPathUi {
                         return item.getLibrary().getDisplayName();
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
-                    String name = (String)WELL_KNOWN_PATHS_NAMES.get( J2SEProjectProperties.getAntPropertyName( item.getReference() ) );
+                    String name = (String)WELL_KNOWN_PATHS_NAMES.get( ClassPathSupport.getAntPropertyName( item.getReference() ) );
                     return name == null ? item.getReference() : name;
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {

@@ -75,10 +75,13 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
                             List resources = cs.itemsList( raw );
                             ClassPathSupport.Item item = ClassPathSupport.Item.create( library, null );
                             if (!resources.contains(item)) {
-                                resources.add (item);
+                                resources.add (item);                                
                                 String itemRefs[] = cs.encodeToStrings( resources.iterator() );                                
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
-                                props.setProperty(classPathId, itemRefs);
+                                props.setProperty(classPathId, itemRefs);                                
+                                String prop = cs.getLibraryReference( item );
+                                prop = prop.substring(2, prop.length()-1); // XXX make a PropertyUtils method for this!
+                                ClassPathSupport.relativizeLibraryClassPath(props, helper.getAntProjectHelper(), prop);                                
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                 ProjectManager.getDefault().saveProject(project);
                                 return Boolean.TRUE;

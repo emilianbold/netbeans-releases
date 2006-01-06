@@ -24,10 +24,13 @@ import java.util.Set;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -306,7 +309,8 @@ public class ClassPathSupport {
                 throw new IllegalArgumentException( "property must not be null in broken items" ); // NOI18N
             }
             return new Item( type, BROKEN, property );
-        }
+        }                
+        
         
         // Instance methods ----------------------------------------------------
         
@@ -419,6 +423,59 @@ public class ClassPathSupport {
 
         }
                 
+    }
+    
+    /**
+     * Tokenize library classpath and try to relativize all the jars.
+     * @param ep the editable properties in which the result should be stored
+     * @param aph AntProjectHelper used to resolve files
+     * @param libCpProperty the library classpath property
+     */
+    public static boolean relativizeLibraryClassPath (final EditableProperties ep, final AntProjectHelper aph, final String libCpProperty) {
+        String value = PropertyUtils.getGlobalProperties().getProperty(libCpProperty);
+        // bugfix #42852, check if the classpath property is set, otherwise return null
+        if (value == null) {
+            return false;
+        }
+        String[] paths = PropertyUtils.tokenizePath(value);
+        StringBuffer sb = new StringBuffer();
+        File projectDir = FileUtil.toFile(aph.getProjectDirectory());
+        for (int i=0; i<paths.length; i++) {
+            File f = aph.resolveFile(paths[i]);
+            if (CollocationQuery.areCollocated(f, projectDir)) {
+                sb.append(PropertyUtils.relativizeFile(projectDir, f));
+            } else {
+                return false;
+            }
+            if (i+1<paths.length) {
+                sb.append(File.pathSeparatorChar);
+            }
+        }
+        if (sb.length() == 0) {
+            return false;
+        }            
+        ep.setProperty(libCpProperty, sb.toString());
+        ep.setComment(libCpProperty, new String[]{
+            // XXX this should be I18N! Not least because the English is wrong...
+            "# Property "+libCpProperty+" is set here just to make sharing of project simpler.",
+            "# The library definition has always preference over this property."}, false);
+        return true;
+    }
+    
+    /**
+     * Converts the ant reference to the name of the referenced property
+     * @param ant reference
+     * @param the name of the referenced property
+     */ 
+    public static String getAntPropertyName( String property ) {
+        if ( property != null && 
+             property.startsWith( "${" ) && // NOI18N
+             property.endsWith( "}" ) ) { // NOI18N
+            return property.substring( 2, property.length() - 1 ); 
+        }
+        else {
+            return property;
+        }
     }
             
 }

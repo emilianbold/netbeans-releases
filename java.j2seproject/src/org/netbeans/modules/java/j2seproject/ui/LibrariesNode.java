@@ -324,7 +324,7 @@ final class LibrariesNode extends AbstractNode {
             List pe = new ArrayList(Arrays.asList(PropertyUtils.tokenizePath( raw )));
             while (pe.size()>0){
                 String prop = (String) pe.remove(0);
-                String propName = J2SEProjectProperties.getAntPropertyName (prop);
+                String propName = org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport.getAntPropertyName (prop);
                 if (classPathIgnoreRef.contains(propName)) {
                     continue;
                 }

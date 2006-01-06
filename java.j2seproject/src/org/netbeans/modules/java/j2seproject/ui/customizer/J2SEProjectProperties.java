@@ -453,7 +453,7 @@ public class J2SEProjectProperties {
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
                 // remove helper property pointing to library jar if there is any
                 String prop = item.getReference();
-                prop = prop.substring(2, prop.length()-1);
+                prop = ClassPathSupport.getAntPropertyName(prop);
                 ep.remove(prop);
                 changed = true;
             }
@@ -465,54 +465,14 @@ public class J2SEProjectProperties {
                 // add property to project.properties pointing to relativized 
                 // library jar(s) if possible                
                 String prop = cs.getLibraryReference( item );
-                prop = prop.substring(2, prop.length()-1); // XXX make a PropertyUtils method for this!
-                String value = relativizeLibraryClasspath(prop, projDir);
-                if (value != null) {
-                    ep.setProperty(prop, value);
-                    ep.setComment(prop, new String[]{
-                        // XXX this should be I18N! Not least because the English is wrong...
-                        "# Property "+prop+" is set here just to make sharing of project simpler.",
-                        "# The library definition has always preference over this property."}, false);
-                    changed = true;
-                }
+                prop = ClassPathSupport.getAntPropertyName(prop);
+                changed |= ClassPathSupport.relativizeLibraryClassPath(ep,updateHelper.getAntProjectHelper(),prop);
             }
         }
         if (changed) {
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         }
-    }
-        
-    /**
-     * Tokenize library classpath and try to relativize all the jars.
-     * @param property library property name ala "libs.someLib.classpath"
-     * @param projectDir project dir for relativization
-     * @return relativized library classpath or null if some jar is not collocated
-     */
-    private String relativizeLibraryClasspath(String property, File projectDir) {
-        String value = PropertyUtils.getGlobalProperties().getProperty(property);
-        // bugfix #42852, check if the classpath property is set, otherwise return null
-        if (value == null) {
-            return null;
-        }
-        String[] paths = PropertyUtils.tokenizePath(value);
-        StringBuffer sb = new StringBuffer();
-        for (int i=0; i<paths.length; i++) {
-            File f = updateHelper.getAntProjectHelper().resolveFile(paths[i]);
-            if (CollocationQuery.areCollocated(f, projectDir)) {
-                sb.append(PropertyUtils.relativizeFile(projectDir, f));
-            } else {
-                return null;
-            }
-            if (i+1<paths.length) {
-                sb.append(File.pathSeparatorChar);
-            }
-        }
-        if (sb.length() == 0) {
-            return null;
-        } else {
-            return sb.toString();
-        }
-    }
+    }            
     
     private void storeRoots( SourceRoots roots, DefaultTableModel tableModel ) throws MalformedURLException {
         Vector data = tableModel.getDataVector();
@@ -524,18 +484,6 @@ public class J2SEProjectProperties {
             rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
         }
         roots.putRoots(rootURLs,rootLabels);
-    }
-    
-    
-    public static String getAntPropertyName( String property ) {
-        if ( property != null && 
-             property.startsWith( "${" ) && // NOI18N
-             property.endsWith( "}" ) ) { // NOI18N
-            return property.substring( 2, property.length() - 1 ); 
-        }
-        else {
-            return property;
-        }
     }
     
     /* This is used by CustomizerWSServiceHost */
