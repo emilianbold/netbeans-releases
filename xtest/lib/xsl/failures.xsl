@@ -116,11 +116,16 @@
 	<xsl:variable name="ParentTestBag" select="parent::*/parent::*"/>
 	<xsl:variable name="ParentTestRun" select="parent::*/parent::*/parent::*"/>
 	<xsl:variable name="SuiteName"><xsl:value-of select="parent::*/@name"/></xsl:variable>
+        <xsl:variable name="SuiteNameShort">
+            <xsl:call-template name="strip-package">
+                <xsl:with-param name="val" select="$SuiteName"/>
+            </xsl:call-template>
+        </xsl:variable>
 	<TR valing="top">
 		<xsl:attribute name="class"><xsl:value-of select="translate(@result,' ','-')"/></xsl:attribute>
 		<TD>
 			<A HREF="../{$ParentTestRun/@runID}/{$ParentTestBag/@bagID}/htmlresults/suites/TEST-{$SuiteName}.html#{@name}">
-				<xsl:value-of select="parent::*/@name"/>.<xsl:value-of select="@name"/>
+                            <xsl:value-of select="$SuiteNameShort"/>.<xsl:value-of select="@name"/>
 			</A>
 		</TD>
 		<TD><xsl:value-of select="@result"/></TD>
@@ -135,5 +140,18 @@
 	</TR>	
 </xsl:template>
 
+    <xsl:template name="strip-package">
+        <xsl:param name="val"/>
+        <xsl:choose>
+            <xsl:when test="contains($val, '.')">
+                <xsl:call-template name="strip-package">
+                    <xsl:with-param name="val" select="substring-after($val, '.')"/>
+                </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$val"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
 
 </xsl:stylesheet>
