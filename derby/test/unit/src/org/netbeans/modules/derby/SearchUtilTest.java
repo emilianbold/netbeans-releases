@@ -25,18 +25,6 @@ public class SearchUtilTest extends TestCase {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(SearchUtilTest.class);
-        
-        return suite;
-    }
-
     /**
      * Test of checkForString method, of class org.netbeans.modules.derby.SearchUtil.
      */
