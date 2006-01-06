@@ -1606,7 +1606,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
     
     
-  <target name="generate-files-layout" depends="generate-golden-files" >
+  <target name="generate-files-layout" depends="generate-golden-files-init" >
     <property name="generated.files.dir" location="build/generated" />
     <mkdir dir="${generated.files.dir}" />
     
