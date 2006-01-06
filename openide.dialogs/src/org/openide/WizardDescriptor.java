@@ -7,20 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide;
 
-import java.lang.reflect.InvocationTargetException;
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
+package org.openide;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -37,26 +28,44 @@ import java.awt.KeyboardFocusManager;
 import java.awt.MediaTracker;
 import java.awt.Rectangle;
 import java.awt.Window;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import java.io.IOException;
-
-import java.lang.ref.WeakReference;
-
 import java.net.URL;
-
 import java.text.MessageFormat;
-
-import java.util.*;
-
-import javax.accessibility.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
+import javax.accessibility.Accessible;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.ListCellRenderer;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.openide.awt.HtmlBrowser;
+import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  * Implements a basic "wizard" GUI system.
@@ -175,9 +184,6 @@ public class WizardDescriptor extends DialogDescriptor {
      */
     private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
 
-    /** Reference to default image */
-    private static WeakReference defaultImage;
-    
     private static ErrorManager err = ErrorManager.getDefault ().getInstance (WizardDescriptor.class.getName ());
 
     /** real buttons to be placed instead of the options */
@@ -1064,26 +1070,7 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private static Image getDefaultImage() {
-        Image img = null;
-
-        if (defaultImage != null) {
-            img = (Image) defaultImage.get();
-        }
-
-        if (img == null) {
-            java.net.URL url = NbBundle.getLocalizedFile(
-                    "org.openide.resources.defaultWizard", // NOI18N
-                    "gif" // NOI18N
-                );
-
-            img = (url == null) ? null : java.awt.Toolkit.getDefaultToolkit().getImage(url);
-
-            if (img != null) {
-                defaultImage = new WeakReference(img);
-            }
-        }
-
-        return img;
+        return Utilities.loadImage("org/openide/resources/defaultWizard.gif", true);
     }
 
     private void updateButtonAccessibleDescription() {
