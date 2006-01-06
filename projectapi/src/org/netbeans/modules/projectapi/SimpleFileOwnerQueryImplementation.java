@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -119,10 +119,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         try {
             return URI.create(f.getURL().toString());
         } catch (FileStateInvalidException e) {
-            IllegalArgumentException iae = new IllegalArgumentException(e.getMessage());
-            
-            ErrorManager.getDefault().annotate(iae, e);
-            throw iae;
+            throw (IllegalArgumentException) new IllegalArgumentException(e.toString()).initCause(e);
         }
     }
     
