@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -286,7 +286,9 @@ public class LayerUtilsTest extends LayerTestBase {
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(p);
         assertDisplayName(fs, "right display name for netbeans.org standard file", "Menu/RunProject", "Run");
         assertNull("not loading files from extra modules", fs.findResource("Templates/Documents/docbook-article.xml"));
-        p = (NbModuleProject) ProjectManager.getDefault().findProject(nbroot.getFileObject("contrib/docbook"));
+        FileObject docbook = nbroot.getFileObject("contrib/docbook");
+        assertNotNull("contrib checked out", docbook);
+        p = (NbModuleProject) ProjectManager.getDefault().findProject(docbook);
         fs = LayerUtils.getEffectiveSystemFilesystem(p);
         assertDisplayName(fs, "right display name for file from extra module", "Templates/Documents/docbook-article.xml", "DocBook Article");
     }
