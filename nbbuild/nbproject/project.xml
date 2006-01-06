@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
@@ -369,6 +369,7 @@ Microsystems, Inc. All Rights Reserved.
                 <unit-tests/>
                 <classpath mode="compile">../junit/external/junit-3.8.1.jar:netbeans/testtools/modules/ext/nbjunit.jar:../ant/external/lib/ant.jar:nbantext.jar</classpath>
                 <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
+                <built-to>build/test/unit/classes</built-to>
                 <source-level>1.4</source-level>
             </compilation-unit>
         </java-data>
