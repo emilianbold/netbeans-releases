@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -350,7 +350,7 @@ public final class ParseProjectXml extends Task {
         }
         Element d = XMLUtil.findElement(c, "data", NBM_NS);
         if (d == null) {
-            throw new BuildException("No <data>", getLocation());
+            throw new BuildException("No <data> in " + getProjectFile(), getLocation());
         }
         return d;
     }
