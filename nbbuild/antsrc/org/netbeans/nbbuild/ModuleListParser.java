@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import org.apache.tools.ant.BuildListener;
@@ -56,11 +57,47 @@ final class ModuleListParser {
     private static Map/*<String,Entry>*/ scanNetBeansOrgSources(File root, Hashtable properties, Project project) throws IOException {
         Map/*<String,Entry>*/ entries = (Map) SOURCE_SCAN_CACHE.get(root);
         if (entries == null) {
-            if (project != null) {
-                project.log("Scanning for modules in " + root);
-            }
             entries = new HashMap();
-            doScanNetBeansOrgSources(entries, root, DEPTH_NB_ALL, properties, null, project);
+            // Similar to #62221: if just invoked from a module in standard clusters, only scan those clusters (faster):
+            Set/*<String>*/ standardModules = new HashSet();
+            boolean doFastScan = false;
+            String basedir = (String) properties.get("basedir");
+            if (basedir != null) {
+                File basedirF = new File(basedir);
+                String clusterList = (String) properties.get("nb.clusters.list");
+                if (clusterList != null) {
+                    StringTokenizer tok = new StringTokenizer(clusterList, ", ");
+                    while (tok.hasMoreTokens()) {
+                        String clusterName = tok.nextToken();
+                        String moduleList = (String) properties.get(clusterName);
+                        if (moduleList != null) {
+                            StringTokenizer tok2 = new StringTokenizer(moduleList, ", ");
+                            while (tok2.hasMoreTokens()) {
+                                String module = tok2.nextToken();
+                                standardModules.add(module);
+                                doFastScan |= new File(root, module.replace('/', File.separatorChar)).equals(basedirF);
+                            }
+                        }
+                    }
+                }
+            }
+            if (doFastScan) {
+                if (project != null) {
+                    project.log("Scanning for modules in " + root + " among standard clusters");
+                }
+                Iterator it = standardModules.iterator();
+                while (it.hasNext()) {
+                    String module = (String) it.next();
+                    scanPossibleProject(new File(root, module.replace('/', File.separatorChar)), entries, properties, module, ParseProjectXml.TYPE_NB_ORG, project);
+                }
+            } else {
+                // Might be an extra module (e.g. something in contrib); need to scan everything.
+                if (project != null) {
+                    project.log("Scanning for modules in " + root);
+                    project.log("Quick scan mode disabled since " + basedir + " not among standard modules of " + root + " which are " + standardModules, project.MSG_VERBOSE);
+                }
+                doScanNetBeansOrgSources(entries, root, DEPTH_NB_ALL, properties, null, project);
+            }
             if (project != null) {
                 project.log("Found modules: " + entries.keySet(), Project.MSG_VERBOSE);
             }
