@@ -275,6 +275,13 @@ public final class ParseProjectXml extends Task {
                 Hashtable properties = getProject().getProperties();
                 properties.put("project", project.getAbsolutePath());
                 modules = new ModuleListParser(properties, getModuleType(pDoc), getProject());
+                ModuleListParser.Entry myself = modules.findByCodeNameBase(getCodeNameBase(pDoc));
+                if (myself == null) { // #71130
+                    ModuleListParser.resetCaches();
+                    modules = new ModuleListParser(properties, getModuleType(pDoc), getProject());
+                    myself = modules.findByCodeNameBase(getCodeNameBase(pDoc));
+                    assert myself != null;
+                }
                 deps = getDeps(pDoc, modules);
             }
             if (moduleDependenciesProperty != null) {

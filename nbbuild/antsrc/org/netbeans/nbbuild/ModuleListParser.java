@@ -51,6 +51,14 @@ final class ModuleListParser {
     private static Map/*<File,Entry>*/ STANDALONE_SCAN_CACHE = new HashMap();
     private static Map/*<File,Map<String,Entry>>*/ BINARY_SCAN_CACHE = new HashMap();
     
+    /** Clear caches. Cf. #71130. */
+    public static void resetCaches() {
+        SOURCE_SCAN_CACHE.clear();
+        SUITE_SCAN_CACHE.clear();
+        STANDALONE_SCAN_CACHE.clear();
+        BINARY_SCAN_CACHE.clear();
+    }
+    
     /**
      * Find all NBM projects in a root, possibly from cache.
      */
