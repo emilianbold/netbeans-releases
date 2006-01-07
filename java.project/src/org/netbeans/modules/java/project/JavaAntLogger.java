@@ -68,7 +68,8 @@ public final class JavaAntLogger extends AntLogger {
      * </ol>
      */
     private static final Pattern EXCEPTION_MESSAGE = Pattern.compile(
-    "(?:Exception in thread \"main\" )?(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)+)([a-zA-Z_$][a-zA-Z0-9_$]*(?:: .+)?)"); // NOI18N
+    // #42894: JRockit uses "Main Thread" not "main"
+    "(?:Exception in thread \"(?:main|Main Thread)\" )?(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)+)([a-zA-Z_$][a-zA-Z0-9_$]*(?:: .+)?)"); // NOI18N
     
     /**
      * Regexp matching part of a Java task's invocation debug message
