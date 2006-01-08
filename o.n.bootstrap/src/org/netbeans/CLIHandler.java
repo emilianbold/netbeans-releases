@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -733,6 +734,7 @@ public abstract class CLIHandler extends Object {
         private OutputStream os;
         private OutputStream err;
         private File currentDir;
+        private boolean closed;
         
         Args(String[] args, InputStream is, OutputStream os, java.io.OutputStream err, String currentDir) {
             argsBackup = args;
@@ -760,6 +762,12 @@ public abstract class CLIHandler extends Object {
             } else {
                 args = (String[])argsBackup.clone();
             }
+        }
+        
+        /** Closes the connection.
+         */
+        final void close() {
+            closed = true;
         }
         
         /**
@@ -798,6 +806,17 @@ public abstract class CLIHandler extends Object {
         public InputStream getInputStream() {
             return is;
         }
+        
+        /** Is open? True if the connection is still alive. Can be
+         * used with long running computations to find out if the
+         * consumer of the output has not been interupted.
+         *
+         * @return true if the connection is still alive
+         */
+        public boolean isOpen() {
+            return !closed;
+        }
+        
     } // end of Args
     
     /** Server that creates local socket and communicates with it.
@@ -969,6 +988,15 @@ public abstract class CLIHandler extends Object {
                                 wait (1000);
                                 os.write (REPLY_DELAY);
                                 os.flush ();
+                            } catch (SocketException ex) {
+                                if (ex.getMessage().equals("Broken pipe")) { // NOI18N
+                                    // mark the arguments killed
+                                    arguments.close();
+                                    // interrupt this thread
+                                    interrupt();
+                                } else {
+                                    ex.printStackTrace();
+                                }
                             } catch (InterruptedException ex) {
                                 ex.printStackTrace();
                             } catch (IOException ex) {
@@ -979,8 +1007,19 @@ public abstract class CLIHandler extends Object {
                 }
                 ComputingAndNotifying r = new ComputingAndNotifying ();
                 r.waitForResultAndNotifyOthers ();
-                os.write(REPLY_EXIT);
-                os.writeInt(r.res);
+                try {
+                    os.write(REPLY_EXIT);
+                    os.writeInt(r.res);
+                } catch (SocketException ex) {
+                    if (ex.getMessage().equals("Broken pipe")) { // NOI18N
+                        // mark the arguments killed
+                        arguments.close();
+                        // interrupt r thread
+                        r.interrupt();
+                    } else {
+                        throw ex;
+                    }
+                }
             } else {
                 enterState(103, block);
                 os.write(REPLY_FAIL);

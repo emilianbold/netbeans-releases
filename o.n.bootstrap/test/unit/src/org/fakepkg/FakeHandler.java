@@ -14,6 +14,7 @@
 package org.fakepkg;
 
 import java.io.PrintWriter;
+import java.util.Map;
 import org.netbeans.CLIHandler;
 
 /**
@@ -22,6 +23,7 @@ import org.netbeans.CLIHandler;
  */
 public class FakeHandler extends CLIHandler {
     public static Runnable toRun;
+    public static Map chained;
     
     /** Creates a new instance of FakeHandler */
     public FakeHandler() {
@@ -36,6 +38,10 @@ public class FakeHandler extends CLIHandler {
     }
 
     protected int cli(CLIHandler.Args args) {
+        if (chained != null) {
+            Integer i = (Integer)chained.get(args);
+            return i.intValue();
+        }
         return 0;
     }
 
