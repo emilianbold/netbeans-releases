@@ -226,8 +226,8 @@ public final class SuiteLogicalView implements LogicalViewProvider {
                 // SuiteProject$Info.getSimpleName() which acquires ProjectManager.mutex(). And
                 // since this method might be called under ProjectManager.mutex() write access
                 // and updateKeys() --> setKeys() in turn calls Children.MUTEX write access,
-                // deadlock is here, so preventing it...
-                if (ProjectManager.mutex().isWriteAccess()) {
+                // deadlock is here, so preventing it... (also got this under read access)
+                if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             updateKeys();
