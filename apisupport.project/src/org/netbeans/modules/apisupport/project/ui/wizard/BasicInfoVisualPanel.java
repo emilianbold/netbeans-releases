@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -82,7 +82,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
             detachModuleTypeGroup();
             locationValue.setText(getSuiteLocation());
-        } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE) {
+        } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE ||
+                wizardType == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT) {
             if (moduleSuiteValue.getItemCount() > 0) {
                 restoreSelectedSuite();
                 suiteModule.setSelected(true);
@@ -94,19 +95,12 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
             moduleSuite.setText(getMessage("LBL_Add_to_Suite")); // NOI18N
             suiteModule.setSelected(true);
-            suiteModule.setVisible(false);
             if (moduleSuiteValue.getItemCount() > 0) {
                 restoreSelectedSuite();
                 locationValue.setText((String) moduleSuiteValue.getSelectedItem());
             }
-            platform.setVisible(false);
-            platformValue.setVisible(false);
-            managePlatform.setVisible(false);
-            standAloneModule.setVisible(false);
-            mainProject.setSelected(false);
-            mainProject.setVisible(false);
         } else {
-            assert false : "Unknown wizard type =" + wizardType; // NOI18N
+            assert false : "Unknown wizard type = " + wizardType; // NOI18N
         }
         
         attachDocumentListeners();
@@ -132,13 +126,33 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
     private void setComponentsVisibility() {
         boolean isSuiteWizard = wizardType == NewNbModuleWizardIterator.TYPE_SUITE;
+        boolean isSuiteComponentWizard = wizardType == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT;
+        boolean isLibraryWizard = wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE;
+        
         typeChooserPanel.setVisible(!isSuiteWizard);
         suitePlatform.setVisible(isSuiteWizard);
         suitePlatformValue.setVisible(isSuiteWizard);
         manageSuitePlatform.setVisible(isSuiteWizard);
+        
+        suiteModule.setVisible(!isLibraryWizard);
+        platform.setVisible(!isLibraryWizard);
+        platformValue.setVisible(!isLibraryWizard);
+        managePlatform.setVisible(!isLibraryWizard);
+        standAloneModule.setVisible(!isLibraryWizard);
+        mainProject.setSelected(!isLibraryWizard);
+        
+        standAloneModule.setVisible(!isSuiteComponentWizard);
+        platform.setVisible(!isSuiteComponentWizard);
+        platformValue.setVisible(!isSuiteComponentWizard);
+        managePlatform.setVisible(!isSuiteComponentWizard);
+        suiteModule.setVisible(!isSuiteComponentWizard);
     }
     
     private void restoreSelectedSuite() {
+        String preferredSuiteDir  = (String) getSettings().getProperty(NewNbModuleWizardIterator.PREFERRED_SUITE_DIR);
+        if (preferredSuiteDir != null) {
+            lastSelectedSuite = preferredSuiteDir;
+        }
         if (lastSelectedSuite != null) {
             int max = moduleSuiteValue.getModel().getSize();
             for (int i=0; i < max; i++) {
@@ -173,8 +187,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         platformValue.setEnabled(standalone);
         managePlatform.setEnabled(standalone);
         moduleSuite.setEnabled(suiteModuleSelected);
-        moduleSuiteValue.setEnabled(suiteModuleSelected);
-        browseSuiteButton.setEnabled(suiteModuleSelected);
+        moduleSuiteValue.setEnabled(suiteModuleSelected && wizardType != NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT);
+        browseSuiteButton.setEnabled(suiteModuleSelected && wizardType != NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT);
     }
     
     void updateAndCheck() {
@@ -186,10 +200,10 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             setErrorMessage(getMessage("MSG_LocationCannotBeEmpty"));
         } else if (suiteModule.isSelected() && moduleSuiteValue.getSelectedItem() == null) {
             setErrorMessage(getMessage("MSG_ChooseRegularSuite"));
-        } else if (standAloneModule.isSelected() && 
+        } else if (standAloneModule.isSelected() &&
                 (platformValue.getSelectedItem() == null || !((NbPlatform) platformValue.getSelectedItem()).isValid())) {
             setErrorMessage(getMessage("MSG_ChosenPlatformIsInvalid"));
-        } else if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE && 
+        } else if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE &&
                 (suitePlatformValue.getSelectedItem() == null || !((NbPlatform) suitePlatformValue.getSelectedItem()).isValid())) {
             setErrorMessage(getMessage("MSG_ChosenPlatformIsInvalid"));
         } else if (getFolder().exists()) {
@@ -281,7 +295,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             counter = ModuleUISettings.getDefault().getNewSuiteCounter() + 1;
             bundlekey = "TXT_Suite"; //NOI18N
             data.setSuiteCounter(counter);
-        } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE) {
+        } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE ||
+                wizardType == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT) {
             counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
             bundlekey = "TXT_Module"; //NOI18N
             data.setModuleCounter(counter);
@@ -794,5 +809,5 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     private javax.swing.JComboBox suitePlatformValue;
     private javax.swing.JPanel typeChooserPanel;
     // End of variables declaration//GEN-END:variables
-
+    
 }

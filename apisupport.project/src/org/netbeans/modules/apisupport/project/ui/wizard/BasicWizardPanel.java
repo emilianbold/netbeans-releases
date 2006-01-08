@@ -103,7 +103,8 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
         String helpId = null;
         if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
             helpId = "suite"; // NOI18N
-        } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE) {
+        } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE ||
+                wizardType == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT) {
             helpId = "module"; // NOI18N
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
             helpId = "library"; // NOI18N

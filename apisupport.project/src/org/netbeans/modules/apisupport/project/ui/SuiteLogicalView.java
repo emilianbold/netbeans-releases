@@ -7,18 +7,20 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -37,12 +39,14 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
+import org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -171,7 +175,8 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         public Action[] getActions(boolean context) {
             return new Action[] {
-                new AddSuiteComponentAction(suite)
+                new AddSuiteComponentAction(suite),
+                new AddNewSuiteComponentAction(suite)
             };
         }
         
@@ -261,6 +266,40 @@ public final class SuiteLogicalView implements LogicalViewProvider {
                 } else {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                             NbBundle.getMessage(SuiteLogicalView.class, "MSG_SuiteAlreadyContainsCNB", project.getCodeNameBase())));
+                }
+            }
+        }
+        
+    }
+    
+    private static final class AddNewSuiteComponentAction extends AbstractAction {
+        
+        private final SuiteProject suite;
+        
+        public AddNewSuiteComponentAction(final SuiteProject suite) {
+            super(NbBundle.getMessage(SuiteLogicalView.class, "CTL_AddNewModule"));
+            this.suite = suite;
+        }
+        
+        public void actionPerformed(ActionEvent evt) {
+            NewNbModuleWizardIterator iterator = NewNbModuleWizardIterator.createSuiteComponentIterator(suite);
+            WizardDescriptor wd = new WizardDescriptor(iterator);
+            wd.setTitleFormat(new MessageFormat("{0}")); // NOI18N
+            wd.setTitle(NbBundle.getMessage(SuiteLogicalView.class, "CTL_NewModuleProject"));
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(wd);
+            dialog.setVisible(true);
+            dialog.toFront();
+            boolean cancelled = wd.getValue() != WizardDescriptor.FINISH_OPTION;
+            if (!cancelled) {
+                FileObject folder = iterator.getCreateProjectFolder();
+                try {
+                    Project project = ProjectManager.getDefault().findProject(folder);
+                    OpenProjects.getDefault().open(new Project[] { project }, false);
+                    if (wd.getProperty("setAsMain") == Boolean.TRUE) { // NOI18N
+                        OpenProjects.getDefault().setMainProject(project);
+                    }
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
         }

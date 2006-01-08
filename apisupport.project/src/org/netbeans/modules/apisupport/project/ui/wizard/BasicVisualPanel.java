@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -70,12 +70,13 @@ public abstract class BasicVisualPanel extends JPanel {
             String resource = null;
             if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
                 resource = "emptySuite"; // NOI18N
-            } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE) {
+            } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE ||
+                    wizardType == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT) {
                 resource = "emptyModule"; // NOI18N
             } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
                 resource = "libraryModule"; // NOI18N
             } else {
-                assert false : "Unknown wizard type =" + wizardType; // NOI18N
+                assert false : "Unknown wizard type = " + wizardType; // NOI18N
             }
             settings.putProperty("NewProjectWizard_Title", // NOI18N
                     NbBundle.getMessage(BasicVisualPanel.class, "Templates/Project/APISupport/" + resource));
