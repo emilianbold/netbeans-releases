@@ -262,4 +262,13 @@ public class GlobFileBuiltQueryTest extends NbTestCase {
         assertTrue("Now Foo2.java is built", fooStatus.isBuilt());
     }
     
+    /**See issue #66713.
+     */
+    public void testInvalidFile() throws Exception {
+        FileObject baz = TestUtil.createFileFromContent(null, prj, "src/pkg/Baz.java");
+        
+        baz.delete();
+        assertNull(fbqi.getStatus(baz));
+    }
+    
 }

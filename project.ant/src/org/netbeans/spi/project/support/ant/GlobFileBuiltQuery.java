@@ -181,7 +181,14 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     private StatusImpl createStatus(FileObject file) {
         File target = findTarget(file);
         if (target != null) {
-            return new StatusImpl(file, target);
+            try {
+                DataObject source = DataObject.find(file);
+                
+                return new StatusImpl(source, file, target);
+            } catch (DataObjectNotFoundException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                return null;
+            }   
         } else {
             return null;
         }
@@ -194,14 +201,10 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         private final DataObject source;
         private File target;
         
-        StatusImpl(FileObject source, File target) {
-            try {
-                this.source = DataObject.find(source);
-            } catch (DataObjectNotFoundException e) {
-                throw new Error(e);
-            }
+        StatusImpl(DataObject source, FileObject sourceFO, File target) {
+            this.source = source;
             this.source.addPropertyChangeListener(WeakListeners.propertyChange(this, this.source));
-            source.addFileChangeListener(FileUtil.weakFileChangeListener(this, source));
+            sourceFO.addFileChangeListener(FileUtil.weakFileChangeListener(this, sourceFO));
             this.target = target;
             FileChangeSupport.DEFAULT.addListener(this, target);
         }
