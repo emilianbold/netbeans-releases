@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Micro//S ystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Micro//S ystems, Inc. Portions Copyright 1997-2006 Sun
  * Micro//S ystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.jpda.ui;
@@ -37,8 +37,12 @@ import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.openide.ErrorManager;
 
 /**
+ * Utility methods for sources.
+ *
+ * @see Similar class in debuggerjpda when modifying this.
  *
  * @author Jan Jancura
  */
@@ -265,7 +269,12 @@ public class SourcePath {
                     convertSlash (csf.getSourcePath (stratumn)), true
                 );
             }
-            if (url == null) return false;
+            if (url == null) {
+                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                        "Show Source: No URL for source path "+csf.getSourcePath (stratumn)+
+                        "\nThe reason is likely no opened project for this source file.");
+                return false;
+            }
             int lineNumber = csf.getLineNumber (stratumn);
             if (lineNumber < 1) lineNumber = 1;
             return EditorContextBridge.showSource (
@@ -274,10 +283,17 @@ public class SourcePath {
                 debugger
             );
         } catch (AbsentInformationException e) {
+            String url = getURL (
+                convertClassNameToRelativePath (csf.getClassName ()), true
+            );
+            if (url == null) {
+                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                        "Show Source: No source URL for class "+csf.getClassName()+
+                        "\nThe reason is likely no opened project for the source file.");
+                return false;
+            }
             return EditorContextBridge.showSource (
-                getURL (
-                    convertClassNameToRelativePath (csf.getClassName ()), true
-                ),
+                url,
                 1,
                 debugger
             );

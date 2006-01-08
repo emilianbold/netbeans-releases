@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -40,6 +40,7 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
 import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.openide.ErrorManager;
 
 
 /**
@@ -185,7 +186,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         try {
             getDebugger().setAltCSF(thread.frame(0));
         } catch (com.sun.jdi.IncompatibleThreadStateException e) {
-            e.printStackTrace(); 
+            ErrorManager.getDefault().notify(e);
         } catch (java.lang.IndexOutOfBoundsException e) {
             // No frame in case of Thread and "Main" class breakpoints, PATCH 56540 
         } 

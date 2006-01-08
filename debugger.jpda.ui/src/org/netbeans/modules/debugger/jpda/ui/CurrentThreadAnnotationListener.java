@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Micro//S ystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Micro//S ystems, Inc. Portions Copyright 1997-2006 Sun
  * Micro//S ystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.jpda.ui;
@@ -24,6 +24,7 @@ import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.openide.ErrorManager;
 
 import org.openide.util.RequestProcessor;
 
@@ -121,6 +122,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         try {
             stack = currentThread.getCallStack ();
         } catch (AbsentInformationException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             synchronized (currentPCLock) {
                 currentPCSet = false; // The annotation is goint to be removed
             }

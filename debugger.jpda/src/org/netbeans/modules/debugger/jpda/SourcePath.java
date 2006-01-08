@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.jpda;
@@ -25,8 +25,12 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.openide.ErrorManager;
 
 /**
+ * Utility methods for sources.
+ *
+ * @see Similar class in debuggerjpda/ui when modifying this.
  *
  * @author Jan Jancura
  */
@@ -226,26 +230,6 @@ public class SourcePath {
                 getURL (
                     convertClassNameToRelativePath (t.getClassName ()), 
                     true
-                ),
-                lineNumber,
-                debugger
-            );
-        }
-    }
-
-    public boolean showSource (CallStackFrame csf, String stratumn) {
-        int lineNumber = csf.getLineNumber (stratumn);
-        if (lineNumber < 1) lineNumber = 1;
-        try {
-            return EditorContextBridge.showSource (
-                getURL (convertSlash (csf.getSourcePath (stratumn)), true),
-                lineNumber,
-                debugger
-            );
-        } catch (AbsentInformationException e) {
-            return EditorContextBridge.showSource (
-                getURL (
-                    convertClassNameToRelativePath (csf.getClassName ()), true
                 ),
                 lineNumber,
                 debugger
