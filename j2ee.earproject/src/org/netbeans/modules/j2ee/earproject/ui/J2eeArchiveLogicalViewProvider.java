@@ -182,11 +182,9 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
     
     
     private String getIconBase() {
-        IconBaseProvider ibp =
-                (IconBaseProvider) project.getLookup().lookup(IconBaseProvider.class);
+        IconBaseProvider ibp = (IconBaseProvider) project.getLookup().lookup(IconBaseProvider.class);
         if (null == ibp) {
-            
-            return "org/netbeans/modules/j2ee/earproject/ui/resources/defaultProjectIcon";
+            return "org/netbeans/modules/j2ee/earproject/ui/resources/";
         }
         return ibp.getIconBase();
     }
