@@ -7,16 +7,15 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util;
 
+import java.util.Iterator;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-
-import java.util.*;
-
 
 /**
  * A general registry permitting clients to find instances of services
@@ -127,7 +126,7 @@ public abstract class Lookup {
 
     /** Look up an object matching a given interface.
      * This is the simplest method to use.
-     * If more than one object matches, one will be returned arbitrarily.
+     * If more than one object matches, the first will be returned.
      * The template class may be a class or interface; the instance is
      * guaranteed to be assignable to it.
      *
