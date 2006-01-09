@@ -7,15 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.wizards;
 
 import javax.swing.JPanel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -37,7 +35,11 @@ public class PanelConfigureProjectVisual extends JPanel {
         locationContainer.add(projectLocationPanel, java.awt.BorderLayout.NORTH);
 
         optionsPanel = new PanelOptionsVisual(panel);
-        optionsContainer.add(optionsPanel, java.awt.BorderLayout.NORTH);
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        optionsContainer.add(optionsPanel, gridBagConstraints);
 
 ///
 /*        DocumentListener dl = new DocumentListener() {
@@ -113,7 +115,7 @@ public class PanelConfigureProjectVisual extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
         add(jSeparator1, gridBagConstraints);
 
-        optionsContainer.setLayout(new java.awt.BorderLayout());
+        optionsContainer.setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -123,8 +125,7 @@ public class PanelConfigureProjectVisual extends JPanel {
         gridBagConstraints.weighty = 1.0;
         add(optionsContainer, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSeparator jSeparator1;

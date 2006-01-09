@@ -280,10 +280,10 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanel1.add(jCheckBox1, gridBagConstraints);
         jCheckBox1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("ACS_LBL_IW_SetAsMainProject_A11YDesc"));
 
@@ -390,8 +390,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void projectLocationFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_projectLocationFocusLost
         if (projectLocation.getText().trim().length() > 0) {
