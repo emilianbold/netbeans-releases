@@ -45,6 +45,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
@@ -170,9 +172,7 @@ public class MakeJNLP extends Task {
                 shrt = prop.getProperty("OpenIDE-Module-Long-Description", oneline);
             }
             
-            if (verify) {
-                verifyExtensions(jar, theJar.getManifest(), dashcnb, codenamebase);
-            }
+            Map localizedFiles = verifyExtensions(jar, theJar.getManifest(), dashcnb, codenamebase, verify);
             
 
             File signed = new File(target, jar.getName());
@@ -194,6 +194,34 @@ public class MakeJNLP extends Task {
             processExtensions(jar, theJar.getManifest(), writeJNLP, dashcnb, codebase);
             
             writeJNLP.write("  </resources>\n");
+            
+            {
+                // write down locales
+                Iterator it = localizedFiles.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry e = (Map.Entry)it.next();
+                    String locale = (String)e.getKey();
+                    List files = (List)e.getValue();
+                    
+                    writeJNLP.write("  <resources locale='" + locale + "'>\n");
+
+                    Iterator fit = files.iterator();
+                    while (fit.hasNext()) {
+                        File n = (File)fit.next();
+                        File t = new File(target, n.getName());
+                        
+                        getSignTask().setJar(n);
+                        getSignTask().setSignedjar(t);
+                        getSignTask().execute();
+                        
+                        writeJNLP.write("     <jar href='"); writeJNLP.write(n.getName()); writeJNLP.write("'/>\n");
+                    }
+
+                    writeJNLP.write("  </resources>\n");
+                    
+                }
+            }        
+            
             writeJNLP.write("  <component-desc/>\n");
             writeJNLP.write("</jnlp>\n");
             writeJNLP.close();
@@ -212,7 +240,10 @@ public class MakeJNLP extends Task {
         
     }
     
-    private void verifyExtensions(File f, Manifest mf, String dashcnb, String codebasename) throws IOException, BuildException {
+    private Map verifyExtensions(File f, Manifest mf, String dashcnb, String codebasename, boolean verify) throws IOException, BuildException {
+        Map localizedFiles = new HashMap();
+        
+        
         File clusterRoot = f.getParentFile();
         String moduleDirPrefix = "";
         File updateTracking;
@@ -224,6 +255,10 @@ public class MakeJNLP extends Task {
             moduleDirPrefix = clusterRoot.getName() + "/" + moduleDirPrefix;
             clusterRoot = clusterRoot.getParentFile();
             if (clusterRoot == null || !clusterRoot.exists()) {
+                if (!verify) {
+                    return localizedFiles;
+                }
+                
                 throw new BuildException("Cannot find update_tracking directory for module " + f);
             }
         }
@@ -247,16 +282,19 @@ public class MakeJNLP extends Task {
         log("project files: " + fileToOwningModule, Project.MSG_DEBUG);
         String name = relative(f, clusterRoot);
         log("  removing: " + name, Project.MSG_DEBUG);
-        fileToOwningModule.remove(name);
+        removeWithLocales(fileToOwningModule, name, clusterRoot, localizedFiles);
         name = "config/Modules/" + dashcnb + ".xml";
         log("  removing: " + name, Project.MSG_DEBUG);
-        fileToOwningModule.remove(name);
+        removeWithLocales(fileToOwningModule, name, clusterRoot, localizedFiles);
         name = "config/ModuleAutoDeps/" + dashcnb + ".xml";
         log("  removing: " + name, Project.MSG_DEBUG);
-        fileToOwningModule.remove(name);
+        removeWithLocales(fileToOwningModule, name, clusterRoot, localizedFiles);
         name = "update_tracking/" + dashcnb + ".xml";
         log("  removing: " + name, Project.MSG_DEBUG);
-        fileToOwningModule.remove(name);
+        removeWithLocales(fileToOwningModule, name, clusterRoot, localizedFiles);
+        
+        
+        
         
         String path = mf.getMainAttributes().getValue("Class-Path");
         if (path != null) {
@@ -265,23 +303,53 @@ public class MakeJNLP extends Task {
                 String s = tok.nextToken();
                 File e = new File(f.getParentFile(), s);
                 String r = relative(e, clusterRoot);
-                fileToOwningModule.remove(r);
+                removeWithLocales(fileToOwningModule, r, clusterRoot, localizedFiles);
             }
         }
         
         if (verifyExcludes != null) {
             StringTokenizer tok = new StringTokenizer(verifyExcludes, ", ");
             while(tok.hasMoreElements()) {
-                fileToOwningModule.remove(tok.nextToken());
+                removeWithLocales(fileToOwningModule, tok.nextToken(), clusterRoot, localizedFiles);
             }
         }
             
         
-        if (!fileToOwningModule.isEmpty()) {
-            throw new BuildException(
-                "Cannot build JNLP for module " + f + " as these files are in " +
-                "module's NBM, but are not referenced from any path:\n" + fileToOwningModule.keySet()
-            );
+        if (verify) {
+            if (!fileToOwningModule.isEmpty()) {
+                throw new BuildException(
+                    "Cannot build JNLP for module " + f + " as these files are in " +
+                    "module's NBM, but are not referenced from any path:\n" + fileToOwningModule.keySet()
+                );
+            }
+        }
+        
+        return localizedFiles;
+    }
+    
+    private static void removeWithLocales(Map removeFrom, String removeWhat, File clusterRoot, Map/*<String,List<File>>*/ recordLocales) {
+        if (removeFrom.remove(removeWhat) != null && removeWhat.endsWith(".jar")) {
+            int basedir = removeWhat.indexOf('/');
+            String base = basedir == -1 ? "" : removeWhat.substring(0, basedir);
+            String name = removeWhat.substring(basedir + 1, removeWhat.length() - 4);
+            Pattern p = Pattern.compile(base + "/locale/" + name + "(|_[a-zA-Z0-9_]+)\\.jar");
+            
+            Iterator it = removeFrom.keySet().iterator();
+            while (it.hasNext()) {
+                String s = (String)it.next();
+                Matcher m = p.matcher(s);
+                if (m.matches()) {
+                    String locale = m.group(1).substring(1);
+                    
+                    List l = (List)recordLocales.get(locale);
+                    if (l == null) {
+                        l = new ArrayList();
+                        recordLocales.put(locale, l);
+                    }
+                    l.add(new File(clusterRoot, s.replace('/', File.separatorChar)));
+                    it.remove();
+                }
+            }
         }
     }
 

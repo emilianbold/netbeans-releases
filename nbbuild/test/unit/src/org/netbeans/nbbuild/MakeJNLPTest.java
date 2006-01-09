@@ -16,7 +16,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -113,6 +115,123 @@ public class MakeJNLPTest extends NbTestCase {
         }
     }
     
+    public void testGenerateJNLPAndSignedJarForSimpleLocalizedModule() throws Exception {
+        Manifest m;
+        
+        m = ModuleDependenciesTest.createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "org.my.module/3");
+        File simpleJar = generateJar ("modules/", new String[0], m, null);
+
+        File parent = simpleJar.getParentFile ();
+        File localizedJarCZ = generateJar("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        assertEquals("There need to have the same name", simpleJar.getName(), localizedJarCZ.getName());
+        assertTrue("Successful rename", localizedJarCZ.renameTo(new File(localizedJarCZ.getParent(), "0_cs.jar")));
+        
+        File localizedJarZH = generateJar("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        assertEquals("There need to have the same name", simpleJar.getName(), localizedJarZH.getName());
+        assertTrue("Successful rename", localizedJarZH.renameTo(new File(localizedJarCZ.getParent(), "0_zh_CN.jar")));
+        
+        File localizedJarJA = generateJar("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        assertEquals("There need to have the same name", simpleJar.getName(), localizedJarJA.getName());
+        assertTrue("Successful rename", localizedJarJA.renameTo(new File(localizedJarCZ.getParent(), "0_ja.jar")));
+
+        File updateTracking = new File(getWorkDir(), "update_tracking");
+        updateTracking.mkdirs();
+        assertTrue("Created", updateTracking.isDirectory());
+        
+        File trackingFile = new File(updateTracking, "org-my-module.xml");
+        FileWriter w = new FileWriter(trackingFile);
+        w.write(
+"<?xml version='1.0' encoding='UTF-8'?>\n" +
+"<module codename='org.my.module/3'>\n" +
+    "<module_version specification_version='3.22' origin='installer' last='true' install_time='1124194231878'>\n" +
+        "<file name='modules/" + simpleJar.getName() + "' crc='3245456472'/>\n" +
+        "<file name='config/Modules/org-my-module.xml' crc='43434' />\n" +
+        "<file name='modules/locale/0_cs.jar' crc='454244' />\n" +
+        "<file name='modules/locale/0_ja.jar' crc='779831' />\n" +
+        "<file name='modules/locale/0_zh_CN.jar' crc='475345' />\n" +
+"    </module_version>\n" +
+"</module>\n"
+        );
+        w.close();
+        
+        
+        File output = new File(parent, "output");
+        File ks = genereteKeystore("jnlp", "netbeans-test");
+        
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "' />" + 
+            "  <jnlp dir='" + output + "' alias='jnlp' storepass='netbeans-test' keystore='" + ks + "' verify='true' >" +
+            "    <modules dir='" + parent + "' >" +
+            "      <include name='" + simpleJar.getName() + "' />" +
+            "    </modules>" +
+            "  </jnlp>" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        
+        assertTrue ("Output exists", output.exists ());
+        assertTrue ("Output directory created", output.isDirectory());
+        
+        String[] files = output.list();
+        assertEquals("It has two files plus localized ones", 5, files.length);
+        
+        HashSet setFiles = new HashSet(Arrays.asList(files));
+       
+        if (!setFiles.contains("0.jar")) fail("0.jar shall be there: " + setFiles);
+        if (!setFiles.contains("org-my-module.jnlp")) fail("org-my-module.jnlp shall be there: " + setFiles);
+        if (!setFiles.contains("0_cs.jar")) fail("0_cs.jar shall be there: " + setFiles);
+        if (!setFiles.contains("0_zh_CN.jar")) fail("0_zh_CN.jar shall be there: " + setFiles);
+        if (!setFiles.contains("0_ja.jar")) fail("0_ja.jar shall be there: " + setFiles);
+
+
+        File jnlp = new File(output, "org-my-module.jnlp");
+        String res = ModuleDependenciesTest.readFile (jnlp);
+        
+        
+        assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
+        assertTrue ("We support all permitions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
+        
+        Matcher match = Pattern.compile(".*codebase=['\\\"]([^'\\\"]*)['\\\"]").matcher(res);
+        assertTrue("codebase is there", match.find());
+        assertEquals("one group found", 1, match.groupCount());
+        String base = match.group(1);
+        
+        assertEquals("By default the dest directory is $$codebase: ", "$$codebase", base);
+        
+        assertResource(res, "cs", "0_cs.jar");
+        assertResource(res, "ja", "0_ja.jar");
+        assertResource(res, "zh", "0_zh_CN.jar");
+
+        CHECK_SIGNED: for (int i = 0; i < files.length; i++) {
+            if (!files[i].endsWith(".jar")) {
+                continue;
+            }
+            
+            File jar = new File(output, files[i]);
+
+            JarFile signed = new JarFile(jar);
+            Enumeration it = signed.entries();
+            while (it.hasMoreElements()) {
+                JarEntry entry = (JarEntry)it.nextElement();
+                if (entry.getName().endsWith(".SF")) {
+                    continue CHECK_SIGNED;
+                }
+            }
+            fail ("File does not seem to be signed: " + jar);
+        }
+    }
+    
+    private static void assertResource(String where, String locale, String file) {
+        where = where.replace('\n', ' ');
+        Matcher match = Pattern.compile("<resources *locale='" + locale + "' *>.*<jar href='" + file + "' */>.*</resources>").matcher(where);
+        assertTrue("File really referenced " + file + " in locale " + locale + "\n" + where, match.find());
+    }
     
     public void testOneCanChangeTheCodeBase() throws Exception {
         Manifest m;
