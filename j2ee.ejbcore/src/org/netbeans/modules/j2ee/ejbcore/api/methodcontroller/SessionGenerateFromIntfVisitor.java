@@ -94,7 +94,7 @@ class SessionGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Ab
         implMethod.setName(newName);
         implMethod.setType(JMIUtils.resolveType("void"));
         implMethod.setModifiers(Modifier.PUBLIC);
-        implMethod.setBodyText(TODO);
+        implMethod.setBodyText(TODO + newName);
     }
     
     public void visit(HomeMethodType hmt) {
