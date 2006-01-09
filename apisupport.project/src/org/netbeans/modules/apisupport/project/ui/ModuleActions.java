@@ -243,7 +243,7 @@ public final class ModuleActions implements ActionProvider {
                 return true;
             }
             files = findTestSources(context, false);
-            return files != null && files.length == 1;
+            return files != null;
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             FileObject[] files = findTestSources(context, false);
             return files != null && files.length == 1;
