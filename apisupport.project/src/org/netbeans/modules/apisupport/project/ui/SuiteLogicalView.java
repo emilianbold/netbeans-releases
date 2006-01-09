@@ -176,8 +176,8 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         public Action[] getActions(boolean context) {
             return new Action[] {
+                new AddNewSuiteComponentAction(suite),
                 new AddSuiteComponentAction(suite),
-                new AddNewSuiteComponentAction(suite)
             };
         }
         
