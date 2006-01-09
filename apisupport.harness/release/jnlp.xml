@@ -91,7 +91,7 @@ $${jnlp.resources}
             storepass="${jnlp.signjar.password}"
             dir="${jnlp.dest.dir}/netbeans/"
             verify="true"
-            verifyexcludes="lib/nbexec.cmd,lib/nbexec,lib/nbexec.exe,core/ide.ks,LICENSE.txt,DISTRIBUTION.txt,docs/swing-layout-1.0-doc.zip,docs/html40.zip,core/org-netbeans-modules-utilities-cli.jar,docs/org/netbeans/modules/usersguide/ide.css"
+            verifyexcludes="lib/nbexec.cmd,lib/nbexec,lib/nbexec.exe,core/ide.ks,LICENSE.txt,DISTRIBUTION.txt,THIRDPARTYLICENSEREADME.txt,docs/swing-layout-1.0-doc.zip,docs/html40.zip,core/org-netbeans-modules-utilities-cli.jar,docs/org/netbeans/modules/usersguide/ide.css"
         >
             <modules refid="jnlp.included.modules"/>
         </makejnlp>
