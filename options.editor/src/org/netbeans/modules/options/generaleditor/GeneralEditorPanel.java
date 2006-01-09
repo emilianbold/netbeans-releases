@@ -1,7 +1,14 @@
 /*
- * GeneralEditorPanel1.java
- *
- * Created on 9. leden 2006, 15:53
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.options.generaleditor;
@@ -16,15 +23,18 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
+ * Implementation of one panel in Options Dialog.
  *
- * @author  Administrator
+ * @author Jan Jancura
  */
 public class GeneralEditorPanel extends JPanel implements ActionListener {
 
     private boolean         changed = false;
     private boolean         listen = false;
     
-    /** Creates new form GeneralEditorPanel1 */
+    /** 
+     * Creates new form GeneralEditorPanel.
+     */
     public GeneralEditorPanel () {
         initComponents ();
         

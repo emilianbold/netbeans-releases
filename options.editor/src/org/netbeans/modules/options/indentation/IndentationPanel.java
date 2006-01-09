@@ -1,7 +1,14 @@
 /*
- * IndentationPanel1.java
- *
- * Created on 9. leden 2006, 16:20
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.options.indentation;
@@ -28,9 +35,11 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
+
 /**
+ * Implementation of one panel in Options Dialog.
  *
- * @author  Administrator
+ * @author Jan Jancura
  */
 public class IndentationPanel extends JPanel implements ChangeListener, 
 ActionListener {
@@ -41,7 +50,9 @@ ActionListener {
     private boolean             changed = false;
 
     
-    /** Creates new form IndentationPanel1 */
+    /** 
+     * Creates new form IndentationPanel.
+     */
     public IndentationPanel () {
         initComponents ();
         
