@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -213,9 +213,14 @@ final class AddModulePanel extends JPanel {
     }
     
     ModuleDependency[] getSelectedDependencies() {
-        Object[] objects = moduleList.getSelectedValues();
-        ModuleDependency[] deps = new ModuleDependency[objects.length];
-        System.arraycopy(objects, 0, deps, 0, objects.length);
+        ModuleDependency[] deps;
+        if (CustomizerComponentFactory.isWaitModel(moduleList.getModel())) {
+            deps = new ModuleDependency[0];
+        } else {
+            Object[] objects = moduleList.getSelectedValues();
+            deps = new ModuleDependency[objects.length];
+            System.arraycopy(objects, 0, deps, 0, objects.length);
+        }
         return deps;
     }
     
