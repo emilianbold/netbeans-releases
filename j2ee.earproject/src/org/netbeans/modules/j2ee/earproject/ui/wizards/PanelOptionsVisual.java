@@ -95,8 +95,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements DocumentLi
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 5, 11, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 0);
         add(setAsMainCheckBox, gridBagConstraints);
         setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc"));
 
@@ -218,8 +219,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements DocumentLi
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
         add(warningPlaceHolderPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void createWebAppCheckBox_action(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createWebAppCheckBox_action
         jTextFieldWebAppName.setEnabled(createWARCheckBox.isSelected());
