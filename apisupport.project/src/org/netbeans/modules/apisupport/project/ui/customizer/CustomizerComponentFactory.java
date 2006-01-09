@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -79,6 +79,14 @@ public final class CustomizerComponentFactory {
     }
     
     /**
+     * Conveninent method which delegates to {@link #hasOnlyValue} passing a
+     * given model and {@link #WAIT_VALUE} as a value.
+     */
+    public static boolean isWaitModel(final ListModel model) {
+        return hasOnlyValue(model, CustomizerComponentFactory.WAIT_VALUE);
+    }
+    
+    /**
      * Returns true if the given model is not <code>null</code> and contains
      * only the given value.
      */
@@ -89,6 +97,8 @@ public final class CustomizerComponentFactory {
     /**
      * Use this model in situation when you need to populate list in the
      * background. The only item in this model is {@link #WAIT_VALUE}.
+     *
+     * @see #isWaitModel
      */
     public static ListModel createListWaitModel() {
         DefaultListModel listWaitModel = new DefaultListModel();

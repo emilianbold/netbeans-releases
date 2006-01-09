@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -112,7 +112,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             // XXX check if there are not multiple (--> redundant) listeners
             txt.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
                 public void insertUpdate(DocumentEvent e) {
-                    if (!CustomizerComponentFactory.hasOnlyValue(combo.getModel(), CustomizerComponentFactory.WAIT_VALUE)) {
+                    if (!CustomizerComponentFactory.isWaitModel(combo.getModel())) {
                         checkValidity();
                     }
                 }
