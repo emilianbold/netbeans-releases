@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,29 +15,39 @@ package org.apache.tools.ant.module.loader;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.run.TargetExecutor;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.actions.Presenter;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /** An instance cookie providing an action running a script.
  * The action provides the standard presenters, so may be used
@@ -46,7 +56,7 @@ import org.w3c.dom.Element;
 public class AntActionInstance implements
         InstanceCookie, Action,
         Presenter.Menu, Presenter.Toolbar,
-        ChangeListener
+        ChangeListener, PropertyChangeListener
 {
     
     private final AntProjectCookie proj;
@@ -55,6 +65,7 @@ public class AntActionInstance implements
     public AntActionInstance (AntProjectCookie proj) {
         this.proj = proj;
         proj.addChangeListener(WeakListeners.change(this, proj));
+        OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjects.getDefault()));
     }
 
     private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -105,12 +116,39 @@ public class AntActionInstance implements
     }
     
     public boolean isEnabled () {
-        return proj.getParseException () == null &&
-               proj.getFile () != null;
+        if (proj.getFile() == null) {
+            return false; // cannot run script not on disk
+        }
+        // #21249: if it delegates to a script in a project, enable only if that project is open
+        Element root = proj.getProjectElement();
+        if (root == null) {
+            return false; // misparse
+        }
+        NodeList nl = root.getElementsByTagName("ant"); // NOI18N
+        if (nl.getLength() == 1) {
+            Element ant = (Element) nl.item(0);
+            String antfile = ant.getAttribute("antfile"); // NOI18N
+            if (antfile.length() == 0) {
+                String dir = ant.getAttribute("dir"); // NOI18N
+                if (dir.length() > 0) {
+                    antfile = dir + File.separatorChar + "build.xml"; // NOI18N
+                }
+            }
+            if (antfile.length() > 0) {
+                FileObject fo = FileUtil.toFileObject(new File(antfile));
+                if (fo != null) {
+                    Project owner = FileOwnerQuery.getOwner(fo);
+                    if (owner != null) {
+                        return Arrays.asList(OpenProjects.getDefault().getOpenProjects()).contains(owner);
+                    }
+                }
+            }
+        }
+        return true;
     }
     
     public void setEnabled (boolean b) {
-        // ignore
+        assert false;
     }
     
     public Object getValue (String key) {
@@ -161,13 +199,36 @@ public class AntActionInstance implements
     // Presenter.Menu:
     
     public JMenuItem getMenuPresenter () {
-        return new JMenuItem (this);
+        class AntMenuItem extends JMenuItem implements DynamicMenuContent {
+            public AntMenuItem() {
+                super(AntActionInstance.this);
+            }
+            public JComponent[] getMenuPresenters() {
+                return isEnabled() ? new JComponent[] {this} : new JComponent[0];
+            }
+            public JComponent[] synchMenuPresenters(JComponent[] items) {
+                return getMenuPresenters();
+            }
+        }
+        return new AntMenuItem();
     }
-    
+
     // Presenter.Toolbar:
     
     public Component getToolbarPresenter () {
-        return new JButton (this);
+        class AntButton extends JButton implements PropertyChangeListener {
+            public AntButton() {
+                super(AntActionInstance.this);
+                setVisible(isEnabled());
+                AntActionInstance.this.addPropertyChangeListener(WeakListeners.propertyChange(this, AntActionInstance.this));
+            }
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("enabled".equals(evt.getPropertyName())) { // NOI18N
+                    setVisible(isEnabled());
+                }
+            }
+        }
+        return new AntButton();
     }
     
     // ChangeListener:
@@ -182,6 +243,13 @@ public class AntActionInstance implements
         changeSupport.firePropertyChange(Action.NAME, null, getValue (Action.NAME));
         changeSupport.firePropertyChange("enabled", null, isEnabled () ? Boolean.TRUE : Boolean.FALSE); // NOI18N
         changeSupport.firePropertyChange(Action.MNEMONIC_KEY, null, getValue (Action.MNEMONIC_KEY));
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        // Open projects list may have changed.
+        if (changeSupport != null) {
+            changeSupport.firePropertyChange("enabled", null, isEnabled() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
+        }
     }
     
 }

@@ -54,6 +54,8 @@ public class SubprojectProviderImplTest extends TestBase {
             "core/options",
             "libs/swing-layout",
             "core/progress",
+            "projects/projectapi",
+            "projects/projectuiapi",
         });
     }
     
