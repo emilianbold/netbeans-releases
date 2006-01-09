@@ -107,7 +107,11 @@ public class CompletionScrollPane extends JScrollPane {
     
     public Dimension getPreferredSize() {
         Dimension prefSize = super.getPreferredSize();
+        Dimension labelSize = topLabel != null ? topLabel.getPreferredSize() : new Dimension(0, 0);
         Dimension maxSize = getMaximumSize();
+        if (labelSize.width > prefSize.width) {
+            prefSize.width = labelSize.width;
+        }
         if (prefSize.width > maxSize.width) {
             prefSize.width = maxSize.width;
         }
