@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -196,7 +196,6 @@ public class NbModuleProjectGenerator {
                     createSuiteProperties(dirFO, suiteDir);
                     createManifest(dirFO, cnb, bundlePath, null);
                     createBundle(dirFO, bundlePath, name);
-                    appendToSuite(cnb, dirFO, suiteDir);
                     
                     // write down the nbproject/properties file
                     FileObject bundleFO = createFileObject(
@@ -205,6 +204,7 @@ public class NbModuleProjectGenerator {
                     
                     ModuleList.refresh();
                     ProjectManager.getDefault().clearNonProjectCache();
+                    appendToSuite(cnb, dirFO, suiteDir);
                     return null;
                 }
             });

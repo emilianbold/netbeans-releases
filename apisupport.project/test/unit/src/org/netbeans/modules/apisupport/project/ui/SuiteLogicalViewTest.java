@@ -58,13 +58,13 @@ public class SuiteLogicalViewTest extends TestBase {
         final ModuleChildren children = (ModuleChildren) modulesNode.getChildren();
         
         TestBase.generateSuiteComponent(suite1, "module1b");
-        children.propertiesChanged(null); // #70914
+        children.stateChanged(null); // #70914
         assertEquals("two children", 2, children.getNodes(true).length);
         
         TestBase.generateSuiteComponent(suite1, "module1c");
         ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
-                children.propertiesChanged(null); // #70914
+                children.stateChanged(null); // #70914
                 return null; // #70914
             }
         });
@@ -93,12 +93,12 @@ public class SuiteLogicalViewTest extends TestBase {
         TestBase.generateSuiteComponent(suite, "module");
         SuiteProjectTest.openSuite(suite);
         SuiteLogicalView.SuiteRootNode rootNode = (SuiteRootNode) ((LogicalViewProvider)
-            suite.getLookup().lookup(LogicalViewProvider.class)).createLogicalView();
+        suite.getLookup().lookup(LogicalViewProvider.class)).createLogicalView();
         Set expected = new HashSet(Arrays.asList(
-            new FileObject[] {
-                suite.getProjectDirectory().getFileObject("nbproject"),
-                suite.getProjectDirectory().getFileObject("build.xml")
-            }
+                new FileObject[] {
+            suite.getProjectDirectory().getFileObject("nbproject"),
+            suite.getProjectDirectory().getFileObject("build.xml")
+        }
         ));
         assertTrue(expected.equals(rootNode.getProjectFiles()));
     }

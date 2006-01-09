@@ -29,6 +29,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -40,8 +42,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -188,40 +189,36 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             return Utilities.loadImage(SUITE_MODULES_OPENED_ICON_PATH);
         }
         
-        static final class ModuleChildren extends Children.Keys/*<NbModuleProject>*/ implements AntProjectListener {
+        static final class ModuleChildren extends Children.Keys/*<NbModuleProject>*/ implements ChangeListener {
             
-            private final SuiteProject suite;
+            private final SubprojectProvider spp;
             
             public ModuleChildren(SuiteProject suite) {
-                this.suite = suite;
+                this.spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
+                spp.addChangeListener(this);
             }
             
             protected void addNotify() {
                 updateKeys();
-                suite.getHelper().addAntProjectListener(this);
             }
             
             private void updateKeys() {
                 // #70112: sort them.
                 SortedSet/*<NbModuleProject>*/ subModules = new TreeSet(Util.projectDisplayNameComparator());
-                subModules.addAll(SuiteUtils.getSubProjects(suite));
+                subModules.addAll(spp.getSubprojects());
                 setKeys(subModules);
             }
             
             protected void removeNotify() {
-                suite.getHelper().removeAntProjectListener(this);
+                spp.removeChangeListener(this);
                 setKeys(Collections.EMPTY_SET);
             }
             
             protected Node[] createNodes(Object key) {
-                return new Node[] {new SuiteComponentNode((NbModuleProject) key)};
+                return new Node[] { new SuiteComponentNode((NbModuleProject) key) };
             }
             
-            public void configurationXmlChanged(AntProjectEvent ev) {
-                // ignore
-            }
-            
-            public void propertiesChanged(AntProjectEvent ev) {
+            public void stateChanged(ChangeEvent ev) {
                 // e.g.(?) Explorer view under Children.MUTEX subsequently calls e.g.
                 // SuiteProject$Info.getSimpleName() which acquires ProjectManager.mutex(). And
                 // since this method might be called under ProjectManager.mutex() write access
