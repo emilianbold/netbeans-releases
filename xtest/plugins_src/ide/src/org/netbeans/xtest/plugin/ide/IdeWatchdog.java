@@ -90,6 +90,11 @@ public class IdeWatchdog implements Runnable {
     
     public void run() {
         File finishFile = new File(xtestWorkdir, "watchdog.finish");
+        if(finishFile.exists()) {
+            if(!finishFile.delete()) {
+                System.out.println(System.currentTimeMillis()+" IdeWatchdog: "+finishFile+" cannot be deleted.");
+            }
+        }
         while(true) {
             if(finishFile.exists()) {
                 System.out.println(System.currentTimeMillis()+" IdeWatchdog: IDE Finished before timeout expires.");
