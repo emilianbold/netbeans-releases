@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,7 +37,7 @@ import java.util.Set;
 // (useful e.g. for GeneratedFilesHelper)
 
 /**
- * Similar to {@link Properties} but designed to retain additional
+ * Similar to {@link java.util.Properties} but designed to retain additional
  * information needed for safe hand-editing.
  * Useful for various <samp>*.properties</samp> in a project:
  * <ol>
@@ -49,7 +49,7 @@ import java.util.Set;
  * </ol>
  * The file format (including encoding etc.) is compatible with the regular JRE implementation.
  * Only (non-null) String is supported for keys and values.
- * This class is not thread-safe; use only from a single thread, or use {@link Collections#synchronizedMap}.
+ * This class is not thread-safe; use only from a single thread, or use {@link java.util.Collections#synchronizedMap}.
  * @author Jesse Glick, David Konecny
  */
 public final class EditableProperties extends AbstractMap/*<String,String>*/ implements Cloneable {

@@ -7,17 +7,21 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Stack;
+import java.util.Timer;
+import java.util.TimerTask;
 import org.openide.ErrorManager;
-
-import java.lang.ref.*;
-
-import java.util.*;
-
 
 /** Request processor that is capable to execute requests in dedicated threads.
  * You can create your own instance or use the shared one.
@@ -268,8 +272,8 @@ public final class RequestProcessor {
     *
     * @param run action to run in the process
     * @param initiallyFinished should the task be marked initially finished? If 
-    *   so the {@link waitFinished} on the task will succeeded immediatelly even
-    *   the task has not yet been {@link Task.schedule}d.
+    *   so the {@link Task#waitFinished} on the task will succeeded immediatelly even
+    *   the task has not yet been {@link Task#schedule}d.
     * @return the task to control execution of given action
     * @since 6.8
     */

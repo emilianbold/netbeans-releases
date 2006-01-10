@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -50,7 +50,8 @@ import org.openide.filesystems.FileObject;
  * location (bytecode).</p>
  * <p>You should return these classpaths for the package root folder and any
  * files or folders inside it.</p>
- * <p>You should register classpaths for source files of all these types in {@link GlobalPathRegistry}
+ * <p>You should register classpaths for source files of all these types in
+ * {@link org.netbeans.api.java.classpath.GlobalPathRegistry}
  * when they are to be exposed in the GUI as available for use (e.g. for the editor's Fast Open dialog),
  * and unregister them when they are no longer to be exposed. Typically this is done as part of
  * <a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/ProjectOpenedHook.html">ProjectOpenedHook</a>.
@@ -75,7 +76,7 @@ import org.openide.filesystems.FileObject;
  * class file (computed according to the class file's package information, if this is possible).</p>
  * </div>
  * @see ClassPath#getClassPath
- * @see GlobalPathRegistry
+ * @see org.netbeans.api.java.classpath.GlobalPathRegistry
  * @author Jesse Glick
  * @since org.netbeans.api.java/1 1.4
  */

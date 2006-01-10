@@ -472,7 +472,7 @@ public final class AntProjectHelper {
     }
     
     /**Notification that this project has been deleted.
-     * See {@link org.netbeans.spi.project.ProjectState#notifyDeleted}.
+     * @see org.netbeans.spi.project.ProjectState#notifyDeleted
      *
      * @since 1.8
      */
