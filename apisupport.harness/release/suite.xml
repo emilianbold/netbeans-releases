@@ -91,7 +91,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <dirset dir="${netbeans.dest.dir}" id="platform.clusters" includes="${zip.platform.clusters.duplicates}"/>
         
-        <pathconvert property="zip.platform.clusters" pathsep="${line.separator}">
+        <pathconvert property="zip.platform.clusters" pathsep="&#10;"> <!-- #71128: \n OK on Win but \r\n bad on Unix -->
             <path>
                 <dirset refid="platform.clusters"/>
             </path>
@@ -109,9 +109,9 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${harness.dir}/launchers/app.sh" tofile="${build.launcher.dir}/bin/${app.name}"/>
         <copy file="${harness.dir}/etc/app.conf" tofile="${build.launcher.dir}/etc/${app.name}.conf"/>
         <echo message="${zip.platform.clusters}" file="${build.launcher.dir}/etc/${app.name}.clusters"/>
-        <echo message="${line.separator}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
+        <echo message="&#10;" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
         <echo message="${app.name}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
-        <echo message="${line.separator}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
+        <echo message="&#10;" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
         
     </target>
     
