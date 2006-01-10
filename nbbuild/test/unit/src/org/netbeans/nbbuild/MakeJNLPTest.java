@@ -115,6 +115,144 @@ public class MakeJNLPTest extends NbTestCase {
         }
     }
     
+    public void testTheLocalizedAutoupdateProblem() throws Exception {
+        String UTfile =   
+            "<?xml version='1.0' encoding='UTF-8'?>" +
+            "<module codename='org.netbeans.modules.autoupdate/1'>" +
+            "    <module_version install_time='1136503038669' last='true' origin='installer' specification_version='2.16.1'>" +
+            "        <file crc='746562502' name='config/Modules/org-netbeans-modules-autoupdate.xml'/>" +
+            "        <file crc='3552349255' name='modules/ext/locale/updater_ja.jar'/>" +
+            "        <file crc='72601456' name='modules/ext/locale/updater_zh_CN.jar'/>" +
+            "        <file crc='3405032071' name='modules/ext/updater.jar'/>" +
+            "        <file crc='2409221434' name='modules/locale/org-netbeans-modules-autoupdate_ja.jar'/>" +
+            "        <file crc='1180043929' name='modules/locale/org-netbeans-modules-autoupdate_zh_CN.jar'/>" +
+            "        <file crc='3477298901' name='modules/org-netbeans-modules-autoupdate.jar'/>" +
+            "    </module_version>" +
+            "</module>";
+      
+        Manifest m = ModuleDependenciesTest.createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "org.netbeans.modules.autoupdate/1");
+        m.getMainAttributes ().putValue ("Class-Path", "ext/updater.jar");
+        File simpleJar = generateJar ("modules/", new String[0], m, null);
+        File moduleJar = new File(simpleJar.getParentFile(), "org-netbeans-modules-autoupdate.jar");
+        simpleJar.renameTo(moduleJar);
+        
+        File p = simpleJar.getParentFile();
+        
+        simpleJar = generateJar ("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        simpleJar.renameTo(new File(simpleJar.getParentFile(), "org-netbeans-modules-autoupdate_ja.jar"));
+
+        simpleJar = generateJar ("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        simpleJar.renameTo(new File(simpleJar.getParentFile(), "org-netbeans-modules-autoupdate_zh_CN.jar"));
+        
+        simpleJar = generateJar ("modules/ext/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        simpleJar.renameTo(new File(simpleJar.getParentFile(), "updater.jar"));
+
+        simpleJar = generateJar ("modules/ext/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        simpleJar.renameTo(new File(simpleJar.getParentFile(), "updater_ja.jar"));
+
+        simpleJar = generateJar ("modules/ext/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        simpleJar.renameTo(new File(simpleJar.getParentFile(), "updater_zh_CN.jar"));
+
+        File xml = new File(p, "config/Modules/org-netbeans-modules-autoupdate.xml");
+        xml.getParentFile().mkdirs();
+        xml.createNewFile();
+        
+        File updateTracking = new File(getWorkDir(), "update_tracking");
+        updateTracking.mkdirs();
+        assertTrue("Created", updateTracking.isDirectory());
+        
+        File trackingFile = new File(updateTracking, "org-netbeans-modules-autoupdate.xml");
+        FileWriter w = new FileWriter(trackingFile);
+        w.write(UTfile);
+        w.close();
+
+        File output = new File(getWorkDir(), "output");
+        File ks = genereteKeystore("jnlp", "netbeans-test");
+        
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "' />" + 
+            "  <jnlp dir='" + output + "' alias='jnlp' storepass='netbeans-test' keystore='" + ks + "' verify='true' >" +
+            "    <modules dir='" + p + "' >" +
+            "      <include name='" + moduleJar.getName() + "' />" +
+            "    </modules>" +
+            "  </jnlp>" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        
+        assertTrue ("Output exists", output.exists ());
+        assertTrue ("Output directory created", output.isDirectory());
+        
+        String[] files = output.list();
+        assertEquals("It has two files plus localized ones", 7, files.length);
+        
+        HashSet setFiles = new HashSet(Arrays.asList(files));
+       
+        if (!setFiles.contains("org-netbeans-modules-autoupdate.jar")) fail("org-netbeans-modules-autoupdate.jar shall be there: " + setFiles);
+        if (!setFiles.contains("org-netbeans-modules-autoupdate.jnlp")) fail("org-my-module.jnlp shall be there: " + setFiles);
+        if (!setFiles.contains("org-netbeans-modules-autoupdate_zh_CN.jar")) fail("org-netbeans-modules-autoupdate_zh_CN.jar shall be there: " + setFiles);
+        if (!setFiles.contains("org-netbeans-modules-autoupdate_ja.jar")) fail("org-netbeans-modules-autoupdate_ja.jar shall be there: " + setFiles);
+        if (!setFiles.contains("updater_zh_CN.jar")) fail("updater_zh_CN.jar shall be there: " + setFiles);
+        if (!setFiles.contains("updater_ja.jar")) fail("updater_ja.jar shall be there: " + setFiles);
+        if (!setFiles.contains("updater.jar")) fail("updater.jar shall be there: " + setFiles);
+
+
+        File jnlp = new File(output, "org-netbeans-modules-autoupdate.jnlp");
+        String res = ModuleDependenciesTest.readFile (jnlp);
+        
+        
+        assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
+        assertTrue ("We support all permitions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
+        
+        Matcher match = Pattern.compile(".*codebase=['\\\"]([^'\\\"]*)['\\\"]").matcher(res);
+        assertTrue("codebase is there", match.find());
+        assertEquals("one group found", 1, match.groupCount());
+        String base = match.group(1);
+        
+        assertEquals("By default the dest directory is $$codebase: ", "$$codebase", base);
+        
+        assertResource(res, "ja", "updater_ja.jar");
+        assertResource(res, "zh_CN", "updater_zh_CN.jar");
+        assertResource(res, "ja", "org-netbeans-modules-autoupdate_ja.jar");
+        assertResource(res, "zh_CN", "org-netbeans-modules-autoupdate_zh_CN.jar");
+
+        CHECK_SIGNED: for (int i = 0; i < files.length; i++) {
+            if (!files[i].endsWith(".jar")) {
+                continue;
+            }
+            
+            File jar = new File(output, files[i]);
+
+            JarFile signed = new JarFile(jar);
+            Enumeration it = signed.entries();
+            while (it.hasMoreElements()) {
+                JarEntry entry = (JarEntry)it.nextElement();
+                if (entry.getName().endsWith(".SF")) {
+                    continue CHECK_SIGNED;
+                }
+            }
+            fail ("File does not seem to be signed: " + jar);
+        }
+        
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     public void testGenerateJNLPAndSignedJarForSimpleLocalizedModule() throws Exception {
         Manifest m;
         
@@ -206,7 +344,7 @@ public class MakeJNLPTest extends NbTestCase {
         
         assertResource(res, "cs", "0_cs.jar");
         assertResource(res, "ja", "0_ja.jar");
-        assertResource(res, "zh", "0_zh_CN.jar");
+        assertResource(res, "zh_CN", "0_zh_CN.jar");
 
         CHECK_SIGNED: for (int i = 0; i < files.length; i++) {
             if (!files[i].endsWith(".jar")) {

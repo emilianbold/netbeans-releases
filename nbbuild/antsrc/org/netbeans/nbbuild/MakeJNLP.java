@@ -329,7 +329,7 @@ public class MakeJNLP extends Task {
     
     private static void removeWithLocales(Map removeFrom, String removeWhat, File clusterRoot, Map/*<String,List<File>>*/ recordLocales) {
         if (removeFrom.remove(removeWhat) != null && removeWhat.endsWith(".jar")) {
-            int basedir = removeWhat.indexOf('/');
+            int basedir = removeWhat.lastIndexOf('/');
             String base = basedir == -1 ? "" : removeWhat.substring(0, basedir);
             String name = removeWhat.substring(basedir + 1, removeWhat.length() - 4);
             Pattern p = Pattern.compile(base + "/locale/" + name + "(|_[a-zA-Z0-9_]+)\\.jar");
