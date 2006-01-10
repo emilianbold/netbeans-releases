@@ -7,12 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.project.ui.wizards;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -81,6 +82,9 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         
         setJ2eeVersionWarningPanel();
         
+        //resize panel to show all components
+        computeSize();
+        
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
 
         setName(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_ImportTitle")); //NOI18N
@@ -131,6 +135,19 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             }
         });     
 
+    }
+    
+    private void computeSize() {
+        double srcLocLabelLength = jLabelSrcLocationDesc.getFontMetrics(jLabelSrcLocationDesc.getFont()).getStringBounds(jLabelSrcLocationDesc.getText(), getGraphics()).getWidth() * 0.85;
+        int width = new Double(srcLocLabelLength).intValue();
+        if (width < 500)
+            width = 500;
+        int height = jComboBoxEnterprise.getFontMetrics(jComboBoxEnterprise.getFont()).getHeight() * 13 + 150;
+        if (height > 340) {
+            Dimension dim = new Dimension(width, height);
+            setMinimumSize(dim);
+            setPreferredSize(dim);
+        }
     }
     
     void read(WizardDescriptor settings) {

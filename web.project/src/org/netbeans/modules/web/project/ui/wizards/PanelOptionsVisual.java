@@ -7,12 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.project.ui.wizards;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,6 +56,10 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         initEnterpriseApplications();
     }
     
+    protected int computeHeight() {
+        return srcStructComboBox.getFontMetrics(srcStructComboBox.getFont()).getHeight() * 8 + 100;
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -91,8 +96,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         add(srcStructLabel, gridBagConstraints);
         srcStructLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SourceStructureComboBox_A11YDesc"));
 
-        srcStructComboBox.setMinimumSize(new java.awt.Dimension(160, 18));
-        srcStructComboBox.setPreferredSize(new java.awt.Dimension(160, 18));
+        srcStructComboBox.setMinimumSize(new java.awt.Dimension(160, 24));
+        srcStructComboBox.setPreferredSize(new java.awt.Dimension(160, 24));
         srcStructComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 srcStructComboBoxActionPerformed(evt);
@@ -166,8 +171,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         jPanel1.add(j2eeSpecLabel, gridBagConstraints);
 
-        j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 18));
-        j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 18));
+        j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
+        j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -231,7 +236,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(setAsMainCheckBox, gridBagConstraints);
         setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc"));
 

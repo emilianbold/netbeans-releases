@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -53,6 +53,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         projectLocationTextField.getDocument().addDocumentListener( this );        
     }
     
+    protected int computeHeight() {
+        return createdFolderTextField.getFontMetrics(createdFolderTextField.getFont()).getHeight() * 3 + 40;
+    }
     
     public String getProjectName () {
         return this.projectNameTextField.getText ();

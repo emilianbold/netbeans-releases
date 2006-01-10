@@ -7,12 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.project.ui.wizards;
 
+import java.awt.Dimension;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -70,6 +71,14 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "LBL_NWP1_ProjectTitleName")); //NOI18N
         putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewWebApp")); //NOI18N
+        
+        //resize panel to show all components
+        int height = projectLocationPanel.computeHeight() + optionsPanel.computeHeight() + 30;
+        if (height > 340) {
+            Dimension dim = new Dimension(getWidth(), height);
+            setMinimumSize(dim);
+            setPreferredSize(dim);
+        }
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {
