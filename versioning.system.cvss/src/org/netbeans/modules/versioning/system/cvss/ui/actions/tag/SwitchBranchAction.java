@@ -160,6 +160,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
                     }
                 };
                 group.addBarrier(action);
+                others.addAll(newFolders);
             }
 
             if (others.size() > 0) {
