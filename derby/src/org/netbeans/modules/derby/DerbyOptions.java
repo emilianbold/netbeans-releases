@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -44,7 +44,7 @@ public class DerbyOptions extends SystemOption {
     static final String PROP_DERBY_LOCATION = "location"; // NOI18N
     static final String PROP_DERBY_SYSTEM_HOME = "systemHome"; // NOI18N
     
-    private static final String INST_DIR = "db-derby-10.1.1.0"; // NOI18N
+    static final String INST_DIR = "db-derby-10.1.1.0"; // NOI18N
     
     private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
     private static final String DRIVER_CLASS_EMBEDDED = "org.apache.derby.jdbc.EmbeddedDriver"; // NOI18N
@@ -77,13 +77,6 @@ public class DerbyOptions extends SystemOption {
         if (location == null) {
             location = ""; // NOI18N
         }
-//        // try to set the location to the bundled Derby if available
-//        if (location == null || location.length() <= 0) { // NOI18N
-//            location = getDefaultInstallLocation();
-//            if (location == null) {
-//                location = ""; // NOI18N
-//            }
-//        }
         return location;
     }
 
@@ -99,8 +92,9 @@ public class DerbyOptions extends SystemOption {
      * Sets the Derby location.
      * 
      * @param location the Derby location. A null value is valid and
-     *        will be transformed into an empty string (meaning "not set"). An empty
-     *        string is valid and has the meaning "set to the default location".
+     *        will be returned by getLocation() as an empty 
+     *        string (meaning "not set"). An empty string is valid 
+     *        and has the meaning "set to the default location".
      */
     public void setLocation(String location) {
         synchronized (getLock()) {
@@ -109,9 +103,6 @@ public class DerbyOptions extends SystemOption {
             }
             if (location != null && location.length() <= 0) {
                 location = getDefaultInstallLocation();
-                if (location == null) {
-                    location = ""; // NOI18N
-                }
             }
             if (!isReadExternal()) {
                 registerDrivers(location);
@@ -141,7 +132,7 @@ public class DerbyOptions extends SystemOption {
         }
     }
     
-    private static String getDefaultInstallLocation() {
+    static String getDefaultInstallLocation() {
         File location = InstalledFileLocator.getDefault().locate(INST_DIR, null, false);
         if (location == null) {
             return null;
