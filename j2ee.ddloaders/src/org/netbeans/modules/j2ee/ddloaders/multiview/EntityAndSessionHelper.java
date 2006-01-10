@@ -240,8 +240,10 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
                     // add EJBHome or EJBLocalHome as supertype
                     if (remote) {
                         newIfClass.getInterfaceNames().add(JMIUtils.createMultipartId(newIfClass, "javax.ejb.EJBHome"));
+                        newIfClass.setJavadocText("This is the remote home interface for " + newIfClass.getSimpleName() + " enterprise bean");
                     } else {
                         newIfClass.getInterfaceNames().add(JMIUtils.createMultipartId(newIfClass, "javax.ejb.EJBLocalHome"));
+                        newIfClass.setJavadocText("This is the local home interface for " + newIfClass.getSimpleName() + " enterprise bean");
                     }
                     for (Iterator it = getImportantHomeMethods(oldIfClass).iterator(); it.hasNext();) {
                         Method originalMethod = (Method) it.next();
