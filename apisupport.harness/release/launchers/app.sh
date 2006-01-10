@@ -49,10 +49,15 @@ if [ -f "${userdir}/etc/$APPNAME".conf ] ; then
 fi
 
 readClusters() {
+  if [ -x /usr/ucb/echo ]; then
+    echo=/usr/ucb/echo
+  else
+    echo=echo
+  fi
   sep=""
   while read X; do 
-    echo -n $sep
-    echo -n "$progdir/../$X"
+    $echo -n $sep
+    $echo -n "$progdir/../$X"
     sep=":"
   done
 }
