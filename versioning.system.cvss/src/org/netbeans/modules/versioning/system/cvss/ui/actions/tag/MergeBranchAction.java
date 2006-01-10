@@ -162,6 +162,8 @@ public class MergeBranchAction extends AbstractSystemAction {
                 cmd.setMergeRevision1(headTag);
             }
             cmd.setFiles(context.getRootFiles());
+            cmd.setBuildDirectories(true);
+            cmd.setPruneDirectories(true);
         
             return UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options);
         }
