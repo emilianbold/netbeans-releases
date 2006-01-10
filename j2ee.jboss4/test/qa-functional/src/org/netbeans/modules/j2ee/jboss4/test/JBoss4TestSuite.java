@@ -138,11 +138,9 @@ public class JBoss4TestSuite extends NbTestCase {
                 return;
             
             ProgressUI pui = new ProgressUI("Start JBoss", true);
-            
-            pui.start();
             inst.start(pui);
-            pui.finish();
             
+            sleep();
             
             if(!inst.isRunning())
                 throw new Exception("JBoss server start failed");
@@ -179,11 +177,9 @@ public class JBoss4TestSuite extends NbTestCase {
                 return;
             
             ProgressUI pui = new ProgressUI("Stop JBoss", true);
-            
-            pui.start();
             inst.stop(pui);
-            pui.finish();
             
+            sleep();
             
             if(inst.isRunning())
                 throw new Exception("JBoss server stop failed");
@@ -305,7 +301,7 @@ public class JBoss4TestSuite extends NbTestCase {
     
     public void sleep() {
         try {
-            Thread.sleep(5000);
+            Thread.sleep(10000);
         } catch(Exception e) {
             fail(e.getMessage());
         }
