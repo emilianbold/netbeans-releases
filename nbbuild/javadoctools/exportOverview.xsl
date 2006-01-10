@@ -68,7 +68,7 @@ Microsystems, Inc. All Rights Reserved.
             </xsl:if>
             
             <xsl:if test="api-answers/answer[@id='deploy-dependencies']/node()" >
-                <h5>What do other modules need to do to declare a dependency on this one?</h5>
+                <h5>What do other modules need to do to declare a dependency on this one, in addition to or instead of a plain module dependency?</h5>
                 <xsl:apply-templates select="api-answers/answer[@id='deploy-dependencies']/node()" mode="description"/>
             </xsl:if>
 

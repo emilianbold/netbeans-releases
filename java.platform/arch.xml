@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -334,22 +334,8 @@ The platform module does not provide any persistence mechanism.
 
 
 
-<!--
-        <question id="deploy-dependencies" when="final">
-            What do other modules need to do to declare a dependency on this one?
-            <hint>
-                Provide a sample of the actual lines you would add to a module manifest
-                to declare a dependency, for example using OpenIDE-Module-Module-Dependencies
-                or OpenIDE-Module-Requires. You may use the magic token @SPECIFICATION-VERSION@
-                to represent the current specification version of the module.
-            </hint>
-        </question>
--->
-
  <answer id="deploy-dependencies">
-  <pre>
-   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.platform/1 &gt; @SPECIFICATION-VERSION@
-  </pre>
+Nothing.
  </answer>
 
 

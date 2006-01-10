@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -353,49 +353,10 @@ public class MyNode extends AbstractNode {
 
 
 
-<!--
-        <question id="deploy-dependencies" when="final">
-            What do other modules need to do to declare a dependency on this one?
-            <hint>
-                Provide a sample of the actual lines you would add to a module manifest
-                to declare a dependency, for example using OpenIDE-Module-Module-Dependencies
-                or OpenIDE-Module-Requires. You may use the magic token @SPECIFICATION-VERSION@
-                to represent the current specification version of the module.
-            </hint>
-        </question>
--->
  <answer id="deploy-dependencies">
   <p>
-    A dependancy on module <code>org.openidex.util/3</code>, specification
-    version <code>3.3</code>, must be added. There are two ways how to do it:
+Nothing.
   </p>
-    <ul>
-        <li>For projectized modules (most of the modules in NetBeans 4.0):<br />
-            Add the following element as a child of element
-            &lt;module-dependencies&gt;:
-            <blockquote>
-<pre>&lt;dependency&gt;
-    &lt;code-name-base&gt;org.openidex.util&lt;/code-name-base&gt;
-    &lt;build-prerequisite/&gt;
-    &lt;compile-dependency/&gt;
-    &lt;run-dependency&gt;
-        &lt;release-version&gt;3&lt;/release-version&gt;
-        &lt;specification-version&gt;3.3&lt;/specification-version&gt;
-    &lt;/run-dependency&gt;
-&lt;/dependency></pre>
-            </blockquote>
-            </li>
-        <li>For other modules:<br />
-            Add the following line into the first section of the module's
-            manifest file:
-            <blockquote>
-                <pre>OpenIDE-Module-Module-Dependencies: org.openidex.util/3 &gt; 3.3</pre>
-            </blockquote>
-            If the <code>OpenIDE-Module-Module-Dependencies</code> label
-            is already there, just add <code>org.openidex.util/3 &gt; 3.3</code>
-            to the list of modules (separated by commas)
-            </li>
-    </ul>
  </answer>
 
 

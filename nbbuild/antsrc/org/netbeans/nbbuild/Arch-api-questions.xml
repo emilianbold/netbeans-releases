@@ -8,17 +8,16 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <!--
-    Author     : Jaroslav Tulach
+    Author     : Jaroslav Tulach, Jesse Glick
     Description: Questions that should be answered in order to make better API
 
     No PUBLIC or SYSTEM IDs defined currently.
 -->
-
 
 <!--
                         *** ATTENTION EDITORS ***
@@ -28,10 +27,10 @@ an old one. Changing this field ensures that arch pages answering the old versio
 print a warning during Javadoc generation. If you only change hints or make small
 edits in the text of a question, you need not change the version number.
 
-Also rerun openide/www/tutorial/build.xml#question when you are done and commit
-openide/www/tutorial/questions.html.
+An automated process runs openide/www/tutorial/build.xml#question periodically
+and commits any changes to openide/www/tutorial/questions.html.
 -->
-<api-questions version="1.26">
+<api-questions version="1.27">
     <category id="arch" name="General Information">
         <question id="arch-what" when="init" >
             What is this project good for?
@@ -200,12 +199,17 @@ openide/www/tutorial/questions.html.
         </question>
 
         <question id="deploy-dependencies" when="final" >
-            What do other modules need to do to declare a dependency on this one?
+            What do other modules need to do to declare a dependency on this one,
+            in addition to or instead of the normal module dependency declaration
+            (e.g. tokens to require)?
             <hint>
                 Provide a sample of the actual lines you would add to a module manifest
-                to declare a dependency, for example using OpenIDE-Module-Module-Dependencies
-                or OpenIDE-Module-Requires. You may use the magic token @SPECIFICATION-VERSION@
-                to represent the current specification version of the module.
+                to declare a dependency, for example OpenIDE-Module-Requires: some.token.
+                If other modules should not depend on this module, or should just use a
+                simple regular module dependency, you can just answer "nothing". If you
+                intentionally expose a semistable API to clients using implementation
+                dependencies, you should mention that here (but there is no need to give
+                an example of usage).
             </hint>
         </question>
         

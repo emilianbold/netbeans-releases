@@ -40,7 +40,6 @@ ${javadoc.overview}   Overview HTML file; default a generic page
 ${javadoc.check.external.links}  set to "true" to check external HTTP links
 ${javadoc.check.failonerror}     set to "true" if you want the build to fail due to broken link
 ${javadoc.header}     Special header text.
-${javadoc.manifest}   API module manifest file - permits @SPECIFICATION-VERSION@ in arch summary to be substituted
 ${javadoc.web.root}   Base URL for online Javadoc for linking; default http://www.netbeans.org/download/dev/javadoc
 
 To call this script you MUST use the form of <ant> with the 'dir' attribute. This
@@ -291,21 +290,6 @@ cause it to fail.
         />
     </target>
 
-    <target name="arch-replace-init" if="javadoc.manifest">
-        <property file="${javadoc.manifest}"/>
-        <condition property="javadoc.manifest+export.interfaces">
-            <and>
-                <isset property="javadoc.manifest"/>
-                <isset property="export.interfaces"/>
-            </and>
-        </condition>
-    </target>
-
-    <target name="javadoc-stage-arch-replace" depends="javadoc-init,javadoc-check-timestamps,arch-replace-init" unless="javadoc.up.to.date" if="javadoc.manifest">
-        <replace file="${javadoc.out.dir}/architecture-summary.html" token="@SPECIFICATION-VERSION@" value="${OpenIDE-Module-Specification-Version}"/>
-        <replace file="${javadoc.out.dir}/overview-summary.html" token="@SPECIFICATION-VERSION@" value="${OpenIDE-Module-Specification-Version}"/>
-    </target>
-    
     <!-- XXX up-to-date check here should be independent: from ${javadoc.arch} to ${export.interfaces}/${javadoc.name} -->
     <target name="javadoc-stage-export-interfaces" depends="javadoc-init,javadoc-check-timestamps" if="export.interfaces">
         <taskdef name="arch" classname="org.netbeans.nbbuild.Arch">
@@ -330,11 +314,7 @@ cause it to fail.
         </concat>
     </target>
     
-    <target name="javadoc-stage-export-interfaces-replace" depends="javadoc-init,javadoc-check-timestamps,arch-replace-init" unless="javadoc.up.to.date" if="javadoc.manifest+export.interfaces">
-        <replace file="${export.interfaces}/${javadoc.name}" token="@SPECIFICATION-VERSION@" value="${OpenIDE-Module-Specification-Version}"/>
-    </target>
-    
-    <target name="javadoc-stage-replace-apichanges" depends="javadoc-stage-main,javadoc-generate-references,javadoc-stage-alternative,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-stage-arch-replace,javadoc-stage-export-interfaces,javadoc-stage-export-interfaces-replace" unless="javadoc.up.to.date" if="export.apichanges" >
+    <target name="javadoc-stage-replace-apichanges" depends="javadoc-stage-main,javadoc-generate-references,javadoc-stage-alternative,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-stage-export-interfaces" unless="javadoc.up.to.date" if="export.apichanges" >
         <replace dir="${export.apichanges}" >        
             <include name="${javadoc.name}"/>
             <replacefilter token="@JDK@" value="${javadoc.docs.jdk}"/>
@@ -344,7 +324,7 @@ cause it to fail.
             &replaces;
         </replace>
     </target>
-    <target name="javadoc-stage-replace-interfaces" depends="javadoc-stage-main,javadoc-generate-references,javadoc-stage-alternative,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-stage-arch-replace,javadoc-stage-export-interfaces,javadoc-stage-export-interfaces-replace" unless="javadoc.up.to.date" if="export.interfaces" >
+    <target name="javadoc-stage-replace-interfaces" depends="javadoc-stage-main,javadoc-generate-references,javadoc-stage-alternative,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-stage-export-interfaces" unless="javadoc.up.to.date" if="export.interfaces" >
         <replace dir="${export.interfaces}" >
             <include name="${javadoc.name}"/>
             <replacefilter token="@JDK@" value="${javadoc.docs.jdk}"/>
@@ -355,7 +335,7 @@ cause it to fail.
         </replace>
     </target>
     
-    <target name="javadoc-stage-replace" depends="javadoc-stage-main,javadoc-generate-references,javadoc-stage-alternative,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-stage-arch-replace,javadoc-stage-export-interfaces,javadoc-stage-export-interfaces-replace,javadoc-stage-replace-interfaces,javadoc-stage-replace-apichanges" unless="javadoc.up.to.date">
+    <target name="javadoc-stage-replace" depends="javadoc-stage-main,javadoc-generate-references,javadoc-stage-alternative,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-stage-export-interfaces,javadoc-stage-replace-interfaces,javadoc-stage-replace-apichanges" unless="javadoc.up.to.date">
         <replace dir="${javadoc.out.dir}">
             <include name="**/*.html"/>
             <replacefilter token="@JDK@" value="${javadoc.docs.jdk}"/>
