@@ -77,6 +77,7 @@ final class LicensePanel extends javax.swing.JPanel {
         jTextAreaTop.setText(bundle.getString("MSG_LicenseDlgLabelTop"));
         jTextAreaTop.setWrapStyleWord(true);
         jTextAreaTop.setFocusable(false);
+        jTextAreaTop.setMargin(new java.awt.Insets(0, 0, 2, 0));
         jTextAreaTop.setRequestFocusEnabled(false);
         add(jTextAreaTop);
 
@@ -98,8 +99,7 @@ final class LicensePanel extends javax.swing.JPanel {
         jTextAreaBottom.setRequestFocusEnabled(false);
         add(jTextAreaBottom);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
