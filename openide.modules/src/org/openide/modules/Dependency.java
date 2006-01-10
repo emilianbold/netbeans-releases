@@ -7,18 +7,19 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.modules;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import org.openide.util.Utilities;
-
-// THIS CLASS OUGHT NOT USE NbBundle NOR org.openide CLASSES
-// OUTSIDE OF openide-util.jar! UI AND FILESYSTEM/DATASYSTEM
-// INTERACTIONS SHOULD GO ELSEWHERE.
-import java.util.*;
-
 
 /** A dependency a module can have.
  * @author Jesse Glick
@@ -34,7 +35,10 @@ public final class Dependency {
     /** Dependency on Java. */
     public final static int TYPE_JAVA = 3;
 
-    /** Dependency on the IDE. */
+    /**
+     * Dependency on the IDE.
+     * @deprecated This type of dependency should no longer be used.
+     */
     public final static int TYPE_IDE = 4;
 
     /** Dependency on a token.
