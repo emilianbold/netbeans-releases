@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,7 +37,6 @@ import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.ErrorManager;
@@ -473,7 +472,7 @@ public final class AntProjectHelper {
     }
     
     /**Notification that this project has been deleted.
-     * See {@link org.netbeans.api.projects.ProjectState#notifyDeleted}.
+     * See {@link org.netbeans.spi.project.ProjectState#notifyDeleted}.
      *
      * @since 1.8
      */
