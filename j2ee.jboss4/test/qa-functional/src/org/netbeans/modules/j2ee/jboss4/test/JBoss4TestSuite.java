@@ -18,7 +18,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
@@ -35,7 +34,6 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory;
-import org.netbeans.modules.j2ee.jboss4.ide.JBStartServer;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBInstantiatingIterator;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
@@ -69,17 +67,8 @@ public class JBoss4TestSuite extends NbTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("JBoss4TestSuite");
         suite.addTest(new JBoss4TestSuite("addJBossDefaultInstance"));
-        suite.addTest(new JBoss4TestSuite("sleep"));
-//        suite.addTest(new JBoss4TestSuite("startServer"));
-//        suite.addTest(new JBoss4TestSuite("restartServer"));
-//        suite.addTest(new JBoss4TestSuite("stopServer"));
-//        suite.addTest(new JBoss4TestSuite("startServerDebug"));
-//        suite.addTest(new JBoss4TestSuite("restartServer"));
-//        suite.addTest(new JBoss4TestSuite("stopServer"));
-//        suite.addTest(new JBoss4TestSuite("deployWebModule"));
-//        suite.addTest(new JBoss4TestSuite("deployEjbModule"));
-//        suite.addTest(new JBoss4TestSuite("stopServer"));
-//        suite.addTest(new JBoss4TestSuite("sleep"));
+        suite.addTest(new JBoss4TestSuite("startServer"));
+        suite.addTest(new JBoss4TestSuite("stopServer"));
         suite.addTest(new JBoss4TestSuite("removeJBossInstance"));
         return suite;
     }
@@ -111,6 +100,8 @@ public class JBoss4TestSuite extends NbTestCase {
             inst.instantiate();
             
             ServerRegistry.getInstance().checkInstanceExists(URL);
+            
+            sleep();
         } catch(Exception e) {
             fail(e.getMessage());
         }
@@ -122,109 +113,107 @@ public class JBoss4TestSuite extends NbTestCase {
     
     public void removeJBossInstance() {
         try {
+            sleep();
+            
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
             inst.remove();
-            ServerRegistry.getInstance().checkInstanceExists(URL);
+            
+            try {
+                ServerRegistry.getInstance().checkInstanceExists(URL);
+            } catch(Exception e) {
+                return;
+            }
+            
             fail("JBoss instance still exists !");
-        } catch(Exception e) {}
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
     }
     
     public void startServer() {
         try {
-            final JBStartServer server = new JBStartServer(ServerRegistry.getInstance().getServerInstance(URL).getDisconnectedDeploymentManager());
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
             
-            Runnable startCondition = new Runnable() {
-                public void run() {
-                    ProgressObject po = server.startDeploymentManager();
-                    while(!po.getDeploymentStatus().isCompleted()) {
-                        try {
-                            Thread.sleep(5000);
-                        } catch(Exception e) {}
-                    }
-                }
-            };
+            if(inst.isRunning())
+                return;
             
-            Task t = RequestProcessor.getDefault().create(startCondition);
-            t.run();
-            if(!t.waitFinished(300000))
-                throw new Exception("Server start timeout");
+            ProgressUI pui = new ProgressUI("Start JBoss", true);
+            
+            pui.start();
+            inst.start(pui);
+            pui.finish();
+            
+            
+            if(!inst.isRunning())
+                throw new Exception("JBoss server start failed");
             
             sleep();
-            
-            if(!server.isRunning())
-                throw new Exception("JBoss4 server start failed");
         } catch(Exception e) {
             fail(e.getMessage());
         }
     }
     
-    public void startServerDebug() {
-        try {
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
-            
-            inst.refresh();
-            
-            ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
-            inst.startDebug(ui);
-            
-            sleep();
-            
-            if(!inst.isReallyRunning())
-                throw new Exception("JBoss4 server start debug failed");
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
-    }
+//    public void startServerDebug() {
+//        try {
+//            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
+//
+//            inst.refresh();
+//
+//            ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
+//            inst.startDebug(ui);
+//
+//            sleep();
+//
+//            if(!inst.isReallyRunning())
+//                throw new Exception("JBoss4 server start debug failed");
+//        } catch(Exception e) {
+//            fail(e.getMessage());
+//        }
+//    }
     
     public void stopServer() {
         try {
-            final JBStartServer server = new JBStartServer(ServerRegistry.getInstance().getServerInstance(URL).getDisconnectedDeploymentManager());
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
             
-            Runnable stopCondition = new Runnable() {
-                public void run() {
-                    ProgressObject po = server.stopDeploymentManager();
-                    while(!po.getDeploymentStatus().isCompleted()) {
-                        try {
-                            Thread.sleep(5000);
-                        } catch(Exception e) {}
-                    }
-                }
-            };
+            if(!inst.isRunning())
+                return;
             
-            Task t = RequestProcessor.getDefault().create(stopCondition);
-            t.run();
-            if(!t.waitFinished(300000))
-                throw new Exception("Server stop timeout");
+            ProgressUI pui = new ProgressUI("Stop JBoss", true);
+            
+            pui.start();
+            inst.stop(pui);
+            pui.finish();
+            
+            
+            if(inst.isRunning())
+                throw new Exception("JBoss server stop failed");
             
             sleep();
-            
-            if(server.isRunning())
-                throw new Exception("JBoss4 server stop failed");
         } catch(Exception e) {
             fail(e.getMessage());
         }
     }
     
-    public void restartServer() {
-        try {
-            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
-            
-            inst.refresh();
-            
-            if(!inst.isReallyRunning())
-                return;
-            
-            ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
-            inst.restart(ui);
-            
-            sleep();
-            
-            if(!inst.isReallyRunning())
-                throw new Exception("JBoss4 server stop failed");
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
-    }
+//    public void restartServer() {
+//        try {
+//            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
+//
+//            inst.refresh();
+//
+//            if(!inst.isReallyRunning())
+//                return;
+//
+//            ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
+//            inst.restart(ui);
+//
+//            sleep();
+//
+//            if(!inst.isReallyRunning())
+//                throw new Exception("JBoss4 server stop failed");
+//        } catch(Exception e) {
+//            fail(e.getMessage());
+//        }
+//    }
     
     public void deployWebModule() {
         try {
