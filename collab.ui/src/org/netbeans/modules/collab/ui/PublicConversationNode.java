@@ -72,7 +72,7 @@ public class PublicConversationNode extends AbstractNode implements CollabSessio
         systemActions = DEFAULT_ACTIONS;
         setDefaultAction(DEFAULT_ACTIONS[0]);
 
-        session.addPropertyChangeListener(this);
+        session.addPropertyChangeListener(WeakListeners.propertyChange(this, session));
 
         getCookieSet().add(this);
         getCookieSet().add(new PublicConversationOpenSupport(this, session, name));
@@ -109,7 +109,7 @@ public class PublicConversationNode extends AbstractNode implements CollabSessio
     public void setConversation(Conversation conversation) {
         this.conversation = conversation;
         setIconBase(PUBLIC_CONVERSATION_ACTIVE_ICON);
-        conversation.addPropertyChangeListener(this);
+        conversation.addPropertyChangeListener(WeakListeners.propertyChange(this, conversation));
 
         // Register this node as the UI object for the conversation
         CollabManager.getDefault().getUserInterface().registerConversationUI(conversation, this);

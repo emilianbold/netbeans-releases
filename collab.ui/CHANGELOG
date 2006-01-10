@@ -32,4 +32,5 @@
 
 1.0.16:	Perform both find and browse public conference out of AWT thread
         with a progress bar (#61978)
-	 
+	
+1.3:	Weak listening from ConversationNode to prevent memory leak #63905
