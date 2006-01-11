@@ -640,6 +640,15 @@ public class TomcatManager implements DeploymentManager {
             timestamp = serverXml.lastModified();
             if (timestamp > tp.getTimestamp()) {
                 try {
+                    // for the bundled tomcat we cannot simply use the server.xml 
+                    // file from the home folder, since we change the port numbers
+                    // during base folder generation
+                    if (isBundledTomcat() && !new File(tp.getCatalinaBase(), "conf/server.xml").exists()) { // NOI18N
+                        tp.setTimestamp(timestamp);
+                        tp.setServerPort(TomcatProperties.DEF_VALUE_BUNDLED_SERVER_PORT);
+                        tp.setShutdownPort(TomcatProperties.DEF_VALUE_BUNDLED_SHUTDOWN_PORT);
+                        return;
+                    }
                     Server server = Server.createGraph(serverXml);
                     tp.setTimestamp(timestamp);
                     tp.setServerPort(Integer.parseInt(TomcatInstallUtil.getPort(server)));

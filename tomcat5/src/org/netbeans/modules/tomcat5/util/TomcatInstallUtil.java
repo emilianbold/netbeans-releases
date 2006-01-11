@@ -41,10 +41,6 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class TomcatInstallUtil {
     
-    /** default value of bundled tomcat server port */
-    private static final Integer BUNDLED_DEFAULT_SERVER_PORT = new Integer(8084);
-    /** default value of bundled tomcat admin port */
-    private static final Integer BUNDLED_DEFAULT_ADMIN_PORT = new Integer(8025);
     /** default value of bundled tomcat' http connector uri encoding */
     private static final String BUNDLED_DEFAULT_URI_ENCODING = "utf-8"; // NOI18N
     /** default value of bundled tomcat's host autoDeploy attribute */
@@ -278,8 +274,8 @@ public class TomcatInstallUtil {
     public static void patchBundledServerXml(File serverXml) {
         try {
             Server server = Server.createGraph(serverXml);
-            setServerAttributeValue(server, ATTR_PORT, BUNDLED_DEFAULT_ADMIN_PORT.toString());
-            setHttpConnectorAttributeValue(server, ATTR_PORT, BUNDLED_DEFAULT_SERVER_PORT.toString());
+            setServerAttributeValue(server, ATTR_PORT, String.valueOf(TomcatProperties.DEF_VALUE_BUNDLED_SHUTDOWN_PORT));
+            setHttpConnectorAttributeValue(server, ATTR_PORT, String.valueOf(TomcatProperties.DEF_VALUE_BUNDLED_SERVER_PORT));
             setHttpConnectorAttributeValue(server, ATTR_URI_ENCODING, BUNDLED_DEFAULT_URI_ENCODING);
             setHostAttributeValue(server, ATTR_AUTO_DEPLOY, BUNDLED_DEFAULT_AUTO_DEPLOY.toString());
             server.write(serverXml);

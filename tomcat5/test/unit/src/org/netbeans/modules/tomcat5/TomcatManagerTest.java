@@ -15,7 +15,12 @@ package org.netbeans.modules.tomcat5;
 
 import java.io.File;
 import javax.enterprise.deploy.spi.Target;
+import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.tomcat5.util.TomcatProperties;
+import org.netbeans.modules.tomcat5.util.TestUtils;
 
 /**
  *
@@ -23,6 +28,7 @@ import org.netbeans.junit.NbTestCase;
  */
 public class TomcatManagerTest extends NbTestCase {
     
+    /** Bundled Tomcat deployment manager */
     private TomcatManager tm;
     private File datadir;
     
@@ -33,174 +39,96 @@ public class TomcatManagerTest extends NbTestCase {
     protected void setUp () throws Exception {
         super.setUp ();
         tm = (TomcatManager)TomcatFactory55.create().getDeploymentManager(TomcatFactory55Test.TOMCAT_URI, null, null);
-        tm.ensureCatalinaBaseReady(); // This causes the base dir to be created if needed
+    }
+    
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new TomcatManagerTest("testBundledTomcatDefaultPorts"));
+        suite.addTest(new TomcatManagerTest("testGetUri"));
+        suite.addTest(new TomcatManagerTest("testGetPorts"));
+        suite.addTest(new TomcatManagerTest("testBundledTomcatDefaults"));
+        suite.addTest(new TomcatManagerTest("testGetServerUri"));
+        suite.addTest(new TomcatManagerTest("testGetTargets"));
+        suite.addTest(new TomcatManagerTest("testIsRedeploySupported"));
+        return suite;
     }
     
     /** Test of getUri method, of class org.netbeans.modules.tomcat5.TomcatManager. */
     public void testGetUri () {
-        System.out.println ("testGetUri");
         assertEquals ("Uri string doesn't match", TomcatFactory55Test.TOMCAT_URI, tm.getUri ());
     }
     
-    public void testGetShutdownPort() {
-        assertEquals(tm.getShutdownPort(), 8025);
+    public void testGetPorts() throws Exception {
+        clearWorkDir();
+        
+        String home = getDataDir().getAbsolutePath() + "/server/home0";
+        String base = getWorkDir().getAbsolutePath() + "/base_dir";
+        
+        String url = TomcatFactory55.tomcatUriPrefix;        
+        url += "home=" + home + ":base=" + base;
+        
+        // register the test tomcat instance
+        InstanceProperties ip = InstanceProperties.createInstanceProperties(
+                url, "", "", "Test Tomcat");
+        
+        TomcatManager manager = (TomcatManager)TomcatFactory55.create().getDeploymentManager(url, null, null);
+        
+        assertEquals(9999, manager.getServerPort());
+        assertEquals(7777, manager.getShutdownPort());
+        
+        manager.ensureCatalinaBaseReady();
+        
+        assertEquals(9999, manager.getServerPort());
+        assertEquals(7777, manager.getShutdownPort());
+        
     }
     
-    public void testGetServerPort() {
-        assertEquals(tm.getServerPort(), 8084);
+    public void testBundledTomcatDefaultPorts() {
+        
+        TestUtils.rm(tm.getTomcatProperties().getCatalinaBase());
+        assertFalse(tm.getTomcatProperties().getCatalinaBase().exists());
+        tm.getInstanceProperties().setProperty(TomcatProperties.PROP_SERVER_PORT, null);
+        tm.getTomcatProperties().setTimestamp(0);
+        assertEquals(8084, tm.getServerPort());
+        
+        TestUtils.rm(tm.getTomcatProperties().getCatalinaBase());
+        assertFalse(tm.getTomcatProperties().getCatalinaBase().exists());
+        tm.getInstanceProperties().setProperty(TomcatProperties.PROP_SHUTDOWN, null);
+        tm.getTomcatProperties().setTimestamp(0);
+        assertEquals(8025, tm.getShutdownPort());
+        
+        TestUtils.rm(tm.getTomcatProperties().getCatalinaBase());
+        assertFalse(tm.getTomcatProperties().getCatalinaBase().exists());
+        tm.ensureCatalinaBaseReady();
+        assertEquals(8084, tm.getServerPort());
+        
+        TestUtils.rm(tm.getTomcatProperties().getCatalinaBase());
+        assertFalse(tm.getTomcatProperties().getCatalinaBase().exists());
+        tm.ensureCatalinaBaseReady();
+        assertEquals(8025, tm.getShutdownPort());
     }
     
-    public void testGetTomcatVersion() {
-        assertEquals(tm.getTomcatVersion(), tm.TOMCAT_55);
-    }
-    
-    public void testIsTomcat55() {
+    public void testBundledTomcatDefaults() {
+        assertEquals(tm.TOMCAT_55, tm.getTomcatVersion());
         assertTrue(tm.isTomcat55());
-    }
-    
-    public void testIsTomcat50() {
         assertFalse(tm.isTomcat50());
     }
-    
+
     public void testGetServerUri() {
-        assertEquals(tm.getServerUri(), "http://localhost:8084");
+        assertEquals("http://localhost:8084", tm.getServerUri());
     }
     
-//    /** Test of getUsername method, of class org.netbeans.modules.tomcat5.TomcatManager. */
-//    public void testGetUsername () {
-//        System.out.println ("testGetUsername");
-//        assertEquals (TomcatFactory55Test.TOMCAT_UNAME, tm.getUsername ());
-//    }
-//    
-//    /** Test of getPassword method, of class org.netbeans.modules.tomcat5.TomcatManager. */
-//    public void testGetPassword () {
-//        System.out.println ("testGetPassword");
-//        assertEquals (TomcatFactory55Test.TOMCAT_PASSWD, tm.getPassword ());
-//    }
-    
-//    /** Test of createConfiguration method, of class org.netbeans.modules.tomcat5.TomcatManager. */
-//    public void testCreateConfiguration () {
-//        System.out.println ("testCreateConfiguration");
-//        
-//        // Add your test code below by replacing the default call to fail.
-//        fail ("The test case is empty.");
-//    }
-//    
-    /** Test of getCurrentLocale method, of class org.netbeans.modules.tomcat5.TomcatManager. * /
-    public void testGetCurrentLocale () {
-        System.out.println ("testGetCurrentLocale");
-        
-        // Add your test code below by replacing the default call to fail.
-        fail ("The test case is empty.");
-    }
-    */
-    
-    /** Test of getDefaultLocale method, of class org.netbeans.modules.tomcat5.TomcatManager. * /
-    public void testGetDefaultLocale () {
-        System.out.println ("testGetDefaultLocale");
-        
-        // Add your test code below by replacing the default call to fail.
-        fail ("The test case is empty.");
-    }
-     */
-    
-    /** Test of getSupportedLocales method, of class org.netbeans.modules.tomcat5.TomcatManager. * /
-    public void testGetSupportedLocales () {
-        System.out.println ("testGetSupportedLocales");
-        
-        // Add your test code below by replacing the default call to fail.
-        fail ("The test case is empty.");
-    }
-     */
-    
-    /** Test of isLocaleSupported method, of class org.netbeans.modules.tomcat5.TomcatManager. * /
-    public void testIsLocaleSupported () {
-        System.out.println ("testIsLocaleSupported");
-        
-        // Add your test code below by replacing the default call to fail.
-        fail ("The test case is empty.");
-    }
-     */
-    
-    /** Test of setLocale method, of class org.netbeans.modules.tomcat5.TomcatManager. * /
-    public void testSetLocale () {
-        System.out.println ("testSetLocale");
-        
-        // Add your test code below by replacing the default call to fail.
-        fail ("The test case is empty.");
-    }
-     */
-    
-    /** Test of getTargets method, of class org.netbeans.modules.tomcat5.TomcatManager. */
     public void testGetTargets () {
-        System.out.println ("testGetTargets");
         Target [] tgts = tm.getTargets ();
         assertTrue ("There should be one target", tgts != null && tgts.length == 1);
     }
     
-    /** Test of getDConfigBeanVersion method, of class org.netbeans.modules.tomcat5.TomcatManager. * /
-    public void testGetDConfigBeanVersion () {
-        System.out.println ("testGetDConfigBeanVersion");
-        
-        // Add your test code below by replacing the default call to fail.
-        fail ("The test case is empty.");
-    }
-     */
-    
-    /** Test of setDConfigBeanVersion method, of class org.netbeans.modules.tomcat5.TomcatManager. * /
-    public void testSetDConfigBeanVersion () {
-        System.out.println ("testSetDConfigBeanVersion");
-        
-        // Add your test code below by replacing the default call to fail.
-        fail ("The test case is empty.");
-    }
-     */
-    
-    /** Test of isDConfigBeanVersionSupported method, of class org.netbeans.modules.tomcat5.TomcatManager. * /
-    public void testIsDConfigBeanVersionSupported () {
-        System.out.println ("testIsDConfigBeanVersionSupported");
-        
-        // Add your test code below by replacing the default call to fail.
-        fail ("The test case is empty.");
-    }
-     */
-    
-    /** Test of isRedeploySupported method, of class org.netbeans.modules.tomcat5.TomcatManager. */
     public void testIsRedeploySupported () {
-        System.out.println ("testIsRedeploySupported");
-        assertFalse (tm.isRedeploySupported ());
+        assertFalse(tm.isRedeploySupported ());
     }
     
-    /** Test for adding instance (needs to be ide test). */
-//    public void testAddToRegistry () {
-//        System.out.println ("testAddToRegistry");
-//        ServerRegistryNode srn = new ServerRegistryNode ();
-//        try {
-//            j2ee.deployment.impl.ServerRegistry
-//                .getInstance().addInstance("tomcat:dummy manager", "", "");
-//        }
-//        catch (IOException ioe) {
-//            fail(ioe.getMessage ());
-//            return;
-//        }
-//        
-//        boolean found = false;
-//        Node [] nodes = srn.getChildren ().getNodes ();
-//        for (int i=0; i<nodes.length; i++) {
-//            Node [] subnodes = nodes[i].getChildren ().getNodes ();
-//            for (int j=0; j<nodes.length; j++) {
-//                if (subnodes[j].getDisplayName ().indexOf ("dummy manager") >= 0) {
-//                    found = true;
-//                    break;
-//                }
-//            }
-//            if (found) {
-//                break;
-//            }
-//        }
-//        assertTrue ("Added instance not found in registry", found);
-//        
-//    }
-    
+    public static void main(java.lang.String[] args) {
+        TestRunner.run(suite());
+    }
     
 }

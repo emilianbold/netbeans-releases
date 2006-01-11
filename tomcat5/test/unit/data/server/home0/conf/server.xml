@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
   </GlobalNamingResources>
 
   <Service name="Catalina">
-    <Connector port="8080" />
+    <Connector port="9999" />
 
     <!-- This is here for compatibility only, not required -->
     <Connector port="8009" protocol="AJP/1.3" />

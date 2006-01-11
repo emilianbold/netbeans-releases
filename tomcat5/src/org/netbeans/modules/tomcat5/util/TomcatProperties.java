@@ -84,6 +84,10 @@ public class TomcatProperties {
     private static final boolean DEF_VALUE_MONITOR       = true;
     private static final int     DEF_VALUE_DEBUG_PORT    = 11555;
     public  static final int     DEF_VALUE_SHUTDOWN_PORT = 8005;
+    
+    public static final int      DEF_VALUE_BUNDLED_SERVER_PORT   = 8084;
+    public static final int      DEF_VALUE_BUNDLED_SHUTDOWN_PORT = 8025;
+    
     private static final String  DEF_VALUE_SHARED_MEM    = "tomcat_shared_memory_id"; // NOI18N
     private static final boolean DEF_VALUE_OPEN_LOG      = true;
     private static final String  DEF_VALUE_HOST          = "localhost"; // NOI18N
