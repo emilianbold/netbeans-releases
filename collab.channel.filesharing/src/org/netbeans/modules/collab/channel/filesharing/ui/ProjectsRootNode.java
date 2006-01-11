@@ -777,23 +777,28 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
             final Node pNode = projectNode;
             final String pName = projectName;
 
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        //get Actions from original project
-                        if (fromProject != null) {
-                            processActionsFromSharedProject(pNode, fromProject);
-                        } else {
-                            SharedProject sharedProject = getContext().getSharedProjectManager().getSharedProject(
-                                    userName, pName);
-                            processActions(pNode, sharedProject);
-                        }                    
-                    }
-                });
-            } catch (InterruptedException ie) {
-                // ignore
-            } catch (InvocationTargetException ite) {
-                ErrorManager.getDefault().notify(ite);
+            Runnable run = new Runnable() {
+                public void run() {
+                    //get Actions from original project
+                    if (fromProject != null) {
+                        processActionsFromSharedProject(pNode, fromProject);
+                    } else {
+                        SharedProject sharedProject = getContext().getSharedProjectManager().getSharedProject(
+                                userName, pName);
+                        processActions(pNode, sharedProject);
+                    }                    
+                }
+            };
+	    if (SwingUtilities.isEventDispatchThread()) {
+                run.run();
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(run);
+                } catch (InterruptedException ie) {
+                    // ignore
+                } catch (InvocationTargetException ite) {
+                    ErrorManager.getDefault().notify(ite);
+                }
             }
         }
 
