@@ -130,9 +130,9 @@ public class UnShareFileAction extends SystemAction {
             }
 
             //node detroy
-            node.destroy();
-        } catch (IOException iox) {
-            iox.printStackTrace(Debug.out);
+//            node.destroy();
+//        } catch (IOException iox) {
+//            iox.printStackTrace(Debug.out);
         } catch (CollabException e) {
             e.printStackTrace(Debug.out);
         }

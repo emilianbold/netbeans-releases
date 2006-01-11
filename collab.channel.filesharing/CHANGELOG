@@ -17,3 +17,7 @@
         Jumping focus (#62871, JSE issue #6317025)
 
 1.0.9:	Integrated JSE INF#76430 (NB#70523)
+
+1.3:	Fix for: Shared file is sometimes not received correctly
+	Fix for #71268: Stop sharing deletes master file.
+	
