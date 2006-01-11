@@ -359,7 +359,7 @@ public final class Splash  implements SwingConstants {
          * Creates new text with the ellipsis at the end when text width is
          * bigger than allowed space
          */
-        private void adjustText(String text){
+        private void adjustText(String text) {
             String newText = null;
             String newString;
             
@@ -385,6 +385,23 @@ public final class Splash  implements SwingConstants {
                     } else                        
                         newText = newString;
                         
+                }
+                // #71064 - cut the text and put the ellipsis correctly when 
+                // very loong text without spaces that exceeds available space is used
+                // it can happen in multibyte environment (such as japanese) 
+                if (newText == null) {
+                    this.text = "";
+                    newString = "";
+                    newText = "";
+                    for (int i = 0; i < text.length(); i++) {
+                        newString += text.charAt(i);
+                        if (fm.stringWidth(newString + "...") > view.width) { // NOI18N
+                            this.text = newText + "..."; // NOI18N
+                            break;
+                        } else {
+                            newText = newString;
+                        }
+                    }
                 }
             } else
                 this.text = text;
