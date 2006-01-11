@@ -332,7 +332,7 @@ public class MetaComponentCreator {
         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
         boolean autoUndo = true;
         try {
-            LayoutComponent parent = targetCont != null ?
+            LayoutComponent parent = shouldBeLayoutContainer(targetCont) ?
                 layoutModel.getLayoutComponent(targetCont.getId()) : null;
             layoutModel.addNewComponent(layoutComp, parent, prototype);
             autoUndo = false;
