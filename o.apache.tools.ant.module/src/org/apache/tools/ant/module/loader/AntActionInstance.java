@@ -59,21 +59,18 @@ public class AntActionInstance implements
         ChangeListener, PropertyChangeListener
 {
     
+    private boolean inited;
     private final AntProjectCookie proj;
     private transient PropertyChangeSupport changeSupport;
     
     public AntActionInstance (AntProjectCookie proj) {
         this.proj = proj;
-        proj.addChangeListener(WeakListeners.change(this, proj));
-        OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjects.getDefault()));
     }
 
     private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject ();
-        changeSupport = null;
+        init();
     }
-    
-    // InstanceCookie:
     
     public Class instanceClass () {
         return AntActionInstance.class;
@@ -89,17 +86,20 @@ public class AntActionInstance implements
         }
     }
     
-    /*
-    public boolean instanceOf (Class type) {
-        return type.isAssignableFrom (AntActionInstance.class);
-    }
-     */
-    
     public Object instanceCreate () {
+        init();
         return this;
     }
     
-    // Action:
+    private void init() {
+        if (inited) {
+            return;
+        }
+        inited = true;
+        proj.addChangeListener(WeakListeners.change(this, proj));
+        OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjects.getDefault()));
+        changeSupport = new PropertyChangeSupport(this);
+    }
     
     public void actionPerformed (ActionEvent ignore) {
         // #21355 similar to fix of #16720 - don't do this in the event thread...
@@ -184,19 +184,12 @@ public class AntActionInstance implements
     }
     
     public final void addPropertyChangeListener (PropertyChangeListener listener) {
-        synchronized (this) {
-            if (changeSupport == null)
-                changeSupport = new PropertyChangeSupport(this);
-        }
         changeSupport.addPropertyChangeListener(listener);
     }
     
     public final void removePropertyChangeListener (PropertyChangeListener listener) {
-        if (changeSupport != null)
-            changeSupport.removePropertyChangeListener(listener);
+        changeSupport.removePropertyChangeListener(listener);
     }
-    
-    // Presenter.Menu:
     
     public JMenuItem getMenuPresenter () {
         class AntMenuItem extends JMenuItem implements DynamicMenuContent {
@@ -213,8 +206,6 @@ public class AntActionInstance implements
         return new AntMenuItem();
     }
 
-    // Presenter.Toolbar:
-    
     public Component getToolbarPresenter () {
         class AntButton extends JButton implements PropertyChangeListener {
             public AntButton() {
@@ -231,15 +222,9 @@ public class AntActionInstance implements
         return new AntButton();
     }
     
-    // ChangeListener:
-    
     public void stateChanged (ChangeEvent ignore) {
         // Ant script changed; maybe the project name changed with it.
         // Or maybe it is now misparsed.
-
-        if (changeSupport == null)
-            return;
-        
         changeSupport.firePropertyChange(Action.NAME, null, getValue (Action.NAME));
         changeSupport.firePropertyChange("enabled", null, isEnabled () ? Boolean.TRUE : Boolean.FALSE); // NOI18N
         changeSupport.firePropertyChange(Action.MNEMONIC_KEY, null, getValue (Action.MNEMONIC_KEY));
@@ -247,9 +232,7 @@ public class AntActionInstance implements
 
     public void propertyChange(PropertyChangeEvent evt) {
         // Open projects list may have changed.
-        if (changeSupport != null) {
-            changeSupport.firePropertyChange("enabled", null, isEnabled() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
-        }
+        changeSupport.firePropertyChange("enabled", null, isEnabled() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
     }
     
 }
