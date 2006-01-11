@@ -13,17 +13,24 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.DeleteOperationImplementation;
+import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
@@ -31,7 +38,9 @@ import org.openide.filesystems.FileObject;
 /**
  * @author Martin Krauskopf
  */
-public final class SuiteOperations implements DeleteOperationImplementation {
+public final class SuiteOperations implements DeleteOperationImplementation, MoveOperationImplementation {
+    
+    private static final Map/*<String, Set<Project>>*/ TEMPORARY_CACHE = new HashMap();
     
     private final SuiteProject suite;
     private final FileObject projectDir;
@@ -54,6 +63,31 @@ public final class SuiteOperations implements DeleteOperationImplementation {
     
     public void notifyDeleted() throws IOException {
         suite.getHelper().notifyDeleted();
+    }
+    
+    public void notifyMoving() throws IOException {
+        Set/*<Project>*/ subprojects = SuiteUtils.getSubProjects(suite);
+        if (!subprojects.isEmpty()) {
+            // XXX using suite's name is probably weak. Consider another solution. E.g.
+            // store some "private" property and than read it.
+            TEMPORARY_CACHE.put(ProjectUtils.getInformation(suite).getName(), subprojects);
+        }
+        notifyDeleting();
+    }
+    
+    public void notifyMoved(Project original, File originalPath, String nueName) throws IOException {
+        if (original == null) { // called on the original project
+            suite.getHelper().notifyDeleted();
+        } else { // called on the new project
+            String name = ProjectUtils.getInformation(suite).getName();
+            Set/*<Project>*/ subprojects = (Set) TEMPORARY_CACHE.remove(name);
+            if (subprojects != null) {
+                for (Iterator it = subprojects.iterator(); it.hasNext();) {
+                    NbModuleProject p = (NbModuleProject) it.next();
+                    SuiteUtils.addModule(suite, p);
+                }
+            }
+        }
     }
     
     public List/*<FileObject>*/ getMetadataFiles() {

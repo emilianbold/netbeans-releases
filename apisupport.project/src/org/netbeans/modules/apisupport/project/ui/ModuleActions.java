@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -135,6 +135,7 @@ public final class ModuleActions implements ActionProvider {
         actions.add(null);
         actions.add(SystemAction.get(FindAction.class));
         actions.add(null);
+        actions.add(CommonProjectActions.moveProjectAction());
         actions.add(CommonProjectActions.deleteProjectAction());
         
         // Honor #57874 contract:
@@ -202,6 +203,7 @@ public final class ModuleActions implements ActionProvider {
         if (project.getPerformanceTestSourceDirectory() != null) {
             supportedActionsSet.add(ActionProvider.COMMAND_RUN_SINGLE);
         }
+        supportedActionsSet.add(ActionProvider.COMMAND_MOVE);
         supportedActionsSet.add(ActionProvider.COMMAND_DELETE);
         supportedActions = (String[])supportedActionsSet.toArray(new String[supportedActionsSet.size()]);
     }
@@ -223,7 +225,8 @@ public final class ModuleActions implements ActionProvider {
     }
     
     public boolean isActionEnabled(String command, Lookup context) {
-        if (ActionProvider.COMMAND_DELETE.equals(command)) {
+        if (ActionProvider.COMMAND_DELETE.equals(command) ||
+                ActionProvider.COMMAND_MOVE.equals(command)) {
             return true;
         } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
             return findBuildXml(project) != null &&
@@ -336,6 +339,9 @@ public final class ModuleActions implements ActionProvider {
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
+            return;
+        } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
+            DefaultProjectOperations.performDefaultMoveOperation(project);
             return;
         }
         Properties p;
