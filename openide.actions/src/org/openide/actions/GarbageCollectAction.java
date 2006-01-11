@@ -102,6 +102,8 @@ public class GarbageCollectAction extends CallableSystemAction {
         /** start of usable data in graph */
         private int graphBase;
         private boolean containsMouse = false;
+        
+        private boolean isInitialized = false;
 
         public MemButton() {
             t = new Timer(TICK, this);
@@ -113,6 +115,11 @@ public class GarbageCollectAction extends CallableSystemAction {
 
             setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
             setToolTipText(NbBundle.getMessage(GarbageCollectAction.class, "CTL_GC"));
+            
+            setHorizontalAlignment( JLabel.CENTER );
+            setMinimumSize( getPreferredSize() );
+            setMaximumSize( getPreferredSize() );
+            isInitialized = true;
         }
 
         public void paintBorder(Graphics g) {
@@ -296,6 +303,22 @@ public class GarbageCollectAction extends CallableSystemAction {
         public void actionPerformed(ActionEvent e) {
             // Timer
             update(true);
+        }
+
+        private String myText;
+        public void setText(String text) {
+            this.myText = text;
+            if( isInitialized ) {
+                repaint();
+            } else {
+                super.setText(text);
+            }
+        }
+
+        public String getText() {
+            if( isInitialized )
+                return myText;
+            return super.getText();
         }
     }
 }
