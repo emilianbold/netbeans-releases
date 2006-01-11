@@ -477,11 +477,11 @@
             <property name="helpString"/>
             <property name="text"/>
             <property name="textSource">2</property>
-            <property name="fileName">$A(basedir)/resources/bcl.html</property>
+            <property name="fileName">$A(basedir)/resources/LICENSE.txt</property>
             <property name="fileEncoding"/>
             <property name="resolveFileContents">False</property>
             <property name="includeLocalizedFiles">True</property>
-            <property name="contentType">2</property>
+            <property name="contentType">1</property>
             <property name="showBorder">True</property>
             <property name="busyMessage">$L(com.installshield.wizard.i18n.WizardResources,pleaseWait)</property>
             <property name="approveCaption">$L(org.netbeans.installer.Bundle, ApprovalPanel.approval)</property>
