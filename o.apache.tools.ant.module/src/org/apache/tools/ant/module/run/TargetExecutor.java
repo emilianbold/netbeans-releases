@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -91,7 +91,7 @@ public final class TargetExecutor implements Runnable {
         properties.putAll (p);
     }
     
-    public ExecutorTask execute () throws IOException {
+    static String getProcessDisplayName(AntProjectCookie pcookie, List/*<String>*/ targetNames) {
         Element projel = pcookie.getProjectElement();
         String projectName;
         if (projel != null) {
@@ -120,10 +120,17 @@ public final class TargetExecutor implements Runnable {
                 targetList.append(NbBundle.getMessage(TargetExecutor.class, "SEP_output_target"));
                 targetList.append((String) it.next());
             }
-            displayName = NbBundle.getMessage(TargetExecutor.class, "TITLE_output_target", projectName, fileName, targetList);
+            return NbBundle.getMessage(TargetExecutor.class, "TITLE_output_target", projectName, fileName, targetList);
         } else {
-            displayName = NbBundle.getMessage(TargetExecutor.class, "TITLE_output_notarget", projectName, fileName);
+            return NbBundle.getMessage(TargetExecutor.class, "TITLE_output_notarget", projectName, fileName);
         }
+    }
+    
+    /**
+     * Actually start the process.
+     */
+    public ExecutorTask execute () throws IOException {
+        displayName = getProcessDisplayName(pcookie, targetNames);
         
         final ExecutorTask task;
         synchronized (this) {
@@ -227,6 +234,8 @@ public final class TargetExecutor implements Runnable {
             err.println(NbBundle.getMessage(TargetExecutor.class, "EXC_non_local_proj_file"));
             return;
         }
+        
+        LastTargetExecuted.record(buildFile, verbosity, targetNames != null ? (String[]) targetNames.toArray(new String[targetNames.size()]) : null, properties);
         
         // Don't hog the CPU, the build might take a while:
         Thread.currentThread().setPriority((Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) / 2);

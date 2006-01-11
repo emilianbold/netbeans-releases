@@ -8,12 +8,29 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
+    <folder name="Actions">
+        <folder name="Build">
+            <!-- XXX currently not registered anywhere: -->
+            <file name="org-apache-tools-ant-module-run-RunLastTargetAction.instance"/>
+            <file name="org-apache-tools-ant-module-run-StopBuildingAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="OptionsDialog"> <!-- XXX #71280: should not be necessary but currently is -->
+        <folder name="Actions">
+            <folder name="Build">
+                <file name="org-apache-tools-ant-module-run-RunLastTargetAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Build/org-apache-tools-ant-module-run-RunLastTargetAction.instance"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
     <folder name="Menu">
         <folder name="BuildProject">
             <attr name="SeparatorCompileSingle.instance/org-apache-tools-ant-module-run-StopBuildingAction.instance" boolvalue="true"/>
