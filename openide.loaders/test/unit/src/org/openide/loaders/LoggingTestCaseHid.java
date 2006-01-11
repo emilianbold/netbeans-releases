@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -78,7 +80,9 @@ public abstract class LoggingTestCaseHid extends NbTestCase {
         } catch (IOException iex) {//#66208
             IOException ne = new IOException (iex.getMessage () + " Log:\n" + ErrManager.messages);
             ne.setStackTrace (iex.getStackTrace ());
-            throw ne;	    
+            throw ne;
+        } catch (RuntimeException ex) {
+            throw new InvocationTargetException(ex, ex.getMessage() + " Log:\n" + ErrManager.messages);
 	} finally {
             // do not write to log files anymore
             ErrManager.clear(getName(), System.err);

@@ -14,6 +14,8 @@
 package org.openide.loaders;
 
 import java.util.ArrayList;
+import junit.framework.TestFailure;
+import junit.framework.TestResult;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 
@@ -183,5 +185,25 @@ public class LoggingControlTest extends LoggingTestCaseHid {
         
         assertEquals("Really changing the execution according to the provided order: " + res, "[A, 1, A, 2, A, 3]", res);
     }
-    
+
+    private Exception throwIt;
+    public void testRuntimeExceptionsAlsoGenerateLog() throws Exception {
+        if (throwIt != null) {
+            ErrorManager.getDefault().log("Ahoj");
+            throw throwIt;
+        }
+        
+        LoggingControlTest l = new LoggingControlTest("testRuntimeExceptionsAlsoGenerateLog");
+        l.throwIt = new NullPointerException();
+        TestResult res = l.run();
+        assertEquals("No failures", 0, res.failureCount());
+        assertEquals("One error", 1, res.errorCount());
+        
+        Object o = res.errors().nextElement();
+        TestFailure f = (TestFailure)o;
+        
+        if (f.exceptionMessage() == null || f.exceptionMessage().indexOf("Ahoj") == -1) {
+            fail("Logged messages shall be in exception message: " + f.exceptionMessage());
+        }
+    }
 }
