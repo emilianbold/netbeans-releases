@@ -203,10 +203,19 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             }
             
             private void updateKeys() {
-                // #70112: sort them.
-                SortedSet/*<NbModuleProject>*/ subModules = new TreeSet(Util.projectDisplayNameComparator());
-                subModules.addAll(spp.getSubprojects());
-                setKeys(subModules);
+                // e.g.(?) Explorer view under Children.MUTEX subsequently calls e.g.
+                // SuiteProject$Info.getSimpleName() which acquires ProjectManager.mutex(). And
+                // since this method might be called under ProjectManager.mutex() write access
+                // and updateKeys() --> setKeys() in turn calls Children.MUTEX write access,
+                // deadlock is here, so preventing it... (also got this under read access)
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        // #70112: sort them.
+                        SortedSet/*<NbModuleProject>*/ subModules = new TreeSet(Util.projectDisplayNameComparator());
+                        subModules.addAll(spp.getSubprojects());
+                        setKeys(subModules);
+                    }
+                });
             }
             
             protected void removeNotify() {
@@ -219,20 +228,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             }
             
             public void stateChanged(ChangeEvent ev) {
-                // e.g.(?) Explorer view under Children.MUTEX subsequently calls e.g.
-                // SuiteProject$Info.getSimpleName() which acquires ProjectManager.mutex(). And
-                // since this method might be called under ProjectManager.mutex() write access
-                // and updateKeys() --> setKeys() in turn calls Children.MUTEX write access,
-                // deadlock is here, so preventing it... (also got this under read access)
-                if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
-                    EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            updateKeys();
-                        }
-                    });
-                } else {
-                    updateKeys();
-                }
+                updateKeys();
             }
             
         }

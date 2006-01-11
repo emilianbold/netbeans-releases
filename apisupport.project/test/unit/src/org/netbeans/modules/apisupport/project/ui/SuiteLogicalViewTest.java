@@ -53,14 +53,14 @@ public class SuiteLogicalViewTest extends TestBase {
         SuiteProject suite1 = generateSuite("suite1");
         TestBase.generateSuiteComponent(suite1, "module1a");
         Node modulesNode = new SuiteLogicalView.ModulesNode(suite1);
+        modulesNode.getChildren().getNodes(true); // "expand the node" simulation
+        waitForGUIUpdate();
         assertEquals("one children", 1, modulesNode.getChildren().getNodes(true).length);
         
         final ModuleChildren children = (ModuleChildren) modulesNode.getChildren();
-        
         TestBase.generateSuiteComponent(suite1, "module1b");
-        children.stateChanged(null); // #70914
+        waitForGUIUpdate();
         assertEquals("two children", 2, children.getNodes(true).length);
-        
         TestBase.generateSuiteComponent(suite1, "module1c");
         ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
@@ -68,7 +68,7 @@ public class SuiteLogicalViewTest extends TestBase {
                 return null; // #70914
             }
         });
-        EventQueue.invokeAndWait(new Runnable() { public void run() {} });
+        waitForGUIUpdate();
         assertEquals("three children", 3, children.getNodes(true).length);
     }
     
@@ -108,6 +108,10 @@ public class SuiteLogicalViewTest extends TestBase {
         public void propertyChange(PropertyChangeEvent evt) {
             changed.add(evt.getPropertyName());
         }
+    }
+    
+    private void waitForGUIUpdate() throws Exception {
+        EventQueue.invokeAndWait(new Runnable() { public void run() {} });
     }
     
 }
