@@ -425,7 +425,7 @@ public final class RequestProcessor {
             }
         }
         if (loggable) {
-            em.log("Item enqueued: " + item + " status: " + item.enqueued); // NOI18N
+            em.log("Item enqueued: " + item.action + " status: " + item.enqueued); // NOI18N
         }
     }
 
