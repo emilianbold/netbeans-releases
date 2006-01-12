@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="stable OR cache" executor="platform" name="Testing lookup in real IDE">
+    <testbag testattribs="cache" executor="platform" name="Testing lookup in real IDE">
         <testset dir="unit/src">
             <patternset>
                 <!-- this includes all tests testing layers -->
@@ -44,7 +44,6 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <include name="org/netbeans/core/lookup/*Test.class"/>
                 <include name="org/netbeans/core/lookup/*Test?.class"/>
-                <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -62,7 +61,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/projects/cache/*Test.class"/>
                 <include name="org/netbeans/core/lookup/*Test.class"/>
                 <include name="org/netbeans/core/lookup/*Test?.class"/>
-                <exclude name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
                 <include name="org/netbeans/*Test.class"/>
                 <include name="org/netbeans/core/xml/*Test.class"/>
                 <!-- these tests are run in IDE mode-->
@@ -71,18 +69,14 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="failing" executor="code" name="testbag_4">
+    <testbag testattribs="failing" executor="code" name="failing">
         <testset dir="unit/src">
             <patternset>
-                <!-- Under investigation why it fails (probably "as designed"): -->
-                <include name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
                 <!-- Seems to fail consistently on tester machine. Cannot reproduce on workstation. TBD. -->
                 <!-- Window displayed always says: "Exception". So something is being thrown by something else. -->
                 <!-- But there is no way to track down what that is. When core-windows.jar includes all -->
                 <!-- GUI stuff, and plain core does not show dialogs for exceptions, this will be fixable. -->
                 <include name="org/netbeans/core/PlainTest.class/testPlainShowsNoGUI"/>
-                <!-- XXX #46116: who knows... -->
-                <include name="org/netbeans/core/NbClipboardNativeTest.class"/>
             </patternset>
         </testset>
     </testbag>
