@@ -1475,6 +1475,45 @@ public class AbstractLookupBaseHid extends NbTestCase {
         
     }
     
+    public void testReturnSomethingElseThenYouClaimYouWillReturn() {
+        class Liar extends AbstractLookup.Pair {
+            public Object obj;
+            
+            protected boolean instanceOf(Class c) {
+                return c.isAssignableFrom(String.class);
+            }
+
+            protected boolean creatorOf(Object obj) {
+                return this.obj == obj;
+            }
+
+            public Object getInstance() {
+                return this.obj;
+            }
+
+            public Class getType() {
+                return String.class;
+            }
+
+            public String getId() {
+                return String.class.getName();
+            }
+
+            public String getDisplayName() {
+                return getId();
+            }
+        }
+        
+        
+        Liar l = new Liar();
+        l.obj = new Integer(5);
+        
+        this.ic.addPair(l);
+        
+        Collection c = lookup.lookup(new Lookup.Template(String.class)).allInstances();
+        assertTrue("It is empty: " + c, c.isEmpty());
+    }
+    
     /** Adds instances to the instance lookup.
      */
     private void addInstances (Object[] instances) {

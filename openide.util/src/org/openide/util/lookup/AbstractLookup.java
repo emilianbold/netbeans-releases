@@ -891,10 +891,10 @@ public class AbstractLookup extends Lookup implements Serializable {
             Iterator it = items.iterator();
 
             while (it.hasNext()) {
-                Item item = (Item) it.next();
+                Pair item = (Pair) it.next();
                 Object obj = item.getInstance();
 
-                if (obj != null) {
+                if (reference.template.getType().isInstance(obj)) {
                     s.add(obj);
                 }
             }
