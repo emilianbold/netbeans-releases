@@ -989,7 +989,7 @@ public abstract class CLIHandler extends Object {
                                 os.write (REPLY_DELAY);
                                 os.flush ();
                             } catch (SocketException ex) {
-                                if (ex.getMessage().equals("Broken pipe")) { // NOI18N
+                                if (isClosedSocket(ex)) { // NOI18N
                                     // mark the arguments killed
                                     arguments.close();
                                     // interrupt this thread
@@ -1011,7 +1011,7 @@ public abstract class CLIHandler extends Object {
                     os.write(REPLY_EXIT);
                     os.writeInt(r.res);
                 } catch (SocketException ex) {
-                    if (ex.getMessage().equals("Broken pipe")) { // NOI18N
+                    if (isClosedSocket(ex)) { // NOI18N
                         // mark the arguments killed
                         arguments.close();
                         // interrupt r thread
@@ -1030,6 +1030,21 @@ public abstract class CLIHandler extends Object {
             
             os.close();
             is.close();
+        }
+        
+        /** A method to find out on various systems whether an exception is
+         * a signal of closed socket, especially if the peer is killed or exited.
+         * @param ex the exception to investigate
+         */
+        static final boolean isClosedSocket(SocketException ex) {
+            if (ex.getMessage().equals("Broken pipe")) { // NOI18N
+                return true;
+            }
+            if (ex.getMessage().startsWith("Connection reset by peer")) { // NOI18N
+                return true;
+            }
+            
+            return false;
         }
         
         private static final class IS extends InputStream {
