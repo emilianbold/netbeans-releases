@@ -18,6 +18,8 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*.class"/>
+                <exclude name="org/netbeans/modules/extbrowser/NbDdeBrowserImplTest.class/testSetURL"/>
+                <exclude name="org/netbeans/modules/extbrowser/UnixBrowserImplTest.class/testSetURL"/>
             </patternset>
         </testset>
     </testbag>
