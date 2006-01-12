@@ -67,6 +67,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- J2EE team -->
         <module name="j2eeserver" testtypes="unit" attributes="stable"/>
         <module name="web/webapi" testtypes="unit" attributes="stable"/>
+        <module name="j2ee/ejbapi" testtypes="unit" attributes="stable"/>
         <module name="j2ee/refactoring" testtypes="unit" attributes="stable"/>
         <module name="db" testtypes="unit" attributes="stable"/>
         <!--<module name="extbrowser" testtypes="unit" attributes="stable"/>-->
@@ -77,9 +78,9 @@ Microsystems, Inc. All Rights Reserved.
         <module name="j2ee/ddloaders" testtypes="unit" attributes="stable"/>
         <module name="web/jspparser" testtypes="unit" attributes="stable"/>
         <module name="tomcatint/tomcat5" testtypes="unit" attributes="stable"/>
-        <!-- removed (not runnable): html, schema2beans -->
+        <!--<module name="schema2beans" testtypes="unit" attributes="stable"/>-->
         <module name="xml/text-edit" testtypes="unit" attributes="stable"/>
-	<module name="web/jspsyntax" testtypes="unit" attributes="stable"/>
+        <module name="web/jspsyntax" testtypes="unit" attributes="stable"/>
 
         <!-- these two need depend on each other -->
         <module name="openide/execution" testtypes="unit" attributes="stable"/>
