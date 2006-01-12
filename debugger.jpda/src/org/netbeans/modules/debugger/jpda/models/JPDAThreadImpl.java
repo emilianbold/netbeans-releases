@@ -383,6 +383,7 @@ public final class JPDAThreadImpl implements JPDAThread {
      */
     public ObjectVariable getContendedMonitor () {
         try {
+            if (!isSuspended()) return null;
             ObjectReference or = threadReference.currentContendedMonitor ();
             if (or == null) return null;
             return new ThisVariable (debugger, or, "");
@@ -401,6 +402,7 @@ public final class JPDAThreadImpl implements JPDAThread {
      */
     public ObjectVariable[] getOwnedMonitors () {
         try {
+            if (!isSuspended()) return new ObjectVariable [0];
             List l = threadReference.ownedMonitors ();
             int i, k = l.size ();
             ObjectVariable[] vs = new ObjectVariable [k];
