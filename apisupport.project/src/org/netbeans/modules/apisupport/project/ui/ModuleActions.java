@@ -136,6 +136,7 @@ public final class ModuleActions implements ActionProvider {
         actions.add(SystemAction.get(FindAction.class));
         actions.add(null);
         actions.add(CommonProjectActions.moveProjectAction());
+        actions.add(CommonProjectActions.copyProjectAction());
         actions.add(CommonProjectActions.deleteProjectAction());
         
         // Honor #57874 contract:
@@ -204,6 +205,7 @@ public final class ModuleActions implements ActionProvider {
             supportedActionsSet.add(ActionProvider.COMMAND_RUN_SINGLE);
         }
         supportedActionsSet.add(ActionProvider.COMMAND_MOVE);
+        supportedActionsSet.add(ActionProvider.COMMAND_COPY);
         supportedActionsSet.add(ActionProvider.COMMAND_DELETE);
         supportedActions = (String[])supportedActionsSet.toArray(new String[supportedActionsSet.size()]);
     }
@@ -226,7 +228,8 @@ public final class ModuleActions implements ActionProvider {
     
     public boolean isActionEnabled(String command, Lookup context) {
         if (ActionProvider.COMMAND_DELETE.equals(command) ||
-                ActionProvider.COMMAND_MOVE.equals(command)) {
+                ActionProvider.COMMAND_MOVE.equals(command) ||
+                ActionProvider.COMMAND_COPY.equals(command)) {
             return true;
         } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
             return findBuildXml(project) != null &&
@@ -342,6 +345,9 @@ public final class ModuleActions implements ActionProvider {
             return;
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
             DefaultProjectOperations.performDefaultMoveOperation(project);
+            return;
+        } else if (ActionProvider.COMMAND_COPY.equals(command)) {
+            DefaultProjectOperations.performDefaultCopyOperation(project);
             return;
         }
         Properties p;

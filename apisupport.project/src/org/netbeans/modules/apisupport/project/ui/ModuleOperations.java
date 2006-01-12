@@ -28,7 +28,9 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
+import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -37,7 +39,8 @@ import org.openide.filesystems.FileObject;
 /**
  * @author Martin Krauskopf
  */
-public final class ModuleOperations implements DeleteOperationImplementation, MoveOperationImplementation {
+public final class ModuleOperations implements DeleteOperationImplementation,
+        MoveOperationImplementation, CopyOperationImplementation {
     
     private static final Map/*<String, SuiteProject>*/ TEMPORARY_CACHE = new HashMap();
     
@@ -84,6 +87,32 @@ public final class ModuleOperations implements DeleteOperationImplementation, Mo
         }
     }
     
+    public void notifyCopying() throws IOException {
+        SuiteProject suite = SuiteUtils.findSuite(project);
+        if (suite != null) {
+            // Let's remove the project from its suite. Since we want to be a
+            // copy a standalone module for now. And since we cannot control
+            // the phase between a new project is physically copied and when it
+            // is opened we have to use this workaround.
+            TEMPORARY_CACHE.put(project.getCodeNameBase(), suite);
+            SuiteUtils.removeModuleFromSuite(project);
+        }
+    }
+    
+    public void notifyCopied(Project original, File originalPath, String nueName) throws IOException {
+        if (original == null) { // called on the original project
+            SuiteProject suite = (SuiteProject) TEMPORARY_CACHE.remove(project.getCodeNameBase());
+            if (suite != null) {
+                // Let's readd the original suite component to its suite. Look
+                // into notifyCopying() commens for more details.
+                SuiteUtils.addModule(suite, (NbModuleProject) project);
+            }
+        } else {
+            // Adjust display name so the copy can be recognized from the original.
+            adjustDisplayName();
+        }
+    }
+    
     public List/*<FileObject>*/ getMetadataFiles() {
         List/*<FileObject>*/ files = new ArrayList();
         addFile(GeneratedFilesHelper.BUILD_XML_PATH, files);
@@ -114,6 +143,19 @@ public final class ModuleOperations implements DeleteOperationImplementation, Mo
         FileObject file = projectDir.getFileObject(fileName);
         if (file != null) {
             result.add(file);
+        }
+    }
+    
+    private void adjustDisplayName() throws IOException {
+        LocalizedBundleInfo.Provider lbiProvider =
+                (LocalizedBundleInfo.Provider) project.getLookup().lookup(LocalizedBundleInfo.Provider.class);
+        if (lbiProvider != null) {
+            LocalizedBundleInfo info = lbiProvider.getLocalizedBundleInfo();
+            if (info != null) {
+                // XXX what if the user makes two copies from one module?
+                info.setDisplayName(info.getDisplayName() + " (1)"); // NOI18N
+                info.store();
+            }
         }
     }
     
