@@ -44,12 +44,6 @@ public class InstanceDataObjectModuleTest4 extends InstanceDataObjectModuleTestH
         super(name);
     }
     
-    public static void main(String[] args) {
-        // Turn on verbose logging while developing tests:
-        //System.setProperty("org.netbeans.core.modules", "0");
-        TestRunner.run(new NbTestSuite(InstanceDataObjectModuleTest4.class));
-    }
-    
     /** Currently fails (lookup gets a result not assignable to its template),
      * probably because this is not supported with *.instance (?).
      */
@@ -62,14 +56,20 @@ public class InstanceDataObjectModuleTest4 extends InstanceDataObjectModuleTestH
             assertEquals("Correct loader", l1, c1.getClassLoader());
             assertTrue("SomeAction<1> instance found after module installation",
                 existsSomeAction(c1));
-            ERR.log("Before reload");
+            
+            ClassLoader g1 = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            ERR.log("Before reload: " + g1);
             twiddle(m1, TWIDDLE_RELOAD);
-            ERR.log("After reload");
+            ClassLoader g2 = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            ERR.log("After reload: " + g2);
             // Sleeping for a few seconds here does *not* help.
             l2 = m1.getClassLoader();
             assertTrue("ClassLoader really changed", l1 != l2);
             Class c2 = l2.loadClass("test1.SomeAction");
             assertTrue("Class really changed", c1 != c2);
+            
+            assertTrue("Glboal Class loaders really changed", g1 != g2);
+            
             
             LoaderPoolNode.waitFinished();
             ERR.log("After waitFinished");
