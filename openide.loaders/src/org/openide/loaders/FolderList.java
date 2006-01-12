@@ -602,7 +602,9 @@ implements FileChangeListener, DataObject.Container {
         Collection order, Map map, FolderListListener f
     ) {
         final boolean LOG = err.isLoggable(ErrorManager.INFORMATIONAL);
-        if (LOG) err.log ("createObjects on " + folder);
+        if (LOG) {
+            err.log ("createObjects on " + folder);
+        }
         int size = order.size ();
 
         Iterator it = order.iterator ();
@@ -611,13 +613,24 @@ implements FileChangeListener, DataObject.Container {
         for (int i = 0; i < size; i++) {
             FileObject fo = (FileObject)it.next ();
 
-            if (!fo.isValid ()) continue;
+            if (LOG) {
+                err.log("  iterating" + fo); // NOI18N
+            }
+            if (!fo.isValid ()) {
+                if (LOG) {
+                    err.log("    not valid, continue"); // NOI18N
+                }
+                continue;
+            }
 
             Reference ref = (Reference)map.get (fo);
             DataObject obj = ref != null ? (DataObject)ref.get() : null;
 
             if (obj == null) {
                 // try to find new data object
+                if (LOG) {
+                    err.log("    reference is " + ref + " obj is " + obj); // NOI18N
+                }
                 try {
                     obj = DataObject.find (fo);
                     ref = new SoftReference (obj);
@@ -627,6 +640,9 @@ implements FileChangeListener, DataObject.Container {
             }
             // add if accepted
             if (obj != null) {
+                if (LOG) {
+                    err.log("    deliver: ref is " + ref + " obj is " + obj); // NOI18N
+                }
 
                 // JST: Cannot be avoided otherwise DataObject.files () can be unconsistent
                 // avoid to checkFiles(this)
@@ -644,7 +660,14 @@ implements FileChangeListener, DataObject.Container {
         }
 
         if (f != null) {
+            if (LOG) {
+                err.log("  finished: " + res); // NOI18N
+            }
             f.finished (res);
+        }
+        
+        if (LOG) {
+            err.log("createObjects ends on " + folder); // NOI18N
         }
         return res;
     }
