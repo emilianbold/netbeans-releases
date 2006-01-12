@@ -411,16 +411,33 @@ public class XMLFormatter extends ExtFormatter {
                             //an open tag
                             String openTagName = token.getImage().substring(1);
                             //check #2
-                            token = sup.getTokenChain(dotPos, dotPos + 1);
-                            if(token != null &&
-                                    token.getTokenID() == XMLTokenIDs.TAG &&
-                                    token.getImage().startsWith("</" + openTagName)) {
+                            
+                            boolean applySmartEnter = false;
+                            int lineEnd = Utilities.getRowEnd(doc, dotPos);
+                            int closingTagOffset = -1;
+                            token = sup.getTokenChain(lineEnd - 1, lineEnd);
+                            
+                            if (token != null && token.getTokenID() == XMLTokenIDs.TAG
+                                    && ">".equals(token.getImage())){
+                                TokenItem tagNameToken = token.getPrevious();
+                                
+                                if (tagNameToken != null && tagNameToken.getImage().startsWith("</")){ //NOI18N
+                                    String tagName = tagNameToken.getImage().substring("</".length());
+                                    
+                                    if (tagName.equalsIgnoreCase(openTagName)){
+                                        applySmartEnter = true;
+                                        closingTagOffset = tagNameToken.getOffset();
+                                    }
+                                }
+                            }
+                            
+                            if(applySmartEnter) {
                                 //found pair end tag => we can do the reformat!!!
                                 int currentLineIndex = Utilities.getLineOffset(doc, token.getOffset());
                                 //a. insert a new line on the current line
                                 doc.atomicLock();
                                 try {
-                                    doc.insertString( dotPos, "\n" , null);
+                                    doc.insertString( closingTagOffset, "\n" , null);
                                 } catch( BadLocationException exc ) {
                                     //do nothing
                                 } finally {
@@ -434,7 +451,8 @@ public class XMLFormatter extends ExtFormatter {
                                 changeRowIndent(doc, newLineOffset, newLineIndent);
                                 
                                 //c. set cursor to the end of the new line
-                                target.setCaretPosition(Utilities.getRowEnd(doc, newLineOffset));
+                                target.setCaretPosition(Math.min(Utilities.getFirstNonWhiteFwd(doc, Utilities.getRowStart(doc, newLineOffset)), 
+                                        Utilities.getRowEnd(doc, newLineOffset)));
                                 
                                 //return end tag line start and end offset to reformat the end tag correctly
                                 //get first non white offset from the line after the newly inserted line
