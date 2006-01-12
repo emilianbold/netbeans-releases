@@ -1121,7 +1121,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         }
         
         //JSP comment
-        if(id == JspTagTokenContext.COMMENT || id == JspDirectiveTokenContext.COMMENT) {
+        if(id == JspTagTokenContext.COMMENT || id == JspDirectiveTokenContext.COMMENT
+                || id == HTMLTokenContext.BLOCK_COMMENT) {
             return getCommentChain(item, offset);
         }
 
