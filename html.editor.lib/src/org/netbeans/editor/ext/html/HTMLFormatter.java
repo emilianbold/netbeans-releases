@@ -413,6 +413,7 @@ public class HTMLFormatter extends ExtFormatter {
              */
                 //1. does the previous line ends with an open tag with tagname X?
                 //2. does the token on the carret position is an end tag with X tagname?
+                //#59499: the 2nd condition should be wider, like "is the line starting at caret postion terminated by X tagname"?
                 //if both of the assumptions are true then:
                 //a. insert endline on the carret position
                 //b. indent the new line
@@ -435,17 +436,32 @@ public class HTMLFormatter extends ExtFormatter {
                             //an open tag
                             String openTagName = token.getImage();
                             //check #2
-                            token = sup.getTokenChain(dotPos, dotPos + 1);
-                            if(token != null &&
-                                    token.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL &&
-                                    "</".equals(token.getImage()) &&
-                                    token.getNext().getImage().equals(openTagName)) {
+                            
+                            boolean applySmartEnter = false;
+                            int lineEnd = Utilities.getRowEnd(doc, dotPos);
+                            int closingTagOffset = -1;
+                            token = sup.getTokenChain(lineEnd - 1, lineEnd);
+                            
+                            if (token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL && ">".equals(token.getImage())){
+                                TokenItem tagNameToken = token.getPrevious();
+                                
+                                if (tagNameToken != null && openTagName.equalsIgnoreCase(tagNameToken.getImage())){
+                                    TokenItem tsToken = tagNameToken.getPrevious();
+                                    
+                                    if (tsToken != null && tsToken.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL && "</".equals(tsToken.getImage())){
+                                        applySmartEnter = true;
+                                        closingTagOffset = tsToken.getOffset();
+                                    }
+                                }
+                            }
+                            
+                            if(applySmartEnter) {
                                 //found pair end tag => we can do the reformat!!!
                                 int currentLineIndex = Utilities.getLineOffset(doc, token.getOffset());
                                 //a. insert a new line on the current line
                                 doc.atomicLock();
                                 try {
-                                    doc.insertString( dotPos, "\n" , null);
+                                    doc.insertString(closingTagOffset, "\n" , null);
                                 } catch( BadLocationException exc ) {
                                     //do nothing
                                 } finally {
@@ -458,8 +474,9 @@ public class HTMLFormatter extends ExtFormatter {
                                 int newLineIndent = previousLineIndentation + getShiftWidth();
                                 changeRowIndent(doc, newLineOffset, newLineIndent);
                                 
-                                //c. set cursor to the end of the new line
-                                target.setCaretPosition(Utilities.getRowEnd(doc, newLineOffset));
+                                //c. set cursor to the beginning of the new line
+                                target.setCaretPosition(Math.min(Utilities.getFirstNonWhiteFwd(doc, Utilities.getRowStart(doc, newLineOffset)), 
+                                        Utilities.getRowEnd(doc, newLineOffset)));
                                 
                                 //return end tag line start and end offset to reformat the end tag correctly
                                 //get first non white offset from the line after the newly inserted line
