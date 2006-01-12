@@ -212,7 +212,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
                 }
                 
                 
-            } else if( /*id == HTMLTokenContext.TEXT && */ preText.endsWith( "<" ) ) { // NOI18N
+            } else if( id == HTMLTokenContext.TEXT &&  preText.endsWith( "<" ) ) { // NOI18N
                 // There will be lookup for possible StartTags, in SyntaxSupport
                 //                l = translateTags( offset-len, len, sup.getPossibleStartTags ( offset-len, "" ) );
                 l = translateTags( offset-len, len, dtd.getElementList( "" ) );
