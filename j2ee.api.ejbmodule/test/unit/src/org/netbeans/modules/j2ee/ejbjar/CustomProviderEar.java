@@ -14,7 +14,6 @@
 package org.netbeans.modules.j2ee.ejbjar;
 
 import java.util.HashMap;
-import org.netbeans.modules.j2ee.api.common.EjbProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.*;
 import org.netbeans.modules.j2ee.spi.ejbjar.*;
 import org.openide.filesystems.FileObject;
