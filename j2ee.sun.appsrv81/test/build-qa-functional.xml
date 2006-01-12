@@ -37,7 +37,15 @@ Microsystems, Inc. All Rights Reserved.
         <fail unless="sjsas.present" message="Sjsas was not found in ${sjsas.server.path}. Set property sjsas.server.path to point to Sjsas installation directory."/>
     </target>
     
-    <target name="runidetest" depends="init,init-cp, check-sjsas">        
+    <target name="runidetest" depends="init,init-cp, check-sjsas">
+        <copy todir="${xtest.tmpdir}/SjsasTestEjb">
+            <fileset dir="qa-functional/data/SjsasTestEjb"/>
+        </copy>
+        <copy todir="${xtest.tmpdir}/SjsasTestWeb">
+            <fileset dir="qa-functional/data/SjsasTestWeb"/>
+        </copy>
         <executeTests pluginname="ide"/>
+        <delete dir="${xtest.tmpdir}/SjsasTestWeb"/>
+        <delete dir="${xtest.tmpdir}/SjsasTestEjb"/>
     </target>        
 </project>
