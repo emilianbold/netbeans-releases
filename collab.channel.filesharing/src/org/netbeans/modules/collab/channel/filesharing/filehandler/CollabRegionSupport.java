@@ -76,28 +76,9 @@ public class CollabRegionSupport extends Object {
      */
     public CollabRegionSupport(
         CollabFileHandler fh, String regionName, int regionBegin, int regionEnd, boolean guarded
-    ) {
-        super();
-        this.fh = fh;
-        this.regionName = regionName;
-        this.guarded = guarded;
-
-        try {
-            if (fh != null) {
-                this.fileDocument = fh.getDocument();
-            }
-
-            this.regionBegin = NbDocument.createPosition(getDocument(), regionBegin, Position.Bias.Forward);
-            this.regionEnd = NbDocument.createPosition(getDocument(), regionEnd, Position.Bias.Forward);
-
-            if ((this.regionBegin == null) || (this.regionEnd == null)) {
-                throw new IllegalArgumentException("Region creation failed for: " + regionName);
-            }
-        } catch (javax.swing.text.BadLocationException ex) {
-            throw new IllegalArgumentException("Region creation failed for: " + regionName);
-        } catch (CollabException ce) {
-            throw new IllegalArgumentException("Region creation failed for: " + regionName);
-        }
+    ) throws CollabException {
+		this(fh.getDocument(), regionName, regionBegin, regionEnd, guarded);
+		this.fh=fh;
     }
 
     /**
@@ -259,8 +240,24 @@ public class CollabRegionSupport extends Object {
         String content = null;
 
         try {
-            int length = getEndOffset() - getBeginOffset();
-            content = getDocument().getText(getBeginOffset(), length);
+            int beginLineIndex=getDocument().getDefaultRootElement().getElementIndex(getBeginOffset());
+            Element beginLine=getDocument().getDefaultRootElement().getElement(beginLineIndex);
+            int endLineIndex=getDocument().getDefaultRootElement().getElementIndex(getEndOffset());
+            Element endLine=getDocument().getDefaultRootElement().getElement(endLineIndex);              
+            Debug.log("CollabFileHandlerSupport","CRS, getContent " +
+                "begin : " + getBeginOffset()+
+                "end : " + getEndOffset()+
+                "actual line begin: "+beginLine.getStartOffset()+
+                "actual line end: "+endLine.getEndOffset()); //NoI18n 
+			
+            //int length = getEndOffset() - getBeginOffset();			
+			int beginOffset = getBeginOffset();
+			int endOffset = getEndOffset();
+			if(endOffset<endLine.getEndOffset())
+				endOffset = endLine.getEndOffset();			
+			int length = endOffset - beginOffset;
+			
+            content = getDocument().getText(beginOffset/*getBeginOffset()*/, length);
         } catch (javax.swing.text.BadLocationException ex) {
             throw new CollabException(ex);
         }
@@ -318,7 +315,7 @@ public class CollabRegionSupport extends Object {
      * @return interval
      */
     public int getInterval() {
-        int interval = FilesharingCollabletFactorySettings.getDefault().getLockTimeoutInterval().intValue();
+        int interval = 3;//FilesharingCollabletFactorySettings.getDefault().getLockTimeoutInterval().intValue();
 
         if ((interval < 3) || (interval > 60)) {
             interval = 3;
@@ -531,12 +528,144 @@ public class CollabRegionSupport extends Object {
          */
         public int setText(String text) throws CollabException {
             int p1 = getBegin();
-            int p2 = p1 + getText().length();
+            int p2 = getPositionAfter()-1;
+			boolean isRegionEOF=false;
+			boolean isError=false;
+			int endLineIndex=doc.getDefaultRootElement().getElementIndex(p2);
+			
+			if(endLineIndex+1>=doc.getDefaultRootElement().getElementCount())
+				isRegionEOF=true;
+			
+			int docLen = doc.getLength();	
+			CollabLineRegion elr=null;//end line region
+			int elrx=-1;//end line region index			
+			String beforeNextLine="";//line region that borders endLine content befoe change, supposed to be same as below
+			String afterNextLine="";//line region that borders endLine content after change
+			if(!isRegionEOF)
+			{
+				try {				
+					Element endLine=doc.getDefaultRootElement().getElement(endLineIndex);
+					elr=((CollabFileHandlerSupport)fh).getLineRegion(endLineIndex);	
+					if(elr==null)
+						isError=true;
+					
+					if(!isError)
+					{
+						elrx=elr.getLineIndex();
+						Element nextLine=doc.getDefaultRootElement().getElement(endLineIndex+1);
+						beforeNextLine = doc.getText(nextLine.getStartOffset(), 
+							nextLine.getEndOffset()-nextLine.getStartOffset());
 
-            if (p1 > 0) {
-                p1 -= 1;
-            }
+						if (Debug.isEnabled())
+						{
+							Debug.out.println("endLine: "+endLineIndex+" endOffset: "+endLine.getEndOffset());
+							Debug.out.println("endLine text: ["+doc.getText(endLine.getStartOffset(), 
+								endLine.getEndOffset()-endLine.getStartOffset()).replaceAll("\n", "~n")+"]");
+							Debug.out.println("beforeNextLine text: ["+beforeNextLine.replaceAll("\n", "~n")+"]");						
+						}
+					}
+				} catch (BadLocationException ex) {
+					ex.printStackTrace(Debug.out);
+				}
+			}
 
+			//now do setText
+            int len = setText(text, p1, p2);
+			
+			int sfBegin = p1 + len;
+			
+			CollabLineRegion nlr=((CollabFileHandlerSupport)fh).getLineRegion(elrx+1);
+			if(nlr==null)
+				isError=true;
+			
+			if(!isRegionEOF && !isError)
+			{			
+				endLineIndex=doc.getDefaultRootElement().getElementIndex(sfBegin-2);
+				Element endLine=doc.getDefaultRootElement().getElement(endLineIndex);
+				Element nextLine=doc.getDefaultRootElement().getElement(endLineIndex+1);						
+				try{
+					afterNextLine = doc.getText(nextLine.getStartOffset(), 
+						nextLine.getEndOffset()-nextLine.getStartOffset());	
+					
+					if (Debug.isEnabled())
+					{
+						Debug.out.println("endLine: "+endLineIndex+" endOffset: "+endLine.getEndOffset());
+						Debug.out.println("endLine text: ["+doc.getText(endLine.getStartOffset(), 
+							endLine.getEndOffset()-endLine.getStartOffset()).replaceAll("\n", "~n")+"]");
+					}					
+				} catch (javax.swing.text.BadLocationException e) {
+					e.printStackTrace(Debug.out);
+				}
+
+				if (Debug.isEnabled())
+				{
+					Debug.out.println("p1: "+p1+"p2: " + p2);
+					Debug.out.println("text insert(len): " + text.length());
+					Debug.out.println("docLen before: "+docLen+" after: "+doc.getLength());
+					Debug.out.println("beforeNextLine: ["+beforeNextLine.replaceAll("\n", "~n")+"]");
+					Debug.out.println("afterNextLine : ["+afterNextLine.replaceAll("\n", "~n")+"]");
+					
+					Debug.out.println("((p2-p1)-text.length()): "+((p2-p1)-text.length()));
+					Debug.out.println("(docLen-doc.getLength()): "+(docLen-doc.getLength()));
+					
+					if(((p2-p1)-text.length())!=(docLen-doc.getLength()))
+						Debug.out.println("!!!ERROR!!! - Document corrupted after update");
+
+					try{
+						Debug.out.println("elrx: "+elrx);						
+						Debug.out.println("elr: ["+elr.getContent().replaceAll("\n", "~n")+"]");
+						Debug.out.println("nlr: ["+nlr.getContent().replaceAll("\n", "~n")+"]");
+						Debug.out.println("(sfBegin-1): "+(sfBegin-1));						
+						Debug.out.println("nlr.getBeginOffset(): "+nlr.getBeginOffset());
+					} catch (Exception ex) {
+						ex.printStackTrace(Debug.out);
+					}
+				}
+				
+				if((sfBegin-1) < nlr.getBeginOffset())
+				{
+					int begin=(sfBegin-1);
+					int end=nlr.getBeginOffset();
+					int rmLen=afterNextLine.length();
+					try {
+						Debug.out.println("removing text: ["+doc.getText(begin, rmLen).replaceAll("\n", "~n")+"]");
+					} catch (BadLocationException ex) {
+						ex.printStackTrace(Debug.out);
+					}
+					try {
+						doc.remove(begin, rmLen);
+					} catch (BadLocationException ex) {
+						ex.printStackTrace(Debug.out);
+					}
+				}
+			}
+			else//remove last NB inserted line
+			{
+				int rmLen=1;
+				if(elr==null && nlr==null)
+					rmLen++;
+				try {
+					Debug.out.println("removing text: ["+doc.getText(sfBegin-1, rmLen).replaceAll("\n", "~n")+"]");
+				} catch (BadLocationException ex) {
+					ex.printStackTrace(Debug.out);
+				}				
+				try {
+					doc.remove(sfBegin-1, rmLen);
+				} catch (BadLocationException ex) {
+					ex.printStackTrace(Debug.out);
+				}
+			}
+            return len;
+        }
+		
+        /**
+         * set region content
+         *
+         * @param text
+         * @throws CollabException
+         * @return
+         */
+        private int setText(String text, int p1, int p2) throws CollabException {
             if (Debug.isEnabled())
                 Debug.log("CollabRegionSupport", "CRS:: updateText: p1: " + p1 + " p2:" + p2 + " text: [" + text + "]");
 
@@ -562,35 +691,40 @@ public class CollabRegionSupport extends Object {
                     int docLen = doc.getLength();
 
                     if ((p2 - p1) >= 2) {
-                        Debug.out.println("CFHS:: before insert: [" + doc.getText(0, doc.getLength()) + "]");
-                        doc.insertString(p1 + 1, text, null);
-                        Debug.out.println("CFHS:: after insert: [" + doc.getText(0, doc.getLength()) + "]");
+						int np1=p1 + 1;						
+                        //Debug.out.println("CFHS:: before insert: docLen: "+ doc.getLength()+": [" + doc.getText(0, doc.getLength()) + "]");
+                        doc.insertString(np1, text, null);
+                        //Debug.out.println("CFHS:: after insert: docLen: "+ doc.getLength()+":[" + doc.getText(0, doc.getLength()) + "]");
 
                         // [MaM] compute length of inserted string
-                        len = doc.getLength() - docLen - 1;
+                        len = doc.getLength() - docLen;
 
-                        NbDocument.unmarkGuarded(doc, p1 + 1 + len, p2 - p1 - 1);
-                        Debug.out.println("CFHS:: removing text: [" + doc.getText(p1 + 1 + len, p2 - p1 - 1) + "]");
-                        doc.remove(p1 + 1 + len, p2 - p1 - 1);
+
+						int sfBegin=np1 + len;
+						int sfSize=p2 - np1;
+                        NbDocument.unmarkGuarded(doc, sfBegin, sfSize);
+                        //Debug.out.println("CFHS:: removing text: [" + doc.getText(sfBegin, sfSize) + "]");
+                        doc.remove(sfBegin, sfSize);
 
                         NbDocument.unmarkGuarded(doc, p1, 1);
-                        Debug.out.println("CFHS:: removing text: [" + doc.getText(p1, 1) + "]");
+                        //Debug.out.println("CFHS:: removing text: [" + doc.getText(p1, 1) + "]");
                         doc.remove(p1, 1);
+						
                     } else {
                         // zero or exactly one character:
                         // adjust the positions if they are
                         // biased to not absorb the text inserted at the start/end
                         // it would be ridiculous not to have text set by setText
                         // be part of the bounds.
-                        Debug.out.println("CFHS:: before insert: [" + doc.getText(0, doc.getLength()) + "]");
+                        //Debug.out.println("CFHS:: before insert: [" + doc.getText(0, doc.getLength()) + "]");
                         doc.insertString(p1, text, null);
-                        Debug.out.println("CFHS:: after insert: [" + doc.getText(0, doc.getLength()) + "]");
+                        //Debug.out.println("CFHS:: after insert: [" + doc.getText(0, doc.getLength()) + "]");
 
                         // [MaM] compute length of inserted string
-                        len = doc.getLength() - docLen - 1;
+                        len = doc.getLength() - docLen;
 
                         if (p2 > p1) {
-                            Debug.out.println("CFHS:: removing text: [" + doc.getText(p1 + len, p2 - p1) + "]");
+                            //Debug.out.println("CFHS:: removing text: [" + doc.getText(p1 + len, p2 - p1) + "]");
                             doc.remove(p1 + len, p2 - p1);
                         }
                     }

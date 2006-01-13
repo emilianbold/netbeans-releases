@@ -365,9 +365,9 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
         }
 
         //correction for adjacent regions
-        if (beginOffset > 0) {
+        /*if (beginOffset > 0) {
             beginOffset += 1;
-        }
+        }*/
 
         CollabRegion region = null;
 
@@ -720,7 +720,7 @@ public class CollabJavaFileHandler extends CollabFileHandlerSupport implements C
          */
         public CollabJavaRegion(String regionName, int regionBegin, int regionEnd, boolean guarded)
         throws CollabException {
-            super(CollabJavaFileHandler.this.getDocument(), regionName, regionBegin, regionEnd, guarded);
+            super(CollabJavaFileHandler.this, regionName, regionBegin, regionEnd, guarded);
         }
 
         ////////////////////////////////////////////////////////////////////////////

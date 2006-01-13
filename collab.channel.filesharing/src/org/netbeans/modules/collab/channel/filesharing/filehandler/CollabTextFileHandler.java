@@ -131,9 +131,9 @@ public class CollabTextFileHandler extends CollabFileHandlerSupport implements C
         }
 
         //correction for adjacent regions
-        if (beginOffset > 0) {
+        /*if (beginOffset > 0) {
             beginOffset += 1;
-        }
+        }*/
 
         StyledDocument doc = getDocument();
 
@@ -153,7 +153,7 @@ public class CollabTextFileHandler extends CollabFileHandlerSupport implements C
          */
         public CollabTextRegion(String regionName, int regionBegin, int regionEnd, boolean guarded)
         throws CollabException {
-            super(CollabTextFileHandler.this.getDocument(), regionName, regionBegin, regionEnd, guarded);
+            super(CollabTextFileHandler.this, regionName, regionBegin, regionEnd, guarded);
         }
 
         ////////////////////////////////////////////////////////////////////////////

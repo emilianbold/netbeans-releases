@@ -105,9 +105,9 @@ public class CollabXMLFileHandler extends CollabFileHandlerSupport implements Co
         }
 
         //correction for adjacent regions
-        if (beginOffset > 0) {
+        /*if (beginOffset > 0) {
             beginOffset += 1;
-        }
+        }*/
 
         StyledDocument doc = getDocument();
 
@@ -128,7 +128,7 @@ public class CollabXMLFileHandler extends CollabFileHandlerSupport implements Co
          */
         public CollabXMLRegion(String regionName, int regionBegin, int regionEnd, boolean guarded)
         throws CollabException {
-            super(CollabXMLFileHandler.this.getDocument(), regionName, regionBegin, regionEnd, guarded);
+            super(CollabXMLFileHandler.this, regionName, regionBegin, regionEnd, guarded);
         }
 
         ////////////////////////////////////////////////////////////////////////////
