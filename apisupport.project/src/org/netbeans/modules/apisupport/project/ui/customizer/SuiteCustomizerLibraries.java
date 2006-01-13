@@ -7,28 +7,40 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleProjectType;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
@@ -36,14 +48,19 @@ import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
+import org.openide.modules.Dependency;
+import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.w3c.dom.Element;
 
 /**
  * Represents <em>Libraries</em> panel in Suite customizer.
@@ -53,6 +70,7 @@ import org.openide.util.NbBundle;
 final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         implements Comparator, ExplorerManager.Provider, ChangeListener {
     private ExplorerManager manager;
+    private ModuleEntry[] platformModules;
     
     /**
      * Creates new form SuiteCustomizerLibraries
@@ -88,9 +106,11 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
     
     private void refreshModules() {
-        ModuleEntry[] entry = getProperties().getActivePlatform().getModules();
-        Node root = createModuleNode(entry);
+        platformModules = getProperties().getActivePlatform().getModules();
+        Node root = createPlatformModulesNode();
         manager.setRootContext(root);
+        universe = null;
+        updateDependencyWarnings();
     }
     
     private void refreshJavaPlatforms() {
@@ -301,7 +321,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     // End of variables declaration//GEN-END:variables
     
     
-    private Node createModuleNode(ModuleEntry[] entries) {
+    private Node createPlatformModulesNode() {
         HashSet disabledModuleCNB = new HashSet(Arrays.asList(getProperties().getDisabledModules()));
         HashSet disabledClusters = new HashSet(Arrays.asList(getProperties().getDisabledClusters()));
         
@@ -313,26 +333,26 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         n.setName(getMessage("LBL_ModuleListClusters"));
         n.setDisplayName(getMessage("LBL_ModuleListClustersModules"));
         
-        for (int i = 0; i < entries.length; i++) {
-            Children clusterChildren = (Children)clusterToChildren.get(entries[i].getClusterDirectory());
+        for (int i = 0; i < platformModules.length; i++) {
+            Children clusterChildren = (Children)clusterToChildren.get(platformModules[i].getClusterDirectory());
             if (clusterChildren == null) {
                 Children.SortedArray modules = new Children.SortedArray();
                 modules.setComparator(this);
                 clusterChildren = modules;
                 
-                String clusterName = entries[i].getClusterDirectory().getName();
+                String clusterName = platformModules[i].getClusterDirectory().getName();
                 Enabled cluster = new Enabled(modules, !disabledClusters.contains(clusterName));
                 cluster.setName(clusterName);
                 cluster.setIconBaseWithExtension(SuiteProject.SUITE_ICON_PATH);
-                clusterToChildren.put(entries[i].getClusterDirectory(), modules);
+                clusterToChildren.put(platformModules[i].getClusterDirectory(), modules);
                 n.getChildren().add(new Node[] { cluster });
             }
             
-            String cnb = entries[i].getCodeNameBase();
+            String cnb = platformModules[i].getCodeNameBase();
             AbstractNode module = new Enabled(Children.LEAF, !disabledModuleCNB.contains(cnb));
             module.setName(cnb);
-            module.setDisplayName(entries[i].getLocalizedName());
-            String desc = entries[i].getShortDescription();
+            module.setDisplayName(platformModules[i].getLocalizedName());
+            String desc = platformModules[i].getShortDescription();
             String tooltip;
             if (desc != null) {
                 if (desc.startsWith("<html>")) { // NOI18N
@@ -447,7 +467,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
     }
     
-    static final class Enabled extends AbstractNode {
+    final class Enabled extends AbstractNode {
         private boolean enabled;
         private Children standard;
         
@@ -482,6 +502,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 Enabled en = (Enabled)n;
                 en.firePropertyChange(null, null, null);
             }
+            updateDependencyWarnings();
         }
         
         public boolean isEnabled() {
@@ -555,6 +576,355 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private void initAccessibility() {
         managePlafsButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_ManagePlafsButton"));
         platformValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformValue"));
+    }
+    
+    // #65924: show warnings if some dependencies cannot be satisfied
+    
+    interface UniverseModule {
+        String getCodeNameBase();
+        int getReleaseVersion();
+        SpecificationVersion getSpecificationVersion();
+        String getImplementationVersion();
+        Set/*<String>*/ getProvidedTokens();
+        Set/*<String>*/ getRequiredTokens();
+        Set/*<Dependency>*/ getModuleDependencies();
+        String getCluster();
+        String getDisplayName();
+    }
+    
+    private static abstract class AbstractUniverseModule implements UniverseModule {
+        protected final ManifestManager mm;
+        protected AbstractUniverseModule(ManifestManager mm) {
+            this.mm = mm;
+        }
+        public int getReleaseVersion() {
+            String s = mm.getReleaseVersion();
+            return s != null ? Integer.parseInt(s) : -1;
+        }
+        public String getImplementationVersion() {
+            return mm.getImplementationVersion();
+        }
+        public Set/*<String>*/ getProvidedTokens() {
+            return new HashSet(Arrays.asList(mm.getProvidedTokens()));
+        }
+        public Set/*<String>*/ getRequiredTokens() {
+            Set s = new HashSet(Arrays.asList(mm.getRequiredTokens()));
+            Iterator it = s.iterator();
+            while (it.hasNext()) {
+                String tok = (String) it.next();
+                if (tok.startsWith("org.openide.modules.ModuleFormat") || tok.startsWith("org.openide.modules.os.")) { // NOI18N
+                    it.remove();
+                }
+            }
+            return s;
+        }
+    }
+    
+    private static final class PlatformModule extends AbstractUniverseModule {
+        private final ModuleEntry entry;
+        public PlatformModule(ModuleEntry entry) throws IOException {
+            super(ManifestManager.getInstanceFromJAR(entry.getJarLocation()));
+            this.entry = entry;
+        }
+        public String getCodeNameBase() {
+            return entry.getCodeNameBase();
+        }
+        public SpecificationVersion getSpecificationVersion() {
+            String s = entry.getSpecificationVersion();
+            return s != null ? new SpecificationVersion(s) : null;
+        }
+        public Set/*<Dependency>*/ getModuleDependencies() {
+            return mm.getModuleDependencies();
+        }
+        public String getCluster() {
+            return entry.getClusterDirectory().getName();
+        }
+        public String getDisplayName() {
+            return entry.getLocalizedName();
+        }
+    }
+    
+    private static final class SuiteModule extends AbstractUniverseModule {
+        private final NbModuleProject project;
+        private final Set/*<Dependency>*/ dependencies;
+        public SuiteModule(NbModuleProject project) {
+            super(ManifestManager.getInstance(project.getManifest(), false));
+            this.project = project;
+            dependencies = new HashSet();
+            // Cannot use ProjectXMLManager since we need to report also deps on nonexistent modules.
+            Element dataE = project.getHelper().getPrimaryConfigurationData(true);
+            Element depsE = Util.findElement(dataE, "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            Iterator/*<Element>*/ deps = Util.findSubElements(depsE).iterator();
+            while (deps.hasNext()) {
+                Element dep = (Element) deps.next();
+                Element run = Util.findElement(dep, "run-dependency", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                if (run == null) {
+                    continue;
+                }
+                String text = Util.findText(Util.findElement(dep, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED)); // NOI18N
+                Element relverE = Util.findElement(run, "release-version", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                if (relverE != null) {
+                    text += '/' + Util.findText(relverE);
+                }
+                Element specverE = Util.findElement(run, "specification-version", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                if (specverE != null) {
+                    text += " > " + Util.findText(specverE);
+                } else {
+                    Element implver = Util.findElement(run, "implementation-version", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                    if (implver != null) {
+                        // Will special-case '*' as an impl version to mean "match anything".
+                        text += " = *"; // NOI18N
+                    }
+                }
+                dependencies.addAll(Dependency.create(Dependency.TYPE_MODULE, text));
+            }
+        }
+        public String getCodeNameBase() {
+            return project.getCodeNameBase();
+        }
+        public SpecificationVersion getSpecificationVersion() {
+            String s = project.getSpecVersion();
+            return s != null ? new SpecificationVersion(s) : null;
+        }
+        public Set/*<Dependency>*/ getModuleDependencies() {
+            return dependencies;
+        }
+        public String getCluster() {
+            return null;
+        }
+        public String getDisplayName() {
+            return ProjectUtils.getInformation(project).getDisplayName();
+        }
+    }
+
+    private RequestProcessor.Task updateDependencyWarningsTask;
+    private void updateDependencyWarnings() {
+        // XXX avoid running unless and until we become visible, perhaps
+        if (updateDependencyWarningsTask == null) {
+            updateDependencyWarningsTask = RequestProcessor.getDefault().create(new Runnable() {
+                public void run() {
+                    doUpdateDependencyWarnings();
+                }
+            });
+        }
+        updateDependencyWarningsTask.schedule(0);
+    }
+    
+    static Set/*<UniverseModule>*/ loadUniverseModules(ModuleEntry[] platformModules, Set/*<NbModuleProject>*/ suiteModules) throws IOException {
+        Set universe = new LinkedHashSet();
+        Iterator/*<Project>*/ it = suiteModules.iterator();
+        while (it.hasNext()) {
+            universe.add(new SuiteModule((NbModuleProject) it.next()));
+        }
+        for (int i = 0; i < platformModules.length; i++) {
+            universe.add(new PlatformModule(platformModules[i]));
+        }
+        return universe;
+    }
+    
+    static String[] findWarning(Set/*<UniverseModule>*/ universeModules, Set/*<String>*/ disabledClusters, Set/*<String>*/ disabledModules) {
+        SortedMap/*<String,UniverseModule>*/ sortedModules = new TreeMap();
+        Set/*<UniverseModule>*/ excluded = new HashSet();
+        Map/*<String,Set<UniverseModule>>*/ providers = new HashMap();
+        Iterator it = universeModules.iterator();
+        while (it.hasNext()) {
+            UniverseModule m = (UniverseModule) it.next();
+            String cnb = m.getCodeNameBase();
+            String cluster = m.getCluster();
+            if (cluster != null && (disabledClusters.contains(cluster) || disabledModules.contains(cnb))) {
+                excluded.add(m);
+            }
+            sortedModules.put(cnb, m);
+            Iterator/*<String>*/ provides = m.getProvidedTokens().iterator();
+            while (provides.hasNext()) {
+                String tok = (String) provides.next();
+                Set/*<UniverseModule>*/ providersOf = (Set) providers.get(tok);
+                if (providersOf == null) {
+                    providersOf = new HashSet();
+                    providers.put(tok, providersOf);
+                }
+                providersOf.add(m);
+            }
+        }
+        it = sortedModules.values().iterator();
+        while (it.hasNext()) {
+            UniverseModule m = (UniverseModule) it.next();
+            if (excluded.contains(m)) {
+                continue;
+            }
+            String[] warning = findWarning(m, sortedModules, providers, excluded);
+            if (warning != null) {
+                return warning;
+            }
+        }
+        return null;
+    }
+    
+    private Set/*<UniverseModule>*/ universe;
+    private void doUpdateDependencyWarnings() {
+        if (universe == null) {
+            try {
+                Set/*<Project>*/ suiteModules = getProperties().getSubModules();
+                universe = loadUniverseModules(platformModules, suiteModules);
+            } catch (IOException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                return; // any warnings would probably be wrong anyway
+            }
+        }
+        
+        Set disabledClusters = new TreeSet();
+        Set disabledModules = new TreeSet();
+        
+        Node[] clusters = getExplorerManager().getRootContext().getChildren().getNodes();
+        for (int i = 0; i < clusters.length; i++) {
+            if (clusters[i] instanceof Enabled) {
+                Enabled e = (Enabled) clusters[i];
+                if (!e.isEnabled()) {
+                    disabledClusters.add(e.getName());
+                } else {
+                    Node[] modules = e.getChildren().getNodes();
+                    for (int j = 0; j < modules.length; j++) {
+                        if (modules[j] instanceof Enabled) {
+                            Enabled m = (Enabled) modules[j];
+                            if (!m.isEnabled()) {
+                                disabledModules.add(m.getName());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        final String[] warning = findWarning(universe, disabledClusters, disabledModules);
+        
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                if (warning != null) {
+                    String key = warning[0];
+                    String[] args = new String[warning.length - 1];
+                    System.arraycopy(warning, 1, args, 0, args.length);
+                    setWarning(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
+                } else {
+                    setWarning(null);
+                }
+            }
+        });
+        
+    }
+
+    private static String[] findWarning(UniverseModule m, Map/*<String,UniverseModule>*/ modules, Map/*<String,Set<UniverseModule>>*/ providers, Set/*<UniverseModule>*/ excluded) {
+        // Check module dependencies:
+        SortedSet/*<Dependency>*/ deps = new TreeSet(new Comparator() {
+            public int compare(Object o1, Object o2) {
+                Dependency d1 = (Dependency) o1;
+                Dependency d2 = (Dependency) o2;
+                return d1.getName().compareTo(d2.getName());
+            }
+        });
+        deps.addAll(m.getModuleDependencies());
+        Iterator it = deps.iterator();
+        while (it.hasNext()) {
+            Dependency d = (Dependency) it.next();
+            String codename = d.getName();
+            String cnb;
+            int mrvLo, mrvHi;
+            int slash = codename.lastIndexOf('/');
+            if (slash == -1) {
+                cnb = codename;
+                mrvLo = -1;
+                mrvHi = -1;
+            } else {
+                cnb = codename.substring(0, slash);
+                String mrv = codename.substring(slash + 1);
+                int dash = mrv.lastIndexOf('-');
+                if (dash == -1) {
+                    mrvLo = mrvHi = Integer.parseInt(mrv);
+                } else {
+                    mrvLo = Integer.parseInt(mrv.substring(0, dash));
+                    mrvHi = Integer.parseInt(mrv.substring(dash + 1));
+                }
+            }
+            UniverseModule dep = (UniverseModule) modules.get(cnb);
+            if (dep == null) {
+                if (m.getCluster() != null) {
+                    return new String[] {"ERR_platform_no_dep", m.getDisplayName(), m.getCluster(), cnb};
+                } else {
+                    return new String[] {"ERR_suite_no_dep", m.getDisplayName(), cnb};
+                }
+            }
+            if (excluded.contains(dep)) {
+                assert dep.getCluster() != null;
+                if (m.getCluster() != null) {
+                    return new String[] {"ERR_platform_excluded_dep", m.getDisplayName(), m.getCluster(), dep.getDisplayName(), dep.getCluster()};
+                } else {
+                    return new String[] {"ERR_suite_excluded_dep", m.getDisplayName(), dep.getDisplayName(), dep.getCluster()};
+                }
+            }
+            if (dep.getReleaseVersion() < mrvLo || dep.getReleaseVersion() > mrvHi) {
+                if (m.getCluster() != null) {
+                    return new String[] {"ERR_platform_bad_dep_mrv", m.getDisplayName(), m.getCluster(), dep.getDisplayName()};
+                } else {
+                    return new String[] {"ERR_suite_bad_dep_mrv", m.getDisplayName(), dep.getDisplayName()};
+                }
+            }
+            if (d.getComparison() == Dependency.COMPARE_SPEC) {
+                SpecificationVersion needed = new SpecificationVersion(d.getVersion());
+                SpecificationVersion found = dep.getSpecificationVersion();
+                if (found == null || found.compareTo(needed) < 0) {
+                    if (m.getCluster() != null) {
+                        return new String[] {"ERR_platform_bad_dep_spec", m.getDisplayName(), m.getCluster(), dep.getDisplayName()};
+                    } else {
+                        return new String[] {"ERR_suite_bad_dep_spec", m.getDisplayName(), dep.getDisplayName()};
+                    }
+                }
+            } else if (d.getComparison() == Dependency.COMPARE_IMPL) {
+                String needed = d.getVersion();
+                if (!needed.equals("*") && !needed.equals(dep.getImplementationVersion())) { // NOI18N
+                    assert m.getCluster() != null;
+                    return new String[] {"ERR_platform_bad_dep_impl", m.getDisplayName(), m.getCluster(), dep.getDisplayName()};
+                }
+            }
+        }
+        // Now check token availability:
+        Iterator toks = new TreeSet(m.getRequiredTokens()).iterator();
+        while (toks.hasNext()) {
+            String tok = (String) toks.next();
+            UniverseModule wouldBeProvider = null;
+            boolean found = false;
+            Set/*<UniverseModule>*/ possibleProviders = (Set) providers.get(tok);
+            if (possibleProviders != null) {
+                it = possibleProviders.iterator();
+                while (it.hasNext()) {
+                    UniverseModule p = (UniverseModule) it.next();
+                    if (excluded.contains(p)) {
+                        if (wouldBeProvider == null) {
+                            wouldBeProvider = p;
+                        }
+                    } else {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                if (wouldBeProvider != null) {
+                    assert wouldBeProvider.getCluster() != null;
+                    if (m.getCluster() != null) {
+                        return new String[] {"ERR_platform_only_excluded_providers", tok, m.getDisplayName(), m.getCluster(), wouldBeProvider.getDisplayName(), wouldBeProvider.getCluster()}; // NOI18N
+                    } else {
+                        return new String[] {"ERR_suite_only_excluded_providers", tok, m.getDisplayName(), wouldBeProvider.getDisplayName(), wouldBeProvider.getCluster()}; // NOI18N
+                    }
+                } else {
+                    if (m.getCluster() != null) {
+                        return new String[] {"ERR_platform_no_providers", tok, m.getDisplayName(), m.getCluster()}; // NOI18N
+                    } else {
+                        return new String[] {"ERR_suite_no_providers", tok, m.getDisplayName()}; // NOI18N
+                    }
+                }
+            }
+        }
+        // All clear for this module.
+        return null;
     }
     
 }

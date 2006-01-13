@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,7 +18,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -45,6 +47,7 @@ public final class ManifestManager {
     private String layer;
     private String classPath;
     private PackageExport[] publicPackages;
+    private String moduleDependencies;
     private boolean deprecated;
     
     public static final String OPENIDE_MODULE = "OpenIDE-Module"; // NOI18N
@@ -56,6 +59,7 @@ public final class ManifestManager {
     public static final String OPENIDE_MODULE_LOCALIZING_BUNDLE = "OpenIDE-Module-Localizing-Bundle"; // NOI18N
     public static final String OPENIDE_MODULE_PUBLIC_PACKAGES = "OpenIDE-Module-Public-Packages"; // NOI18N
     public static final String OPENIDE_MODULE_FRIENDS = "OpenIDE-Module-Friends"; // NOI18N
+    public static final String OPENIDE_MODULE_MODULE_DEPENDENCIES = "OpenIDE-Module-Module-Dependencies"; // NOI18N
     public static final String CLASS_PATH = "Class-Path"; // NOI18N
     
     static final PackageExport[] EMPTY_EXPORTED_PACKAGES = new PackageExport[0];
@@ -70,7 +74,7 @@ public final class ManifestManager {
     private ManifestManager(String cnb, String releaseVersion, String specVer,
             String implVer, String provTokensString, String requiredTokens,
             String locBundle, String layer, String classPath,
-            PackageExport[] publicPackages, boolean deprecated) {
+            PackageExport[] publicPackages, boolean deprecated, String moduleDependencies) {
         this.codeNameBase = cnb;
         this.releaseVersion = releaseVersion;
         this.specificationVersion = specVer;
@@ -83,6 +87,7 @@ public final class ManifestManager {
         this.classPath = classPath;
         this.publicPackages = publicPackages;
         this.deprecated = deprecated;
+        this.moduleDependencies = moduleDependencies;
     }
     
     private String[] parseTokens(String tokens) {
@@ -165,7 +170,8 @@ public final class ManifestManager {
                 attr.getValue(OPENIDE_MODULE_LAYER),
                 attr.getValue(CLASS_PATH),
                 publicPackages,
-                deprecated);
+                deprecated,
+                attr.getValue(OPENIDE_MODULE_MODULE_DEPENDENCIES));
         return mm;
     }
     
@@ -270,6 +276,14 @@ public final class ManifestManager {
 
     public boolean isDeprecated() {
         return deprecated;
+    }
+    
+    public Set/*<Dependency>*/ getModuleDependencies() {
+        if (moduleDependencies != null) {
+            return Dependency.create(Dependency.TYPE_MODULE, moduleDependencies);
+        } else {
+            return Collections.EMPTY_SET;
+        }
     }
     
     /**

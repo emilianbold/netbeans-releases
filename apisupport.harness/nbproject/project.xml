@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
@@ -21,7 +21,9 @@ Microsystems, Inc. All Rights Reserved.
                     <!-- needed by the extra-compilation-unit -->
                     <code-name-base>org.netbeans.bootstrap</code-name-base>
                     <build-prerequisite/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
                 </dependency>
             </module-dependencies>
             <public-packages/>
