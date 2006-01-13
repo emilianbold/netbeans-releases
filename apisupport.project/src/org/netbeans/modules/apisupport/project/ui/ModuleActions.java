@@ -135,6 +135,7 @@ public final class ModuleActions implements ActionProvider {
         actions.add(null);
         actions.add(SystemAction.get(FindAction.class));
         actions.add(null);
+        actions.add(CommonProjectActions.renameProjectAction());
         actions.add(CommonProjectActions.moveProjectAction());
         actions.add(CommonProjectActions.copyProjectAction());
         actions.add(CommonProjectActions.deleteProjectAction());
@@ -204,6 +205,7 @@ public final class ModuleActions implements ActionProvider {
         if (project.getPerformanceTestSourceDirectory() != null) {
             supportedActionsSet.add(ActionProvider.COMMAND_RUN_SINGLE);
         }
+        supportedActionsSet.add(ActionProvider.COMMAND_RENAME);
         supportedActionsSet.add(ActionProvider.COMMAND_MOVE);
         supportedActionsSet.add(ActionProvider.COMMAND_COPY);
         supportedActionsSet.add(ActionProvider.COMMAND_DELETE);
@@ -228,6 +230,7 @@ public final class ModuleActions implements ActionProvider {
     
     public boolean isActionEnabled(String command, Lookup context) {
         if (ActionProvider.COMMAND_DELETE.equals(command) ||
+                ActionProvider.COMMAND_RENAME.equals(command) ||
                 ActionProvider.COMMAND_MOVE.equals(command) ||
                 ActionProvider.COMMAND_COPY.equals(command)) {
             return true;
@@ -343,6 +346,9 @@ public final class ModuleActions implements ActionProvider {
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return;
+        } else if (ActionProvider.COMMAND_RENAME.equals(command)) {
+            DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            return;
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
             DefaultProjectOperations.performDefaultMoveOperation(project);
             return;
@@ -446,7 +452,7 @@ public final class ModuleActions implements ActionProvider {
         configure.setDefaultCapable(true);
         d.setOptions(new Object[] {
             configure,
-                    NotifyDescriptor.CANCEL_OPTION,
+            NotifyDescriptor.CANCEL_OPTION,
         });
         d.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
         if (DialogDisplayer.getDefault().notify(d).equals(configure)) {

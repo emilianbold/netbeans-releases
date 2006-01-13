@@ -84,6 +84,11 @@ public final class ModuleOperations implements DeleteOperationImplementation,
             if (suite != null) {
                 SuiteUtils.addModule(suite, project);
             }
+            boolean isRename = original.getProjectDirectory().getParent().equals(
+                    project.getProjectDirectory().getParent());
+            if (isRename) {
+                setDisplayName(nueName);
+            }
         }
     }
     
@@ -147,13 +152,18 @@ public final class ModuleOperations implements DeleteOperationImplementation,
     }
     
     private void adjustDisplayName() throws IOException {
+        // XXX what if the user makes two copies from one module?
+        setDisplayName(ProjectUtils.getInformation(project).getDisplayName() + " (0)");
+    }
+    
+    private void setDisplayName(String nueName) throws IOException {
         LocalizedBundleInfo.Provider lbiProvider =
                 (LocalizedBundleInfo.Provider) project.getLookup().lookup(LocalizedBundleInfo.Provider.class);
         if (lbiProvider != null) {
             LocalizedBundleInfo info = lbiProvider.getLocalizedBundleInfo();
             if (info != null) {
                 // XXX what if the user makes two copies from one module?
-                info.setDisplayName(info.getDisplayName() + " (1)"); // NOI18N
+                info.setDisplayName(nueName); // NOI18N
                 info.store();
             }
         }
