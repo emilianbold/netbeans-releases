@@ -13,6 +13,7 @@
 
 package org.netbeans.core.startup;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -78,7 +79,9 @@ public final class AutomaticDependencies {
         for (int i = 0; i < urls.length; i++) {
             String id = urls[i].toExternalForm();
             try {
-                p.parse(new InputSource(id));
+		InputSource is = new InputSource(id);
+		is.setByteStream(new BufferedInputStream(urls[i].openStream()));
+                p.parse(is);
             } catch (SAXException e) {
                 Util.err.annotate(e, ErrorManager.UNKNOWN, "While parsing: " + id, null, null, null);
                 throw e;
