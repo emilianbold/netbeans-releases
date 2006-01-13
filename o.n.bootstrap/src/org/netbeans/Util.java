@@ -99,16 +99,20 @@ public abstract class Util {
             name = nameExt;
             ext = ""; // NOI18N
         }
+	boolean localeDirExists = dir.exists();
         String[] suffixes = getLocalizingSuffixesFast();
         for (int i = 0; i < suffixes.length; i++) {
             String suffix = suffixes[i];
-            File v = new File(dir, name + suffix + ext);
-            if (v.isFile()) {
-                if (includeSuffixes) {
-                    l.add(new Object[] {v, suffix});
-                } else {
-                    l.add(v);
-                }
+            File v;
+	    if (localeDirExists) {
+		v = new File(dir, name + suffix + ext);
+		if (v.isFile()) {
+		    if (includeSuffixes) {
+			l.add(new Object[] {v, suffix});
+		    } else {
+			l.add(v);
+		    }
+		}
             } else if (logicalDir != null) {
                 String path = logicalDir + name + suffix + ext;
                 v = InstalledFileLocator.getDefault().locate(path, null, false);
