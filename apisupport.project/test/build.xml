@@ -11,11 +11,18 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project name="apisupport/project/test" basedir="." default="all">
+<project name="apisupport/project/test" basedir="." default="pre-apisupport-test">
     <property name="xtest.module" value="apisupport/project"/>
     <import file="../../../nbbuild/templates/xtest.xml"/>
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
     <property name="xtest.ide.use.classloader" value="org.netbeans.modules.apisupport.project"/>
  
+    <target name="pre-apisupport-test" depends="compile-nb-org-sources">
+        <antcall target="all"/>
+    </target>
+    
+    <target name="compile-nb-org-sources" if="apisupport-test4u">
+        <ant  dir="../../../nbbuild/" target="build" inheritAll="false"/>
+    </target>
 </project>
