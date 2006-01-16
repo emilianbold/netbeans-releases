@@ -16,6 +16,7 @@ package org.netbeans.core.startup;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,9 +79,11 @@ public final class AutomaticDependencies {
         Parser p = new Parser(h.new Handler());
         for (int i = 0; i < urls.length; i++) {
             String id = urls[i].toExternalForm();
+	    InputStream inS = null;
             try {
 		InputSource is = new InputSource(id);
-		is.setByteStream(new BufferedInputStream(urls[i].openStream()));
+		inS = new BufferedInputStream(urls[i].openStream());
+		is.setByteStream(inS);
                 p.parse(is);
             } catch (SAXException e) {
                 Util.err.annotate(e, ErrorManager.UNKNOWN, "While parsing: " + id, null, null, null);
@@ -89,6 +92,11 @@ public final class AutomaticDependencies {
                 Util.err.annotate(e, ErrorManager.UNKNOWN, "While parsing: " + id, null, null, null);
                 throw e;
             }
+	    finally {
+		if (inS != null) {
+		    inS.close();
+		}
+	    }
         }
         return h;
     }
