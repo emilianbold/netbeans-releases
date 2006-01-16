@@ -160,22 +160,17 @@ public class DDEditorTest extends NbTestCase {
             }
         };
 
-
         openInDesignView(dObj);
         Helper.waitForDispatchThread();
-        
-        // check context params table in Design View
-        final DDBeanTableModel model = getDDBeanModel();
-        final int n = model.getRowCount();
-        
+
         new StepIterator() {
             private String paramValue;
 
             public boolean step() throws Exception {
                 // get context params table model
                 DDBeanTableModel model = getDDBeanModel();
-                if (model.getRowCount() > n) {
-                    paramValue = (String) model.getValueAt(n, 0);
+                if (model.getRowCount() > 2) {
+                    paramValue = (String) model.getValueAt(2, 0);
                     return "cylinders".equals(paramValue);
                 } else {
                     return false;
