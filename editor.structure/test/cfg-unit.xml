@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="unit test config">
 
-    <testbag testattribs="validation" executor="code" name="DocumentModel test">
+    <testbag testattribs="stable" executor="code" name="DocumentModel test">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
