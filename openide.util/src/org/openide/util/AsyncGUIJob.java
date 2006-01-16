@@ -28,6 +28,7 @@ package org.openide.util;
  *
  * @author  Dafe Simonek
  *
+ * @see org.openide.util.Utilities#attachInitJob
  * @since 3.36
  */
 public interface AsyncGUIJob {
