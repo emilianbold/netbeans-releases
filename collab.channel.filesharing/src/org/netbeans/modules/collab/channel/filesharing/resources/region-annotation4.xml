@@ -19,6 +19,6 @@ Microsystems, Inc. All Rights Reserved.
       description_key="MSG_RegionAnnotation4_Description"
       localizing_bundle="org.netbeans.modules.collab.channel.filesharing.annotations.Bundle"
       visible="true" 
-      glyph="nbresloc:/corg/netbeans/modules/collab/channel/filesharing/resources/region-annotation-glyph.gif"
+      glyph="nbresloc:/org/netbeans/modules/collab/channel/filesharing/resources/region-annotation-glyph.gif"
       highlight="0xffe0cc"
       type="line"/>
