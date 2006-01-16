@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -155,12 +155,7 @@ public final class SuiteProperties extends ModuleProperties {
         return arr == null ? new String[0] : arr;
     }
     
-    /**
-     * Stores cached properties. This is called when the user press <em>OK</em>
-     * button in the properties customizer. If <em>Cancel</em> button is
-     * pressed properties will not be saved,.
-     */
-    void storeProperties() throws IOException {
+    public void storeProperties() throws IOException {
         ModuleProperties.storePlatform(getHelper(), getActivePlatform());
         ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), false);
         getBrandingModel().store();
@@ -215,8 +210,9 @@ public final class SuiteProperties extends ModuleProperties {
         return moduleListModel;
     }
     
-    BasicBrandingModel getBrandingModel() {
+    public BasicBrandingModel getBrandingModel() {
         return brandingModel;
     }
+    
 }
 

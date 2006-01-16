@@ -79,6 +79,7 @@ public final class SuiteActions implements ActionProvider {
         actions.add(null);
         actions.add(SystemAction.get(FindAction.class));
         actions.add(null);
+        actions.add(CommonProjectActions.renameProjectAction());
         actions.add(CommonProjectActions.moveProjectAction());
         actions.add(CommonProjectActions.deleteProjectAction());
         try {
@@ -131,6 +132,7 @@ public final class SuiteActions implements ActionProvider {
             "debug-jnlp", // NOI18N
             "nbms", // NOI18N
             "profile", // NOI18N
+            ActionProvider.COMMAND_RENAME,
             ActionProvider.COMMAND_MOVE,
             ActionProvider.COMMAND_DELETE
         };
@@ -138,6 +140,7 @@ public final class SuiteActions implements ActionProvider {
     
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         if (ActionProvider.COMMAND_DELETE.equals(command) ||
+                ActionProvider.COMMAND_RENAME.equals(command) ||
                 ActionProvider.COMMAND_MOVE.equals(command)) {
             return true;
         } else if (Arrays.asList(getSupportedActions()).contains(command)) {
@@ -150,6 +153,8 @@ public final class SuiteActions implements ActionProvider {
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
+        } else if (ActionProvider.COMMAND_RENAME.equals(command)) {
+            DefaultProjectOperations.performDefaultRenameOperation(project, null);
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
             DefaultProjectOperations.performDefaultMoveOperation(project);
         } else {

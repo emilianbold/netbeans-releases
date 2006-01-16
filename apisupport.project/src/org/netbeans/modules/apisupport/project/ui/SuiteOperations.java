@@ -24,9 +24,12 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.DeleteOperationImplementation;
@@ -34,11 +37,14 @@ import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  * @author Martin Krauskopf
  */
-public final class SuiteOperations implements DeleteOperationImplementation, MoveOperationImplementation {
+public final class SuiteOperations implements DeleteOperationImplementation,
+        MoveOperationImplementation {
     
     private static final Map/*<String, Set<Project>>*/ TEMPORARY_CACHE = new HashMap();
     
@@ -87,6 +93,11 @@ public final class SuiteOperations implements DeleteOperationImplementation, Mov
                     SuiteUtils.addModule(suite, p);
                 }
             }
+            boolean isRename = original.getProjectDirectory().getParent().equals(
+                    suite.getProjectDirectory().getParent());
+            if (isRename) {
+                setDisplayName(nueName);
+            }
         }
     }
     
@@ -106,6 +117,26 @@ public final class SuiteOperations implements DeleteOperationImplementation, Mov
         FileObject file = projectDir.getFileObject(fileName);
         if (file != null) {
             result.add(file);
+        }
+    }
+    
+    private void setDisplayName(String nueName) throws IOException {
+        final SuiteProperties sp = new SuiteProperties(suite, suite.getHelper(),
+                suite.getEvaluator(), SuiteUtils.getSubProjects(suite));
+        BasicBrandingModel branding = sp.getBrandingModel();
+        if (branding.isBrandingEnabled()) {
+            branding.setTitle(nueName);
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                    public Object run() throws Exception {
+                        sp.storeProperties();
+                        ProjectManager.getDefault().saveProject(suite);
+                        return null;
+                    }
+                });
+            } catch (MutexException e) {
+                throw (IOException) e.getException();
+            }
         }
     }
     
