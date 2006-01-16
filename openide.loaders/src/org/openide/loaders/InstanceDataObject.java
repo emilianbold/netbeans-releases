@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.openide.ErrorManager;
@@ -809,7 +810,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                     c == '.' || c == '"' || c < '\u0020' || c > '\u007E' || c == '#') {
                 // Hex escape.
                 escaped.append ('#');
-                String hex = Integer.toString (c, 16).toUpperCase ();
+                String hex = Integer.toString(c, 16).toUpperCase(Locale.ENGLISH);
                 if (hex.length () < 4) escaped.append ('0');
                 if (hex.length () < 3) escaped.append ('0');
                 if (hex.length () < 2) escaped.append ('0');
@@ -861,9 +862,14 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
         String ename = escape(name);
         if (ename.length() <= maxLen)  return ename;
-        String hash = Integer.toHexString(ename.hashCode());
+        String hash = Integer.toHexString(ename.hashCode()).toUpperCase(Locale.ENGLISH);
         maxLen = (maxLen > hash.length()) ? (maxLen-hash.length()) / 2 :1;
         String start = ename.substring(0, maxLen);
+        if (start.endsWith("#")) {
+            //Strip ending # so that next hexadecimal (hash) sequence is not treated as escape sequence
+            //by unescape.
+            start = start.substring(0, start.length() - 1);
+        }
         String end = ename.substring(ename.length() - maxLen);
 
         return start + hash + end;
