@@ -65,6 +65,14 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptyLibraryDescriptor.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
+            <!--<file name="newJavaHelp">
+                <attr boolvalue="true" name="template"/>
+                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.javahelp.NewJavaHelpIterator.createIterator" name="instantiatingIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.javahelp.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.html"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
+            </file>-->
             <file name="newLoader">
                 <attr boolvalue="true" name="template"/>
                 <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.loader.NewLoaderIterator.createIterator" name="instantiatingIterator"/>

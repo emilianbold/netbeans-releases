@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<index version="2.0">	
+  <indexitem text="About @@MyPlugin_DisplayName@@" target="@@MyPlugin@@-about" />	
+</index>
