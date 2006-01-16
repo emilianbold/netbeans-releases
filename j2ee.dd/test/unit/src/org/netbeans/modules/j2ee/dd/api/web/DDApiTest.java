@@ -21,6 +21,7 @@ import java.io.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.filesystems.*;
+import java.util.*;
 
 
 public class DDApiTest extends NbTestCase {
@@ -266,9 +267,34 @@ public class DDApiTest extends NbTestCase {
         String testDataDirS = System.getProperty("test.data.dir");     
         java.io.File pass = new File(System.getProperty("test.data.dir")+"/web.pass");
         File test = FileUtil.toFile(fo);
-        
-        assertFile("Result different than golden file", pass, test, test.getParentFile());
-        
+        try {
+            BufferedReader reader1 = new BufferedReader(new FileReader(test));
+            BufferedReader reader2 = new BufferedReader(new FileReader(pass));
+            String line1=null;
+            Set set1 = new HashSet();
+            Set set2 = new HashSet();
+            while((line1=reader1.readLine())!=null) {
+                line1 = line1.trim();
+                String line2 = reader2.readLine();
+                if (line2==null) {
+                    assertFile("Result different than golden file", pass, test, test.getParentFile());
+                }
+                line2=line2.trim();
+                // description order can be changed so it must be compared differently
+                if (line1.startsWith("<description")) {
+                    set1.add(line1);
+                    set2.add(line2);
+                } else if (!line1.equals(line2)) {
+                    assertFile("Result different than golden file", pass, test, test.getParentFile());
+                }
+            }
+            reader1.close();reader2.close();
+            if (!set1.equals(set2)) {
+                assertFile("Problem with descriotion elements", pass, test, test.getParentFile());
+            }
+        } catch (IOException ex) {
+            throw new AssertionFailedErrorException("Comparing to golden file failed",ex);
+        }
     }
     
     private static DDProvider ddProvider;
