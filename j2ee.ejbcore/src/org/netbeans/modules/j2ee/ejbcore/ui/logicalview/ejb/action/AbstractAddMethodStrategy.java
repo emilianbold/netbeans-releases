@@ -16,11 +16,15 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Iterator;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.JavaModelPackage;
 import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.Type;
+import org.netbeans.jmi.javamodel.TypeReference;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
@@ -116,7 +120,7 @@ public abstract class AbstractAddMethodStrategy {
 	    boolean isComponent = pType instanceof MethodType.BusinessMethodType;
 	    boolean isOneReturn = mc.finderReturnIsSingle();
 	    handle.progress(10);
-	    if (mc.publishToLocal()) {
+            if (mc.publishToLocal()) {
 		Type localReturn =
 			localReturnType(c, prototypeMethod.getType(), isOneReturn);
 		prototypeMethod.setType(localReturn);
@@ -134,7 +138,9 @@ public abstract class AbstractAddMethodStrategy {
 	    if (ejbql != null && ejbql.length() > 0) {
 		c.addEjbQl(JMIUtils.duplicate(prototypeMethod), ejbql, getDDFile(jc));
 	    }
-	    handle.progress(99);
+	    JMIUtils.fixImports(jc);
+            JMIUtils.fixImports(c.getBeanClass());
+            handle.progress(99);
 	} finally {
 	    handle.finish();
 	}
