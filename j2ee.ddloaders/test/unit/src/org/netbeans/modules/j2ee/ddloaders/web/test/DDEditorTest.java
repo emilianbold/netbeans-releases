@@ -80,7 +80,6 @@ public class DDEditorTest extends NbTestCase {
         final int n = model.getRowCount() + 1;
         model.addRow(new Object[]{"color","Blue",""});
         dObj.modelUpdatedFromUI();
-        Helper.waitForDispatchThread();
         new StepIterator() {
             int sizeContextParam;
 
@@ -97,7 +96,6 @@ public class DDEditorTest extends NbTestCase {
         // test the model
 
         openInXmlView(dObj);
-        Helper.waitForDispatchThread();
 
         XmlMultiViewEditorSupport editor = (XmlMultiViewEditorSupport) dObj.getCookie(EditorCookie.class);
         final Document document = editor.getDocument();
