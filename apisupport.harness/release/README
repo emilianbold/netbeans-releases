@@ -840,10 +840,10 @@ platform.properties, not project.properties.
 modules - list of contained modules. Path format; entries resolved against the
 suite directory as needed.
 
-jnlp.codebase - in case one wants to build a static repository not packaged
-in a WAR file, one needs to pass in the full URL for it. By default it is 
-specified as "$$codebase" and replaced dynamically by the servlet packaged
-in the WAR file.
+jnlp.codebase [since 5.0u1] - in case one wants to build a static repository not
+packaged in a WAR file, one needs to pass in the full URL for it. By default it
+is specified as "$$codebase" and replaced dynamically by the servlet packaged in
+the WAR file.
 
 
 TARGETS AVAILABLE FOR OVERRIDING IN YOUR SUITE build.xml
