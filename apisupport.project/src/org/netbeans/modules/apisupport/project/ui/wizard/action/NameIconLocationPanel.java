@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -94,10 +94,11 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private void updateData() {
         storeBaseData();
-        CreatedModifiedFiles files = data.getCreatedModifiedFiles();
-        createdFiles.setText(UIUtil.generateTextAreaContent(files.getCreatedPaths()));
-        modifiedFiles.setText(UIUtil.generateTextAreaContent(files.getModifiedPaths()));
-        checkValidity();
+        if (checkValidity()) {
+            CreatedModifiedFiles files = data.getCreatedModifiedFiles();
+            createdFiles.setText(UIUtil.generateTextAreaContent(files.getCreatedPaths()));
+            modifiedFiles.setText(UIUtil.generateTextAreaContent(files.getModifiedPaths()));
+        }
     }
     
     /** Data needed to compute CMF. ClassName, packageName, icon. */
@@ -112,21 +113,23 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         return icon.getText().equals(NONE_LABEL) ? null : icon.getText();
     }
     
-    private void checkValidity() {
+    private boolean checkValidity() {
         String pName = packageName.getEditor().getItem() == null ? "" : packageName.getEditor().getItem().toString().trim();
         if (!Utilities.isJavaIdentifier(getClassName())) {
             setErrorMessage(getMessage("MSG_ClassNameMustBeValidJavaIdentifier"));
         } else if (getDisplayName().equals("") || getDisplayName().equals(ENTER_LABEL)) {
             setErrorMessage(getMessage("MSG_DisplayNameMustBeEntered"));
+        } else if (pName.length() == 0 || !UIUtil.isValidPackageName(pName)) {
+            setErrorMessage(getMessage("ERR_Package_Invalid"));
         } else if (classAlreadyExists()) {
             setErrorMessage(getMessage("MSG_ClassAlreadyExists"));
         } else if (data.isToolbarEnabled() && getIconPath() == null) {
             setErrorMessage(getMessage("MSG_IconRequiredForToolbar"));
-        } else if (pName.length() == 0 || !UIUtil.isValidPackageName(pName)) {
-            setErrorMessage(getMessage("ERR_Package_Invalid"));
         } else {
             setErrorMessage(null);
+            return true;
         }
+        return false;
     }
     
     private boolean classAlreadyExists() {
