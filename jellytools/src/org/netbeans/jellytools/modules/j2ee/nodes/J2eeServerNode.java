@@ -7,21 +7,18 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.jellytools.modules.j2ee.nodes;
 
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.ExploreFromHereAction;
-import org.netbeans.jellytools.actions.FindAction;
+import org.netbeans.jellytools.modules.j2ee.actions.StartDebugAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.modules.j2ee.actions.CustomizerAction;
-import org.netbeans.jellytools.modules.j2ee.actions.DebugAction;
 import org.netbeans.jellytools.modules.j2ee.actions.RefreshAction;
 import org.netbeans.jellytools.modules.j2ee.actions.RemoveInstanceAction;
 import org.netbeans.jellytools.modules.j2ee.actions.RestartAction;
@@ -48,7 +45,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 public class J2eeServerNode extends Node {
     
     static final CustomizerAction customizerAction = new CustomizerAction();
-    static final DebugAction debugAction = new DebugAction();
+    static final StartDebugAction startDebugAction = new StartDebugAction();
     static final RefreshAction refreshAction = new RefreshAction();
     static final RemoveInstanceAction removeInstanceAction =
             new RemoveInstanceAction();
@@ -78,7 +75,7 @@ public class J2eeServerNode extends Node {
     public void verifyPopup() {
         verifyPopup(new Action[]{
             customizerAction,
-            debugAction,
+            startDebugAction,
             refreshAction,
             removeInstanceAction,
             restartAction,
@@ -94,7 +91,7 @@ public class J2eeServerNode extends Node {
     
     /** performs 'Start in Debug Mode' with this node */
     public void debug() {
-        debugAction.perform(this);
+        startDebugAction.perform(this);
         waitDebugging();
     }
     
