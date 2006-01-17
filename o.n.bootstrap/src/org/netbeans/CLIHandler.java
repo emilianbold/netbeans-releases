@@ -829,6 +829,10 @@ public abstract class CLIHandler extends Object {
         private Socket work;
         private static volatile int counter;
         private final boolean failOnUnknownOptions;
+
+        private static long lastReply;
+        /** by default wait 100ms before sending a REPLY_FAIL message */
+        private static long failDelay = 100;
         
         public Server(byte[] key, Integer block, Collection handlers, boolean failOnUnknownOptions) throws IOException {
             super("CLI Requests Server"); // NOI18N
@@ -1022,6 +1026,18 @@ public abstract class CLIHandler extends Object {
                 }
             } else {
                 enterState(103, block);
+                long toWait = lastReply + failDelay - System.currentTimeMillis();
+                if (toWait > 0) {
+                    try {
+                        Thread.sleep(toWait);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                    failDelay *= 2;
+                } else {
+                    failDelay = 100;
+                }
+                lastReply = System.currentTimeMillis();
                 os.write(REPLY_FAIL);
             }
             
