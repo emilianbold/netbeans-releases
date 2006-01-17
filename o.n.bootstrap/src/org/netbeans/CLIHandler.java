@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Command Line Interface and User Directory Locker support class.
@@ -450,17 +451,21 @@ public abstract class CLIHandler extends Object {
                 enterState(10, block);
                 
                 byte[] arr = new byte[KEY_LENGTH];
-                try {
-                    SecureRandom.getInstance("SHA1PRNG").nextBytes(arr); // NOI18N
-                } catch (NoSuchAlgorithmException e) {
-                    // #36966: IBM JDK doesn't have it.
+                if (Boolean.getBoolean("org.netbeans.CLIHandler.fast.random")) { // NOI18N
+                    new Random().nextBytes(arr);
+                } else {
                     try {
-                        SecureRandom.getInstance("IBMSecureRandom").nextBytes(arr); // NOI18N
-                    } catch (NoSuchAlgorithmException e2) {
-                        // OK, disable server...
-                        System.err.println("WARNING: remote IDE automation features cannot be cryptographically secured, so disabling; please reopen http://www.netbeans.org/issues/show_bug.cgi?id=36966"); // NOI18N
-                        e.printStackTrace();
-                        return new Status();
+                        SecureRandom.getInstance("SHA1PRNG").nextBytes(arr); // NOI18N
+                    } catch (NoSuchAlgorithmException e) {
+                        // #36966: IBM JDK doesn't have it.
+                        try {
+                            SecureRandom.getInstance("IBMSecureRandom").nextBytes(arr); // NOI18N
+                        } catch (NoSuchAlgorithmException e2) {
+                            // OK, disable server...
+                            System.err.println("WARNING: remote IDE automation features cannot be cryptographically secured, so disabling; please reopen http://www.netbeans.org/issues/show_bug.cgi?id=36966"); // NOI18N
+                            e.printStackTrace();
+                            return new Status();
+                        }
                     }
                 }
                 

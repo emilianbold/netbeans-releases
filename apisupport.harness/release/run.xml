@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
         <property name="test.user.dir" location="build/testuserdir"/>
         <property name="install" location="${netbeans.dest.dir}"/>
-        <property name="run.args.common" value='--userdir "${test.user.dir}" -J-Dnetbeans.logger.console=true -J-ea'/>
+        <property name="run.args.common" value='--userdir "${test.user.dir}" -J-Dnetbeans.logger.console=true -J-Dorg.netbeans.CLIHandler.fast.random=true -J-ea'/>
         <!-- In case run from a suite module, to get app.name and/or branding.token: -->
         <property file="${suite.dir}/nbproject/private/private.properties"/>
         <property file="${suite.dir}/nbproject/project.properties"/>
