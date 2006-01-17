@@ -730,7 +730,7 @@ final class XMLSettingsSupport {
                         
                         in = new ByteArrayInputStream (arr);
                     } else {
-                        in = new BufferedInputStream (source.getInputStream ());
+                        in = source.getInputStream ();
                     }
                     Set iofs = quickParse(new BufferedInputStream(in));
                     if (iofs != null) {
