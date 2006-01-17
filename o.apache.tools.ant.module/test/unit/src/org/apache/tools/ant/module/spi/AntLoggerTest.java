@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -162,8 +163,8 @@ public class AntLoggerTest extends NbTestCase {
             interestingTasks = AntLogger.NO_TASKS;
             interestingLogLevels = new int[0];
             collectLineNumbersForTargets = false;
-            targetsStarted = new ArrayList();
-            messages = new ArrayList();
+            targetsStarted = Collections.synchronizedList(new ArrayList());
+            messages = Collections.synchronizedList(new ArrayList());
         }
 
         public boolean interestedInAllScripts(AntSession session) {
