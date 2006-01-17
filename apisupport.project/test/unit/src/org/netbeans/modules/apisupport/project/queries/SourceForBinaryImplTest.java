@@ -89,7 +89,7 @@ public class SourceForBinaryImplTest extends TestBase {
                 null,
                 new File[] { FileUtil.toFile(yyJar)} );
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
-        cmf.add(cmf.addModuleDependency("yy", -1, null, true));
+        cmf.add(cmf.addModuleDependency("yy"));
         cmf.run();
         
         URL wrappedJar = Util.urlForJar(new File(wrapperDirF, "release/modules/ext/yy.jar"));

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -201,13 +201,13 @@ final class NewTCIterator extends BasicWizardIterator {
                     }
                 }
                 if (!windows) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.windows", -1, null, true)); //NOI18N
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
                 }
                 if (!util) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.util", -1, null, true)); //NOI18N
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
                 }
                 if (!awt) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.awt", -1, null, true)); //NOI18N
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N
                 }
             }
         } catch (IOException e) {

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -109,7 +109,7 @@ public final class CreatedModifiedFiles {
     private LayerUtils.LayerHandle layerHandle;
     LayerUtils.LayerHandle getLayerHandle() {
         if (layerHandle == null) {
-             layerHandle = LayerUtils.layerForProject(project);
+            layerHandle = LayerUtils.layerForProject(project);
         }
         return layerHandle;
     }
@@ -298,6 +298,16 @@ public final class CreatedModifiedFiles {
     }
     
     /**
+     * Delegates to {@link #addModuleDependency(String, int,
+     * SpecificationVersion, boolean)} passing a given code name base,
+     * <code>-1</code> as release version, <code>null</code> as version and
+     * <code>true</code> as useInCompiler arguments.
+     */
+    public CreatedModifiedFiles.Operation addModuleDependency(String codeNameBase) {
+        return addModuleDependency(codeNameBase, -1, null, true);
+    }
+    
+    /**
      * Creates an entry (<em>file</em> element) in the project's layer. Also
      * may create and/or modify other files as it is needed.
      *
@@ -316,11 +326,11 @@ public final class CreatedModifiedFiles {
      *        <em>SystemFileSystem.localizingBundle</em> attribute will be
      *        created with the stringvalue to a default bundle (from manifest).
      *        Also an appropriate entry will be added into the bundle.
-     * @param fileAttributes a map of <String,Object>s. key in the map is the
+     * @param fileAttributes &lt;String,Object&gt; map. key in the map is the
      *        name of the file attribute value is the actual value, currently
      *        supported types are Boolean and String Generates
      *        <pre>
-     *          <attr name="KEY" stringvalue="VALUE"/> or <attr name="KEY" booleanvalue="VALUE"/>
+     *          &lt;attr name="KEY" stringvalue="VALUE"/&gt; or &lt;attr name="KEY" booleanvalue="VALUE"/&gt;
      *        </pre>
      * @return see {@link Operation}
      */
@@ -334,25 +344,25 @@ public final class CreatedModifiedFiles {
                 content, substitutionTokens,
                 localizedDisplayName, fileAttributes);
     }
-
+    
     /**
      * Adds new attributes into manifest file.
-     * @param section the name of the section or null for the main section
-     * @param attributes a map of <String,String>s.
+     * @param section the name of the section or <code>null</code> for the main section.
+     * @param attributes &lt;String,String&gt; map mapping attributes names and values.
      * @return see {@link Operation}
      */
-    public Operation manifestModification(String section,Map/*<String, String>*/ attributes) {                    
+    public Operation manifestModification(String section, Map/*<String, String>*/ attributes) {
         return CreatedModifiedFilesFactory.manifestModification(project, section, attributes);
     }
-
+    
     /**
      * Adds new properties into property file.
      * @param propertyPath path representing properties file relative to a project directory where all
-     * properties will be put in. If such a file doesn't exist then is created.
-     * @param properties a map of <String,String>s.
+     * properties will be put in. If such a file does not exist it is created.
+     * @param properties &lt;String,String&gt; map mapping properties names and values.
      * @return see {@link Operation}
      */
-    public Operation propertiesModification(String propertyPath, 
+    public Operation propertiesModification(String propertyPath,
             Map/*<String, String>*/ properties) {
         return CreatedModifiedFilesFactory.propertiesModification(project, propertyPath, properties);
     }

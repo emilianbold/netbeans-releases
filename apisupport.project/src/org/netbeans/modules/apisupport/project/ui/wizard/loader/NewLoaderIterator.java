@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -251,22 +251,22 @@ public class NewLoaderIterator extends BasicWizardIterator {
                     }
                 }
                 if (!filesystems) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.filesystems", -1, null, true)); //NOI18N
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.filesystems")); //NOI18N
                 }
                 if (!loaders) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.loaders", -1, null, true)); //NOI18N
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.loaders")); //NOI18N
                 }
                 if (!nodes) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.nodes", -1, null, true)); //NOI18N
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.nodes")); //NOI18N
                 }
                 if (!util) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.util", -1, null, true)); //NOI18N
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
                 }
                 if (!text && isEditable) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.text", -1, null, true)); //NOI18N
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.text")); //NOI18N
                 }
                 if (!windows && isEditable) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.windows", -1, null, true)); //NOI18N
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
                 }
             }
         } catch (IOException e) {

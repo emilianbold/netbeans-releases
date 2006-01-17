@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -184,11 +184,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf.add(cmf.createLayerAttribute(instanceFullPath, "instanceClass", fqClassName)); // NOI18N
         
         // add dependency on util to project.xml
-        cmf.add(cmf.addModuleDependency("org.openide.util", -1, null, true)); // NOI18N
+        cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
         if (!alwaysEnabled) {
-            cmf.add(cmf.addModuleDependency("org.openide.nodes", -1, null, true)); // NOI18N
+            cmf.add(cmf.addModuleDependency("org.openide.nodes")); // NOI18N
             for (Iterator it = addedFQNCs.iterator(); it.hasNext(); ) {
-                cmf.add(cmf.addModuleDependency((String) CLASS_TO_CNB.get(it.next()), -1, null, true));
+                cmf.add(cmf.addModuleDependency((String) CLASS_TO_CNB.get(it.next())));
             }
         }
         

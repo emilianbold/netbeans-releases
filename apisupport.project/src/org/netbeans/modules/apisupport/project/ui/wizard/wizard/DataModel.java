@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -94,9 +94,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }
 
         // XXX what if these deps are already there? (cf. other wizards)
-        cmf.add(cmf.addModuleDependency("org.openide.util", -1, null, true)); // NOI18N
-        cmf.add(cmf.addModuleDependency("org.openide.dialogs", -1, null, true)); // NOI18N
-        cmf.add(cmf.addModuleDependency("org.openide.awt", -1, null, true)); // NOI18N
+        cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
+        cmf.add(cmf.addModuleDependency("org.openide.dialogs")); // NOI18N
+        cmf.add(cmf.addModuleDependency("org.openide.awt")); // NOI18N
         
         // generate .java for wizard iterator
         if (fileTemplateType || branching) {
