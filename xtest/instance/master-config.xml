@@ -77,6 +77,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="j2ee/ddapi" testtypes="unit" attributes="stable"/>
         <!--web/core test for DDDataObject was moved to j2ee/ddloaders -->
         <module name="j2ee/ddloaders" testtypes="unit" attributes="stable"/>
+        <module name="j2ee/ejbfreeform" testtype="unit" attributes="stable"/>
         <module name="web/jspparser" testtypes="unit" attributes="stable"/>
         <module name="tomcatint/tomcat5" testtypes="unit" attributes="stable"/>
         <!--<module name="schema2beans" testtypes="unit" attributes="stable"/>-->
