@@ -14,8 +14,10 @@
 package org.netbeans.modules.apisupport.project.jnlp;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -37,6 +39,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -209,6 +212,147 @@ public class GenerateJNLPApplicationTest extends TestBase {
         if (cntJnlp == 0) {
             fail("There should be at least one jnlp entry");
         }
+    }
+    
+    public void testItIsPossibleToGenerateStaticRepository() throws Exception {
+        EditableProperties ep = suite.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.setProperty("app.name", "fakeapp");
+        
+        StringBuffer exclude = new StringBuffer();
+        String sep = "";
+        String[] possibleClusters = destDirF.list();
+        for (int i = 0; i < possibleClusters.length; i++) {
+            if (possibleClusters[i].startsWith("platform")) {
+                continue;
+            }
+            exclude.append(sep);
+            exclude.append(possibleClusters[i]);
+            sep = ",";
+        }
+        ep.setProperty("disabled.clusters", exclude.toString());
+        ep.setProperty("disabled.modules", "org.netbeans.modules.autoupdate," +
+            "org.openide.compat," +
+            "org.netbeans.api.progress," +
+            "org.netbeans.core.multiview," +
+            "org.openide.filesystems," +
+            "org.openide.modules," +
+            "org.openide.util," +
+            "org.netbeans.core.execution," +
+            "org.netbeans.core.output2," +
+            "org.netbeans.core.ui," +
+            "org.netbeans.core.windows," +
+            "org.netbeans.core," +
+            "org.netbeans.modules.favorites," +
+            "org.netbeans.modules.javahelp," +
+            "org.netbeans.modules.masterfs," +
+            "org.netbeans.modules.queries," +
+            "org.netbeans.modules.settings," +
+            "org.netbeans.swing.plaf," +
+            "org.netbeans.swing.tabcontrol," +
+            "org.openide.actions," +
+            "org.openide.awt," +
+            "org.openide.dialogs," +
+            "org.openide.execution," +
+            "org.openide.explorer," +
+            "org.openide.io," +
+            "org.openide.loaders," +
+            "org.openide.nodes," +
+            "org.openide.options," +
+            "org.openide.text," +
+            "org.openide.windows," +
+            "org.openide.util.enumerations" +
+            "");
+        suite.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ProjectManager.getDefault().saveProject(suite);
+        err.log("Properties stored");
+        
+        FileObject fo = suite.getProjectDirectory().getFileObject("build.xml");
+        assertNotNull("There should be a build script", fo);
+        
+        {
+            String s = readFile(fo);
+            int insert = s.indexOf("</project>");
+            if (insert == -1) {
+                fail("there should be insert place: " + s);
+            }
+
+            s = s.substring(0, insert) + 
+                "  <target name='build-jnlp' depends='build,-jdk-init' description='Builds a static JNLP version of the app.' >" +
+                "   <ant antfile='${harness.dir}/jnlp.xml' target='build-jnlp-nowar'>" +
+                "       <property name='jnlp.codebase' value='http://www.netbeans.org/download/samples/jnlp/htmleditor/' />" +
+                "   </ant>" +
+                "</target>"
+                + s.substring(insert);
+            FileLock lock = fo.lock();
+            OutputStream os = fo.getOutputStream(lock);
+            os.write(s.getBytes());
+            os.close();
+            lock.releaseLock();
+        }
+        
+        SuiteActions p = (SuiteActions)suite.getLookup().lookup(ActionProvider.class);
+        assertNotNull("Provider is here");
+        
+        List l = Arrays.asList(p.getSupportedActions());
+        assertTrue("We support build-jnlp: " + l, l.contains("build-jnlp"));
+        
+        DialogDisplayerImpl.returnFromNotify(null);
+        err.log("invoking build-jnlp");
+        ExecutorTask task = p.invokeActionImpl("build-jnlp", suite.getLookup());
+        err.log("Invocation started");
+        
+        assertNotNull("Task was started", task);
+        err.log("Waiting for task to finish");
+        task.waitFinished();
+        err.log("Checking the result");
+        assertEquals("Finished ok", 0, task.result());
+        err.log("Testing the content of the directory");
+        
+        FileObject[] arr = suite.getProjectDirectory().getChildren();
+        List subobj = new ArrayList (Arrays.asList(arr));
+        subobj.remove(suite.getProjectDirectory().getFileObject("mod1"));
+        subobj.remove(suite.getProjectDirectory().getFileObject("nbproject"));
+        FileObject buildXML = suite.getProjectDirectory().getFileObject("build.xml");
+        subobj.remove(buildXML);
+        FileObject master = suite.getProjectDirectory().getFileObject("master.jnlp");
+        assertNotNull("Master must be created", master);
+        subobj.remove(master);
+        FileObject build = suite.getProjectDirectory().getFileObject("build");
+        subobj.remove(build);
+        
+        // check content of build
+        FileObject jnlp = build.getFileObject("jnlp/app/org-example-mod1.jnlp");
+        assertNotNull("Found jnlp file", jnlp);
+        String jnlpContent = readFile(jnlp);
+        if (jnlpContent.indexOf("http://www.netbeans.org/download/samples/jnlp/htmleditor/") == -1) {
+            fail("URL must be present: " + jnlpContent);
+        }
+        
+        
+        // check master file has it 
+        String masterContent = readFile(master);
+        if (masterContent.indexOf("http://www.netbeans.org/download/samples/jnlp/htmleditor/") == -1) {
+            fail("URL must be present in master: " + masterContent);
+        }
+        
+        
+        FileObject dist = suite.getProjectDirectory().getFileObject("dist");
+        assertNull("no dist created", dist);
+
+        
+        if (!subobj.isEmpty()) {
+            fail("There should be no created directories in the suite dir: " + subobj);
+        }   
+        
+    }
+
+    private static String readFile(final FileObject fo) throws IOException, FileNotFoundException {
+        // write user modified version of the file
+        byte[] arr = new byte[(int)fo.getSize()];
+        int len = fo.getInputStream().read(arr);
+        assertEquals("Read all", arr.length, len);
+        String s = new String(arr);
+        return s;
     }
     
     private File createNewJarFile (String prefix) throws IOException {

@@ -12,6 +12,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="suite-jnlp" basedir=".">
+    <property name="jnlp.codebase" value="$$$$codebase" />
 
     <target name="-check-for-master.jnlp">
         <available file="master.jnlp" property="master.jnlp.exists"/>
@@ -19,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="jnlp-init-generate-master" depends="-check-for-master.jnlp" unless="master.jnlp.exists">
         <!-- XXX ought to try to avoid generating a fixed codebase at this time (WAR build replaces it though) -->
         <echo file="master.jnlp"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase="$$$$codebase">
+<jnlp spec="1.0+" codebase="${jnlp.codebase}">
   <information>
       <title>$${app.title}</title>
       <vendor>$${app.title} vendor</vendor>
@@ -180,7 +181,7 @@ $${jnlp.resources}
             <property name="jnlp.dest.dir" value="${jnlp.dest.dir}/app"/>
             <property name="jnlp.master.dir" value="${jnlp.master.dir}"/>
             <property name="jnlp.master.codebase" value="app/"/>
-            <property name="jnlp.codebase" value="$$$$codebase"/>
+            <property name="jnlp.codebase" value="${jnlp.codebase}"/>
             <property name="jnlp.signjar.alias" value="${jnlp.signjar.alias}"/>
             <property name="jnlp.signjar.keystore" location="${jnlp.signjar.keystore}"/>
             <property name="jnlp.signjar.password" value="${jnlp.signjar.password}"/>
