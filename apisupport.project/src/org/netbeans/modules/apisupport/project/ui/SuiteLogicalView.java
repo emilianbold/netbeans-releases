@@ -44,6 +44,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -116,7 +117,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         }
         
         public String getName() {
-            return info.getName();
+            return info.getDisplayName();
         }
         
         public String getDisplayName() {
@@ -146,6 +147,14 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             } else if (evt.getPropertyName().equals(ProjectInformation.PROP_DISPLAY_NAME)) {
                 fireDisplayNameChange(null, getDisplayName());
             }
+        }
+        
+        public boolean canRename() {
+            return true;
+        }
+        
+        public void setName(String name) {
+            DefaultProjectOperations.performDefaultRenameOperation(suite, name);
         }
         
     }

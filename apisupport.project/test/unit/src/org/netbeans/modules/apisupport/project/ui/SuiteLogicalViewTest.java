@@ -75,7 +75,7 @@ public class SuiteLogicalViewTest extends TestBase {
     public void testNameAndDisplayName() throws Exception {
         SuiteProject p = generateSuite("Sweet Stuff");
         Node n = ((LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class)).createLogicalView();
-        assertEquals("Sweet_Stuff", n.getName());
+        assertEquals("Sweet Stuff", n.getName());
         assertEquals("Sweet Stuff", n.getDisplayName());
         NL nl = new NL();
         n.addNodeListener(nl);
@@ -84,7 +84,7 @@ public class SuiteLogicalViewTest extends TestBase {
         ep.setProperty("app.title", "Sweetness is Now!");
         p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         assertEquals(new HashSet(Arrays.asList(new String[] {Node.PROP_NAME, Node.PROP_DISPLAY_NAME})), nl.changed);
-        assertEquals("Sweet_Stuff", n.getName());
+        assertEquals("Sweetness is Now!", n.getName());
         assertEquals("Sweetness is Now!", n.getDisplayName());
     }
     

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,6 +37,7 @@ import org.netbeans.modules.apisupport.project.layers.LayerNode;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -124,7 +125,6 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             setForceAnnotation(true);
             setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
             ProjectInformation pi = ProjectUtils.getInformation(project);
-            setName(pi.getName());
             setDisplayName(pi.getDisplayName());
             setShortDescription(NbBundle.getMessage(ModuleLogicalView.class, "HINT_project_root_node", FileUtil.getFileDisplayName(project.getProjectDirectory())));
             
@@ -174,6 +174,18 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             return getIcon(type); // the same in the meantime
         }
         
+        public boolean canRename() {
+            return true;
+        }
+        
+        public String getName() {
+            return ProjectUtils.getInformation(project).getDisplayName();
+        }
+        
+        public void setName(String name) {
+            DefaultProjectOperations.performDefaultRenameOperation(project, name);
+        }
+        
     }
     
     /** Package private for unit tests. */
@@ -183,7 +195,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         
         private static final String[] SOURCE_GROUP_TYPES = {
             JavaProjectConstants.SOURCES_TYPE_JAVA,
-                    "javahelp", // NOI18N
+            "javahelp", // NOI18N
         };
         
         private final NbModuleProject project;
@@ -347,7 +359,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                 throw new AssertionError(key);
             }
         }
-
+        
         private void refreshKeys() {
             List newVisibleFiles = new ArrayList();
             LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
