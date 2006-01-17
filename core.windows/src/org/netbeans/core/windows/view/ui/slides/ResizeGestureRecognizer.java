@@ -23,6 +23,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
@@ -144,12 +145,14 @@ public class ResizeGestureRecognizer implements AWTEventListener {
             boolean noModif = evt.getModifiersEx() == 0;
             if (noModif && isInResizeArea(evt)) {
                 // make glasspane visible
-                state = STATE_START;
-                JRootPane pane = SwingUtilities.getRootPane(comp);
-                oldGlass = pane.getGlassPane();
-                glass.setCursor(side);
-                pane.setGlassPane(glass);
-                glass.setVisible(true);
+                if (state == STATE_NOOP) {
+                    state = STATE_START;
+                    JRootPane pane = SwingUtilities.getRootPane(comp);
+                    oldGlass = pane.getGlassPane();
+                    glass.setCursor(side);
+                    pane.setGlassPane(glass);
+                    glass.setVisible(true);
+                }
                 return;
             } else if (state != STATE_NOOP) {
                 resetState();
@@ -195,7 +198,10 @@ public class ResizeGestureRecognizer implements AWTEventListener {
         if (pane != null && oldGlass != null) {
             // when clicking results in hidden slide window, pne can be null?
             // how to avoid?
-            pane.setGlassPane(oldGlass);
+            JComponent current = (JComponent) pane.getGlassPane();
+            if (current instanceof GlassPane) {
+                pane.setGlassPane(oldGlass);
+            }
         }
         oldGlass = null;
         startPoint = null;
