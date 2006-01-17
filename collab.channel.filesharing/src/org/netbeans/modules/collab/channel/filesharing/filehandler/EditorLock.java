@@ -16,6 +16,7 @@ import java.util.*;
 
 import javax.swing.*;
 
+import org.openide.util.Mutex;
 import org.netbeans.modules.collab.core.Debug;
 
 
@@ -91,8 +92,8 @@ public class EditorLock extends Object {
 
         if (editorStates != null) {
             for (int i = 0; i < editorStates.length; i++) {
-                EditorState editorState = editorStates[i];
-                JEditorPane editorPane = editorState.getEditorPane();
+                final EditorState editorState = editorStates[i];
+                final JEditorPane editorPane = editorState.getEditorPane();
 
                 if (editorPane != null) {
                     Debug.log(
@@ -100,10 +101,14 @@ public class EditorLock extends Object {
                         "CollabFileHandlerSupport, editorPane: " + //NoI18n
                         editorPane.getName()
                     );
-                    editorPane.setEnabled(false);
+                    Mutex.EVENT.readAccess(new Runnable() {
+                        public void run() {
+                            editorPane.setEditable(false);
+                            editorState.save();
+                        }
+                    });
                 }
 
-                editorState.save();
             }
         }
     }
@@ -116,15 +121,14 @@ public class EditorLock extends Object {
 
         if (editorStates != null) {
             for (int i = 0; i < editorStates.length; i++) {
-                EditorState editorState = editorStates[i];
+                final EditorState editorState = editorStates[i];
 
                 if (editorState == null) {
                     continue;
                 }
 
-                editorState.resume();
 
-                JEditorPane editorPane = editorState.getEditorPane();
+                final JEditorPane editorPane = editorState.getEditorPane();
 
                 if (editorPane != null) {
                     Debug.log(
@@ -132,11 +136,14 @@ public class EditorLock extends Object {
                         "CollabFileHandlerSupport, editorPane: " + //NoI18n
                         editorPane.getName()
                     );
-                    editorPane.setEnabled(true);
-                    editorPane.requestFocus();
+                    Mutex.EVENT.readAccess(new Runnable() {
+                        public void run() {
+                            //editorState.resume();
+                            editorPane.setEditable(true);
+                            // editorPane.requestFocus();
+                        }
+                    });
                 }
-
-                editorState = null;
             }
         }
     }
