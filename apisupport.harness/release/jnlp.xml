@@ -12,7 +12,14 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="suite-jnlp" basedir=".">
+
+    <!-- if jnlp.codebase is provided make both the app and the platform relative to it -->
+    <condition property="jnlp.codebase.app" value="${jnlp.codebase}app/" >
+        <isset property="jnlp.codebase" />
+    </condition>
+    <!-- if not specified, assign all codebases to value suitable for jnlp-servlet.jar -->
     <property name="jnlp.codebase" value="$$$$codebase" />
+    <property name="jnlp.codebase.app" value="$$$$codebase" />
 
     <target name="-check-for-master.jnlp">
         <available file="master.jnlp" property="master.jnlp.exists"/>
@@ -83,6 +90,12 @@ $${jnlp.resources}
     <target name="jnlp-generate-platform" depends="jnlp-generate-platform-repository,jnlp-generate-platform-master"/>
     
     <target name="jnlp-generate-platform-repository" depends="jnlp-generate-keystore,jnlp-init" unless="jnlp.platform.codebase">
+        <condition property="jnlp.platform.codebase.own" value="${jnlp.codebase}netbeans/" >
+            <not>
+                <equals arg1="${jnlp.codebase}" arg2="$$$$codebase" />
+            </not>
+        </condition>
+        <property name="jnlp.platform.codebase.own" value="$$$$codebase"/>
         <property name="jnlp.platform.codebase" value="netbeans/"/>
         <mkdir dir="${jnlp.dest.dir}/netbeans"/>
         
@@ -91,6 +104,7 @@ $${jnlp.resources}
             keystore="${jnlp.signjar.keystore}" 
             storepass="${jnlp.signjar.password}"
             dir="${jnlp.dest.dir}/netbeans/"
+            codebase="${jnlp.platform.codebase.own}"
             verify="true"
             verifyexcludes="lib/nbexec.cmd,lib/nbexec,lib/nbexec.exe,core/ide.ks,LICENSE.txt,DISTRIBUTION.txt,THIRDPARTYLICENSEREADME.txt,docs/swing-layout-1.0-doc.zip,docs/html40.zip,core/org-netbeans-modules-utilities-cli.jar,docs/org/netbeans/modules/usersguide/ide.css"
         >
@@ -181,7 +195,7 @@ $${jnlp.resources}
             <property name="jnlp.dest.dir" value="${jnlp.dest.dir}/app"/>
             <property name="jnlp.master.dir" value="${jnlp.master.dir}"/>
             <property name="jnlp.master.codebase" value="app/"/>
-            <property name="jnlp.codebase" value="${jnlp.codebase}"/>
+            <property name="jnlp.codebase" value="${jnlp.codebase.app}"/>
             <property name="jnlp.signjar.alias" value="${jnlp.signjar.alias}"/>
             <property name="jnlp.signjar.keystore" location="${jnlp.signjar.keystore}"/>
             <property name="jnlp.signjar.password" value="${jnlp.signjar.password}"/>

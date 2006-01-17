@@ -320,14 +320,43 @@ public class GenerateJNLPApplicationTest extends TestBase {
         FileObject build = suite.getProjectDirectory().getFileObject("build");
         subobj.remove(build);
         
-        // check content of build
-        FileObject jnlp = build.getFileObject("jnlp/app/org-example-mod1.jnlp");
-        assertNotNull("Found jnlp file", jnlp);
-        String jnlpContent = readFile(jnlp);
-        if (jnlpContent.indexOf("http://www.netbeans.org/download/samples/jnlp/htmleditor/") == -1) {
-            fail("URL must be present: " + jnlpContent);
+        {
+            // check content of build
+            FileObject jnlpDir = build.getFileObject("jnlp/app/");
+            assertNotNull("app dir exists", jnlpDir);
+            FileObject[] arrX = jnlpDir.getChildren();
+            int cnt = 0;
+            for (int i = 0; i < arrX.length; i++) {
+                if (arrX[i].hasExt("jnlp")) {
+                    cnt++;
+                    String jnlpContent = readFile(arrX[i]);
+                    if (jnlpContent.indexOf("http://www.netbeans.org/download/samples/jnlp/htmleditor/app/") == -1) {
+                        fail(" for " + arrX[i] + " URL with /app/ must be present: " + jnlpContent);
+                    }
+                }
+            }
+
+            if (cnt == 0) fail("At least one jnlp file in app dir");
         }
         
+        {
+            // check content of netbeans default dir
+            FileObject jnlpDir = build.getFileObject("jnlp/netbeans/");
+            assertNotNull("netbeans dir exists", jnlpDir);
+            FileObject[] arrX = jnlpDir.getChildren();
+            int cnt = 0;
+            for (int i = 0; i < arrX.length; i++) {
+                if (arrX[i].hasExt("jnlp")) {
+                    cnt++;
+                    String jnlpContent = readFile(arrX[i]);
+                    if (jnlpContent.indexOf("http://www.netbeans.org/download/samples/jnlp/htmleditor/netbeans/") == -1) {
+                        fail(" for " + arrX[i] + " URL with /netbeans/ must be present: " + jnlpContent);
+                    }
+                }
+            }
+
+            if (cnt == 0) fail("At least one jnlp file in app dir");
+        }
         
         // check master file has it 
         String masterContent = readFile(master);
