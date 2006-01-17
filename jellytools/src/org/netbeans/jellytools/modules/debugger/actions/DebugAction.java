@@ -25,7 +25,6 @@ import org.netbeans.jellytools.nodes.Node;
  */
 public class DebugAction extends Action {
 
-    private static String mainMenuPath;
     // "Run"
     private static final String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
     // "Run File"
@@ -35,28 +34,16 @@ public class DebugAction extends Action {
             Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_DebugFile_Action");
     private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F5, KeyEvent.CTRL_MASK+KeyEvent.SHIFT_MASK);
     
-    /** Creates new ContinueAction instance. */
+    /** Creates new DebugAction instance. */
     public DebugAction() {
-        super(mainMenuPath, popupPath, null, shortcut);
-    }
-    
-    /** This is not supported (use {@link #performMenu(Node)}). */
-    public void performMenu() {
-        throw new UnsupportedOperationException("Debug action can only be called on node.");
-    }
-    
-    /** This is not supported (use {@link #performMenu(Node)}). 
-     * @param nodes array of nodes to be selected
-     */
-    public void performMenu(Node[] nodes) {
-        throw new UnsupportedOperationException("Debug action can only be called on single node.");
+        super(null, popupPath, null, shortcut);
     }
     
     /** Performs action through main menu. 
      * @param node node to be selected before action
      */
     public void performMenu(Node node) {
-        mainMenuPath = runItem+"|"+runFileItem+"|"+
+        this.menuPath = runItem+"|"+runFileItem+"|"+
                 Bundle.getString("org.netbeans.modules.project.ui.actions.Bundle",
                                  "LBL_DebugSingleAction_Name",
                                  new Object[] {new Integer(1), node.getText()});
