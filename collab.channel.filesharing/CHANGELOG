@@ -20,4 +20,5 @@
 
 1.3:	Fix for: Shared file is sometimes not received correctly
 	Fix for #71268: Stop sharing deletes master file.
-	
+
+1.4:	Fix for #69662: missing cursor. Also prevent cursor jumping.
