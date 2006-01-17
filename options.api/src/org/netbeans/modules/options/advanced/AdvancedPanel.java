@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.options.advanced;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,9 +22,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 import org.netbeans.modules.options.ui.TabbedPanel;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -61,12 +59,8 @@ public final class AdvancedPanel extends JPanel {
         scrollPane.getVerticalScrollBar ().setUnitIncrement (20);
         
         // define layout
-        FormLayout layout = new FormLayout (
-            "p:g",      // cols
-            "p:g");     // rows
-        PanelBuilder builder = new PanelBuilder (layout, this);
-        CellConstraints cc = new CellConstraints ();
-        builder.add (scrollPane, cc.xy (1, 1, "f,f"));
+        setLayout (new BorderLayout ());
+        add (scrollPane, BorderLayout.CENTER);
         
         int preferredWith = 0;
         Iterator it = model.getCategories ().iterator ();

@@ -13,14 +13,13 @@
 
 package org.netbeans.modules.options;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -79,6 +78,7 @@ import org.openide.util.RequestProcessor;
 
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.WindowManager;
 
 public class OptionsPanel extends JPanel {
     
@@ -116,6 +116,12 @@ public class OptionsPanel extends JPanel {
     
     /** Creates new form OptionsPanel */
     public OptionsPanel () {
+        
+        // 0) change cursor
+        final Frame frame = WindowManager.getDefault ().getMainWindow ();
+        final Cursor cursor = frame.getCursor ();
+        frame.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
+        setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
 
         // 1) init UI components, layout and actions, and add some default values
         initUI ();
@@ -128,9 +134,6 @@ public class OptionsPanel extends JPanel {
                         // 2) Load OptionsCategory instances from layers
                         optionCategories = loadOptionsCategories ();
 
-                        // 3) add buttons to icon view & inits buttons
-                        refreshButtons ();
-        
                         // 4) init OptionsPanelControllers
                         //    inits categoryToController
                         initControllers ();
@@ -140,7 +143,6 @@ public class OptionsPanel extends JPanel {
 
                         // 6) init option panels & categoryToPanel map
                         Dimension maxSize = initPanels (masterLookup);
-                        checkSize (maxSize);
 
                         int i, k = optionCategories.size ();
                         for (i = 0; i < k; i++)
@@ -150,17 +152,24 @@ public class OptionsPanel extends JPanel {
                                 OptionsPanelController controller = (OptionsPanelController) categoryToController.get (category);
                                 controller.update ();
                                 updatedCategories.add (category);
-                                if (getCurrentIndex () == i)
-                                    setCurrentIndex (i);
                             } catch (Throwable t) {
                                 ErrorManager.getDefault ().notify (t);
                             }
-                        if (getCurrentIndex () < 0 && k > 0)
-                            setCurrentIndex (0);
+                        
+                        // paint
+                        refreshButtons ();
+                        checkSize (maxSize);
+                        int index = getCurrentIndex ();
+                        if (index < 0) index = 0;
+                        setCurrentIndex (index);
+                        
+                        // 7) reset cursor
+                        frame.setCursor (cursor);
+                        setCursor (cursor);
                     }
                 });
             }
-        });
+        }, 250);
     }
     
     int getCurrentIndex () {
@@ -230,8 +239,7 @@ public class OptionsPanel extends JPanel {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 if (!checkSize (size)) {
-                    invalidate ();
-                    validate ();
+                    revalidate ();
                     repaint ();
                 }
                 if (i != -1)
@@ -340,9 +348,9 @@ public class OptionsPanel extends JPanel {
         pCategories = new JPanel (new BorderLayout ());
         if (isMac) {
             pCategories.setBorder (new CompoundBorder (
-                    new VariableBorder (null, null, borderMac, null),
-                    BorderFactory.createEmptyBorder (0, 4, 0, 4)
-                ));
+                new VariableBorder (null, null, borderMac, null),
+                BorderFactory.createEmptyBorder (0, 4, 0, 4)
+            ));
         } else {
             pCategories.setBorder (new LineBorder (iconViewBorder));
         }
@@ -350,33 +358,21 @@ public class OptionsPanel extends JPanel {
         pCategories.add ("North", pCategories2);
         
         // layout
-        FormLayout layout;
-        if (isMac) {
-            layout = new FormLayout(
-                "p:g", // cols
-                "p, 5dlu, p:g");      // rows
-        } else {
-            layout = new FormLayout(
-                "p, 5dlu, p:g", // cols
-                "p, 5dlu, p:g");      // rows
-        }
-        PanelBuilder builder = new PanelBuilder (layout, this);
+        setLayout (new BorderLayout (10, 10));
         if (isMac) {
             pOptions.setBorder (new CompoundBorder (
                 new VariableBorder (null, null, borderMac, null),
                 BorderFactory.createEmptyBorder (0, 20, 5, 20)
             ));
+            add (pCategories, BorderLayout.NORTH);
+            add (pOptions, BorderLayout.CENTER);
         } else {
-            builder.setDefaultDialogBorder ();
-        }
-        CellConstraints cc = new CellConstraints ();
-        if (isMac) {
-            builder.add (    pCategories,  cc.xy    (1, 1));
-            builder.add (    pOptions,     cc.xy    (1, 3, "f,f"));
-        } else {
-            builder.add (    pCategories,  cc.xywh  (1, 1, 1, 3));
-            builder.add (    pTitle,       cc.xy    (3, 1));
-            builder.add (    pOptions,     cc.xy    (3, 3, "f,f"));
+            JPanel centralPanel = new JPanel (new BorderLayout (10, 10));
+            centralPanel.add (pTitle, BorderLayout.NORTH);
+            centralPanel.add (pOptions, BorderLayout.CENTER);
+            add (pCategories, BorderLayout.WEST);
+            add (centralPanel, BorderLayout.CENTER);
+            setBorder (new EmptyBorder (10, 10, 0, 10));
         }
         
         initActions ();
