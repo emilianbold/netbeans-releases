@@ -21,11 +21,11 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -97,8 +97,33 @@ public final class CreatedModifiedFilesFactory {
             String layerPath, URL content,
             Map/*<String,String>*/ substitutionTokens, String localizedDisplayName, Map attrs) {
         return new CreateLayerEntry(cmf, project, layerPath, content,
-                substitutionTokens, localizedDisplayName, attrs);
+                substitutionTokens, localizedDisplayName, attrs);        
     }
+    
+    static CreatedModifiedFiles.Operation manifestModification(NbModuleProject project, String section, 
+            Map/*<String, String>*/ attributes) {
+        CreatedModifiedFilesFactory.ModifyManifest retval = 
+                new CreatedModifiedFilesFactory.ModifyManifest(project);
+        for (Iterator it = attributes.keySet().iterator(); it.hasNext();) {
+            String name = (String) it.next();
+            String value = (String) attributes.get(name);
+            retval.setAttribute(name, value, section);
+        }                
+        return retval;
+    }        
+    
+    static CreatedModifiedFiles.Operation propertiesModification(NbModuleProject project, 
+            String propertyPath, Map/*<String, String>*/ properties) {
+        CreatedModifiedFilesFactory.ModifyProperties retval = 
+                new CreatedModifiedFilesFactory.ModifyProperties(project, propertyPath);
+        for (Iterator it = properties.keySet().iterator(); it.hasNext();) {
+            String name = (String) it.next();
+            String value = (String) properties.get(name);
+            retval.setProperty(name, value);
+        }                
+        return retval;
+    }        
+    
     
     public static abstract class OperationBase implements CreatedModifiedFiles.Operation {
         
@@ -575,6 +600,158 @@ public final class CreatedModifiedFilesFactory {
         }
         
     }
-    
+
+    /**
+     * Operation for making changes in manifest
+     */
+    public static class ModifyManifest extends CreatedModifiedFilesFactory.OperationBase {
+        private FileObject manifestFile;
+        private Map attributesToAdd;
+        
+        /**
+         * @param project 
+         */
+        public ModifyManifest(final NbModuleProject project) {
+            super(project);
+            this.attributesToAdd = new HashMap();
+            addModifiedFileObject(getManifestFile());
+        }
+        
+        /**
+         * Adds requirement for modifying attribute for the main section. How attribute
+         * will be modified depends on implementation of method {@link performModification}.
+         * @param name the attribute name
+         * @param value the new attribute value
+         */
+        public final void setAttribute(final String name, final  String value) {
+            setAttribute(name, value, "null");//NOI18N
+        }
+        
+        /**
+         * Adds requirement for modifying attribute. How attribute
+         * will be modified depends on implementation of method {@link performModification}.
+         * @param name the attribute name 
+         * @param value the new attribute value
+         * @param section the name of the section or null for the main section
+         */
+        public final void setAttribute(final String name, final String value, final  String section) {
+            Map attribs = getAttributes(section);
+            if (attribs == null) {
+                attribs = new HashMap();
+                attributesToAdd.put(section, attribs);
+            }
+            attribs.put(name, value);
+        }
+
+        /**
+         * Creates section if doesn't exists and set all attributes 
+         * @param em EditableManifest where attribute represented by other 
+         * parameters is going to be added
+         * @param name the attribute name 
+         * @param value the new attribute value
+         * @param section the name of the section to add it to, or null for the main section
+         */
+        protected void performModification(final EditableManifest em,final String name,final String value,
+                final String section)  {
+            if (section != null && em.getSectionNames().contains(section)) {
+                em.addSection(section);
+            }
+            em.setAttribute(name, value, section);
+        }
+        
+        public final void run() throws IOException {
+            ensureSavingFirst();
+            
+            EditableManifest em = Util.loadManifest(getManifestFile());
+            for (Iterator sectionsIterator = attributesToAdd.keySet().iterator(); sectionsIterator.hasNext();) {
+                String section = (String) sectionsIterator.next();
+                Map attributes = getAttributes(section);
+                assert attributes != null;
+
+                for (Iterator namesIterator = attributes.keySet().iterator(); namesIterator.hasNext();) {
+                    String name = (String) namesIterator.next();
+                    String value = (String)attributes.get(name);
+                    performModification(em, name, value, (("null".equals(section)) ? null : section));
+                }
+            }
+            
+            Util.storeManifest(getManifestFile(), em);
+        }
+        
+        
+        private FileObject getManifestFile() {
+            if (manifestFile == null) {
+                manifestFile = getProject().getManifestFile();
+            }
+            return manifestFile;
+        }
+        
+        private Map getAttributes(final String sectionName) {
+            Map attribs = (Map)attributesToAdd.get(sectionName);
+            return attribs;
+        }
+        
+        private void ensureSavingFirst() throws IOException {
+            //#65420 it can happen the manifest is currently being edited. save it
+            // and cross fingers because it can be in inconsistent state
+            try {
+                DataObject dobj = DataObject.find(getManifestFile());
+                SaveCookie safe = (SaveCookie)dobj.getCookie(SaveCookie.class);
+                if (safe != null) {
+                    safe.save();
+                }
+            } catch (DataObjectNotFoundException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Operation for making changes in properties
+     */    
+    private  static class ModifyProperties extends CreatedModifiedFilesFactory.OperationBase {
+        private Map properties;
+        private final String propertyPath;
+        private EditableProperties ep;
+        private FileObject propertiesFile;
+        
+        private ModifyProperties(final NbModuleProject project, final String propertyPath) {
+            super(project);
+            this.propertyPath= propertyPath;
+            addCreatedOrModifiedPath(propertyPath,true);
+        }
+        
+        public void run() throws IOException {
+            EditableProperties ep = getEditableProperties();
+            ep.putAll(getProperties());
+            Util.storeProperties(getPropertyFile(),ep);
+        }
+        
+        public final void setProperty(final String name, final String value) {
+            getProperties().put(name, value);
+        }
+        
+        protected final FileObject getPropertyFile() throws IOException {
+            if (propertiesFile == null) {
+                FileObject projectDirectory = getProject().getProjectDirectory();
+                propertiesFile = FileUtil.createData(projectDirectory, propertyPath);
+            }
+            return propertiesFile;
+        }
+        
+        protected final EditableProperties getEditableProperties() throws IOException {
+            if (ep == null) {
+                ep = Util.loadProperties(getPropertyFile());
+            }
+            return ep;
+        }
+        
+        protected final Map getProperties() {
+            if (properties == null) {
+                this.properties = new HashMap();
+            }
+            return properties;
+        }
+    }        
 }
 

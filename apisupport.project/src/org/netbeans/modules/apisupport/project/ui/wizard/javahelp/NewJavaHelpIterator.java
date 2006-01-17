@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,25 +16,16 @@ package org.netbeans.modules.apisupport.project.ui.wizard.javahelp;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFilesFactory;
+import org.netbeans.modules.apisupport.project.CreatedModifiedFilesFactory.ModifyManifest;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.WizardDescriptor;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,17 +92,36 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                 for (int i = 0; i < TOKENS.length; i++) {
                     tokens.put(TOKENS[i],replaceToken(TOKENS[i]));
                 }
+                
+                //layer registration
                 files.add(createLayerEntryOperation(tokens));
+                
+                //copying templates
                 for (int i = 0; i < TEMPLATES_SUFFIXES.length; i++) {
                     files.add(createFileOperation(TEMPLATES_SUFFIXES[i], tokens));
                 }
-                Properties props = new Properties();
-                props.setProperty("javahelp.base", getCodeNameBase().replace('.','/'));//NOIN18N
-                //props.setProperty("jhall.jar","${harness.dir}/lib/jhall.jar");//NOI18N
-                files.add(new AddProperties(getProject(), "nbproject/project.properties", props));//NOIN18N
-                Properties attribs = new Properties();
-                attribs.setProperty("OpenIDE-Module-Requires", "org.netbeans.api.javahelp.Help");//NOIN18N
-                files.add(new AddAttributesIntoManifestSection(getProject(), null, attribs));                
+                
+                //put javahelp.base into nbproject/project.properties
+                Map props = new HashMap();
+                props.put("javahelp.base", getCodeNameBase().replace('.','/'));//NOIN18N
+                //props.put("jhall.jar","${harness.dir}/lib/jhall.jar");//NOI18N
+                files.add(files.propertiesModification("nbproject/project.properties",props));//NOIN18N
+                
+                //put OpenIDE-Module-Requires into manifest
+                ModifyManifest attribs = new CreatedModifiedFilesFactory.ModifyManifest(getProject()) {
+                    protected void performModification(final EditableManifest em,final String name,final String value,
+                            final String section) throws IllegalArgumentException {
+                        String originalValue = em.getAttribute(name, section);
+                        if (originalValue != null) {
+                            em.setAttribute(name, originalValue+","+value, section);
+                        } else {
+                            super.performModification(em, name, value, section);
+                        }
+                    }
+                    
+                };
+                attribs.setAttribute("OpenIDE-Module-Requires", "org.netbeans.api.javahelp.Help", null);//NOIN18N
+                files.add(attribs);
             }
             return files;
         }
@@ -171,66 +181,6 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
             }
             return codeNameBase;
         }
-    }
-    
-    private static final class AddAttributesIntoManifestSection extends CreatedModifiedFilesFactory.OperationBase {
-        private FileObject mfFO;
-        private Properties attrs2Include;
-        private String sectionName;
-        
-        public AddAttributesIntoManifestSection(final NbModuleProject project, final  String sectionName, final Properties attrs2Include) {
-            super(project);
-            this.attrs2Include = attrs2Include;
-            this.sectionName = sectionName;
-            this.mfFO = getProject().getManifestFile();
-            addModifiedFileObject(mfFO);
-        }
-        
-        public void run() throws IOException {
-            //#65420 it can happen the manifest is currently being edited. save it
-            // and cross fingers because it can be in inconsistent state
-            try {
-                DataObject dobj = DataObject.find(mfFO);
-                SaveCookie safe = (SaveCookie)dobj.getCookie(SaveCookie.class);
-                if (safe != null) {
-                    safe.save();
-                }
-            } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
-            }
-            
-            EditableManifest em = Util.loadManifest(mfFO);
-            if (sectionName != null) {
-                em.addSection(sectionName);
-            }
-            Set keys = attrs2Include.keySet();
-            for (Iterator it = keys.iterator(); it.hasNext();) {
-                String key = (String) it.next();
-                String value = attrs2Include.getProperty(key);
-                em.setAttribute(key, value, sectionName);
-            }            
-            Util.storeManifest(mfFO, em);
-        }
-    }
-    
-    private static class AddProperties extends CreatedModifiedFilesFactory.OperationBase {
-        private Properties props2Include;
-        private String propertyPath;
-        
-        AddProperties(final NbModuleProject project, final String propertyPath, final Properties props2Include) {
-            super(project);
-            this.props2Include = props2Include;
-            this.propertyPath= propertyPath;
-            addCreatedOrModifiedPath(propertyPath,true);
-        }
-        
-        public void run() throws IOException {
-            FileObject propsFileFO = FileUtil.createData(getProject().getProjectDirectory(), propertyPath);
-            
-            EditableProperties ep = Util.loadProperties(propsFileFO);
-            ep.putAll(props2Include);
-            Util.storeProperties(propsFileFO,ep);
-        }
-    }
+    }    
 }
 

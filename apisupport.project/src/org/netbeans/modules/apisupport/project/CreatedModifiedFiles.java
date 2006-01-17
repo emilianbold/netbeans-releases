@@ -334,6 +334,28 @@ public final class CreatedModifiedFiles {
                 content, substitutionTokens,
                 localizedDisplayName, fileAttributes);
     }
+
+    /**
+     * Adds new attributes into manifest file.
+     * @param section the name of the section or null for the main section
+     * @param attributes a map of <String,String>s.
+     * @return see {@link Operation}
+     */
+    public Operation manifestModification(String section,Map/*<String, String>*/ attributes) {                    
+        return CreatedModifiedFilesFactory.manifestModification(project, section, attributes);
+    }
+
+    /**
+     * Adds new properties into property file.
+     * @param propertyPath path representing properties file relative to a project directory where all
+     * properties will be put in. If such a file doesn't exist then is created.
+     * @param properties a map of <String,String>s.
+     * @return see {@link Operation}
+     */
+    public Operation propertiesModification(String propertyPath, 
+            Map/*<String, String>*/ properties) {
+        return CreatedModifiedFilesFactory.propertiesModification(project, propertyPath, properties);
+    }
     
     /**
      * Creates a new arbitrary <em>&lt;attr&gt;</em> element.
