@@ -117,7 +117,7 @@ public class RADProperty extends FormProperty {
                     message, null, null);                
                 throw (IllegalAccessException) tex;
             } else if(value==null && tex instanceof NullPointerException) {
-                IllegalArgumentException iae = new IllegalArgumentException(tex);
+                IllegalArgumentException iae = new IllegalArgumentException();
                 ErrorManager.getDefault().annotate(
                     iae, ErrorManager.WARNING, null,
                     message, null, null);                
