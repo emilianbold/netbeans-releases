@@ -50,19 +50,5 @@ Microsystems, Inc. All Rights Reserved.
         </buildTests>
     </target>
     
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-    
-    <target name="run_ide_tests">
-        <property name="xtest.ide.use.classloader" value="org.netbeans.modules.html.editor.lib"/>
-        <property name="xtest.ide.commandline.suffix" value="${noscan} -nogui"/>
-        <executeTests  pluginName="ide">
-            <classpath>
-                <pathelement location="${html/editor.dir}/modules/org-netbeans-modules-html-editor.jar"/>
-            </classpath>
-        </executeTests>
-    </target>
-    
 </project>
 
