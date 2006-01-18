@@ -114,6 +114,10 @@ Microsystems, Inc. All Rights Reserved.
                     <ide-action name="build"/>
                     <ide-action name="rebuild"/>
                     <ide-action name="clean"/>
+                    <action>
+                        <label>Clean User Directory</label>
+                        <target>testuserdir-delete</target>
+                    </action>
                     <ide-action name="test"/>
                     <ide-action name="javadoc"/>
                     <separator/>
