@@ -393,99 +393,19 @@ public class HTMLFormatter extends ExtFormatter {
                 
             }
             
-            // "smart enter" :-) feature
-            /*
-             <tag>|</tag>
-             
-             ENTER key pressed =>
-             
-             <tag>
-                 |
-             </tag>
-             
-             **/
             if(lastChar == '\n') {
-                //enter pressed
-                //check following situation:
-            /*
-             <tag>
-             |</tag>
-             */
-                //1. does the previous line ends with an open tag with tagname X?
-                //2. does the token on the carret position is an end tag with X tagname?
-                //#59499: the 2nd condition should be wider, like "is the line starting at caret postion terminated by X tagname"?
-                //if both of the assumptions are true then:
-                //a. insert endline on the carret position
-                //b. indent the new line
-                //c. move the cursor to the end of the new line
+                // just pressed enter
                 
-                //check #1
-                int endOfPrevLineOffset = Utilities.getRowStart(doc, dotPos) -1 ;
-                if(endOfPrevLineOffset > 0) { //do not reformat when enter pressed on the first line
-                    TokenItem token = sup.getTokenChain(endOfPrevLineOffset -1 , endOfPrevLineOffset );
-                    if(token != null &&
-                            token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL) {
-                        //found an end of a tag -> we needs to decide whether it is an open tag
-                        //find tag beninning (skip whitespaces inside the tag (</table >)
-                        do {
-                            token = token.getPrevious();
-                        } while (token != null && token.getTokenID() != HTMLTokenContext.TAG_OPEN);
-                        
-                        if(token != null &&
-                                token.getTokenID() == HTMLTokenContext.TAG_OPEN) {
-                            //an open tag
-                            String openTagName = token.getImage();
-                            //check #2
-                            
-                            boolean applySmartEnter = false;
-                            int lineEnd = Utilities.getRowEnd(doc, dotPos);
-                            int closingTagOffset = -1;
-                            token = sup.getTokenChain(lineEnd - 1, lineEnd);
-                            
-                            if (token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL && ">".equals(token.getImage())){
-                                TokenItem tagNameToken = token.getPrevious();
-                                
-                                if (tagNameToken != null && openTagName.equalsIgnoreCase(tagNameToken.getImage())){
-                                    TokenItem tsToken = tagNameToken.getPrevious();
-                                    
-                                    if (tsToken != null && tsToken.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL && "</".equals(tsToken.getImage())){
-                                        applySmartEnter = true;
-                                        closingTagOffset = tsToken.getOffset();
-                                    }
-                                }
-                            }
-                            
-                            if(applySmartEnter) {
-                                //found pair end tag => we can do the reformat!!!
-                                int currentLineIndex = Utilities.getLineOffset(doc, token.getOffset());
-                                //a. insert a new line on the current line
-                                doc.atomicLock();
-                                try {
-                                    doc.insertString(closingTagOffset, "\n" , null);
-                                } catch( BadLocationException exc ) {
-                                    //do nothing
-                                } finally {
-                                    doc.atomicUnlock();
-                                }
-                                
-                                //b. indent the new line
-                                int newLineOffset = Utilities.getRowStartFromLineOffset(doc, currentLineIndex);
-                                int previousLineIndentation = Utilities.getRowIndent(doc, Utilities.getRowStartFromLineOffset(doc, currentLineIndex - 1));
-                                int newLineIndent = previousLineIndentation + getShiftWidth();
-                                changeRowIndent(doc, newLineOffset, newLineIndent);
-                                
-                                //c. set cursor to the beginning of the new line
-                                target.setCaretPosition(Math.min(Utilities.getFirstNonWhiteFwd(doc, Utilities.getRowStart(doc, newLineOffset)), 
-                                        Utilities.getRowEnd(doc, newLineOffset)));
-                                
-                                //return end tag line start and end offset to reformat the end tag correctly
-                                //get first non white offset from the line after the newly inserted line
-                                int start = Utilities.getRowStartFromLineOffset(doc, currentLineIndex+1);
-                                int end = Utilities.getRowEnd(doc, start);
-                                return new int[]{start, end};
-                            }
-                        }
-                    }
+                int newCursorPos = smartEnter(doc, dotPos, sup);
+                
+                if (newCursorPos != -1){
+                    target.setCaretPosition(newCursorPos);
+                    //return end tag line start and end offset to reformat the end tag correctly
+                    //get first non white offset from the line after the newly inserted line
+                    int closingTagLine = Utilities.getLineOffset(doc, newCursorPos) + 1;
+                    int start = Utilities.getRowStartFromLineOffset(doc, closingTagLine);
+                    int end = Utilities.getRowEnd(doc, start);
+                    return new int[]{start, end};
                 }
             }
             
@@ -504,6 +424,97 @@ public class HTMLFormatter extends ExtFormatter {
             }
         }
         return true;
+    }
+    
+
+    /**
+     * "smart enter" :-) feature
+     * <tag>|</tag>
+     * ENTER key pressed =>
+     * <tag>
+     *  |
+     * </tag>
+     *
+     * @return new caret position, -1 if smart enter was not applied
+     */
+    protected int smartEnter(BaseDocument doc, int dotPos, HTMLSyntaxSupport sup) throws BadLocationException {
+        int newCaretPos = -1; // return value
+         /*
+          check following situation:
+             1. does the previous line ends with an open tag with tagname X?
+             2. does the token on the carret position is an end tag with X tagname?
+          #59499: the 2nd condition should be wider, like "is the line starting at caret postion terminated by X tagname"?
+          if both of the assumptions are true then:
+           a. insert endline on the carret position
+           b. indent the new line
+           c. move the cursor to the end of the new line
+         */
+                
+                //check #1
+        int endOfPrevLineOffset = Utilities.getRowStart(doc, dotPos) -1 ;
+        if(endOfPrevLineOffset > 0) { //do not reformat when enter pressed on the first line
+            TokenItem token = sup.getTokenChain(endOfPrevLineOffset -1 , endOfPrevLineOffset );
+            if(token != null &&
+                    token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL) {
+                //found an end of a tag -> we needs to decide whether it is an open tag
+                //find tag beninning (skip whitespaces inside the tag (</table >)
+                do {
+                    token = token.getPrevious();
+                } while (token != null && token.getTokenID() != HTMLTokenContext.TAG_OPEN);
+                
+                if(token != null &&
+                        token.getTokenID() == HTMLTokenContext.TAG_OPEN) {
+                    //an open tag
+                    String openTagName = token.getImage();
+                    //check #2
+                    
+                    boolean applySmartEnter = false;
+                    int lineEnd = Utilities.getRowEnd(doc, dotPos);
+                    int closingTagOffset = -1;
+                    token = sup.getTokenChain(lineEnd - 1, lineEnd);
+                    
+                    if (token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL && ">".equals(token.getImage())){
+                        TokenItem tagNameToken = token.getPrevious();
+                        
+                        if (tagNameToken != null && openTagName.equalsIgnoreCase(tagNameToken.getImage())){
+                            TokenItem tsToken = tagNameToken.getPrevious();
+                            
+                            if (tsToken != null && tsToken.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL && "</".equals(tsToken.getImage())){
+                                applySmartEnter = true;
+                                closingTagOffset = tsToken.getOffset();
+                            }
+                        }
+                    }
+                    
+                    if(applySmartEnter) {
+                        //found pair end tag => we can do the reformat!!!
+                        int currentLineIndex = Utilities.getLineOffset(doc, token.getOffset());
+                        //a. insert a new line on the current line
+                        doc.atomicLock();
+                        try {
+                            doc.insertString(closingTagOffset, "\n" , null);
+                            
+                            //b. indent the new line
+                            int newLineOffset = Utilities.getRowStartFromLineOffset(doc, currentLineIndex);
+                            int previousLineIndentation = Utilities.getRowIndent(doc, Utilities.getRowStartFromLineOffset(doc, currentLineIndex - 1));
+                            int newLineIndent = previousLineIndentation + getShiftWidth();
+                            changeRowIndent(doc, newLineOffset, newLineIndent);
+                            
+                            //c. set cursor to the beginning of the new line
+                            newCaretPos = Math.min(Utilities.getFirstNonWhiteFwd(doc, Utilities.getRowStart(doc, newLineOffset)),
+                                    Utilities.getRowEnd(doc, newLineOffset));
+                            
+                        } catch( BadLocationException exc ) {
+                            //do nothing
+                        } finally {
+                            doc.atomicUnlock();
+                        }
+                    }
+                }
+            }
+        }
+        
+        return newCaretPos;
     }
     
     public class OutLineLayer extends AbstractFormatLayer {
@@ -536,7 +547,7 @@ public class HTMLFormatter extends ExtFormatter {
         
     }
     
-    //some of not needed methods are removed - I do not need them in the fake document
+//some of not needed methods are removed - I do not need them in the fake document
     private class HackedBaseDocument extends BaseDocument {
         public HackedBaseDocument(Class kitClass, boolean addToRegistry) {
             super(kitClass, addToRegistry);
