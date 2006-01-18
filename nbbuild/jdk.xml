@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="jdk" basedir=".">
@@ -85,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="-jdk-warn" depends="-jdk-preinit" if="nbjdk.active-or-nbjdk.home" unless="nbjdk.valid">
         <property name="jdkhome.presumed" location="${java.home}/.."/>
-        <echo level="warning">Warning: nbjdk.active=${nbjdk.active} is an invalid Java platform; ignoring and using ${jdkhome.presumed}</echo>
+        <echo level="warning">Warning: nbjdk.active=${nbjdk.active} or nbjdk.home=${nbjdk.home} is an invalid Java platform; ignoring and using ${jdkhome.presumed}</echo>
     </target>
     
     <target name="-jdk-presetdef-basic" depends="-jdk-preinit" if="nbjdk.valid" unless="jdk.presetdef.basic.done">
