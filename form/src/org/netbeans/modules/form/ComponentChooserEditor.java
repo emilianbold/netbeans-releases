@@ -39,12 +39,14 @@ public class ComponentChooserEditor implements PropertyEditor,
 
     private static String noneText = null;
     private static String invalidText = null;
+    private static String defaultText = null;
 
     private FormModel formModel;
     private List components;
     private Class[] beanTypes = null;
     private int componentCategory = 0;
 
+    private Object defaultValue;
     private ComponentRef value;
 
     private PropertyChangeSupport changeSupport;
@@ -60,14 +62,20 @@ public class ComponentChooserEditor implements PropertyEditor,
     // PropertyEditor implementation
 
     public void setValue(Object value) {
+        defaultValue = null;
         if (value == null || value instanceof ComponentRef)
             this.value = (ComponentRef) value;
+        
         else if (value instanceof RADComponent)
             this.value = new ComponentRef((RADComponent)value);
         else if (value instanceof String)
             this.value = new ComponentRef((String)value);
-        else
-            return;
+        else {
+            this.value = null;
+            defaultValue = value;
+        }    
+            
+            //return;
 
         firePropertyChange();
     }
@@ -75,27 +83,45 @@ public class ComponentChooserEditor implements PropertyEditor,
     public Object getValue() {
         if (value != null && INVALID_REF.equals(value.getDescription()))
             return BeanSupport.NO_VALUE; // special - invalid value was loaded
-
-        return value;
+        
+        return isDefaultValue() ? defaultValue : value; 
     }
 
     public String[] getTags() {
         List compList = getComponents();
 
-        int count = compList.size() + 1;
-        String[] names = new String[count];
-        names[0] = noneString();
-
-        if (count > 1) {
-            for (int i=1; i < count; i++)
-                names[i] = ((RADComponent)compList.get(i-1)).getName();
+        int extraValues = 0;        
+        int count = 0;
+        String[] names;                                    
+        
+        if( isDefaultValue() ) {
+            extraValues = 2;        
+            count = compList.size() + extraValues;
+            names = new String[count];                                    
+            names[0] = defaultString();            
+        } else {
+            extraValues = 1;        
+            count = compList.size() + extraValues;
+            names = new String[count];                                                
+        } 
+        names[extraValues - 1] = noneString();
+        
+        if (count > extraValues) {
+            for (int i=extraValues; i < count; i++)
+                names[i] = ((RADComponent)compList.get(i-extraValues)).getName();
             Arrays.sort(names, 1, count);
         }
 
         return names;
     }
 
+    private boolean isDefaultValue() {
+        return value == null && defaultValue != null;
+    }    
+    
     public String getAsText() {
+        if (isDefaultValue())
+            return defaultString();
         if (value == null)
             return noneString();
         if (value.getComponent() == null)
@@ -108,8 +134,16 @@ public class ComponentChooserEditor implements PropertyEditor,
     public void setAsText(String str) {
         if (str == null || str.equals("") || str.equals(noneString())) // NOI18N
             setValue(null);
-        else
-            setValue(str);
+        else {
+            if(defaultString().equals(str)) {           
+                // XXX 
+                setValue(defaultValue);
+            } else {
+                setValue(str);    
+            }
+            
+        }
+            
     }
 
     public String getJavaInitializationString() {
@@ -253,6 +287,12 @@ public class ComponentChooserEditor implements PropertyEditor,
         return noneText;
     }
 
+    protected String defaultString() {
+        if (defaultText == null)
+            defaultText = FormUtils.getBundleString("CTL_DefaultComponent"); // NOI18N
+        return defaultText;
+    }
+    
     protected String invalidString() {
         if (invalidText == null)
             invalidText = FormUtils.getBundleString("CTL_InvalidReference"); // NOI18N
@@ -273,8 +313,8 @@ public class ComponentChooserEditor implements PropertyEditor,
 
     // ------------
 
-    private class ComponentRef implements RADComponent.ComponentReference,
-                                          FormDesignValue
+    private class ComponentRef implements RADComponent.ComponentReference, 
+                                             FormDesignValue
     {
         private String componentName;
         private RADComponent component;
