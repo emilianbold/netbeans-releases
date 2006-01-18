@@ -1,5 +1,4 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.openide.actions
-OpenIDE-Module-Specification-Version: 6.6
 OpenIDE-Module-Localizing-Bundle: org/openide/actions/Bundle.properties
 
