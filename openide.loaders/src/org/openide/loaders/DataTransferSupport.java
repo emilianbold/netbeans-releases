@@ -19,6 +19,9 @@
 package org.openide.loaders;
 
 import java.util.Arrays;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.awt.Mnemonics;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -115,10 +118,28 @@ abstract class DataTransferSupport {
             return true;
         }
         /** Paste all DataObjects */
-        public final Transferable paste () throws IOException {
-            doPaste ();
+        public final Transferable paste() throws IOException {
+            if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        String n = org.openide.awt.Actions.cutAmpersand(getName());
+                        ProgressHandle h = ProgressHandleFactory.createHandle(n);
+                        h.start();
+                        h.switchToIndeterminate();
+                        try {
+                            doPaste();
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ioe);
+                        } finally {
+                            h.finish();
+                        }
+                    }
+                });
+            } else {
+                doPaste();
+            }
             // clear clipboard or preserve content
-            return cleanClipboard () ? ExTransferable.EMPTY : null;
+            return cleanClipboard() ? ExTransferable.EMPTY : null;
         }
         
         private void doPaste () throws IOException {
