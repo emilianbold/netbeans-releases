@@ -15,6 +15,7 @@ package org.openide.loaders;
 
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
+import java.awt.image.BufferedImage;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -34,6 +35,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import org.openide.DialogDisplayer;
@@ -61,6 +64,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.NewType;
+import org.openide.windows.WindowManager;
 
 /** A folder containing data objects.
 * Is actually itself a data object, whose primary (and only) file object
@@ -1072,6 +1076,42 @@ implements Serializable, DataObject.Container {
         return folderName.indexOf ('/') == -1 && folderName.indexOf ('\\') == -1;
     }
     
+    /** Gets an icon from UIManager and converts it to Image
+     */
+    private static Image icon2image(String key) {
+        Object obj = UIManager.get(key);
+        if (obj instanceof Image) {
+            return (Image)obj;
+        }
+        
+        if (obj instanceof Icon) {
+            Icon icon = (Icon)obj;
+            
+            int height = icon.getIconHeight();
+            int width = icon.getIconWidth();
+
+            BufferedImage bImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            icon.paintIcon(new JPanel(), bImage.getGraphics(), 0, 0);
+
+            return bImage;
+        }
+        
+        return null;
+    }  
+    
+    
+    private static Image findIcon(String k1, String k2) {
+        Image i1 = icon2image(k1);
+        if (i1 == null) {
+            i1 = icon2image(k2);
+        }
+        return i1;
+    }
+    
+    // icons for FolderNode
+    static final Image DEFAULT_ICON = findIcon("Nb.Explorer.Folder.icon", "Tree.closedIcon"); // NOI18N
+    static final Image DEFAULT_OPENED_ICON = findIcon("Nb.Explorer.Folder.openedIcon", "Tree.openIcon"); // NOI18N
+        
     /** Node for a folder.
     */
     public class FolderNode extends DataNode {
@@ -1089,6 +1129,7 @@ implements Serializable, DataObject.Container {
             super (DataFolder.this, new FolderChildren (DataFolder.this));
             setIconBase(FOLDER_ICON_BASE);
         }
+        
 
         /** Overrides folder icon to search for icon in UIManager table for
          * BeanInfo.ICON_COLOR_16x16 type, to allow for different icons
@@ -1099,7 +1140,7 @@ implements Serializable, DataObject.Container {
             Image img = null;
             if (type == BeanInfo.ICON_COLOR_16x16) {
                 // search for proper folder icon installed by core/windows module
-                img = (Image)UIManager.get("Nb.Explorer.Folder.icon");
+                img = DEFAULT_ICON;
             }
             if (img == null) {
                 img = super.getIcon(type);
@@ -1126,7 +1167,7 @@ implements Serializable, DataObject.Container {
             Image img = null;
             if (type == BeanInfo.ICON_COLOR_16x16) {
                 // search for proper folder icon installed by core/windows module
-                img = (Image)UIManager.get("Nb.Explorer.Folder.openedIcon");
+                img = DEFAULT_OPENED_ICON;
             }
             if (img == null) {
                 img = super.getOpenedIcon(type);
@@ -1143,6 +1184,7 @@ implements Serializable, DataObject.Container {
             }
             return img;
         }
+        
 
         public Node.Cookie getCookie (Class clazz) {
             if (clazz == org.openide.nodes.Index.class || clazz == Index.class) {
