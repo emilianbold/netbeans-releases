@@ -133,6 +133,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         suitePlatform.setVisible(isSuiteWizard);
         suitePlatformValue.setVisible(isSuiteWizard);
         manageSuitePlatform.setVisible(isSuiteWizard);
+        mainProject.setVisible(!isLibraryWizard);
         
         suiteModule.setVisible(!isLibraryWizard);
         platform.setVisible(!isLibraryWizard);
@@ -141,15 +142,15 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         standAloneModule.setVisible(!isLibraryWizard);
         mainProject.setSelected(!isLibraryWizard);
         
-        standAloneModule.setVisible(!isSuiteComponentWizard);
-        platform.setVisible(!isSuiteComponentWizard);
-        platformValue.setVisible(!isSuiteComponentWizard);
-        managePlatform.setVisible(!isSuiteComponentWizard);
-        suiteModule.setVisible(!isSuiteComponentWizard);
+        standAloneModule.setVisible(!isSuiteComponentWizard && !isLibraryWizard);
+        platform.setVisible(!isSuiteComponentWizard && !isLibraryWizard);
+        platformValue.setVisible(!isSuiteComponentWizard && !isLibraryWizard);
+        managePlatform.setVisible(!isSuiteComponentWizard && !isLibraryWizard);
+        suiteModule.setVisible(!isSuiteComponentWizard && !isLibraryWizard);
     }
     
     private void restoreSelectedSuite() {
-        String preferredSuiteDir  = (String) getSettings().getProperty(NewNbModuleWizardIterator.PREFERRED_SUITE_DIR);
+        String preferredSuiteDir  = getPreferredSuiteDir();
         if (preferredSuiteDir != null) {
             lastSelectedSuite = preferredSuiteDir;
         }
@@ -162,6 +163,10 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
                 }
             }
         }
+    }
+    
+    private String getPreferredSuiteDir() {
+        return (String) getSettings().getProperty(NewNbModuleWizardIterator.PREFERRED_SUITE_DIR);
     }
     
     private String getNameValue() {
@@ -187,8 +192,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         platformValue.setEnabled(standalone);
         managePlatform.setEnabled(standalone);
         moduleSuite.setEnabled(suiteModuleSelected);
-        moduleSuiteValue.setEnabled(suiteModuleSelected && wizardType != NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT);
-        browseSuiteButton.setEnabled(suiteModuleSelected && wizardType != NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT);
+        moduleSuiteValue.setEnabled(suiteModuleSelected && getPreferredSuiteDir() == null);
+        browseSuiteButton.setEnabled(suiteModuleSelected && getPreferredSuiteDir() == null);
     }
     
     void updateAndCheck() {

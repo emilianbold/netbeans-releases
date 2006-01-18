@@ -94,6 +94,15 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         return new NewNbModuleWizardIterator(TYPE_SUITE);
     }
     
+    /**
+     * Returns wizard for creating library wrapper module <strong>only</strong>.
+     */
+    public static NewNbModuleWizardIterator createLibraryModuleIterator(final SuiteProject suite) {
+        NewNbModuleWizardIterator iterator = new NewNbModuleWizardIterator(TYPE_LIBRARY_MODULE);
+        iterator.preferredSuiteDir = FileUtil.toFile(suite.getProjectDirectory()).getAbsolutePath();
+        return iterator;
+    }
+    
     public static NewNbModuleWizardIterator createLibraryModuleIterator() {
         return new NewNbModuleWizardIterator(TYPE_LIBRARY_MODULE);
     }
@@ -161,6 +170,9 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     
     public void initialize(WizardDescriptor wiz) {
         this.settings = wiz;
+        if (preferredSuiteDir != null) {
+            settings.putProperty(PREFERRED_SUITE_DIR, preferredSuiteDir);
+        }
         position = 0;
         String[] steps = null;
         switch (type) {
@@ -168,9 +180,6 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
                 steps = initModuleWizard(TYPE_MODULE);
                 break;
             case TYPE_SUITE_COMPONENT:
-                if (preferredSuiteDir != null) {
-                    settings.putProperty(PREFERRED_SUITE_DIR, preferredSuiteDir);
-                }
                 steps = initModuleWizard(TYPE_SUITE_COMPONENT);
                 break;
             case TYPE_SUITE:
