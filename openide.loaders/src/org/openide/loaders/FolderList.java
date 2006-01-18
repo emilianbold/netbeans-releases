@@ -634,6 +634,7 @@ implements FileChangeListener, DataObject.Container {
                 try {
                     obj = DataObject.find (fo);
                     ref = new SoftReference (obj);
+                    map.put(fo, ref);
                 } catch (DataObjectNotFoundException ex) {
                     ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
                 }
@@ -789,7 +790,7 @@ implements FileChangeListener, DataObject.Container {
                     }
 
                     // add it to the list of primary files
-                    file.put (primary, new WeakReference (obj));
+                    file.put (primary, new SoftReference (obj));
                 } else {
                     // 1. nothing to add to data object list
                     // 2. remove this object if it was in list of previous ones
@@ -825,6 +826,9 @@ implements FileChangeListener, DataObject.Container {
         }
 
         // notify the filter
+        if (LOG) {
+            err.log("Notifying filter: " + filter); // NOI18N
+        }
         if (filter != null) {
             filter.finished (res);
         }
