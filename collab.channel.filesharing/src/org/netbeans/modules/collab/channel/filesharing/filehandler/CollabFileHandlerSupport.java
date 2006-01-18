@@ -2271,7 +2271,8 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
             synchronized(getDocumentLock()) {
                 editorLock = lockEditor(getEditorCookie());
 
-                if (includeMarginLines) {
+                /* refactored into findUnAssignedLines()
+				 if (includeMarginLines) {
                     if (beginLine > 0) {
                         beginLine -= 1;
                     }
@@ -2305,6 +2306,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                 Vector lineRegions = new Vector(10);
                 boolean foundFirstMatch = false;
                 CollabLineRegion endLineNeighbour=null;
+				CollabLineRegion beginLineNeighbour=null;
                 Debug.log("CollabFileHandlerSupport","CFHS, Check lines are between:" +
                         " beginOffset: " + beginOffset + " endOffset: " + endOffset); //NoI18n
 
@@ -2329,22 +2331,33 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                             endLineNeighbour=lineRegion;
                             break;
                         }
+						else
+							beginLineNeighbour=lineRegion;
                     }
-                }
-
+                }*/
+				
+				Vector lineRegions=
+					findUnAssignedLines(beginLine, endLine, 
+						endOffsetCorrection, includeMarginLines);
                 if (lineRegions.size() == 0) {
                     Debug.log("CollabFileHandlerSupport","CFHS," +
                             "Cannot create lock, no line regions match, so try to " +
                             "create regions from " + beginLine + " to: " +endLine);
                     return;
                 }
-
+				CollabLineRegion beginLineNeighbour=(CollabLineRegion) lineRegions.firstElement();
+				lineRegions.removeElement(beginLineNeighbour);
+				CollabLineRegion endLineNeighbour=(CollabLineRegion) lineRegions.lastElement();
+				lineRegions.removeElement(endLineNeighbour);
+				
+/*refactored to findNewRegionBeginOffset() and findNewRegionEndOffset()
                 //Calculate offset based on unassigned lineregions only
                 if(lineRegions==null || lineRegions.size()==0) return;
                 CollabLineRegion beginLineRegion=(CollabLineRegion)lineRegions.get(0);
                 if(beginLineRegion==null) return;
                 //beginOffset = fileDocument.getDefaultRootElement().
                 //        getElement(beginLineRegion.getLineIndex()).getStartOffset()-1;
+				beginOffset=beginLineRegion.getBeginOffset();
 				if(beginOffset!=0 && beginOffset+1==beginLineRegion.getBeginOffset())//correct beginoffset
 					beginOffset = beginLineRegion.getBeginOffset();
 				if(beginOffset<0) beginOffset=0;				
@@ -2370,13 +2383,28 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                 }
 
                 int docLength=fileDocument.getLength();
-                if(endOffset>docLength) endOffset=docLength;
+                if(endOffset>docLength) endOffset=docLength;*/
+				
+                Debug.log("CollabFileHandlerSupport","CFHS, " +
+                        "create new region beginLineNeighbour end: "+ 
+						(beginLineNeighbour!=null?beginLineNeighbour.getEndOffset():-1) +
+                        " endLineNeighbour begin: " +
+						(endLineNeighbour!=null?endLineNeighbour.getBeginOffset():-1));//NoI18n
+                Debug.log("CollabFileHandlerSupport","CFHS, lines size: " + lineRegions.size()); //NoI18n
+				
+				int beginOffset=
+					findNewRegionBeginOffset(lineRegions, beginLineNeighbour);
+				if(beginOffset==-1) return;
+				
+				int endOffset=
+					findNewRegionEndOffset(lineRegions, endLineNeighbour);	
+				if(endOffset==-1) return;
 
                 //Create new region
                 Debug.log("CollabFileHandlerSupport","CFHS, " +
                         "create new region beginOffset: "+ beginOffset +
                         " endOffset: "+endOffset);//NoI18n
-                Debug.log("CollabFileHandlerSupport","CFHS, lines: " + lineRegions); //NoI18n
+                //Debug.log("CollabFileHandlerSupport","CFHS, lines: " + lineRegions); //NoI18n
 				if(endOffset==0) return;
                 CollabRegion textRegion = createRegion(regionName, beginOffset, endOffset, false);
                 if(textRegion==null) return;
@@ -2449,7 +2477,149 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
   */
         } 
     }
+	
+    private Vector findUnAssignedLines(int beginLine, int endLine, 
+			int endOffsetCorrection, boolean includeMarginLines)
+		throws CollabException 
+	{
+		CollabLineRegion beginLineNeighbour=null;
+		CollabLineRegion endLineNeighbour=null;
+		StyledDocument fileDocument=getDocument();
+		if (includeMarginLines) {
+			if (beginLine > 0) {
+				beginLine -= 1;
+			}
 
+			if (endLine < (fileDocument.getDefaultRootElement().getElementCount() - 2)) {
+				endLine += 2;
+			} else if (endLine < (fileDocument.getDefaultRootElement().getElementCount() - 1)) {
+				endLine += 1;
+			}
+
+			if (endLine >= fileDocument.getDefaultRootElement().getElementCount()) {
+				endLine = fileDocument.getDefaultRootElement().getElementCount() - 1;
+			}
+
+			Debug.log(
+				"CollabFileHandlerSupport", //NoI18n
+				"CollabFileHandlerSupport, " + "includeMarginLines beginLine: " + beginLine + " endLine: " + endLine
+			);
+		}
+		//adjust beginLine to avoid delete first line
+		if(beginLine==1) beginLine=0;
+
+		int beginOffset = fileDocument.getDefaultRootElement().getElement(beginLine).getStartOffset() - 1;
+
+		if (beginOffset < 0) {
+			beginOffset = 0;
+		}
+
+		int endOffset = fileDocument.getDefaultRootElement().getElement(endLine).getEndOffset();
+
+		Vector lineRegions = new Vector(10);
+		boolean foundFirstMatch = false;
+		Debug.log("CollabFileHandlerSupport","CFHS, Check lines are between:" +
+				" beginOffset: " + beginOffset + " endOffset: " + endOffset); //NoI18n
+
+		if(beginLine>0)
+			beginLineNeighbour=rCtx.getLineRegion(beginLine-1);
+		
+		for (int i = beginLine; i < rCtx.getLineRegionCount(); i++) {
+			CollabLineRegion lineRegion = rCtx.getLineRegion(i);
+
+			if (lineRegion == null) {
+				continue;
+			}
+
+			int lineBeginOffset = lineRegion.getBeginOffset();
+			Debug.log("CollabFileHandlerSupport","CFHS, "+ "line ["+i+"]: "+
+					lineRegion.getID()+" isAssigned(): " + lineRegion.isAssigned()+
+					" lineBeginOffset: "+lineBeginOffset); //NoI18n
+			if(!lineRegion.isAssigned() && lineBeginOffset>=beginOffset && lineBeginOffset<endOffset) {
+				foundFirstMatch=true;
+				Debug.log("CollabFileHandlerSupport","CFHS, Add line: " + //NoI18n
+						lineRegion.getID());
+				lineRegions.add(lineRegion);
+			} else {
+				if (foundFirstMatch) { //reached end of match
+					endLineNeighbour=lineRegion;
+					break;
+				}
+				else
+					beginLineNeighbour=lineRegion;
+			}
+		}
+		//add the neighbouring begin and end lines
+		lineRegions.insertElementAt(beginLineNeighbour, 0);
+		lineRegions.add(endLineNeighbour);
+		
+		return lineRegions;
+	}	
+	
+	private int findNewRegionBeginOffset(final Vector lineRegions,
+			final CollabLineRegion beginLineNeighbour)
+	{
+		int beginOffset=0;
+		
+		if(lineRegions==null || lineRegions.size()==0) return -1;
+		
+		if(beginLineNeighbour!=null)
+		{
+			Debug.log("CollabFileHandlerSupport","CFHS, blN: "+beginLineNeighbour.getID()+
+					" end: "+beginLineNeighbour.getEndOffset());//NoI18n			
+			beginOffset=beginLineNeighbour.getEndOffset();
+		}
+		/*CollabLineRegion beginLineRegion=(CollabLineRegion)lineRegions.get(0);
+		if(beginLineRegion==null) return -1;
+		beginOffset=beginLineRegion.getBeginOffset();
+		if(beginOffset!=0 && beginOffset+1==beginLineRegion.getBeginOffset())//correct beginoffset
+			beginOffset = beginLineRegion.getBeginOffset();
+
+		if(beginOffset<0) beginOffset=0;*/
+		
+		if(beginOffset<0) beginOffset=0;
+		
+		return beginOffset;
+	}
+
+	private int findNewRegionEndOffset(final Vector lineRegions, 
+			final CollabLineRegion endLineNeighbour) 
+		throws CollabException
+	{
+		int docLength=getDocument().getLength();		
+		int endOffset=docLength;
+		
+		if(lineRegions==null || lineRegions.size()==0) return -1;
+				
+		if(endLineNeighbour!=null)
+		{
+			Debug.log("CollabFileHandlerSupport","CFHS, elN: "+endLineNeighbour.getID()+
+					" begin: "+endLineNeighbour.getBeginOffset());//NoI18n
+			endOffset=endLineNeighbour.getBeginOffset()-1;
+		}
+		/*CollabLineRegion endLineRegion=
+				(CollabLineRegion)lineRegions.get(lineRegions.size()-1);
+		if(endLineRegion==null) return -1;
+		if(endOffset<endLineRegion.getEndOffset())
+			endOffset = endLineRegion.getEndOffset();
+
+		//adjust endoffset for new inserted lines or delete first line
+		if(endLineNeighbour!=null && (endOffset+1<endLineNeighbour.getBeginOffset() ||
+				endOffset>=endLineNeighbour.getBeginOffset())) {
+			Debug.log("CollabFileHandlerSupport","CFHS, elR: " +
+					endLineRegion.getID()+" end: "+ endOffset);//NoI18n
+			Debug.log("CollabFileHandlerSupport","CFHS, elN: "+endLineNeighbour.getID()+
+					" begin: "+endLineNeighbour.getBeginOffset());//NoI18n
+			endOffset=endLineNeighbour.getBeginOffset()-1;
+			if(endOffset<0) endOffset=0;
+			Debug.log("CollabFileHandlerSupport","CFHS, adjusted endOffset: "+
+					endOffset);//NoI18n
+		}*/
+
+		if(endOffset>docLength) endOffset=docLength;
+		
+		return endOffset;
+	}	
     /**
      * creates a CollabRegion, a super-class for all regions
      *

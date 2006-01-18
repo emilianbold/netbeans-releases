@@ -315,7 +315,7 @@ public class CollabRegionSupport extends Object {
      * @return interval
      */
     public int getInterval() {
-        int interval = 3;//FilesharingCollabletFactorySettings.getDefault().getLockTimeoutInterval().intValue();
+        int interval = FilesharingCollabletFactorySettings.getDefault().getLockTimeoutInterval().intValue();
 
         if ((interval < 3) || (interval > 60)) {
             interval = 3;
