@@ -93,9 +93,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
         }
         s = s.toLowerCase();
         return s.endsWith(".jpg") || s.endsWith(".gif") || // NOI18N
-        s.endsWith(".jpeg") || s.endsWith(".jpe") || // NOI18N
-        s.equals("jpg") || s.equals("gif") || // NOI18N
-        s.equals("jpeg") || s.equals("jpe"); // NOI18N
+        s.endsWith(".jpeg") || s.endsWith(".jpe") || s.endsWith(".png"); // NOI18N
     }
     
     /**
