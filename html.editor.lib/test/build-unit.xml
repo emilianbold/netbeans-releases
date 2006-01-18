@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
                 <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar"/>
                 <pathelement location="${html/editor.dir}/modules/org-netbeans-modules-html-editor-lib.jar"/>
-                
+                <pathelement location="${html/editor.dir}/modules/org-netbeans-modules-html-editor.jar"/>
             </classpath>
         </buildTests>
     </target>
@@ -59,7 +59,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.ide.commandline.suffix" value="${noscan} -nogui"/>
         <executeTests  pluginName="ide">
             <classpath>
-                <!--<pathelement location="${html/editor.dir}/modules/org-netbeans-modules-html-editor-lib.jar"/>-->
+                <pathelement location="${html/editor.dir}/modules/org-netbeans-modules-html-editor.jar"/>
             </classpath>
         </executeTests>
     </target>
