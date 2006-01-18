@@ -7,19 +7,28 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.nodes;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import org.openide.util.Mutex;
-
-import java.beans.*;
-
-import java.lang.ref.*;
-
-import java.util.*;
-
 
 /** Container for array of nodes.
 * Can be {@link Node#Node associated} with a node and then
@@ -1255,10 +1264,10 @@ public abstract class Children extends Object {
     * Each new child is added at the end of the array. The nodes are
     * returned in the order they were inserted.
     *
-    * <p>Normally you will simply create an instance of
-    * <code>Children.Array</code> and add some nodes to it.
-    * If you expect the child nodes to change dynamically,
+    * <p><strong>
+    * Directly subclassing this class is discouraged.
     * {@link Children.Keys} is preferable.
+     * </strong>
     */
     public static class Array extends Children implements Cloneable {
         /** the entry used for all nodes in the following collection
@@ -1870,6 +1879,13 @@ public abstract class Children extends Object {
     * There is a {@link #createNodes(Object) method} that should for each
     * key create an array of nodes that represents the key.
     *
+     * <p>This class is preferable to {@link Children.Array} because
+     * <ol>
+     * <li>It more clearly separates model from view and encourages use of a discrete model.
+     * <li>It correctly handles adding, removing, and reordering children while preserving
+     *     existing node selections in a tree (or other) view where possible.
+     * </ol>
+     *
     * <p>Typical usage:
     * <ol>
     * <li>Subclass.
