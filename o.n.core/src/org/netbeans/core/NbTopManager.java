@@ -7,54 +7,50 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.io.*;
+import java.awt.Dialog;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.URLStreamHandlerFactory;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.text.MessageFormat;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.TopSecurityManager;
 import org.netbeans.core.startup.MainLookup;
+import org.netbeans.core.startup.ModuleSystem;
 import org.netbeans.core.startup.layers.SessionManager;
-
-import org.openide.*;
-import org.openide.loaders.*;
-import org.openide.actions.*;
+import org.openide.ErrorManager;
+import org.openide.LifecycleManager;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.SaveCookie;
-import org.openide.modules.Dependency;
-import org.openide.modules.SpecificationVersion;
-import org.openide.explorer.*;
-import org.openide.util.*;
-import org.openide.util.io.*;
-import org.openide.nodes.*;
-import org.openide.util.lookup.*;
+import org.openide.loaders.DataObject;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-
-import org.netbeans.core.actions.*;
-import org.netbeans.TopSecurityManager;
-import org.netbeans.Module;
-import org.netbeans.core.startup.StartLog;
-import org.netbeans.core.startup.ModuleSystem;
-import org.openide.awt.HtmlBrowser;
-import org.openide.modules.ModuleInfo;
 
 /**
  * Main switchboard for the NetBeans core.
@@ -247,6 +243,10 @@ public abstract class NbTopManager {
         DataObject dobj = null;
         ArrayList bad = new ArrayList ();
         DataObject[] modifs = DataObject.getRegistry ().getModified ();
+        if (modifs.length == 0) {
+            // Do not show MSG_AllSaved
+            return;
+        }
         for (int i = 0; i < modifs.length; i++) {
             try {
                 dobj = modifs[i];
