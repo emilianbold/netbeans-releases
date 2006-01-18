@@ -7,19 +7,29 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
-import org.openide.util.WeakListeners;
-
-import java.io.*;
-
-import java.lang.ref.*;
-
-import java.util.*;
-
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /** Implementation of the file object for multi file system.
 *
@@ -483,6 +493,27 @@ final class MultiFileObject extends AbstractFolder implements FileChangeListener
         }
 
         return false;
+    }
+
+    public boolean canWrite() {
+        MultiFileSystem fs = getMultiFileSystem();
+
+        if (fs.isReadOnly()) {
+            return false;
+        }
+
+        if (!leader.canWrite()) {
+            // if we can make it writable then nothing
+            try {
+                FileSystem simple = fs.createWritableOn(getPath());
+
+                return simple == leader.getFileSystem();
+            } catch (IOException e) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /* Get the MIME type of this file.
