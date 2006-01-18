@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -192,9 +192,7 @@ final class FixedModule extends Module {
                     throw new IOException("Could not find localizing bundle: " + locbundle); // NOI18N
                 }
             } catch (IOException ioe) {
-                InvalidException e = new InvalidException(ioe.toString());
-                Util.err.annotate(e, ioe);
-                throw e;
+                throw (InvalidException) new InvalidException(ioe.toString()).initCause(ioe);
             }
         }
     }

@@ -7,17 +7,18 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup;
 
-import java.util.*;
-import javax.xml.parsers.*;
-import org.openide.*;
-import org.openide.util.*;
-import org.openide.util.lookup.Lookups;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * A special DocumentBuilderFactory that delegates to other factories till
@@ -77,9 +78,7 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
         try {
             return tryCreate();
         } catch (IllegalArgumentException e) {
-            ParserConfigurationException pce = new ParserConfigurationException(); // NOI18N
-            ErrorManager.getDefault().annotate(pce, e);
-            throw pce;
+            throw (ParserConfigurationException) new ParserConfigurationException(e.toString()).initCause(e);
         }
     }
 
@@ -89,9 +88,7 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
         try {
             tryCreate();
         } catch (ParserConfigurationException e) {
-            IllegalArgumentException iae = new IllegalArgumentException(); // NOI18N
-            ErrorManager.getDefault().annotate(iae, e);
-            throw iae;
+            throw (IllegalArgumentException) new IllegalArgumentException(e.toString()).initCause(e);
         }
     }
     
@@ -130,9 +127,6 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
         } catch (IllegalAccessException e) {
             ex = e;
         }
-        
-        ParserConfigurationException pce = new ParserConfigurationException("Broken factory"); // NOI18N
-        ErrorManager.getDefault().annotate(pce, ex);
-        throw pce;
+        throw (ParserConfigurationException) new ParserConfigurationException("Broken factory").initCause(ex); // NOI18N
     }    
 }

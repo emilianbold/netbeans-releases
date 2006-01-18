@@ -7,24 +7,33 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.api;
 
-import java.io.*;
-import java.util.*;
-import java.util.Map; // override org.apache.tools.ant.Map
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.openide.*;
-import org.openide.util.RequestProcessor;
-
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
-import org.apache.tools.ant.module.bridge.*;
+import org.apache.tools.ant.module.bridge.AntBridge;
+import org.apache.tools.ant.module.bridge.IntrospectionHelperProxy;
+import org.openide.ErrorManager;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -340,14 +349,10 @@ public final class IntrospectedInfo implements Serializable {
                 AntModule.err.log ("IntrospectedInfo: skipping " + clazzname + ": " + ncdfe);
             } catch (LinkageError e) {
                 // Not normal; if it is there it ought to be resolvable etc.
-                IOException ioe = new IOException ("Could not load class " + clazzname + ": " + e); // NOI18N
-                AntModule.err.annotate (ioe, e);
-                throw ioe;
+                throw (IOException) new IOException("Could not load class " + clazzname + ": " + e).initCause(e); // NOI18N
             } catch (RuntimeException e) {
                 // SecurityException etc. Not normal.
-                IOException ioe = new IOException ("Could not load class " + clazzname + ": " + e); // NOI18N
-                AntModule.err.annotate (ioe, e);
-                throw ioe;
+                throw (IOException) new IOException("Could not load class " + clazzname + ": " + e).initCause(e); // NOI18N
             }
         }
     }

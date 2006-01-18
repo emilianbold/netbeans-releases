@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -42,12 +42,9 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
-import org.netbeans.JarClassLoader;
-import org.netbeans.ProxyClassLoader;
 import org.openide.ErrorManager;
 import org.openide.modules.Dependency;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakSet;
 
 /** Object representing one module, possibly installed.
  * Responsible for opening of module JAR file; reading
@@ -610,9 +607,7 @@ final class StandardModule extends Module {
             classloader = new OneModuleClassLoader(classp, (ClassLoader[])loaders.toArray(new ClassLoader[loaders.size()]));
         } catch (IllegalArgumentException iae) {
             // Should not happen, but just in case.
-            IOException ioe = new IOException(iae.toString());
-            Util.err.annotate(ioe, iae);
-            throw ioe;
+            throw (IOException) new IOException(iae.toString()).initCause(iae);
         }
     }
     

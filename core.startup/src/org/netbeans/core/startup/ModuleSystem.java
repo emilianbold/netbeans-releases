@@ -7,26 +7,37 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup;
 
-import org.openide.*;
-import org.netbeans.*;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileObject;
-
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.io.*;
-import java.util.*;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import java.net.URL;
-import java.net.MalformedURLException;
-import org.openide.util.Lookup;
+import org.netbeans.DuplicateException;
+import org.netbeans.Events;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
+import org.netbeans.Util;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /** Controller of the IDE's whole module system.
  * Contains higher-level convenience methods to
@@ -314,9 +325,7 @@ public final class ModuleSystem {
                         tm = mgr.create(jar, new ModuleHistory(jar.getAbsolutePath()), true, false, false);
                     } catch (DuplicateException dupe2) {
                         // Should not happen.
-                        IOException ioe = new IOException(dupe2.toString());
-                        Util.err.annotate(ioe, dupe2);
-                        throw ioe;
+                        throw (IOException) new IOException(dupe2.toString()).initCause(dupe2);
                     }
                 }
             }

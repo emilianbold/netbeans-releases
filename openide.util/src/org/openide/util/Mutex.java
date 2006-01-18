@@ -7,23 +7,19 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.util;
 
-import org.openide.ErrorManager;
-
 import java.awt.EventQueue;
-
 import java.lang.reflect.InvocationTargetException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
+import org.openide.ErrorManager;
 
 /** Read-many/write-one lock.
 * Allows control over resources that
@@ -208,9 +204,7 @@ public final class Mutex extends Object {
             try {
                 return doEventAccess(action);
             } catch (MutexException e) {
-                InternalError err = new InternalError("Exception from non-Exception Action"); // NOI18N
-                ErrorManager.getDefault().annotate(err, e.getException());
-                throw err;
+                throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(e.getException()); // NOI18N
             }
         }
 
@@ -301,9 +295,7 @@ public final class Mutex extends Object {
             try {
                 return doEventAccess(action);
             } catch (MutexException e) {
-                InternalError err = new InternalError("Exception from non-Exception Action"); // NOI18N
-                ErrorManager.getDefault().annotate(err, e.getException());
-                throw err;
+                throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(e.getException()); // NOI18N
             }
         }
 

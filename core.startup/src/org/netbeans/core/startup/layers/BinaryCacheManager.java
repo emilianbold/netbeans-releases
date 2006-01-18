@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -261,9 +261,7 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
         try {
             return 4 + s.getBytes("UTF-8").length; // NOI18N
         } catch (UnsupportedEncodingException e) {
-            IllegalStateException ise = new IllegalStateException(e.toString());
-            LayerCacheManager.err.annotate(ise, e);
-            throw ise;
+            throw (IllegalStateException) new IllegalStateException(e.toString()).initCause(e);
         }
     }
     
@@ -310,9 +308,7 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
             try {
                 data =  str.getBytes("UTF-8"); // NOI18N
             } catch (UnsupportedEncodingException e) {
-                IllegalStateException ise = new IllegalStateException(e.toString());
-                LayerCacheManager.err.annotate(ise, e);
-                throw ise;
+                throw (IllegalStateException) new IllegalStateException(e.toString()).initCause(e);
             }
             
             writeInt(data.length);

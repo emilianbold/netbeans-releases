@@ -7,20 +7,27 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util.io;
 
+import java.awt.Image;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 import org.openide.ErrorManager;
 import org.openide.util.WeakSet;
-
-import java.awt.Image;
-
-import java.io.*;
-
-import java.util.*;
-
 
 // note: keep method NbObjectInputStream.resolveObject
 // consistent with replaceObject method
@@ -53,9 +60,7 @@ public class NbObjectOutputStream extends ObjectOutputStream {
         try {
             enableReplaceObject(true);
         } catch (SecurityException ex) {
-            IOException ioe = new IOException(ex.toString());
-            ErrorManager.getDefault().annotate(ioe, ex);
-            throw ioe;
+            throw (IOException) new IOException(ex.toString()).initCause(ex);
         }
     }
 

@@ -7,26 +7,33 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util;
 
-import org.openide.ErrorManager;
-
-import java.beans.*;
-
-import java.io.*;
-
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
-
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-
-import java.util.*;
-
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
+import org.openide.ErrorManager;
 
 /** Shared object that allows different instances of the same class
 * to share common data.
@@ -875,9 +882,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
                     msg = "<unknown object>"; // NOI18N
                 }
 
-                IllegalStateException ise = new IllegalStateException(msg);
-                err.annotate(ise, invalid);
-                throw ise;
+                throw (IllegalStateException) new IllegalStateException(msg).initCause(invalid);
             }
              // else fine
         }
@@ -891,16 +896,10 @@ public abstract class SharedClassObject extends Object implements Externalizable
                 obj.initialize();
             } catch (Exception e) {
                 invalid = e;
-
-                IllegalStateException ise = new IllegalStateException(invalid.toString() + " from " + obj); // NOI18N
-                err.annotate(ise, invalid);
-                throw ise;
+                throw (IllegalStateException) new IllegalStateException(invalid.toString() + " from " + obj).initCause(invalid); // NOI18N
             } catch (LinkageError e) {
                 invalid = e;
-
-                IllegalStateException ise = new IllegalStateException(invalid.toString() + " from " + obj); // NOI18N
-                err.annotate(ise, invalid);
-                throw ise;
+                throw (IllegalStateException) new IllegalStateException(invalid.toString() + " from " + obj).initCause(invalid); // NOI18N
             } finally {
                 initializeInProgress = false;
             }

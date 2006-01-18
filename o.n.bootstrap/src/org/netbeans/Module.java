@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -33,7 +33,6 @@ import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakSet;
 
 /** Object representing one module, possibly installed.
  * Responsible for opening of module JAR file; reading
@@ -274,9 +273,7 @@ public abstract class Module extends ModuleInfo {
                 try {
                     specVers = new SpecificationVersion(specVersS);
                 } catch (NumberFormatException nfe) {
-                    InvalidException ie = new InvalidException("While parsing OpenIDE-Module-Specification-Version: " + nfe.toString()); // NOI18N
-                    Util.err.annotate(ie, nfe);
-                    throw ie;
+                    throw (InvalidException)new InvalidException("While parsing OpenIDE-Module-Specification-Version: " + nfe.toString()).initCause(nfe); // NOI18N
                 }
             } else {
                 specVers = null;
@@ -400,9 +397,7 @@ public abstract class Module extends ModuleInfo {
             mgr.refineDependencies(this, dependencies);
             dependenciesA = (Dependency[])dependencies.toArray(new Dependency[dependencies.size()]);
         } catch (IllegalArgumentException iae) {
-            InvalidException ie = new InvalidException("While parsing a dependency attribute: " + iae.toString()); // NOI18N
-            Util.err.annotate(ie, iae);
-            throw ie;
+            throw (InvalidException) new InvalidException("While parsing a dependency attribute: " + iae.toString()).initCause(iae); // NOI18N
         }
     }
 

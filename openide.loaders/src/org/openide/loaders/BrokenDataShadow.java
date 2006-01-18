@@ -7,36 +7,43 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.io.*;
-import java.text.MessageFormat;
-import java.lang.reflect.*;
+import java.io.IOException;
 import java.lang.ref.Reference;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.List;
+import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.openide.ErrorManager;
-
-import org.openide.filesystems.*;
-import org.openide.nodes.Node;
-import org.openide.nodes.Sheet;
-import org.openide.nodes.PropertySupport;
-import org.openide.util.HelpCtx;
+import org.openide.actions.CopyAction;
+import org.openide.actions.CutAction;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.PropertiesAction;
+import org.openide.actions.ToolsAction;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
 import org.openide.nodes.Children;
-import org.openide.util.actions.*;
-import org.openide.actions.*;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.SystemAction;
 
 /** For representing data shadows with broken link to original file.
 * Since 1.13 it extends MultiDataObject.
@@ -382,9 +389,7 @@ final class BrokenDataShadow extends MultiDataObject {
                     DataShadow.writeOriginal(bds.getPrimaryFile(), u);
                     bds.url = u;
                 } catch (IOException ex) {
-                    IllegalArgumentException e = new IllegalArgumentException (ex.getMessage ());
-                    org.openide.ErrorManager.getDefault ().annotate (e, ex);
-                    throw e;
+                    throw (IllegalArgumentException) new IllegalArgumentException(ex.toString()).initCause(ex);
                 }
                 bds.refresh ();
             }

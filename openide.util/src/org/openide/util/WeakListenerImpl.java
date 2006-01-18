@@ -7,26 +7,33 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.util;
 
-import org.openide.ErrorManager;
+package org.openide.util;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-
-import java.beans.*;
-
-import java.lang.ref.*;
-import java.lang.reflect.*;
-
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 import java.util.EventListener;
 import java.util.EventObject;
-
-import javax.swing.event.*;
-
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.openide.ErrorManager;
 
 /**
  * A listener wrapper that delegates to another listener but hold
@@ -369,9 +376,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
 
                 proxy = p;
             } catch (Exception ex) {
-                IllegalStateException e = new IllegalStateException(ex.getMessage());
-                ErrorManager.getDefault().annotate(e, ex);
-                throw e;
+                throw (IllegalStateException) new IllegalStateException(ex.toString()).initCause(ex);
             }
         }
 

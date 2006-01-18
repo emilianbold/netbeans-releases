@@ -7,25 +7,36 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup.layers;
 
-import java.beans.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.lang.reflect.Constructor;
-import java.net.*;
-import java.util.*;
-
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import org.netbeans.core.startup.StartLog;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.util.NbBundle;
-
-import org.netbeans.core.startup.StartLog;
 import org.openide.filesystems.Repository;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /** Layered file system serving itself as either the user or installation layer.
@@ -101,9 +112,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
                 err.log("Using cache manager of type " + managerName + " in " + cacheDir);
                 return mgr;
             } catch (Exception e) {
-                IOException ioe = new IOException(e.toString());
-                err.annotate(ioe, e);
-                throw ioe;
+                throw (IOException) new IOException(e.toString()).initCause(e);
             }
         } else {
             err.log("No cache manager");

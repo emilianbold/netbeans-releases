@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -153,9 +153,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
         } catch (IOException ioe) {
             throw ioe;
         } catch (Exception e) {
-            IOException ioe = new IOException(e.toString());
-            LayerCacheManager.err.annotate(ioe, e);
-            throw ioe;
+            throw (IOException) new IOException(e.toString()).initCause(e);
         } finally {
             fileCount = folderCount = attrCount = 0;
             base = null;
@@ -202,9 +200,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
                 try {
                     file.ref = new URL(base, u);
                 } catch (MalformedURLException mfue) {
-                    SAXException saxe = new SAXException(mfue.toString());
-                    LayerCacheManager.err.annotate(saxe, mfue);
-                    throw saxe;
+                    throw (SAXException) new SAXException(mfue.toString()).initCause(mfue);
                 }
             } else {
                 file.ref = null;

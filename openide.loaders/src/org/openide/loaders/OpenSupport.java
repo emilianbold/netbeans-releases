@@ -7,28 +7,33 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.beans.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.io.ObjectInputStream;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-
-import org.openide.filesystems.*;
-import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.CloneableOpenSupport;
-import org.openide.util.WeakSet;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakSet;
+import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.CloneableTopComponent;
 
 /** Simple support for an openable file.
 * Can be used either as an {@link org.openide.cookies.OpenCookie},
@@ -139,11 +144,7 @@ public abstract class OpenSupport extends CloneableOpenSupport {
             try {
                 fs = obj.getPrimaryFile().getFileSystem();
             } catch(FileStateInvalidException fsie) {
-                IllegalStateException ise = new IllegalStateException(
-                    "FileSystem is invalid for " + obj.getPrimaryFile() + "!" // NOI18N
-                );
-                org.openide.ErrorManager.getDefault().annotate(ise, fsie);
-                throw ise;
+                throw (IllegalStateException) new IllegalStateException("FileSystem is invalid for " + obj.getPrimaryFile() + "!").initCause(fsie); // NOI18N
             }
 
             FileSystemNameListener fsListener;

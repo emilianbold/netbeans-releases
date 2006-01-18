@@ -7,25 +7,31 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.projects;
 
-import org.netbeans.core.startup.layers.SessionManager;
-import org.openide.util.WeakListeners;
-import org.openide.filesystems.*;
-
-import java.util.WeakHashMap;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Iterator;
-import java.lang.ref.WeakReference;
-import java.io.IOException;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import org.openide.ErrorManager;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.WeakHashMap;
+import org.netbeans.core.startup.layers.SessionManager;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 
 /** Scans positions of FileObject-delegates for FileObjects from SystemFileSystem. Each
  *
@@ -402,9 +408,7 @@ final class FileStateManager {
                         return i;
                 }
             } catch (FileStateInvalidException e) {
-                IllegalStateException ex = new IllegalStateException ("Invalid file - " + fo); // NOI81N
-                ErrorManager.getDefault ().annotate (ex, e);
-                throw ex;
+                throw (IllegalStateException) new IllegalStateException("Invalid file - " + fo).initCause(e); // NOI18N
             }
             return -1;
 //            throw new IllegalStateException ("File isn't from any layer in DefaultFileSystem - " + fo); // NOI18N

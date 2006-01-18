@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,17 +19,11 @@ import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.ErrorManager;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
 /** Important places in the system.
 *
@@ -146,10 +140,7 @@ public final class NbPlaces extends Object {
             DataFolder df = DataFolder.findFolder(fo);
             return df;
         } catch (IOException ex) {
-            IllegalStateException e = new IllegalStateException(
-                "Folder not found and cannot be created: " + name); // NOI18N
-            ErrorManager.getDefault ().annotate (e, ex);
-            throw e;
+            throw (IllegalStateException) new IllegalStateException("Folder not found and cannot be created: " + name).initCause(ex); // NOI18N
         }
     }
 

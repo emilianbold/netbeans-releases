@@ -7,14 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.ui;
 
 import javax.swing.Action;
-import org.openide.ErrorManager;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.MoveDownAction;
 import org.openide.actions.MoveUpAction;
@@ -27,17 +26,16 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.loaders.TemplateWizard;
 import org.openide.loaders.XMLDataObject;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
+import org.openide.util.actions.SystemAction;
 
 /** Node that displays the content of Services directory and let's user 
 * customize it.
@@ -222,9 +220,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
             
             return DataFolder.findFolder (fo);
         } catch (java.io.IOException ex) {
-            IllegalStateException e = new IllegalStateException (ex.getMessage ());
-            ErrorManager.getDefault ().annotate (e, ex);
-            throw e;
+            throw (IllegalStateException) new IllegalStateException(ex.toString()).initCause(ex);
         }
     }
 

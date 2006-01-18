@@ -7,29 +7,36 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup;
-import java.beans.*;
-import java.io.*;
+import java.beans.Introspector;
+import java.beans.PropertyEditorManager;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
-import javax.swing.*;
-
-import org.openide.*;
-import org.openide.filesystems.*;
-import org.openide.modules.SpecificationVersion;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.Repository;
 import org.openide.modules.Dependency;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
-import java.net.URL;
-import org.openide.modules.InstalledFileLocator;
 
 /**
  * Main class for NetBeans when run in GUI mode.
@@ -193,9 +200,7 @@ public final class Main extends Object {
                 moduleSystem = new ModuleSystem(Repository.getDefault().getDefaultFileSystem());
             } catch (IOException ioe) {
                 // System will be screwed up.
-                IllegalStateException ise = new IllegalStateException("Module system cannot be created"); // NOI18N
-                ErrorManager.getDefault().annotate(ise, ioe);
-                throw ise;
+                throw (IllegalStateException) new IllegalStateException("Module system cannot be created").initCause(ioe); // NOI18N
             }
             StartLog.logProgress ("ModuleSystem created"); // NOI18N
         }

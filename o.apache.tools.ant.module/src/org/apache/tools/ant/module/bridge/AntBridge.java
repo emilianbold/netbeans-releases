@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -519,18 +519,14 @@ public final class AntBridge {
                 defs.put(name, clazz);
             } catch (ClassNotFoundException cnfe) {
                 // This is not normal. If the class is mentioned, it should be there.
-                IOException ioe = new IOException("Could not load class " + clazzname + ": " + cnfe); // NOI18N
-                err.annotate(ioe, cnfe);
-                throw ioe;
+                throw (IOException) new IOException("Could not load class " + clazzname + ": " + cnfe).initCause(cnfe); // NOI18N
             } catch (NoClassDefFoundError ncdfe) {
                 // Normal for e.g. tasks dumped there by disabled modules.
                 // Cf. #36702 for possible better solution.
                 err.log("AntBridge.loadDefs: skipping " + clazzname + ": " + ncdfe);
             } catch (LinkageError e) {
                 // Not normal; if it is there it ought to be resolvable etc.
-                IOException ioe = new IOException("Could not load class " + clazzname + ": " + e); // NOI18N
-                err.annotate(ioe, e);
-                throw ioe;
+                throw (IOException) new IOException("Could not load class " + clazzname + ": " + e).initCause(e); // NOI18N
             }
         }
     }

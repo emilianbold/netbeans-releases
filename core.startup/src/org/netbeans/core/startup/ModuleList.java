@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,6 +37,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import org.netbeans.DuplicateException;
+import org.netbeans.Events;
+import org.netbeans.InvalidException;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
+import org.netbeans.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -57,7 +63,6 @@ import org.openide.util.io.NbObjectInputStream;
 import org.openide.util.io.NbObjectOutputStream;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
-import org.netbeans.*;
 import org.xml.sax.Attributes;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
@@ -166,9 +171,7 @@ final class ModuleList {
                                 try {
                                     reader = XMLUtil.createXMLReader();
                                 } catch(SAXException e) {
-                                    IllegalStateException ise = new IllegalStateException(e.toString());
-                                    Util.err.annotate(ise, e);
-                                    throw ise;
+                                    throw (IllegalStateException) new IllegalStateException(e.toString()).initCause(e);
                                 }
                                 reader.setEntityResolver(listener);
                                 reader.setErrorHandler(listener);
@@ -639,9 +642,7 @@ final class ModuleList {
                             m.put(paramName, processStatusParam(paramName, data.toString()));
                         } catch (NumberFormatException nfe) {
                             // From either Integer or SpecificationVersion constructors.
-                            SAXException saxe = new SAXException(nfe.toString());
-                            Util.err.annotate(saxe, nfe);
-                            throw saxe;
+                            throw (SAXException) new SAXException(nfe.toString()).initCause(nfe);
                         }
 
                         data.setLength(0);
@@ -1502,9 +1503,7 @@ final class ModuleList {
                         try {
                             dirtyprops.put(cnb, readStatus(src, null));
                         } catch (SAXException saxe) {
-                            IOException ioe = new IOException(saxe.toString());
-                            Util.err.annotate(ioe, saxe);
-                            throw ioe;
+                            throw (IOException) new IOException(saxe.toString()).initCause(saxe);
                         }
                     } finally {
                         is.close();
@@ -1556,9 +1555,7 @@ final class ModuleList {
                     } catch (DuplicateException dupe) {
                         // XXX should this be tolerated somehow? In case the original is
                         // in fact scheduled for deletion anyway?
-                        IOException ioe = new IOException(dupe.toString());
-                        Util.err.annotate(ioe, dupe);
-                        throw ioe;
+                        throw (IOException) new IOException(dupe.toString()).initCause(dupe);
                     }
                     m.addPropertyChangeListener(this);
                     // Mark the status as disabled for the moment, so in step 3 it will be turned on

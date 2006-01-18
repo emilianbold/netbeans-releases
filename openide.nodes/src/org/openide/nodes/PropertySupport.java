@@ -7,21 +7,19 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.nodes;
 
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
+package org.openide.nodes;
 
 import java.beans.Beans;
 import java.beans.PropertyEditor;
-
-import java.lang.reflect.*;
-
-import java.security.*;
-
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /** Support class for <code>Node.Property</code>.
 *
@@ -255,10 +253,7 @@ public abstract class PropertySupport extends Node.Property {
                 sb.append(valideInstance.getClass().getName());
                 sb.append(" Problem:");
                 sb.append(iae.getMessage());
-
-                IllegalArgumentException nue = new IllegalArgumentException(sb.toString());
-                ErrorManager.getDefault().annotate(nue, iae);
-                throw nue;
+                throw (IllegalArgumentException) new IllegalArgumentException(sb.toString()).initCause(iae);
             }
         }
 

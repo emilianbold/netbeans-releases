@@ -7,19 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.nodes;
 
-import org.openide.ErrorManager;
-import org.openide.util.HelpCtx;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
-import org.openide.util.actions.SystemAction;
-
 import java.awt.Image;
-
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.Beans;
@@ -34,16 +27,17 @@ import java.beans.PropertyDescriptor;
 import java.beans.beancontext.BeanContext;
 import java.beans.beancontext.BeanContextChild;
 import java.beans.beancontext.BeanContextProxy;
-
 import java.io.IOException;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
-
 import javax.swing.Action;
+import org.openide.ErrorManager;
+import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.SystemAction;
 
 
 /** Represents one JavaBean in the nodes hierarchy.
@@ -139,10 +133,7 @@ public class BeanNode extends AbstractNode {
     }
 
     private static IntrospectionException mkie(Throwable t) {
-        IntrospectionException ie = new IntrospectionException(t.toString());
-        ErrorManager.getDefault().annotate(ie, t);
-
-        return ie;
+        return (IntrospectionException) new IntrospectionException(t.toString()).initCause(t);
     }
 
     /** Set whether or not to keep the node name and Bean name synchronized automatically.
