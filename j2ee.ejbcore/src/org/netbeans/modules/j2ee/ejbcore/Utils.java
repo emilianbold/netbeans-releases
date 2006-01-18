@@ -54,10 +54,10 @@ import org.openide.loaders.DataObject;
 
 
 public class Utils {
-
+    
     private static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
     private static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N;
-
+    
     public static String toClasspathString(File[] classpathEntries) {
         if (classpathEntries == null) {
             return "";
@@ -71,14 +71,14 @@ public class Utils {
         }
         return classpath.toString();
     }
-
+    
     public static void notifyError(Exception ex) {
         NotifyDescriptor ndd = new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
         DialogDisplayer.getDefault().notify(ndd);
     }
-
+    
     public static void mergeSteps(WizardDescriptor wizard, WizardDescriptor.Panel[] panels, String[] steps) {
-        Object prop = wizard.getProperty (WIZARD_PANEL_CONTENT_DATA);
+        Object prop = wizard.getProperty(WIZARD_PANEL_CONTENT_DATA);
         String[] beforeSteps;
         int offset;
         if (prop instanceof String[]) {
@@ -97,7 +97,7 @@ public class Utils {
         }
         setSteps(panels, steps, resultSteps, offset);
     }
-
+    
     private static void setSteps(WizardDescriptor.Panel[] panels, String[] steps, String[] resultSteps, int offset) {
         int n = steps == null ? 0 : steps.length;
         for (int i = 0; i < panels.length; i++) {
@@ -106,17 +106,17 @@ public class Utils {
             if (step == null) {
                 step = component.getName();
             }
-            component.putClientProperty (WIZARD_PANEL_CONTENT_DATA, resultSteps);
+            component.putClientProperty(WIZARD_PANEL_CONTENT_DATA, resultSteps);
             component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(i));
-            component.getAccessibleContext().setAccessibleDescription (step);
+            component.getAccessibleContext().setAccessibleDescription(step);
             resultSteps[i + offset] = step;
         }
     }
-
+    
     public static void setSteps(WizardDescriptor.Panel[] panels, String[] steps) {
         setSteps(panels, steps, steps, 0);
     }
-
+    
     /**
      * JMI transaction must be started and JMI classpath must be set to use this method
      */
@@ -135,16 +135,16 @@ public class Utils {
             }
         }
     }
-
+    
     /**
      * JMI transaction must be started and JMI classpath must be set to use this method
      */
-    public static boolean isModified(JavaClass ce) {        
+    public static boolean isModified(JavaClass ce) {
         DataObject dataObject = JavaMetamodel.getManager().getDataObject(ce.getResource());
         assert dataObject != null: ("DataObject not found for " + ce.getName());
         return dataObject.isModified();
     }
-
+    
     public static boolean areInSameJ2EEApp(Project p1, Project p2) {
         Set globalPath = GlobalPathRegistry.getDefault().getSourceRoots();
         Iterator iter = globalPath.iterator();
@@ -164,7 +164,7 @@ public class Utils {
                         if (affectedPrjProvider1 != null && affectedPrjProvider2 != null) {
                             List childModules = Arrays.asList(j2eeModules);
                             if (childModules.contains(affectedPrjProvider1) &&
-                                childModules.contains(affectedPrjProvider2)) {
+                                    childModules.contains(affectedPrjProvider2)) {
                                 return true;
                             }
                         }
@@ -174,55 +174,55 @@ public class Utils {
         }
         return false;
     }
-
+    
     // =========================================================================
-
+    
     // utils for ejb code synchronization
     
     public static boolean canExposeInLocal(Method me) {
-        boolean signatureOk = 
-            Modifier.isPublic(me.getModifiers()) &&
-	    !Modifier.isProtected(me.getModifiers()) &&
-	    !Modifier.isPrivate(me.getModifiers()) &&
-            !Modifier.isStatic(me.getModifiers());
+        boolean signatureOk =
+                Modifier.isPublic(me.getModifiers()) &&
+                !Modifier.isProtected(me.getModifiers()) &&
+                !Modifier.isPrivate(me.getModifiers()) &&
+                !Modifier.isStatic(me.getModifiers());
         if (signatureOk) {
             ClassDefinition clzDef = me.getDeclaringClass();
-            EjbMethodController c = (clzDef instanceof JavaClass)? 
+            EjbMethodController c = (clzDef instanceof JavaClass)?
                 EjbMethodController.createFromClass((JavaClass)clzDef):
-                null; 
+                null;
             return c != null &&
-                   c.hasLocal() &&
-                   !c.hasMethodInInterface(me, c.getMethodTypeFromImpl(me), true);
+                    c.hasLocal() &&
+                    !c.hasMethodInInterface(me, c.getMethodTypeFromImpl(me), true);
         }
         return false;
     }
-
+    
     
     public static void exposeInLocal(Method method) {
-        EjbMethodController c = EjbMethodController.create(method); 
+        EjbMethodController c = EjbMethodController.create(method);
         c.createAndAddInterface(method, true);
     }
     
     public static boolean canExposeInRemote(Method me) {
-        boolean signatureOk = 
-            Modifier.isPublic(me.getModifiers()) &&
-	    !Modifier.isProtected(me.getModifiers()) &&
-	    !Modifier.isPrivate(me.getModifiers()) &&
-            !Modifier.isStatic(me.getModifiers());
+        boolean signatureOk =
+                Modifier.isPublic(me.getModifiers()) &&
+                !Modifier.isProtected(me.getModifiers()) &&
+                !Modifier.isPrivate(me.getModifiers()) &&
+                !Modifier.isStatic(me.getModifiers());
         if (signatureOk) {
             ClassDefinition clzDef = me.getDeclaringClass();
-            EjbMethodController c = (clzDef instanceof JavaClass)? 
+            EjbMethodController c = (clzDef instanceof JavaClass)?
                 EjbMethodController.createFromClass((JavaClass)clzDef):
-                null; 
+                null;
             return c != null &&
-                   c.hasRemote() &&
-                   !c.hasMethodInInterface(me, c.getMethodTypeFromImpl(me), false);
+                    c.hasRemote() &&
+                    !c.hasMethodInInterface(me, c.getMethodTypeFromImpl(me), false);
         }
         return false;
     }
-
+    
     public static void exposeInRemote(Method me) {
-        EjbMethodController c = EjbMethodController.create(me); 
+        EjbMethodController c = EjbMethodController.create(me);
         c.createAndAddInterface(me, false);
     }
     
@@ -241,6 +241,7 @@ public class Utils {
         }
         
         try {
+            String orgRefName = ejbRefName;
             if (remote) {
                 EjbRef ejbRef = ref.createRef();
                 if (ejbRefName != null) {
@@ -251,8 +252,9 @@ public class Utils {
                     MethodImpl lookupMethodImpl = (MethodImpl) ref.generateJNDILookup(ejbRef, throwExceptions);
                     JavaModelPackage jmp = (JavaModelPackage) beanClass.refImmediatePackage();
                     Method methodToAdd = (Method) lookupMethodImpl.duplicate(jmp);
+                    generateUniqueMethodName(beanClass, methodToAdd, orgRefName);
                     beanClass.getContents().add(methodToAdd);
-		    JMIUtils.openInEditor(methodToAdd.getBody());
+                    JMIUtils.openInEditor(methodToAdd.getBody());
                 } else {
                     ref.generateServiceLocatorLookup(ejbRef, throwExceptions,
                             beanClass, serviceLocatorStrategy);
@@ -267,12 +269,15 @@ public class Utils {
                     MethodImpl lookupMethodImpl = (MethodImpl) ref.generateJNDILookup(ejbLocalRef, throwExceptions);
                     JavaModelPackage jmp = (JavaModelPackage) beanClass.refImmediatePackage();
                     Method methodToAdd = (Method) lookupMethodImpl.duplicate(jmp);
+                    // fixes #70329
+                    generateUniqueMethodName(beanClass, methodToAdd, orgRefName);
                     beanClass.getContents().add(methodToAdd);
-		    JMIUtils.openInEditor(methodToAdd.getBody());
+                    JMIUtils.openInEditor(methodToAdd.getBody());
                 } else {
                     ref.generateServiceLocatorLookup(ejbLocalRef, throwExceptions,
                             beanClass, serviceLocatorStrategy);
                 }
+                
             }
             if (serviceLocator != null) {
                 erc.setServiceLocatorName(serviceLocator);
@@ -283,12 +288,11 @@ public class Utils {
             ErrorManager.getDefault().notify(jmie);
         }
     }
-    
     /** Returns list of all EJB projects that can be called from the caller project.
      *
      * @param enterpriseProject the caller enterprise project
      */
-    public static Project [] getCallableEjbProjects (Project enterpriseProject) {
+    public static Project [] getCallableEjbProjects(Project enterpriseProject) {
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
         
         boolean isCallerEJBModule = false;
@@ -310,11 +314,39 @@ public class Utils {
                 isEJBModule = true;
             }
             if ((isEJBModule && !isCallerFreeform) ||
-                (isCallerFreeform && enterpriseProject.equals(allProjects[i]))) {
+                    (isCallerFreeform && enterpriseProject.equals(allProjects[i]))) {
                 filteredResults.add(allProjects[i]);
             }
         }
         return (Project []) filteredResults.toArray(new Project[filteredResults.size()]);
+    }
+    
+    /**
+     * Generates and sets an unique name for given method.
+     * @param beanClass the JavaClass which existing methods are checked for conflicts.
+     * @param method the method for which generated name will be set.
+     * @param orgRefName original name of the ejb reference.
+     */
+    private static void generateUniqueMethodName(JavaClass beanClass, Method method, String orgRefName){
+        orgRefName = orgRefName.substring(orgRefName.lastIndexOf('/') + 1);
+        // resolves the "original" name of the method, i.e. the name the method would
+        // have if there was no additional lookups generated.
+        String orgMethodName = 
+                method.getName().substring(0, method.getName().lastIndexOf(orgRefName) + orgRefName.length());
+
+        Method[] existing = JMIUtils.getMethods(beanClass);
+        List existingMethodNames = new ArrayList();
+        
+        for (int i = 0; i < existing.length; i++) {
+            existingMethodNames.add(existing[i].getName());
+        }
+        
+        int uniquefier = 1;
+        String newName = orgMethodName;
+        while (existingMethodNames.contains(newName)){
+            newName = orgMethodName + uniquefier++;
+        }
+        method.setName(newName);
     }
     
 }
