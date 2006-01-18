@@ -21,15 +21,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-apache-tools-ant-module-run-StopBuildingAction.instance"/>
         </folder>
     </folder>
-    <folder name="OptionsDialog"> <!-- XXX #71280: should not be necessary but currently is -->
-        <folder name="Actions">
-            <folder name="Build">
-                <file name="org-apache-tools-ant-module-run-RunLastTargetAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Build/org-apache-tools-ant-module-run-RunLastTargetAction.instance"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
     
     <folder name="Menu">
         <folder name="BuildProject">
@@ -156,11 +147,19 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    
     <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="Ant.instance">
                 <attr name="instanceClass" stringvalue="org.apache.tools.ant.module.AntOption"/>
             </file>
+        </folder>
+        <folder name="Actions"> <!-- XXX #71280: should not be necessary but currently is -->
+            <folder name="Build">
+                <file name="org-apache-tools-ant-module-run-RunLastTargetAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Build/org-apache-tools-ant-module-run-RunLastTargetAction.instance"/>
+                </file>
+            </folder>
         </folder>
    </folder>
 
