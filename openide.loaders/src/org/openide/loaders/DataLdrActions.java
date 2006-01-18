@@ -7,26 +7,21 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.beans.*;
-import java.io.*;
-import java.util.*;
-
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.*;
-import org.openide.nodes.NodeOp;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
-import org.openide.util.Utilities;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.io.SafeException;
 
 /** Manages actions read and write for a given loader.
  *
