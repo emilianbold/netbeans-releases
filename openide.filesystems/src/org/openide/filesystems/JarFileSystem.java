@@ -7,29 +7,46 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights ReFserved.
  */
+
 package org.openide.filesystems;
 
-import org.openide.filesystems.*;
-import org.openide.util.*;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.lang.ref.*;
-
-import java.util.*;
-import java.util.jar.*;
-import java.util.zip.*;
-
+import java.beans.PropertyVetoException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.zip.ZipException;
+import org.openide.util.Enumerations;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /** A virtual filesystem based on a JAR archive.
 * <p>For historical reasons many AbstractFileSystem.* methods are implemented
 * as protected in this class. Do not call them! Subclasses might override
 * them, or (better) use delegation.
+ * <p><strong>Most module code should never create an instance of this class directly.</strong>
+ * Use {@link FileUtil#getArchiveRoot(FileObject)} instead.</p>
 * @author Jan Jancura, Jaroslav Tulach, Petr Hamernik, Radek Matous
 */
 public class JarFileSystem extends AbstractFileSystem {
@@ -87,6 +104,8 @@ public class JarFileSystem extends AbstractFileSystem {
 
     /**
     * Default constructor.
+     * <p><strong>Most module code should never create an instance of this class directly.</strong>
+     * Use {@link FileUtil#getArchiveRoot(FileObject)} instead.</p>
     */
     public JarFileSystem() {
         Impl impl = new Impl(this);

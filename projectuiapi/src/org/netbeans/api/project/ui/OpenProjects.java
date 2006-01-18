@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -107,8 +107,13 @@ public final class OpenProjects {
      * <div class="nonnormative">
      * <p><strong>Warning:</strong> the set of usecases that require invoking this method is
      * limited. {@link org.netbeans.spi.project.ui.support.MainProjectSensitiveActions} should
-     * be used in favour of this method if possible. In particular, this method should not
-     * be used to let user choose if an action should be run over main or current project.</p>
+     * be used in favour of this method if possible. In particular, this method should <em>not</em>
+     * be used to let the user choose if an action should be run on the main vs. the currently selected project.</p>
+     * <p>As a rule of thumb, any code outside of the project system infrastructure which behaves differently
+     * depending on the choice of main project should be reviewed critically. All functionality
+     * of a project ought to be available regardless of the "main project" flag, which is intended only
+     * as a convenient shortcut to permit certain actions (such as <b>Run</b>) to be invoked
+     * from a global context on a preselected project.</p>
      * </div>
      *
      * @return the current main project or null if none
@@ -123,7 +128,8 @@ public final class OpenProjects {
      * <div class="nonnormative">
      * <p><strong>Warning:</strong> the set of usecases that require invoking this method is
      * very limited and should be generally avoided if possible. In particular, this method
-     * should not be used to set project created by the New Project Wizard as main.</p>
+     * should <em>not</em> be used to mark a project just created by the <b>New Project</b> wizard
+     * as the main project.</p>
      * </div>
      *
      * @param project project to set as main project (must be open), or
