@@ -14,8 +14,11 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="Configuration of web project unit tests">
-    
+
+<!--
     <testbag testattribs="stable" executor="ide" name="web/project">
+-->
+    <testbag testattribs="stable" executor="unit-executor" name="web/project">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
@@ -23,7 +26,10 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>    
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+<!--
     <executor name="ide" antfile="build-unit.xml" target="runidetest"/>    
+-->
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
     
 </mconfig>
