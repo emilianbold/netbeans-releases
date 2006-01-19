@@ -13,18 +13,11 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="unit test config">
-
-    <testbag testattribs="stable" executor="ide" name="XML DocumentModel test">
+    
+    <testbag testattribs="stable" executor="code" name="XML editor tests">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/modules/xml/text/structure/*Test.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    <testbag testattribs="stable" executor="code" name="XML Indenatation test">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="org/netbeans/modules/xml/text/indent/*Test.class"/>
+                <include name="**/*Test.class"/>
             </patternset>
         </testset>
     </testbag>
