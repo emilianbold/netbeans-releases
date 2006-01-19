@@ -25,7 +25,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
-import javax.swing.UIManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -265,18 +264,9 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             return IMPORTANT_FILES_NAME;
         }
         
-        private static final String ICON_KEY_UIMANAGER = "Nb.Explorer.Folder.icon"; // NOI18N
-        private static final String OPENED_ICON_KEY_UIMANAGER = "Nb.Explorer.Folder.openedIcon"; // NOI18N
-        private static final String ICON_PATH = "org/netbeans/modules/apisupport/project/resources/defaultFolder.gif"; // NOI18N
-        private static final String OPENED_ICON_PATH = "org/netbeans/modules/apisupport/project/resources/defaultFolderOpen.gif"; // NOI18N
-        
         private Image getIcon(boolean opened) {
-            Image base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
-            if (base == null) {
-                base = Utilities.loadImage(opened ? OPENED_ICON_PATH : ICON_PATH, true);
-            }
             Image badge = Utilities.loadImage("org/netbeans/modules/apisupport/project/resources/config-badge.gif", true);
-            return Utilities.mergeImages(base, badge, 8, 8);
+            return Utilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 8, 8);
         }
         
         private static final String DISPLAY_NAME = NbBundle.getMessage(ModuleLogicalView.class, "LBL_important_files");

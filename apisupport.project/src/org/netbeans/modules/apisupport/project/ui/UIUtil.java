@@ -14,6 +14,9 @@
 package org.netbeans.modules.apisupport.project.ui;
 
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -39,6 +42,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
@@ -74,6 +78,13 @@ import org.openide.util.Utilities;
  * @author Martin Krauskopf
  */
 public final class UIUtil {
+    
+    private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon"; // NOI18N
+    private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.openedIcon"; // NOI18N
+    private static final String ICON_PATH = "org/netbeans/modules/apisupport/project/resources/defaultFolder.gif"; // NOI18N
+    private static final String OPENED_ICON_PATH = "org/netbeans/modules/apisupport/project/resources/defaultFolderOpen.gif"; // NOI18N
     
     private UIUtil() {}
     
@@ -351,7 +362,7 @@ public final class UIUtil {
         
     }
     
-    /** 
+    /**
      * Returns path relative to the root of the SFS. May return
      * <code>null</code> for empty String or user's custom non-string items.
      * Also see {@link Util#isValidSFSPath(String)}.
@@ -395,9 +406,9 @@ public final class UIUtil {
             } else if (nmtp.getModuleType() == NbModuleTypeProvider.SUITE_COMPONENT) {
                 Object[] params = new Object[] {
                     ProjectUtils.getInformation(project).getDisplayName(),
-                            getSuiteProjectName(project),
-                            getSuiteProjectDirectory(project),
-                            ProjectUtils.getInformation(suite).getDisplayName(),
+                    getSuiteProjectName(project),
+                    getSuiteProjectDirectory(project),
+                    ProjectUtils.getInformation(suite).getDisplayName(),
                 };
                 NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(
                         NbBundle.getMessage(UIUtil.class, "MSG_MoveFromSuiteToSuite", params),
@@ -416,7 +427,7 @@ public final class UIUtil {
         }
         return suiteComponent;
     }
-
+    
     /**
      * Appropriately renders {@link Project}s. For others instances delegates
      * to {@link DefaultListCellRenderer}.
@@ -434,6 +445,44 @@ public final class UIUtil {
                 return this;
             }
         };
+    }
+    
+    /**
+     * Returns default folder icon as {@link java.awt.Image}. Never returns
+     * <code>null</code>.
+     *
+     * @param opened wheter closed or opened icon should be returned.
+     */
+    public static Image getTreeFolderIcon(boolean opened) {
+        Image base = null;
+        Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
+        if (baseIcon != null) {
+            base = UIUtil.convertToImage(baseIcon);
+        } else {
+            base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
+            if (base == null) { // fallback to our owns
+                base = Utilities.loadImage(opened ? OPENED_ICON_PATH : ICON_PATH, true);
+            }
+        }
+        assert base != null;
+        return base;
+    }
+    
+    /**
+     * Converts given icon to a {@link java.awt.Image}.
+     *
+     * @param icon {@link javax.swing.Icon} to be converted.
+     */
+    public static Image convertToImage(final Icon icon) {
+        if (icon instanceof ImageIcon) {
+            return ((ImageIcon) icon).getImage();
+        } else {
+            BufferedImage bImage = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics g = bImage.getGraphics();
+            icon.paintIcon(new JLabel(), g, 0, 0);
+            g.dispose();
+            return bImage;
+        }
     }
     
     /**
@@ -517,4 +566,3 @@ public final class UIUtil {
     }
     
 }
-

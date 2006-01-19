@@ -169,11 +169,6 @@ public final class SuiteLogicalView implements LogicalViewProvider {
     /** Represent <em>Modules</em> node in the Suite Logical View. */
     static final class ModulesNode extends AbstractNode {
         
-        public static final String SUITE_MODULES_ICON_PATH =
-                "org/netbeans/modules/apisupport/project/suite/resources/suiteModules.gif"; // NOI18N
-        public static final String SUITE_MODULES_OPENED_ICON_PATH =
-                "org/netbeans/modules/apisupport/project/suite/resources/suiteModulesOpened.gif"; // NOI18N
-        
         private SuiteProject suite;
         
         ModulesNode(final SuiteProject suite) {
@@ -191,12 +186,17 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             };
         }
         
+        private Image getIcon(boolean opened) {
+            Image badge = Utilities.loadImage("org/netbeans/modules/apisupport/project/suite/resources/module-badge.gif", true);
+            return Utilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 9, 9);
+        }
+        
         public Image getIcon(int type) {
-            return Utilities.loadImage(SUITE_MODULES_ICON_PATH);
+            return getIcon(false);
         }
         
         public Image getOpenedIcon(int type) {
-            return Utilities.loadImage(SUITE_MODULES_OPENED_ICON_PATH);
+            return getIcon(true);
         }
         
         static final class ModuleChildren extends Children.Keys/*<NbModuleProject>*/ implements ChangeListener {
