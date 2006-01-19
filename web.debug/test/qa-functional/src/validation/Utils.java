@@ -92,6 +92,12 @@ public class Utils {
         // "Socket Port:
         String socketPortLabel = Bundle.getString("org.netbeans.modules.tomcat5.customizer.Bundle", "TXT_SocketPort");
         new JRadioButtonOperator(serverManagerOper, socketPortLabel).setSelected(true);
+        // set socket port number
+        JSpinnerOperator socketPortOper = new JSpinnerOperator(serverManagerOper, 0);
+        // satisfy focus on spinner which causes changes are reflected
+        socketPortOper.getNumberSpinner().scrollToValue((Number)socketPortOper.getNextValue());
+        socketPortOper.setValue(new Integer(getPort()));        
+        
         serverManagerOper.close();
     }
     
