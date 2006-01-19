@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -67,7 +66,7 @@ public class AntLoggerTest extends NbTestCase {
     private static void run(FileObject script) throws Exception {
         int res = AntTargetExecutor.createTargetExecutor(new AntTargetExecutor.Env()).execute(new AntProjectSupport(script), null).result();
         if (res != 0) {
-            throw new IOException("Nonzero exit code: " + res + "; messages: " + LOGGER.messages);
+            throw new IOException("Nonzero exit code: " + res + "; messages: " + LOGGER.getMessages());
         }
     }
 
@@ -90,7 +89,7 @@ public class AntLoggerTest extends NbTestCase {
         assertEquals("correct 2 targets run (NOTE: you need Ant 1.6.0+)", Arrays.asList(new String[] {
             imported + "#subtarget",
             importing + "#main",
-        }), LOGGER.targetsStarted);
+        }), LOGGER.getTargetsStarted());
     }
     
     public void testLocationOfImportedTargetsWithLineNumbers() throws Exception {
@@ -104,7 +103,7 @@ public class AntLoggerTest extends NbTestCase {
         assertEquals("correct 2 targets run (NOTE: you need Ant 1.6.3+)", Arrays.asList(new String[] {
             imported + ":3#subtarget",
             importing + ":4#main",
-        }), LOGGER.targetsStarted);
+        }), LOGGER.getTargetsStarted());
     }
     
     public void testTaskdef() throws Exception {
@@ -115,9 +114,9 @@ public class AntLoggerTest extends NbTestCase {
         LOGGER.interestingLogLevels = new int[] {AntEvent.LOG_INFO, AntEvent.LOG_WARN};
         run(testdirFO.getFileObject("taskdefs.xml"));
         //System.err.println("messages=" + LOGGER.messages);
-        assertTrue("got info message", LOGGER.messages.contains("mytask:" + AntEvent.LOG_INFO + ":MyTask info message"));
-        assertFalse("did not get verbose message", LOGGER.messages.contains("mytask:" + AntEvent.LOG_VERBOSE + ":MyTask verbose message"));
-        assertTrue("got warn message", LOGGER.messages.contains("mytask:" + AntEvent.LOG_WARN + ":MyTask warn message"));
+        assertTrue("got info message", LOGGER.getMessages().contains("mytask:" + AntEvent.LOG_INFO + ":MyTask info message"));
+        assertFalse("did not get verbose message", LOGGER.getMessages().contains("mytask:" + AntEvent.LOG_VERBOSE + ":MyTask verbose message"));
+        assertTrue("got warn message", LOGGER.getMessages().contains("mytask:" + AntEvent.LOG_WARN + ":MyTask warn message"));
     }
     
     public void testCorrectTaskFromIndirectCall() throws Exception {
@@ -132,7 +131,8 @@ public class AntLoggerTest extends NbTestCase {
         LOGGER.interestingLogLevels = new int[] {AntEvent.LOG_DEBUG};
         run(testdirFO.getFileObject("property.xml"));
         //System.err.println("messages=" + LOGGER.messages);
-        assertTrue("have message with task ID in " + LOGGER.messages, LOGGER.messages.contains("property:4:Setting project property: propname -> propval"));
+        List/*<String>*/ messages = LOGGER.getMessages();
+        assertTrue("have message with task ID in " + messages, messages.contains("property:4:Setting project property: propname -> propval"));
     }
     
     /**
@@ -148,14 +148,14 @@ public class AntLoggerTest extends NbTestCase {
         public int[] interestingLogLevels;
         public boolean collectLineNumbersForTargets;
         /** Format of each: "/path/to/file.xml:line#targetName" (line numbers only if collectLineNumbersForTargets) */
-        public List/*<String>*/ targetsStarted;
+        private List/*<String>*/ targetsStarted;
         /** Format of each: "taskname:level:message" */
-        public List/*<String>*/ messages;
+        private List/*<String>*/ messages;
         
         public TestLogger() {}
         
         /** Set everything back to default values as in AntLogger base class. */
-        public void reset() {
+        public synchronized void reset() {
             interestedInSessionFlag = false;
             interestedInAllScriptsFlag = false;
             interestingScripts = new HashSet();
@@ -163,8 +163,16 @@ public class AntLoggerTest extends NbTestCase {
             interestingTasks = AntLogger.NO_TASKS;
             interestingLogLevels = new int[0];
             collectLineNumbersForTargets = false;
-            targetsStarted = Collections.synchronizedList(new ArrayList());
-            messages = Collections.synchronizedList(new ArrayList());
+            targetsStarted = new ArrayList();
+            messages = new ArrayList();
+        }
+        
+        public synchronized List/*<String>*/ getTargetsStarted() {
+            return new ArrayList(targetsStarted);
+        }
+        
+        public synchronized List/*<String>*/ getMessages() {
+            return new ArrayList(messages);
         }
 
         public boolean interestedInAllScripts(AntSession session) {
@@ -191,14 +199,14 @@ public class AntLoggerTest extends NbTestCase {
             return interestingLogLevels;
         }
 
-        public void targetStarted(AntEvent event) {
+        public synchronized void targetStarted(AntEvent event) {
             int line = event.getLine();
             targetsStarted.add(event.getScriptLocation() +
                 (collectLineNumbersForTargets && line != -1 ? ":" + line : "") +
                 '#' + event.getTargetName());
         }
         
-        public void messageLogged(AntEvent event) {
+        public synchronized void messageLogged(AntEvent event) {
             String toadd = "" + event.getLogLevel() + ":" + event.getMessage();
             String taskname = event.getTaskName();
             if (taskname != null) {
@@ -207,7 +215,7 @@ public class AntLoggerTest extends NbTestCase {
             messages.add(toadd);
         }
 
-        public void buildFinished(AntEvent event) {
+        public synchronized void buildFinished(AntEvent event) {
             Throwable t = event.getException();
             if (t != null) {
                 messages.add("EXC:" + t);
