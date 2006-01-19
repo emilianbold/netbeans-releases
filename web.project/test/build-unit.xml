@@ -15,4 +15,12 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="web/project/test-unit" basedir="." default="all">
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+
+    <target name="runidetest" depends="init,init-cp">
+        <property name="xtest.ide.use.classloader" value="org.netbeans.modules.web.project"/>
+        <executeTests  pluginName="ide">
+            <classpath/>
+        </executeTests>
+    </target>
+
 </project>
