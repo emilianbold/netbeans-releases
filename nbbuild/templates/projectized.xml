@@ -99,6 +99,8 @@ Microsystems, Inc. All Rights Reserved.
         <nbbrowse file="${netbeans.javadoc.dir}/${code.name.base.dashes}/index.html"/>
     </target>
     
+    <target name="netbeans-javadoc" depends="netbeans,javadoc" />
+    
     <!-- apisupport/project could calls this for the debug action. -->
     <!-- You can also call it directly from the nbbuild/misc pseudoproject. -->
     <target name="debug" depends="netbeans">
