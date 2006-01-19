@@ -71,12 +71,18 @@ public class HTMLCompletionQuery implements CompletionQuery {
      */
     public CompletionQuery.Result query(JTextComponent component, int offset, SyntaxSupport support) {
         Class kitClass = Utilities.getKitClass(component);
+        BaseDocument doc = (BaseDocument)component.getDocument();
+        return query(component, kitClass, doc, offset, support);
+    }
+    
+    /* The code has been extracted from the original method to be better testable. */
+    CompletionQuery.Result query(JTextComponent component, Class kitClass, BaseDocument doc, int offset, SyntaxSupport support) {
         if (kitClass != null) {
             lowerCase = SettingsUtil.getBoolean(kitClass,
                     HTMLSettingsNames.COMPLETION_LOWER_CASE,
                     HTMLSettingsDefaults.defaultCompletionLowerCase);
         }
-        BaseDocument doc = (BaseDocument)component.getDocument();
+        
         if( doc.getLength() == 0 ) return null; // nothing to examine
         HTMLSyntaxSupport sup = (HTMLSyntaxSupport)support.get(HTMLSyntaxSupport.class);
         if( sup == null ) return null;// No SyntaxSupport for us, no hint for user
@@ -592,6 +598,23 @@ else System.err.println( "Inside token " + item.getTokenID() );
         public String getItemText() { return baseText; }
         
         public String getHelpID() { return helpID; }
+        
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            String className = this.getClass().getName();
+            className = className.substring(className.lastIndexOf('.') + 1); //cut off the package 
+            sb.append(className);
+            sb.append('(');
+            sb.append(getItemText());
+            sb.append(';');
+            sb.append(getSubstituteOffset());
+            sb.append(';');
+            sb.append(getHelpID());
+            sb.append(')');
+            
+            return sb.toString();
+        }
+        
     }
     
     static class EndTagItem extends HTMLResultItem {
