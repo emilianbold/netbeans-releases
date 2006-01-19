@@ -27,13 +27,14 @@ import org.netbeans.modules.editor.structure.api.DocumentModelListener;
 import org.netbeans.modules.editor.structure.api.DocumentModelUtils;
 import org.netbeans.modules.editor.structure.spi.DocumentModelProvider;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
+import org.netbeans.modules.xml.text.test.TestBase;
 
 
 /** XML DocumentModel provider unit tests
  *
  * @author  Marek Fukala
  */
-public class XMLDocumentModelTest extends NbTestCase {
+public class XMLDocumentModelTest extends TestBase {
     
     private static final int MODEL_TIMEOUT = 500; //ms
     
