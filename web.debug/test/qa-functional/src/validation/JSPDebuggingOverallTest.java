@@ -199,7 +199,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         // assuming server is running in debug mode and page is opened in browser
         AttachDialogOperator ado = AttachDialogOperator.invoke();
         ado.selectConnector(ado.ITEM_SOCKET_ATTACH);
-        ado.setPort("11555"); // NOI18N
+        ado.setPort(Utils.getSocketPort()); // NOI18N
         ado.ok();
         // "User program running"
         String runningLabel = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_running");

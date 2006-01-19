@@ -43,6 +43,8 @@ import org.netbeans.jemmy.operators.JTreeOperator;
  */
 public class Utils {
     
+    private static int socketPort;
+    
     /** Sets Swing HTML Browser as default browser. */
     public static void setSwingBrowser() {
         OptionsOperator optionsOper = OptionsOperator.invoke();
@@ -96,9 +98,17 @@ public class Utils {
         JSpinnerOperator socketPortOper = new JSpinnerOperator(serverManagerOper, 0);
         // satisfy focus on spinner which causes changes are reflected
         socketPortOper.getNumberSpinner().scrollToValue((Number)socketPortOper.getNextValue());
-        socketPortOper.setValue(new Integer(getPort()));        
+        socketPort = getPort();
+        socketPortOper.setValue(new Integer(socketPort));
         
         serverManagerOper.close();
+    }
+    
+    /** Returns socket port set in setTomcatProperties method.
+     * @return socket port used for debugger transport
+     */
+    public static String getSocketPort() {
+        return Integer.toString(socketPort);
     }
     
     /** Returns unique free port number within range of dynamic or private ports
