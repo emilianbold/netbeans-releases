@@ -13,8 +13,10 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Properties;
@@ -22,17 +24,18 @@ import java.util.Set;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
-import org.netbeans.modules.apisupport.project.ui.ModuleActions;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Tests ProjectXMLManager class.
@@ -66,14 +69,22 @@ public class CompilationDependencyTest extends TestBase {
         clearWorkDir();
         super.setUp();
         InstalledFileLocatorImpl.registerDestDir(destDirF);
+        TestAntLogger.getDefault().setEnabled(true);
         
-        testingProject = TestBase.generateStandaloneModule(getWorkDir(), "testing");
-        testingProject.open();
     }
+
+    protected void tearDown() throws Exception {
+        TestAntLogger.getDefault().setEnabled(false);
+    }
+    
+
     
     private NbModuleProject testingProject ;
     
     public void testInvalidSpecVersion() throws Exception {
+        testingProject = TestBase.generateStandaloneModule(getWorkDir(), "testing");
+        testingProject.open();
+       
         FileObject buildScript = findBuildXml();
         assertNotNull(buildScript);
         ExecutorTask et = ActionUtils.runTarget(buildScript, new String[]{"jar"}, null);
@@ -102,21 +113,18 @@ public class CompilationDependencyTest extends TestBase {
         
         // it must fail but I don't know why it passed
         assertFalse("Error during ant ...",0  == et.result());
-        FileObject fo = testingProject.getProjectDirectory().getFileObject("build/cluster/modules/org-example-testing.jar");
-        if (fo != null) {
-            // refresh on filesystem doesn't work well
-            // so rather test existence of java.io.File
-            File f = FileUtil.toFile(fo);
-            assertFalse(f.exists());
-        }
+        assertFalse("Successfully compiled when is invalid specification version",
+                   testingProject.getModuleJarLocation().exists());
     }
     
     public void testCompileAgaistPublicPackage() throws Exception {
+        testingProject = TestBase.generateStandaloneModule(getWorkDir(), "testing");
+        testingProject.open();
         FileObject buildScript = findBuildXml();
         assertNotNull(buildScript);
         Properties antProps = new Properties();
         
-        final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject.getHelper());
+         ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject.getHelper());
         NbPlatform platform = testingProject.getPlatform(true);
         ModuleEntry modules[] = platform.getModules();
         ModuleEntry module = null;
@@ -143,26 +151,60 @@ public class CompilationDependencyTest extends TestBase {
         ExecutorTask et = ActionUtils.runTarget(buildScript, new String[]{"clean","netbeans"}, antProps);
         et.waitFinished();
         
-        FileObject fo = testingProject.getProjectDirectory().getFileObject("build/cluster/modules/org-example-testing.jar");
-        if (fo != null) {
-            // refresh on filesystem doesn't work well
-            // so rather test existence of java.io.File
-            File f = FileUtil.toFile(fo);
-            assertFalse("project was successfully compiled against non public package",f.exists());
-        }
+        assertFalse("project was successfully compiled against non public package",
+                testingProject.getModuleJarLocation().exists());
+
+        testingPXM = new ProjectXMLManager(testingProject.getHelper());
         testingPXM.removeDependency(WINDOWS);
         newDep = new ModuleDependency(module,module.getReleaseVersion(),module.getSpecificationVersion(),true,true);
+        testingPXM.addDependency(newDep); 
         ProjectManager.getDefault().saveProject(testingProject);
         
         et = ActionUtils.runTarget(buildScript, new String[]{"clean","netbeans"}, antProps);
+        Reader reader = et.getInputOutput().getIn();
+        BufferedReader breader = new BufferedReader(reader);
         et.waitFinished();
-        fo = testingProject.getProjectDirectory().getFileObject("build/cluster/modules/org-example-testing.jar");
-        if (fo != null) {
-            // refresh on filesystem doesn't work well
-            // so rather test existence of java.io.File
-            File f = FileUtil.toFile(fo);
-            assertTrue("Implementation dependency - ompilation fails for non publicpackage", f.exists());
+        String line = null;
+        while ((line = breader.readLine()) != null ) {
+            log(line);
+            System.out.println(line);
         }
+        assertTrue("compilation failed for implementation dependency",
+                testingProject.getModuleJarLocation().exists());
+        
+    }
+    
+    public void testCompileAgainstRemovedModule68716() throws Exception {
+        SuiteProject suite = TestBase.generateSuite(new File(getWorkDir(), "projects"), "suite"); 
+        NbModuleProject proj = TestBase.generateSuiteComponent(suite, "mod1");  
+        SuiteProjectTest.openSuite(suite);
+        NbPlatform platform = proj.getPlatform(true);
+        ModuleEntry modules[] = platform.getModules(); 
+        ProjectXMLManager testingPXM = new ProjectXMLManager(proj.getHelper());
+        ModuleEntry module = null;
+        for (int mIt = 0 ; mIt < modules.length ; mIt++) {
+            module = modules[mIt];
+            if (module.getCodeNameBase().equals(WINDOWS)) {
+                break;
+            }
+        }
+        testingPXM.removeDependency(WINDOWS);
+        ModuleDependency newDep = new ModuleDependency(module);
+        testingPXM.addDependency(newDep);
+        // remove WINDOWS from platform
+        //
+        EditableProperties ep = suite.getHelper().getProperties("nbproject/platform.properties"); 
+        ep.setProperty(SuiteProperties.DISABLED_MODULES_PROPERTY,module.getCodeNameBase());   
+        suite.getHelper().putProperties("nbproject/platform.properties", ep); 
+        ProjectManager.getDefault().saveProject(proj);       
+        ProjectManager.getDefault().saveProject(suite);       
+        //// build project
+        FileObject buildScript = proj.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+        assertNotNull(buildScript);
+        ExecutorTask et = ActionUtils.runTarget(buildScript, new String[]{"clean","netbeans"}, null);
+        et.waitFinished();
+        assertFalse("project was successfully compiled against removed module from platform",proj.getModuleJarLocation().exists());
+  
         
     }
     
