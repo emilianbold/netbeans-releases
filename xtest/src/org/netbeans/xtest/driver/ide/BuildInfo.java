@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -118,6 +118,7 @@ public class BuildInfo {
                 Manifest mf = new Manifest(is);
                 is.close();
 
+                // Can be also OpenIDE-Module-Build-Version
                 buildNumber = mf.getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -164,9 +165,6 @@ public class BuildInfo {
         		}
                 }
 		
-		// get openide jar
-                urls.add(new File(libDir,"lib/org-openide-util.jar").toURI().toURL());
-				
 		// get core jar
 		urls.add(new File(libDir,"core/core.jar").toURI().toURL());
 
