@@ -167,6 +167,9 @@ public class BuildInfo {
 		
 		// get core jar
 		urls.add(new File(libDir,"core/core.jar").toURI().toURL());
+                
+		// get openide jar
+                urls.add(new File(libDir,"lib/org-openide-util.jar").toURI().toURL());
 
 		// get the urls as an array
 		// now create the classloader;
