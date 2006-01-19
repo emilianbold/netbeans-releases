@@ -84,7 +84,8 @@ Microsystems, Inc. All Rights Reserved.
         <module name="xml/text-edit" testtypes="unit" attributes="stable"/>
         <module name="html/editor/lib" testtypes="unit" attributes="stable"/>
         <module name="xml/tageditorsupport" testtypes="unit" attributes="stable"/>
-        <module name="web/jspsyntax" testtypes="unit" attributes="stable"/>
+	<module name="web/jspsyntax" testtypes="unit" attributes="stable"/>
+	<module name="web/project" testtypes="unit" attributes="stable"/>
 
         <!-- these two need depend on each other -->
         <module name="openide/execution" testtypes="unit" attributes="stable"/>
