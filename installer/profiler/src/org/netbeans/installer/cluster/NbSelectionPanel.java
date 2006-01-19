@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -43,6 +43,7 @@ import org.netbeans.installer.Util;
 public class NbSelectionPanel extends DirectoryChooserPanel {    
     
     private String nbHome;
+    private String nbHomeMacOSX;
     
     private static final String BUNDLE = "$L(org.netbeans.installer.cluster.Bundle,";
     
@@ -144,7 +145,11 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
     }
     
     private String getInstallDir() {
-        return new File(nbHome, resolveString(BUNDLE + "Product.clusterDir)")).getPath();
+        if (nbHomeMacOSX != null) {
+            return new File(nbHomeMacOSX, resolveString(BUNDLE + "Product.clusterDir)")).getPath();
+        } else {
+            return new File(nbHome, resolveString(BUNDLE + "Product.clusterDir)")).getPath();
+        }
     }
 
     /** Checks if there is NB cluster dir in selected NB installation directory.
@@ -253,7 +258,7 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
         //Find nb cluster dir
         nbHomeDir = nbHomeDir + File.separator + resolveString(BUNDLE + "NetBeans.nbSubDir)");
         
-        logEvent(this, Log.DBG,"Enter validateNbDirMacOSX nbHomeDir: " + nbHomeDir);
+        logEvent(this, Log.DBG,"validateNbDirMacOSX nbHomeDir: " + nbHomeDir);
         
         if ("".equals(nbHomeDir)) {
             //Empty string
@@ -342,8 +347,8 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
             return false;
         }
         
-        nbHome = nbHome + File.separator + resolveString(BUNDLE + "NetBeans.nbSubDir)");
-
+        nbHomeMacOSX = nbHome + File.separator + resolveString(BUNDLE + "NetBeans.nbSubDir)");
+        
         return true;
     }
     
@@ -431,7 +436,7 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
         //Find nb cluster dir
         nbHomeDir = nbHomeDir + File.separator + resolveString(BUNDLE + "NetBeans.nbSubDir)");
         
-        logEvent(this, Log.DBG,"Enter validateNbDirMacOSX nbHomeDir: " + nbHomeDir);
+        logEvent(this, Log.DBG,"validateNbDirMacOSXNoUI nbHomeDir: " + nbHomeDir);
         
         if ("".equals(nbHomeDir)) {
             //Empty string
@@ -497,6 +502,8 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
         if (!f.canWrite()) {
             return false;
         }
+        
+        nbHomeMacOSX = nbHome + File.separator + resolveString(BUNDLE + "NetBeans.nbSubDir)");
         
         return true;
     }
