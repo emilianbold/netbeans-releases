@@ -165,9 +165,7 @@ final class JpxBuilder extends ProjectBuilder {
             File sourceFile = FileUtil.normalizeFile(new File(projectDir, sourcePath));
             AbstractProject.SourceRoot asr;
             asr = new AbstractProject.SourceRoot(sourceFile.getName(), sourceFile);
-            if (!allTestPaths.contains(asr)) {
-                project.addSourceRoot(asr);
-            }
+            project.addSourceRoot(asr);
         }
         
         while (libraryEn.hasMoreElements()) {

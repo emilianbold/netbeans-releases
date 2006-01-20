@@ -98,6 +98,7 @@ public final class UserLibrarySupport {
             File library = new File(folders[i], fileName);
             if (!library.exists() && library.getParentFile() != null) {
                 File[] allChildren = library.getParentFile().listFiles();
+                if (allChildren == null) continue;
                 for (int j = 0; j < allChildren.length; j++) {
                     if (allChildren[j].getName().equalsIgnoreCase(fileName)) {
                         UserLibrarySupport instance = new UserLibrarySupport(libraryName, allChildren[j]);
