@@ -8,8 +8,6 @@ the NBM project type module, so that you can open any module in the NB IDE and
 work with it naturally: build and test it using Ant, use Java code completion,
 and so on.
 
-Motivation can be found here: http://apisupport.netbeans.org/new-apisupport.html
-
 Questions and comments should go to: dev@openide.netbeans.org
 
 BASIC FILE LAYOUT
