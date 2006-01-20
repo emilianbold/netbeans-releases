@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
    
      
-    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
     
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
     

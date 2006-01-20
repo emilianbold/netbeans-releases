@@ -52,31 +52,6 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </buildTests>
     </target>
-    
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-    
-    <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
-    If you need to customize it, you can uncomment the following and override it.-->
-    <target name="runcodetest">        
-        <executeTests  pluginName="jvm">
-            <classpath>
-                <pathelement location="${html/editor.dir}/modules/org-netbeans-modules-html-editor.jar"/>
-                <pathelement location="${html/editor/lib.dir}/modules/org-netbeans-modules-html-editor-lib.jar"/>                                
-                
-                <pathelement location="${openide.dir}/core/openide.jar"/>
-                <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
-                <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
-                
-                <pathelement location="${editor/lib.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-util.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar"/>
-                
-            </classpath>
-        </executeTests>
-    </target>
-    
+       
 </project>
 
