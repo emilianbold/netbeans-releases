@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="unit test config">
 
-    <testbag testattribs="stable" executor="unit-executor" name="jsp syntax parser tests">
+    <testbag testattribs="stable" executor="ide" name="jsp syntax parser tests">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/test/web/core/syntax/*Test.class"/>
@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>-->
         
-    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <executor name="ide" antfile="build-unit.xml" target="runidetest" default="true"/>
     
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
     
