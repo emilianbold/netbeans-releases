@@ -123,6 +123,7 @@ public class XMLDocumentModelTest extends TestBase {
         
     }
     
+    
     public void testAddElement() throws DocumentModelException, BadLocationException, InterruptedException {
         //initialize documents used in tests
         initDoc1();
@@ -1111,6 +1112,51 @@ public class XMLDocumentModelTest extends TestBase {
     }
     
     
+    public void testEditElementWithOneCharContent_71596() throws DocumentModelException, BadLocationException, InterruptedException {
+        //initialize documents used in tests
+        initDoc6();
+        //set the document content
+        DocumentModel model = DocumentModel.getDocumentModel(doc);
+        DocumentElement root = model.getRootElement();
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        DocumentElement rootTag = root.getElement(0); //get <root> element
+        
+        assertNotNull(rootTag.getName());
+        
+        //listen to model
+        final Vector modelChanges = new Vector();
+        model.addDocumentModelListener(new DocumentModelListenerAdapter() {
+            public void documentElementAdded(DocumentElement de) {
+                modelChanges.add(de);
+            }
+        });
+        
+        //listen to element
+        final Vector elementChanges = new Vector();
+        rootTag.addDocumentElementListener(new DocumentElementListenerAdapter() {
+            public void elementAdded(DocumentElementEvent e) {
+                elementChanges.add(e.getChangedChild());
+            }
+        });
+        
+        doc.insertString(5," ",null);
+        Thread.sleep(MODEL_TIMEOUT * 2); //wait for the model update (started after 500ms)
+        
+        System.out.println(doc.getText(0, doc.getLength()));
+        DocumentModelUtils.dumpElementStructure(root);
+        
+        assertEquals(1, rootTag.getElementCount());
+        
+        //check events
+        assertEquals(0, modelChanges.size());
+        assertEquals(0, elementChanges.size());
+                
+    }
+    
+    
     private void initDoc1() throws BadLocationException {
         /*
           supposed structure:
@@ -1215,6 +1261,21 @@ public class XMLDocumentModelTest extends TestBase {
         doc.insertString(0,"<?xml version='1.0'?>   <root>   <a>   <c/>   </a>   <b>text</b>   </root>",null);
         //                  012345678901234567890123456789012345678901234567890123456789
         //                  0         1         2         3         4         5
+    }
+    
+    private void initDoc6() throws BadLocationException {
+        /*
+          supposed structure:
+            ROOT
+             |
+             +--<root>X</root>
+         */
+        doc = new BaseDocument(XMLKit.class, false);
+        doc.putProperty("mimeType", "text/xml");
+        
+        doc.insertString(0,"<root>X</root>",null);
+        //                  0123456789012345
+        //                  0         1     
     }
     
     private static class DocumentModelListenerAdapter implements DocumentModelListener {
