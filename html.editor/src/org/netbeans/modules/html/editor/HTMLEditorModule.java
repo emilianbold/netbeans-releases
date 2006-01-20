@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.html.editor;
 
-import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.ext.html.HTMLSettingsInitializer;
 import org.netbeans.modules.editor.NbLocalizer;
@@ -43,9 +42,6 @@ public class HTMLEditorModule extends ModuleInstall {
         Settings.addInitializer(new HTMLSettingsInitializer(HTMLKit.class));
         Settings.addInitializer(new NbHTMLSettingsInitializer());
         Settings.reset();
-
-        optionsLocalizer = new NbLocalizer(HTMLOptions.class);
-        LocaleSupport.addLocalizer(optionsLocalizer);
     }
 
     /** Called when module is uninstalled. Overrides superclass method. */
@@ -58,8 +54,6 @@ public class HTMLEditorModule extends ModuleInstall {
         Settings.removeInitializer(NbHTMLSettingsInitializer.NAME);
         Settings.reset();
 
-        LocaleSupport.removeLocalizer(optionsLocalizer);
-        optionsLocalizer = null;
     }
 
     
