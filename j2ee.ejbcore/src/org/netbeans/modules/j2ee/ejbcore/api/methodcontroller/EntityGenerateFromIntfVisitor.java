@@ -125,7 +125,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.DOUBLE)) {
             result ="\nreturn 0.0;";
         } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.FLOAT)) {
-            result ="\nreturn 0.0;";
+            result ="\nreturn 0;";
         } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.INT)) {
             result ="\nreturn 0;";
         } else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.LONG)) {

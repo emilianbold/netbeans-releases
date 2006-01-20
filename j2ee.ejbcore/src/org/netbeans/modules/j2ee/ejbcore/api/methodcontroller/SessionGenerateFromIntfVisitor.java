@@ -68,7 +68,7 @@ class SessionGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Ab
             body+="\nreturn 0.0;";
         }
         else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.FLOAT)){
-            body+="\nreturn 0.0;";
+            body+="\nreturn 0;";
         }
         else if ((type instanceof PrimitiveType) && ((PrimitiveType) type).getKind().equals(PrimitiveTypeKindEnum.INT)){
             body+="\nreturn 0;";
