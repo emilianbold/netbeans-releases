@@ -379,7 +379,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                 org.xml.sax.XMLReader reader = org.openide.xml.XMLUtil.createXMLReader(false, false);
                 reader.setContentHandler(this);
                 reader.setEntityResolver(this);
-                in = src.getInputStream();
+                in = new BufferedInputStream (src.getInputStream());
                 InputSource is = new InputSource(in);
                 try {
                     reader.setFeature("http://xml.org/sax/features/validation", false);  //NOI18N
