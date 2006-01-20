@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,10 +18,10 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.im.InputContext;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.StringBufferInputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import javax.swing.Action;
@@ -660,7 +660,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
                 } else if (Reader.class.equals(flavor.getRepresentationClass())) {
                     return new StringReader(richText);
                 } else if (InputStream.class.equals(flavor.getRepresentationClass())) {
-                    return new StringBufferInputStream(richText);
+                    return new ByteArrayInputStream(richText.getBytes());
                 }
                 throw new UnsupportedFlavorException(flavor);
             }
@@ -785,7 +785,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
                 } else if (Reader.class.equals(flavor.getRepresentationClass())) {
                     return new StringReader(data);
                 } else if (InputStream.class.equals(flavor.getRepresentationClass())) {
-                    return new StringBufferInputStream(data);
+                    return new ByteArrayInputStream(data.getBytes());
                 }
                 // fall through to unsupported
             } else if (isPlainFlavor(flavor)) {
@@ -796,7 +796,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
                 } else if (Reader.class.equals(flavor.getRepresentationClass())) {
                     return new StringReader(data);
                 } else if (InputStream.class.equals(flavor.getRepresentationClass())) {
-                    return new StringBufferInputStream(data);
+                    return new ByteArrayInputStream(data.getBytes());
                 }
                 // fall through to unsupported
                 
