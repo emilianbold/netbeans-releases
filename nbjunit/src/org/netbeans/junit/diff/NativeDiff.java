@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -98,26 +98,21 @@ public class NativeDiff implements Diff {
         return prs.exitValue()!=0;
     }
     
-    private String prepareCommand(String firstFile, String secondFile) {
-        StringTokenizer tok = new StringTokenizer(diffcmd, "%");
-        StringBuffer    buf = new StringBuffer(256);
-        while (tok.hasMoreTokens()) {
+    private String[] prepareCommand(String firstFile, String secondFile) {
+        StringTokenizer tok = new StringTokenizer(diffcmd);
+        int tokensCount = tok.countTokens();
+        String[] cmdarray = new String[tokensCount];
+        for(int i=0;i<tokensCount;i++) {
             String token = tok.nextToken();
-            if (token.equals("TESTFILE")) {
-                buf.append('"');
-                buf.append(firstFile);
-                buf.append('"');
-            } else if (token.equals("PASSFILE")) {
-                buf.append('"');
-                buf.append(secondFile);
-                buf.append('"');
-            } else if (0 == token.length()) {
-                buf.append('%');
+            if (token.equals("%TESTFILE%")) {
+                cmdarray[i] = firstFile;
+            } else if (token.equals("%PASSFILE%")) {
+                cmdarray[i] = secondFile;
             } else {
-                buf.append(token);
+                cmdarray[i] = token;
             }
         }
-        return buf.toString();
+        return cmdarray;
     }
     
     class StreamGobbler extends Thread {
