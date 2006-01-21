@@ -523,7 +523,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                             endOffset);
                     
                     CollabRegion simpleSection = createSimpleSection(beginOffset, endOffset, regionName);
-                    if(simpleSection==null) { //check with correction: cannot create section 
+                    /*if(simpleSection==null) { //check with correction: cannot create section 
                         simpleSection = createSimpleSection(beginOffset+1, endOffset, regionName); 
 
                         if (simpleSection == null) //check with correction
@@ -541,7 +541,14 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                                 }
                             }
                         }
-                    }
+                    }*/
+					if (simpleSection == null) //check with correction
+					 { //cannot create section
+						Debug.log("CollabFileHandlerSupport","CFHS, " +
+                            "create section null for: "+regionName); //NoI18n
+						unlockEditor(editorLock);
+						return;
+					}					
 
                     Debug.log("CollabFileHandlerSupport","CFHS, receivedLock " +
                             "for text : [" + simpleSection.getContent()+"]"); //NoI18n
@@ -1473,17 +1480,9 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
 
                 text = cregion.getContent();
 
-                /*if (!(text.charAt(text.length() - 1) == '\n')) {
-                    Debug.log("CollabFileHandlerSupport", "CollabFileHandlerSupport, Adding line feed to text"); //NoI18n	
-                    text += "\n";
-                }*/
-
-                Debug.log("CollabFileHandlerSupport","CFHS, , construct unlock for " + //NoI18n
-                        "region: "+regionName+" with content : [" + text +"]"); //NoI18n
-
-                String encodedChange = encodeBase64(text.getBytes());
-                content.setData(encodedChange);
-                unlockRegionData.setContent(content);
+//                String encodedChange = encodeBase64(text.getBytes());
+//                content.setData(encodedChange);
+//                unlockRegionData.setContent(content);
 
                 //add new lineregion
                 int beginOffset = cregion.getBeginOffset();
@@ -1497,6 +1496,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                 //construct protocol line regions
                 LineRegion[] pregions = setUnlockLineRegion(unlockRegionData, newLineRegionList.size());
 
+				StringBuffer lineTexts = new StringBuffer();
                 for (int i = 0; i < newLineRegionList.size(); i++) {
                     CollabLineRegion cLineRegion = (CollabLineRegion) newLineRegionList.get(i);
                     LineRegion pLineRegion = pregions[i];
@@ -1505,6 +1505,9 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                         "CollabFileHandlerSupport", "CollabFileHandlerSupport, New newLineRegionList" + //NoI18n
                         lineRegionName
                     );
+                    Debug.log("CollabFileHandlerSupport", "CFHS, line content" + 
+                        cLineRegion.getContent());//NoI18n					
+					lineTexts.append(cLineRegion.getContent());					
 
                     int lineBeginOffset = cLineRegion.getBeginOffset();
                     int lineEndOffset = cLineRegion.getEndOffset();
@@ -1536,8 +1539,21 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                 addLineRegionAnnotation(
                     (CollabLineRegion[]) newLineRegionList.toArray(new CollabLineRegion[0]), style, annotationMessage
                 );
+				
+				//text=lineTexts.toString();
+				//if(text.endsWith("\n"))
+				//	text=text.substring(0, text.length()-1);
+				if(!((CollabRegionSupport)textRegion).isEndOpenRegion() && text.endsWith("\n"))
+					text=text.substring(0, text.length()-1);
+					
+                Debug.log("CollabFileHandlerSupport","CFHS, , construct unlock for " + //NoI18n
+                        "region: "+regionName+" with content : [" + text +"]"); //NoI18n				
+                String encodedChange = encodeBase64(text.getBytes());
+                content.setData(encodedChange);
+                unlockRegionData.setContent(content);				
             }
         } catch(Throwable th) {
+			Debug.log("CollabFileHandlerSupport", "CFHS, exception: "+th.getMessage());
             throw new CollabException(th);
         } finally{
             unlockEditor(editorLock);
@@ -1622,13 +1638,18 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
 
             try {
                 constructUnlockRegionData(regionName, unlockRegionData);
+				isReadyToUnlock1++;
+				Debug.log("CollabFileHandlerSupport", "CFHS, after constructUnlockRegionData: " + isReadyToUnlock1); //NoI18n
+				break;//process only one unlock region at a time
             } catch (Throwable th) {
+				Debug.log("CollabFileHandlerSupport", "CFHS, exception: " + th.getMessage()); //NoI18n
                 continue;
             }
 
-            isReadyToUnlock1++;
+            //isReadyToUnlock1++;
         }
 
+		Debug.log("CollabFileHandlerSupport", "CFHS, isReadyToUnlock1: " + isReadyToUnlock1); //NoI18n
         if (isReadyToUnlock1 == 0) {
             return false;
         }
@@ -2435,6 +2456,8 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                         (CollabLineRegion[]) tmpList.toArray(new CollabLineRegion[0]),
                         style, annotationMessage);
 
+				if(textRegion.getContent().endsWith("\n"))
+					((CollabRegionSupport)textRegion).setEndOpenRegion(true);
                 Debug.log(
                     "CollabFileHandlerSupport",
                     "CollabFileHandlerSupport, createLock text : [" + //NoI18n
@@ -2678,6 +2701,21 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
     throws CollabException {
         return rCtx.isUserRegionExist(user, offset, length, adjacency);
     }
+	
+    /**
+     * test if the region exist in the repository
+     *
+     * @param user
+     * @param offset
+     * @param length
+     * @param length of adjacency of change to this region
+     * @return true if region exist
+     */
+    public CollabRegion getContainingUserRegion(String user, int offset, int length, int adjacency)
+		throws CollabException 
+	{
+        return rCtx.getContainingUserRegion(user, offset, length, adjacency);
+    }	
     
     /**
      * test if the region exist in the repository
@@ -4775,7 +4813,8 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                         currentLineRegions);//NoI18n
 
                 int beginLine = fileDocument.getDefaultRootElement().getElementIndex(beginOffset);
-                int endLine = fileDocument.getDefaultRootElement().getElementIndex(endOffset - 1);
+                //int endLine = fileDocument.getDefaultRootElement().getElementIndex(endOffset - 1);
+				int endLine = fileDocument.getDefaultRootElement().getElementIndex(endOffset);
                 Debug.log("CollabFileHandlerSupport","CFHS, beginLine: " + beginLine); //NoI18n
                 Debug.log("CollabFileHandlerSupport","CFHS, endLine: " + endLine); //NoI18n
 
@@ -4871,7 +4910,7 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
          */
         public boolean isUserRegionExist(String user, int offset, int length, int adjacency)
         throws CollabException {
-            boolean foundUserRegion=false;
+            /*boolean foundUserRegion=false;
             CollabRegion region=getContainingRegion(offset, length, adjacency);
             if(region!=null && region.isValid() && region instanceof CollabRegion &&
                     !(region instanceof CollabLineRegion)) {
@@ -4891,8 +4930,48 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
                 }
                 return foundUserRegion;
             }
-            return foundUserRegion;
+            return foundUserRegion;*/
+			CollabRegion findUserRegion=getContainingUserRegion(user, offset, length, adjacency);
+			if(findUserRegion!=null)
+				return true;
+
+			return false;
         }
+		
+        /**
+         * get user region in the repository
+         *
+         * @param user
+         * @param offset
+         * @param length
+         * @param length of adjacency of change to this region
+         * @return        true/false                                true if region exist
+         */
+        public CollabRegion getContainingUserRegion(String user, int offset, int length, int adjacency)
+			throws CollabException 
+		{
+            CollabRegion findUserRegion=null;
+            CollabRegion region=getContainingRegion(offset, length, adjacency);
+            if(region!=null && region.isValid() && region instanceof CollabRegion &&
+                    !(region instanceof CollabLineRegion)) {
+                Vector userRegions = (Vector)getUserRegion(user);
+                if(userRegions!=null) {
+                    for(int i=0;i<userRegions.size();i++) {
+                        String regionName = (String)userRegions.get(i);
+                        if(regionName!=null && regionName.equals(region.getID()))
+                            findUserRegion=region;
+                    }
+                }
+                
+                currentUpdatedRegion=region;
+                if(!skipUpdate) {
+                    //update status changed
+                    region.updateStatusChanged(true);
+                }
+                return findUserRegion;
+            }
+            return findUserRegion;
+        }		
         
         /**
          * test if the region exist in the repository

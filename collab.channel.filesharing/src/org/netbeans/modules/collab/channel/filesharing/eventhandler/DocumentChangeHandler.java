@@ -22,6 +22,7 @@ import org.netbeans.modules.collab.channel.filesharing.event.DocumentChangeInser
 import org.netbeans.modules.collab.channel.filesharing.event.DocumentChangeRemove;
 import org.netbeans.modules.collab.channel.filesharing.filehandler.CollabFileHandler;
 import org.netbeans.modules.collab.channel.filesharing.filehandler.CollabFileHandlerSupport;
+import org.netbeans.modules.collab.channel.filesharing.filehandler.CollabRegion;
 import org.netbeans.modules.collab.channel.filesharing.filehandler.RegionQueue;
 import org.netbeans.modules.collab.channel.filesharing.filehandler.RegionQueueItem;
 import org.netbeans.modules.collab.channel.filesharing.mdc.CollabContext;
@@ -209,14 +210,30 @@ public class DocumentChangeHandler extends FilesharingEventHandler implements Fi
 
         ((CollabFileHandlerSupport) collabFileHandler).updateStatusFileChanged(offset, -length, true);
 
-        boolean regionExist = ((CollabFileHandlerSupport)collabFileHandler).isUserRegionExist(
+        /*boolean regionExist = ((CollabFileHandlerSupport)collabFileHandler).isUserRegionExist(
                 getLoginUser(), offset, -length, 1);             
 
         if (!regionExist) {
             ((CollabFileHandlerSupport)collabFileHandler).lockFileForCreateRegion();
             //((CollabFileHandlerSupport) collabFileHandler).unlockAllUserRegions();
             createNewRegion(false, offset, length, null);
-        }
+        }*/
+		
+		CollabRegion userRegion = 
+			((CollabFileHandlerSupport)collabFileHandler).
+				getContainingUserRegion(getLoginUser(), offset, -length, 1);
+		if(userRegion==null ||
+				userRegion!=null && userRegion.getEndOffset()<(offset+length))
+		{
+			int newOffset=offset;
+			
+			//take beginOffset from the last line endoffset of the region found above
+			if(userRegion!=null && userRegion.getEndOffset()<(offset+length))
+				newOffset=userRegion.getEndOffset();
+		
+			((CollabFileHandlerSupport)collabFileHandler).lockFileForCreateRegion();
+			createNewRegion(false, newOffset, length, null);
+		}
     }
 
     /**
