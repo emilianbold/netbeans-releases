@@ -2134,7 +2134,10 @@ public class FilesharingContext extends CollabContext implements FilesharingCons
         CollabPrincipal principal = null;
 
         int index = getConversation().getCollabSession().getUserPrincipal().getIdentifier().indexOf("@");
-        String domain = getConversation().getCollabSession().getUserPrincipal().getIdentifier().substring(index);
+        String domain = "";
+        if (index != -1) {
+            domain = getConversation().getCollabSession().getUserPrincipal().getIdentifier().substring(index);
+        }
 
         try {
             principal = getConversation().getCollabSession().getPrincipal(id + domain);
