@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -29,6 +30,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -97,6 +99,41 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
                 s.add(moduleProject);
             } catch (IOException e) {
                 Util.err.notify(e);
+            }
+        }
+        // #63824: consider also artifacts found in ${cp.extra} and/or <class-path-extension>s
+        List/*<Element>*/ cpexts = Util.findSubElements(data);
+        it = cpexts.iterator();
+        while (it.hasNext()) {
+            Element cpext = (Element) it.next();
+            if (!cpext.getTagName().equals("class-path-extension")) { // NOI18N
+                continue;
+            }
+            Element binorig = Util.findElement(cpext, "binary-origin", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            if (binorig == null) {
+                continue;
+            }
+            String text = Util.findText(binorig);
+            String eval = project.evaluator().evaluate(text);
+            if (eval == null) {
+                continue;
+            }
+            File jar = project.getHelper().resolveFile(eval);
+            // Could also use AntArtifactQuery but this should suffice:
+            Project owner = FileOwnerQuery.getOwner(jar.toURI());
+            if (owner != null) {
+                s.add(owner);
+            }
+        }
+        String eval = project.evaluator().getProperty("cp.extra"); // NOI18N
+        if (eval != null) {
+            String[] pieces = PropertyUtils.tokenizePath(eval);
+            for (int i = 0; i < pieces.length; i++) {
+                File jar = project.getHelper().resolveFile(pieces[i]);
+                Project owner = FileOwnerQuery.getOwner(jar.toURI());
+                if (owner != null) {
+                    s.add(owner);
+                }
             }
         }
         return s;

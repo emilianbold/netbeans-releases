@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -69,6 +69,12 @@ public class SubprojectProviderImplTest extends TestBase {
         checkSubprojects(EEP + "/suite3/dummy-project", new String[0]);
     }
     
+    /** @see "#63824" */
+    public void testAdHocSubprojects() throws Exception {
+        assertDepends("mdr/module", "mdr");
+        assertDepends("ide/applemenu", "ide/applemenu/eawtstub");
+    }
+    
     private void checkSubprojects(String project, String[] subprojects) throws Exception {
         Project p = project(project);
         SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);
@@ -90,6 +96,14 @@ public class SubprojectProviderImplTest extends TestBase {
         Project p = ProjectManager.getDefault().findProject(dir);
         assertNotNull("have project in " + path, p);
         return p;
+    }
+
+    private void assertDepends(String parent, String child) throws Exception {
+        Project p1 = project(parent);
+        Project p2 = project(child);
+        SubprojectProvider spp = (SubprojectProvider) p1.getLookup().lookup(SubprojectProvider.class);
+        assertNotNull("have SPP in " + p1, spp);
+        assertTrue(parent + " includes " + child, spp.getSubprojects().contains(p2));
     }
     
 }
