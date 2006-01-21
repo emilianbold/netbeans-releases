@@ -22,3 +22,6 @@
 	Fix for #71268: Stop sharing deletes master file.
 
 1.4:	Fix for #69662: missing cursor. Also prevent cursor jumping.
+
+1.5:	Fixed the shared file corruption bug, #69812
+	Made filesharing more provider agnostic, #71503
