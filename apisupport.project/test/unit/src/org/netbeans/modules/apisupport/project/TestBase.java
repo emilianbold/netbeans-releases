@@ -415,7 +415,10 @@ public abstract class TestBase extends NbTestCase {
         Manifest mani = new Manifest();
         mani.getMainAttributes().putValue("OpenIDE-Module", "core");
         TestBase.createJar(new File(new File(new File(d, "platform"), "core"), "core.jar"), Collections.EMPTY_MAP, mani);
-        TestBase.dump(new File(new File(d, "harness"), "suite.xml"), "");
+        mani = new Manifest();
+        mani.getMainAttributes().putValue("OpenIDE-Module", "org.netbeans.modules.apisupport.harness");
+        mani.getMainAttributes().putValue("OpenIDE-Module-Specification-Version", "1.6.1"); // like 5.0
+        TestBase.createJar(new File(new File(new File(d, "harness"), "modules"), "org-netbeans-modules-apisupport-harness.jar"), Collections.EMPTY_MAP, mani);
     }
     
     public static void delete(File f) throws IOException {

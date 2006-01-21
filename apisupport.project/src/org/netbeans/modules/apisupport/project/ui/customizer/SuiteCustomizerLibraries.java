@@ -103,6 +103,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         refreshJavaPlatforms();
         refreshPlatforms();
         refreshModules();
+        updateJavaPlatformEnabled();
     }
     
     private void refreshModules() {
@@ -300,6 +301,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     private void platformValueItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_platformValueItemStateChanged
         getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
         refreshModules();
+        updateJavaPlatformEnabled();
     }//GEN-LAST:event_platformValueItemStateChanged
     
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
@@ -925,6 +927,10 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
         // All clear for this module.
         return null;
+    }
+
+    private void updateJavaPlatformEnabled() { // #71631
+        javaPlatformCombo.setEnabled(((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1);
     }
     
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -36,6 +36,7 @@ import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
@@ -43,6 +44,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -66,6 +68,14 @@ public final class NbPlatform {
     
     private static Set/*<NbPlatform>*/ platforms;
 
+    // should proceed in chronological order so we can do compatibility tests with >=
+    /** Unknown version - platform might be invalid, or just predate any 5.0 release version. */
+    public static final int HARNESS_VERSION_UNKNOWN = 0;
+    /** Harness version found in 5.0. */
+    public static final int HARNESS_VERSION_50 = 1;
+    /** Harness version found in 5.0 update 1. */
+    public static final int HARNESS_VERSION_50u1 = 2;
+
     /**
      * Reset cached info so unit tests can start from scratch.
      */
@@ -79,7 +89,7 @@ public final class NbPlatform {
     public static Set/*<NbPlatform>*/ getPlatforms() {
         if (platforms == null) {
             platforms = new HashSet();
-            Map/*<String,String>*/ p = PropertyUtils.sequentialPropertyEvaluator(PropertyUtils.globalPropertyProvider (), new PropertyProvider[0]).getProperties();
+            Map/*<String,String>*/ p = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {PropertyUtils.globalPropertyProvider()}).getProperties();
             boolean foundDefault = false;
             Iterator keys = p.keySet().iterator();
             while (keys.hasNext()) {
@@ -88,16 +98,24 @@ public final class NbPlatform {
                     String id = key.substring(PLATFORM_PREFIX.length(), key.length() - PLATFORM_DEST_DIR_SUFFIX.length());
                     String label = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX);
                     String destdir = (String) p.get(key);
+                    String harnessdir = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX);
                     String sources = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_SOURCES_SUFFIX);
                     String javadoc = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_JAVADOC_SUFFIX);
-                    platforms.add(new NbPlatform(id, label, FileUtil.normalizeFile(new File(destdir)), findURLs(sources), findURLs(javadoc)));
+                    File destdirF = FileUtil.normalizeFile(new File(destdir));
+                    File harness;
+                    if (harnessdir != null) {
+                        harness = FileUtil.normalizeFile(new File(harnessdir));
+                    } else {
+                        harness = findHarness(destdirF);
+                    }
+                    platforms.add(new NbPlatform(id, label, destdirF, harness, findURLs(sources), findURLs(javadoc)));
                     foundDefault |= id.equals(PLATFORM_ID_DEFAULT);
                 }
             }
             if (!foundDefault) {
                 File loc = defaultPlatformLocation();
                 if (loc != null) {
-                    platforms.add(new NbPlatform(PLATFORM_ID_DEFAULT, null, loc, new URL[0], new URL[0]));
+                    platforms.add(new NbPlatform(PLATFORM_ID_DEFAULT, null, loc, findHarness(loc), new URL[0], new URL[0]));
                 }
             }
             if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -126,13 +144,13 @@ public final class NbPlatform {
             return null;
         }
         // Semi-arbitrary harness component.
-        File suiteXml = InstalledFileLocator.getDefault().locate("suite.xml", "org.netbeans.modules.apisupport.harness", false); // NOI18N
-        if (suiteXml == null) {
+        File harnessJar = InstalledFileLocator.getDefault().locate("modules/org-netbeans-modules-apisupport-harness.jar", "org.netbeans.modules.apisupport.harness", false); // NOI18N
+        if (harnessJar == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot resolve default platform. " + // NOI18N
                     "Probably either \"org.netbeans.modules.apisupport.harness\" module is missing or is corrupted."); // NOI18N
             return null;
         }
-        File loc = suiteXml.getParentFile().getParentFile();
+        File loc = harnessJar.getParentFile().getParentFile().getParentFile();
         if (!loc.equals(bootJar.getParentFile().getParentFile().getParentFile())) {
             // Unusual installation structure, punt.
             return null;
@@ -213,7 +231,19 @@ public final class NbPlatform {
         // XXX might also check OpenProjectList for NbModuleProject's and/or SuiteProject's with a matching
         // dest dir and look up property 'sources' to use; TBD whether Javadoc could also be handled in a
         // similar way
-        return new NbPlatform(null, null, destDir, sources, new URL[0]);
+        return new NbPlatform(null, null, destDir, findHarness(destDir), sources, new URL[0]);
+    }
+    
+    private static File findHarness(File destDir) {
+        File[] kids = destDir.listFiles();
+        if (kids != null) {
+            for (int i = 0; i < kids.length; i++) {
+                if (kids[i].isDirectory() && kids[i].getName().startsWith("harness")) { // NOI18N
+                    return kids[i];
+                }
+            }
+        }
+        return new File(destDir, "harness"); // NOI18N
     }
 
     /**
@@ -242,6 +272,19 @@ public final class NbPlatform {
      * @throws IOException in case of problems (e.g. destination directory does not exist)
      */
     public static NbPlatform addPlatform(final String id, final File destdir, final String label) throws IOException {
+        return addPlatform(id, destdir, findHarness(destdir), label);
+    }
+    
+    /**
+     * Register a new platform.
+     * @param id unique ID string for the platform
+     * @param destdir destination directory (i.e. top-level directory beneath which there are clusters)
+     * @param harness harness directory
+     * @param label display label
+     * @return the created platform
+     * @throws IOException in case of problems (e.g. destination directory does not exist)
+     */
+    public static NbPlatform addPlatform(final String id, final File destdir, final File harness, final String label) throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
@@ -252,12 +295,15 @@ public final class NbPlatform {
                         throw new FileNotFoundException(destdir.getAbsolutePath());
                     }
                     String harnessDirKey = PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX;
-                    if (new File(destdir, "harness").isDirectory()) { // NOI18N
-                        // Normal case.
-                        props.setProperty(harnessDirKey, "${" + plafDestDir + "}/harness"); // NOI18N
-                    } else {
-                        // Platform w/o harness. Provide a default harness for it and hope it works.
+                    if (harness.getParentFile().equals(destdir)) {
+                        // Common case.
+                        props.setProperty(harnessDirKey, "${" + plafDestDir + "}/" + harness.getName()); // NOI18N
+                    } else if (harness.equals(getDefaultPlatform().getHarnessLocation())) {
+                        // Also common.
                         props.setProperty(harnessDirKey, "${" + PLATFORM_PREFIX + PLATFORM_ID_DEFAULT + PLATFORM_HARNESS_DIR_SUFFIX + "}"); // NOI18N
+                    } else {
+                        // Some random location.
+                        props.setProperty(harnessDirKey, harness.getAbsolutePath());
                     }
                     props.setProperty(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX, label);
                     PropertyUtils.putGlobalProperties(props);
@@ -267,7 +313,7 @@ public final class NbPlatform {
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
-        NbPlatform plaf = new NbPlatform(id, label, FileUtil.normalizeFile(destdir),
+        NbPlatform plaf = new NbPlatform(id, label, FileUtil.normalizeFile(destdir), harness,
                 findURLs(null), findURLs(null));
         getPlatforms().add(plaf);
         if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -302,14 +348,17 @@ public final class NbPlatform {
     private final String id;
     private String label;
     private File nbdestdir;
+    private File harness;
     private URL[] sourceRoots;
     private URL[] javadocRoots;
     private List/*<ModuleList>*/ listsForSources;
+    private int harnessVersion = -1;
     
-    private NbPlatform(String id, String label, File nbdestdir, URL[] sources, URL[] javadoc) {
+    private NbPlatform(String id, String label, File nbdestdir, File harness, URL[] sources, URL[] javadoc) {
         this.id = id;
         this.label = label;
         this.nbdestdir = nbdestdir;
+        this.harness = harness;
         this.sourceRoots = sources;
         this.javadocRoots = javadoc;
     }
@@ -814,6 +863,49 @@ public final class NbPlatform {
     
     public String toString() {
         return "NbPlatform[" + getID() + ":" + getDestDir() + ";sources=" + Arrays.asList(getSourceRoots()) + ";javadoc=" + Arrays.asList(getJavadocRoots()) + "]"; // NOI18N;
+    }
+
+    /**
+     * Get the version of this platform's harness.
+     */
+    public int getHarnessVersion() {
+        if (harnessVersion != -1) {
+            return harnessVersion;
+        }
+        if (!isValid()) {
+            return harnessVersion = HARNESS_VERSION_UNKNOWN;
+        }
+        File harnessJar = new File(harness, "modules" + File.separatorChar + "org-netbeans-modules-apisupport-harness.jar"); // NOI18N
+        if (harnessJar.isFile()) {
+            try {
+                JarFile jf = new JarFile(harnessJar);
+                try {
+                    String spec = jf.getManifest().getMainAttributes().getValue(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION);
+                    if (spec != null) {
+                        SpecificationVersion v = new SpecificationVersion(spec);
+                        if (v.compareTo(new SpecificationVersion("1.7")) >= 0) { // NOI18N
+                            return harnessVersion = HARNESS_VERSION_50u1;
+                        } else if (v.compareTo(new SpecificationVersion("1.6")) >= 0) { // NOI18N
+                            return harnessVersion = HARNESS_VERSION_50;
+                        } // earlier than beta2? who knows...
+                    }
+                } finally {
+                    jf.close();
+                }
+            } catch (IOException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            } catch (NumberFormatException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        return harnessVersion = HARNESS_VERSION_UNKNOWN;
+    }
+
+    /**
+     * Get the location of this platform's harness
+     */
+    public File getHarnessLocation() {
+        return harness;
     }
     
 }

@@ -7,13 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.beans.PropertyChangeEvent;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.util.NbBundle;
 
 /**
@@ -34,12 +35,16 @@ final class CustomizerCompiling extends NbPropertyPanel.Single {
         debug.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEBUG));
         deprecation.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEPRECATION));
         options.setText(getProperty(SingleModuleProperties.JAVAC_COMPILERARGS));
+        options.setEnabled(((SingleModuleProperties) props).getActivePlatform().getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1); // #71631
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
         super.propertyChange(evt);
         if (SingleModuleProperties.JAVAC_COMPILERARGS.equals(evt.getPropertyName())) {
             options.setText(getProperty(SingleModuleProperties.JAVAC_COMPILERARGS));
+        }
+        if (SingleModuleProperties.NB_PLATFORM_PROPERTY.equals(evt.getPropertyName())) {
+            options.setEnabled(((SingleModuleProperties) props).getActivePlatform().getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1);
         }
     }
     

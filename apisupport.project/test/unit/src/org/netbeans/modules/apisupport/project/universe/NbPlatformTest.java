@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,9 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
  * Test functionality of {@link NbPlatform}.
@@ -230,6 +233,26 @@ public class NbPlatformTest extends TestBase {
         for (int i = 0; i < us.length; i++) {
             assertEquals(path, us[i].toExternalForm(), rus[i].toExternalForm());
         }
+    }
+    
+    public void testHarnessVersionDetection() throws Exception {
+        NbPlatform p = NbPlatform.getDefaultPlatform();
+        assertEquals("5.0u1 harness detected", NbPlatform.HARNESS_VERSION_50u1, p.getHarnessVersion());
+        File testPlatform = new File(getWorkDir(), "test-platform");
+        makePlatform(testPlatform);
+        p = NbPlatform.getPlatformByDestDir(testPlatform);
+        assertEquals("5.0 harness detected", NbPlatform.HARNESS_VERSION_50, p.getHarnessVersion());
+        File defaultHarnessLocation = NbPlatform.getDefaultPlatform().getHarnessLocation();
+        p = NbPlatform.addPlatform("test", testPlatform, defaultHarnessLocation, "Test");
+        assertEquals("5.0u1 harness detected", NbPlatform.HARNESS_VERSION_50u1, p.getHarnessVersion());
+        PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {PropertyUtils.globalPropertyProvider()});
+        assertEquals(defaultHarnessLocation.getAbsolutePath(), eval.getProperty("nbplatform.test.harness.dir"));
+        NbPlatform.reset();
+        p = NbPlatform.getPlatformByID("test");
+        assertNotNull(p);
+        assertEquals(testPlatform, p.getDestDir());
+        assertEquals(defaultHarnessLocation, p.getHarnessLocation());
+        assertEquals(NbPlatform.HARNESS_VERSION_50u1, p.getHarnessVersion());
     }
     
 }

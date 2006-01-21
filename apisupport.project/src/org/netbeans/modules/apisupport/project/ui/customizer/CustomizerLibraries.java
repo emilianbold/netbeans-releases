@@ -87,9 +87,6 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         refreshPlatforms();
         platformValue.setEnabled(getProperties().isStandalone());
         managePlafsButton.setEnabled(getProperties().isStandalone());
-        boolean javaEnabled = getProperties().isStandalone() || getProperties().isNetBeansOrg();
-        javaPlatformCombo.setEnabled(javaEnabled);
-        javaPlatformButton.setEnabled(javaEnabled);
         updateEnabled();
         reqTokenList.setModel(getProperties().getRequiredTokenListModel());
         dependencyList.setModel(getProperties().getDependenciesListModel());
@@ -118,6 +115,11 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         editDepButton.setEnabled(enabled);
         removeDepButton.setEnabled(enabled);
         addDepButton.setEnabled(getProperties().isActivePlatformValid());
+        boolean javaEnabled = getProperties().isNetBeansOrg() ||
+                (getProperties().isStandalone() &&
+                /* #71631 */ ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1);
+        javaPlatformCombo.setEnabled(javaEnabled);
+        javaPlatformButton.setEnabled(javaEnabled);
     }
     
     private CustomizerComponentFactory.DependencyListModel getDepListModel() {
