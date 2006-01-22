@@ -86,7 +86,8 @@ Microsystems, Inc. All Rights Reserved.
                     <selector refid="zip.platform.included.files"/>
                 </fileset>
             </path>
-            <mapper type="regexp" from="^\Q${netbeans.dest.dir.absolute}\E[/\\]([^/\\]+)" to="\1"/>
+            <map from="${netbeans.dest.dir.absolute}" to=""/> <!-- #71720 -->
+            <mapper type="regexp" from="^[/\\]([^/\\]+)" to="\1"/>
         </pathconvert>
         
         <dirset dir="${netbeans.dest.dir}" id="platform.clusters" includes="${zip.platform.clusters.duplicates}"/>
@@ -95,7 +96,8 @@ Microsystems, Inc. All Rights Reserved.
             <path>
                 <dirset refid="platform.clusters"/>
             </path>
-            <mapper type="regexp" from="^\Q${netbeans.dest.dir.absolute}\E[/\\]([^/\\]+)" to="\1"/>
+            <map from="${netbeans.dest.dir.absolute}" to=""/> <!-- #71720 -->
+            <mapper type="regexp" from="^[/\\]([^/\\]+)" to="\1"/>
         </pathconvert>
         <echo level="verbose">Included platform clusters: ${zip.platform.clusters}</echo>
 
