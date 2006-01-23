@@ -88,6 +88,8 @@ public final class ModuleDependency implements Comparable {
         return me;
     }
     
+    // XXX module dependencies are not the same also if their versioning varies.
+    // So consider spec, release, and probably all <dependency> subelemenets recursively
     public int compareTo(Object o) {
         return getModuleEntry().getCodeNameBase().compareTo(
                 ((ModuleDependency) o).getModuleEntry().getCodeNameBase());
