@@ -60,6 +60,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
@@ -332,8 +333,8 @@ public final class SuiteLogicalView implements LogicalViewProvider {
     /** Represent one module (a suite component) node. */
     private static final class SuiteComponentNode extends AbstractNode {
         
-        private final static Action removeAction = new RemoveSuiteComponentAction();
-        private final static Action defaultAction = new OpenProjectAction();
+        private final static Action REMOVE_ACTION = new RemoveSuiteComponentAction();
+        private final static Action OPEN_ACTION = new OpenProjectAction();
         
         public SuiteComponentNode(final NbModuleProject suiteComponent) {
             super(Children.LEAF, Lookups.fixed(new Object[] {suiteComponent}));
@@ -354,12 +355,12 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         public Action[] getActions(boolean context) {
             return new Action[] {
-                defaultAction, removeAction
+                OPEN_ACTION, REMOVE_ACTION
             };
         }
         
         public Action getPreferredAction() {
-            return defaultAction;
+            return OPEN_ACTION;
         }
         
     }
@@ -398,15 +399,13 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
     }
     
-    private static final class OpenProjectAction extends NodeAction {
+    private static final class OpenProjectAction extends CookieAction {
         
         protected void performAction(Node[] activatedNodes) {
             final Project[] projects = new Project[activatedNodes.length];
             for (int i = 0; i < activatedNodes.length; i++) {
-                NbModuleProject suiteComponent =
-                        (NbModuleProject) activatedNodes[i].getLookup().lookup(NbModuleProject.class);
-                assert suiteComponent != null : "NbModuleProject in lookup"; // NOI18N
-                projects[i] = suiteComponent;
+                Project project = (Project) activatedNodes[i].getLookup().lookup(Project.class);
+                projects[i] = project;
             }
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
@@ -419,10 +418,6 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             });
         }
         
-        protected boolean enable(Node[] activatedNodes) {
-            return true;
-        }
-        
         public String getName() {
             return NbBundle.getMessage(SuiteLogicalView.class, "CTL_OpenProject");
         }
@@ -433,6 +428,14 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         protected boolean asynchronous() {
             return false;
+        }
+        
+        protected int mode() {
+            return CookieAction.MODE_ALL;
+        }
+        
+        protected Class[] cookieClasses() {
+            return new Class[] { Project.class };
         }
         
     }

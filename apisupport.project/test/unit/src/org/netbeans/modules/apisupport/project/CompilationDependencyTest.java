@@ -17,7 +17,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.Reader;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -46,10 +45,8 @@ public class CompilationDependencyTest extends TestBase {
     
     private final static String ANT_PROJECT_SUPPORT = "org.netbeans.modules.project.ant";
     private final static String WINDOWS = "org.openide.windows";
-    private final static Set ASSUMED_CNBS;
     
     static {
-        
         // #65461: do not try to load ModuleInfo instances from ant module
         System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
         LayerTestBase.Lkp.setLookup(new Object[0]);
@@ -58,7 +55,6 @@ public class CompilationDependencyTest extends TestBase {
         Set assumedCNBs = new HashSet(2);
         assumedCNBs.add(ANT_PROJECT_SUPPORT);
         assumedCNBs.add(WINDOWS);
-        ASSUMED_CNBS = Collections.unmodifiableSet(assumedCNBs);
     }
     
     public CompilationDependencyTest(String testName) {
@@ -90,7 +86,7 @@ public class CompilationDependencyTest extends TestBase {
         ExecutorTask et = ActionUtils.runTarget(buildScript, new String[]{"jar"}, null);
         et.waitFinished();
         assertEquals("Error during ant ...",0,et.result());
-        final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject.getHelper());
+        final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
         NbPlatform platform = testingProject.getPlatform(true);
         ModuleEntry modules[] = platform.getModules();
         ModuleEntry module = null;
@@ -124,7 +120,7 @@ public class CompilationDependencyTest extends TestBase {
         assertNotNull(buildScript);
         Properties antProps = new Properties();
         
-         ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject.getHelper());
+         ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
         NbPlatform platform = testingProject.getPlatform(true);
         ModuleEntry modules[] = platform.getModules();
         ModuleEntry module = null;
@@ -154,7 +150,7 @@ public class CompilationDependencyTest extends TestBase {
         assertFalse("project was successfully compiled against non public package",
                 testingProject.getModuleJarLocation().exists());
 
-        testingPXM = new ProjectXMLManager(testingProject.getHelper());
+        testingPXM = new ProjectXMLManager(testingProject);
         testingPXM.removeDependency(WINDOWS);
         newDep = new ModuleDependency(module,module.getReleaseVersion(),module.getSpecificationVersion(),true,true);
         testingPXM.addDependency(newDep); 
@@ -180,7 +176,7 @@ public class CompilationDependencyTest extends TestBase {
         SuiteProjectTest.openSuite(suite);
         NbPlatform platform = proj.getPlatform(true);
         ModuleEntry modules[] = platform.getModules(); 
-        ProjectXMLManager testingPXM = new ProjectXMLManager(proj.getHelper());
+        ProjectXMLManager testingPXM = new ProjectXMLManager(proj);
         ModuleEntry module = null;
         for (int mIt = 0 ; mIt < modules.length ; mIt++) {
             module = modules[mIt];

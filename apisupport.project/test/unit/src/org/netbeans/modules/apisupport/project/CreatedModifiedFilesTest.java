@@ -40,7 +40,6 @@ import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -226,8 +225,8 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         cmf.add(op);
         cmf.run();
         
-        ProjectXMLManager pxm = new ProjectXMLManager(project.getHelper());
-        Set deps = pxm.getDirectDependencies(NbPlatform.getDefaultPlatform());
+        ProjectXMLManager pxm = new ProjectXMLManager(project);
+        Set deps = pxm.getDirectDependencies();
         assertEquals("one dependency", 1, deps.size());
         ModuleDependency antDep = (ModuleDependency) deps.toArray()[0];
         assertEquals("cnb", "org.apache.tools.ant.module", antDep.getModuleEntry().getCodeNameBase());
@@ -250,8 +249,8 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         cmf.add(op);
         cmf.run();
         
-        ProjectXMLManager pxm = new ProjectXMLManager(project.getHelper());
-        Set deps = pxm.getDirectDependencies(NbPlatform.getDefaultPlatform());
+        ProjectXMLManager pxm = new ProjectXMLManager(project);
+        Set deps = pxm.getDirectDependencies();
         assertEquals("one dependency", 1, deps.size());
         ModuleDependency antDep = (ModuleDependency) deps.toArray()[0];
         assertEquals("cnb", "org.apache.tools.ant.module", antDep.getModuleEntry().getCodeNameBase());

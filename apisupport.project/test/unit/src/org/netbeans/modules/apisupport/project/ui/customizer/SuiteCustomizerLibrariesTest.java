@@ -101,7 +101,7 @@ public class SuiteCustomizerLibrariesTest extends NbTestCase {
         lbinfo.store();
         // MODULE org.example.module3
         module = TestBase.generateSuiteComponent(suite, "module3");
-        ProjectXMLManager xml = new ProjectXMLManager(module.getHelper());
+        ProjectXMLManager xml = new ProjectXMLManager(module);
         xml.addDependency(new ModuleDependency(module.getModuleList().getEntry("org.example.module2")));
         xml.addDependency(new ModuleDependency(module.getModuleList().getEntry("bar")));
         lbinfo = ((LocalizedBundleInfo.Provider) module.getLookup().lookup(LocalizedBundleInfo.Provider.class)).getLocalizedBundleInfo();

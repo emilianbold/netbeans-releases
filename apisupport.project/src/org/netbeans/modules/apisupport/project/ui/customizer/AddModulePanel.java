@@ -51,7 +51,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Martin Krauskopf, Jesse Glick
  */
-final class AddModulePanel extends JPanel {
+public final class AddModulePanel extends JPanel {
     
     private static final String FILTER_DESCRIPTION = getMessage("LBL_FilterDescription");
     
@@ -62,7 +62,7 @@ final class AddModulePanel extends JPanel {
     
     private final SingleModuleProperties props;
     
-    AddModulePanel(final SingleModuleProperties props) {
+    public AddModulePanel(final SingleModuleProperties props) {
         this.props = props;
         initComponents();
         initAccessibility();
@@ -212,7 +212,7 @@ final class AddModulePanel extends JPanel {
         }
     }
     
-    ModuleDependency[] getSelectedDependencies() {
+    public ModuleDependency[] getSelectedDependencies() {
         ModuleDependency[] deps;
         if (CustomizerComponentFactory.isWaitModel(moduleList.getModel())) {
             deps = new ModuleDependency[0];

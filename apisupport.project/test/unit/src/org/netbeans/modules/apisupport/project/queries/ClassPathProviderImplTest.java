@@ -74,7 +74,7 @@ public class ClassPathProviderImplTest extends TestBase {
         copyOfMiscDir = FileUtil.toFileObject(miscF);
         copyOfMiscProject = (NbModuleProject) ProjectManager.getDefault().findProject(copyOfMiscDir);
         assertNotNull(copyOfMiscProject);
-        copyOfMiscXMLManager = new ProjectXMLManager(copyOfMiscProject.getHelper());
+        copyOfMiscXMLManager = new ProjectXMLManager(copyOfMiscProject);
         // make sure its platform-private.properties is correct:
         Project copyOfSuite2P = ProjectManager.getDefault().findProject(FileUtil.toFileObject(copyOfSuite2));
         SuiteProjectTest.openSuite(copyOfSuite2P);

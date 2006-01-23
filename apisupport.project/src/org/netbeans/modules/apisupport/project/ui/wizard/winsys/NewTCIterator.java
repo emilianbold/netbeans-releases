@@ -177,12 +177,12 @@ final class NewTCIterator extends BasicWizardIterator {
         
         
         // 2. update project dependencies
-        ProjectXMLManager manager = new ProjectXMLManager(project.getHelper());
+        ProjectXMLManager manager = new ProjectXMLManager(project);
         replaceTokens.put("@@MODULENAME@@", project.getCodeNameBase()); // NOI18N
         //TODO how to figure the currect specification version for module?
         replaceTokens.put("@@SPECVERSION@@", project.getSpecVersion()); // NOI18N
         try {
-            SortedSet set = manager.getDirectDependencies(project.getPlatform(false));
+            SortedSet set = manager.getDirectDependencies();
             if (set != null) {
                 Iterator it = set.iterator();
                 boolean windows = false;

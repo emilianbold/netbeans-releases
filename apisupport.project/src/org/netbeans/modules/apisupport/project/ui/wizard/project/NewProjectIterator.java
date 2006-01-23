@@ -176,9 +176,9 @@ final class NewProjectIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.createFileWithSubstitutions(descName, template, replaceTokens));
         
         // 2. update project dependencies
-        ProjectXMLManager manager = new ProjectXMLManager(project.getHelper());
+        ProjectXMLManager manager = new ProjectXMLManager(project);
         try {
-            SortedSet/*<ModuleDependency>*/ currentDeps = manager.getDirectDependencies(project.getPlatform(false));
+            SortedSet/*<ModuleDependency>*/ currentDeps = manager.getDirectDependencies();
             Set cnbsToAdd = new HashSet(Arrays.asList(NewProjectIterator.MODULES));
             for (Iterator it = currentDeps.iterator(); it.hasNext();) {
                 ModuleDependency dep = (ModuleDependency) it.next();

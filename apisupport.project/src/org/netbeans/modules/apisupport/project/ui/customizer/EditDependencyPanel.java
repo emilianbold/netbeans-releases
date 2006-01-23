@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,13 +32,13 @@ import org.openide.util.NbBundle;
  *
  * @author  mkrauskopf
  */
-final class EditDependencyPanel extends JPanel {
+public final class EditDependencyPanel extends JPanel {
     
     private final ModuleDependency origDep;
     private final URL javadoc;
     
     /** Creates new form EditDependencyPanel */
-    EditDependencyPanel(final ModuleDependency dep, final NbPlatform platform) {
+    public EditDependencyPanel(final ModuleDependency dep, final NbPlatform platform) {
         this.origDep = dep;
         initComponents();
         readFromEntry();
@@ -80,7 +80,7 @@ final class EditDependencyPanel extends JPanel {
         versionChanged(null);
     }
     
-    ModuleDependency getEditedDependency() {
+    public ModuleDependency getEditedDependency() {
         ModuleDependency dep = new ModuleDependency(origDep.getModuleEntry(),
                 releaseVersionValue.getText().trim(),
                 specVerValue.getText().trim(),

@@ -119,7 +119,7 @@ public class SingleModulePropertiesTest extends TestBase {
         }
         
         // modify project.xml
-        final ProjectXMLManager pxm = new ProjectXMLManager(p.getHelper());
+        final ProjectXMLManager pxm = new ProjectXMLManager(p);
         ModuleEntry me = p.getModuleList().getEntry(
                 "org.netbeans.modules.java.project");
         final ModuleDependency md = new ModuleDependency(me, "1", null, false, true);
@@ -169,7 +169,7 @@ public class SingleModulePropertiesTest extends TestBase {
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
             public Object run() throws IOException {
-                ProjectXMLManager pxm = new ProjectXMLManager(p.getHelper());
+                ProjectXMLManager pxm = new ProjectXMLManager(p);
                 String[] newPP = new String[] { "org.example.module1" };
                 pxm.replacePublicPackages(newPP);
                 return Boolean.TRUE;
@@ -294,7 +294,7 @@ public class SingleModulePropertiesTest extends TestBase {
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
             public Object run() throws IOException {
-                ProjectXMLManager pxm = new ProjectXMLManager(p.getHelper());
+                ProjectXMLManager pxm = new ProjectXMLManager(p);
                 String[] newPP = new String[] { "org.example.module1a" };
                 pxm.replacePublicPackages(newPP);
                 return Boolean.TRUE;

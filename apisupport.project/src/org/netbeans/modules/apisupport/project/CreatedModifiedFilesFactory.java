@@ -401,10 +401,10 @@ public final class CreatedModifiedFilesFactory {
             assert me != null : "Cannot find module with the given codeNameBase (" + // NOI18N
                     codeNameBase + ") in the project's universe"; // NOI18N
             
-            ProjectXMLManager pxm = new ProjectXMLManager(getProject().getHelper());
+            ProjectXMLManager pxm = new ProjectXMLManager(getProject());
             
             // firstly check if the dependency is already not there
-            Set currentDeps = pxm.getDirectDependencies(getProject().getPlatform(false));
+            Set currentDeps = pxm.getDirectDependencies();
             for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
                 ModuleDependency md = (ModuleDependency) it.next();
                 if (codeNameBase.equals(md.getModuleEntry().getCodeNameBase())) {

@@ -13,9 +13,11 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,11 +26,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -76,8 +78,8 @@ public final class ProjectXMLManager {
     private static final String SUBPACKAGES = "subpackages"; // NOI18N
     private static final String SUITE_COMPONENT = "suite-component"; // NOI18N
     
-    private AntProjectHelper helper;
-    private NbPlatform plaf;
+    private final NbModuleProject project;
+    private NbPlatform customPlaf;
     
     private String cnb;
     private SortedSet/*<ModuleDependency>*/ directDeps;
@@ -88,9 +90,22 @@ public final class ProjectXMLManager {
     // cached confData element for easy access with getConfData
     private Element confData;
     
-    /** Creates a new instance of ProjectXMLManager */
-    public ProjectXMLManager(AntProjectHelper helper) {
-        this.helper = helper;
+    /** Creates a new instance of ProjectXMLManager. */
+    public ProjectXMLManager(final NbModuleProject project) {
+        this.project = project;
+    }
+    
+    /**
+     * Utility mehtod for getting the instance associated with a project in the
+     * given directory.
+     *
+     * @throws IOException if the project under a given <code>projectDir</code>
+     *         was recognized but could not be loaded (see {@link ProjectManager#findProject}).
+     */
+    public static ProjectXMLManager getInstance(final File projectDir) throws IOException {
+        FileObject dir = FileUtil.toFileObject(projectDir);
+        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(dir);
+        return new ProjectXMLManager(p);
     }
     
     public void setModuleType(NbModuleType moduleType) {
@@ -127,18 +142,29 @@ public final class ProjectXMLManager {
         if (newModuleType != null) {
             confData.insertBefore(newModuleType, findModuleDependencies(confData));
         }
-        helper.putPrimaryConfigurationData(confData, true);
+        project.getHelper().putPrimaryConfigurationData(confData, true);
     }
     
     /** Returns sorted direct module dependencies. */
-    public SortedSet/*<ModuleDependency>*/ getDirectDependencies(NbPlatform plaf) throws IOException {
-        if (this.plaf == plaf && directDeps != null) {
-            return directDeps;
+    public SortedSet/*<ModuleDependency>*/ getDirectDependencies() throws IOException {
+        return getDirectDependencies(null);
+    }
+    
+    /** Returns sorted direct module dependencies allowing to pass a custom platform. */
+    public SortedSet/*<ModuleDependency>*/ getDirectDependencies(final NbPlatform customPlaf) throws IOException {
+        if (this.customPlaf == customPlaf && this.directDeps != null) {
+            return this.directDeps;
         }
-        directDeps = new TreeSet();
+        this.customPlaf = customPlaf;
+        SortedSet directDeps = new TreeSet();
         Element moduleDependencies = findModuleDependencies(getConfData());
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
-        ModuleList ml = getModuleList(plaf);
+        ModuleList ml;
+        if (customPlaf != null) {
+            ml = project.getModuleList();
+        } else {
+            ml = ModuleList.getModuleList(FileUtil.toFile(project.getProjectDirectory()));
+        }
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             Element depEl = (Element)it.next();
             
@@ -189,7 +215,8 @@ public final class ProjectXMLManager {
                 throw new IllegalStateException(errMessage);
             }
         }
-        return directDeps;
+        this.directDeps = Collections.unmodifiableSortedSet(directDeps);
+        return this.directDeps;
     }
     
     /** Remove given dependency from the configuration data. */
@@ -205,7 +232,7 @@ public final class ProjectXMLManager {
                 moduleDependencies.removeChild(dep);
             }
         }
-        helper.putPrimaryConfigurationData(confData, true);
+        project.getHelper().putPrimaryConfigurationData(confData, true);
     }
     
     /**
@@ -244,7 +271,7 @@ public final class ProjectXMLManager {
             Util.err.log(ErrorManager.WARNING,
                     "Some modules weren't deleted: " + cnbsToDelete); // NOI18N
         }
-        helper.putPrimaryConfigurationData(confData, true);
+        project.getHelper().putPrimaryConfigurationData(confData, true);
     }
     
     public void editDependency(ModuleDependency origDep, ModuleDependency newDep) {
@@ -262,7 +289,7 @@ public final class ProjectXMLManager {
                 break;
             }
         }
-        helper.putPrimaryConfigurationData(confData, true);
+        project.getHelper().putPrimaryConfigurationData(confData, true);
     }
     
     /**
@@ -277,16 +304,17 @@ public final class ProjectXMLManager {
     /**
      * Adds given modules as module-dependencies for the project.
      */
-    public void addDependencies(Set/*<ModuleDependency>*/ toAdd) throws IOException {
-        Set deps = getDirectDependencies(this.plaf);
-        deps.addAll(toAdd);
-        replaceDependencies(deps);
+    public void addDependencies(final Set/*<ModuleDependency>*/ toAdd) throws IOException {
+        SortedSet deps = new TreeSet(getDirectDependencies());
+        if (deps.addAll(toAdd)) {
+            replaceDependencies(deps);
+        }
     }
     
     /**
      * Replaces all original dependencies with the given <code>newDeps</code>.
      */
-    public void replaceDependencies(Set/*<ModuleDependency>*/ newDeps) {
+    public void replaceDependencies(final Set/*<ModuleDependency>*/ newDeps) {
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
         Element moduleDependencies = findModuleDependencies(confData);
@@ -304,7 +332,8 @@ public final class ProjectXMLManager {
             ModuleDependency md = (ModuleDependency) it.next();
             createModuleDependencyElement(moduleDependencies, md, null);
         }
-        helper.putPrimaryConfigurationData(confData, true);
+        project.getHelper().putPrimaryConfigurationData(confData, true);
+        this.directDeps = sortedDeps;
     }
     
     public void removeClassPathExtensions() {
@@ -314,7 +343,7 @@ public final class ProjectXMLManager {
         for (int i = 0; i < nl.getLength(); i++) {
             confData.removeChild(nl.item(i));
         }
-        helper.putPrimaryConfigurationData(confData, true);
+        project.getHelper().putPrimaryConfigurationData(confData, true);
     }
     
     /**
@@ -339,7 +368,7 @@ public final class ProjectXMLManager {
                 confData.appendChild(cpel);
                 
             }
-            helper.putPrimaryConfigurationData(confData, true);
+            project.getHelper().putPrimaryConfigurationData(confData, true);
         }
     }
     
@@ -360,10 +389,10 @@ public final class ProjectXMLManager {
             publicPackagesEl.appendChild(
                     createModuleElement(doc, ProjectXMLManager.PACKAGE, newPackages[i]));
         }
-        helper.putPrimaryConfigurationData(confData, true);
+        project.getHelper().putPrimaryConfigurationData(confData, true);
         publicPackages = null; // XXX cleaner would be to listen on changes in helper
     }
-
+    
     /** Position public-packages or friend-packages according to XSD. */
     private void insertPublicOrFriend(Element packagesEl) {
         Element beforeEl = findElement(getConfData(), ProjectXMLManager.CLASS_PATH_EXTENSION);
@@ -393,7 +422,7 @@ public final class ProjectXMLManager {
             friendPackages.appendChild(
                     createModuleElement(doc, ProjectXMLManager.PACKAGE, packagesToExpose[i]));
         }
-        helper.putPrimaryConfigurationData(confData, true);
+        project.getHelper().putPrimaryConfigurationData(confData, true);
         publicPackages = null;
     }
     
@@ -537,18 +566,6 @@ public final class ProjectXMLManager {
         Element el = createSuiteElement(doc, name);
         el.appendChild(doc.createTextNode(innerText));
         return el;
-    }
-    
-    /**
-     * Helper method to get the <code>ModuleList</code> for the project this
-     * instance manage.
-     */
-    private ModuleList getModuleList(NbPlatform plaf) throws IOException {
-        if (plaf != null) {
-            return ModuleList.getModuleList(FileUtil.toFile(helper.getProjectDirectory()), plaf.getDestDir());
-        } else {
-            return ModuleList.getModuleList(FileUtil.toFile(helper.getProjectDirectory()));
-        }
     }
     
     /**
@@ -739,7 +756,7 @@ public final class ProjectXMLManager {
     
     private Element getConfData() {
         if (confData == null) {
-            confData = helper.getPrimaryConfigurationData(true);
+            confData = project.getHelper().getPrimaryConfigurationData(true);
         }
         return confData;
     }

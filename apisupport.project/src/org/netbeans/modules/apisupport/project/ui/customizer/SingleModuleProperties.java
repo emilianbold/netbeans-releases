@@ -39,6 +39,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
@@ -152,6 +153,15 @@ public final class SingleModuleProperties extends ModuleProperties {
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
     public static final String JAVA_PLATFORM_PROPERTY = "nbjdk.active"; // NOI18N
     public static final String DEPENDENCIES_PROPERTY = "moduleDependencies"; // NOI18N
+
+    /**
+     * Returns an instance of SingleModuleProperties for the given project.
+     */
+    public static SingleModuleProperties getInstance(final NbModuleProject project) {
+        SuiteProvider sp = (SuiteProvider) project.getLookup().lookup(SuiteProvider.class);
+        return new SingleModuleProperties(project.getHelper(), project.evaluator(), sp, Util.getModuleType(project),
+                (LocalizedBundleInfo.Provider) project.getLookup().lookup(LocalizedBundleInfo.Provider.class));
+    }
     
     /**
      * Creates a new instance of SingleModuleProperties
@@ -159,6 +169,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     SingleModuleProperties(AntProjectHelper helper, PropertyEvaluator evaluator,
             SuiteProvider sp, NbModuleTypeProvider.NbModuleType moduleType,
             LocalizedBundleInfo.Provider bundleInfoProvider) {
+        // XXX consider SingleModuleProperties(NbModuleProject) constructor. Life would be easier.
         super(helper, evaluator);
         this.bundleInfoProvider = bundleInfoProvider;
         refresh(moduleType, sp);
@@ -365,7 +376,11 @@ public final class SingleModuleProperties extends ModuleProperties {
     
     private ProjectXMLManager getProjectXMLManager() {
         if (projectXMLManager == null) {
-            projectXMLManager = new ProjectXMLManager(getHelper());
+            try {
+                projectXMLManager = ProjectXMLManager.getInstance(getProjectDirectoryFile());
+            } catch (IOException e) {
+                assert false : e;
+            }
         }
         return projectXMLManager;
     }

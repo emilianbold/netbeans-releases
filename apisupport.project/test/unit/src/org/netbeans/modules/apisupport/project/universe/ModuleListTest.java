@@ -258,7 +258,7 @@ public class ModuleListTest extends TestBase {
         // added package must be reflected in the refreshed list (63561)
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
             public Object run() throws IOException {
-                ProjectXMLManager pxm = new ProjectXMLManager(p.getHelper());
+                ProjectXMLManager pxm = new ProjectXMLManager(p);
                 String[] newPP = new String[] { "org.example.module1a" };
                 pxm.replacePublicPackages(newPP);
                 return Boolean.TRUE;

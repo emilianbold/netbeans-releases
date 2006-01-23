@@ -314,7 +314,7 @@ public final class SuiteUtils {
     }
     
     private static void setNbModuleType(Project module, NbModuleTypeProvider.NbModuleType type) throws IOException {
-        ProjectXMLManager pxm = new ProjectXMLManager(((NbModuleProject) module).getHelper());
+        ProjectXMLManager pxm = new ProjectXMLManager(((NbModuleProject) module));
         pxm.setModuleType(type);
     }
     

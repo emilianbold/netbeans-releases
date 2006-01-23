@@ -34,6 +34,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.layers.LayerNode;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.ui.LibrariesNode;
 import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -216,6 +217,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                 l.add(javadocDocfiles);
             }
             l.add(IMPORTANT_FILES_NAME);
+            l.add(LibrariesNode.LIBRARIES_NAME);
             setKeys(l);
         }
         
@@ -230,6 +232,8 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                 n = PackageView.createPackageView((SourceGroup) key);
             } else if (key == IMPORTANT_FILES_NAME) {
                 n = new ImportantFilesNode(project);
+            } else if (key == LibrariesNode.LIBRARIES_NAME) {
+                n = new LibrariesNode(project);
             } else {
                 throw new AssertionError("Unknown key: " + key);
             }
