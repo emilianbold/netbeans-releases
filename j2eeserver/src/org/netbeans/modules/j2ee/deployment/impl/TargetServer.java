@@ -280,6 +280,9 @@ public class TargetServer {
         try {
             ModuleType type = (ModuleType) dtarget.getModule().getModuleType();
             TargetModuleID[] ids = dm.getAvailableModules(type, targets);
+            if (ids == null) {
+                return availablesMap;
+            }
             for (int i=0; i<ids.length; i++) {
                 availablesMap.put(keyOf(ids[i]), ids[i]);
             }
