@@ -43,12 +43,6 @@ public class SuiteLogicalViewTest extends TestBase {
         super(name);
     }
     
-    protected void setUp() throws Exception {
-        super.setUp();
-        clearWorkDir();
-        TestBase.initializeBuildProperties(getWorkDir());
-    }
-    
     public void testModulesNode() throws Exception {
         SuiteProject suite1 = generateSuite("suite1");
         TestBase.generateSuiteComponent(suite1, "module1a");
