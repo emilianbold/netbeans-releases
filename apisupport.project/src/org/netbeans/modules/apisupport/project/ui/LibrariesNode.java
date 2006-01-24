@@ -51,6 +51,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.actions.FindAction;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -63,11 +64,13 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * @author Martin Krauskopf
@@ -253,8 +256,11 @@ final class LibrariesNode extends AbstractNode {
         private Action[] actions;
         
         LibraryDependencyNode(final ModuleDependency dep,
-                final NbModuleProject project, final Node jarNode) {
-            super(jarNode, null, Lookups.fixed(new Object[] { dep, project }));
+                final NbModuleProject project, final Node original) {
+            super(original, null, new ProxyLookup(new Lookup[] {
+                original.getLookup(),
+                Lookups.fixed(new Object[] { dep, project })
+            }));
             this.dep = dep;
             this.project = project;
             setShortDescription(LibrariesNode.createHtmlDescription(dep));
@@ -264,7 +270,12 @@ final class LibrariesNode extends AbstractNode {
             if (actions == null) {
                 Set result = new LinkedHashSet();
                 result.add(new EditDependencyAction(dep, project));
-                // XXX put find action here
+                Action[] superActions = super.getActions(false);
+                for (int i = 0; i < superActions.length; i++) {
+                    if (superActions[i] instanceof FindAction) {
+                        result.add(superActions[i]);
+                    }
+                }
                 result.add(new ShowJavadocAction(dep, project));
                 result.add(LibrariesChildren.REMOVE_DEPENDENCY_ACTION);
                 actions = (Action[]) result.toArray(new Action[result.size()]);
