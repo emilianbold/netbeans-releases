@@ -110,7 +110,9 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         platformModules = getProperties().getActivePlatform().getModules();
         Node root = createPlatformModulesNode();
         manager.setRootContext(root);
-        universe = null;
+        synchronized (this) {
+            universe = null;
+        }
         updateDependencyWarnings();
     }
     
@@ -763,7 +765,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
     
     private Set/*<UniverseModule>*/ universe;
-    private void doUpdateDependencyWarnings() {
+    private /* #71791 */ synchronized void doUpdateDependencyWarnings() {
         if (universe == null) {
             try {
                 Set/*<Project>*/ suiteModules = getProperties().getSubModules();
