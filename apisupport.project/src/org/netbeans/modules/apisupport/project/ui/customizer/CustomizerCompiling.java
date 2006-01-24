@@ -30,12 +30,12 @@ final class CustomizerCompiling extends NbPropertyPanel.Single {
         initAccessibility();
         refresh();
     }
-
+    
     void refresh() {
         debug.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEBUG));
         deprecation.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEPRECATION));
         options.setText(getProperty(SingleModuleProperties.JAVAC_COMPILERARGS));
-        NbPlatform platform = ((SingleModuleProperties) props).getActivePlatform();
+        NbPlatform platform = getProperties().getActivePlatform();
         options.setEnabled(platform == null || platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1); // #71631
     }
     
@@ -45,7 +45,7 @@ final class CustomizerCompiling extends NbPropertyPanel.Single {
             options.setText(getProperty(SingleModuleProperties.JAVAC_COMPILERARGS));
         }
         if (SingleModuleProperties.NB_PLATFORM_PROPERTY.equals(evt.getPropertyName())) {
-            NbPlatform platform = ((SingleModuleProperties) props).getActivePlatform();
+            NbPlatform platform = getProperties().getActivePlatform();
             options.setEnabled(platform == null || platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1);
         }
     }
