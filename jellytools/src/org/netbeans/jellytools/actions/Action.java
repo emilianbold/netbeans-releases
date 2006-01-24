@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.actions;
@@ -29,6 +29,7 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.drivers.input.KeyRobotDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTreeOperator.NoSuchPathException;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.ComponentVisualizer;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
@@ -325,14 +326,23 @@ public class Action {
      * @param nodes nodes to be action performed on  
      * @throws UnsupportedOperationException when action does not support popup mode */    
     public void performPopup(Node[] nodes) {
+        callPopup(nodes).pushMenu(popupPath, "|", getComparator());
+        try {
+            Thread.sleep(AFTER_ACTION_WAIT_TIME);
+        } catch (Exception e) {
+            throw new JemmyException("Sleeping interrupted", e);
+        }
+    }
+    
+    /** Calls popup on given nodes and returns JPopupMenuOperator instance.
+     * @param nodes nodes to be action performed on  
+     * @return JPopupMenuOperator instance
+     */
+    JPopupMenuOperator callPopup(Node[] nodes) {
         if (popupPath==null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define popup path");
         }
         testNodes(nodes);
-        TreePath paths[]=new TreePath[nodes.length];
-        for (int i=0; i<nodes.length; i++) {
-            paths[i]=nodes[i].getTreePath();
-        }
         ComponentVisualizer treeVisualizer = nodes[0].tree().getVisualizer();
         ComponentVisualizer oldVisualizer = null;
         // If visualizer of JTreeOperator is EmptyVisualizer, we need
@@ -345,17 +355,26 @@ public class Action {
         // Need to wait here to be more reliable.
         // TBD - It can be removed after issue 23663 is solved.
         new EventTool().waitNoEvent(500);
-        JPopupMenuOperator popup=new JPopupMenuOperator(nodes[0].tree().callPopupOnPaths(paths));
+        TreePath paths[] = new TreePath[nodes.length];
+        for (int i=0; i<nodes.length; i++) {
+            paths[i]=nodes[i].getTreePath();
+        }
+        JPopupMenuOperator popup;
+        try {
+            popup = new JPopupMenuOperator(nodes[0].tree().callPopupOnPaths(paths));
+        } catch (NoSuchPathException e) {
+            // possibly node was recreated, so we can find it again (see issue #71591)
+            for (int i=0; i<nodes.length; i++) {
+                paths[i] = nodes[i].getTreePath();
+            }
+            popup = new JPopupMenuOperator(nodes[0].tree().callPopupOnPaths(paths));
+        }
         // restore previously used default visualizer
         if(oldVisualizer != null) {
             Operator.setDefaultComponentVisualizer(oldVisualizer);
         }
-        popup.pushMenu(popupPath, "|", getComparator());
-        try {
-            Thread.sleep(AFTER_ACTION_WAIT_TIME);
-        } catch (Exception e) {
-            throw new JemmyException("Sleeping interrupted", e);
-        }
+        popup.setComparator(getComparator());
+        return popup;
     }
     
     /** performs action through popup menu

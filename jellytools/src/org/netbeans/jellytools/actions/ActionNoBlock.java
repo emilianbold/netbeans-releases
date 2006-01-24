@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.actions;
@@ -105,32 +105,7 @@ public class ActionNoBlock extends Action {
      * @param nodes nodes to be action performed on  
      * @throws UnsupportedOperationException when action does not support popup mode */    
     public void performPopup(Node[] nodes) {
-        if (popupPath==null)
-            throw new UnsupportedOperationException(getClass().toString()+" does not define popup path");
-        testNodes(nodes);
-        TreePath paths[]=new TreePath[nodes.length];
-        for (int i=0; i<nodes.length; i++) {
-            paths[i]=nodes[i].getTreePath();
-        }
-        Operator.ComponentVisualizer treeVisualizer = nodes[0].tree().getVisualizer();
-        Operator.ComponentVisualizer oldVisualizer = null;
-        // If visualizer of JTreeOperator is EmptyVisualizer, we need
-        // to avoid making tree component visible in callPopup method.
-        // So far only known case is tree from TreeTableOperator.
-        if(treeVisualizer instanceof EmptyVisualizer) {
-            oldVisualizer = Operator.getDefaultComponentVisualizer();
-            Operator.setDefaultComponentVisualizer(treeVisualizer);
-        }
-        // Need to wait here to be more reliable.
-        // TBD - It can be removed after issue 23663 is solved.
-        new EventTool().waitNoEvent(500);
-        JPopupMenuOperator popup = new JPopupMenuOperator(nodes[0].tree().callPopupOnPaths(paths));
-        // restore previously used default visualizer
-        if(oldVisualizer != null) {
-            Operator.setDefaultComponentVisualizer(oldVisualizer);
-        }
-        popup.setComparator(getComparator());
-        popup.pushMenuNoBlock(popupPath, "|");
+        callPopup(nodes).pushMenuNoBlock(popupPath, "|");
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
         } catch (Exception e) {
