@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -46,7 +46,7 @@ public interface Sources {
      * the {@link Project#getProjectDirectory project directory} must either be
      * one of the returned folders, or a descendant of one of the returned folders.
      * @param type a kind of folder, e.g. {@link #TYPE_GENERIC} or
-     *             {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
+     *             <a href="@org-netbeans-modules-java-project@/org/netbeans/api/java/project/JavaProjectConstants.html#SOURCES_TYPE_JAVA"><code>JavaProjectConstants.SOURCES_TYPE_JAVA</code></a>
      * @return a list of top-level source folders of that kind (may be empty but not null)
      */
     SourceGroup[] getSourceGroups(String type);
