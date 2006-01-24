@@ -314,10 +314,14 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         positionsCombo.setModel(CustomizerComponentFactory.createComboWaitModel());
         SFS_RP.post(new Runnable() {
             public void run() {
-                final Enumeration filesEn = parent.getFileObject().getData(false);
+                DataObject[] kids = DataFolder.findFolder(parent.getFileObject()).getChildren(); // #71820: sort!
+                final FileObject[] files = new FileObject[kids.length];
+                for (int i = 0; i < kids.length; i++) {
+                    files[i] = kids[i].getPrimaryFile();
+                }
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        createPositionModel(positionsCombo, filesEn, parent);
+                        createPositionModel(positionsCombo, files, parent);
                     }
                 });
             }
@@ -325,13 +329,13 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     }
     
     private void createPositionModel(final JComboBox positionsCombo,
-            final Enumeration filesEn,
+            final FileObject[] files,
             final LayerItemPresenter parent) {
         DefaultComboBoxModel newModel = new DefaultComboBoxModel();
         LayerItemPresenter previous = null;
-        while (filesEn.hasMoreElements()) {
+        for (int i = 0; i < files.length; i++) {
             LayerItemPresenter current = new LayerItemPresenter(
-                    (FileObject) filesEn.nextElement(),
+                    files[i],
                     parent.getFileObject());
             newModel.addElement(createPosition(previous, current));
             previous = current;
