@@ -80,9 +80,9 @@ public class Annotator {
             }
         }
 
-        String string = System.getProperty("netbeans.experimental.cvs.ui.statusLabelFormat");  // NOI18N
+        String string = System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
         if (string != null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "CVS status labels use format \"" + string + "\" where:"); // NOI18N
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "SVN status labels use format \"" + string + "\" where:"); // NOI18N
             ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{0} stays for revision"); // NOI18N
             ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{1} stays for status"); // NOI18N
             ErrorManager.getDefault().log(ErrorManager.WARNING, "\t{2} stays for branch or sticky tag"); // NOI18N
@@ -358,7 +358,7 @@ public class Annotator {
                         if (info.isDirectory()) continue;
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png", true);  // NOI18N
+                            Image badge = Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/conflicts-badge.png", true);  // NOI18N
                             return Utilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -372,7 +372,7 @@ public class Annotator {
                         FileInformation info = (FileInformation) modifiedFiles.get(mf);
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png", true); // NOI18N
+                            Image badge = Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/conflicts-badge.png", true); // NOI18N
                             return Utilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -383,7 +383,7 @@ public class Annotator {
         }
 
         if (modified && !allExcluded) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/modified-badge.png", true); // NOI18N
+            Image badge = Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/modified-badge.png", true); // NOI18N
             return Utilities.mergeImages(icon, badge, 16, 9);
         } else {
             return icon;
