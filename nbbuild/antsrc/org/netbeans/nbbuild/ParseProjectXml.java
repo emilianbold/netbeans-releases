@@ -680,7 +680,7 @@ public final class ParseProjectXml extends Task {
                 String pubpkgs = attr.getValue("OpenIDE-Module-Public-Packages");
                 if ("-".equals(pubpkgs)) {
                     throw new BuildException("The module " + depJar + " has no public packages and so cannot be compiled against", getLocation());
-                } else if (pubpkgs != null && !runtime && publicPackageJarDir != null) {
+                } else if (pubpkgs != null && !runtime && /* #71807 */ dep.run && publicPackageJarDir != null) {
                     File splitJar = createPublicPackageJar(additions, pubpkgs, publicPackageJarDir, cnb);
                     additions.clear();
                     additions.add(splitJar);
