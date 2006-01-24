@@ -130,19 +130,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
         new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
         // wait until page is displayed in internal browser
-        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
-        try {
-            // increase time to wait to 120 second (it fails on Linux)
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 120000);
-            new TopComponentOperator("Test JSP Page").close(); // NOI18N
-        } finally {
-            // restore default timeout
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
-            // log messages from output
-            getLog("TomcatMessages0").print(new OutputTabOperator("Bundled Tomcat", 0).getText()); // NOI18N
-            getLog("TomcatMessages1").print(new OutputTabOperator("Bundled Tomcat", 1).getText()); // NOI18N
-            getLog("RunOutput").print(new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME).getText()); // NOI18N
-        }
+        waitBrowser().close();
     }
 
     /** Debug project.
@@ -152,7 +140,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
     public void testDebugProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
         new DebugProjectAction().perform(rootNode);
-        TopComponentOperator browserOper = new TopComponentOperator("Test JSP Page"); // NOI18N
+        waitBrowser();
     }
 
     /** Set breakpoint.
@@ -391,5 +379,24 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         // wait until Debug toolbar dismiss
         debugToolbarOper.waitComponentVisible(false);
         so.close();
+    }
+    
+    /** Increases timeout and waits until page is displayed in internal browser.
+     * @return TopComponentOperator instance of internal browser
+     */
+    private TopComponentOperator waitBrowser() {
+        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        try {
+            // increase time to wait to 120 second (it fails on slower machines)
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 120000);
+            return new TopComponentOperator("Test JSP Page");// NOI18N
+        } finally {
+            // restore default timeout
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
+            // log messages from output
+            getLog("TomcatMessages0").print(new OutputTabOperator("Bundled Tomcat", 0).getText()); // NOI18N
+            getLog("TomcatMessages1").print(new OutputTabOperator("Bundled Tomcat", 1).getText()); // NOI18N
+            getLog("RunOutput").print(new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME).getText()); // NOI18N
+        }
     }
 }
