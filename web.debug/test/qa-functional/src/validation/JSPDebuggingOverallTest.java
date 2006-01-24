@@ -232,6 +232,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
         int line = eo.getLineNumber();
         stt.waitText("index.jsp:"+line);
+        stt.clear();
         Utils.finishDebugger();
         // start debugger again
         new DebugProjectAction().perform();
@@ -257,6 +258,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
         int line = eo.getLineNumber();
         stt.waitText("index.jsp:"+line);
+        stt.clear();
         
         // check it is not possible to stop server
         // "Bundled Tomcat (x.y.z)"
