@@ -138,8 +138,16 @@ public abstract class AbstractAddMethodStrategy {
 	    if (ejbql != null && ejbql.length() > 0) {
 		c.addEjbQl(JMIUtils.duplicate(prototypeMethod), ejbql, getDDFile(jc));
 	    }
-	    JMIUtils.fixImports(jc);
-            JMIUtils.fixImports(c.getBeanClass());
+
+            JMIUtils.beginJmiTransaction();
+            boolean rollback = true;
+            try {
+                JMIUtils.fixImports(jc);
+                JMIUtils.fixImports(c.getBeanClass());
+                rollback = false;
+            } finally {
+                JMIUtils.endJmiTransaction(rollback);
+            }
             handle.progress(99);
 	} finally {
 	    handle.finish();
