@@ -30,6 +30,10 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.tigris.subversion.svnclientadapter</package>
                 <package>org.tigris.subversion.svnclientadapter.commandline</package>
             </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/svnClientAdapter.jar</runtime-relative-path>
+                <binary-origin>../external/svnClientAdapter.jar</binary-origin>
+            </class-path-extension>            
         </data>
     </configuration>
 </project>
