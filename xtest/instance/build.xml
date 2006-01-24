@@ -56,7 +56,10 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="." antfile="${xtest.harness.antfile}"
              target="runtestsdist"/>
     </target>
-    
+
+    <target name="buildnetbeans">
+        <ant dir="../../nbbuild"/>
+    </target>	    
     <target name="buildtests">
         <ant dir="." antfile="${xtest.harness.antfile}"
              target="buildtests"/>
