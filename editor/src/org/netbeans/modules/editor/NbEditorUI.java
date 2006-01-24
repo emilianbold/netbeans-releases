@@ -43,6 +43,7 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtEditorUI;
@@ -192,6 +193,18 @@ public class NbEditorUI extends ExtEditorUI {
             cm.putAll(super.createColoringMap());
             Collection col = cm.keySet();
             Iterator it = col.iterator();
+            AttributeSet defAS = fcs.getTokenFontColors("default"); //NOI18N
+            Integer defSize = null;
+            if (defAS != null){
+                Object fsObj = defAS.getAttribute(StyleConstants.FontSize);
+                if (fsObj instanceof Integer){
+                    defSize = (Integer) fsObj;
+                }
+            }
+            
+            if (defSize == null){
+                defSize = new Integer(SettingsDefaults.defaultFont.getSize());
+            }
             
             while (it.hasNext()){
 
@@ -211,7 +224,7 @@ public class NbEditorUI extends ExtEditorUI {
                 }
 
                 Font font = as.getAttribute (StyleConstants.FontFamily) != null ?
-                    toFont (as) : null;
+                    toFont (as, defSize) : null;
 
                 if (name.equals ("default")) { //NOI18N
                     if (font == null) {
@@ -242,11 +255,15 @@ public class NbEditorUI extends ExtEditorUI {
         }
     }
     
-    static Font toFont (AttributeSet s) {
+    static Font toFont (AttributeSet s, Integer defSize) {
         Object fontFamily = s.getAttribute (StyleConstants.FontFamily);
         Object fontSize = s.getAttribute (StyleConstants.FontSize);
-        if (fontFamily == null || fontSize == null){ 
+        if (fontFamily == null){ 
             return null;
+        }
+        
+        if (fontSize == null){
+            fontSize = defSize;
         }
         
 	int style = 0;

@@ -794,21 +794,30 @@ public class BaseOptions extends OptionSupport {
         super.setSettingValue(SettingsNames.KEY_BINDING_LIST, list, KEY_BINDING_LIST_PROP);
     }
     
-    static Font toFont (AttributeSet s) {
-        if (s.getAttribute (StyleConstants.FontFamily) == null) return null;
+    static Font toFont (AttributeSet s, Integer defSize) {
+        Object fontFamily = s.getAttribute (StyleConstants.FontFamily);
+        Object fontSize = s.getAttribute (StyleConstants.FontSize);
+        if (fontFamily == null){ 
+            return null;
+        }
+        
+        if (fontSize == null){
+            fontSize = defSize;
+        }
+        
 	int style = 0;
-	if (s.getAttribute (StyleConstants.Bold) != null &&
-            s.getAttribute (StyleConstants.Bold).equals (Boolean.TRUE)
-        )
+        if (Boolean.TRUE.equals(s.getAttribute (StyleConstants.Bold))){
 	    style += Font.BOLD;
-	if (s.getAttribute (StyleConstants.Italic) != null &&
-            s.getAttribute (StyleConstants.Italic).equals (Boolean.TRUE)
-        )
+        }
+        
+	if (Boolean.TRUE.equals(s.getAttribute (StyleConstants.Italic))){
 	    style += Font.ITALIC;
+        }
+        
 	return new Font (
-	    (String) s.getAttribute (StyleConstants.FontFamily), 
+	    (String) fontFamily, 
 	    style,
-	    ((Integer) s.getAttribute (StyleConstants.FontSize)).intValue ()
+	    ((Integer) fontSize).intValue ()
 	);
     }
     
@@ -840,6 +849,20 @@ public class BaseOptions extends OptionSupport {
             return;
         }
         Iterator it = m.keySet ().iterator ();
+        
+        AttributeSet defAS = fcs.getTokenFontColors("default"); //NOI18N        
+        Integer defSize = null;
+        if (defAS != null){
+            Object fsObj = defAS.getAttribute(StyleConstants.FontSize);
+            if (fsObj instanceof Integer){
+                defSize = (Integer) fsObj;
+            }
+        }
+
+        if (defSize == null){
+            defSize = new Integer(SettingsDefaults.defaultFont.getSize());
+        }
+        
         while (it.hasNext ()) {
             String category = (String) it.next ();
 	    if (category == null) continue;
@@ -851,7 +874,7 @@ public class BaseOptions extends OptionSupport {
                 continue;
 	    }
 	    Font font = as.getAttribute (StyleConstants.FontFamily) != null ?
-                toFont (as) : null;
+                toFont (as, defSize) : null;
 	    if (category.equals ("default")) { //NOI18N
 		if (font == null) {
 		    System.out.println("ColorBridge null font!!! ");
