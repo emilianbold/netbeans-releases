@@ -274,9 +274,16 @@ implements ChangeListener {
                 err.log (ErrorManager.INFORMATIONAL, "             blocked on: " + blocked); // NOI18N
             }
             try {
+                if (FolderList.isFolderRecognizerThread()) {
+                    inWaitNotified = System.currentTimeMillis();
+                }
                 wait ();
             } catch (InterruptedException ex) {
                 // means nothing, go on
+            } finally {
+                if (FolderList.isFolderRecognizerThread()) {
+                    inWaitNotified = -1;
+                }
             }
         } 
     }
