@@ -255,4 +255,6 @@ public class NbPlatformTest extends TestBase {
         assertEquals(NbPlatform.HARNESS_VERSION_50u1, p.getHarnessVersion());
     }
     
+    // XXX testHarnessSelection
+    
 }

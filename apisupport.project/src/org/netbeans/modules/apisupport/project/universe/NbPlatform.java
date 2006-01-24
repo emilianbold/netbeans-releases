@@ -234,11 +234,15 @@ public final class NbPlatform {
         return new NbPlatform(null, null, destDir, findHarness(destDir), sources, new URL[0]);
     }
     
+    /**
+     * Find the location of the harness inside a platform.
+     * Guaranteed to be a child directory (but might not exist yet).
+     */
     private static File findHarness(File destDir) {
         File[] kids = destDir.listFiles();
         if (kids != null) {
             for (int i = 0; i < kids.length; i++) {
-                if (kids[i].isDirectory() && kids[i].getName().startsWith("harness")) { // NOI18N
+                if (isHarness(kids[i])) {
                     return kids[i];
                 }
             }
@@ -246,6 +250,13 @@ public final class NbPlatform {
         return new File(destDir, "harness"); // NOI18N
     }
 
+    /**
+     * Check whether a given directory is really a valid harness.
+     */
+    public static boolean isHarness(File dir) {
+        return new File(dir, "modules" + File.separatorChar + "org-netbeans-modules-apisupport-harness.jar").isFile(); // NOI18N
+    }
+    
     /**
      * Returns whether the platform within the given direcotry is already
      * registered.
@@ -294,17 +305,7 @@ public final class NbPlatform {
                     if (!destdir.isDirectory()) {
                         throw new FileNotFoundException(destdir.getAbsolutePath());
                     }
-                    String harnessDirKey = PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX;
-                    if (harness.getParentFile().equals(destdir)) {
-                        // Common case.
-                        props.setProperty(harnessDirKey, "${" + plafDestDir + "}/" + harness.getName()); // NOI18N
-                    } else if (harness.equals(getDefaultPlatform().getHarnessLocation())) {
-                        // Also common.
-                        props.setProperty(harnessDirKey, "${" + PLATFORM_PREFIX + PLATFORM_ID_DEFAULT + PLATFORM_HARNESS_DIR_SUFFIX + "}"); // NOI18N
-                    } else {
-                        // Some random location.
-                        props.setProperty(harnessDirKey, harness.getAbsolutePath());
-                    }
+                    storeHarnessLocation(id, destdir, harness, props);
                     props.setProperty(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX, label);
                     PropertyUtils.putGlobalProperties(props);
                     return null;
@@ -320,6 +321,21 @@ public final class NbPlatform {
             Util.err.log("NbPlatform added: " + plaf);
         }
         return plaf;
+    }
+    
+    private static void storeHarnessLocation(String id, File destdir, File harness, EditableProperties props) {
+        String harnessDirKey = PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX;
+        if (harness.equals(findHarness(destdir))) {
+            // Common case.
+            String plafDestDir = PLATFORM_PREFIX + id + PLATFORM_DEST_DIR_SUFFIX;
+            props.setProperty(harnessDirKey, "${" + plafDestDir + "}/" + harness.getName()); // NOI18N
+        } else if (harness.equals(getDefaultPlatform().getHarnessLocation())) {
+            // Also common.
+            props.setProperty(harnessDirKey, "${" + PLATFORM_PREFIX + PLATFORM_ID_DEFAULT + PLATFORM_HARNESS_DIR_SUFFIX + "}"); // NOI18N
+        } else {
+            // Some random location.
+            props.setProperty(harnessDirKey, harness.getAbsolutePath());
+        }
     }
     
     public static void removePlatform(final NbPlatform plaf) throws IOException {
@@ -902,10 +918,57 @@ public final class NbPlatform {
     }
 
     /**
-     * Get the location of this platform's harness
+     * Get the current location of this platform's harness
      */
     public File getHarnessLocation() {
         return harness;
     }
     
+    /**
+     * Get the location of the harness bundled with this platform. 
+     */
+    public File getBundledHarnessLocation() {
+        return findHarness(nbdestdir);
+    }
+    
+    /**
+     * Set a new location for this platform's harness.
+     */
+    public void setHarnessLocation(final File harness) throws IOException {
+        if (harness.equals(this.harness)) {
+            return;
+        }
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                public Object run() throws IOException {
+                    EditableProperties props = PropertyUtils.getGlobalProperties();
+                    storeHarnessLocation(id, nbdestdir, harness, props);
+                    PropertyUtils.putGlobalProperties(props);
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
+        }
+        this.harness = harness;
+        harnessVersion = -1;
+    }
+    
+    /**
+     * Gets a quick display name for the <em>version</em> of a harness.
+     * @param {@link #HARNESS_VERSION_50} etc.
+     * @return a short display name
+     */
+    public static String getHarnessVersionDisplayName(int version) {
+        switch (version) {
+            case HARNESS_VERSION_50:
+                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_5.0");
+            case HARNESS_VERSION_50u1:
+                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_5.0u1");
+            default:
+                assert version == HARNESS_VERSION_UNKNOWN;
+                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_unknown");
+        }
+    }
+
 }

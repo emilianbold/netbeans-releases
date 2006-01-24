@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -47,6 +47,7 @@ public final class NbPlatformCustomizer extends JPanel {
     private NbPlatformCustomizerSources sourcesTab;
     private NbPlatformCustomizerModules modulesTab;
     private NbPlatformCustomizerJavadoc javadocTab;
+    private NbPlatformCustomizerHarness harnessTab;
     
     public static void showCustomizer() {
         NbPlatformCustomizer customizer = new NbPlatformCustomizer();
@@ -88,9 +89,11 @@ public final class NbPlatformCustomizer extends JPanel {
             sourcesTab = new NbPlatformCustomizerSources();
             modulesTab = new NbPlatformCustomizerModules();
             javadocTab = new NbPlatformCustomizerJavadoc();
+            harnessTab = new NbPlatformCustomizerHarness();
             detailPane.addTab(getMessage("CTL_ModulesTab"), modulesTab); // NOI18N
             detailPane.addTab(getMessage("CTL_SourcesTab"), sourcesTab); // NOI18N
-            detailPane.addTab(getMessage("CTL_JavadocTab"), javadocTab); // NOI18N)
+            detailPane.addTab(getMessage("CTL_JavadocTab"), javadocTab); // NOI18N
+            detailPane.addTab(getMessage("CTL_HarnessTab"), harnessTab); // NOI18N
             Container window = this.getTopLevelAncestor();
             if (window != null && window instanceof Window) {
                 ((Window) window).pack();
@@ -115,6 +118,7 @@ public final class NbPlatformCustomizer extends JPanel {
                 modulesTab.setPlatform(plaf);
                 sourcesTab.setPlatform(plaf);
                 javadocTab.setPlatform(plaf);
+                harnessTab.setPlatform(plaf);
             }
         } else {
             modulesTab.reset();
