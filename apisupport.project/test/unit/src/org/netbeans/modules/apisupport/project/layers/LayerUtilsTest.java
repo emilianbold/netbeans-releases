@@ -14,21 +14,21 @@
 package org.netbeans.modules.apisupport.project.layers;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.Manifest;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -300,6 +300,28 @@ public class LayerUtilsTest extends LayerTestBase {
         FileObject file = fs.findResource(path);
         assertNotNull("found " + path, file);
         assertEquals(message, label, DataObject.find(file).getNodeDelegate().getDisplayName());
+    }
+    
+    public void testMasks() throws Exception {
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(project);
+        Set/*<String>*/ optionInstanceNames = new HashSet();
+        FileObject toolsMenu = fs.findResource("Menu/Tools");
+        assertNotNull(toolsMenu);
+        FileObject[] kids = toolsMenu.getChildren();
+        for (int i = 0; i < kids.length; i++) {
+            String name = kids[i].getNameExt();
+            if (name.indexOf("Options") != -1) {
+                optionInstanceNames.add(name);
+            }
+        }
+        assertEquals("#63295: masks work",
+                new HashSet(Arrays.asList(new String[] {
+            "org-netbeans-modules-options-OptionsWindowAction.shadow",
+            // org-netbeans-core-actions-OptionsAction.instance should be masked
+        })), optionInstanceNames);
+        assertNotNull("system FS has xml/catalog", fs.findResource("Services/Hidden/org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance"));
+        assertNull("but one entry hidden by apisupport/project", fs.findResource("Services/Hidden/org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance"));
     }
     
 }

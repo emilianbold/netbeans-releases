@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -72,6 +73,7 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Task;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Misc support for dealing with layers.
@@ -549,9 +551,9 @@ public class LayerUtils {
             FileSystem projectLayer = layerForProject(p).layer(false);
             if (type == NbModuleTypeProvider.STANDALONE) {
                 Set/*<File>*/ jars = getPlatformJarsForStandaloneProject(p);
-                FileSystem platformLayers = getPlatformLayers(jars);
+                FileSystem[] platformLayers = getPlatformLayers(jars);
                 ClassPath cp = createLayerClasspath(Collections.singleton(p), jars);
-                return mergeFilesystems(projectLayer, new FileSystem[] {platformLayers}, cp);
+                return mergeFilesystems(projectLayer, platformLayers, cp);
             } else if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
                 SuiteProject suite = SuiteUtils.findSuite(p);
                 if (suite == null) {
@@ -572,7 +574,7 @@ public class LayerUtils {
                     }
                 }
                 Set/*<File>*/ jars = getPlatformJarsForSuiteComponentProject(p, suite);
-                readOnlyLayers.add(getPlatformLayers(jars));
+                readOnlyLayers.addAll(Arrays.asList(getPlatformLayers(jars)));
                 ClassPath cp = createLayerClasspath(modules, jars);
                 return mergeFilesystems(projectLayer, (FileSystem[]) readOnlyLayers.toArray(new FileSystem[readOnlyLayers.size()]), cp);
             } else if (type == NbModuleTypeProvider.NETBEANS_ORG) {
@@ -677,29 +679,49 @@ public class LayerUtils {
     }
 
     /**
-     * Constructs a filesystem representing the merged XML layers of the supplied platform module JARs.
+     * Constructs a list of filesystems representing the XML layers of the supplied platform module JARs.
      */
-    private static FileSystem getPlatformLayers(Set/*<File>*/ platformJars) throws IOException {
-        List/*<URL>*/ urls = new ArrayList();
+    private static FileSystem[] getPlatformLayers(Set/*<File>*/ platformJars) throws IOException {
+        List/*<FileSystem>*/ layers = new ArrayList();
         Iterator it = platformJars.iterator();
-        while (it.hasNext()) {
+        JAR: while (it.hasNext()) {
             File jar = (File) it.next();
             ManifestManager mm = ManifestManager.getInstanceFromJAR(jar);
+            String[] toks = mm.getRequiredTokens();
+            for (int i = 0; i < toks.length; i++) {
+                if (toks[i].startsWith("org.openide.modules.os.")) { // NOI18N
+                    // Best to exclude platform-specific modules, e.g. ide/applemenu, as they can cause confusion.
+                    continue JAR;
+                }
+            }
             String layer = mm.getLayer();
             if (layer != null) {
-                urls.add(new URL("jar:" + jar.toURI() + "!/" + layer)); // NOI18N
+                URL u = new URL("jar:" + jar.toURI() + "!/" + layer);
+                try {
+                    // XXX nbres: and such URL protocols may not work in platform layers
+                    // (cf. org.openide.filesystems.ExternalUtil.findClass)
+                    FileSystem xfs = new XMLFileSystem(u);
+                    boolean hasMasks = false;
+                    Enumeration e = xfs.getRoot().getChildren(true);
+                    while (e.hasMoreElements()) {
+                        FileObject f = (FileObject) e.nextElement();
+                        if (f.getNameExt().endsWith("_hidden")) { // NOI18N
+                            // #63295: put it at the beginning. Not as good as following module deps but probably close enough.
+                            hasMasks = true;
+                            break;
+                        }
+                    }
+                    if (hasMasks) {
+                        layers.add(0, xfs);
+                    } else {
+                        layers.add(xfs);
+                    }
+                } catch (SAXException e) {
+                    throw (IOException) new IOException(e.toString()).initCause(e);
+                }
             }
         }
-        XMLFileSystem fs = new XMLFileSystem();
-        try {
-            // XXX properly speaking should topo sort by module deps so overrides work, but forget it
-            // XXX nbres: and such URL protocols may not work in platform layers
-            // (cf. org.openide.filesystems.ExternalUtil.findClass)
-            fs.setXmlUrls((URL[]) urls.toArray(new URL[urls.size()]));
-        } catch (PropertyVetoException ex) {
-            assert false : ex;
-        }
-        return fs;
+        return (FileSystem[]) layers.toArray(new FileSystem[layers.size()]);
     }
     
     /**
