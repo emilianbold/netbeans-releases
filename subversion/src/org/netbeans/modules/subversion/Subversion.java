@@ -13,16 +13,29 @@
 
 package org.netbeans.modules.subversion;
 
+import org.openide.ErrorManager;
 import org.tigris.subversion.svnclientadapter.*;
+import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
         
 /**
  *
  * @author Petr Kuzel
  */
 public class Subversion {
+
+    static {
+        try {
+            CmdLineClientAdapterFactory.setup();
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    }
     
     /** Creates a new instance of Subversion */
     public Subversion() {
     }
     
+    static ISVNClientAdapter getClient() {
+        return SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
+    }
 }
