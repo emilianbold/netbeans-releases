@@ -94,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="CVS/SVN" boolvalue="true" />
 
         <folder name="SVN">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.subversion.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.subversion.resources.Bundle" />
 
             <file name="org-netbeans-modules-subversion-actions-ShowAllChangesAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-actions-ShowAllChangesAction.instance"/>
