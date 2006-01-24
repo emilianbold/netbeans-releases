@@ -243,20 +243,25 @@ public class NbEditorUI extends ExtEditorUI {
     }
     
     static Font toFont (AttributeSet s) {
-        if (s.getAttribute (StyleConstants.FontFamily) == null) return null;
+        Object fontFamily = s.getAttribute (StyleConstants.FontFamily);
+        Object fontSize = s.getAttribute (StyleConstants.FontSize);
+        if (fontFamily == null || fontSize == null){ 
+            return null;
+        }
+        
 	int style = 0;
-	if (s.getAttribute (StyleConstants.Bold) != null &&
-            s.getAttribute (StyleConstants.Bold).equals (Boolean.TRUE)
-        )
+        if (Boolean.TRUE.equals(s.getAttribute (StyleConstants.Bold))){
 	    style += Font.BOLD;
-	if (s.getAttribute (StyleConstants.Italic) != null &&
-            s.getAttribute (StyleConstants.Italic).equals (Boolean.TRUE)
-        )
+        }
+        
+	if (Boolean.TRUE.equals(s.getAttribute (StyleConstants.Italic))){
 	    style += Font.ITALIC;
+        }
+        
 	return new Font (
-	    (String) s.getAttribute (StyleConstants.FontFamily), 
+	    (String) fontFamily, 
 	    style,
-	    ((Integer) s.getAttribute (StyleConstants.FontSize)).intValue ()
+	    ((Integer) fontSize).intValue ()
 	);
     }
     
