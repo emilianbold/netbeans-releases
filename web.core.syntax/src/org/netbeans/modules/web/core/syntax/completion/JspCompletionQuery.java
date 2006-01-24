@@ -22,6 +22,8 @@ import javax.servlet.jsp.tagext.TagAttributeInfo;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
 
@@ -34,6 +36,19 @@ import org.netbeans.modules.web.core.syntax.*;
 
 public class JspCompletionQuery implements CompletionQuery {
     
+    /**
+     * @see filterNonStandardXMLEntities(List, List)
+     **/
+    private static final Set stdXMLEntities = new TreeSet();
+    
+    static{
+        stdXMLEntities.add("&lt;");
+        stdXMLEntities.add("&gt;");
+        stdXMLEntities.add("&apos;");
+        stdXMLEntities.add("&quot;");
+        stdXMLEntities.add("&amp;");
+    }
+            
     protected CompletionQuery contentQuery;
     
     public JspCompletionQuery(CompletionQuery contentQuery) {
@@ -106,7 +121,16 @@ public class JspCompletionQuery implements CompletionQuery {
                     ArrayList all = new ArrayList();
                     all.addAll(jspDirec.getData());
                     all.addAll(jspRes.getData());
-                    if(contentLResult != null) all.addAll(contentLResult.getData());
+                    if(contentLResult != null){
+                        DataObject dobj = NbEditorUtilities.getDataObject(doc);
+                        
+                        if(dobj != null && JspUtils.getJSPColoringData(doc, dobj.getPrimaryFile()).isXMLSyntax()){
+                            filterNonStandardXMLEntities(all, contentLResult.getData());
+                        }
+                        else{
+                            all.addAll(contentLResult.getData());
+                        }
+                    }
                     
                     //note: offset and removelength passed into the DefaultResult are not used anywhere
                     CompletionQuery.Result result = new CompletionQuery.DefaultResult(component, 
@@ -120,6 +144,32 @@ public class JspCompletionQuery implements CompletionQuery {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * A hack-fix for #70366
+     */
+    private void filterNonStandardXMLEntities(List completionItemsRep, List htmlSuggestions) {
+        Iterator it = htmlSuggestions.iterator();
+        
+        while (it.hasNext()){
+            CompletionQuery.ResultItem item = (CompletionQuery.ResultItem) it.next();
+            
+            String itemText = item.getItemText();
+            boolean filterOut = false;
+            
+            // check if entity is suggested
+            if (itemText.startsWith("&") && itemText.endsWith(";")){
+                // only allow well known XML entities
+                if (!stdXMLEntities.contains(itemText)){
+                    filterOut = true;
+                }
+            }
+            
+            if (!filterOut){
+                completionItemsRep.add(item);
+            }
+        }
     }
     
     /** a new CC api hack - the result item needs to know its offset, formerly got from result - now cannot be used. */
