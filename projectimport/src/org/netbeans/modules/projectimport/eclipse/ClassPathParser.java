@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,7 +31,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.netbeans.modules.projectimport.ProjectImporterException;
 
 /**
- * Parses .classpath file and sets the given project's classpath.
+ * Parses a content of the .classpath file..
  *
  * @author mkrauskopf
  */
@@ -41,6 +41,7 @@ final class ClassPathParser extends DefaultHandler {
     private static final String CLASSPATH = "classpath";
     private static final String CLASSPATH_ENTRY = "classpathentry";
     private static final String ATTRIBUTES = "attributes";
+    private static final String ATTRIBUTE = "attribute";
     
     // attributes names
     private static final String KIND_ATTR = "kind";
@@ -51,6 +52,7 @@ final class ClassPathParser extends DefaultHandler {
     private static final int POSITION_CLASSPATH = 1;
     private static final int POSITION_CLASSPATH_ENTRY = 2;
     private static final int POSITION_ATTRIBUTES = 3;
+    private static final int POSITION_ATTRIBUTE = 4;
     
     private int position = POSITION_NONE;
     private StringBuffer chars;
@@ -59,7 +61,11 @@ final class ClassPathParser extends DefaultHandler {
     
     private ClassPathParser() {/* emtpy constructor */}
     
-    /** Returns classpath content from project's .classpath file */
+    /** 
+     * Returns classpath content from a project's .classpath file.
+     *
+     * @param classPathFile the .classpath file
+     */
     static ClassPath parse(File classPathFile) throws ProjectImporterException {
         
         ClassPathParser parser = new ClassPathParser();
@@ -83,7 +89,12 @@ final class ClassPathParser extends DefaultHandler {
         return parser.classPath;
     }
     
-    /** Returns classpath content from project's .classpath file */
+    /**
+     * Returns classpath content as it is represented in the project's
+     * .classpath file.
+     *
+     * @param classPath string as it is in the .classpath file
+     */
     static ClassPath parse(String classPath) throws ProjectImporterException {
         ClassPathParser parser = new ClassPathParser();
         parser.load(new InputSource(new StringReader(classPath)));
@@ -140,6 +151,13 @@ final class ClassPathParser extends DefaultHandler {
                     position = POSITION_ATTRIBUTES;
                 }
                 break;
+            case POSITION_ATTRIBUTES:
+                if (localName.equals(ATTRIBUTE)) {
+                    // ignored in the meantime - prepared for future 
+                    // (probably since elicpse 3.1M6 - see #57661)
+                    position = POSITION_ATTRIBUTE;
+                }
+                break;
             default:
                 throw (new SAXException("Unknown element reached: "
                         + localName));
@@ -158,6 +176,9 @@ final class ClassPathParser extends DefaultHandler {
                 break;
             case POSITION_ATTRIBUTES:
                 position = POSITION_CLASSPATH_ENTRY;
+                break;
+            case POSITION_ATTRIBUTE:
+                position = POSITION_ATTRIBUTES;
                 break;
             default:
                 ErrorManager.getDefault().log(ErrorManager.WARNING,

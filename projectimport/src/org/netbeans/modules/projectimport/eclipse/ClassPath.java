@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -99,7 +99,7 @@ final class ClassPath {
     private static final int USER_LIBRARY_PREFIX_LENGTH = USER_LIBRARY_PREFIX.length();
     
     private ClassPathEntry output;
-    private Collection pathEntries = Collections.EMPTY_LIST;
+    private Collection/*<ClassPathEntry>*/ pathEntries = Collections.EMPTY_LIST;
     
     private String jreContainer;
     private Collection sourceRoots;
@@ -135,7 +135,7 @@ final class ClassPath {
         return output;
     }
     
-    Collection getEntries() {
+    Collection/*<ClassPathEntry>*/ getEntries() {
         return pathEntries;
     }
     
