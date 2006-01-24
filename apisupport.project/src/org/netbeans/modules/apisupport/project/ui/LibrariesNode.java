@@ -45,6 +45,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.openide.DialogDescriptor;
@@ -54,6 +55,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -74,7 +76,7 @@ final class LibrariesNode extends AbstractNode {
     
     static final String LIBRARIES_NAME = "libraries"; // NOI18N
     
-    private static final String DISPLAY_NAME = NbBundle.getMessage(LibrariesNode.class, "LBL_libraries");
+    private static final String DISPLAY_NAME = getMessage("LBL_libraries");
     
     private Action[] actions;
     
@@ -107,27 +109,33 @@ final class LibrariesNode extends AbstractNode {
         StringBuffer shortDesc = new StringBuffer("<html>" + // NOI18N
                 "<u>" + dep.getModuleEntry().getCodeNameBase() + "</u><br>"); // NOI18N
         if (dep.hasImplementationDepedendency()) {
-            shortDesc.append("<br><strong><font color=\"red\">Implementation Depenendency</font></strong>"); // NOI18N
+            shortDesc.append("<br><font color=\"red\">" + getMessage("CTL_ImplementationDependency") + "</font>");
         }
         if (dep.hasCompileDependency()) {
-            shortDesc.append("<br>Needed to <strong>compile</strong>"); // NOI18N
+            shortDesc.append("<br>" + getMessage("CTL_NeededToCompile"));
         }
         if (dep.getReleaseVersion() != null) {
-            shortDesc.append("<br>Major release version: <strong>" + dep.getReleaseVersion() + "</strong>"); // NOI18N
+            shortDesc.append("<br>" + NbBundle.getMessage(LibrariesNode.class, "CTL_MajorReleaseVersion",
+                    dep.getReleaseVersion()));
         }
         if (dep.getSpecificationVersion() != null) {
-            shortDesc.append("<br>Specification version: <strong>" + dep.getSpecificationVersion() + "</strong>"); // NOI18N
+            shortDesc.append("<br>" + NbBundle.getMessage(LibrariesNode.class, "CTL_SpecificationVersion",
+                    dep.getSpecificationVersion()));
         }
         shortDesc.append("</html>"); // NOI18N
         return shortDesc.toString();
     }
     
+    private static String getMessage(String bundleKey) {
+        return NbBundle.getMessage(LibrariesNode.class, bundleKey);
+    }
+    
     private static final class LibrariesChildren extends Children.Keys implements AntProjectListener {
         
-        private final NbModuleProject project;
+        static final Action OPEN_PROJECT_ACTION = new OpenProjectAction();
+        static final Action REMOVE_DEPENDENCY_ACTION = new RemoveDependencyAction();
         
-        private static final Action OPEN_PROJECT_ACTION = new OpenProjectAction();
-        private static final Action REMOVE_DEPENDENCY_ACTION = new RemoveDependencyAction();
+        private final NbModuleProject project;
         
         LibrariesChildren(final NbModuleProject project) {
             this.project = project;
@@ -162,11 +170,16 @@ final class LibrariesNode extends AbstractNode {
             File srcF = dep.getModuleEntry().getSourceLocation();
             Node node;
             if (srcF == null) {
-                Node jarNode = getNodeDelegate(dep.getModuleEntry().getJarLocation());
-                assert jarNode != null;
-                node = new SourcelessDependencyNode(dep, project, jarNode, createDependenyActions(dep, project, false));
+                File jarF = dep.getModuleEntry().getJarLocation();
+                URL jarRootURL = Util.urlForJar(jarF);
+                assert jarRootURL != null;
+                FileObject root = URLMapper.findFileObject(jarRootURL);
+                ModuleEntry me = dep.getModuleEntry();
+                String name = me.getLocalizedName() + " - " + me.getCodeNameBase(); // NOI18N
+                Node pvNode = PackageView.createPackageView(new LibrariesSourceGroup(root, name));
+                node = new LibraryDependencyNode(dep, project, pvNode);
             } else {
-                node = new SourceDependencyNode(dep, project, createDependenyActions(dep, project, true));
+                node = new ProjectDependencyNode(dep, project);
             }
             return new Node[] { node };
         }
@@ -197,72 +210,70 @@ final class LibrariesNode extends AbstractNode {
             return n;
         }
         
-        private Action[] createDependenyActions(final ModuleDependency dep,
-                final NbModuleProject project, final boolean hasSources) {
-            Set actions = new LinkedHashSet();
-            if (hasSources) {
-                actions.add(OPEN_PROJECT_ACTION);
-            }
-            actions.add(new EditDependencyAction(dep, project));
-            actions.add(new ShowJavadocAction(dep, project));
-            actions.add(REMOVE_DEPENDENCY_ACTION);
-            return (Action[]) actions.toArray(new Action[actions.size()]);
-        }
-        
     }
     
-    private static final class SourceDependencyNode extends AbstractNode {
+    private static final class ProjectDependencyNode extends AbstractNode {
         
+        private ModuleDependency dep;
+        private NbModuleProject project;
         private Action[] actions;
         
-        SourceDependencyNode(final ModuleDependency dep, final NbModuleProject project,
-                final Action[] actions) {
+        ProjectDependencyNode(final ModuleDependency dep, final NbModuleProject project) {
             super(Children.LEAF, Lookups.fixed(new Object[] { dep, project }));
+            this.dep = dep;
+            this.project = project;
             ModuleEntry me = dep.getModuleEntry();
             setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
             setDisplayName(me.getLocalizedName());
             setShortDescription(LibrariesNode.createHtmlDescription(dep));
-            this.actions = actions;
         }
         
         public Action[] getActions(boolean context) {
+            if (actions == null) {
+                Set result = new LinkedHashSet();
+                result.add(LibrariesChildren.OPEN_PROJECT_ACTION);
+                result.add(new EditDependencyAction(dep, project));
+                result.add(new ShowJavadocAction(dep, project));
+                result.add(LibrariesChildren.REMOVE_DEPENDENCY_ACTION);
+                actions = (Action[]) result.toArray(new Action[result.size()]);
+            }
             return actions;
         }
         
         public Action getPreferredAction() {
-            return actions[0]; // actually open
+            return getActions(false)[0]; // open
         }
         
     }
     
-    private static final class SourcelessDependencyNode extends FilterNode {
+    private static final class LibraryDependencyNode extends FilterNode {
         
+        private ModuleDependency dep;
+        private NbModuleProject project;
         private Action[] actions;
         
-        private Image icon = Utilities.loadImage("org/netbeans/modules/apisupport/project/ui/resources/libraries.gif", true);
-        
-        SourcelessDependencyNode(final ModuleDependency dep, final NbModuleProject project,
-                final Node jarNode, final Action[] actions) {
+        LibraryDependencyNode(final ModuleDependency dep,
+                final NbModuleProject project, final Node jarNode) {
             super(jarNode, null, Lookups.fixed(new Object[] { dep, project }));
-            setDisplayName(dep.getModuleEntry().getLocalizedName() + " - " + dep.getModuleEntry().getCodeNameBase()); // NOI18N
+            this.dep = dep;
+            this.project = project;
             setShortDescription(LibrariesNode.createHtmlDescription(dep));
-            this.actions = actions;
         }
         
         public Action[] getActions(boolean context) {
+            if (actions == null) {
+                Set result = new LinkedHashSet();
+                result.add(new EditDependencyAction(dep, project));
+                // XXX put find action here
+                result.add(new ShowJavadocAction(dep, project));
+                result.add(LibrariesChildren.REMOVE_DEPENDENCY_ACTION);
+                actions = (Action[]) result.toArray(new Action[result.size()]);
+            }
             return actions;
         }
         
         public Action getPreferredAction() {
-            return actions[0]; // actually edit
-        }
-        
-        public Image getIcon(int type) {
-            return icon;
-        }
-        
-        public Image getOpenedIcon(int type) {
-            return icon;
+            return getActions(false)[0]; // edit
         }
         
     }
@@ -272,7 +283,7 @@ final class LibrariesNode extends AbstractNode {
         private final NbModuleProject project;
         
         AddModuleDependencyAction(final NbModuleProject project) {
-            super(NbBundle.getMessage(LibrariesNode.class, "CTL_AddModuleDependency"));
+            super(getMessage("CTL_AddModuleDependency"));
             this.project = project;
         }
         
@@ -281,7 +292,7 @@ final class LibrariesNode extends AbstractNode {
             SingleModuleProperties props = SingleModuleProperties.getInstance(project);
             final AddModulePanel addPanel = new AddModulePanel(props);
             final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
-                    NbBundle.getMessage(LibrariesNode.class, "CTL_AddModuleDependencyTitle"));
+                    getMessage("CTL_AddModuleDependencyTitle"));
             descriptor.setHelpCtx(new HelpCtx(AddModulePanel.class));
             descriptor.setClosingOptions(new Object[0]);
             final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
@@ -347,7 +358,7 @@ final class LibrariesNode extends AbstractNode {
         }
         
         public String getName() {
-            return NbBundle.getMessage(LibrariesNode.class, "CTL_RemoveDependency");
+            return getMessage("CTL_RemoveDependency");
         }
         
         public HelpCtx getHelpCtx() {
@@ -374,7 +385,7 @@ final class LibrariesNode extends AbstractNode {
         private final NbModuleProject project;
         
         EditDependencyAction(final ModuleDependency dep, final NbModuleProject project) {
-            super(NbBundle.getMessage(LibrariesNode.class, "CTL_EditDependency"));
+            super(getMessage("CTL_EditDependency"));
             this.dep = dep;
             this.project = project;
         }
@@ -416,7 +427,7 @@ final class LibrariesNode extends AbstractNode {
         private URL currectJavadoc;
         
         ShowJavadocAction(final ModuleDependency dep, final NbModuleProject project) {
-            super(NbBundle.getMessage(LibrariesNode.class, "CTL_ShowJavadoc"));
+            super(getMessage("CTL_ShowJavadoc"));
             this.dep = dep;
             this.project = project;
         }
@@ -455,7 +466,7 @@ final class LibrariesNode extends AbstractNode {
                     public void run() {
                         String previousText = StatusDisplayer.getDefault().getStatusText();
                         StatusDisplayer.getDefault().setStatusText(
-                                NbBundle.getMessage(LibrariesNode.class, "MSG_OpeningProjects"));
+                                getMessage("MSG_OpeningProjects"));
                         OpenProjects.getDefault().open(projects, false);
                         StatusDisplayer.getDefault().setStatusText(previousText);
                     }
@@ -470,7 +481,7 @@ final class LibrariesNode extends AbstractNode {
         }
         
         public String getName() {
-            return NbBundle.getMessage(LibrariesNode.class, "CTL_Open");
+            return getMessage("CTL_Open");
         }
         
         public HelpCtx getHelpCtx() {

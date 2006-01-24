@@ -10,7 +10,7 @@ import org.openide.nodes.Node;
  * @author Martin Krauskopf
  */
 public class LibrariesNodeTest extends TestBase {
-
+    
     public LibrariesNodeTest(String testName) {
         super(testName);
     }
@@ -27,8 +27,22 @@ public class LibrariesNodeTest extends TestBase {
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(p);
         cmf.add(cmf.addModuleDependency("org.netbeans.modules.java.project"));
         cmf.run();
-
+        
         assertEquals("dependency noticed", 1, libraries.getChildren().getNodesCount());
+    }
+    
+    public void testDependencyNodeActions() throws Exception {
+        NbModuleProject p = generateStandaloneModule("module");
+        LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
+        Node root = lvp.createLogicalView();
+        Node libraries = root.getChildren().findChild(LibrariesNode.LIBRARIES_NAME);
+
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(p);
+        cmf.add(cmf.addModuleDependency("org.netbeans.modules.java.project"));
+        cmf.run();
+        
+        assertEquals("dependency noticed", 1, libraries.getChildren().getNodesCount());
+        assertEquals("dependency noticed", 4, libraries.getChildren().getNodes()[0].getActions(false).length);
     }
     
     // XXX Much more needed
