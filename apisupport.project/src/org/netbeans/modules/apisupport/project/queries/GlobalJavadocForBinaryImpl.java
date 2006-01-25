@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -80,6 +80,9 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
             URL[] roots = supposedPlaf.getJavadocRoots();
             Util.err.log("Platform in " + supposedPlaf.getDestDir() + " claimed to have Javadoc roots " + Arrays.asList(roots));
             for (int i = 0; i < roots.length; i++) {
+                // 1. user may insert directly e.g ...nbbuild/build/javadoc/org-openide-actions[.zip]
+                candidates.add(roots[i]);
+                // 2. or whole bunch of javadocs e.g. ...nbbuild/build/javadoc/
                 candidates.add(new URL(roots[i], cnbdashes + '/'));
             }
             Iterator it = candidates.iterator();

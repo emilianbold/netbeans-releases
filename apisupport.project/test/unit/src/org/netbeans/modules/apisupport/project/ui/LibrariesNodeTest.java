@@ -22,13 +22,13 @@ public class LibrariesNodeTest extends TestBase {
         Node root = lvp.createLogicalView();
         Node libraries = root.getChildren().findChild(LibrariesNode.LIBRARIES_NAME);
         assertNotNull("have the Libraries node", libraries);
-        assertEquals("no libraries yet", 0, libraries.getChildren().getNodesCount());
+        assertEquals("just jdk node is present", 1, libraries.getChildren().getNodesCount());
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(p);
         cmf.add(cmf.addModuleDependency("org.netbeans.modules.java.project"));
         cmf.run();
         
-        assertEquals("dependency noticed", 1, libraries.getChildren().getNodesCount());
+        assertEquals("dependency noticed", 2, libraries.getChildren().getNodesCount());
     }
     
     public void testDependencyNodeActions() throws Exception {
@@ -41,8 +41,8 @@ public class LibrariesNodeTest extends TestBase {
         cmf.add(cmf.addModuleDependency("org.netbeans.modules.java.project"));
         cmf.run();
         
-        assertEquals("dependency noticed", 1, libraries.getChildren().getNodesCount());
-        assertEquals("dependency noticed", 4, libraries.getChildren().getNodes()[0].getActions(false).length);
+        assertEquals("dependency noticed", 2, libraries.getChildren().getNodesCount());
+        assertEquals("dependency noticed", 4, libraries.getChildren().getNodes()[1].getActions(false).length);
     }
     
     // XXX Much more needed

@@ -15,16 +15,14 @@ package org.netbeans.modules.apisupport.project.ui;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
-// XXX this class is more or less copy-pasted from LibrariesSourceGroup from
-// j2seproject. Get rid of it as soon as "some" Libraries Node API is provided
+// XXX this class is more or less copy-pasted from j2seproject.
+// Get rid of it as soon as "some" Libraries Node API is provided.
 
 /**
  * LibrariesSourceGroup
@@ -34,24 +32,25 @@ import org.openide.util.Utilities;
  */
 final class LibrariesSourceGroup implements SourceGroup {
     
-    private static final String LIBRARIES_ICON =
-            "org/netbeans/modules/apisupport/project/ui/resources/libraries.gif"; // NOI18N
-    
     private final FileObject root;
     private final String displayName;
-    private Icon icon;
+    private final Icon icon;
+    private final Icon openIcon;
     
     /**
      * Creates new LibrariesSourceGroup
      * @param root the classpath root
      * @param displayName the display name presented to user
+     * @param icon closed icon
+     * @param openIcon opened icon
      */
-    LibrariesSourceGroup(FileObject root, String displayName) {
+    LibrariesSourceGroup(FileObject root, String displayName, Icon icon, Icon openIcon) {
         assert root != null;
         this.root = root;
         this.displayName = displayName;
+        this.icon = icon;
+        this.openIcon = openIcon;
     }
-    
     
     public FileObject getRootFolder() {
         return this.root;
@@ -71,10 +70,7 @@ final class LibrariesSourceGroup implements SourceGroup {
     }
     
     public Icon getIcon(boolean opened) {
-        if (icon == null) {
-            icon = new ImageIcon(Utilities.loadImage(LIBRARIES_ICON, true));
-        }
-        return icon;
+        return opened ? openIcon : icon;
     }
     
     public boolean contains(FileObject file) throws IllegalArgumentException {

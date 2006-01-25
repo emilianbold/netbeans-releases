@@ -20,18 +20,22 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -135,10 +139,17 @@ final class LibrariesNode extends AbstractNode {
     
     private static final class LibrariesChildren extends Children.Keys implements AntProjectListener {
         
+        private static final String JDK_PLATFORM_NAME = "jdkPlatform"; // NOI18N
+        
+        private static final String LIBRARIES_ICON =
+                "org/netbeans/modules/apisupport/project/ui/resources/libraries.gif"; // NOI18N
+        
         static final Action OPEN_PROJECT_ACTION = new OpenProjectAction();
         static final Action REMOVE_DEPENDENCY_ACTION = new RemoveDependencyAction();
         
         private final NbModuleProject project;
+        
+        private ImageIcon librariesIcon;
         
         LibrariesChildren(final NbModuleProject project) {
             this.project = project;
@@ -159,31 +170,41 @@ final class LibrariesNode extends AbstractNode {
         private void refreshKeys() {
             ProjectXMLManager pxm = new ProjectXMLManager(project);
             try {
+                List keys = new ArrayList();
+                keys.add(JDK_PLATFORM_NAME);
                 SortedSet deps = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
                 deps.addAll(pxm.getDirectDependencies());
+                keys.addAll(deps);
                 setKeys(Collections.EMPTY_SET); // XXX workaround for bad ModuleDependency comparision mechanism implementation
-                setKeys(Collections.unmodifiableSortedSet(deps));
+                setKeys(Collections.unmodifiableList(keys));
             } catch (IOException e) {
                 assert false : e;
             }
         }
         
         protected Node[] createNodes(Object key) {
-            ModuleDependency dep = (ModuleDependency) key;
-            File srcF = dep.getModuleEntry().getSourceLocation();
             Node node;
-            if (srcF == null) {
-                File jarF = dep.getModuleEntry().getJarLocation();
-                URL jarRootURL = Util.urlForJar(jarF);
-                assert jarRootURL != null;
-                FileObject root = URLMapper.findFileObject(jarRootURL);
-                ModuleEntry me = dep.getModuleEntry();
-                String name = me.getLocalizedName() + " - " + me.getCodeNameBase(); // NOI18N
-                Node pvNode = PackageView.createPackageView(new LibrariesSourceGroup(root, name));
-                node = new LibraryDependencyNode(dep, project, pvNode);
+            if (key == JDK_PLATFORM_NAME) {
+                node = PlatformNode.create(project.evaluator(), "nbjdk.home"); // NOI18N
             } else {
-                node = new ProjectDependencyNode(dep, project);
+                ModuleDependency dep = (ModuleDependency) key;
+                File srcF = dep.getModuleEntry().getSourceLocation();
+                if (srcF == null) {
+                    File jarF = dep.getModuleEntry().getJarLocation();
+                    URL jarRootURL = Util.urlForJar(jarF);
+                    assert jarRootURL != null;
+                    FileObject root = URLMapper.findFileObject(jarRootURL);
+                    ModuleEntry me = dep.getModuleEntry();
+                    String name = me.getLocalizedName() + " - " + me.getCodeNameBase(); // NOI18N
+                    Icon icon = getLibrariesIcon();
+                    Node pvNode = ActionFilterNode.create(
+                            PackageView.createPackageView(new LibrariesSourceGroup(root, name, icon, icon)));
+                    node = new LibraryDependencyNode(dep, project, pvNode);
+                } else {
+                    node = new ProjectDependencyNode(dep, project);
+                }
             }
+            assert node != null;
             return new Node[] { node };
         }
         
@@ -211,6 +232,13 @@ final class LibrariesNode extends AbstractNode {
                 }
             }
             return n;
+        }
+        
+        private Icon getLibrariesIcon() {
+            if (librariesIcon == null) {
+                librariesIcon = new ImageIcon(Utilities.loadImage(LIBRARIES_ICON, true));
+            }
+            return librariesIcon;
         }
         
     }

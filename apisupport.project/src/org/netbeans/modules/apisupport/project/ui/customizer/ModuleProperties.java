@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -42,12 +42,12 @@ import org.openide.util.RequestProcessor;
  *
  * @author Martin Krauskopf
  */
-abstract class ModuleProperties {
+public abstract class ModuleProperties {
     
     public static final String PROPERTIES_REFRESHED = "propertiesRefreshed"; // NOI18N
     
     static final RequestProcessor RP = new RequestProcessor(ModuleProperties.class.getName());
-
+    
     // XXX better to inject own DialogDisplayer when running tests or similar trick
     static boolean runFromTests = false;
     
@@ -231,7 +231,7 @@ abstract class ModuleProperties {
             System.err.println(message);
         }
     }
-
+    
     static String getPlatformID(JavaPlatform platform) {
         // XXX why isn't there a real API for this??
         return (String) platform.getProperties().get("platform.ant.name"); // NOI18N
@@ -249,7 +249,7 @@ abstract class ModuleProperties {
         }
         return null;
     }
-
+    
     static void storeJavaPlatform(AntProjectHelper helper, PropertyEvaluator eval, JavaPlatform platform, boolean isNetBeansOrg) throws IOException {
         if (isNetBeansOrg) {
             final boolean isDefault = platform == null || platform == JavaPlatform.getDefault();
@@ -302,8 +302,8 @@ abstract class ModuleProperties {
             return null;
         }
     }
-
-    static JavaPlatform findJavaPlatformByLocation(String home) {
+    
+    public static JavaPlatform findJavaPlatformByLocation(String home) {
         if (home == null) {
             return JavaPlatform.getDefault();
         }
