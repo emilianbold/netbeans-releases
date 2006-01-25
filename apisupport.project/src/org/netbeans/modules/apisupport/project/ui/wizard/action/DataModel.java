@@ -107,6 +107,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     private String className;
     private String displayName;
     private String origIconPath;
+    private String largeIconPath;
     
     DataModel(WizardDescriptor wiz) {
         super(wiz);
@@ -176,6 +177,10 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         } else {
             replaceTokens.put("@@ICON_RESOURCE_METHOD@@", ""); // NOI18N
             replaceTokens.put("@@INITIALIZE_METHOD@@", DataModel.generateNoIconInitializeMethod()); // NOI18N
+        }
+        
+        if (isToolbarEnabled() && largeIconPath != null) {
+            addCreateIconOperation(cmf, largeIconPath);
         }
         
         // add layer entry about the action
@@ -496,6 +501,10 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 INDENT_2X + "// see org.openide.util.actions.SystemAction.iconResource() javadoc for more details" + NEW_LINE + // NOI18N
                 INDENT_2X + "putValue(\"noIconInMenu\", Boolean.TRUE);" + NEW_LINE + // NOI18N
                 INDENT + "}" + NEW_LINE; // NOI18N
+    }
+
+    public void setLargeIconPath(String largeIconPath) {
+        this.largeIconPath = largeIconPath;
     }
     
 }

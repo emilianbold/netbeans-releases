@@ -15,6 +15,11 @@ package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
 import java.awt.Component;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -24,6 +29,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -41,6 +47,9 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private DataModel data;
     private DocumentListener updateListener;
+    
+    private String smallIconPath; 
+    private String largeIconPath; 
     
     /** Creates new NameIconLocationPanel */
     public NameIconLocationPanel(final WizardDescriptor setting, final DataModel data) {
@@ -105,7 +114,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private void storeBaseData() {
         data.setClassName(getClassName());
         data.setPackageName(packageName.getEditor().getItem().toString());
-        data.setIconPath(getIconPath());
+        data.setIconPath(smallIconPath);
+        data.setLargeIconPath(largeIconPath);
         data.setDisplayName(displayName.getText());
     }
     
@@ -127,9 +137,65 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
             setErrorMessage(getMessage("MSG_IconRequiredForToolbar"));
         } else {
             setErrorMessage(null);
+            if (data.isToolbarEnabled()) {
+                checkIconValidity();
+            }
             return true;
         }
         return false;
+    }
+
+    private void checkIconValidity() {
+        if (smallIconPath != null) {            
+            if (largeIconPath == null) {
+                setErrorMessage(getMessage("MSG_NoLargeIcontSelected"),false);
+            } 
+        } else {
+            setErrorMessage(getMessage("MSG_NoSmallIcontSelected"),false);
+        }
+    }
+
+    private Boolean isIconSmall(final File icon) {
+        Boolean iconIsSmall = null;
+        if (icon != null) {
+            try {
+                ImageIcon imc = new ImageIcon(icon.toURL());
+                int width = imc.getIconWidth();
+                if (width == 16) {//NOI18N
+                    iconIsSmall = Boolean.TRUE;
+                }  else if (width == 24) {
+                    iconIsSmall = Boolean.FALSE;
+                }
+            } catch (MalformedURLException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }                
+        }
+        return iconIsSmall;
+    }
+
+    private static Set getPossibleIcons(final String iconPath) {
+        File icon = new File(iconPath);
+        String[] resultSuffixes = new String[]{"16","24",""};//NOI18N
+        
+        Set results = new HashSet();
+        String iconName = icon.getName();
+        int idx = iconName.lastIndexOf(".");
+        String name = (idx != -1) ? iconName.substring(0,idx) : iconName;
+        String extension = (idx != -1) ? iconName.substring(idx+1) : null;
+        boolean hasSuffix = (name.endsWith("24")) || (name.endsWith("16"));//NOI18N
+        name = hasSuffix ? name.substring(0,name.length()-2) : name;
+        for (int i = 0; i < resultSuffixes.length; i++) {
+            String resultSuffix = resultSuffixes[i];
+            String resultName = name + resultSuffix;
+            if (extension != null) {
+                resultName = resultName + "." + extension;
+            }
+            File f = new File(icon.getParentFile(),resultName);
+            if (f.exists()) {
+                results.add(f);
+            }
+        }        
+        return results;
     }
     
     private boolean classAlreadyExists() {
@@ -345,8 +411,36 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         JFileChooser chooser = UIUtil.getIconFileChooser(icon.getText());
         int ret = chooser.showDialog(this, getMessage("LBL_Select")); // NOI18N
         if (ret == JFileChooser.APPROVE_OPTION) {
-            File file =  chooser.getSelectedFile();
-            icon.setText(file.getAbsolutePath());
+            File iconFile =  chooser.getSelectedFile();
+            icon.setText(iconFile.getAbsolutePath());
+            {
+                Set allFiles = getPossibleIcons(getIconPath());
+                assert iconFile != null;
+                assert allFiles.contains(iconFile);
+                allFiles.remove(iconFile);
+                Boolean isIconSmall = isIconSmall(iconFile);
+                isIconSmall = (isIconSmall == null) ? Boolean.FALSE : isIconSmall;
+                assert isIconSmall != null;
+ 
+                File secondIcon = null;
+                Boolean isSecondIconSmall = null;
+                for (Iterator it = allFiles.iterator(); it.hasNext();) {
+                    File f = (File) it.next();
+                    isSecondIconSmall = isIconSmall(f);
+                    if (isSecondIconSmall != null && !isIconSmall.equals(isSecondIconSmall)) {
+                        secondIcon = f;
+                        break;
+                    }
+                }
+                
+                if (secondIcon != null) {
+                    smallIconPath = (isIconSmall.booleanValue()) ? iconFile.getAbsolutePath() : secondIcon.getAbsolutePath();
+                    largeIconPath = (isIconSmall.booleanValue()) ? secondIcon.getAbsolutePath() : iconFile.getAbsolutePath();
+                } else {
+                    smallIconPath = iconFile.getAbsolutePath();
+                }
+                
+            }
             updateData();
         }
     }//GEN-LAST:event_iconButtonActionPerformed
