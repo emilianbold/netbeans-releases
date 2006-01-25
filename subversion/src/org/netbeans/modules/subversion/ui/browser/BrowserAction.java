@@ -38,7 +38,7 @@ public final class BrowserAction extends CallableSystemAction {
                 System.out.println(" url " + urls[i]);
             }
         } else {
-            // XXX
+            
         }
     }
     

@@ -44,7 +44,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  *
- * XXX icons are not working yet
  */
 public class RepositoryPathNode extends AbstractNode {
 
@@ -53,7 +52,7 @@ public class RepositoryPathNode extends AbstractNode {
     
     public static RepositoryPathNode create(ISVNClientAdapter svnClient, SVNUrl svnURL) {
         RepositoryPathChildren kids = new RepositoryPathChildren(svnClient, svnURL);
-        Lookup lookup = Lookups.singleton(svnURL); // XXX what _EXACTLY_ is this suposed to do?
+        Lookup lookup = Lookups.singleton(svnURL); 
         RepositoryPathNode node = new RepositoryPathNode(kids, lookup, svnURL);
 
         node.setDisplayName(svnURL.getLastPathSegment());

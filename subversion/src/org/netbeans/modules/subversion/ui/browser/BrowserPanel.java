@@ -116,7 +116,10 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider, Ve
                 return;
             }
             
-            Node selectedNode = oldSelection[0]; // XXX is this enough?
+            // we anticipate that nothing went wrong and 
+            // all nodes in the old selection are at the same level
+            Node selectedNode = oldSelection[0]; 
+            
             for (int i = 0; i < newSelection.length; i++) {
                  if (getNodeLevel(selectedNode) != getNodeLevel(newSelection[i])) {
                     throw new PropertyVetoException("", evt); // NOI18N
