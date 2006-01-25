@@ -105,9 +105,9 @@ final class UpdateCenterRegistrationPanel extends BasicWizardIterator.Panel {
     
     private boolean checkValidity() {
         boolean result = false;
-        if (data.getUpdateCenterURL ().isEmpty ()) {
+        if (data.getUpdateCenterURL ().length () == 0) {
             setErrorMessage (getMessage ("ERR_Url_Is_Empty")); //NOI18N
-        } else if (data.getUpdateCenterDisplayName ().isEmpty ()) {
+        } else if (data.getUpdateCenterDisplayName ().length () == 0) {
             setErrorMessage (getMessage ("ERR_Empty_Display_Name")); //NOI18N
         } else {
             setValid (Boolean.TRUE);
