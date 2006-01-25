@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="xtest-qa-functional" basedir="." default="all">
+
+    <property name="jellytools.home" location="${netbeans.user}/modules/ext/"/>
+    <property name="jemmy.home" location="${netbeans.user}/modules/ext/"/>
+    <path id="jemmy.and.jelly.path">
+        <pathelement location="${jemmy.home}/jemmy.jar"/>
+        <pathelement location="${jellytools.home}/jelly2-nb.jar"/>
+    </path>
+    
+    <target name="init">
+        <property file="../nbproject/private/private.properties"/>
+        <property file="../nbproject/project.properties"/>
+        <property name="build.compiler.debug" value="true"/>
+        <property name="build.compiler.source" value="1.4"/>
+        <property name="build.compiler.deprecation" value="true"/>
+        <property name="build.sysclasspath" value="ignore"/>
+    </target>
+    
+    <target name="init-cp">
+        <path id="test.qa-functional.compile.cp">
+            <path refid="jemmy.and.jelly.path"/>
+            <pathelement path="${test.qa-functional.cp.extra}"/>
+        </path>
+        <!-- This property cannot be undefined. -->
+        <property name="test.qa-functional.run.cp.extra" value=""/>
+        <path id="test.qa-functional.run.cp">
+            <path refid="jemmy.and.jelly.path"/>
+            <pathelement path="${test.qa-functional.run.cp.extra}"/>
+        </path>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+    
+    <target name="qa-functional-compiler" depends="init,init-cp">
+        <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">
+            <classpath refid="test.qa-functional.compile.cp"/>
+        </buildTests>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <target name="runidetest" depends="init,init-cp">
+        <executeTests pluginname="ide">
+            <classpath refid="test.qa-functional.run.cp"/>
+        </executeTests>
+    </target>
+    
+    <!-- ================ -->
+    <!-- Run in IDE's JVM -->
+    <!-- ================ -->
+
+    <target name="internal-execution" depends="init,init-cp">
+        <taskdef name="internalExecution" classname="org.netbeans.xtest.plugin.ide.IdeInternalExecutionTask" 
+                 classpath="${xtest.home}/plugins/ide/lib/xtest-ide-plugin.jar"/>
+
+        <!-- Root directory where tests are built in. It means there will be
+             separate folder for each test type: ${compile.destdir.root}/${xtest.testtype}/classes.
+             Originally defined in module_harness.xml.             
+        -->
+        <property name="compile.destdir.root" location="../build/test"/>
+        <!-- Destination directory for compiled tests. Used in basic_compiler_targets.xml. -->
+        <property name="compile.destdir" location="${compile.destdir.root}/${xtest.testtype}/classes"/>
+        <!-- JUnit, NbJUnit, NBJUnit-ide and Insane should be in classpath by default -->
+        <property name="junit.classpath" value="${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar:${xtest.home}/lib/nbjunit-ide.jar:${xtest.home}/lib/insanelib.jar"/>
+
+        <!-- This target runs main method of given class in IDE's JVM. 
+            You have -->
+        <internalExecution classname="${classname}">
+            <classpath>
+                <path refid="test.qa-functional.run.cp"/>
+                <pathelement path="${compile.destdir}"/>
+                <pathelement path="${junit.classpath}"/>
+            </classpath>
+        </internalExecution>
+    </target>
+</project>
+

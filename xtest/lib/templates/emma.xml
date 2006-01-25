@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="emma_main" basedir="." default="coverage-usage">
+    
+    <!-- Imports init-parse-project-xml target which also initializes all project properties. -->
+    <import file="init.xml"/>
+    
+    <property name="xtest.workdir" location="work"/>
+    <property name="emma.dir" location="${xtest.home}/external"/>
+    
+    <property name="coverage.dir" location="coverage"/>
+    <property name="coverage.filter" location="coverage.filter"/>
+    <property name="coverage.properties" location="coverage.properties"/>
+    
+    <available file="${coverage.filter}" property="available.coverage.filter"/>
+    <available file="${coverage.properties}" property="available.coverage.properties"/>
+    
+    <target name="define-emma-tasks" depends="emma-download">
+        <path id="emma.lib">
+            <pathelement location="${emma.dir}/emma.jar"/>
+            <pathelement location="${emma.dir}/emma_ant.jar"/>
+        </path>
+        <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
+    </target>
+    
+    <target name="emma-download" depends="emma-check-jars,setup-proxy" unless="skip-download-emma">
+        <property name="emma.version" value="2.0.5312"/>
+        <echo message="Going to download emma. If it fails download it from http://emma.sf.net/ (and unpack into ${basedir}) or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
+        <mkdir dir="${emma.dir}"/>
+        <get src="http://ibiblio.org/maven/emma/jars/emma-2.0.5312.jar" dest="${emma.dir}/emma.jar"/> 
+        <get src="http://ibiblio.org/maven/emma/jars/emma_ant-2.0.5312.jar" dest="${emma.dir}/emma_ant.jar"/>
+    </target>
+    
+    <target name="emma-check-jars">
+        <condition property="skip-download-emma" >
+            <and>
+                <available file="${emma.dir}/emma_ant.jar" />
+                <available file="${emma.dir}/emma.jar" />
+            </and>
+        </condition>
+    </target>
+    
+    <target name="setup-proxy" if="proxy.host" >
+        <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" />
+    </target>
+    
+    <target name="emma-clean">
+        <delete file="${emma.dir}/emma.jar" />
+        <delete file="${emma.dir}/emma_ant.jar" />
+    </target>
+    
+    <target name="load-coverage-properties" depends="define-emma-tasks" if="available.coverage.properties">
+        <property file="${coverage.properties}"/>
+    </target>
+    
+    <target name="emma-init" depends="buildtests,load-coverage-properties,init-parse-project-xml,emma-init-coverage-path,emma-init-coverage-source-path"/>
+    
+    <target name="emma-init-coverage-path">
+        <property name="module.jar.dir" value="modules"/>
+        <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
+        <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
+        <property name="coverage.path" location="${cluster}/${module.jar}"/>
+        <copy file="${coverage.path}" tofile="${coverage.path}.noninstr"/>
+        <echo>coverage.path=${coverage.path}</echo>
+        <path id="coverage.path" path="${coverage.path}"/>
+    </target>
+    
+    <target name="emma-init-coverage-source-path">
+        <property name="coverage.source.path" location="../src"/>        
+        <echo>coverage.source.path=${coverage.source.path}</echo>
+        <path id="coverage.source.path" path="${coverage.source.path}"/>
+    </target>
+    
+    <!-- xxx -->
+    
+    <target name="emma" description="turns on emma instrumentation/reporting">
+        <property name="emma.enabled" value="true"/>
+    </target>
+            
+    <target name="emma-instrument"  if="available.coverage.filter">
+        <emma enabled="${emma.enabled}">
+            <instr instrpathref="coverage.path"
+                metadatafile="${coverage.dir}/metadata.emma"
+                mode="overwrite" merge="true">
+                <filter file="coverage.filter"/>
+            </instr>
+        </emma>
+    </target>
+    
+    <target name="emma-instrument-no-filter" unless="available.coverage.filter">
+        <emma enabled="${emma.enabled}">
+            <instr instrpathref="coverage.path"
+                metadatafile="${coverage.dir}/metadata.emma"
+                mode="overwrite" merge="true">
+            </instr>
+        </emma>
+    </target>
+    
+    <target name="emma-report">
+        <emma enabled="${emma.enabled}">
+            <report sourcepathref="coverage.source.path">
+                <fileset dir="${coverage.dir}">
+                    <include name="*.emma"/>
+                </fileset>
+                <txt outfile="${coverage.dir}/coverage.txt"/>
+                <html outfile="${coverage.dir}/coverage.html"/>
+            </report>
+        </emma>
+    </target>
+    
+    <target name="show-coverage-results-nb" if="netbeans.home">
+        <nbbrowse file="${coverage.dir}/coverage.html"/>
+    </target>
+    
+    <target name="coverage" depends="emma,emma-init,emma-instrument,emma-instrument-no-filter,coverage-runtests,emma-report"/>
+    
+    <!--
+    following must be passed to running measured process:
+    <jvmarg value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
+    and following must be added to its running cp:
+    ${emma.dir}/emma.jar
+    -->
+    
+    <target name="coverage-runtests">
+        <antcall target="runtests">
+            <param name="coverage.lib.path" location="${emma.dir}/emma.jar"/>
+            <param name="xtest.jvm.coverage.args" value="-Demma.coverage.out.file=&quot;${coverage.dir}/coverage.emma&quot;"/>
+            <param name="xtest.ide.coverage.args" value="-J-Dnetbeans.security.nocheck=true -J-Demma.coverage.out.file=&quot;${coverage.dir}/coverage.emma&quot;"/>
+        </antcall>
+        <move file="${coverage.path}.noninstr" tofile="${coverage.path}"/>
+    </target>
+    
+    <target name="cleancoverage">
+        <delete dir="${coverage.dir}"/>
+    </target>
+    
+    <target name="coverage-usage">
+        <echo message="This Ant script is supposed to be imported only!"/>
+    </target>
+    
+</project>
