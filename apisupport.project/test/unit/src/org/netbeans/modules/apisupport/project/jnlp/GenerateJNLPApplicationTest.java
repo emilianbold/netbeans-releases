@@ -285,9 +285,12 @@ public class GenerateJNLPApplicationTest extends TestBase {
                 + s.substring(insert);
             FileLock lock = fo.lock();
             OutputStream os = fo.getOutputStream(lock);
-            os.write(s.getBytes());
-            os.close();
-            lock.releaseLock();
+            try {
+                os.write(s.getBytes());
+            } finally {
+                os.close();
+                lock.releaseLock();
+            }
         }
         
         SuiteActions p = (SuiteActions)suite.getLookup().lookup(ActionProvider.class);
@@ -378,9 +381,11 @@ public class GenerateJNLPApplicationTest extends TestBase {
     private static String readFile(final FileObject fo) throws IOException, FileNotFoundException {
         // write user modified version of the file
         byte[] arr = new byte[(int)fo.getSize()];
-        int len = fo.getInputStream().read(arr);
+        InputStream is = fo.getInputStream();
+        int len = is.read(arr);
         assertEquals("Read all", arr.length, len);
         String s = new String(arr);
+        is.close();
         return s;
     }
     
