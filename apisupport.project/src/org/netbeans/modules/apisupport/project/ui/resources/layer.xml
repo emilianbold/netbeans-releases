@@ -113,6 +113,14 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newModuleInstall.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
+            <file name="newUpdateCenter">
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.updatecenter.NewUpdateCenterIterator.createIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.updatecenter.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newUpdateCenter.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newUpdateCenter.html"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
+            </file>
         </folder>
     </folder>
 
