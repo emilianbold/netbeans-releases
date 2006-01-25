@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.nodes;
@@ -137,8 +137,8 @@ public class AbstractNode extends Node {
 
     /** Create a new abstract node with a given child set and associated
     * lookup. If you use this constructor, please do not call methods
-    * <link>getCookieSet</link> and <link>setCookieSet</link> they will
-    * throw an exception.
+    * {@link #getCookieSet} and {@link #setCookieSet} they will throw an
+    * exception.
     * <p>
     * More info on the correct usage of constructor with Lookup can be found
     * in the {@link Node#Node(org.openide.nodes.Children, org.openide.util.Lookup)}
@@ -204,7 +204,7 @@ public class AbstractNode extends Node {
     * formats.
     *
     * The method effectively behaves as if it was just delegating
-    * to {$link #setIconBaseWithExtension(java.lang.String)}
+    * to {@link #setIconBaseWithExtension(java.lang.String)}
     * using <code>base + ".gif"</code> as parameter.
     *
     * @param base base resouce name (no initial slash)
