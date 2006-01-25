@@ -26,11 +26,10 @@ import java.util.Collections;
 import java.util.List;
 import java.awt.*;
 import java.beans.BeanInfo;
-import java.io.File;
 import java.util.ArrayList;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
+import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -49,16 +48,47 @@ public class RepositoryPathNode extends AbstractNode {
 
     private final static Node[] EMPTY = new Node[0];
     private final SVNUrl svnURL;
+
+    private RequestProcessor requestProcessor;
     
     public static RepositoryPathNode create(ISVNClientAdapter svnClient, SVNUrl svnURL) {
         RepositoryPathChildren kids = new RepositoryPathChildren(svnClient, svnURL);
         Lookup lookup = Lookups.singleton(svnURL); 
         RepositoryPathNode node = new RepositoryPathNode(kids, lookup, svnURL);
 
-        node.setDisplayName(svnURL.getLastPathSegment());
+        node.setDisplayName(svnURL.getLastPathSegment() + " ...");
+        annotate(node, svnClient, svnURL);
         return node;
     }
 
+    private static void annotate(final Node node, final ISVNClientAdapter svnClient, final SVNUrl svnURL) {
+        RequestProcessor requestProcessor = new RequestProcessor("BrowserPanel", 1, true);
+        Runnable r = new Runnable() {
+            public void run() {
+                ISVNLogMessage[] messages = null;
+                try {                
+                    messages = svnClient.getLogMessages(svnURL, SVNRevision.HEAD, SVNRevision.HEAD);
+                } catch (SVNClientException ex) {
+                    ex.printStackTrace();
+                    // XXX message error node ???
+                }
+                if(messages==null || messages.length == 0) { 
+                    // XXX message error node ???
+                } else {
+                    StringBuffer displaName = new StringBuffer();
+                    displaName.append(svnURL.getLastPathSegment());
+                    displaName.append(" [");
+                    displaName.append(messages[0].getRevision());
+                    displaName.append(" ");
+                    displaName.append(messages[0].getAuthor());
+                    displaName.append("]");
+                    node.setDisplayName(displaName.toString());
+                }
+            }
+        };
+        requestProcessor.post(r);
+    }
+    
     private RepositoryPathNode(Children children, Lookup lookup, SVNUrl svnURL) {
         super(children, lookup);
         this.svnURL = svnURL;
@@ -122,9 +152,9 @@ public class RepositoryPathNode extends AbstractNode {
             }
             SVNUrl newSVNURL;
             try {                
-                newSVNURL = new SVNUrl(svnURL.toString() + 
+                newSVNURL = new SVNUrl(svnURL.toString() + // XXX HACK ???
                                        "/" + // NOI18N
-                                       (String) key); // XXX HACK ???
+                                       (String) key); 
             } catch (MalformedURLException ex) {
                 ex.printStackTrace(); // should not happen
                 return EMPTY;
