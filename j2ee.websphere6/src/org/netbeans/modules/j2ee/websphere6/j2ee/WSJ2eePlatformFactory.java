@@ -18,7 +18,7 @@ import java.util.*;
 import java.awt.*;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
-
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.util.*;
@@ -26,21 +26,20 @@ import org.netbeans.spi.project.libraries.*;
 import org.netbeans.modules.j2ee.deployment.common.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-
 import org.netbeans.modules.j2ee.websphere6.*;
 
 /**
- * A sub-class of the J2eePlatformFactory that is set up to return the 
+ * A sub-class of the J2eePlatformFactory that is set up to return the
  * plugin-specific J2eePlatform.
- * 
+ *
  * @author Kirill Sorokin
  */
 public class WSJ2eePlatformFactory extends J2eePlatformFactory {
     
     /**
-     * Factory method for WSJ2eePlatformImpl. This method is used for 
+     * Factory method for WSJ2eePlatformImpl. This method is used for
      * constructing the plugin-specific J2eePlatform object.
-     * 
+     *
      * @param dm the server specific deployment manager that can be used as an
      * additional source of information
      */
@@ -49,10 +48,10 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
     }
     
     /**
-     * The plugin implementation of the J2eePlatform interface. It is used to 
+     * The plugin implementation of the J2eePlatform interface. It is used to
      * provide all kinds of information about the environment that the deployed
      * application will run against, such as the set of .jsr files representing
-     * the j2ee implementation, which kinds of application the server may 
+     * the j2ee implementation, which kinds of application the server may
      * contain, which j2ee specification version the server supports, etc.
      */
     private static class J2eePlatformImplImpl extends J2eePlatformImpl {
@@ -71,7 +70,7 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
         
         /**
          * Creates a new instance of J2eePlatformImplImpl.
-         * 
+         *
          * @param dm the server's deployment manager
          */
         public J2eePlatformImplImpl(DeploymentManager dm) {
@@ -82,9 +81,9 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
         /**
          * Defines whether the platform supports the named tool. Since it's
          * unclear what actually a 'tool' is, currently it returns false.
-         * 
+         *
          * @param toolName tool name
-         * 
+         *
          * @return false
          */
         public boolean isToolSupported(String toolName) {
@@ -93,11 +92,11 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
         
         /**
          * Gets the classpath entries for the named tool. Since it's
-         * unclear what actually a 'tool' is, currently it returns an empty 
+         * unclear what actually a 'tool' is, currently it returns an empty
          * array.
-         * 
+         *
          * @param toolName tool name
-         * 
+         *
          * @return an empty array of File
          */
         public File[] getToolClasspathEntries(String toolName) {
@@ -106,7 +105,7 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
         
         /**
          * Specifies which versions of j2ee the server supports.
-         * 
+         *
          * @return a Set with the supported versions
          */
         public Set getSupportedSpecVersions() {
@@ -120,9 +119,18 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
             return result;
         }
         
-        /** 
+        
+        public Set getSupportedJavaPlatformVersions() {
+            Set versions = new HashSet();
+            versions.add("1.4"); // NOI18N
+            versions.add("1.5"); // NOI18N
+            return versions;
+            
+        }
+        
+        /**
          * Specifies which module types the server supports.
-         * 
+         *
          * @return a Set the the supported module types
          */
         public Set getSupportedModuleTypes() {
@@ -141,25 +149,25 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         /**
-         * Specifies the platform root directories. It's unclear where and why 
+         * Specifies the platform root directories. It's unclear where and why
          * it is used, for now returning the server home directory.
-         * 
-         * @return an array of files with a single entry - the server home 
+         *
+         * @return an array of files with a single entry - the server home
          *      directory
          */
         public java.io.File[] getPlatformRoots() {
             return new File[] {
-                    new File(dm.getInstanceProperties().getProperty(
-                            WSDeploymentFactory.SERVER_ROOT_ATTR))
-                    };
+                new File(dm.getInstanceProperties().getProperty(
+                        WSDeploymentFactory.SERVER_ROOT_ATTR))
+            };
         }
         
         /**
-         * Gets the libraries that will be attached to the project for 
-         * compilation. A library includes a set of jar files, sources and 
-         * javadocs. As there may be multiple jars per library we create only 
+         * Gets the libraries that will be attached to the project for
+         * compilation. A library includes a set of jar files, sources and
+         * javadocs. As there may be multiple jars per library we create only
          * one.
-         * 
+         *
          * @return an array of libraries
          */
         public LibraryImplementation[] getLibraries() {
@@ -171,14 +179,14 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
                     createLibrary();
             
             // set its name
-            library.setName(NbBundle.getMessage(WSJ2eePlatformFactory.class, 
+            library.setName(NbBundle.getMessage(WSJ2eePlatformFactory.class,
                     "TXT_libraryName"));                               // NOI18N
             
             // add the required jars to the library
             try {
                 ArrayList list = new ArrayList();
                 list.add(fileToUrl(new File(dm.getInstanceProperties().
-                        getProperty(WSDeploymentFactory.SERVER_ROOT_ATTR), 
+                        getProperty(WSDeploymentFactory.SERVER_ROOT_ATTR),
                         "/lib/j2ee.jar")));                            // NOI18N
                 
                 library.setContent(J2eeLibraryTypeProvider.
@@ -197,7 +205,7 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
         /**
          * Gets the platform icon. A platform icon is the one that appears near
          * the libraries attached to j2ee project.
-         * 
+         *
          * @return the platform icon
          */
         public Image getIcon() {
@@ -205,22 +213,22 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         /**
-         * Gets the platform display name. This one appears exactly to the 
+         * Gets the platform display name. This one appears exactly to the
          * right of the platform icon ;)
-         * 
+         *
          * @return the platform's display name
          */
         public String getDisplayName() {
-            return NbBundle.getMessage(WSJ2eePlatformFactory.class, 
+            return NbBundle.getMessage(WSJ2eePlatformFactory.class,
                     "TXT_platformName");                               // NOI18N
         }
         
         /**
          * Converts a file to the URI in system resources.
          * Copied from the plugin for Sun Appserver 8
-         * 
+         *
          * @param file a file to be converted
-         * 
+         *
          * @return the resulting URI
          */
         private URL fileToUrl(File file) throws MalformedURLException {
@@ -234,6 +242,29 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
             
             // return
             return url;
+        }
+        
+        
+        /**
+         * Implements J2eePlatformImpl
+         *
+         */
+        
+        public JavaPlatform getJavaPlatform() {
+            /* TO DO
+            String currentJvm = ip.getProperty(PROP_JAVA_PLATFORM);
+            JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+            JavaPlatform[] installedPlatforms = jpm.getPlatforms(null, new Specification("J2SE", null)); // NOI18N
+            for (int i = 0; i < installedPlatforms.length; i++) {
+                String platformName = (String)installedPlatforms[i].getProperties().get(PLAT_PROP_ANT_NAME);
+                if (platformName != null && platformName.equals(currentJvm)) {
+                    return installedPlatforms[i];
+                }
+            }
+            // return default platform if none was set
+            return jpm.getDefaultPlatform();
+             */
+            return null;
         }
     }
 }

@@ -76,18 +76,24 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.optional.WSOptionalDeploymentManagerFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
                 </file>
+                <file name="ConfigurationSupportImpl.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.config.ConfigurationSupportImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/>
+                </file>
+                
                 
                 <!--
                     An instance of the class responsible for splitting the 
                     server-generated deployment plan and creating the server
                     specific deployment descriptors of it.
                 -->
+                <!--
                 <file name="AppServerPlanSplitter.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.websphere6.optional.WSDeploymentPlanSplitter"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.optional.WSDeploymentPlanSplitter"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
                 </file>
-                
+                -->
                 <!--
                     Server-specific deployment configuration files' names, 
                     grouped by module type

@@ -93,7 +93,7 @@ public class WSInstantiatingIterator
         Set result = new HashSet();
         
         // build the URL
-        String url = "deployer:WebSphere:" + this.host + ":" +         // NOI18N
+        String url = /*"["+domainRoot+"]"+*/"deployer:WebSphere:" + this.host + ":" +         // NOI18N
                 this.port; 
         
         // build the display name
@@ -181,7 +181,8 @@ public class WSInstantiatingIterator
         this.serverRoot = serverRoot;
         
         // reinit the instances list
-        serverPropertiesPanel.updateInstancesList();
+        serverPropertiesPanel.getWizardServerProperties().
+                updateInstancesList(serverRoot);
     }
     
     /**

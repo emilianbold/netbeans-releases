@@ -22,6 +22,8 @@ import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 
 import org.netbeans.modules.j2ee.websphere6.*;
+import org.netbeans.modules.j2ee.websphere6.j2ee.DeploymentManagerProperties;
+import org.netbeans.modules.j2ee.websphere6.j2ee.WSJ2eePlatformFactory;
 import org.netbeans.modules.j2ee.websphere6.ui.nodes.editors.*;
 
 /**
@@ -64,6 +66,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
         super(children);
         
         // get the deployment manager from the lookup and save it
+        
         this.deploymentManager = (WSDeploymentManager) lookup.lookup(
                 DeploymentManager.class);
         
@@ -295,5 +298,16 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
      */
     public boolean equals(Object obj) {
         return super.equals(obj);
+    }
+    
+    public boolean hasCustomizer() {
+        return true;
+    }
+    
+    public Component getCustomizer() {
+        return new org.netbeans.modules.j2ee.websphere6.ui.Customizer(
+                new WSJ2eePlatformFactory()
+                .getJ2eePlatformImpl(deploymentManager),
+                new DeploymentManagerProperties(deploymentManager));
     }
 }

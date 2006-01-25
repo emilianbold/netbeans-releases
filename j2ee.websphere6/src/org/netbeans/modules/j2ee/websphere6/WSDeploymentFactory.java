@@ -41,6 +41,9 @@ public class WSDeploymentFactory implements DeploymentFactory {
     public static final String SERVER_NAME_ATTR = "serverName";        // NOI18N
     public static final String CONFIG_XML_PATH = "configXmlPath";      // NOI18N
     
+    public static final String USERNAME_ATTR="username";
+    public static final String PASSWORD_ATTR="password";
+    
     /**
      * The singleton instance of the factory
      */
@@ -75,6 +78,7 @@ public class WSDeploymentFactory implements DeploymentFactory {
             WSDebug.notify("getDeploymentManager(" + uri + ", " +      // NOI18N
                     username + ", " + password + ")");                 // NOI18N
         
+        
         // return a new deployment manager
         return new WSDeploymentManager(uri, username, password);
     }
@@ -89,7 +93,7 @@ public class WSDeploymentFactory implements DeploymentFactory {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("getDisconnectedDeploymentManager(" + uri + // NOI18N
                     ")");                                              // NOI18N
-        
+      
         // return a new deployment manager
         return new WSDeploymentManager(uri);
     }
@@ -105,8 +109,8 @@ public class WSDeploymentFactory implements DeploymentFactory {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("handlesURI(" + uri + ")");                 // NOI18N
         
-        return uri == null ? false : uri.startsWith(
-                "deployer:WebSphere:");                                // NOI18N
+        //return uri == null ? false : uri.startsWith(
+        return uri == null ? false : (uri.indexOf("deployer:WebSphere:")>-1);                                // NOI18N
     }
     
     /**

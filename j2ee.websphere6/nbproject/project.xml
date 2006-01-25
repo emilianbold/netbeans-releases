@@ -11,35 +11,56 @@
  Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
-
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.j2ee.websphere6</code-name-base>
+            <!-- This section exposes packages that can be used
+                 by other modules which depend on this one.
+                 If you don't do this, and attempt to access a class
+                 in this module from another module, you'll
+                 get a NoClassDefFoundException at runtime.
+            -->
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <code-name-base>org.netbeans.modules.j2ee.api.ejbmodule</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2eeapis</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util</code-name-base>
+                    <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <release-version>4</release-version>
+                        <specification-version>1.10</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.nodes</code-name-base>
+                    <code-name-base>org.netbeans.modules.java.platform</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <release-version>1</release-version>
+                        <specification-version>1.7.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.project.libraries</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -59,7 +80,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.j2ee.api.ejbmodule</code-name-base>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.io</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency/>
@@ -71,45 +100,42 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.io</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
+                    <code-name-base>org.openide.nodes</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>4</release-version>
-                        <specification-version>1.10</specification-version>
+                        <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.j2eeapis</code-name-base>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.jdesktop.layout</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.project.libraries</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
+                        <specification-version>1.3.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-
-            <!-- This section exposes packages that can be used
-                 by other modules which depend on this one.
-                 If you don't do this, and attempt to access a class
-                 in this module from another module, you'll
-                 get a NoClassDefFoundException at runtime.
-            -->
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.j2ee.websphere6</package>
+                <package>org.netbeans.modules.j2ee.websphere6.config</package>
+                <package>org.netbeans.modules.j2ee.websphere6.j2ee</package>
+                <package>org.netbeans.modules.j2ee.websphere6.optional</package>
+                <package>org.netbeans.modules.j2ee.websphere6.ui</package>
+                <package>org.netbeans.modules.j2ee.websphere6.ui.nodes</package>
+                <package>org.netbeans.modules.j2ee.websphere6.ui.nodes.editors</package>
+                <package>org.netbeans.modules.j2ee.websphere6.ui.wizard</package>
+                <package>org.netbeans.modules.j2ee.websphere6.util</package>
+            </public-packages>
         </data>
     </configuration>
 </project>

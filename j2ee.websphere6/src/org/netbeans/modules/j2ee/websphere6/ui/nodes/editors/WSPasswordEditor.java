@@ -19,27 +19,28 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 import org.openide.explorer.propertysheet.editors.*;
+import org.openide.explorer.propertysheet.*;
 
 import org.netbeans.modules.j2ee.websphere6.util.*;
 
 /**
- * An editor for the password field that appears on the properties sheet for 
+ * An editor for the password field that appears on the properties sheet for
  * the instance node.
- * 
+ *
  * @author Kirill Sorokin
  */
-public class WSPasswordEditor extends PropertyEditorSupport 
-        implements EnhancedPropertyEditor {
+public class WSPasswordEditor extends PropertyEditorSupport
+        implements ExPropertyEditor {
     
     /**
-     * The internal store for the edited object, for this editor we assume 
+     * The internal store for the edited object, for this editor we assume
      * that it's a string
      */
     private String value = "";
     
     /**
      * Returns the edited object as a string.
-     * 
+     *
      * @return the string representation of the edited object
      */
     public String getAsText() {
@@ -53,7 +54,7 @@ public class WSPasswordEditor extends PropertyEditorSupport
     /**
      * Sets the edited object value by supplying a string representation of
      * the new value
-     * 
+     *
      * @param string the string representation of the new value
      */
     public void setAsText(String string) throws IllegalArgumentException {
@@ -69,8 +70,18 @@ public class WSPasswordEditor extends PropertyEditorSupport
     }
     
     /**
+     * Implementation of ExPropertyEditor interface
+     * Working is not checked
+     */
+    private PropertyEnv myPropertyEnv = null;
+    
+    public void attachEnv(PropertyEnv env) {
+        myPropertyEnv = env;
+    }
+    
+    /**
      * Sets the edited object value
-     * 
+     *
      * @param object the new value
      */
     public void setValue(Object object) {
@@ -83,23 +94,23 @@ public class WSPasswordEditor extends PropertyEditorSupport
         }
     }
     
-    /** 
+    /**
      * Returns the edited object's value
-     * 
+     *
      * @return the edited object's value
      */
     public Object getValue() {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify(getClass(), "getValue()");                  // NOI18N
-       
+        
         // return
         return value;
     }
     
     /**
-     * Returns the custom in-line editor for the object. In this case it's 
+     * Returns the custom in-line editor for the object. In this case it's
      * a password field
-     * 
+     *
      * @return a swing component for editing the object
      */
     public Component getInPlaceCustomEditor() {
@@ -126,7 +137,7 @@ public class WSPasswordEditor extends PropertyEditorSupport
     
     /**
      * Tells whether this editor support custom in-line editing
-     * 
+     *
      * @return true
      */
     public boolean hasInPlaceCustomEditor() {
@@ -140,12 +151,12 @@ public class WSPasswordEditor extends PropertyEditorSupport
     /**
      * This method is not clear - but apparently there are no tagged values in
      * a password, so we return false
-     * 
+     *
      * @return false
      */
     public boolean supportsEditingTaggedValues() {
         if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify(getClass(), 
+            WSDebug.notify(getClass(),
                     "supportsEditingTaggedValues()");                  // NOI18N
         
         // return
@@ -155,13 +166,13 @@ public class WSPasswordEditor extends PropertyEditorSupport
     /**
      * This a listener that is attached to the editor field and watches
      * keystrokes appending the input characters to the value
-     * 
+     *
      * @author Kirill Sorokin
      */
     private class PasswordListener extends KeyAdapter {
         /**
          * Triggered when a keyboard button is released
-         * 
+         *
          * @param event the corresponding keyboard event
          */
         public void keyReleased(KeyEvent event) {
@@ -178,15 +189,16 @@ public class WSPasswordEditor extends PropertyEditorSupport
             // notify the listeners
             firePropertyChange();
             
-            // if the enter key was pressed simulate the pressing of the 
+            // if the enter key was pressed simulate the pressing of the
             // escape key so that the editor closes
             if(event.getKeyCode() == KeyEvent.VK_ENTER){
-                KeyEvent escapeEvent = new KeyEvent(event.getComponent(), 
-                        KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_ESCAPE, 
-                        KeyEvent.CHAR_UNDEFINED); 
+                KeyEvent escapeEvent = new KeyEvent(event.getComponent(),
+                        KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_ESCAPE,
+                        KeyEvent.CHAR_UNDEFINED);
                 KeyboardFocusManager.getCurrentKeyboardFocusManager().
                         dispatchKeyEvent(escapeEvent);
             }
         }
     }
+    
 }

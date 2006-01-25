@@ -1,4 +1,4 @@
-    /*
+/*
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -10,6 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.j2ee.websphere6;
 
 import java.io.*;
@@ -27,13 +28,12 @@ import org.openide.util.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 
 import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
-
 /**
- * Main class of the deployment process. This serves a a wrapper for the 
+ * Main class of the deployment process. This serves a a wrapper for the
  * server's DeploymentManager implementation, all calls are delegated to the
  * server's implementation, with the thread's context classloader updated
  * if necessary.
- * 
+ *
  * @author Kirill Sorokin
  */
 public class WSDeploymentManager implements DeploymentManager {
@@ -78,9 +78,11 @@ public class WSDeploymentManager implements DeploymentManager {
      */
     private boolean isConnected;
     
+    
+    
     /**
      * Creates a new instance of the deployment manager
-     * 
+     *
      * @param uri the server's URI
      * @param username username for connecting to the server
      * @param password password for connecting to the server
@@ -91,6 +93,7 @@ public class WSDeploymentManager implements DeploymentManager {
                     username + ", " + password + ")");                 // NOI18N
         
         // save the connection properties
+        
         this.uri = uri;
         this.username = username;
         this.password = password;
@@ -98,7 +101,7 @@ public class WSDeploymentManager implements DeploymentManager {
     
     /**
      * Creates a new instance of the deployment manager
-     * 
+     *
      * @param uri the server's URI
      */
     public WSDeploymentManager(String uri) {
@@ -106,7 +109,7 @@ public class WSDeploymentManager implements DeploymentManager {
     }
     
     /**
-     * Parses the URI and stores the parsed URI in the instance properties 
+     * Parses the URI and stores the parsed URI in the instance properties
      * object
      */
     private void parseUri() {
@@ -139,6 +142,23 @@ public class WSDeploymentManager implements DeploymentManager {
     }
     
     /**
+     * Returns the server password stored in the instance properties
+     */
+    public String getPassword() {
+        return getInstanceProperties().getProperty(WSDeploymentFactory.PASSWORD_ATTR);
+        
+    }
+    
+    /**
+     * Returns the server username stored in the instance properties
+     */
+    public String getUsername() {
+        return getInstanceProperties().getProperty(WSDeploymentFactory.USERNAME_ATTR);
+        
+    }
+    
+    
+    /**
      * Returns the server port stored in the instance properties
      */
     public String getPort() {
@@ -146,11 +166,105 @@ public class WSDeploymentManager implements DeploymentManager {
                 WSDeploymentFactory.PORT_ATTR);
     }
     
+    /**
+     * Returns the server installation directory
+     */
+    public String getServerRoot() {
+        return (getInstanceProperties()!=null)?getInstanceProperties().getProperty(
+                WSDeploymentFactory.SERVER_ROOT_ATTR):"";
+    }
+    
+    /**
+     * Returns the profile root directory
+     */
+    public String getDomainRoot() {
+        return (getInstanceProperties()!=null)?getInstanceProperties().getProperty(
+                WSDeploymentFactory.DOMAIN_ROOT_ATTR):"";
+    }
+    /**
+     * Returns true if the type of server is local. Otherwise return false
+     */
+    public String getIsLocal() {
+        return (getInstanceProperties()!=null)?getInstanceProperties().getProperty(
+                WSDeploymentFactory.IS_LOCAL_ATTR):"";
+    }
+    /**
+     * Set server root property
+     */
+    public void setServerRoot(String serverRoot) {
+        if(getInstanceProperties()!=null)
+            getInstanceProperties().setProperty(WSDeploymentFactory.SERVER_ROOT_ATTR,serverRoot);
+    }
+    
+    /**
+     * Set domain root property
+     */
+    public void setDomainRoot(String domainRoot) {
+        if(getInstanceProperties()!=null)
+            getInstanceProperties().setProperty(WSDeploymentFactory.DOMAIN_ROOT_ATTR,domainRoot);
+    }
+    /**
+     * Set host property
+     */
+    public void setHost(String host) {
+        if(getInstanceProperties()!=null)   {
+            getInstanceProperties().setProperty(WSDeploymentFactory.HOST_ATTR,host);
+        }
+    }
+    
+    /**
+     * Set port property
+     */
+    public void setPort(String port) {
+        if(getInstanceProperties()!=null){
+            getInstanceProperties().setProperty(WSDeploymentFactory.PORT_ATTR,port);
+        }
+    }
+    
+    /**
+     * Set password property
+     */
+    public void setPassword(String password) {
+        if(getInstanceProperties()!=null)
+            getInstanceProperties().setProperty(WSDeploymentFactory.PASSWORD_ATTR,password);
+    }
+    /**
+     * Set username property
+     */
+    public void setUsername(String username) {
+        if(getInstanceProperties()!=null)
+            getInstanceProperties().setProperty(WSDeploymentFactory.USERNAME_ATTR,username);
+    }
+    
+    /**
+     * Set Server Name
+     */
+    public void setServerName(String name) {
+        if(getInstanceProperties()!=null)
+            getInstanceProperties().setProperty(WSDeploymentFactory.SERVER_NAME_ATTR,name);
+    }
+    /**
+     * Set .xml configuration file path
+     */
+    public void setConfigXmlPath(String path) {
+        if(getInstanceProperties()!=null)
+            getInstanceProperties().setProperty(WSDeploymentFactory.CONFIG_XML_PATH,path);
+    }
+    
+    /**
+     * Set local/remote type of server
+     */
+    public void setIsLocal(String isLocal) {
+        if(getInstanceProperties()!=null)
+            getInstanceProperties().setProperty(WSDeploymentFactory.IS_LOCAL_ATTR,isLocal);
+    }
+    
+    
     ////////////////////////////////////////////////////////////////////////////
     // Class loading related things
     ////////////////////////////////////////////////////////////////////////////
     /**
-     * Loads the server's deployment factory if it's not already loaded. During 
+     * Loads the server's deployment factory if it's not already loaded. During
      * this process the classloader for WS classes is initialized.
      */
     private void loadDeploymentFactory() {
@@ -160,10 +274,12 @@ public class WSDeploymentManager implements DeploymentManager {
         // if the factory is not loaded - load it
         if (factory == null) {
             // init the classloader
-            loader = WSClassLoader.getInstance(getInstanceProperties().
-                    getProperty(WSDeploymentFactory.SERVER_ROOT_ATTR), 
-                    getInstanceProperties().getProperty(
-                    WSDeploymentFactory.DOMAIN_ROOT_ATTR));
+            
+            String serverProp=getServerRoot();
+            
+            String domainProp=getDomainRoot();
+            
+            loader = WSClassLoader.getInstance(serverProp,domainProp);
             
             // update the context classloader
             loader.updateLoader();
@@ -188,7 +304,7 @@ public class WSDeploymentManager implements DeploymentManager {
     }
     
     /**
-     * Updates the stored deployment manager. This is used when the current 
+     * Updates the stored deployment manager. This is used when the current
      * deployment manager cannot be used due to any reason, for example
      * it is disconnected, its deployment application is already defined, etc
      */
@@ -203,7 +319,7 @@ public class WSDeploymentManager implements DeploymentManager {
         loader.updateLoader();
         
         try {
-            // if the current deployment manager is not null - flush the 
+            // if the current deployment manager is not null - flush the
             // resources it has registered
             if (dm != null) {
                 dm.release();
@@ -239,12 +355,12 @@ public class WSDeploymentManager implements DeploymentManager {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("getInstanceProperties()");                 // NOI18N
         
-        // if the stored instance properties are null - get them via the 
+        // if the stored instance properties are null - get them via the
         // InstanceProperties' static method
         if (instanceProperties == null) {
             instanceProperties = InstanceProperties.getInstanceProperties(uri);
             
-            // if the instance properties were obtained successfully - parse 
+            // if the instance properties were obtained successfully - parse
             // the URI and store the host and port in the instance properties
             if (instanceProperties != null) {
                 parseUri();
@@ -259,12 +375,12 @@ public class WSDeploymentManager implements DeploymentManager {
     // DeploymentManager Implementation
     ////////////////////////////////////////////////////////////////////////////
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
-    public ProgressObject distribute(Target[] target, File file, File file2) 
-            throws IllegalStateException {
+    public ProgressObject distribute(Target[] target, File file, File file2)
+    throws IllegalStateException {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("distribute(" + target + ", " + file +      // NOI18N
                     ", " + file2 + ")");                               // NOI18N
@@ -291,10 +407,10 @@ public class WSDeploymentManager implements DeploymentManager {
     }
     
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
-     * 
+     *
      * @return a wrapper for the server's DeploymentConfiguration implementation
      */
     public DeploymentConfiguration createConfiguration(
@@ -310,7 +426,7 @@ public class WSDeploymentManager implements DeploymentManager {
         loader.updateLoader();
         try {
             // return the wrapper deployment configuration
-            return new WSDeploymentConfiguration(dm, deployableObject, 
+            return new WSDeploymentConfiguration(dm, deployableObject,
                     getInstanceProperties());
         } finally {
             // restore the context classloader
@@ -319,12 +435,12 @@ public class WSDeploymentManager implements DeploymentManager {
     }
     
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
-    public ProgressObject redeploy(TargetModuleID[] targetModuleID, 
-            InputStream inputStream, InputStream inputStream2) 
+    public ProgressObject redeploy(TargetModuleID[] targetModuleID,
+            InputStream inputStream, InputStream inputStream2)
             throws UnsupportedOperationException, IllegalStateException {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("redeploy(" + targetModuleID + ", " +       // NOI18N
@@ -350,13 +466,13 @@ public class WSDeploymentManager implements DeploymentManager {
             loader.restoreLoader();
         }
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
-    public ProgressObject distribute(Target[] target, InputStream inputStream, 
+    public ProgressObject distribute(Target[] target, InputStream inputStream,
             InputStream inputStream2) throws IllegalStateException {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("distribute(" + target + ", " +             // NOI18N
@@ -382,14 +498,14 @@ public class WSDeploymentManager implements DeploymentManager {
             loader.restoreLoader();
         }
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
-    public ProgressObject undeploy(TargetModuleID[] targetModuleID) 
-            throws IllegalStateException {
+    public ProgressObject undeploy(TargetModuleID[] targetModuleID)
+    throws IllegalStateException {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("undeploy(" + targetModuleID + ")");        // NOI18N
         
@@ -413,17 +529,17 @@ public class WSDeploymentManager implements DeploymentManager {
             loader.restoreLoader();
         }
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
-    public ProgressObject stop(TargetModuleID[] targetModuleID) 
-            throws IllegalStateException {
+    public ProgressObject stop(TargetModuleID[] targetModuleID)
+    throws IllegalStateException {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("stop(" + targetModuleID + ")");            // NOI18N
-                
+        
         // update the deployment manager
         updateDeploymentManager();
         
@@ -444,14 +560,14 @@ public class WSDeploymentManager implements DeploymentManager {
             loader.restoreLoader();
         }
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
-    public ProgressObject start(TargetModuleID[] targetModuleID) 
-            throws IllegalStateException {
+    public ProgressObject start(TargetModuleID[] targetModuleID)
+    throws IllegalStateException {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("start(" + targetModuleID + ")");           // NOI18N
         
@@ -475,13 +591,13 @@ public class WSDeploymentManager implements DeploymentManager {
             loader.restoreLoader();
         }
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
-    public TargetModuleID[] getAvailableModules(ModuleType moduleType, 
+    public TargetModuleID[] getAvailableModules(ModuleType moduleType,
             Target[] target) throws TargetException, IllegalStateException {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("getAvailableModules(" + moduleType +       // NOI18N
@@ -507,13 +623,13 @@ public class WSDeploymentManager implements DeploymentManager {
             loader.restoreLoader();
         }
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
-    public TargetModuleID[] getNonRunningModules(ModuleType moduleType, 
+    public TargetModuleID[] getNonRunningModules(ModuleType moduleType,
             Target[] target) throws TargetException, IllegalStateException {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("getNonRunningModules(" + moduleType +      // NOI18N
@@ -539,13 +655,13 @@ public class WSDeploymentManager implements DeploymentManager {
             loader.restoreLoader();
         }
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
-    public TargetModuleID[] getRunningModules(ModuleType moduleType, 
+    public TargetModuleID[] getRunningModules(ModuleType moduleType,
             Target[] target) throws TargetException, IllegalStateException {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("getRunningModules(" + moduleType +         // NOI18N
@@ -571,14 +687,14 @@ public class WSDeploymentManager implements DeploymentManager {
             loader.restoreLoader();
         }
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
-    public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, 
-            File file2) throws UnsupportedOperationException, 
+    public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file,
+            File file2) throws UnsupportedOperationException,
             IllegalStateException {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("redeploy(" + targetModuleID + ", " +       // NOI18N
@@ -606,7 +722,7 @@ public class WSDeploymentManager implements DeploymentManager {
     }
     
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
@@ -620,9 +736,9 @@ public class WSDeploymentManager implements DeploymentManager {
         // delegate the call
         dm.setLocale(locale);
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
@@ -636,14 +752,14 @@ public class WSDeploymentManager implements DeploymentManager {
         // delegate the call
         return dm.isLocaleSupported(locale);
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
     public void setDConfigBeanVersion(
-            DConfigBeanVersionType dConfigBeanVersionType) 
+            DConfigBeanVersionType dConfigBeanVersionType)
             throws DConfigBeanVersionUnsupportedException {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("setDConfigBeanVersion(" +                  // NOI18N
@@ -655,9 +771,9 @@ public class WSDeploymentManager implements DeploymentManager {
         // delegate the call
         dm.setDConfigBeanVersion(dConfigBeanVersionType);
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
@@ -673,9 +789,9 @@ public class WSDeploymentManager implements DeploymentManager {
         // delegate the call and return the result
         return dm.isDConfigBeanVersionSupported(dConfigBeanVersionType);
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
@@ -689,9 +805,9 @@ public class WSDeploymentManager implements DeploymentManager {
             dm = null;
         }
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
@@ -705,9 +821,9 @@ public class WSDeploymentManager implements DeploymentManager {
         // delegate the call and return the result
         return dm.isRedeploySupported();
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
@@ -721,9 +837,9 @@ public class WSDeploymentManager implements DeploymentManager {
         // delegate the call and return the result
         return dm.getCurrentLocale();
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
@@ -737,9 +853,9 @@ public class WSDeploymentManager implements DeploymentManager {
         // delegate the call and return the result
         return dm.getDConfigBeanVersion();
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
@@ -753,9 +869,9 @@ public class WSDeploymentManager implements DeploymentManager {
         // delegate the call and return the result
         return dm.getDefaultLocale();
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
@@ -769,9 +885,9 @@ public class WSDeploymentManager implements DeploymentManager {
         // delegate the call and return the result
         return dm.getSupportedLocales();
     }
-
+    
     /**
-     * Delegates the call to the server's deployment manager, checking whether 
+     * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
      * the IllegalStateException is appropriate
      */
