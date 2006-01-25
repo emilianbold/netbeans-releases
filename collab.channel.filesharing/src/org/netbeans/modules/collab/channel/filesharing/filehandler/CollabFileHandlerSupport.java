@@ -328,6 +328,8 @@ public abstract class CollabFileHandlerSupport extends Object implements Filesha
             }
         }
 
+        resetAllLineRegionOffset();
+
         inReceiveSendFile = false;
     }
 

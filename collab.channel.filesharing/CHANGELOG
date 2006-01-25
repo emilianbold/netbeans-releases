@@ -25,3 +25,6 @@
 
 1.5:	Fixed the shared file corruption bug, #69812
 	Made filesharing more provider agnostic, #71503
+
+1.6:	Additional fix for #69812. Now works properly even if you don't have
+	opened the remote document.
