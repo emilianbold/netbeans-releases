@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -1637,7 +1637,7 @@ widthcheck:  {
     * @return key description object, or <code>null</code> if the string does not represent any valid key
     */
     public static KeyStroke stringToKey(String s) {
-        StringTokenizer st = new StringTokenizer(s.toUpperCase(), "-", true); // NOI18N
+        StringTokenizer st = new StringTokenizer(s.toUpperCase(Locale.ENGLISH), "-", true); // NOI18N
 
         int needed = 0;
 
@@ -1737,7 +1737,7 @@ widthcheck:  {
     * @see #stringToKey
     */
     public static KeyStroke[] stringToKeys(String s) {
-        StringTokenizer st = new StringTokenizer(s.toUpperCase(), " "); // NOI18N
+        StringTokenizer st = new StringTokenizer(s.toUpperCase(Locale.ENGLISH), " "); // NOI18N
         ArrayList arr = new ArrayList();
 
         while (st.hasMoreElements()) {
