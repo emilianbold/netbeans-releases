@@ -17,6 +17,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -86,7 +87,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     // global keyboard shortcut
     private boolean kbShortcutEnabled;
-    private String keyStroke;
+    private Set keyStrokes = new HashSet();
     
     // file type context menu item
     private boolean ftContextEnabled;
@@ -209,7 +210,10 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         // create layer entry for keyboard shortcut
         if (kbShortcutEnabled) {
             String parentPath = "Shortcuts"; // NOI18N
-            generateShadow(parentPath + "/" + keyStroke + ".shadow", instanceFullPath); // NOI18N
+            for (Iterator it = keyStrokes.iterator(); it.hasNext();) {
+                String keyStroke = (String) it.next();
+                generateShadow(parentPath + "/" + keyStroke + ".shadow", instanceFullPath); // NOI18N                
+            }
         }
         
         // create file type context menu item
@@ -384,7 +388,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     }
     
     void setKeyStroke(String keyStroke) {
-        this.keyStroke = keyStroke;
+        keyStrokes.add(keyStroke);
     }
     
     void setFileTypeContextEnabled(boolean contextEnabled) {

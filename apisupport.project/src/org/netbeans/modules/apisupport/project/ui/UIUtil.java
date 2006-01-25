@@ -16,16 +16,20 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.Stack;
@@ -93,6 +97,95 @@ public final class UIUtil {
         int dash = keyDesc.indexOf('-');
         return dash == -1 ? keyDesc :
             keyDesc.substring(0, dash).replace('C', 'D').replace('A', 'O') + keyDesc.substring(dash);
+    }
+    
+    public static String keyStrokeToString(KeyStroke keyStroke) {
+        int modifiers = keyStroke.getModifiers();
+        StringBuffer sb = new StringBuffer();
+        if ((modifiers & InputEvent.CTRL_DOWN_MASK) > 0)
+            sb.append("Ctrl+");
+        if ((modifiers & InputEvent.ALT_DOWN_MASK) > 0)
+            sb.append("Alt+");
+        if ((modifiers & InputEvent.SHIFT_DOWN_MASK) > 0)
+            sb.append("Shift+");
+        if ((modifiers & InputEvent.META_DOWN_MASK) > 0)
+            sb.append("Meta+");
+        if (keyStroke.getKeyCode() != KeyEvent.VK_SHIFT &&
+                keyStroke.getKeyCode() != KeyEvent.VK_CONTROL &&
+                keyStroke.getKeyCode() != KeyEvent.VK_META &&
+                keyStroke.getKeyCode() != KeyEvent.VK_ALT &&
+                keyStroke.getKeyCode() != KeyEvent.VK_ALT_GRAPH
+                )
+            sb.append(Utilities.keyToString(
+                    KeyStroke.getKeyStroke(keyStroke.getKeyCode(), 0)
+                    ));
+        return sb.toString();
+    }
+    
+    public static KeyStroke stringToKeyStroke(String keyStroke) {
+        int modifiers = 0;
+        if (keyStroke.startsWith("Ctrl+")) {
+            modifiers |= InputEvent.CTRL_DOWN_MASK;
+            keyStroke = keyStroke.substring(5);
+        }
+        if (keyStroke.startsWith("Alt+")) {
+            modifiers |= InputEvent.ALT_DOWN_MASK;
+            keyStroke = keyStroke.substring(4);
+        }
+        if (keyStroke.startsWith("Shift+")) {
+            modifiers |= InputEvent.SHIFT_DOWN_MASK;
+            keyStroke = keyStroke.substring(6);
+        }
+        if (keyStroke.startsWith("Meta+")) {
+            modifiers |= InputEvent.META_DOWN_MASK;
+            keyStroke = keyStroke.substring(5);
+        }
+        KeyStroke ks = Utilities.stringToKey(keyStroke);
+        if (ks == null)
+            ErrorManager.getDefault().notify(
+                    new IllegalArgumentException(keyStroke)
+                    );
+        KeyStroke result = KeyStroke.getKeyStroke(ks.getKeyCode(), modifiers);
+        return result;
+    }
+    
+    /** 
+     * Returns multi keystroke for given text representation of shortcuts
+     * (like Alt+A B). Returns null if text is not parsable, and empty array
+     * for empty string.
+     */
+    public static KeyStroke[] stringToKeyStrokes (String keyStrokes) {
+        String delim = " ";//NOI18N
+        if (keyStrokes.length () == 0) return new KeyStroke [0];
+        StringTokenizer st = new StringTokenizer (keyStrokes, delim);
+        List result = new ArrayList ();
+        while (st.hasMoreTokens ()) {
+            String ks = st.nextToken ().trim ();
+            KeyStroke keyStroke = stringToKeyStroke (ks);
+            if (keyStroke == null) return null; // text is not parsable 
+            result.add (keyStroke);
+        }
+        return (KeyStroke[]) result.toArray (new KeyStroke [result.size ()]);
+    }    
+    
+    public static String keyStrokesToString(final KeyStroke[] keyStrokes) {
+        StringBuffer sb = new StringBuffer(UIUtil.keyStrokeToString(keyStrokes [0]));
+        int i, k = keyStrokes.length;
+        for (i = 1; i < k; i++)
+            sb.append(' ').append(UIUtil.keyStrokeToString(keyStrokes [i]));
+        
+        String newShortcut = sb.toString();            
+        return newShortcut;
+    }
+    
+    public static String keyStrokesToLogicalString(final KeyStroke[] keyStrokes) {
+        StringBuffer sb = new StringBuffer(UIUtil.keyToLogicalString(keyStrokes [0]));
+        int i, k = keyStrokes.length;
+        for (i = 1; i < k; i++)
+            sb.append(' ').append(UIUtil.keyToLogicalString((keyStrokes [i])));
+        
+        String newShortcut = sb.toString();            
+        return newShortcut;
     }
     
     /**

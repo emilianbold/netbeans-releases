@@ -14,7 +14,6 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.Collection;
@@ -24,11 +23,13 @@ import java.util.LinkedHashSet;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
@@ -40,8 +41,6 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil.LayerItemPresenter;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.action.DataModel.Position;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -94,7 +93,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             toolbar, toolbarTxt, toolbarPosition, toolbarPositionTxt
         };
         shortcutGroup = new JComponent[] {
-            keyStroke, keyStrokeTxt, keyStrokeChange
+            shortcutsList, keyStrokeTxt, keyStrokeChange, keyStrokeRemove
         };
         fileTypeGroup = new JComponent[] {
             ftContentType, ftContentTypeTxt, ftPosition, ftPositionTxt, ftSeparatorAfter, ftSeparatorBefore
@@ -202,7 +201,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     /** Package private for unit tests only. */
     boolean checkValidity() {
         boolean result = false;
-        if (globalKeyboardShortcut.isSelected() && keyStroke.getText().equals("")) { // NOI18N
+        if (globalKeyboardShortcut.isSelected() && ((DefaultListModel)shortcutsList.getModel()).isEmpty()) { // NOI18N
             setErrorMessage(getMessage("MSG_YouMustSpecifyShortcut"));
         } else if (!check(globalMenuItem, menu, menuPosition) ||
                 !check(globalToolbarButton, toolbar, toolbarPosition) ||
@@ -304,7 +303,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             }
         });
     }
-    
+
     private void loadPositionsCombo(
             final LayerItemPresenter parent,
             final JComboBox positionsCombo) {
@@ -344,7 +343,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         positionsCombo.setModel(newModel);
         checkValidity();
     }
-    
+   
     private static Object getSelectedItem(final JComboBox combo) {
         Object item = combo.getSelectedItem();
         return (item == CustomizerComponentFactory.WAIT_VALUE || item == CustomizerComponentFactory.EMPTY_VALUE) ? null : item;
@@ -405,8 +404,10 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         toolbarPosition = new javax.swing.JComboBox();
         globalKeyboardShortcut = new javax.swing.JCheckBox();
         keyStrokeTxt = new javax.swing.JLabel();
-        keyStroke = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        shortcutsList = new JList(new DefaultListModel());
         keyStrokeChange = new javax.swing.JButton();
+        keyStrokeRemove = new javax.swing.JButton();
         filler = new javax.swing.JLabel();
         fileTypeContext = new javax.swing.JCheckBox();
         ftContentTypeTxt = new javax.swing.JLabel();
@@ -432,7 +433,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         add(categoryTxt, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -598,18 +599,21 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(keyStrokeTxt, gridBagConstraints);
+
+        jScrollPane1.setViewportView(shortcutsList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
-        add(keyStroke, gridBagConstraints);
+        add(jScrollPane1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(keyStrokeChange, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "CTL_Change"));
         keyStrokeChange.addActionListener(new java.awt.event.ActionListener() {
@@ -622,13 +626,30 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
         add(keyStrokeChange, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(keyStrokeRemove, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/action/Bundle").getString("CTL_Remove"));
+        keyStrokeRemove.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                keyStrokeRemoveActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 18;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
+        add(keyStrokeRemove, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 19;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.weightx = 1.0;
@@ -646,7 +667,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 3, 0);
@@ -656,14 +677,14 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(ftContentTypeTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_ContentType"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(ftContentTypeTxt, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -675,7 +696,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(ftPositionTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Position"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(ftPositionTxt, gridBagConstraints);
@@ -683,7 +704,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         ftPosition.setRenderer(POSITION_RENDERER);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -704,7 +725,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 14;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 0, 0);
@@ -721,7 +742,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 3, 0);
@@ -731,14 +752,14 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(edContentTypeTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_ContentType"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridy = 16;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(edContentTypeTxt, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridy = 16;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -750,7 +771,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(edPositionTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Position"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 16;
+        gridBagConstraints.gridy = 17;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(edPositionTxt, gridBagConstraints);
@@ -758,7 +779,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         edPosition.setRenderer(POSITION_RENDERER);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 16;
+        gridBagConstraints.gridy = 17;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -779,13 +800,21 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 17;
+        gridBagConstraints.gridy = 18;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 0, 0);
         add(edSeparatorPanel, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
+
+    private void keyStrokeRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyStrokeRemoveActionPerformed
+        DefaultListModel lm = (DefaultListModel)shortcutsList.getModel();
+        Object[] selected = shortcutsList.getSelectedValues();
+        for (int i = 0; i < selected.length; i++) {
+            lm.removeElement(selected[i]);    
+        }        
+    }//GEN-LAST:event_keyStrokeRemoveActionPerformed
     
     private void editorContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editorContextActionPerformed
         setGroupEnabled(editorGroup, editorContext.isSelected());
@@ -814,16 +843,18 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     }//GEN-LAST:event_globalKeyboardShortcutActionPerformed
     
     private void keyStrokeChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyStrokeChangeActionPerformed
-        ShortcutEnterPanel sepPanel = new ShortcutEnterPanel();
-        DialogDescriptor dd = new DialogDescriptor(sepPanel, getMessage("LBL_AddShortcutTitle"));
-        Dialog addshort = DialogDisplayer.getDefault().createDialog(dd);
-        addshort.setVisible(true);
-        if (dd.getValue().equals(DialogDescriptor.OK_OPTION)) {
-            keyStroke.setText(sepPanel.getKeyText());
-            data.setKeyStroke(UIUtil.keyToLogicalString(sepPanel.getKeyStroke()));
-            checkValidity();
-        }
+        KeyStroke[] keyStrokes = ShortcutEnterPanel.showDialog();
+        if (keyStrokes != null && keyStrokes.length > 0) {
+            String newShortcut = UIUtil.keyStrokesToString(keyStrokes);
+            DefaultListModel lm = (DefaultListModel)shortcutsList.getModel();
+            if (!lm.contains(newShortcut)) {
+                lm.addElement(newShortcut);
+                data.setKeyStroke(UIUtil.keyStrokesToLogicalString(keyStrokes));
+                checkValidity();
+            }
+        }        
     }//GEN-LAST:event_keyStrokeChangeActionPerformed
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox category;
@@ -848,8 +879,9 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JCheckBox globalKeyboardShortcut;
     javax.swing.JCheckBox globalMenuItem;
     javax.swing.JCheckBox globalToolbarButton;
-    private javax.swing.JLabel keyStroke;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton keyStrokeChange;
+    private javax.swing.JButton keyStrokeRemove;
     private javax.swing.JLabel keyStrokeTxt;
     private javax.swing.JComboBox menu;
     private javax.swing.JComboBox menuPosition;
@@ -858,6 +890,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JCheckBox menuSeparatorBefore;
     private javax.swing.JPanel menuSeparatorPanel;
     private javax.swing.JLabel menuTxt;
+    private javax.swing.JList shortcutsList;
     private javax.swing.JComboBox toolbar;
     private javax.swing.JComboBox toolbarPosition;
     private javax.swing.JLabel toolbarPositionTxt;
@@ -881,6 +914,9 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         globalMenuItem.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_globalMenuItem"));
         globalToolbarButton.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_globalToolbarButton"));
         keyStrokeChange.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_keyStrokeChange"));
+        keyStrokeRemove.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_keyStrokeRemove"));        
+        keyStrokeTxt.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_keyStrokeDef"));        
+        shortcutsList.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_keyStrokeList"));
         menu.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_menu"));
         menuPosition.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_menuPosition"));
         menuSeparatorAfter.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_menuSeparatorAfter"));
@@ -934,7 +970,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     }
     
     private static class PositionRenderer extends DefaultListCellRenderer {
-    
+        
         public Component getListCellRendererComponent(
                 JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String text;
