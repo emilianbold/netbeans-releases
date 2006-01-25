@@ -698,11 +698,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
             visualContainer.setOldLayoutSupport(true);
 
         int convIndex = LAYOUT_UNKNOWN;
-        if (visualContainer != null && layoutNode != null) {
-            // load container layout properties saved in NB 3.1 format;
-            // these properties are loaded before subcomponents
-            convIndex = loadLayout(layoutNode,
-                                   visualContainer.getLayoutSupport());
+        if (visualContainer != null) {
+            if (layoutNode != null) {
+                // load container layout properties saved in NB 3.1 format;
+                // these properties are loaded before subcomponents
+                convIndex = loadLayout(layoutNode,
+                                       visualContainer.getLayoutSupport());
+            }
+            else if (layoutCodeNode != null) {
+                convIndex = LAYOUT_FROM_CODE;
+            }
         }
 
         // load subcomponents
@@ -733,7 +738,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (visualContainer != null && layoutCodeNode != null) {
             // load complete layout code (both for container and components);
             // this container doesn't use NB 3.1 format for saving layout data
-            convIndex = LAYOUT_FROM_CODE;
             loadLayoutCode(layoutCodeNode);
         }
 
