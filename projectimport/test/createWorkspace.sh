@@ -8,7 +8,7 @@
 # Example: ./createWorkspace.sh -w ~/workspace-3.0 -p "p1:p2:p3"
 #
 # cDate: 2004/12/14
-# mDate: 2005/04/15
+# mDate: 2006/01/05
 #
 # Author: martin.krauskopf (martin.krauskopf at sun.com)
 # Editor: VIM - Vi IMproved 6.3 (2004 June 7, compiled Jun 26 2004 15:03:59)

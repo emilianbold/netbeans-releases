@@ -38,14 +38,14 @@ import org.netbeans.modules.projectimport.ProjectImporterException;
 final class ClassPathParser extends DefaultHandler {
     
     // elements names
-    private static final String CLASSPATH = "classpath";
-    private static final String CLASSPATH_ENTRY = "classpathentry";
-    private static final String ATTRIBUTES = "attributes";
-    private static final String ATTRIBUTE = "attribute";
+    private static final String CLASSPATH = "classpath"; // NOI18N
+    private static final String CLASSPATH_ENTRY = "classpathentry"; // NOI18N
+    private static final String ATTRIBUTES = "attributes"; // NOI18N
+    private static final String ATTRIBUTE = "attribute"; // NOI18N
     
     // attributes names
-    private static final String KIND_ATTR = "kind";
-    private static final String PATH_ATTR = "path";
+    private static final String KIND_ATTR = "kind"; // NOI18N
+    private static final String PATH_ATTR = "path"; // NOI18N
     
     // indicates current position in a xml document
     private static final int POSITION_NONE = 0;
@@ -82,7 +82,7 @@ final class ClassPathParser extends DefaultHandler {
                     classPathIS.close();
                 } catch (IOException e) {
                     ErrorManager.getDefault().log(ErrorManager.WARNING,
-                            "Unable to close classPathStream: " + e);
+                            "Unable to close classPathStream: " + e); // NOI18N
                 }
             }
         }
@@ -131,8 +131,8 @@ final class ClassPathParser extends DefaultHandler {
                     position = POSITION_CLASSPATH;
                     classPath = new ClassPath();
                 } else {
-                    throw (new SAXException("First element has to be "
-                            + CLASSPATH + ", but is " + localName));
+                    throw (new SAXException("First element has to be " // NOI18N
+                            + CLASSPATH + ", but is " + localName)); // NOI18N
                 }
                 break;
             case POSITION_CLASSPATH:
@@ -159,7 +159,7 @@ final class ClassPathParser extends DefaultHandler {
                 }
                 break;
             default:
-                throw (new SAXException("Unknown element reached: "
+                throw (new SAXException("Unknown element reached: " // NOI18N
                         + localName));
         }
     }
@@ -182,8 +182,8 @@ final class ClassPathParser extends DefaultHandler {
                 break;
             default:
                 ErrorManager.getDefault().log(ErrorManager.WARNING,
-                        "Unknown state reached in ClassPathParser, " +
-                        "position: " + position);
+                        "Unknown state reached in ClassPathParser, " + // NOI18N
+                        "position: " + position); // NOI18N
         }
         chars.setLength(0);
     }

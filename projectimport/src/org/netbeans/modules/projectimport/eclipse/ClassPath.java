@@ -70,7 +70,7 @@ final class ClassPath {
         }
         
         public String toString() {
-            return name + " = " + location + " (type: " + type + ")";
+            return name + " = " + location + " (type: " + type + ")"; // NOI18N
         }
         
         public boolean equals(Object obj) {
