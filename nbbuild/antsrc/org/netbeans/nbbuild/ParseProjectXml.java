@@ -672,7 +672,7 @@ public final class ParseProjectXml extends Task {
                 }
             }
             
-            if (!dep.impl) {
+            if (!dep.impl && /* #71807 */ dep.run) {
                 String friends = attr.getValue("OpenIDE-Module-Friends");
                 if (friends != null && !Arrays.asList(friends.split(" *, *")).contains(myCnb)) {
                     throw new BuildException("The module " + myCnb + " is not a friend of " + depJar, getLocation());
@@ -680,7 +680,7 @@ public final class ParseProjectXml extends Task {
                 String pubpkgs = attr.getValue("OpenIDE-Module-Public-Packages");
                 if ("-".equals(pubpkgs)) {
                     throw new BuildException("The module " + depJar + " has no public packages and so cannot be compiled against", getLocation());
-                } else if (pubpkgs != null && !runtime && /* #71807 */ dep.run && publicPackageJarDir != null) {
+                } else if (pubpkgs != null && !runtime && publicPackageJarDir != null) {
                     File splitJar = createPublicPackageJar(additions, pubpkgs, publicPackageJarDir, cnb);
                     additions.clear();
                     additions.add(splitJar);
