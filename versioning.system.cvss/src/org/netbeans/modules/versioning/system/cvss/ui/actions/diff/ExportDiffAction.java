@@ -140,7 +140,8 @@ public class ExportDiffAction extends AbstractSystemAction {
                 return NbBundle.getMessage(ExportDiffAction.class, "BK3002");
             }
         });
-        
+
+        chooser.setDialogType( JFileChooser.SAVE_DIALOG );  // #71861
         chooser.setApproveButtonMnemonic(NbBundle.getMessage(ExportDiffAction.class, "MNE_Export_ExportAction").charAt(0));
         chooser.setApproveButtonText(NbBundle.getMessage(ExportDiffAction.class, "CTL_Export_ExportAction"));
         DialogDescriptor dd = new DialogDescriptor(chooser, NbBundle.getMessage(ExportDiffAction.class, "CTL_Export_Title"));
