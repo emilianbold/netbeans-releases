@@ -82,6 +82,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         suite.addTest(new JSPDebuggingOverallTest("testDebugAndStopServer"));
         suite.addTest(new JSPDebuggingOverallTest("testStartAnotherSession"));
         suite.addTest(new JSPDebuggingOverallTest("testJavaSession"));
+        suite.addTest(new JSPDebuggingOverallTest("testStopServer"));
         return suite;
     }
     
@@ -379,6 +380,16 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         // wait until Debug toolbar dismiss
         debugToolbarOper.waitComponentVisible(false);
         so.close();
+    }
+    
+    /** Stop server just for clean-up.
+     * - stop server and wait until it finishes
+     */
+    public void testStopServer() {
+        // "Bundled Tomcat (x.y.z)"
+        String tomcatLabel = Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.Bundle", "LBL_BundledTomcat");
+        J2eeServerNode serverNode = new J2eeServerNode(tomcatLabel);
+        serverNode.stop();
     }
     
     /** Increases timeout and waits until page is displayed in internal browser.
