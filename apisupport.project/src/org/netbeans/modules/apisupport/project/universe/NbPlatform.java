@@ -395,7 +395,8 @@ public final class NbPlatform {
     /**
      * Get a unique ID for this platform.
      * Used e.g. in <code>nbplatform.active</code> in <code>platform.properties</code>.
-     * @return a unique ID, or null for anonymous platforms
+     * @return a unique ID, or <code>null</code> for <em>anonymous</em>
+     *         platforms (see {@link #getPlatformByDestDir}). 
      */
     public String getID() {
         return id;
