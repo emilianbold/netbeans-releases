@@ -78,28 +78,23 @@ Microsystems, Inc. All Rights Reserved.
             </custom>
         </selector>
 
-        <property name="netbeans.dest.dir.absolute" location="${netbeans.dest.dir}"/> <!-- #68892 -->
-        
         <pathconvert property="zip.platform.clusters.duplicates" pathsep=",">
             <path>
                 <fileset dir="${netbeans.dest.dir}">
                     <selector refid="zip.platform.included.files"/>
                 </fileset>
             </path>
-            <map from="${netbeans.dest.dir.absolute}" to=""/> <!-- #71720 -->
-            <mapper type="regexp" from="^[/\\]([^/\\]+)" to="\1"/>
+            <mapper type="regexp" from="[/\\]([^/\\]+)[/\\]config[/\\]Modules[/\\]" to="\1"/> <!-- #71849 -->
         </pathconvert>
         
-        <dirset dir="${netbeans.dest.dir}" id="platform.clusters" includes="${zip.platform.clusters.duplicates}"/>
+        <dirset id="zip.platform.clusters" dir="${netbeans.dest.dir}" includes="${zip.platform.clusters.duplicates}" excludes="platform*"/>
         
-        <pathconvert property="zip.platform.clusters" pathsep="&#10;"> <!-- #71128: \n OK on Win but \r\n bad on Unix -->
+        <pathconvert property="zip.platform.clusters.bare" pathsep="&#10;"> <!-- #71128: \n OK on Win but \r\n bad on Unix -->
             <path>
-                <dirset refid="platform.clusters"/>
+                <dirset refid="zip.platform.clusters"/>
             </path>
-            <map from="${netbeans.dest.dir.absolute}" to=""/> <!-- #71720 -->
-            <mapper type="regexp" from="^[/\\]([^/\\]+)" to="\1"/>
+            <mapper type="regexp" from="[/\\]([^/\\]+)[/\\]?$" to="\1"/> <!-- #71849 -->
         </pathconvert>
-        <echo level="verbose">Included platform clusters: ${zip.platform.clusters}</echo>
 
         <property name="build.launcher.dir" location="build/launcher"/>
         
@@ -110,9 +105,9 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${harness.dir}/launchers/app_w.exe" tofile="${build.launcher.dir}/bin/${app.name}_w.exe"/>
         <copy file="${harness.dir}/launchers/app.sh" tofile="${build.launcher.dir}/bin/${app.name}"/>
         <copy file="${harness.dir}/etc/app.conf" tofile="${build.launcher.dir}/etc/${app.name}.conf"/>
-        <echo message="${zip.platform.clusters}" file="${build.launcher.dir}/etc/${app.name}.clusters"/>
+        <echo message="${app.name}" file="${build.launcher.dir}/etc/${app.name}.clusters"/>
         <echo message="&#10;" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
-        <echo message="${app.name}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
+        <echo message="${zip.platform.clusters.bare}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
         <echo message="&#10;" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
         
     </target>

@@ -67,8 +67,7 @@ Microsystems, Inc. All Rights Reserved.
                 </fileset>
             </path>
         </pathconvert>
-        <property name="netbeans.dest.dir.absolute" location="${netbeans.dest.dir}"/> <!-- #68892 -->
-        <pathconvert property="zip.platform.clusters.duplicates" pathsep=",">
+        <pathconvert property="run.platform.clusters.duplicates" pathsep=",">
             <path>
                 <fileset dir="${netbeans.dest.dir}">
                     <selector>
@@ -80,13 +79,12 @@ Microsystems, Inc. All Rights Reserved.
                     </selector>
                 </fileset>
             </path>
-            <map from="${netbeans.dest.dir.absolute}" to=""/> <!-- #71720 -->
-            <mapper type="regexp" from="^[/\\]([^/\\]+)" to="\1"/>
+            <mapper type="regexp" from="[/\\]([^/\\]+)[/\\]config[/\\]Modules[/\\]" to="\1"/> <!-- #71849 -->
         </pathconvert>
         <pathconvert property="run.platform.clusters">
             <path>
-                <dirset dir="${netbeans.dest.dir}" includes="${zip.platform.clusters.duplicates}"/>
                 <pathelement location="${cluster}"/>
+                <dirset dir="${netbeans.dest.dir}" includes="${run.platform.clusters.duplicates}" excludes="platform*"/>
             </path>
         </pathconvert>
         <property name="platform.cluster" location="${install}/platform6"/> <!-- XXX better to avoid hardcoding -->
