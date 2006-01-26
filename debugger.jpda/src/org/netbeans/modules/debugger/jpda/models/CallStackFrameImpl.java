@@ -70,6 +70,8 @@ public class CallStackFrameImpl implements CallStackFrame {
             // this stack frame is not available or information in it is not available
             valid = false;
             return 0;
+        } catch (VMDisconnectedException ex) {
+            return 0;
         }
     }
 
@@ -85,6 +87,8 @@ public class CallStackFrameImpl implements CallStackFrame {
         } catch (InvalidStackFrameException ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
+            return "";
+        } catch (VMDisconnectedException ex) {
             return "";
         }
     }
@@ -102,6 +106,8 @@ public class CallStackFrameImpl implements CallStackFrame {
             // this stack frame is not available or information in it is not available
             valid = false;
             return "";
+        } catch (VMDisconnectedException ex) {
+            return "";
         }
     }
 
@@ -118,6 +124,8 @@ public class CallStackFrameImpl implements CallStackFrame {
             // this stack frame is not available or information in it is not available
             valid = false;
             return "";
+        } catch (VMDisconnectedException ex) {
+            return "";
         }
     }
 
@@ -133,6 +141,8 @@ public class CallStackFrameImpl implements CallStackFrame {
         } catch (InvalidStackFrameException ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
+            return Collections.EMPTY_LIST;
+        } catch (VMDisconnectedException ex) {
             return Collections.EMPTY_LIST;
         }
     }
@@ -152,6 +162,8 @@ public class CallStackFrameImpl implements CallStackFrame {
             // this stack frame is not available or information in it is not available
             valid = false;
             return "";
+        } catch (VMDisconnectedException ex) {
+            return "";
         }
     }
     
@@ -167,6 +179,8 @@ public class CallStackFrameImpl implements CallStackFrame {
         } catch (InvalidStackFrameException ex) {
             // this stack frame is not available or information in it is not available
             valid = false;
+            return "";
+        } catch (VMDisconnectedException ex) {
             return "";
         }
     }
