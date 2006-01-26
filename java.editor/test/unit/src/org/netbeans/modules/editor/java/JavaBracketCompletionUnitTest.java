@@ -325,6 +325,18 @@ public class JavaBracketCompletionUnitTest extends JavaBaseDocumentUnitTestCase 
         );
     }    
     
+    /** issue #71880 */
+    public void testQuoteAtTheEndOfLineCommentLine() throws Exception {
+        setLoadDocumentText (
+            "// test line comment |\n"
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("Quote At The End Of Line Comment Line", 
+            "// test line comment \"|\n"
+        );
+    }    
+    
+    
     // ------- Tests for completion of single quote (') -------------        
     
     public void testSingleQuoteInEmptyDoc () throws Exception {
@@ -527,6 +539,17 @@ public class JavaBracketCompletionUnitTest extends JavaBaseDocumentUnitTestCase 
         typeQuoteChar('\'');
         assertDocumentTextAndCaret ("Single Quote Inside Comments", 
             "/* \'|\n */"
+        );
+    }    
+
+    /** issue #71880 */
+    public void testSingleQuoteAtTheEndOfLineCommentLine() throws Exception {
+        setLoadDocumentText (
+            "// test line comment |\n"
+        );
+        typeQuoteChar('\'');
+        assertDocumentTextAndCaret ("Single Quote At The End Of Line Comment Line", 
+            "// test line comment \'|\n"
         );
     }    
     
