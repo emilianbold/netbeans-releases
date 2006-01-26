@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.core.startup.layers;
 
 import java.beans.PropertyVetoException;
@@ -17,17 +18,24 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.net.URLDecoder;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
 import org.openide.ErrorManager;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.JarFileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
 
 public class ArchiveURLMapper extends URLMapper {
 
@@ -111,15 +119,6 @@ public class ArchiveURLMapper extends URLMapper {
         }
         return null;
     }
-
-    public static FileObject getArchiveRoot (FileObject fo) throws IOException {
-        if (fo.isVirtual()) {
-            return null;
-        }
-        File file = FileUtil.toFile (fo);
-        return getFileSystem(file).getRoot();
-    }    
-
 
     private static synchronized boolean isRoot (File file) {
         return mountRoots.containsKey(file);
