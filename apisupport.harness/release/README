@@ -137,9 +137,9 @@ netbeans.dest.dir and harness.dir in terms of the suite directory, e.g.:
 The platform.properties should *not* define 'nbplatform.active' in this case.
 
 Relative-path source and Javadoc associations for the platform is not yet
-supported in this scenario. Each developer with a checkout of the suite may need
-to configure a platform (with an arbitrary name) in the NetBeans Platform
-Manager dialog with a binary location matching the value you gave for
+supported in this scenario (#70876). Each developer with a checkout of the suite
+may need to configure a platform (with an arbitrary name) in the NetBeans
+Platform Manager dialog with a binary location matching the value you gave for
 ${netbeans.dest.dir}, and with source and/or Javadoc associations of their
 choice. However, as a convenience, special associations may be predefined in the
 IDE in the special case that the destination directory is the subsubdirectory
