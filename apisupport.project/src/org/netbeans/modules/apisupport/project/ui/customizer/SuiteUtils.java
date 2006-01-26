@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -336,20 +336,17 @@ public final class SuiteUtils {
         try {
             return (SuiteProject) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction(){
                 public Object run() throws Exception {
-                    SuiteProvider sp = (SuiteProvider) suiteComponent.getLookup().lookup(SuiteProvider.class);
-                    Project suite = null;
-                    if (sp != null && sp.getSuiteDirectory() != null) {
-                        suite = ProjectManager.getDefault().findProject(
-                                FileUtil.toFileObject(sp.getSuiteDirectory()));
-                    }
-                    return (SuiteProject) suite;
+                    File suiteDir = SuiteUtils.getSuiteDirectory(suiteComponent);
+                    return suiteDir == null ? null :
+                        ProjectManager.getDefault().findProject(
+                            FileUtil.toFileObject(suiteDir));
                 }
             });
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
     }
-
+    
     /**
      * Returns whether a given suite already contains a given project or a
      * project with the same code name base.
@@ -377,4 +374,27 @@ public final class SuiteUtils {
         return spp.getSubprojects();
     }
     
+    /**
+     * Convenient method for getting a suite directory from a given project
+     * which should contain an instance of {@link SuiteProvider} in its lookup.
+     * @return either suite directory or <code>null</code>
+     */
+    public static File getSuiteDirectory(final Project project) {
+        File suiteDir = null;
+        SuiteProvider sp = (SuiteProvider) project.getLookup().lookup(SuiteProvider.class);
+        if (sp != null) {
+            suiteDir = sp.getSuiteDirectory();
+        }
+        return suiteDir;
+    }
+    
+    /**
+     * Returns {@link #getSuiteDirectory}'s absolute path.
+     * @return path or <code>null</code>
+     */
+    public static String getSuiteDirectoryPath(final Project project) {
+        File suiteDir = getSuiteDirectory(project);
+        return suiteDir != null ? suiteDir.getAbsolutePath() : null;
+    }
+
 }

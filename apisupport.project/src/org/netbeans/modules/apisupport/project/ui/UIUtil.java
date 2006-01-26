@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -59,7 +59,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
-import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
@@ -102,71 +101,78 @@ public final class UIUtil {
     public static String keyStrokeToString(KeyStroke keyStroke) {
         int modifiers = keyStroke.getModifiers();
         StringBuffer sb = new StringBuffer();
-        if ((modifiers & InputEvent.CTRL_DOWN_MASK) > 0)
-            sb.append("Ctrl+");
-        if ((modifiers & InputEvent.ALT_DOWN_MASK) > 0)
-            sb.append("Alt+");
-        if ((modifiers & InputEvent.SHIFT_DOWN_MASK) > 0)
-            sb.append("Shift+");
-        if ((modifiers & InputEvent.META_DOWN_MASK) > 0)
-            sb.append("Meta+");
+        if ((modifiers & InputEvent.CTRL_DOWN_MASK) > 0) {
+            sb.append("Ctrl+"); // NOI18N
+        }
+        if ((modifiers & InputEvent.ALT_DOWN_MASK) > 0) {
+            sb.append("Alt+"); // NOI18N
+        }
+        if ((modifiers & InputEvent.SHIFT_DOWN_MASK) > 0) {
+            sb.append("Shift+"); // NOI18N
+        }
+        if ((modifiers & InputEvent.META_DOWN_MASK) > 0) {
+            sb.append("Meta+"); // NOI18N
+        }
         if (keyStroke.getKeyCode() != KeyEvent.VK_SHIFT &&
                 keyStroke.getKeyCode() != KeyEvent.VK_CONTROL &&
                 keyStroke.getKeyCode() != KeyEvent.VK_META &&
                 keyStroke.getKeyCode() != KeyEvent.VK_ALT &&
-                keyStroke.getKeyCode() != KeyEvent.VK_ALT_GRAPH
-                )
+                keyStroke.getKeyCode() != KeyEvent.VK_ALT_GRAPH) {
             sb.append(Utilities.keyToString(
-                    KeyStroke.getKeyStroke(keyStroke.getKeyCode(), 0)
-                    ));
+                    KeyStroke.getKeyStroke(keyStroke.getKeyCode(), 0)));
+        }
         return sb.toString();
     }
     
     public static KeyStroke stringToKeyStroke(String keyStroke) {
         int modifiers = 0;
-        if (keyStroke.startsWith("Ctrl+")) {
+        if (keyStroke.startsWith("Ctrl+")) { // NOI18N
             modifiers |= InputEvent.CTRL_DOWN_MASK;
             keyStroke = keyStroke.substring(5);
         }
-        if (keyStroke.startsWith("Alt+")) {
+        if (keyStroke.startsWith("Alt+")) { // NOI18N
             modifiers |= InputEvent.ALT_DOWN_MASK;
             keyStroke = keyStroke.substring(4);
         }
-        if (keyStroke.startsWith("Shift+")) {
+        if (keyStroke.startsWith("Shift+")) { // NOI18N
             modifiers |= InputEvent.SHIFT_DOWN_MASK;
             keyStroke = keyStroke.substring(6);
         }
-        if (keyStroke.startsWith("Meta+")) {
+        if (keyStroke.startsWith("Meta+")) { // NOI18N
             modifiers |= InputEvent.META_DOWN_MASK;
             keyStroke = keyStroke.substring(5);
         }
         KeyStroke ks = Utilities.stringToKey(keyStroke);
-        if (ks == null)
+        if (ks == null) {
             ErrorManager.getDefault().notify(
-                    new IllegalArgumentException(keyStroke)
-                    );
+                    new IllegalArgumentException(keyStroke));
+        }
         KeyStroke result = KeyStroke.getKeyStroke(ks.getKeyCode(), modifiers);
         return result;
     }
     
-    /** 
+    /**
      * Returns multi keystroke for given text representation of shortcuts
      * (like Alt+A B). Returns null if text is not parsable, and empty array
      * for empty string.
      */
-    public static KeyStroke[] stringToKeyStrokes (String keyStrokes) {
-        String delim = " ";//NOI18N
-        if (keyStrokes.length () == 0) return new KeyStroke [0];
-        StringTokenizer st = new StringTokenizer (keyStrokes, delim);
-        List result = new ArrayList ();
-        while (st.hasMoreTokens ()) {
-            String ks = st.nextToken ().trim ();
-            KeyStroke keyStroke = stringToKeyStroke (ks);
-            if (keyStroke == null) return null; // text is not parsable 
-            result.add (keyStroke);
+    public static KeyStroke[] stringToKeyStrokes(String keyStrokes) {
+        String delim = " "; // NOI18N
+        if (keyStrokes.length() == 0) {
+            return new KeyStroke [0];
         }
-        return (KeyStroke[]) result.toArray (new KeyStroke [result.size ()]);
-    }    
+        StringTokenizer st = new StringTokenizer(keyStrokes, delim);
+        List result = new ArrayList();
+        while (st.hasMoreTokens()) {
+            String ks = st.nextToken().trim();
+            KeyStroke keyStroke = stringToKeyStroke(ks);
+            if (keyStroke == null) { // text is not parsable
+                return null;
+            }
+            result.add(keyStroke);
+        }
+        return (KeyStroke[]) result.toArray(new KeyStroke [result.size()]);
+    }
     
     public static String keyStrokesToString(final KeyStroke[] keyStrokes) {
         StringBuffer sb = new StringBuffer(UIUtil.keyStrokeToString(keyStrokes [0]));
@@ -174,7 +180,7 @@ public final class UIUtil {
         for (i = 1; i < k; i++)
             sb.append(' ').append(UIUtil.keyStrokeToString(keyStrokes [i]));
         
-        String newShortcut = sb.toString();            
+        String newShortcut = sb.toString();
         return newShortcut;
     }
     
@@ -184,7 +190,7 @@ public final class UIUtil {
         for (i = 1; i < k; i++)
             sb.append(' ').append(UIUtil.keyToLogicalString((keyStrokes [i])));
         
-        String newShortcut = sb.toString();            
+        String newShortcut = sb.toString();
         return newShortcut;
     }
     
@@ -303,7 +309,7 @@ public final class UIUtil {
         if (str.length() > 0 && str.charAt(0) == '.') {
             return false;
         }
-        StringTokenizer tukac = new StringTokenizer(str, ".");
+        StringTokenizer tukac = new StringTokenizer(str, "."); // NOI18N
         while (tukac.hasMoreTokens()) {
             String token = tukac.nextToken();
             if ("".equals(token)) {
@@ -615,12 +621,10 @@ public final class UIUtil {
     }
     
     private static File getSuiteDirectory(Project suiteComp) {
-        SuiteProvider sp = (SuiteProvider) suiteComp.
-                getLookup().lookup(SuiteProvider.class);
-        assert sp != null;
-        assert sp.getSuiteDirectory() != null : "Invalid suite provider for: " // NOI18N
+        File suiteDir = SuiteUtils.getSuiteDirectory(suiteComp);
+        assert suiteDir != null : "Invalid suite provider for: " // NOI18N
                 + suiteComp.getProjectDirectory();
-        return sp.getSuiteDirectory();
+        return suiteDir;
     }
     
     private static String getSuiteProjectDirectory(Project suiteComp) {

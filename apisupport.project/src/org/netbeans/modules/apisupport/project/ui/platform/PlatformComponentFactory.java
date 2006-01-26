@@ -35,8 +35,8 @@ import javax.swing.MutableComboBoxModel;
 import javax.swing.UIManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -87,9 +87,9 @@ public final class PlatformComponentFactory {
         MutableComboBoxModel model = new SuiteListModel(userSuites);
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < projects.length; i++) {
-            SuiteProvider sp = (SuiteProvider) projects[i].getLookup().lookup(SuiteProvider.class);
-            if (sp != null && sp.getSuiteDirectory() != null) {
-                model.addElement(sp.getSuiteDirectory().getAbsolutePath());
+            String suiteDir = SuiteUtils.getSuiteDirectoryPath(projects[i]);
+            if (suiteDir != null) {
+                model.addElement(suiteDir);
             }
         }
         JComboBox suiteCombo = new JComboBox(model);

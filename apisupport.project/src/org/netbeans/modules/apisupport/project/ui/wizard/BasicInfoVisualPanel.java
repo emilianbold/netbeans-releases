@@ -30,8 +30,8 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -223,7 +223,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     }
     
     private void updateGUI() {
-        if (!"".equals(getNameValue()) && !"".equals(getLocationValue())) {
+        if (!"".equals(getNameValue()) && !"".equals(getLocationValue())) { // NOI18N
             // update project folder
             File destFolder = getFolder();
             folderValue.setText(destFolder.getPath());
@@ -360,8 +360,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
                 location = FileUtil.toFile(locationFO).getAbsolutePath();
                 break;
             }
-            SuiteProvider sp = (SuiteProvider) maybeSuite.getLookup().lookup(SuiteProvider.class);
-            if (sp == null || sp.getSuiteDirectory() == null) {
+            File suiteDir = SuiteUtils.getSuiteDirectory(maybeSuite);
+            if (suiteDir != null) {
                 location = FileUtil.toFile(locationFO).getAbsolutePath();
                 break;
             }
@@ -749,10 +749,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
                 Project suite = ProjectManager.getDefault().findProject(
                         FileUtil.toFileObject(projectDir));
                 if (suite != null) {
-                    SuiteProvider sp = (SuiteProvider) suite.
-                            getLookup().lookup(SuiteProvider.class);
-                    if (sp != null && sp.getSuiteDirectory() != null) {
-                        String suiteDir = sp.getSuiteDirectory().getAbsolutePath();
+                    String suiteDir = SuiteUtils.getSuiteDirectoryPath(suite);
+                    if (suiteDir != null) {
                         // register for this session
                         PlatformComponentFactory.addUserSuite(suiteDir);
                         // add to current combobox
