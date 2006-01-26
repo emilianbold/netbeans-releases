@@ -35,8 +35,7 @@ Microsystems, Inc. All Rights Reserved.
         <property file="../../nbbuild/build.properties"/>
         <ant dir="../../nbbuild" target="build-javadoc" inheritall="false">
             <!-- Stable only: -->
-            <property name="modules" value="apisupport/apidocs, mdr/mdrapi"/>
-            <property name="fixedmodules" value="${config.fixedmodules.javadoc}"/>
+            <property name="config.javadoc.all" value="${config.javadoc.stable}"/>
             <property name="building.apisupport/apidocs" value="true"/><!-- avoid recursion -->
             <property name="javadoc.skip.brokenlinks.check" value="true" />
         </ant>
