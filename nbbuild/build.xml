@@ -215,7 +215,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- build javadoc for selected modules -->
   <target name="build-javadoc" depends="build-nozip,init" description="Builds Javadoc documentation for modules; on branches pass e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
       <pathconvert property="modules.fullpath" >
-          <path id="x" >
+          <path>
               <dirset dir="${nb_all}" includes="${config.javadoc.all}" />
           </path>
           <mapper type="identity" />
@@ -223,14 +223,15 @@ Microsystems, Inc. All Rights Reserved.
       
       <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
       
+      <pathconvert property="modules.foreach" dirsep="/" pathsep=",">
+          <path path="${modules.sorted}" />
+          <mapper type="glob" from="${nb_all}/*" to="*" />
+      </pathconvert>
+      
       <mkdir dir="build/ModulesExportedInterfaces" />
       <mkdir dir="build/APIChanges" />
-            
-      <subant target="netbeans-javadoc" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false" >
-          <property name="export.interfaces" location="build/ModulesExportedInterfaces" />
-          <property name="export.apichanges" location="build/APIChanges" />
-      </subant>
       
+      <for-each startdir=".." target="netbeans-javadoc" locations="${modules.foreach}"/>
       
       <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-xml" />
       <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-html" />
