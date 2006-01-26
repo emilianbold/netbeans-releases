@@ -21,11 +21,14 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -170,6 +173,12 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     
     public void initialize(WizardDescriptor wiz) {
         this.settings = wiz;
+        if (preferredSuiteDir == null) {
+            Project mainPrj = OpenProjects.getDefault().getMainProject();
+            if (mainPrj != null) {
+                preferredSuiteDir = SuiteUtils.getSuiteDirectoryPath(mainPrj);
+            }
+        }
         if (preferredSuiteDir != null) {
             settings.putProperty(PREFERRED_SUITE_DIR, preferredSuiteDir);
         }
