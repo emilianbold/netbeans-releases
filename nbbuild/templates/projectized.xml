@@ -101,6 +101,25 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="netbeans-javadoc" depends="netbeans,javadoc" />
     
+    <target name="-conditional-nbm-init" depends="build-init">
+        <condition property="skip.nbm">
+            <and>
+                <equals arg1="1.5" arg2="${javac.source}"/>
+                <not>
+                    <available classname="java.lang.StringBuilder"/>
+                </not>
+            </and>
+        </condition>
+    </target>
+    
+    <target name="-conditional-nbm-warn" depends="-conditional-nbm-init" if="skip.nbm">
+        <echo level="error" message="Cannot build NBM for module ${basedir} as it requires JDK 1.5"/>
+    </target>
+    
+    <target name="conditional-nbm" unless="skip.nbm" depends="-conditional-nbm-warn">
+        <antcall target="nbm"/>
+    </target>
+    
     <!-- apisupport/project could calls this for the debug action. -->
     <!-- You can also call it directly from the nbbuild/misc pseudoproject. -->
     <target name="debug" depends="netbeans">

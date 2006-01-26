@@ -184,7 +184,7 @@ Microsystems, Inc. All Rights Reserved.
            built modules (excluding fixedmodules which must build everytime). -->
       <mkdir dir="nbms" />
       <property name="nbm.target.dir" location="nbms" />
-      <for-each startdir=".." target="nbm" locations="${allmodules}"/>
+      <for-each startdir=".." target="conditional-nbm" locations="${allmodules}"/>
   </target>
   <target name="nbm"/><!-- dummy target -->
   
