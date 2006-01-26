@@ -262,7 +262,11 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     }
     
     public String name() {
-        return null; // XXX is this used somewhere actually
+        // TemplateWizard internally does not use the value returned by this
+        // method so we may return whatever (e.g. null) in the meantime. But it
+        // would be resolved as "null" string by MessageFormat. So probably the
+        // safest is to return empty string.
+        return "";
     }
     
     public boolean hasNext() {
