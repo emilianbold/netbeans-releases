@@ -18,6 +18,16 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.modules.jellytools</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.core</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.core.multiview</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.core.output2</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -25,6 +35,16 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                         <implementation-version/>
                     </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.core.windows</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.completion</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.fold</code-name-base>
