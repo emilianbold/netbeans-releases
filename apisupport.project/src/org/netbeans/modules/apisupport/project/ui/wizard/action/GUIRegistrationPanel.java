@@ -814,6 +814,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         for (int i = 0; i < selected.length; i++) {
             lm.removeElement(selected[i]);    
         }        
+        checkValidity();
     }//GEN-LAST:event_keyStrokeRemoveActionPerformed
     
     private void editorContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editorContextActionPerformed
