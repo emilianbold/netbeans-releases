@@ -8,7 +8,7 @@
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights ReFserved.
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.filesystems;
