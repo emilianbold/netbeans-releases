@@ -34,3 +34,6 @@
         with a progress bar (#61978)
 	
 1.3:	Weak listening from ConversationNode to prevent memory leak #63905
+
+1.4:	Fix #71923: correctly show management dialog after creating a pubconv.
+ 
