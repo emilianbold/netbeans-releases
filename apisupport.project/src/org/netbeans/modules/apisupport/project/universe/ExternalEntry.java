@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,12 +28,13 @@ final class ExternalEntry extends AbstractEntryWithSources {
     private final String specVersion;
     private final String[] providedTokens;
     private final ManifestManager.PackageExport[] publicPackages;
+    private final String[] friends;
     private final boolean deprecated;
     
     public ExternalEntry(File basedir, String cnb, File clusterDir, File jar,
             String cpext, File nbdestdir, String releaseVersion, String specVersion,
             String[] providedTokens, ManifestManager.PackageExport[] publicPackages,
-            boolean deprecated) {
+            String[] friends, boolean deprecated) {
         this.basedir = basedir;
         this.cnb = cnb;
         this.clusterDir = clusterDir;
@@ -44,6 +45,7 @@ final class ExternalEntry extends AbstractEntryWithSources {
         this.specVersion = specVersion;
         this.providedTokens = providedTokens;
         this.publicPackages = publicPackages;
+        this.friends = friends;
         this.deprecated = deprecated;
     }
     
@@ -91,6 +93,10 @@ final class ExternalEntry extends AbstractEntryWithSources {
         return publicPackages;
     }
     
+    public boolean isDeclaredAsFriend(String cnb) {
+        return isDeclaredAsFriend(friends, cnb);
+    }
+    
     public boolean isDeprecated() {
         return deprecated;
     }
@@ -98,5 +104,6 @@ final class ExternalEntry extends AbstractEntryWithSources {
     public String toString() {
         return "ExternalEntry[" + getSourceLocation() + "]"; // NOI18N
     }
+    
     
 }

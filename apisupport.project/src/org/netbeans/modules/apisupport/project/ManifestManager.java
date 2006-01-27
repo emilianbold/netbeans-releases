@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -28,6 +29,10 @@ import java.util.jar.Manifest;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.Dependency;
+
+// XXX a lot of code in this method is more or less duplicated from
+// org.netbeans.core.modules.Module class. Do not forgot to refactor this as
+// soon as there is some kind of API (public packages, friends, ...)
 
 /**
  * TODO - Comment whole code!
@@ -47,6 +52,7 @@ public final class ManifestManager {
     private String layer;
     private String classPath;
     private PackageExport[] publicPackages;
+    private String[] friendNames;
     private String moduleDependencies;
     private boolean deprecated;
     
@@ -65,7 +71,7 @@ public final class ManifestManager {
     static final PackageExport[] EMPTY_EXPORTED_PACKAGES = new PackageExport[0];
     
     public static final ManifestManager NULL_INSTANCE = new ManifestManager();
-
+    
     private ManifestManager() {
         this.provTokens = new String[0];
         this.requiredTokens = new String[0];
@@ -74,7 +80,8 @@ public final class ManifestManager {
     private ManifestManager(String cnb, String releaseVersion, String specVer,
             String implVer, String provTokensString, String requiredTokens,
             String locBundle, String layer, String classPath,
-            PackageExport[] publicPackages, boolean deprecated, String moduleDependencies) {
+            PackageExport[] publicPackages, String[] friendNames,
+            boolean deprecated, String moduleDependencies) {
         this.codeNameBase = cnb;
         this.releaseVersion = releaseVersion;
         this.specificationVersion = specVer;
@@ -86,6 +93,7 @@ public final class ManifestManager {
         this.layer = layer;
         this.classPath = classPath;
         this.publicPackages = publicPackages;
+        this.friendNames = friendNames;
         this.deprecated = deprecated;
         this.moduleDependencies = moduleDependencies;
     }
@@ -155,11 +163,19 @@ public final class ManifestManager {
             }
         }
         PackageExport[] publicPackages = null;
+        String[] friendNames = null;
         if (loadPublicPackages) {
             publicPackages = EMPTY_EXPORTED_PACKAGES;
             String pp = attr.getValue(OPENIDE_MODULE_PUBLIC_PACKAGES);
-            if (pp != null) { // sanity check
+            if (pp != null) {
                 publicPackages = parseExportedPackages(pp);
+            }
+            String friends = attr.getValue(OPENIDE_MODULE_FRIENDS);
+            if (friends != null) {
+                friendNames = parseFriends(friends);
+                if (friendNames.length > 0 && publicPackages.length == 0) {
+                    throw new IllegalArgumentException("No use specifying OpenIDE-Module-Friends without any public packages: " + friends); // NOI18N
+                }
             }
         }
         boolean deprecated = "true".equals(attr.getValue("OpenIDE-Module-Deprecated")); // NOI18N
@@ -173,6 +189,7 @@ public final class ManifestManager {
                 attr.getValue(OPENIDE_MODULE_LAYER),
                 attr.getValue(CLASS_PATH),
                 publicPackages,
+                friendNames,
                 deprecated,
                 attr.getValue(OPENIDE_MODULE_MODULE_DEPENDENCIES));
         return mm;
@@ -194,11 +211,7 @@ public final class ManifestManager {
         Util.storeManifest(manifest, em);
     }
     
-    private static PackageExport[] parseExportedPackages(String exportsS) {
-        // XXX a lot of code in this method is duplicated from
-        // org.netbeans.core.modules.Module class. It would be nice to maintain this
-        // code only once.
-        // XXX we need to parse friends list too!
+    private static PackageExport[] parseExportedPackages(final String exportsS) {
         PackageExport[] exportedPackages = null;
         if (exportsS.trim().equals("-")) { // NOI18N
             exportedPackages = EMPTY_EXPORTED_PACKAGES;
@@ -231,6 +244,25 @@ public final class ManifestManager {
             exportedPackages = (PackageExport[])exports.toArray(new PackageExport[exports.size()]);
         }
         return exportedPackages;
+    }
+    
+    private static String[] parseFriends(final String friends) {
+        Set set = new HashSet();
+        StringTokenizer tok = new StringTokenizer(friends, ", "); // NOI18N
+        while (tok.hasMoreTokens()) {
+            String piece = tok.nextToken();
+            if (piece.indexOf('/') != -1) {
+                throw new IllegalArgumentException("May specify only module code name bases in OpenIDE-Module-Friends, not major release versions: " + piece); // NOI18N
+            }
+            // Indirect way of checking syntax:
+            Dependency.create(Dependency.TYPE_MODULE, piece);
+            // OK, add it.
+            set.add(piece);
+        }
+        if (set.isEmpty()) {
+            throw new IllegalArgumentException("Empty OpenIDE-Module-Friends: " + friends); // NOI18N
+        }
+        return (String[]) set.toArray(new String[set.size()]);
     }
     
     public String getCodeNameBase() {
@@ -276,7 +308,11 @@ public final class ManifestManager {
     public PackageExport[] getPublicPackages() {
         return publicPackages;
     }
-
+    
+    public String[] getFriends() {
+        return friendNames;
+    }
+    
     public boolean isDeprecated() {
         return deprecated;
     }
@@ -288,11 +324,12 @@ public final class ManifestManager {
             return Collections.EMPTY_SET;
         }
     }
-    
+
     /**
      * Struct representing a package exported from a module.
      */
     public static final class PackageExport {
+        
         private final String pkg;
         private final boolean recursive;
         
@@ -316,4 +353,5 @@ public final class ManifestManager {
             return "PackageExport[" + pkg + (recursive ? "/**" : "") + "]"; // NOI18N
         }
     }
+    
 }

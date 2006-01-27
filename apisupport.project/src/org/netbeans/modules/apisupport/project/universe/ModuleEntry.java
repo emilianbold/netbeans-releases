@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -121,6 +121,11 @@ public interface ModuleEntry extends Comparable {
     ManifestManager.PackageExport[] getPublicPackages();
     
     /**
+     * Get array of friends of this module.
+     */
+    boolean isDeclaredAsFriend(String cnb);
+    
+    /**
      * Get a set of class names defined in this module's public packages.
      */
     Set/*<String>*/ getPublicClassNames();
@@ -129,5 +134,5 @@ public interface ModuleEntry extends Comparable {
      * Check whether this module is marked as deprecated.
      */
     boolean isDeprecated();
-    
+
 }

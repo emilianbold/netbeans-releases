@@ -320,14 +320,16 @@ public final class ModuleList {
             ManifestManager.getInstance(manifest, false) : ManifestManager.NULL_INSTANCE);
         File clusterDir = PropertyUtils.resolveFile(basedir, eval.evaluate("${cluster}")); // NOI18N
         ModuleEntry entry;
+        ManifestManager.PackageExport[] publicPackages = ProjectXMLManager.findPublicPackages(data);
+        String[] friends = ProjectXMLManager.findFriends(data);
         if (!suiteComponent && !standalone) {
-            entry = new NetBeansOrgEntry(root, cnb, path, clusterDir, module, cpextra.toString(), 
+            entry = new NetBeansOrgEntry(root, cnb, path, clusterDir, module, cpextra.toString(),
                     mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(),
-                    ProjectXMLManager.findPublicPackages(data), mm.isDeprecated());
+                    publicPackages, friends, mm.isDeprecated());
         } else {
             entry = new ExternalEntry(basedir, cnb, clusterDir, PropertyUtils.resolveFile(clusterDir, module),
                     cpextra.toString(), nbdestdir, mm.getReleaseVersion(), mm.getSpecificationVersion(),
-                     mm.getProvidedTokens(), ProjectXMLManager.findPublicPackages(data), mm.isDeprecated());
+                    mm.getProvidedTokens(), publicPackages, friends, mm.isDeprecated());
         }
         if (entries.containsKey(cnb)) {
             if (warnReDuplicates) {
@@ -610,7 +612,7 @@ public final class ModuleList {
                     }
                     ModuleEntry entry = new BinaryEntry(codenamebase, m, exts, root, clusters[i], 
                             mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(),
-                            mm.getPublicPackages(), mm.isDeprecated());
+                            mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated());
                     if (entries.containsKey(codenamebase)) {
                         Util.err.log(ErrorManager.WARNING, "Warning: two modules found with the same code name base (" + codenamebase + "): " + entries.get(codenamebase) + " and " + entry);
                     } else {

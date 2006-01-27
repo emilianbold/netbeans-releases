@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,12 +28,13 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     private final String specVersion;
     private final String[] providedTokens;
     private final ManifestManager.PackageExport[] publicPackages;
+    private final String[] friends;
     private final boolean deprecated;
     
     public NetBeansOrgEntry(File nball, String cnb, String path, File cluster,
             String module, String cpext, String releaseVersion, String specVersion,
             String[] providedTokens, ManifestManager.PackageExport[] publicPackages,
-            boolean deprecated) {
+            String[] friends, boolean deprecated) {
         this.nball = nball;
         this.cnb = cnb;
         this.path = path;
@@ -44,6 +45,7 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
         this.specVersion = specVersion;
         this.providedTokens = providedTokens;
         this.publicPackages = publicPackages;
+        this.friends = friends;
         this.deprecated = deprecated;
     }
     
@@ -89,6 +91,10 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     
     public ManifestManager.PackageExport[] getPublicPackages() {
         return publicPackages;
+    }
+    
+    public boolean isDeclaredAsFriend(String cnb) {
+        return isDeclaredAsFriend(friends, cnb);
     }
     
     public boolean isDeprecated() {

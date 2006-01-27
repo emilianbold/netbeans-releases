@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,11 +32,13 @@ final class BinaryEntry extends AbstractEntry {
     private final String[] providedTokens;
     private LocalizedBundleInfo bundleInfo;
     private final ManifestManager.PackageExport[] publicPackages;
+    private final String[] friends;
     private final boolean deprecated;
     
     public BinaryEntry(String cnb, File jar, File[] exts, File nbdestdir, File clusterDir,
             String releaseVersion, String specVersion, String[] providedTokens,
-            ManifestManager.PackageExport[] publicPackages, boolean deprecated) {
+            ManifestManager.PackageExport[] publicPackages, String[] friends,
+            boolean deprecated) {
         this.cnb = cnb;
         this.jar = jar;
         this.nbdestdir = nbdestdir;
@@ -51,6 +53,7 @@ final class BinaryEntry extends AbstractEntry {
         this.specVersion = specVersion;
         this.providedTokens = providedTokens;
         this.publicPackages = publicPackages;
+        this.friends = friends;
         this.deprecated = deprecated;
     }
     
@@ -118,6 +121,10 @@ final class BinaryEntry extends AbstractEntry {
     
     public ManifestManager.PackageExport[] getPublicPackages() {
         return publicPackages;
+    }
+    
+    public boolean isDeclaredAsFriend(String cnb) {
+        return isDeclaredAsFriend(friends, cnb);
     }
     
     public boolean isDeprecated() {

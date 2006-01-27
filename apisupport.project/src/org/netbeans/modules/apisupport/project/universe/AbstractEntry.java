@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project.universe;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -141,5 +142,14 @@ abstract class AbstractEntry implements ModuleEntry {
     }
     
     protected abstract Set/*<String>*/ computePublicClassNamesInMainModule() throws IOException;
+    
+    // XXX consider inheritance refactoring instead.
+    /**
+     * Just a convenient methods. <code>null</code> may be passed as a
+     * <cdoe>friends</code>.
+     */
+    protected static boolean isDeclaredAsFriend(String[] friends, String cnb) {
+        return friends == null ? true : Arrays.binarySearch(friends, cnb) >= 0;
+    }
     
 }
