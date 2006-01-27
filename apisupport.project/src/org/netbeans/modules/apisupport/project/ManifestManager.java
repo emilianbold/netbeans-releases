@@ -125,6 +125,9 @@ public final class ManifestManager {
     
     public static ManifestManager getInstanceFromJAR(File jar) {
         try {
+            if (!jar.isFile()) {
+                throw new IOException("No such JAR: " + jar); // NOI18N
+            }
             JarFile jf = new JarFile(jar, false);
             try {
                 return ManifestManager.getInstance(jf.getManifest(), true);
