@@ -65,6 +65,8 @@ public class PalettePanel extends JPanel implements Scrollable {
         addMouseListener( mouseListener() );
         
         dndSupport = new DnDSupport( this );
+        
+        setBackground( CategoryList.panelBackgroundColor );
     }
     
     public static synchronized PalettePanel getDefault() {
