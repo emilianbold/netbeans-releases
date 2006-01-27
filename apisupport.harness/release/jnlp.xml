@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="suite-jnlp" basedir=".">
@@ -57,6 +57,7 @@ $${jnlp.resources}
         <mkdir dir="${jnlp.master.dir}"/>
         
         <property name="disabled.modules" value=""/>
+        <property name="enabled.clusters" value=""/>
         <property name="disabled.clusters" value=""/>
         
         <fileset id="jnlp.included.modules" dir="${netbeans.dest.dir}">
@@ -64,6 +65,7 @@ $${jnlp.resources}
                 <filename name="**/*.jar"/>
                 <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
                     <param name="excludeModules" value="${disabled.modules}"/>
+                    <param name="includeClusters" value="${enabled.clusters}"/>
                     <param name="excludeClusters" value="${disabled.clusters}"/>
                 </custom>
             </and>

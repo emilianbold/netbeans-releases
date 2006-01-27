@@ -36,6 +36,10 @@ Microsystems, Inc. All Rights Reserved.
                     <length string="${disabled.modules}" when="greater" length="0"/>
                 </and>
                 <and>
+                    <isset property="enabled.clusters"/>
+                    <length string="${enabled.clusters}" when="greater" length="0"/>
+                </and>
+                <and>
                     <isset property="disabled.clusters"/>
                     <length string="${disabled.clusters}" when="greater" length="0"/>
                 </and>
@@ -59,8 +63,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="-prepare-as-platform" depends="-init" if="app.name">
-        <!-- XXX a bunch of stuff copied from suite.xml#build-launchers; would be better to factor this out somewhere? -->
-        <pathconvert property="zip.platform.update.tracking">
+        <property name="disabled.modules" value=""/>
+        <property name="enabled.clusters" value=""/>
+        <property name="disabled.clusters" value=""/>
+        <pathconvert property="run.platform.update.tracking">
             <path>
                 <fileset dir="${netbeans.dest.dir}">
                     <include name="**/update_tracking/*.xml"/>
@@ -73,14 +79,21 @@ Microsystems, Inc. All Rights Reserved.
                     <selector>
                         <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
                             <param name="excludeModules" value="${disabled.modules}"/>
+                            <param name="includeClusters" value="${enabled.clusters}"/>
                             <param name="excludeClusters" value="${disabled.clusters}"/>
-                            <param name="updateTrackingFiles" value="${zip.platform.update.tracking}"/>
+                            <param name="updateTrackingFiles" value="${run.platform.update.tracking}"/>
                         </custom>
                     </selector>
                 </fileset>
             </path>
             <mapper type="regexp" from="[/\\]([^/\\]+)[/\\]config[/\\]Modules[/\\]" to="\1"/> <!-- #71849 -->
         </pathconvert>
+        <fail message="Must have at least one cluster from the platform">
+            <!-- Otherwise ${run.platform.clusters} gets filled with nonsense. -->
+            <condition>
+                <equals arg1="${run.platform.clusters.duplicates}" arg2=""/>
+            </condition>
+        </fail>
         <pathconvert property="run.platform.clusters">
             <path>
                 <pathelement location="${cluster}"/>

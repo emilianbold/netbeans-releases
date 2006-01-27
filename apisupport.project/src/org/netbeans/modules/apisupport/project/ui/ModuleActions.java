@@ -562,7 +562,8 @@ public final class ModuleActions implements ActionProvider {
                         if (/* #67148 */p == null || !p.isDefault()) {
                             return false;
                         }
-                        return SuiteProperties.getArrayProperty(suite.getEvaluator(), SuiteProperties.DISABLED_CLUSTERS_PROPERTY).length == 0 &&
+                        return SuiteProperties.getArrayProperty(suite.getEvaluator(), SuiteProperties.ENABLED_CLUSTERS_PROPERTY).length == 0 &&
+                                SuiteProperties.getArrayProperty(suite.getEvaluator(), SuiteProperties.DISABLED_CLUSTERS_PROPERTY).length == 0 &&
                                 SuiteProperties.getArrayProperty(suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY).length == 0;
                     } catch (IOException e) {
                         Util.err.notify(ErrorManager.INFORMATIONAL, e);

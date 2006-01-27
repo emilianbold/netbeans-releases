@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.nbbuild;
 
 import java.io.FileOutputStream;
@@ -100,13 +101,14 @@ public class ModuleSelectorTest extends NbTestCase {
     
     public void testCanExcludeACluster() throws Exception {
         Parameter p = new Parameter();
-        p.setName("excludeClusters");
-        p.setValue(getWorkDir().getName());
+        p.setName("includeClusters");
+        p.setValue("nonexistent");
         selector.setParameters(new Parameter[] { p });
         
         Manifest m = ModuleDependenciesTest.createManifest ();
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
         File aModule = generateJar(new String[0], m);
+        new File(getWorkDir(), "update_tracking").mkdir();
         assertFalse("Refused", selector.isSelected(getWorkDir().getParentFile(), aModule.toString(), aModule));
     }
     

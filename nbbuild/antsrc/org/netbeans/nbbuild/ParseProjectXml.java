@@ -474,7 +474,7 @@ public final class ParseProjectXml extends Task {
         }
         
         private String implementationVersionOf(ModuleListParser modules, String cnb) throws BuildException {
-            File jar = computeClasspathModuleLocation(modules, cnb, null, null);
+            File jar = computeClasspathModuleLocation(modules, cnb, null, null, null);
             if (!jar.isFile()) {
                 throw new BuildException("No such classpath entry: " + jar, getLocation());
             }
@@ -630,6 +630,11 @@ public final class ParseProjectXml extends Task {
     private String computeClasspath(Document pDoc, ModuleListParser modules, Dep[] deps, boolean runtime) throws BuildException, IOException, SAXException {
         String myCnb = getCodeNameBase(pDoc);
         StringBuffer cp = new StringBuffer();
+        String includedClustersProp = getProject().getProperty("enabled.clusters");
+        Set/*<String>*/ includedClusters = includedClustersProp != null ?
+            new HashSet(Arrays.asList(includedClustersProp.split(" *, *"))) :
+            null;
+        // Compatibility:
         String excludedClustersProp = getProject().getProperty("disabled.clusters");
         Set/*<String>*/ excludedClusters = excludedClustersProp != null ?
             new HashSet(Arrays.asList(excludedClustersProp.split(" *, *"))) :
@@ -644,7 +649,7 @@ public final class ParseProjectXml extends Task {
                 continue;
             }
             String cnb = dep.codenamebase;
-            File depJar = computeClasspathModuleLocation(modules, cnb, excludedClusters, excludedModules);
+            File depJar = computeClasspathModuleLocation(modules, cnb, includedClusters, excludedClusters, excludedModules);
             
             Attributes attr;
             if (!depJar.isFile()) {
@@ -706,16 +711,23 @@ public final class ParseProjectXml extends Task {
         return cp.toString();
     }
     
-    private File computeClasspathModuleLocation(ModuleListParser modules, String cnb, Set/*<String>*/ excludedClusters, Set/*<String>*/ excludedModules) throws BuildException {
+    private File computeClasspathModuleLocation(ModuleListParser modules, String cnb,
+            Set/*<String>*/ includedClusters, Set/*<String>*/ excludedClusters, Set/*<String>*/ excludedModules) throws BuildException {
         ModuleListParser.Entry module = modules.findByCodeNameBase(cnb);
         if (module == null) {
             throw new BuildException("No dependent module " + cnb, getLocation());
         }
-        if (excludedClusters != null && excludedClusters.contains(module.getClusterName())) { // #68716
-            throw new BuildException("Module " + cnb + " part of cluster " + module.getClusterName() + " which is excluded from the target platform", getLocation());
-        }
-        if (excludedModules != null && excludedModules.contains(cnb)) { // again #68716
-            throw new BuildException("Module " + cnb + " excluded from the target platform", getLocation());
+        String cluster = module.getClusterName();
+        if (cluster != null) { // #68716
+            if (includedClusters != null && !includedClusters.isEmpty() && !includedClusters.contains(cluster)) {
+                throw new BuildException("Module " + cnb + " part of cluster " + cluster + " which is excluded from the target platform", getLocation());
+            }
+            if ((includedClusters == null || includedClusters.isEmpty()) && excludedClusters != null && excludedClusters.contains(cluster)) {
+                throw new BuildException("Module " + cnb + " part of cluster " + cluster + " which is excluded from the target platform", getLocation());
+            }
+            if (excludedModules != null && excludedModules.contains(cnb)) { // again #68716
+                throw new BuildException("Module " + cnb + " excluded from the target platform", getLocation());
+            }
         }
         return module.getJar();
     }

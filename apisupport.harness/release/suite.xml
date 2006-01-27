@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo level="verbose">Suite in ${basedir} with target platform ${netbeans.dest.dir}, build cluster ${cluster}, and sorted modules ${modules.sorted}</echo>
         <!-- synchronize with SuiteProject -->
         <property name="disabled.modules" value=""/>
+        <property name="enabled.clusters" value=""/>
         <property name="disabled.clusters" value=""/>
     </target>
 
@@ -73,6 +74,7 @@ Microsystems, Inc. All Rights Reserved.
         <selector id="zip.platform.included.files">
             <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
                 <param name="excludeModules" value="${disabled.modules}"/>
+                <param name="includeClusters" value="${enabled.clusters}"/>
                 <param name="excludeClusters" value="${disabled.clusters}"/>
                 <param name="updateTrackingFiles" value="${zip.platform.update.tracking}"/>
             </custom>

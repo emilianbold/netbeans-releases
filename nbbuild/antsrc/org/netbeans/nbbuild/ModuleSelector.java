@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -36,6 +36,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public final class ModuleSelector extends org.apache.tools.ant.types.selectors.BaseExtendSelector {
     private HashSet excludeModules;
+    private HashSet includeClusters;
     private HashSet excludeClusters;
     private HashMap/*<String,String*/ fileToOwningModule;
     private boolean acceptExcluded;
@@ -71,9 +72,7 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
             try {
                 JarFile jar = new JarFile(file);
                 Manifest m = jar.getManifest();
-                if (m == null) {
-                    module = null;
-                } else {
+                if (m != null) {
                     module = m.getMainAttributes().getValue("OpenIDE-Module");
                 }
                 jar.close();
@@ -85,9 +84,19 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
         String name = file.getName();
         File p = file.getParentFile();
         for(;;) {
-            if (excludeClusters.contains(p.getName())) {
-                log("Excluded cluster: " + p.getName() + " for " + file, Project.MSG_VERBOSE);
-                return null;
+
+            if (new File(p, "update_tracking").isDirectory()) { // else includeClusters does not work
+                String cluster = p.getName();
+                
+                if (!includeClusters.isEmpty() && !includeClusters.contains(cluster)) {
+                    log("Not included cluster: " + cluster + " for " + file, Project.MSG_VERBOSE);
+                    return null;
+                }
+
+                if (includeClusters.isEmpty() && excludeClusters.contains(cluster)) {
+                    log("Excluded cluster: " + cluster + " for " + file, Project.MSG_VERBOSE);
+                    return null;
+                }
             }
             
             if (module == null && fileToOwningModule != null) {
@@ -120,10 +129,11 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
     }
 
     public void verifySettings() {
-        if (excludeClusters != null) {
+        if (includeClusters != null) {
             return;
         }
         
+        includeClusters = new HashSet();
         excludeClusters = new HashSet();
         excludeModules = new HashSet();
         
@@ -136,6 +146,11 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
             if ("excludeModules".equals(arr[i].getName())) {
                 parse(arr[i].getValue(), excludeModules);
                 log("Will excludeModules: " + excludeModules, Project.MSG_VERBOSE);
+                continue;
+            }
+            if ("includeClusters".equals(arr[i].getName())) {
+                parse(arr[i].getValue(), includeClusters);
+                log("Will includeClusters: " + includeClusters, Project.MSG_VERBOSE);
                 continue;
             }
             if ("excludeClusters".equals(arr[i].getName())) {

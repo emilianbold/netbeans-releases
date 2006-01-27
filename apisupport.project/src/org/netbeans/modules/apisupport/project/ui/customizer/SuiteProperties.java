@@ -18,10 +18,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.SuiteSubModulesListModel;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -35,6 +38,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 public final class SuiteProperties extends ModuleProperties {
     
     public static final String DISABLED_MODULES_PROPERTY = "disabled.modules"; // NOI18N
+    public static final String ENABLED_CLUSTERS_PROPERTY = "enabled.clusters"; // NOI18N
     public static final String DISABLED_CLUSTERS_PROPERTY = "disabled.clusters"; // NOI18N
     
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
@@ -57,10 +61,10 @@ public final class SuiteProperties extends ModuleProperties {
     
     /** disabled modules */
     private String[] disabledModules;
-    /** disabled clusters */
-    private String[] disabledClusters;
+    /** enabled clusters */
+    private String[] enabledClusters;
     /** boolean variable to remember whether there were some changes */
-    private boolean changedDisabledModules, changedDisabledClusters;
+    private boolean changedDisabledModules, changedEnabledClusters;
     
     /** keeps all information related to branding*/
     private final BasicBrandingModel brandingModel;
@@ -74,7 +78,17 @@ public final class SuiteProperties extends ModuleProperties {
         this.project = project;
         refresh(subModules);
         this.disabledModules = getArrayProperty(evaluator, DISABLED_MODULES_PROPERTY);
-        this.disabledClusters = getArrayProperty(evaluator, DISABLED_CLUSTERS_PROPERTY);
+        this.enabledClusters = getArrayProperty(evaluator, ENABLED_CLUSTERS_PROPERTY);
+        if (enabledClusters.length == 0) {
+            // Compatibility.
+            SortedSet/*<String>*/ clusters = new TreeSet();
+            ModuleEntry[] modules = activePlatform.getModules();
+            for (int i = 0; i < modules.length; i++) {
+                clusters.add(modules[i].getClusterDirectory().getName());
+            }
+            clusters.removeAll(Arrays.asList(getArrayProperty(evaluator, DISABLED_CLUSTERS_PROPERTY)));
+            enabledClusters = (String[]) clusters.toArray(new String[clusters.size()]);
+        }
         brandingModel = new BasicBrandingModel(this);
     }
     
@@ -118,20 +132,20 @@ public final class SuiteProperties extends ModuleProperties {
         }
     }
     
+    String[] getEnabledClusters() {
+        return enabledClusters;
+    }
+    
     String[] getDisabledModules() {
         return disabledModules;
     }
     
-    String[] getDisabledClusters() {
-        return disabledClusters;
-    }
-    
-    void setDisabledClusters(String[] value) {
-        if (Arrays.asList(disabledClusters).equals(Arrays.asList(value))) {
+    void setEnabledClusters(String[] value) {
+        if (Arrays.asList(enabledClusters).equals(Arrays.asList(value))) {
             return;
         }
-        this.disabledClusters = value;
-        this.changedDisabledClusters = true;
+        this.enabledClusters = value;
+        this.changedEnabledClusters = true;
     }
     
     void setDisabledModules(String[] value) {
@@ -166,7 +180,7 @@ public final class SuiteProperties extends ModuleProperties {
             SuiteUtils.replaceSubModules(this);
         }
         
-        if (changedDisabledModules || changedDisabledClusters) {
+        if (changedDisabledModules || changedEnabledClusters) {
             EditableProperties ep = getHelper().getProperties("nbproject/platform.properties"); // NOI18N
             if (changedDisabledModules) {
                 String[] separated = (String[]) disabledModules.clone();
@@ -177,13 +191,26 @@ public final class SuiteProperties extends ModuleProperties {
                 // Do not want it left in project.properties if it was there before (from 5.0):
                 setProperty(DISABLED_MODULES_PROPERTY, (String) null);
             }
-            if (changedDisabledClusters) {
-                String[] separated = (String[]) disabledClusters.clone();
-                for (int i = 0; i < disabledClusters.length - 1; i++) {
-                    separated[i] = disabledClusters[i] + ',';
+            if (changedEnabledClusters) {
+                String[] separated = (String[]) enabledClusters.clone();
+                for (int i = 0; i < enabledClusters.length - 1; i++) {
+                    separated[i] = enabledClusters[i] + ',';
+                }
+                ep.setProperty(ENABLED_CLUSTERS_PROPERTY, separated);
+                setProperty(ENABLED_CLUSTERS_PROPERTY, (String) null);
+                // Compatibility.
+                SortedSet/*<String>*/ disabledClusters = new TreeSet();
+                ModuleEntry[] modules = activePlatform.getModules();
+                for (int i = 0; i < modules.length; i++) {
+                    disabledClusters.add(modules[i].getClusterDirectory().getName());
+                }
+                disabledClusters.removeAll(Arrays.asList(enabledClusters));
+                separated = (String[]) disabledClusters.toArray(new String[disabledClusters.size()]);
+                for (int i = 0; i < separated.length - 1; i++) {
+                    separated[i] = separated[i] + ',';
                 }
                 ep.setProperty(DISABLED_CLUSTERS_PROPERTY, separated);
-                setProperty(DISABLED_CLUSTERS_PROPERTY, (String) null);
+                ep.setComment(DISABLED_CLUSTERS_PROPERTY, new String[] {"# Deprecated since 5.0u1; for compatibility with 5.0:"}, false); // NOI18N
             }
             getHelper().putProperties("nbproject/platform.properties", ep); // NOI18N
         }

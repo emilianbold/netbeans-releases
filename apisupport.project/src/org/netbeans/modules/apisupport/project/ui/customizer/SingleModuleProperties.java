@@ -7,13 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
@@ -59,7 +58,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.JarFileSystem;
 import org.openide.util.Utilities;
 
 /**
@@ -441,12 +439,14 @@ public final class SingleModuleProperties extends ModuleProperties {
             SuiteProject suite = getSuite();
             String[] disableModules = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY);
+            String[] enableClusters = SuiteProperties.getArrayProperty(
+                    suite.getEvaluator(), SuiteProperties.ENABLED_CLUSTERS_PROPERTY);
             String[] disableClusters = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
             Set/*<ModuleDependency>*/ filtered = new HashSet(universeDependencies);
             for (Iterator it = filtered.iterator(); it.hasNext();) {
                 ModuleDependency dep = (ModuleDependency) it.next();
-                if (isExcluded(dep.getModuleEntry(), disableModules, disableClusters)) {
+                if (isExcluded(dep.getModuleEntry(), disableModules, enableClusters, disableClusters)) {
                     it.remove();
                 }
             }
@@ -459,9 +459,17 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     private static boolean isExcluded(final ModuleEntry me,
-            final String[] disableModules, final String[] disableClusters) {
-        return Arrays.binarySearch(disableModules, me.getCodeNameBase()) >= 0 ||
-                Arrays.binarySearch(disableClusters, me.getClusterDirectory().getName()) >= 0;
+            final String[] disableModules, final String[] enableClusters, final String[] disableClusters) {
+        if (Arrays.binarySearch(disableModules, me.getCodeNameBase()) >= 0) {
+            return true;
+        }
+        if (enableClusters.length != 0 && Arrays.binarySearch(enableClusters, me.getClusterDirectory().getName()) < 0) {
+            return true;
+        }
+        if (enableClusters.length == 0 && Arrays.binarySearch(disableClusters, me.getClusterDirectory().getName()) >= 0) {
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -755,24 +763,22 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     private void addNonEmptyPackagesFromJar(Set/*<String>*/ packages, File jarFile) {
-        if (!jarFile.isFile()) {
+        FileObject jarFileFO = FileUtil.toFileObject(jarFile);
+        if (jarFileFO == null) {
             // Broken classpath entry, perhaps.
             return;
         }
-        try {
-            JarFileSystem jfs = new JarFileSystem();
-            jfs.setJarFile(jarFile);
-            Set/*<FileObject>*/ pkgs = new HashSet();
-            SingleModuleProperties.addNonEmptyPackages(pkgs, jfs.getRoot(), "class"); // NOI18N
-            for (Iterator it = pkgs.iterator(); it.hasNext();) {
-                FileObject pkg = (FileObject) it.next();
-                String pkgS = pkg.getPath();
-                packages.add(pkgS.replace('/', '.'));
-            }
-        } catch (PropertyVetoException pve) {
-            ErrorManager.getDefault().notify(pve);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+        FileObject root = FileUtil.getArchiveRoot(jarFileFO);
+        if (root == null) {
+            // Not really a JAR?
+            return;
+        }
+        Set/*<FileObject>*/ pkgs = new HashSet();
+        SingleModuleProperties.addNonEmptyPackages(pkgs, root, "class"); // NOI18N
+        for (Iterator it = pkgs.iterator(); it.hasNext();) {
+            FileObject pkg = (FileObject) it.next();
+            String pkgS = pkg.getPath();
+            packages.add(pkgS.replace('/', '.'));
         }
     }
     

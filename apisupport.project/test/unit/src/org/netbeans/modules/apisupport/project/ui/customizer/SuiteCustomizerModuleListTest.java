@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,17 +51,17 @@ public class SuiteCustomizerModuleListTest extends TestBase {
     }
 
     public void testDisableCluster() throws Exception {
-        enableAllCusters(false);
+        enableAllClusters(false);
         doDisableCluster(0, true);
     }
     
     public void testDisableCluster2() throws Exception {
-        enableAllCusters(false);
+        enableAllClusters(false);
         doDisableCluster(1, true);
     }
     
     public void testDisableTwoClusters() throws Exception {
-        enableAllCusters(false);
+        enableAllClusters(false);
         
         String c1 = doDisableCluster(1, true);
         String c2 = doDisableCluster(2, false);
@@ -69,11 +69,11 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         c.add(c1);
         c.add(c2);
         
-        String[] xyz = suite1Props.getDisabledClusters();
-        assertEquals("Two clusters disabled", 2, xyz.length);
+        String[] xyz = suite1Props.getEnabledClusters();
+        //assertEquals("Two clusters disabled", ???, xyz.length);
         
         HashSet real = new HashSet(Arrays.asList(xyz));
-        assertEquals("Same are disabled", c, real);
+        assertFalse(real.containsAll(c));
     }
     
     private String doDisableCluster(int index, boolean doCheck) throws Exception {
@@ -95,16 +95,16 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         suite1Props.storeProperties();
         
         if (doCheck) {
-            String[] xyz = suite1Props.getDisabledClusters();
-            assertEquals("One cluster is disabled", 1, xyz.length);
-            assertEquals("It's name is name of the node", clusters[index].getName(), xyz[0]);
+            String[] xyz = suite1Props.getEnabledClusters();
+            //assertEquals("One cluster is disabled", ???, xyz.length);
+            assertFalse("It's name is name of the node", Arrays.asList(xyz).contains(clusters[index].getName()));
         }
         
         return clusters[index].getName();
     }
     
     public void testDisableModule() throws Exception {
-        enableAllCusters(true);
+        enableAllClusters(true);
         
         Node n = customizer.getExplorerManager().getRootContext();
         Node[] clusters = n.getChildren().getNodes();
@@ -155,7 +155,7 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         fail("No enabled property found: " + n);
     }
 
-    private void enableAllCusters(boolean enableModulesAsWell) throws Exception {
+    private void enableAllClusters(boolean enableModulesAsWell) throws Exception {
         Node n = customizer.getExplorerManager().getRootContext();
         Node[] clusters = n.getChildren().getNodes();
         

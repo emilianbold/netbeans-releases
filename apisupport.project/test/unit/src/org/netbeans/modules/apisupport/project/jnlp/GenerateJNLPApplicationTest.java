@@ -94,18 +94,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
         
         File someJar = createNewJarFile("fake-jnlp-servlet");
         
-        StringBuffer exclude = new StringBuffer();
-        String sep = "";
-        String[] possibleClusters = destDirF.list();
-        for (int i = 0; i < possibleClusters.length; i++) {
-            if (possibleClusters[i].startsWith("platform")) {
-                continue;
-            }
-            exclude.append(sep);
-            exclude.append(possibleClusters[i]);
-            sep = ",";
-        }
-        ep.setProperty("disabled.clusters", exclude.toString());
+        ep.setProperty("enabled.clusters", "platform6");
         ep.setProperty("disabled.modules", "org.netbeans.modules.autoupdate," +
             "org.openide.compat," +
             "org.netbeans.api.progress," +
@@ -218,18 +207,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
         EditableProperties ep = suite.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty("app.name", "fakeapp");
         
-        StringBuffer exclude = new StringBuffer();
-        String sep = "";
-        String[] possibleClusters = destDirF.list();
-        for (int i = 0; i < possibleClusters.length; i++) {
-            if (possibleClusters[i].startsWith("platform")) {
-                continue;
-            }
-            exclude.append(sep);
-            exclude.append(possibleClusters[i]);
-            sep = ",";
-        }
-        ep.setProperty("disabled.clusters", exclude.toString());
+        ep.setProperty("enabled.clusters", "platform6");
         ep.setProperty("disabled.modules", "org.netbeans.modules.autoupdate," +
             "org.openide.compat," +
             "org.netbeans.api.progress," +

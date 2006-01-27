@@ -622,15 +622,16 @@ public class LayerUtils {
      */
     static Set/*<File>*/ getPlatformJarsForStandaloneProject(NbModuleProject project) {
         NbPlatform platform = project.getPlatform(true);
-        return getPlatformJars(platform, null, null);
+        return getPlatformJars(platform, null, null, null);
     }
     
     static Set/*<File>*/ getPlatformJarsForSuiteComponentProject(NbModuleProject project, SuiteProject suite) {
         NbPlatform platform = suite.getPlatform(true);
         PropertyEvaluator eval = suite.getEvaluator();
+        String[] includedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.ENABLED_CLUSTERS_PROPERTY);
         String[] excludedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
         String[] excludedModules = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_MODULES_PROPERTY);
-        return getPlatformJars(platform, excludedClusters, excludedModules);
+        return getPlatformJars(platform, includedClusters, excludedClusters, excludedModules);
     }
     
     static Set/*<NbModuleProject>*/ getProjectsForNetBeansOrgProject(NbModuleProject project) throws IOException {
@@ -658,16 +659,20 @@ public class LayerUtils {
      * Finds all the module JARs in the platform.
      * Can optionally pass non-null lists of cluster names and module CNBs to exclude, as per suite properties.
      */
-    private static Set/*<File>*/ getPlatformJars(NbPlatform platform, String[] excludedClusters, String[] excludedModules) {
+    private static Set/*<File>*/ getPlatformJars(NbPlatform platform, String[] includedClusters, String[] excludedClusters, String[] excludedModules) {
         if (platform == null) {
             return Collections.EMPTY_SET;
         }
+        Set/*<String>*/ includedClustersS = (includedClusters != null) ? new HashSet(Arrays.asList(includedClusters)) : Collections.EMPTY_SET;
         Set/*<String>*/ excludedClustersS = (excludedClusters != null) ? new HashSet(Arrays.asList(excludedClusters)) : Collections.EMPTY_SET;
         Set/*<String>*/ excludedModulesS = (excludedModules != null) ? new HashSet(Arrays.asList(excludedModules)) : Collections.EMPTY_SET;
         ModuleEntry[] entries = platform.getModules();
         Set/*<File>*/ jars = new HashSet(entries.length);
         for (int i = 0; i < entries.length; i++) {
-            if (excludedClustersS.contains(entries[i].getClusterDirectory().getName())) {
+            if (!includedClustersS.isEmpty() && !includedClustersS.contains(entries[i].getClusterDirectory().getName())) {
+                continue;
+            }
+            if (includedClustersS.isEmpty() && excludedClustersS.contains(entries[i].getClusterDirectory().getName())) {
                 continue;
             }
             if (excludedModulesS.contains(entries[i].getCodeNameBase())) {

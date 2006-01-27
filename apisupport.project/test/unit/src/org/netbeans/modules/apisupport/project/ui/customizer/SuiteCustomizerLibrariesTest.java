@@ -162,14 +162,15 @@ public class SuiteCustomizerLibrariesTest extends NbTestCase {
     
     public void testDependencyWarnings() throws Exception { // #65924
         Set/*<UniverseModule>*/ modules = SuiteCustomizerLibraries.loadUniverseModules(platform.getModules(), SuiteUtils.getSubProjects(suite));
-        assertNull(join(SuiteCustomizerLibraries.findWarning(modules, Collections.EMPTY_SET, Collections.EMPTY_SET)));
+        Set/*<String>*/ bothClusters = new HashSet(Arrays.asList(new String[] {"somecluster", "anothercluster"}));
+        assertEquals(null, join(SuiteCustomizerLibraries.findWarning(modules, bothClusters, Collections.EMPTY_SET)));
         assertEquals("[ERR_platform_excluded_dep, baz, anothercluster, Foo Module, somecluster]",
-                join(SuiteCustomizerLibraries.findWarning(modules, Collections.singleton("somecluster"), Collections.EMPTY_SET)));
-        assertNull(join(SuiteCustomizerLibraries.findWarning(modules, Collections.singleton("anothercluster"), Collections.EMPTY_SET)));
+                join(SuiteCustomizerLibraries.findWarning(modules, Collections.singleton("anothercluster"), Collections.EMPTY_SET)));
+        assertNull(join(SuiteCustomizerLibraries.findWarning(modules, Collections.singleton("somecluster"), Collections.EMPTY_SET)));
         assertEquals("[ERR_suite_excluded_dep, Module Three, bar, somecluster]",
-                join(SuiteCustomizerLibraries.findWarning(modules, new HashSet(Arrays.asList(new String[] {"somecluster", "anothercluster"})), Collections.EMPTY_SET)));
+                join(SuiteCustomizerLibraries.findWarning(modules, Collections.EMPTY_SET, Collections.EMPTY_SET)));
         assertEquals("[ERR_platform_only_excluded_providers, tok1, bar, somecluster, Foo Module, somecluster]",
-                join(SuiteCustomizerLibraries.findWarning(modules, Collections.EMPTY_SET, Collections.singleton("foo"))));
+                join(SuiteCustomizerLibraries.findWarning(modules, bothClusters, Collections.singleton("foo"))));
         // XXX much more could be tested; check coverage results
     }
     

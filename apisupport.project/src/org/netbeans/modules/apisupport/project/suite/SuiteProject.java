@@ -34,6 +34,7 @@ import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView;
 import org.netbeans.modules.apisupport.project.ui.SuiteOperations;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -166,8 +167,9 @@ public final class SuiteProject implements Project {
         providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         Map/*<String,String>*/ fixedProps = new HashMap();
         // synchronize with suite.xml
-        fixedProps.put("disabled.clusters", ""); // NOI18N
-        fixedProps.put("disabled.modules", ""); // NOI18N
+        fixedProps.put(SuiteProperties.ENABLED_CLUSTERS_PROPERTY, ""); // NOI18N
+        fixedProps.put(SuiteProperties.DISABLED_CLUSTERS_PROPERTY, ""); // NOI18N
+        fixedProps.put(SuiteProperties.DISABLED_MODULES_PROPERTY, ""); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(fixedProps));
         return PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
     }

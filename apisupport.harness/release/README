@@ -825,15 +825,20 @@ overrides.
 
 branding.token - optional token defining an application branding.
 
+enabled.clusters - comma-separated list of cluster names in the target platform
+(e.g. "platform6") which should be included in the application. Should be stored
+in platform.properties, not project.properties. Since 5.0u1.
+
 disabled.clusters - comma-separated list of cluster names in the target platform
-(e.g. "ide6") which should be completely excluded from the application. Since 5.0u1,
-should be stored in platform.properties, not project.properties.
+(e.g. "ide6") which should be completely excluded from the application.
+DEPRECATED since 5.0u1 in favor of ${enabled.clusters} and ignored if that is nonempty.
 
 disabled.modules - comma-separated list of code name bases of modules in the
 target platform (e.g. "org.netbeans.modules.autoupdate") which should be
 excluded from the application. There is no need to specify modules already
-excluded by ${disabled.clusters}. Since 5.0u1, should be stored in
-platform.properties, not project.properties.
+excluded by ${disabled.clusters} (if used) or by modules from clusters not included
+in ${enabled.clusters}. Since 5.0u1, should be stored in platform.properties,
+not project.properties.
 
 modules - list of contained modules. Path format; entries resolved against the
 suite directory as needed.

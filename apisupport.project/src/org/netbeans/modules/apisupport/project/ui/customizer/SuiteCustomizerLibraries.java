@@ -128,16 +128,15 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
     
     public void store() {
-        Set disabledClusters = new TreeSet();
+        Set enabledClusters = new TreeSet();
         Set disabledModules = new TreeSet();
         
         Node[] clusters = getExplorerManager().getRootContext().getChildren().getNodes();
         for (int i = 0; i < clusters.length; i++) {
             if (clusters[i] instanceof Enabled) {
                 Enabled e = (Enabled)clusters[i];
-                if (!e.isEnabled()) {
-                    disabledClusters.add(e.getName());
-                } else {
+                if (e.isEnabled()) {
+                    enabledClusters.add(e.getName());
                     Node[] modules = e.getChildren().getNodes();
                     for (int j = 0; j < modules.length; j++) {
                         if (modules[j] instanceof Enabled) {
@@ -151,7 +150,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
         }
         
-        getProperties().setDisabledClusters((String[])disabledClusters.toArray(new String[0]));
+        getProperties().setEnabledClusters((String[])enabledClusters.toArray(new String[0]));
         getProperties().setDisabledModules((String[])disabledModules.toArray(new String[0]));
     }
     
@@ -327,7 +326,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     
     private Node createPlatformModulesNode() {
         HashSet disabledModuleCNB = new HashSet(Arrays.asList(getProperties().getDisabledModules()));
-        HashSet disabledClusters = new HashSet(Arrays.asList(getProperties().getDisabledClusters()));
+        HashSet enabledClusters = new HashSet(Arrays.asList(getProperties().getEnabledClusters()));
         
         HashMap clusterToChildren = new HashMap();
         
@@ -345,7 +344,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 clusterChildren = modules;
                 
                 String clusterName = platformModules[i].getClusterDirectory().getName();
-                Enabled cluster = new Enabled(modules, !disabledClusters.contains(clusterName));
+                Enabled cluster = new Enabled(modules, enabledClusters.contains(clusterName));
                 cluster.setName(clusterName);
                 cluster.setIconBaseWithExtension(SuiteProject.SUITE_ICON_PATH);
                 clusterToChildren.put(platformModules[i].getClusterDirectory(), modules);
@@ -726,7 +725,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return universe;
     }
     
-    static String[] findWarning(Set/*<UniverseModule>*/ universeModules, Set/*<String>*/ disabledClusters, Set/*<String>*/ disabledModules) {
+    static String[] findWarning(Set/*<UniverseModule>*/ universeModules, Set/*<String>*/ enabledClusters, Set/*<String>*/ disabledModules) {
         SortedMap/*<String,UniverseModule>*/ sortedModules = new TreeMap();
         Set/*<UniverseModule>*/ excluded = new HashSet();
         Map/*<String,Set<UniverseModule>>*/ providers = new HashMap();
@@ -735,7 +734,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             UniverseModule m = (UniverseModule) it.next();
             String cnb = m.getCodeNameBase();
             String cluster = m.getCluster();
-            if (cluster != null && (disabledClusters.contains(cluster) || disabledModules.contains(cnb))) {
+            if (cluster != null && (!enabledClusters.contains(cluster) || disabledModules.contains(cnb))) {
                 excluded.add(m);
             }
             sortedModules.put(cnb, m);
@@ -776,16 +775,15 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
         }
         
-        Set disabledClusters = new TreeSet();
+        Set enabledClusters = new TreeSet();
         Set disabledModules = new TreeSet();
         
         Node[] clusters = getExplorerManager().getRootContext().getChildren().getNodes();
         for (int i = 0; i < clusters.length; i++) {
             if (clusters[i] instanceof Enabled) {
                 Enabled e = (Enabled) clusters[i];
-                if (!e.isEnabled()) {
-                    disabledClusters.add(e.getName());
-                } else {
+                if (e.isEnabled()) {
+                    enabledClusters.add(e.getName());
                     Node[] modules = e.getChildren().getNodes();
                     for (int j = 0; j < modules.length; j++) {
                         if (modules[j] instanceof Enabled) {
@@ -799,7 +797,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
         }
         
-        final String[] warning = findWarning(universe, disabledClusters, disabledModules);
+        final String[] warning = findWarning(universe, enabledClusters, disabledModules);
         
         EventQueue.invokeLater(new Runnable() {
             public void run() {
