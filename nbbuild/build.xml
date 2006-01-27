@@ -187,6 +187,7 @@ Microsystems, Inc. All Rights Reserved.
       <for-each startdir=".." target="conditional-nbm" locations="${allmodules}"/>
   </target>
   <target name="nbm"/><!-- dummy target -->
+  <target name="conditional-nbm"/><!-- dummy target -->
   
   <property name="jnlp.signjar.keystore" location="build/default.keystore" />
   <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}" />
