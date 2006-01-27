@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -146,7 +146,7 @@ public class BridgeImpl implements BridgeInterface {
         
         // first use the ProjectHelper to create the project object
         // from the given build file.
-        NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName, interestingOutputCallback);
+        final NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName, interestingOutputCallback);
         Vector targs;
         try {
             project = new Project();
@@ -194,6 +194,7 @@ public class BridgeImpl implements BridgeInterface {
         }
         catch (BuildException be) {
             logger.buildInitializationFailed(be);
+            logger.shutdown();
             out.close();
             err.close();
             if (in != null) {
@@ -264,6 +265,7 @@ public class BridgeImpl implements BridgeInterface {
                 defs.put("task", p2.getTaskDefinitions());
                 defs.put("type", p2.getDataTypeDefinitions());
                 custom.scanProject(defs);
+                logger.shutdown();
                 // #8993: also try to refresh masterfs...this is hackish...
                 // cf. also RefreshAllFilesystemsAction
                 FileSystem[] allFileSystems = getFileSystems();

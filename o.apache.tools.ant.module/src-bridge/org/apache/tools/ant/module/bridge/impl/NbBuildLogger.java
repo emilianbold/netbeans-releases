@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -96,6 +96,8 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     /** whether this process should be halted at the next safe point */
     private boolean stop = false;
+    /** whether this process is thought to be still running */
+    private boolean running = true;
     
     /**
      * Map from master build scripts to maps from imported target names to imported locations.
@@ -141,6 +143,21 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         if (stop) {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbBuildLogger.class, "MSG_stopped", displayName));
             throw new ThreadDeath();
+        }
+    }
+
+    /**
+     * Notify this process that it has been shut down.
+     * Refuse any further queries on AntEvent etc.
+     * @see "#71266"
+     */
+    public void shutdown() {
+        running = false;
+    }
+    
+    private void verifyRunning() {
+        if (!running) {
+            throw new IllegalStateException("AntSession/AntEvent/TaskStructure method called after completion of Ant process"); // NOI18N
         }
     }
     
@@ -561,26 +578,31 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     public File getOriginatingScript() {
         assert Thread.holdsLock(this);
+        verifyRunning();
         return origScript;
     }
     
     public String[] getOriginatingTargets() {
         assert Thread.holdsLock(this);
+        verifyRunning();
         return targets != null ? targets : new String[0];
     }
     
     public Object getCustomData(AntLogger logger) {
         assert Thread.holdsLock(this);
+        verifyRunning();
         return customData.get(logger);
     }
     
     public void putCustomData(AntLogger logger, Object data) {
         assert Thread.holdsLock(this);
+        verifyRunning();
         customData.put(logger, data);
     }
     
     public void println(String message, boolean error, OutputListener listener) {
         assert Thread.holdsLock(this);
+        verifyRunning();
         if (LOGGABLE) {
             ERR.log(EM_LEVEL, "println: error=" + error + " listener=" + listener + " message=" + message);
         }
@@ -603,6 +625,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     public void deliverMessageLogged(AntEvent originalEvent, String message, int level) {
         assert Thread.holdsLock(this);
+        verifyRunning();
         if (originalEvent == null) {
             throw new IllegalArgumentException("Must pass an original event to deliverMessageLogged"); // NOI18N
         }
@@ -629,6 +652,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     public void consumeException(Throwable t) throws IllegalStateException {
         assert Thread.holdsLock(this);
+        verifyRunning();
         if (isExceptionConsumed(t)) {
             throw new IllegalStateException("Already consumed " + t); // NOI18N
         }
@@ -637,6 +661,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     public boolean isExceptionConsumed(Throwable t) {
         assert Thread.holdsLock(this);
+        verifyRunning();
         if (consumedExceptions.contains(t)) {
             return true;
         }
@@ -652,6 +677,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     public int getVerbosity() {
         assert Thread.holdsLock(this);
+        verifyRunning();
         return verbosity;
     }
     
@@ -661,11 +687,13 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     public String getDisplayName() {
         assert Thread.holdsLock(this);
+        verifyRunning();
         return displayName;
     }
 
     public OutputListener createStandardHyperlink(URL file, String message, int line1, int column1, int line2, int column2) {
         assert Thread.holdsLock(this);
+        verifyRunning();
         return new Hyperlink(file, message, line1, column1, line2, column2);
     }
     
@@ -885,10 +913,12 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
         
         public AntSession getSession() {
+            verifyRunning();
             return thisSession;
         }
 
         public void consume() throws IllegalStateException {
+            verifyRunning();
             if (consumed) {
                 throw new IllegalStateException("Event already consumed"); // NOI18N
             }
@@ -896,10 +926,12 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
 
         public boolean isConsumed() {
+            verifyRunning();
             return consumed;
         }
 
         public File getScriptLocation() {
+            verifyRunning();
             if (scriptLocation != null) {
                 return scriptLocation;
             }
@@ -958,6 +990,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
 
         public int getLine() {
+            verifyRunning();
             if (e == null) {
                 return -1;
             }
@@ -997,6 +1030,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
 
         public String getTargetName() {
+            verifyRunning();
             if (e == null) {
                 return null;
             }
@@ -1023,6 +1057,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
 
         public String getTaskName() {
+            verifyRunning();
             if (e == null) {
                 return null;
             }
@@ -1040,6 +1075,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
 
         public TaskStructure getTaskStructure() {
+            verifyRunning();
             Task task = e.getTask();
             if (task != null) {
                 return LoggerTrampoline.TASK_STRUCTURE_CREATOR.makeTaskStructure(new TaskStructureImpl(task.getRuntimeConfigurableWrapper()));
@@ -1054,6 +1090,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
 
         public String getMessage() {
+            verifyRunning();
             if (e == null) {
                 return null;
             }
@@ -1061,14 +1098,17 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
 
         public int getLogLevel() {
+            verifyRunning();
             return level;
         }
 
         public Throwable getException() {
+            verifyRunning();
             return exception;
         }
 
         public String getProperty(String name) {
+            verifyRunning();
             Project project = getProjectIfPropertiesDefined();
             if (project != null) {
                 Object o = project.getProperty(name);
@@ -1083,6 +1123,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
 
         public Set/*<String>*/ getPropertyNames() {
+            verifyRunning();
             Project project = getProjectIfPropertiesDefined();
             if (project != null) {
                 // XXX could exclude those without String values
@@ -1093,6 +1134,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
 
         public String evaluate(String text) {
+            verifyRunning();
             Project project = getProjectIfPropertiesDefined();
             if (project != null) {
                 return project.replaceProperties(text);
@@ -1111,7 +1153,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
      * Reposted event delegating to an original one except for message and level.
      * @see #deliverMessageLogged
      */
-    private static final class RepostedEvent implements LoggerTrampoline.AntEventImpl {
+    private final class RepostedEvent implements LoggerTrampoline.AntEventImpl {
         
         private final AntEvent originalEvent;
         private final String message;
@@ -1125,6 +1167,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
         
         public void consume() throws IllegalStateException {
+            verifyRunning();
             if (consumed) {
                 throw new IllegalStateException("Event already consumed"); // NOI18N
             }
@@ -1132,6 +1175,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
 
         public boolean isConsumed() {
+            verifyRunning();
             return consumed;
         }
         
@@ -1160,14 +1204,17 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
         
         public String getMessage() {
+            verifyRunning();
             return message;
         }
         
         public int getLogLevel() {
+            verifyRunning();
             return level;
         }
         
         public Throwable getException() {
+            verifyRunning();
             return null;
         }
         
@@ -1193,7 +1240,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
      * Implementation of TaskStructure based on an Ant Task.
      * @see Event#getTaskStructure
      */
-    private static final class TaskStructureImpl implements LoggerTrampoline.TaskStructureImpl {
+    private final class TaskStructureImpl implements LoggerTrampoline.TaskStructureImpl {
         
         private final RuntimeConfigurable rc;
         
@@ -1202,6 +1249,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
         
         public String getName() {
+            verifyRunning();
             String name = rc.getElementTag();
             if (name != null) {
                 return name;
@@ -1212,14 +1260,17 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
         
         public String getAttribute(String name) {
+            verifyRunning();
             return (String) getAttributeMapOfRuntimeConfigurable(rc).get(name);
         }
         
         public Set/*<String>*/ getAttributeNames() {
+            verifyRunning();
             return getAttributeMapOfRuntimeConfigurable(rc).keySet();
         }
         
         public String getText() {
+            verifyRunning();
             String s = getTextOfRuntimeConfigurable(rc);
             if (s.length() > 0) {
                 // XXX is it appropriate to trim() this? probably not
@@ -1230,6 +1281,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
         
         public TaskStructure[] getChildren() {
+            verifyRunning();
             List/*<TaskStructure>*/ structures = new ArrayList();
             Enumeration/*<RuntimeConfigurable>*/ children = getChildrenOfRuntimeConfigurable(rc);
             while (children.hasMoreElements()) {
