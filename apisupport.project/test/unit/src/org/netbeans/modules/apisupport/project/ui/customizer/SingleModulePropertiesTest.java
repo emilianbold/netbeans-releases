@@ -37,6 +37,7 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.PublicPackagesTableModel;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -436,6 +437,57 @@ public class SingleModulePropertiesTest extends TestBase {
         // compare with times after change
         assertEquals("time for manifest has not changed", mfTime, mf.lastModified().getTime());
         assertEquals("time for bundle has not changed", bundleTime, bundle.lastModified().getTime());
+    }
+    
+    public void testGetUniverseDependencies() throws Exception {
+        SuiteProject suite = generateSuite("suite");
+        
+        NbModuleProject testPrj = generateSuiteComponent(suite, "testPrj");
+        
+        NbModuleProject apiPrj = generateSuiteComponent(suite, "apiPrj");
+        FileUtil.createData(apiPrj.getProjectDirectory(), "src/api/Util.java");
+        SingleModuleProperties apiPrjProps = SingleModulePropertiesTest.loadProperties(apiPrj);
+        apiPrjProps.getPublicPackagesModel().setValueAt(Boolean.TRUE, 0, 0);
+        apiPrjProps.storeProperties();
+        ProjectManager.getDefault().saveProject(apiPrj);
+        
+        NbModuleProject friendPrj = generateSuiteComponent(suite, "friendPrj");
+        FileUtil.createData(friendPrj.getProjectDirectory(), "src/friend/Karel.java");
+        SingleModuleProperties friendPrjProps = SingleModulePropertiesTest.loadProperties(friendPrj);
+        friendPrjProps.getPublicPackagesModel().setValueAt(Boolean.TRUE, 0, 0);
+        friendPrjProps.getFriendListModel().addFriend("org.example.testPrj");
+        friendPrjProps.storeProperties();
+        ProjectManager.getDefault().saveProject(friendPrj);
+        
+        generateSuiteComponent(suite, "nonApiPrj");
+        ModuleEntry apiPrjME = ModuleList.getModuleList(FileUtil.toFile(testPrj.getProjectDirectory())).getEntry("org.example.apiPrj");
+        ModuleDependency apiPrjDep = new ModuleDependency(apiPrjME);
+        ModuleEntry friendPrjME = ModuleList.getModuleList(FileUtil.toFile(testPrj.getProjectDirectory())).getEntry("org.example.friendPrj");
+        ModuleDependency friendPrjDep = new ModuleDependency(friendPrjME);
+        ModuleEntry nonApiPrjME = ModuleList.getModuleList(FileUtil.toFile(testPrj.getProjectDirectory())).getEntry("org.example.nonApiPrj");
+        ModuleDependency nonApiPrjDep = new ModuleDependency(nonApiPrjME);
+        
+        SingleModuleProperties testProps = SingleModulePropertiesTest.loadProperties(testPrj);
+        Set allDeps = testProps.getUniverseDependencies(false);
+        Set allDepsFilterExcluded = testProps.getUniverseDependencies(true);
+        Set apiDeps = testProps.getUniverseDependencies(false, true);
+        Set apiDepsFilterExcluded = testProps.getUniverseDependencies(true, true);
+        
+        assertTrue(allDeps.contains(apiPrjDep));
+        assertTrue(allDeps.contains(friendPrjDep));
+        assertTrue(allDeps.contains(nonApiPrjDep));
+        
+        assertTrue(allDepsFilterExcluded.contains(apiPrjDep));
+        assertTrue(allDepsFilterExcluded.contains(friendPrjDep));
+        assertTrue(allDepsFilterExcluded.contains(nonApiPrjDep));
+        
+        assertTrue(apiDeps.contains(apiPrjDep));
+        assertTrue(apiDeps.contains(friendPrjDep));
+        assertFalse(apiDeps.contains(nonApiPrjDep));
+        
+        assertTrue(apiDepsFilterExcluded.contains(apiPrjDep));
+        assertTrue(apiDepsFilterExcluded.contains(friendPrjDep));
+        assertFalse(apiDepsFilterExcluded.contains(nonApiPrjDep));
     }
     
 //    public void testReloadNetBeansModulueListSpeedHid() throws Exception {

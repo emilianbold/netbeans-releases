@@ -67,7 +67,7 @@ public final class AddModulePanel extends JPanel {
         initComponents();
         initAccessibility();
         fillUpUniverseModules();
-        moduleList.setCellRenderer(CustomizerComponentFactory.getDependencyCellRenderer(true));
+        moduleList.setCellRenderer(CustomizerComponentFactory.getDependencyCellRenderer(false));
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!FILTER_DESCRIPTION.equals(filterValue.getText())) {
@@ -141,20 +141,29 @@ public final class AddModulePanel extends JPanel {
     
     private void fillUpUniverseModules() {
         filterValue.setEnabled(false);
-        filterValue.setText(CustomizerComponentFactory.WAIT_VALUE);
         moduleList.setEnabled(false);
+        showNonAPIModules.setEnabled(false);
+        final String lastFilter = filterValue.getText();
+        filterValue.setText(CustomizerComponentFactory.WAIT_VALUE);
         moduleList.setModel(CustomizerComponentFactory.createListWaitModel());
+        final boolean nonApiDeps = showNonAPIModules.isSelected();
         ModuleProperties.RP.post(new Runnable() {
             public void run() {
-                final Set universeDeps = props.getUniverseDependencies(true);
+                final Set universeDeps = props.getUniverseDependencies(true, !nonApiDeps);
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         universeModules = CustomizerComponentFactory.createDependencyListModel(universeDeps);
+                        filterer = null;
                         moduleList.setModel(universeModules);
                         moduleList.setEnabled(true);
                         filterValue.setEnabled(true);
-                        filterValue.setText(FILTER_DESCRIPTION);
-                        filterValue.selectAll();
+                        showNonAPIModules.setEnabled(true);
+                        filterValue.setText(lastFilter);
+                        if (!FILTER_DESCRIPTION.equals(lastFilter)) {
+                            search();
+                        } else {
+                            filterValue.selectAll();
+                        }
                         filterValue.requestFocusInWindow();
                     }
                 });
@@ -304,17 +313,18 @@ public final class AddModulePanel extends JPanel {
         descValueSP = new javax.swing.JScrollPane();
         descValue = new javax.swing.JTextPane();
         showJavadocButton = new javax.swing.JButton();
+        showNonAPIModules = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 6, 6, 6));
-        setPreferredSize(new java.awt.Dimension(400, 300));
+        setPreferredSize(new java.awt.Dimension(400, 400));
         moduleLabel.setLabelFor(moduleList);
         org.openide.awt.Mnemonics.setLocalizedText(moduleLabel, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "LBL_Module"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(moduleLabel, gridBagConstraints);
@@ -323,8 +333,8 @@ public final class AddModulePanel extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         add(moduleSP, gridBagConstraints);
@@ -333,8 +343,8 @@ public final class AddModulePanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(descLabel, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "LBL_Description"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(descLabel, gridBagConstraints);
@@ -351,6 +361,7 @@ public final class AddModulePanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -362,8 +373,8 @@ public final class AddModulePanel extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         add(descValueSP, gridBagConstraints);
@@ -378,13 +389,34 @@ public final class AddModulePanel extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(showJavadocButton, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(showNonAPIModules, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "CTL_ShowNonAPIModules"));
+        showNonAPIModules.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        showNonAPIModules.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        showNonAPIModules.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showNonAPIModulesActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(showNonAPIModules, gridBagConstraints);
+
     }// </editor-fold>//GEN-END:initComponents
+    
+    private void showNonAPIModulesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showNonAPIModulesActionPerformed
+        fillUpUniverseModules();
+    }//GEN-LAST:event_showNonAPIModulesActionPerformed
     
     private void showJavadoc(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showJavadoc
         HtmlBrowser.URLDisplayer.getDefault().showURL(currectJavadoc);
@@ -401,6 +433,7 @@ public final class AddModulePanel extends JPanel {
     javax.swing.JList moduleList;
     private javax.swing.JScrollPane moduleSP;
     private javax.swing.JButton showJavadocButton;
+    private javax.swing.JCheckBox showNonAPIModules;
     // End of variables declaration//GEN-END:variables
     
 }

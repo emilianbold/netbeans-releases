@@ -151,7 +151,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
     public static final String JAVA_PLATFORM_PROPERTY = "nbjdk.active"; // NOI18N
     public static final String DEPENDENCIES_PROPERTY = "moduleDependencies"; // NOI18N
-
+    
     /**
      * Returns an instance of SingleModuleProperties for the given project.
      */
@@ -228,6 +228,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     
     // ---- READ ONLY start
     
+    /** Returns code name base of the module this instance managing. */
     String getCodeNameBase() {
         return getProjectXMLManager().getCodeNameBase();
     }
@@ -418,17 +419,23 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     /**
-     * Returns a set of available modules dependencies ({@link
-     * ModuleDependency}) in the module's universe according to the currently
-     * selected platform ({@link #getActivePlatform()}). If the
-     * <code>filterExcludedModules</code> is set to <code>true</code> and this
-     * module is a suite component, modules exclude from the suite's module
-     * list will be excluded from the returned set.<p>
+     * Returns a set of available {@link ModuleDependency modules dependencies}
+     * in the module's universe according to the currently selected {@link
+     * #getActivePlatform() platform}.<p>
+     * 
      * <strong>Note:</strong> Don't call this method from EDT, since it may be
      * really slow. The {@link AssertionError} will be thrown if you try to do
      * so.
+     *
+     * @param filterExcludedModules if <code>true</code> and this module is a
+     *        suite component, modules excluded from the suite's module list
+     *        will be excluded from the returned set.
+     * @param apiProvidersOnly if <code>true</code> only modules which provide
+     *        public packages and have friendly relationship with this module
+     *        will be included in the returned set
      */
-    Set/*<ModuleDependency>*/ getUniverseDependencies(final boolean filterExcludedModules) {
+    Set/*<ModuleDependency>*/ getUniverseDependencies(
+            final boolean filterExcludedModules, final boolean apiProvidersOnly) {
         assert !SwingUtilities.isEventDispatchThread() :
             "SingleModuleProperties.getUniverseDependencies() cannot be called from EDT"; // NOI18N
         if (universeDependencies == null) {
@@ -450,12 +457,29 @@ public final class SingleModuleProperties extends ModuleProperties {
                     it.remove();
                 }
             }
-            result = Collections.unmodifiableSet(filtered);
+            result = filtered;
         }
         if (result == null) {
-            result = universeDependencies;
+            result = new HashSet(universeDependencies);
         }
-        return result;
+        if (apiProvidersOnly) { // remove module without public/friend API
+            for (Iterator it = result.iterator(); it.hasNext();) {
+                ModuleDependency dep = (ModuleDependency) it.next();
+                ModuleEntry me = dep.getModuleEntry();
+                if (me.getPublicPackages().length == 0 || !me.isDeclaredAsFriend(getCodeNameBase())) {
+                    it.remove();
+                }
+            }
+        }
+        return Collections.unmodifiableSet(result);
+    }
+    
+    /**
+     * Deletages to {@link #getUniverseDependencies(boolean, boolean)} with
+     * <code>false</code> as a second parameter.
+     */
+    Set/*<ModuleDependency>*/ getUniverseDependencies(final boolean filterExcludedModules) {
+        return getUniverseDependencies(filterExcludedModules, false);
     }
     
     private static boolean isExcluded(final ModuleEntry me,
@@ -569,7 +593,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     /**
      * Returns set of all available public packages for the project.
      */
-    Set/*<FileObject>*/ getAvailablePublicPackages() {
+    private Set/*<FileObject>*/ getAvailablePublicPackages() {
         if (availablePublicPackages == null) {
             availablePublicPackages = new TreeSet();
             
