@@ -507,7 +507,7 @@ final class MultiFileObject extends AbstractFolder implements FileChangeListener
             try {
                 FileSystem simple = fs.createWritableOn(getPath());
 
-                return simple == leader.getFileSystem();
+                return simple != leader.getFileSystem();
             } catch (IOException e) {
                 return false;
             }
