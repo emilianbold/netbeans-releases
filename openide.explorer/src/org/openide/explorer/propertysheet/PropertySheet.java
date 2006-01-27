@@ -1241,13 +1241,13 @@ public class PropertySheet extends JPanel {
         public Node detach() {
             Node n = currNode;
 
-            if (currNode != null) {
+            if (n != null) {
                 if (PropUtils.isLoggable(PropertySheet.class)) {
                     PropUtils.log(PropertySheet.class, "Detaching listeners from " + n);
                 }
 
-                currNode.removePropertyChangeListener(inner);
-                currNode.removeNodeListener(this);
+                n.removePropertyChangeListener(inner);
+                n.removeNodeListener(this);
 
                 //clear the reference
                 currNode = null;
