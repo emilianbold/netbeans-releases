@@ -169,8 +169,7 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
             }
             dtde.dropComplete( res );
         }
-        draggingItem = null;
-        draggingCategory = null;
+        cleanupAfterDnD();
     }
 
     public void dragExit( DropTargetEvent dte ) {
@@ -321,24 +320,28 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
         if( null == dragSourceListener ) {
             dragSourceListener = new DragSourceAdapter() {
                 public void dragDropEnd( DragSourceDropEvent dsde ) {
-                    draggingItem = null;
-                    draggingCategory = null;
-                    targetItem = null;
-                    if( null != dragSourceCategoryList ) {
-                        dragSourceCategoryList.resetRollover();
-                    }
-                    dragSourceCategory = null;
-                    dragSourceCategoryList = null;
-                    removeDropLine();
-                    if (DropGlassPane.isOriginalPaneStored()) {
-                        DropGlassPane.putBackOriginal();
-                    }
                     dsde.getDragSourceContext().getDragSource().removeDragSourceListener( this );
-                    removeTimer();
+                    cleanupAfterDnD();
                 }
             };
         } 
         return dragSourceListener;
+    }
+    
+    private void cleanupAfterDnD() {
+        draggingItem = null;
+        draggingCategory = null;
+        targetItem = null;
+        if( null != dragSourceCategoryList ) {
+            dragSourceCategoryList.resetRollover();
+        }
+        dragSourceCategory = null;
+        dragSourceCategoryList = null;
+        removeDropLine();
+        if (DropGlassPane.isOriginalPaneStored()) {
+            DropGlassPane.putBackOriginal();
+        }
+        removeTimer();
     }
 
     private void checkStoredGlassPane() {
