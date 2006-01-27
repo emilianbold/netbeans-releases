@@ -1611,15 +1611,13 @@ public class DefaultUserInterface extends UserInterface {
         public void run() {
             try {
                 sleep(2000);
-                managePublicConversation(session, conversationName);
-
-                if (conv != null) {
-                    conv.leave();
-                    conv = session.createPublicConversation(conversationName);
-                }
+                conv.leave();
+                managePublicConversation(session, conv.getIdentifier());
+                conv = session.createPublicConversation(conversationName);
 
                 CollabManager.getDefault().getUserInterface().showConversation(conv);
             } catch (Exception e) {
+                ErrorManager.getDefault().notify(e);
             }
         }
     }
