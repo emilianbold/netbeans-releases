@@ -159,7 +159,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         Boolean iconIsSmall = null;
         if (icon != null) {
             try {
-                ImageIcon imc = new ImageIcon(icon.toURL());
+                ImageIcon imc = new ImageIcon(icon.toURI().toURL());
                 int width = imc.getIconWidth();
                 if (width == 16) {//NOI18N
                     iconIsSmall = Boolean.TRUE;
