@@ -26,16 +26,14 @@ import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
 
 /**
  * Wizard for creating JavaHelp
  *
- * @author Radek Matous
+ * @author Radek Matous, Jesse Glick
  */
 public class NewJavaHelpIterator extends BasicWizardIterator {
     
-    private static final long serialVersionUID = 1L;
     private NewJavaHelpIterator.DataModel data;
     
     public static NewJavaHelpIterator createIterator() {
@@ -61,25 +59,29 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
     }
     
     static final class DataModel extends BasicWizardIterator.BasicDataModel {
-        private static String[] TEMPLATES_SUFFIXES = new String[] {
-            "-about.html",//NOI18N
-            ".hs",//NOI18N
-            "-idx.xml",//NOI18N
-            "-map.jhm",//NOI18N
-            "-toc.xml"//NOI18N
+        
+        private static final String TEMPLATE_SUFFIX_HS = "-hs.xml"; // NOI18N
+        private static final String[] TEMPLATE_SUFFIXES = {
+            TEMPLATE_SUFFIX_HS,
+            "-idx.xml", // NOI18N
+            "-map.xml", // NOI18N
+            "-toc.xml", // NOI18N
+            "-about.html", // NOI18N
+        };
+        private static final String[] TEMPLATE_RESOURCES = {
+            // Historical names in CVS, do not match actual extensions when created:
+            "template_myplugin.hs", // NOI18N
+            "template_myplugin-idx.xml", // NOI18N
+            "template_myplugin-map.jhm", // NOI18N
+            "template_myplugin-toc.xml", // NOI18N
+            "template_myplugin-about.html", // NOI18N
         };
         
-        private static String[] TOKENS = new String[] {
-            "@@MyPlugin@@",//NOI18N
-            "@@MyPlugin_DisplayName@@",//NOI18N
-            "@@MyPlugin_PATH@@"//NOI18N
-        };
-        
-        private static String TEMPLATE_NAME_PREFIX = "template_myplugin";//NOIN18N
-        private static String HELPSETREF_SUFFIX = "-helpset.xml";//NOIN18N
+        private static final String TOKEN_CODE_NAME = "@@CODE_NAME@@"; // NOI18N
+        private static final String TOKEN_DISPLAY_NAME = "@@DISPLAY_NAME@@"; // NOI18N
+        private static final String TOKEN_HELPSET_PATH = "@@HELPSET_PATH@@"; // NOI18N
         
         private CreatedModifiedFiles files;
-        private String codeNameBase;
         
         DataModel(WizardDescriptor wiz) {
             super(wiz);
@@ -87,25 +89,40 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
         
         public CreatedModifiedFiles getCreatedModifiedFiles() {
             if (files == null) {
+                // org.netbeans.modules.foo
+                String codeNameBase = ManifestManager.getInstance(getProject().getManifest(), false).getCodeNameBase();
+                // foo
+                String basename = codeNameBase.substring(codeNameBase.lastIndexOf('.') + 1);
+                // org/netbeans/modules/foo/docs/
+                String path = codeNameBase.replace('.','/') + "/docs/"; // NOI18N
+                
                 files = new CreatedModifiedFiles(getProject());
                 Map tokens = new HashMap();
-                for (int i = 0; i < TOKENS.length; i++) {
-                    tokens.put(TOKENS[i],replaceToken(TOKENS[i]));
-                }
+                tokens.put(TOKEN_CODE_NAME, basename);
+                tokens.put(TOKEN_DISPLAY_NAME, ProjectUtils.getInformation(getProject()).getDisplayName());
+                tokens.put(TOKEN_HELPSET_PATH, path + basename + TEMPLATE_SUFFIX_HS); // NOI18N
                 
                 //layer registration
-                files.add(createLayerEntryOperation(tokens));
+                files.add(files.createLayerEntry("Services/JavaHelp/" + basename + "-helpset.xml", // NOI18N
+                        NewJavaHelpIterator.class.getResource("template_myplugin-helpset.xml"), // NOI18N
+                        tokens,
+                        null,
+                        null));
                 
                 //copying templates
-                for (int i = 0; i < TEMPLATES_SUFFIXES.length; i++) {
-                    files.add(createFileOperation(TEMPLATES_SUFFIXES[i], tokens));
+                for (int i = 0; i < TEMPLATE_SUFFIXES.length; i++) {
+                    URL template = NewJavaHelpIterator.class.getResource(TEMPLATE_RESOURCES[i]);
+                    String filePath = "javahelp/" + path + basename + TEMPLATE_SUFFIXES[i]; // NOI18N
+                    files.add(files.createFileWithSubstitutions(filePath, template, tokens));
                 }
                 
-                //put javahelp.base into nbproject/project.properties
+                // edit some properties
                 Map props = new HashMap();
-                props.put("javahelp.base", getCodeNameBase().replace('.','/'));//NOIN18N
-                //props.put("jhall.jar","${harness.dir}/lib/jhall.jar");//NOI18N
-                files.add(files.propertiesModification("nbproject/project.properties",props));//NOIN18N
+                // Default for javahelp.base (org/netbeans/modules/foo/docs) is correct.
+                // For <checkhelpset> (currently nb.org modules only, but may be bundled in harness some day):
+                props.put("javahelp.hs", basename + TEMPLATE_SUFFIX_HS); // NOI18N
+                // XXX 71527: props.put("jhall.jar", "${harness.dir}/lib/jhall.jar"); // NOI18N
+                files.add(files.propertiesModification("nbproject/project.properties", props)); // NOI18N
                 
                 //put OpenIDE-Module-Requires into manifest
                 ModifyManifest attribs = new CreatedModifiedFilesFactory.ModifyManifest(getProject()) {
@@ -120,67 +137,12 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                     }
                     
                 };
-                attribs.setAttribute("OpenIDE-Module-Requires", "org.netbeans.api.javahelp.Help", null);//NOIN18N
+                attribs.setAttribute("OpenIDE-Module-Requires", "org.netbeans.api.javahelp.Help", null); // NOI18N
                 files.add(attribs);
             }
             return files;
         }
         
-        private CreatedModifiedFiles.Operation createLayerEntryOperation(final Map tokens) {
-            URL template = NewJavaHelpIterator.class.getResource(TEMPLATE_NAME_PREFIX+HELPSETREF_SUFFIX);
-            return files.createLayerEntry("Services/JavaHelp/"+getFileNamePrefix()+HELPSETREF_SUFFIX,//NOIN18N
-                    template,
-                    tokens,
-                    NbBundle.getMessage(NewJavaHelpIterator.class, "LBL_HelSet"),//NOI18N
-                    null);
-        }
-        
-        private CreatedModifiedFiles.Operation createFileOperation(final String templateSuffix, final Map tokens) {
-            URL template = NewJavaHelpIterator.class.getResource(TEMPLATE_NAME_PREFIX+templateSuffix);
-            String filePath = "javahelp/"+ getCodeNameBase().replace('.','/')+"/";//NOI18N
-            filePath = filePath + getFileNamePrefix()+templateSuffix;
-            return files.createFileWithSubstitutions(filePath, template, tokens);
-        }
-        
-        private String getFilePathForTemplateFile(final String templateSuffix) {
-            StringBuffer sb = new StringBuffer();
-            sb.append(getCodeNameBase().replace('.','/'));
-            sb.append("/").append(getFileNamePrefix()+templateSuffix);//NOI18N
-            return sb.toString();
-        }
-        
-        
-        private String replaceToken(final String token) {
-            String replacement = null;
-            if (/*"@@MyPlugin@@"*/TOKENS[0].equals(token)) {
-                assert "@@MyPlugin@@".equals(token);//NOI18N
-                replacement = getFileNamePrefix();
-            } else if (/*"@@MyPlugin_DisplayName@@"*/TOKENS[1].equals(token)) {
-                assert "@@MyPlugin_DisplayName@@".equals(token);//NOI18N
-                replacement = ProjectUtils.getInformation(getProject()).getDisplayName();
-            } else if (/*"@@MyPlugin_PATH@@"*/TOKENS[2].equals(token)) {
-                assert "@@MyPlugin_PATH@@".equals(token);//NOI18N
-                replacement = getFilePathForTemplateFile(/*".hs"*/TEMPLATES_SUFFIXES[1]);
-            }
-            
-            assert replacement != null;
-            return replacement;
-        }
-        
-        private String getFileNamePrefix() {
-            String replacement;
-            String codeNameBase = getCodeNameBase();
-            replacement = codeNameBase.substring(codeNameBase.lastIndexOf(".")+1);
-            return replacement;
-        }
-        
-        private String getCodeNameBase() {
-            if (codeNameBase == null) {
-                ManifestManager mm = ManifestManager.getInstance(getProject().getManifest(), false);
-                codeNameBase = mm.getCodeNameBase();
-            }
-            return codeNameBase;
-        }
-    }    
+    }
+    
 }
-
