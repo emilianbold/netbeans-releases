@@ -26,6 +26,7 @@ import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
+import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.Waitable;
@@ -139,6 +140,11 @@ public class Utils {
         new FinishDebuggerAction().perform();
         // wait until Debug toolbar dismiss
         debugToolbarOper.waitComponentVisible(false);
+        // wait until server is not in transient state
+        // "Bundled Tomcat (x.y.z)"
+        String tomcatLabel = Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.Bundle", "LBL_BundledTomcat");
+        J2eeServerNode serverNode = new J2eeServerNode(tomcatLabel);
+        serverNode.waitFinished();
 
         /* cannot be used because of this issue 71263 ('User program finished' not printed to output)
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
