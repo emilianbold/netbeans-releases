@@ -1,0 +1,236 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.bluej.nodes;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ResourceBundle;
+import javax.swing.Action;
+import javax.swing.JSeparator;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.bluej.BluejProject;
+import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.ErrorManager;
+import org.openide.actions.FindAction;
+import org.openide.actions.ToolsAction;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.FolderLookup;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+
+/**
+ *
+ * @author mkleint
+ */
+public class BluejLogicalViewRootNode extends AbstractNode {
+    
+    /** Creates a new instance of BluejLogicalViewRootNode */
+    public BluejLogicalViewRootNode(Lookup look) {
+        super(new FilterChildrenImpl(look), look);
+        setIconBaseWithExtension("/org/netbeans/bluej/resources/bluejproject.png");
+    }
+    
+    public String getName() {
+        return getProjectInfo(getLookup()).getName();
+    }
+    
+    public String getDisplayName() {
+        return getProjectInfo(getLookup()).getDisplayName();
+    }
+    
+    private static BluejProject getProject(Lookup lkp) {
+        return (BluejProject)lkp.lookup(BluejProject.class);
+    }
+    
+    private static ProjectInformation getProjectInfo(Lookup lkp) {
+        return (ProjectInformation)getProject(lkp).getLookup().lookup(ProjectInformation.class);
+    }
+    
+    
+    private static SourceGroup getSourceGroup(Lookup lkp) {
+        BluejProject prj = getProject(lkp);
+        Sources srcs = ProjectUtils.getSources(prj);
+        SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        assert grps.length > 0;
+        return grps[0];
+    }
+    
+    public Action[] getActions(boolean context) {
+        
+        ResourceBundle bundle = NbBundle.getBundle(BluejLogicalViewRootNode.class);
+        
+        List actions = new ArrayList();
+        
+        actions.add(CommonProjectActions.newFileAction());
+        actions.add(null);
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null)); // NOI18N
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null)); // NOI18N
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null)); // NOI18N
+        actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, bundle.getString("LBL_JavadocAction_Name"), null)); // NOI18N
+        actions.add(null);
+////        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null)); // NOI18N
+////        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null)); // NOI18N
+////        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
+        actions.add(null);
+        actions.add(CommonProjectActions.setAsMainProjectAction());
+//        actions.add(CommonProjectActions.openSubprojectsAction());
+        actions.add(CommonProjectActions.closeProjectAction());
+        actions.add(null);
+        actions.add(SystemAction.get(FindAction.class));
+        
+        // honor 57874 contact
+        
+        try {
+            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Projects/Actions"); // NOI18N
+            if (fo != null) {
+                DataObject dobj = DataObject.find(fo);
+                FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
+                Lookup.Template query = new Lookup.Template(Object.class);
+                Lookup lookup = actionRegistry.getLookup();
+                Iterator it = lookup.lookup(query).allInstances().iterator();
+                if (it.hasNext()) {
+                    actions.add(null);
+                }
+                while (it.hasNext()) {
+                    Object next = it.next();
+                    if (next instanceof Action) {
+                        actions.add(next);
+                    } else if (next instanceof JSeparator) {
+                        actions.add(null);
+                    }
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            // data folder for existing fileobject expected
+            ErrorManager.getDefault().notify(ex);
+        }
+        
+        actions.add(null);
+        actions.add(SystemAction.get(ToolsAction.class));
+        actions.add(null);
+        actions.add(CommonProjectActions.customizeProjectAction());
+        
+        return (Action[]) actions.toArray(new Action[actions.size()]);
+    }
+    
+    private static class FilterChildrenImpl extends FilterNode.Children {
+        FileObject rootDir;
+        private RootFileOobjectListener listener = null;
+        FilterChildrenImpl(Lookup lkp) {
+            this(PackageView.createPackageView(getSourceGroup(lkp)));
+            rootDir = getProject(lkp).getProjectDirectory();
+        }
+        
+        FilterChildrenImpl(Node original) {
+            super(original);
+        }
+        
+        protected Node[] createNodes(Object object) {
+            Node orig = (Node)object;
+            DataObject dobj = (DataObject)orig.getLookup().lookup(DataObject.class);
+            if (dobj != null) {
+                FileObject fo = dobj.getPrimaryFile();
+                if ("bluej.pkg".equals(fo.getNameExt()) ||
+                        "build.xml".equals(fo.getNameExt()) ||
+                        "bluej.pkh".equals(fo.getNameExt()) ||
+                        "ctxt".equals(fo.getExt()) ||
+                        "class".equals(fo.getExt()) ||
+                        (fo.isFolder() && fo.getFileObject("bluej.pkg") == null)) {
+                    return new Node[0];
+                }
+                if (rootDir != null && rootDir.equals(fo)) {
+                    if (listener == null) {
+                        //add just once..
+                        listener = new RootFileOobjectListener(this, orig, fo);
+                        fo.addFileChangeListener(listener);
+                    }
+                    Enumeration en = ((DataFolder)dobj).children();
+                    Collection col = new ArrayList();
+                    while (en.hasMoreElements()) {
+                        DataObject d2 = (DataObject)en.nextElement();
+                        if (d2.getPrimaryFile().isData()) {
+                            col.addAll(Arrays.asList(createNodes(d2.getNodeDelegate().cloneNode())));
+                        }
+                    }
+                    return (Node[])col.toArray(new Node[col.size()]);
+                }
+                return new Node[] {new FilterNode(orig, fo.isData() ? Children.LEAF : new FilterChildrenImpl(orig))};
+            }
+            return new Node[0];
+        }
+        
+        public void doRefresh(Node original) {
+            refreshKey(original);
+        }
+    }
+    
+    private static class RootFileOobjectListener implements FileChangeListener {
+
+        private FilterChildrenImpl children;
+
+        private Node node;
+
+        private FileObject fileObject;
+        
+        RootFileOobjectListener(FilterChildrenImpl childs, Node nd, FileObject fo) {
+            children = childs;
+            node = nd;
+            fileObject = fo;
+        }
+        
+        public void fileAttributeChanged(FileAttributeEvent fileAttributeEvent) {
+        }
+        public void fileChanged(FileEvent fileEvent) {
+            children.doRefresh(node);
+        }
+        public void fileDataCreated(FileEvent fileEvent) {
+            children.doRefresh(node);
+        }
+        public void fileDeleted(FileEvent fileEvent) {
+            children.doRefresh(node);
+        }
+        public void fileFolderCreated(FileEvent fileEvent) {
+            children.doRefresh(node);
+        }
+        public void fileRenamed(FileRenameEvent fileRenameEvent) {
+            children.doRefresh(node);
+        }
+        
+    }
+    
+}
