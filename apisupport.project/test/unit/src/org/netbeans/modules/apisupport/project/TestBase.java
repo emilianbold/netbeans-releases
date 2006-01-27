@@ -363,6 +363,9 @@ public abstract class TestBase extends NbTestCase {
     /**
      * Generates a suite component module which becomes a part of the given
      * <code>suiteProject</code>.
+     * <p>
+     * See {@link #generateStandaloneModule(File, String)} for details about
+     * what is generated.
      */
     public static NbModuleProject generateSuiteComponent(SuiteProject suiteProject, String prjDir) throws Exception {
         String prjDirDotted = prjDir.replace('/', '.');
