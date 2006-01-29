@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="projectized-common" basedir=".">
@@ -257,8 +257,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     
-    
-    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
+    <target name="-nbm-prompt-for-storepass" if="keystore" unless="storepass">
+        <input addproperty="storepass" message="Enter password for ${keystore}:"/>
+    </target>
+    <target name="nbm" depends="init,netbeans,-nbm-prompt-for-storepass" description="Build NBM archive.">
         <mkdir dir="build"/>
         <makenbm file="build/${nbm}"
                  productdir="${cluster}"
