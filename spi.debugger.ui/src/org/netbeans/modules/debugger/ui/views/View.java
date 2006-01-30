@@ -70,7 +70,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         if (tree == null) {
             setLayout (new BorderLayout ());
             tree = Models.createView (Models.EMPTY_MODEL);
-            tree.setName (name);
+            tree.setName (NbBundle.getMessage (View.class, toolTipResource));
             add (tree, "Center");  //NOI18N
         }
         // <RAVE> CR 6207738 - fix debugger help IDs
