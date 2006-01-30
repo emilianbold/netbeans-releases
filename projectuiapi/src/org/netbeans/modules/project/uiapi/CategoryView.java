@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
-import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -83,6 +82,7 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
     public void addNotify() {
         super.addNotify();
         btv.expandAll();
+        btv.requestFocusInWindow();
     }
 
 
