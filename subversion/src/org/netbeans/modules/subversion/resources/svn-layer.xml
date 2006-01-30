@@ -22,11 +22,11 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
         <folder name="Repository">
-            <file name="org-netbeans-modules-subversion-actions-OpenVersioningAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.actions.OpenVersioningAction"/>
+            <file name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.status.OpenVersioningAction"/>
             </file>
-            <file name="org-netbeans-modules-subversion-actions-ShowAllChangesAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.actions.ShowAllChangesAction"/>
+            <file name="org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.status.ShowAllChangesAction"/>
             </file>
 <!--
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.instance">
@@ -216,16 +216,16 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-GetCleanAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ResolveConflictsAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ResolveConflictsAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-ignore-IgnoreAction.shadow" boolvalue="true" />
             -->
-            <attr name="org-netbeans-modules-subversion-ui-browser-BrowserAction.shadow/org-netbeans-modules-subversion-actions-ShowAllChangesAction.shadow" boolvalue="true"/>
-            <file name="org-netbeans-modules-subversion-actions-ShowAllChangesAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-actions-ShowAllChangesAction.instance"/>
+            <attr name="org-netbeans-modules-subversion-ui-browser-BrowserAction.shadow/org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.instance"/>
             </file>
         </folder>
         <folder name="Window">
-            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow/org-netbeans-modules-subversion-actions-OpenVersioningAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-subversion-actions-OpenVersioningAction.shadow/InspectorAction.shadow" boolvalue="true"/>
-            <file name="org-netbeans-modules-subversion-actions-OpenVersioningAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-actions-OpenVersioningAction.instance"/>
+            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow/org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow" boolvalue="true"/>
+            <attr name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow/InspectorAction.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance"/>
             </file>
         </folder>
     </folder>
