@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -189,11 +189,7 @@ public class J2SESampleProjectGenerator {
                     netbeansDestDir = new File(netbeansDestDir, "../../..");
                     e.setAttribute("location", netbeansDestDir.getAbsolutePath());// NOI18N
                 }
-            }
-            nlist = doc.getElementsByTagName("path");  //NOI18N
-            for (int i=0; i < nlist.getLength(); i++) {
-                Element e = (Element)nlist.item(i);
-                if(e.getAttribute("id").equals("jemmy.path")) { // NOI18N
+                if(e.getAttribute("name").equals("jemmy.path")) { // NOI18N
                     File jemmyJar = InstalledFileLocator.getDefault().
                             locate("modules/ext/jemmy.jar", "org.netbeans.modules.jemmy", false);  // NOI18N
                     e.setAttribute("location", jemmyJar.getAbsolutePath());// NOI18N

@@ -8,13 +8,13 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="anagram/test" basedir="." default="all">
 
     <!-- Path to Jemmy library -->
-    <path id="jemmy.path" location="jemmy.jar"/>
+    <property name="jemmy.path" location="jemmy.jar"/>
     
     <!-- Points to directory with IDE to test-->
     <property name="netbeans.dest.dir" location="../../nbbuild/netbeans"/>
