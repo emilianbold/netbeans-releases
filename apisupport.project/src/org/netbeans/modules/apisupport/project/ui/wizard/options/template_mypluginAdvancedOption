@@ -1,0 +1,26 @@
+package @@PACKAGE_NAME@@;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsCategory;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
+
+public final class @@AdvancedOption_CLASS_NAME@@ extends AdvancedOption {
+    private static String loc (String key) {
+        return NbBundle.getMessage (@@AdvancedOption_CLASS_NAME@@.class, key);        
+    }
+    
+    public String getDisplayName () {
+        return loc ("AdvancedOption_DisplayName");
+    }
+
+    public String getTooltip () {
+        return loc ("AdvancedOption_Tooltip");
+    }
+
+    public OptionsPanelController create () {         
+        return new @@OptionsPanelController_CLASS_NAME@@ ();
+    }
+}
