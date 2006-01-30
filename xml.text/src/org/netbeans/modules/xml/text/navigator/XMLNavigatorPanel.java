@@ -20,6 +20,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 
 /** An implementation of NavigatorPanel for XML navigator.
  *
@@ -42,11 +43,11 @@ public class XMLNavigatorPanel implements NavigatorPanel {
     }
     
     public String getDisplayHint() {
-        return "XML files navigator";
+        return NbBundle.getMessage(XMLNavigatorPanel.class, "XML_files_navigator");
     }
     
     public String getDisplayName() {
-        return "XML View";
+        return NbBundle.getMessage(XMLNavigatorPanel.class, "XML_View");
     }
     
     public JComponent getComponent() {
