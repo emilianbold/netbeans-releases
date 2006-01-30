@@ -476,6 +476,13 @@ public class MakeNBM extends Task {
                 throw new BuildException("exception while reading " + module, ioe, getLocation());
             }
         }
+        
+        if (mostRecentInput < file.lastModified()) {
+            log("Skipping NBM creation as most recent input is younger: " + mostRecentInput + " than the target file: " + file.lastModified(), Project.MSG_VERBOSE);
+            return;
+        }
+        
+        
         try {
 	    infofile = File.createTempFile("info",".xml"); //NOI18N
             OutputStream infoStream = new FileOutputStream (infofile);
