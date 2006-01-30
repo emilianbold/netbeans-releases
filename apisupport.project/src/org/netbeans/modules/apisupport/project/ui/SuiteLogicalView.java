@@ -287,39 +287,54 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         public void actionPerformed(ActionEvent evt) {
             NewNbModuleWizardIterator iterator = NewNbModuleWizardIterator.createSuiteComponentIterator(suite);
-            runWizard(iterator, "CTL_NewModuleProject"); // NOI18N
+            runProjectWizard(iterator, "CTL_NewModuleProject"); // NOI18N
         }
         
     }
     
-    private static final class AddNewLibraryWrapperAction extends AbstractAction {
+    static final class AddNewLibraryWrapperAction extends AbstractAction {
         
-        private final SuiteProject suite;
+        private final Project suiteProvider;
+        private final NbModuleProject target;
         
-        public AddNewLibraryWrapperAction(final SuiteProject suite) {
+        public AddNewLibraryWrapperAction(final Project suiteProvider, final NbModuleProject target) {
             super(NbBundle.getMessage(SuiteLogicalView.class, "CTL_AddNewLibrary"));
-            this.suite = suite;
+            this.suiteProvider = suiteProvider;
+            this.target = target;
+        }
+        
+        public AddNewLibraryWrapperAction(final Project suiteProvider) {
+            this(suiteProvider, null);
         }
         
         public void actionPerformed(ActionEvent evt) {
-            NewNbModuleWizardIterator iterator = NewNbModuleWizardIterator.createLibraryModuleIterator(suite);
-            runWizard(iterator, "CTL_NewLibraryWrapperProject"); // NOI18N
+            NewNbModuleWizardIterator iterator = NewNbModuleWizardIterator.createLibraryModuleIterator(suiteProvider);
+            NbModuleProject project = runProjectWizard(iterator, "CTL_NewLibraryWrapperProject"); // NOI18N
+            if (project != null) {
+                try {
+                    Util.addDependency(target, project);
+                    ProjectManager.getDefault().saveProject(target);
+                } catch (IOException e) {
+                    assert false : e;
+                }
+            }
         }
         
     }
     
-    private static void runWizard(final NewNbModuleWizardIterator iterator, final String titleBundleKey) {
+    private static NbModuleProject runProjectWizard(final NewNbModuleWizardIterator iterator, final String titleBundleKey) {
         WizardDescriptor wd = new WizardDescriptor(iterator);
         wd.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wd.setTitle(NbBundle.getMessage(SuiteLogicalView.class, titleBundleKey));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wd);
         dialog.setVisible(true);
         dialog.toFront();
+        NbModuleProject project = null;
         boolean cancelled = wd.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
             FileObject folder = iterator.getCreateProjectFolder();
             try {
-                Project project = ProjectManager.getDefault().findProject(folder);
+                project = (NbModuleProject) ProjectManager.getDefault().findProject(folder);
                 OpenProjects.getDefault().open(new Project[] { project }, false);
                 if (wd.getProperty("setAsMain") == Boolean.TRUE) { // NOI18N
                     OpenProjects.getDefault().setMainProject(project);
@@ -328,6 +343,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
+        return project;
     }
     
     /** Represent one module (a suite component) node. */

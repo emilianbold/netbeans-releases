@@ -91,7 +91,16 @@ final class LibrariesNode extends AbstractNode {
         super(new LibrariesChildren(project));
         setName(LIBRARIES_NAME);
         setDisplayName(DISPLAY_NAME);
-        actions = new Action[] { new AddModuleDependencyAction(project) };
+        if (Util.getModuleType(project) == NbModuleTypeProvider.SUITE_COMPONENT) {
+            actions = new Action[] {
+                new AddModuleDependencyAction(project),
+                new SuiteLogicalView.AddNewLibraryWrapperAction(project, project)
+            };
+        } else {
+            actions = new Action[] {
+                new AddModuleDependencyAction(project),
+            };
+        }
     }
     
     public Image getIcon(int type) {

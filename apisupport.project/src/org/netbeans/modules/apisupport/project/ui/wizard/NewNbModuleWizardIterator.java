@@ -98,11 +98,14 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     }
     
     /**
-     * Returns wizard for creating library wrapper module <strong>only</strong>.
+     * Returns wizard for creating library wrapper module
+     * <strong>only</strong>. Given project <strong>must</strong> have an
+     * instance of {@link SuiteProvider} in its lookup.
      */
-    public static NewNbModuleWizardIterator createLibraryModuleIterator(final SuiteProject suite) {
+    public static NewNbModuleWizardIterator createLibraryModuleIterator(final Project project) {
         NewNbModuleWizardIterator iterator = new NewNbModuleWizardIterator(TYPE_LIBRARY_MODULE);
-        iterator.preferredSuiteDir = FileUtil.toFile(suite.getProjectDirectory()).getAbsolutePath();
+        iterator.preferredSuiteDir = SuiteUtils.getSuiteDirectoryPath(project);
+        assert iterator.preferredSuiteDir != null : project + " does not have a SuiteProvider in its lookup?"; // NOI18N
         return iterator;
     }
     
