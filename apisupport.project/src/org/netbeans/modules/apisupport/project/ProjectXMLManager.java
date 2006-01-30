@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -43,7 +43,10 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.w3c.dom.NodeList;
 
 /**
- * Convenience class for managing project's <em>project.xml</em> file.
+ * Convenience class for managing project's <em>project.xml</em> file. You
+ * should explicitly enclose a <em>complete</em> operation within write access
+ * to prevent race conditions. Use {@link ProjectManager#saveProject} to apply
+ * changes <em>physically</em>.
  *
  * @author mkrauskopf
  */
@@ -90,14 +93,14 @@ public final class ProjectXMLManager {
     // cached confData element for easy access with getConfData
     private Element confData;
     
-    /** Creates a new instance of ProjectXMLManager. */
+    /** Creates a new instance of {@link ProjectXMLManager}. */
     public ProjectXMLManager(final NbModuleProject project) {
         this.project = project;
     }
     
     /**
-     * Utility mehtod for getting the instance associated with a project in the
-     * given directory.
+     * Utility mehtod for getting the {@link ProjectXMLManager instance}
+     * associated with a project in the given directory.
      *
      * @throws IOException if the project under a given <code>projectDir</code>
      *         was recognized but could not be loaded (see {@link ProjectManager#findProject}).
@@ -296,9 +299,7 @@ public final class ProjectXMLManager {
      * Adds given dependency.
      */
     public void addDependency(ModuleDependency md) throws IOException {
-        Set s = new HashSet(1);
-        s.add(md);
-        addDependencies(s);
+        addDependencies(Collections.singleton(md));
     }
     
     /**
