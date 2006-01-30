@@ -334,7 +334,6 @@ public class MetaComponentCreator {
         try {
             LayoutComponent parent = shouldBeLayoutContainer(targetCont) ?
                 layoutModel.getLayoutComponent(targetCont.getId()) : null;
-            if ((parent != null) && !parent.isLayoutContainer()) parent = null;
             layoutModel.addNewComponent(layoutComp, parent, prototype);
             autoUndo = false;
         } finally {
