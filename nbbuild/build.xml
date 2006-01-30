@@ -179,12 +179,24 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- build NBMs for selected modules -->
   <target name="build-nbms" depends="init">
-      <!-- It's good idea to call merge target before this one.
-           NbMerge.java can set property "modules" to the list of realy
-           built modules (excluding fixedmodules which must build everytime). -->
       <mkdir dir="nbms" />
       <property name="nbm.target.dir" location="nbms" />
-      <for-each startdir=".." target="conditional-nbm" locations="${allmodules}"/>
+      
+      <pathconvert property="modules.fullpath" >
+          <path>
+              <dirset dir="${nb_all}" includes="${allmodules}" />
+          </path>
+          <mapper type="identity" />
+      </pathconvert>
+      
+      <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
+      
+      <pathconvert property="modules.foreach" dirsep="/" pathsep=",">
+          <path path="${modules.sorted}" />
+          <mapper type="glob" from="${nb_all}/*" to="*" />
+      </pathconvert>
+      
+      <for-each startdir=".." target="conditional-nbm" locations="${modules.foreach}"/>
   </target>
   <target name="nbm"/><!-- dummy target -->
   <target name="conditional-nbm"/><!-- dummy target -->
