@@ -1,31 +1,58 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
 package org.netbeans.modules.subversion.ui.browser;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.UserCancelException;
 import org.openide.util.actions.CallableSystemAction;
 import java.awt.Dialog;
 import java.net.MalformedURLException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeAcceptor;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
 
 public final class BrowserAction extends CallableSystemAction {
     
+    private static ISVNClientAdapter svnClient;
+    
     public void performAction() {
-        BrowserPanel panel = new BrowserPanel();
         
-        panel.setup(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_RepositoryBrowser"), 
-                    createRepositoryNode(), 
-                    org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "ACSN_RepositoryTree"), 
-                    org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "ACSD_RepositoryTree"));
+        if(svnClient == null) {
+            try {   
+                CmdLineClientAdapterFactory.setup();
+            } catch (SVNClientException ex) {
+                ex.printStackTrace();
+            }
+            svnClient = CmdLineClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
+        }
         
-        DialogDescriptor dd = new DialogDescriptor(panel, "test dialog");
+        SVNUrl svnURL = null;
+        try {
+            //svnURL = new SVNUrl("https://peterp.czech.sun.com/svnsecure"); 
+            svnURL = new SVNUrl("file:///data/subversion/");
+        } catch (MalformedURLException ex) {
+            ex.printStackTrace(); 
+            return;
+        }
+        
+        BrowserSelector selector = new BrowserSelector(svnClient, svnURL, true, true, false);        
+        
+        DialogDescriptor dd = new DialogDescriptor(selector.getBrowserPanel(), "test dialog");
         dd.setModal(true);
         dd.setValid(true);
 
@@ -33,7 +60,7 @@ public final class BrowserAction extends CallableSystemAction {
         dialog.setVisible(true);
         
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            SVNUrl[] urls = panel.getSelectedURLs();
+            SVNUrl[] urls = selector.getSelectedURLs();
             for (int i = 0; i < urls.length; i++) {
                 System.out.println(" url " + urls[i]);
             }
@@ -58,23 +85,5 @@ public final class BrowserAction extends CallableSystemAction {
     
     protected boolean asynchronous() {
         return false;
-    }
-    
-    private Node createRepositoryNode() {
-        ISVNClientAdapter svnClient;       
-        try {   
-            CmdLineClientAdapterFactory.setup();
-        } catch (SVNClientException ex) {
-            ex.printStackTrace();
-        }
-        svnClient = CmdLineClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
-        SVNUrl svnURL = null;
-        try {
-            svnURL = new SVNUrl("http://peterp.czech.sun.com/svn"); //file:///data/subversion/");
-        } catch (MalformedURLException ex) {
-            ex.printStackTrace(); 
-        }
-        
-        return RepositoryPathNode.create(svnClient, svnURL);
     }
 }

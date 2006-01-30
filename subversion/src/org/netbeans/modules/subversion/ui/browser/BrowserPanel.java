@@ -1,12 +1,15 @@
 /*
- * BrowserPanel.java
+ *                 Sun Public License Notice
  *
- * Created on January 24, 2006, 7:39 PM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.subversion.ui.browser;
 
 import java.awt.BorderLayout;
@@ -17,6 +20,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.tree.TreeSelectionModel;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -28,18 +32,16 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  */
-public class BrowserPanel extends JPanel implements ExplorerManager.Provider, VetoableChangeListener {
+public class BrowserPanel extends JPanel implements ExplorerManager.Provider{
 
-    private final ExplorerManager manager;
     private BrowserBeanTreeView treeView;
     private JLabel label;
+    private final ExplorerManager manager;
 
-    private static final SVNUrl[] EMPTY_URL = new SVNUrl[0];
-    
     /** Creates new form BrowserPanel */
-    public BrowserPanel() {
+    public BrowserPanel(String title, String browserAcsn, String browserAcsd, boolean singelSelectionOnly) {      
         manager = new ExplorerManager();
-        manager.addVetoableChangeListener(this);
+        
         setLayout(new BorderLayout(6, 6));
         
         treeView = new BrowserBeanTreeView();
@@ -49,40 +51,24 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider, Ve
         treeView.setPopupAllowed (false);
         treeView.setDefaultActionAllowed (false);
         treeView.setBorder(BorderFactory.createEtchedBorder());
-        add(java.awt.BorderLayout.CENTER, treeView);
-        
-        label = new JLabel();        
-        label.setLabelFor(treeView.getTree());        
-        add(label, BorderLayout.NORTH);
-        
-        setBorder(BorderFactory.createEmptyBorder(12,12,0,12));
-    }
-   
-    public void setup(String title, Node root, String browserAcsn, String browserAcsd) {
-        manager.setRootContext(root);
-      
         treeView.getAccessibleContext().setAccessibleDescription(browserAcsd);
-        treeView.getAccessibleContext().setAccessibleName(browserAcsn);            
+        treeView.getAccessibleContext().setAccessibleName(browserAcsn);   
+        if(singelSelectionOnly) {
+            treeView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        }
+        treeView.setPopupAllowed(true);
+        add(java.awt.BorderLayout.CENTER, treeView);
+        label = new JLabel();        
+        label.setLabelFor(treeView.getTree());
         label.setToolTipText(browserAcsd);
         Mnemonics.setLocalizedText(label, title);
-    }
-    
-    public Node[] getSelectedNodes() {
-        return manager.getSelectedNodes();
+        add(label, BorderLayout.NORTH);
+                 
+        setBorder(BorderFactory.createEmptyBorder(12,12,0,12));
     }
 
-    public SVNUrl[] getSelectedURLs() {
-        Node[] nodes = (Node[]) manager.getSelectedNodes();
-        
-        if(nodes.length == 0) {
-            return EMPTY_URL;
-        }
-        
-        SVNUrl[] ret = new SVNUrl[nodes.length];
-        for (int i = 0; i < nodes.length; i++) {
-            ret[i] = ((RepositoryPathNode) nodes[i]).getSVNUrl();
-        }
-        return ret;
+    public ExplorerManager getExplorerManager() {
+        return manager;
     }
     
     // XXX ist there some another way to get the tree?
@@ -90,59 +76,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider, Ve
         public JTree getTree() {
             return tree;
         } 
-    }
-    
-    public ExplorerManager getExplorerManager() {
-        return manager;
-    }    
+    } 
 
-    public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-        if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            
-            Node[] oldSelection =  (Node[]) evt.getOldValue();
-            if(oldSelection.length == 0) {
-                return;
-            }
-            
-            Node[] newSelection = (Node[]) evt.getNewValue();
-            boolean selectionChange = true;
-            for (int i = 0; i < oldSelection.length; i++) {
-                if(isInArray(oldSelection[i], newSelection)) {
-                    selectionChange = false;
-                    break;
-                }
-            }
-            if(selectionChange) {
-                return;
-            }
-            
-            // we anticipate that nothing went wrong and 
-            // all nodes in the old selection are at the same level
-            Node selectedNode = oldSelection[0]; 
-            
-            for (int i = 0; i < newSelection.length; i++) {
-                 if (getNodeLevel(selectedNode) != getNodeLevel(newSelection[i])) {
-                    throw new PropertyVetoException("", evt); // NOI18N
-                }
-            }
-        }
-    }
-    
-    private int getNodeLevel(Node node) {
-        int level = 0;
-        while(node!=null) {
-            node = node.getParentNode();
-            level++;
-        }
-        return level;
-    }
-    
-    private boolean isInArray(Node node, Node[] nodeArray) {
-        for (int i = 0; i < nodeArray.length; i++) {
-            if(node==nodeArray[i]) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 }

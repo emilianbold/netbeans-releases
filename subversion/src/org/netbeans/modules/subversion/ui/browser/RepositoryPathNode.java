@@ -13,11 +13,11 @@
 
 package org.netbeans.modules.subversion.ui.browser;
 
-import java.net.MalformedURLException;
+import java.awt.event.ActionEvent;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
@@ -26,13 +26,9 @@ import java.util.Collections;
 import java.util.List;
 import java.awt.*;
 import java.beans.BeanInfo;
-import java.util.ArrayList;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
+import org.openide.util.actions.SystemAction;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -43,56 +39,55 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  *
+ * XXX is there any way to run getLogMAssage in a "batch" for all child nodes at once?
  */
 public class RepositoryPathNode extends AbstractNode {
-
-    private final static Node[] EMPTY = new Node[0];
-    private final SVNUrl svnURL;
-
-    private RequestProcessor requestProcessor;
     
-    public static RepositoryPathNode create(ISVNClientAdapter svnClient, SVNUrl svnURL) {
-        RepositoryPathChildren kids = new RepositoryPathChildren(svnClient, svnURL);
-        Lookup lookup = Lookups.singleton(svnURL); 
-        RepositoryPathNode node = new RepositoryPathNode(kids, lookup, svnURL);
+    private final RepositoryPathEntry entry;
+    private final SVNClient client;
+    
+    interface SVNClient {
+        public void annotate(Node node, SVNUrl url); // XXX do we realy need this ???
+        public List listRepositoryPath(RepositoryPathEntry entry) throws SVNClientException;
+        public void createFolder(SVNUrl url, String name, String message);
+        public boolean isReadOnly();
+    }
 
-        node.setDisplayName(svnURL.getLastPathSegment() + " ...");
-        annotate(node, svnClient, svnURL);
+    static class RepositoryPathEntry {
+        private final SVNNodeKind svnNodeKind;
+        private final SVNUrl svnUrl;
+        RepositoryPathEntry (SVNUrl svnUrl, SVNNodeKind svnNodeKind) {
+            this.svnNodeKind = svnNodeKind;
+            this.svnUrl = svnUrl;
+        }
+        public SVNNodeKind getSvnNodeKind() {
+            return svnNodeKind;
+        }
+
+        public SVNUrl getSvnUrl() {
+            return svnUrl;
+        }
+    }    
+    
+    public static RepositoryPathNode create(SVNClient client, SVNUrl url) {
+        return create(client, new RepositoryPathEntry(url, SVNNodeKind.DIR));
+    }
+    
+    private static RepositoryPathNode create(SVNClient client, RepositoryPathEntry entry) {
+        RepositoryPathChildren kids = new RepositoryPathChildren(client, entry);
+        RepositoryPathNode node = new RepositoryPathNode(kids, client, entry);
+        node.setDisplayName(entry.getSvnUrl().getLastPathSegment()); // NOI18N
         return node;
     }
 
-    private static void annotate(final Node node, final ISVNClientAdapter svnClient, final SVNUrl svnURL) {
-        RequestProcessor requestProcessor = new RequestProcessor("BrowserPanel", 1, true);
-        Runnable r = new Runnable() {
-            public void run() {
-                ISVNLogMessage[] messages = null;
-                try {                
-                    messages = svnClient.getLogMessages(svnURL, SVNRevision.HEAD, SVNRevision.HEAD);
-                } catch (SVNClientException ex) {
-                    ex.printStackTrace();
-                    // XXX message error node ???
-                }
-                if(messages==null || messages.length == 0) { 
-                    // XXX message error node ???
-                } else {
-                    StringBuffer displaName = new StringBuffer();
-                    displaName.append(svnURL.getLastPathSegment());
-                    displaName.append(" [");
-                    displaName.append(messages[0].getRevision());
-                    displaName.append(" ");
-                    displaName.append(messages[0].getAuthor());
-                    displaName.append("]");
-                    node.setDisplayName(displaName.toString());
-                }
-            }
-        };
-        requestProcessor.post(r);
-    }
-    
-    private RepositoryPathNode(Children children, Lookup lookup, SVNUrl svnURL) {
-        super(children, lookup);
-        this.svnURL = svnURL;
-        setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/defaultFolder.gif"); // NOI18N
+    private RepositoryPathNode(Children children, SVNClient client, RepositoryPathEntry entry) {
+        super(children, Lookups.singleton(entry));    // XXX lookup ???     
+        this.entry = entry;
+        this.client = client;
+        
+        if(entry.getSvnNodeKind()==SVNNodeKind.DIR){
+            setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/defaultFolder.gif"); // NOI18N
+        }        
     }
 
     public Image getIcon(int type) {
@@ -104,7 +99,7 @@ public class RepositoryPathNode extends AbstractNode {
             img = super.getIcon(type);
         }
         return img;
-    }
+    }       
 
     public Image getOpenedIcon(int type) {
         Image img = null;
@@ -117,19 +112,30 @@ public class RepositoryPathNode extends AbstractNode {
         return img;
     }
 
-    SVNUrl getSVNUrl() {
-        return svnURL;
+    public Action[] getActions(boolean context) {
+        if(entry.getSvnNodeKind()==SVNNodeKind.DIR) {
+            return new Action[] { new CreateFolderAction() };
+        }
+        return new Action[0];
+    }
+
+    public RepositoryPathEntry getEntry() {
+        return entry;
+    }
+
+    public SVNClient getClient() {
+        return client;
     }
     
     private static class RepositoryPathChildren extends Children.Keys implements Runnable {
 
-        private final ISVNClientAdapter svnClient;
-        private final SVNUrl svnURL;
         private RequestProcessor.Task task;
-
-        public RepositoryPathChildren(ISVNClientAdapter svnClient, SVNUrl svnURL) {
-            this.svnClient = svnClient;
-            this.svnURL = svnURL;
+        private final RepositoryPathEntry pathEntry;
+        private final SVNClient client;
+        
+        public RepositoryPathChildren(SVNClient client, RepositoryPathEntry pathEntry) {
+            this.client = client;
+            this.pathEntry = pathEntry;
         }
 
         protected void addNotify() {
@@ -150,30 +156,18 @@ public class RepositoryPathNode extends AbstractNode {
             if (key instanceof Node) {
                 return new Node[] {(Node)key};
             }
-            SVNUrl newSVNURL;
-            try {                
-                newSVNURL = new SVNUrl(svnURL.toString() + // XXX HACK ???
-                                       "/" + // NOI18N
-                                       (String) key); 
-            } catch (MalformedURLException ex) {
-                ex.printStackTrace(); // should not happen
-                return EMPTY;
-            }
-            
-            Node pathNode = RepositoryPathNode.create(svnClient, newSVNURL);
+            Node pathNode = RepositoryPathNode.create(client, (RepositoryPathEntry) key);
             return new Node[] {pathNode};
         }
 
         public void run() {
-            List keys;
             try {
-                keys = listRepositoryPath(svnClient, svnURL);
+                setKeys(client.listRepositoryPath(pathEntry));
             } catch (SVNClientException ex) {
                 ex.printStackTrace(); // XXX notify ???
                 setKeys(Collections.singleton(errorNode(ex)));
                 return;
-            }
-            setKeys(keys);
+            }  
         }
 
         private Node errorNode(Exception ex) {
@@ -183,21 +177,25 @@ public class RepositoryPathNode extends AbstractNode {
             return errorNode;
         }
         
-        private List listRepositoryPath(ISVNClientAdapter svnClient, SVNUrl root) throws SVNClientException {
-            List ret = new ArrayList();
-            ISVNDirEntry[] dirEntry = null;
-            dirEntry = svnClient.getList(root, SVNRevision.HEAD, false);
-            
-            if(dirEntry==null) {
-                return null;
-            }
-            
-            for (int i = 0; i < dirEntry.length; i++) { 
-                if(dirEntry[i].getNodeKind()==SVNNodeKind.DIR) {
-                    ret.add(dirEntry[i].getPath());
-                }                
-            }
-            return ret;
-        }       
+        public void setKeys(List list) {
+            super.setKeys(list);
+        }
     }
+
+    private class CreateFolderAction extends AbstractAction {
+        public CreateFolderAction() {
+           putValue(Action.NAME, org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "CTL_Action_MakeDir"));
+        }
+        public void actionPerformed(ActionEvent e) {
+            client.createFolder(entry.getSvnUrl(), entry.getSvnUrl().getLastPathSegment() + "newdir", "message");
+//            try {
+//                ((RepositoryPathChildren)getChildren()).setKeys(client.listRepositoryPath(entry)); // XXX hm ...
+//            } catch (SVNClientException ex) {
+//                ex.printStackTrace();
+//            } // XXX hm ...
+        }
+        public boolean isEnabled() {
+            return !client.isReadOnly() && entry.getSvnNodeKind() == SVNNodeKind.DIR;
+        }
+    }    
 }
