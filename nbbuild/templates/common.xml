@@ -195,8 +195,14 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </copy>
     </target>
+    
+    <target name="verify-class-linkage" depends="jar,release">
+        <verifyclasslinkage jar="${cluster}/${module.jar}" failonerror="false">
+            <classpath refid="cp"/>
+        </verifyclasslinkage>
+    </target>
 
-    <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,module-xml-eager,javahelp,module-auto-deps,release">
+    <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,module-xml-eager,javahelp,module-auto-deps,release,verify-class-linkage">
         <genlist outputfiledir="${cluster}" module="${module.jar}">
             <fileset dir="${cluster}">
                 <patternset refid="module.files"/>

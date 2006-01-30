@@ -812,6 +812,9 @@ test-single - run a selected unit test only. Available in the IDE's menus.
 
 testuserdir-delete - deletes just the testing user directory (if not currently in use).
 
+verify-class-linkage [since 5.0u1] - checks for possible linkage errors in your module
+and its Class-Path extensions.
+
 SUITE PROPERTIES
 ----------------
 
