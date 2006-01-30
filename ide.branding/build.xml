@@ -147,6 +147,8 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 
   </target>
 
+  <target name="conditional-nbm" depends="nbm"/>
+  
   <target name="nbm" depends="netbeans" description="Create Localized NBM's">
     <mkdir dir="build"/>
     <makenbm 
