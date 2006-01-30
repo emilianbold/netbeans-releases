@@ -81,6 +81,7 @@ public class PalettePanel extends JPanel implements Scrollable {
             scrollPane = new JScrollPane( this );
             scrollPane.setBorder(null);
             scrollPane.addMouseListener( mouseListener() );
+            scrollPane.getViewport().setBackground( CategoryList.panelBackgroundColor );
         }
         return scrollPane;
     }
