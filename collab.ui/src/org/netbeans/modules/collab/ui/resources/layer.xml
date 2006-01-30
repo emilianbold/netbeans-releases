@@ -107,6 +107,7 @@ Microsystems, Inc. All Rights Reserved.
 
 	<folder name="Toolbars">
 		<folder name="Collaboration">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.resources.Bundle"/>
 		<!--
 			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.resources.Bundle"/>
 			<file name="ShowCollabExplorerAction.shadow">
