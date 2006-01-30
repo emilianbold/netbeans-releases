@@ -88,6 +88,7 @@ Controller, ActionListener {
         connectors.addAll (vmm.listeningConnectors ());
            
         // We temporary do not support these three connectors
+        // use --cp:a ${JDK_HOME}/lib/sa-jdi.jar to activate them if you uncomment this
         for (Iterator ci = connectors.iterator(); ci.hasNext(); ) {
             String name = ((Connector)ci.next()).name();
             int index = name.lastIndexOf('.');
