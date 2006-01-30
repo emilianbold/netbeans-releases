@@ -53,11 +53,6 @@ class CategoryButton extends JCheckBox implements Autoscroll {
             
         setFont( getFont().deriveFont( Font.BOLD ) );
         setMargin(new Insets(0, 3, 0, 3));
-        if( getBorder() instanceof CompoundBorder ) { // from BasicLookAndFeel
-            Dimension pref = getPreferredSize();
-            pref.height -= 3;
-            setPreferredSize( pref );
-        }
         setFocusPainted( false );
 
         setSelected( false );
@@ -67,6 +62,12 @@ class CategoryButton extends JCheckBox implements Autoscroll {
         setVerticalTextPosition( SwingConstants.CENTER );
 
         updateProperties();
+
+        if( getBorder() instanceof CompoundBorder ) { // from BasicLookAndFeel
+            Dimension pref = getPreferredSize();
+            pref.height -= 3;
+            setPreferredSize( pref );
+        }
 
         addActionListener( new ActionListener () {
             public void actionPerformed( ActionEvent e ) {
