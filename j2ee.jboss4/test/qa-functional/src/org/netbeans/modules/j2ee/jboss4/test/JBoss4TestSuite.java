@@ -68,7 +68,15 @@ public class JBoss4TestSuite extends NbTestCase {
         NbTestSuite suite = new NbTestSuite("JBoss4TestSuite");
         suite.addTest(new JBoss4TestSuite("addJBossDefaultInstance"));
         suite.addTest(new JBoss4TestSuite("startServer"));
+        suite.addTest(new JBoss4TestSuite("restartServer"));
         suite.addTest(new JBoss4TestSuite("stopServer"));
+        suite.addTest(new JBoss4TestSuite("startDebugServer"));
+        suite.addTest(new JBoss4TestSuite("restartServer"));
+        suite.addTest(new JBoss4TestSuite("stopServer"));;
+        suite.addTest(new JBoss4TestSuite("deployWebModule"));;
+        suite.addTest(new JBoss4TestSuite("stopServer"));;
+        suite.addTest(new JBoss4TestSuite("deployEjbModule"));;
+        suite.addTest(new JBoss4TestSuite("stopServer"));;
         suite.addTest(new JBoss4TestSuite("removeJBossInstance"));
         return suite;
     }
@@ -151,23 +159,26 @@ public class JBoss4TestSuite extends NbTestCase {
         }
     }
     
-//    public void startServerDebug() {
-//        try {
-//            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
-//
-//            inst.refresh();
-//
-//            ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
-//            inst.startDebug(ui);
-//
-//            sleep();
-//
-//            if(!inst.isReallyRunning())
-//                throw new Exception("JBoss4 server start debug failed");
-//        } catch(Exception e) {
-//            fail(e.getMessage());
-//        }
-//    }
+    public void startDebugServer() {
+        try {
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
+            
+            if(inst.isRunning())
+                return;
+            
+            ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
+            inst.startDebug(ui);
+            
+            sleep();
+            
+            if(!inst.isRunning())
+                throw new Exception("JBoss4 server start debug failed");
+            
+            sleep();
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+    }
     
     public void stopServer() {
         try {
@@ -190,26 +201,26 @@ public class JBoss4TestSuite extends NbTestCase {
         }
     }
     
-//    public void restartServer() {
-//        try {
-//            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
-//
-//            inst.refresh();
-//
-//            if(!inst.isReallyRunning())
-//                return;
-//
-//            ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
-//            inst.restart(ui);
-//
-//            sleep();
-//
-//            if(!inst.isReallyRunning())
-//                throw new Exception("JBoss4 server stop failed");
-//        } catch(Exception e) {
-//            fail(e.getMessage());
-//        }
-//    }
+    public void restartServer() {
+        try {
+            ServerInstance inst = ServerRegistry.getInstance().getServerInstance(URL);
+            
+            if(!inst.isRunning())
+                return;
+            
+            ProgressUI ui = new ProgressUI(DISPLAY_NAME, true);
+            inst.restart(ui);
+            
+            sleep();
+            
+            if(!inst.isRunning())
+                throw new Exception("JBoss4 server stop failed");
+            
+            sleep();
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+    }
     
     public void deployWebModule() {
         try {
@@ -250,6 +261,8 @@ public class JBoss4TestSuite extends NbTestCase {
                 throw new Exception("WEB Application deploy timeout");
             
             closeProject(WEB_PROJECT_NAME);
+            
+            sleep();
         } catch(Exception e) {
             fail(e.getMessage());
         }
@@ -294,6 +307,8 @@ public class JBoss4TestSuite extends NbTestCase {
                 throw new Exception("EJB Application deploy timeout");
             
             closeProject(EJB_PROJECT_NAME);
+            
+            sleep();
         } catch(Exception e) {
             fail(e.getMessage());
         }
