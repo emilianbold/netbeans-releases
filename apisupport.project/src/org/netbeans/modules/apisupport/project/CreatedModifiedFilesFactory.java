@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -34,11 +34,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
-import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -97,32 +94,32 @@ public final class CreatedModifiedFilesFactory {
             String layerPath, URL content,
             Map/*<String,String>*/ substitutionTokens, String localizedDisplayName, Map attrs) {
         return new CreateLayerEntry(cmf, project, layerPath, content,
-                substitutionTokens, localizedDisplayName, attrs);        
+                substitutionTokens, localizedDisplayName, attrs);
     }
     
-    static CreatedModifiedFiles.Operation manifestModification(NbModuleProject project, String section, 
+    static CreatedModifiedFiles.Operation manifestModification(NbModuleProject project, String section,
             Map/*<String, String>*/ attributes) {
-        CreatedModifiedFilesFactory.ModifyManifest retval = 
+        CreatedModifiedFilesFactory.ModifyManifest retval =
                 new CreatedModifiedFilesFactory.ModifyManifest(project);
         for (Iterator it = attributes.keySet().iterator(); it.hasNext();) {
             String name = (String) it.next();
             String value = (String) attributes.get(name);
             retval.setAttribute(name, value, section);
-        }                
+        }
         return retval;
-    }        
+    }
     
-    static CreatedModifiedFiles.Operation propertiesModification(NbModuleProject project, 
+    static CreatedModifiedFiles.Operation propertiesModification(NbModuleProject project,
             String propertyPath, Map/*<String, String>*/ properties) {
-        CreatedModifiedFilesFactory.ModifyProperties retval = 
+        CreatedModifiedFilesFactory.ModifyProperties retval =
                 new CreatedModifiedFilesFactory.ModifyProperties(project, propertyPath);
         for (Iterator it = properties.keySet().iterator(); it.hasNext();) {
             String name = (String) it.next();
             String value = (String) properties.get(name);
             retval.setProperty(name, value);
-        }                
+        }
         return retval;
-    }        
+    }
     
     
     public static abstract class OperationBase implements CreatedModifiedFiles.Operation {
@@ -181,7 +178,7 @@ public final class CreatedModifiedFilesFactory {
             }
             return createdPaths;
         }
-
+        
         protected SortedSet/*<String>*/ getInvalidPathsSet() {
             if (invalidPaths == null) {
                 invalidPaths = new TreeSet();
@@ -382,42 +379,21 @@ public final class CreatedModifiedFilesFactory {
         
         private String codeNameBase;
         private int releaseVersion;
-        private SpecificationVersion version;
+        private SpecificationVersion specVersion;
         private boolean useInCompiler;
         
         public AddModuleDependency(NbModuleProject project, String codeNameBase,
-                int releaseVersion, SpecificationVersion version, boolean useInCompiler) {
+                int releaseVersion, SpecificationVersion specVersion, boolean useInCompiler) {
             super(project);
             this.codeNameBase = codeNameBase;
             this.releaseVersion = releaseVersion;
-            this.version = version;
+            this.specVersion = specVersion;
             this.useInCompiler = useInCompiler;
             getModifiedPathsSet().add("nbproject/project.xml"); // NOI18N
         }
         
         public void run() throws IOException {
-            ModuleEntry me = getProject().getModuleList().getEntry(codeNameBase);
-            // XXX this should rather probably be an IAE in AMD's constructor?
-            assert me != null : "Cannot find module with the given codeNameBase (" + // NOI18N
-                    codeNameBase + ") in the project's universe"; // NOI18N
-            
-            ProjectXMLManager pxm = new ProjectXMLManager(getProject());
-            
-            // firstly check if the dependency is already not there
-            Set currentDeps = pxm.getDirectDependencies();
-            for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
-                ModuleDependency md = (ModuleDependency) it.next();
-                if (codeNameBase.equals(md.getModuleEntry().getCodeNameBase())) {
-                    Util.err.log(ErrorManager.INFORMATIONAL, codeNameBase + " already added"); // NOI18N
-                    return;
-                }
-            }
-            
-            ModuleDependency md = new ModuleDependency(me,
-                    releaseVersion == -1 ? me.getReleaseVersion() : String.valueOf(releaseVersion),
-                    version == null ? me.getSpecificationVersion() : version.toString(),
-                    useInCompiler, false);
-            pxm.addDependency(md);
+            Util.addDependency(getProject(), codeNameBase, releaseVersion, specVersion, useInCompiler);
             // XXX consider this carefully
             ProjectManager.getDefault().saveProject(getProject());
         }
@@ -546,7 +522,7 @@ public final class CreatedModifiedFilesFactory {
     }
     
     private static final class LayerModifications implements CreatedModifiedFiles.Operation {
-
+        
         private final NbModuleProject project;
         private final CreatedModifiedFiles.LayerOperation op;
         private final Set/*<String>*/ externalFiles;
@@ -600,7 +576,7 @@ public final class CreatedModifiedFilesFactory {
         }
         
     }
-
+    
     /**
      * Operation for making changes in manifest
      */
@@ -609,7 +585,7 @@ public final class CreatedModifiedFilesFactory {
         private Map attributesToAdd;
         
         /**
-         * @param project 
+         * @param project
          */
         public ModifyManifest(final NbModuleProject project) {
             super(project);
@@ -630,7 +606,7 @@ public final class CreatedModifiedFilesFactory {
         /**
          * Adds requirement for modifying attribute. How attribute
          * will be modified depends on implementation of method {@link performModification}.
-         * @param name the attribute name 
+         * @param name the attribute name
          * @param value the new attribute value
          * @param section the name of the section or null for the main section
          */
@@ -642,12 +618,12 @@ public final class CreatedModifiedFilesFactory {
             }
             attribs.put(name, value);
         }
-
+        
         /**
-         * Creates section if doesn't exists and set all attributes 
-         * @param em EditableManifest where attribute represented by other 
+         * Creates section if doesn't exists and set all attributes
+         * @param em EditableManifest where attribute represented by other
          * parameters is going to be added
-         * @param name the attribute name 
+         * @param name the attribute name
          * @param value the new attribute value
          * @param section the name of the section to add it to, or null for the main section
          */
@@ -667,11 +643,11 @@ public final class CreatedModifiedFilesFactory {
                 String section = (String) sectionsIterator.next();
                 Map attributes = getAttributes(section);
                 assert attributes != null;
-
+                
                 for (Iterator namesIterator = attributes.keySet().iterator(); namesIterator.hasNext();) {
                     String name = (String) namesIterator.next();
                     String value = (String)attributes.get(name);
-                    performModification(em, name, value, (("null".equals(section)) ? null : section));
+                    performModification(em, name, value, (("null".equals(section)) ? null : section)); // NOI18N
                 }
             }
             
@@ -705,10 +681,10 @@ public final class CreatedModifiedFilesFactory {
             }
         }
     }
-
+    
     /**
      * Operation for making changes in properties
-     */    
+     */
     private  static class ModifyProperties extends CreatedModifiedFilesFactory.OperationBase {
         private Map properties;
         private final String propertyPath;
@@ -752,6 +728,6 @@ public final class CreatedModifiedFilesFactory {
             }
             return properties;
         }
-    }        
+    }
 }
 

@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.TestBase;
@@ -88,9 +88,9 @@ public class SourceForBinaryImplTest extends TestBase {
                 suiteDir, // suite directory
                 null,
                 new File[] { FileUtil.toFile(yyJar)} );
-        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
-        cmf.add(cmf.addModuleDependency("yy"));
-        cmf.run();
+        
+        Util.addDependency(project, "yy");
+        ProjectManager.getDefault().saveProject(project);
         
         URL wrappedJar = Util.urlForJar(new File(wrapperDirF, "release/modules/ext/yy.jar"));
         assertEquals("no sources for wrapper", 0, SourceForBinaryQuery.findSourceRoots(wrappedJar).getRoots().length);

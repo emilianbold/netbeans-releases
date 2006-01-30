@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,6 +56,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
@@ -96,8 +97,8 @@ public final class Util {
             if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
                 Element el = (Element)l.item(i);
                 if ((namespace == null && name.equals(el.getTagName())) ||
-                    (namespace != null && name.equals(el.getLocalName()) &&
-                                          namespace.equals(el.getNamespaceURI()))) {
+                        (namespace != null && name.equals(el.getLocalName()) &&
+                        namespace.equals(el.getNamespaceURI()))) {
                     if (result == null) {
                         result = el;
                     } else {
@@ -378,7 +379,7 @@ public final class Util {
                         Iterator it = NbBundle.getLocalizingSuffixes();
                         while (it.hasNext()) {
                             String infix = (String) it.next();
-                            File variant = new File(binaryProject.getParentFile(), "locale" + File.separatorChar + base + infix + suffix);
+                            File variant = new File(binaryProject.getParentFile(), "locale" + File.separatorChar + base + infix + suffix); // NOI18N
                             if (variant.isFile()) {
                                 JarFile jf = new JarFile(variant);
                                 extraJarFiles.add(jf);
@@ -532,7 +533,7 @@ public final class Util {
         return javadocURLs == null ? null : findJavadocURL(
                 dep.getModuleEntry().getCodeNameBase().replace('.', '-'), javadocURLs);
     }
-
+    
     /**
      * Find javadoc URL for the given module dependency using javadoc roots of
      * the given platform. May return <code>null</code>.
@@ -545,6 +546,70 @@ public final class Util {
     
     public static boolean isValidSFSPath(final String path) {
         return path.matches(SFS_VALID_PATH_RE);
+    }
+    
+    /**
+     * Delegates to {@link #addDependency(NbModuleProject, String, int,
+     * SpecificationVersion, boolean)}.
+     */
+    public static void addDependency(final NbModuleProject target,
+            final NbModuleProject dependency) throws IOException {
+        Util.addDependency(target, dependency.getCodeNameBase(), -1, null, true);
+    }
+    
+    /**
+     * Delegates to {@link #addDependency(NbModuleProject, String, int,
+     * SpecificationVersion, boolean)}.
+     */
+    public static void addDependency(final NbModuleProject target,
+            final String codeNameBase) throws IOException {
+        Util.addDependency(target, codeNameBase, -1, null, true);
+    }
+    
+    /**
+     * Makes <code>target</code> project to be dependend on the given
+     * <code>dependency</code> project. I.e. adds new &lt;module-dependency&gt;
+     * element into target's <em>project.xml</em>. If such a dependency already
+     * exists the method does nothing.
+     * <p>
+     * Note that the method does <strong>not</strong> save the
+     * <code>target</code> project. You need to do so explicitly (see {@link
+     * ProjectManager#saveProject}).
+     *
+     * @param codeNameBase codename base.
+     * @param releaseVersion release version, if -1 will be taken from the
+     *        entry found in platform.
+     * @param version {@link SpecificationVersion specification version}, if
+     *        <code>null</code>, will be taken from the entry found in the
+     *        module's target platform.
+     * @param useInCompiler whether this this module needs a
+     *        <code>dependency</code> module at a compile time.
+     */
+    public static void addDependency(final NbModuleProject target,
+            final String codeNameBase, final int releaseVersion,
+            final SpecificationVersion version, final boolean useInCompiler) throws IOException {
+        
+        ModuleEntry me = target.getModuleList().getEntry(codeNameBase);
+        assert me != null : "Cannot find module with the given codeNameBase (" + // NOI18N
+                codeNameBase + ") in the project's universe"; // NOI18N
+        
+        ProjectXMLManager pxm = new ProjectXMLManager(target);
+        
+        // firstly check if the dependency is already not there
+        Set currentDeps = pxm.getDirectDependencies();
+        for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
+            ModuleDependency md = (ModuleDependency) it.next();
+            if (codeNameBase.equals(md.getModuleEntry().getCodeNameBase())) {
+                Util.err.log(ErrorManager.INFORMATIONAL, codeNameBase + " already added"); // NOI18N
+                return;
+            }
+        }
+        
+        ModuleDependency md = new ModuleDependency(me,
+                releaseVersion == -1 ? me.getReleaseVersion() : String.valueOf(releaseVersion),
+                version == null ? me.getSpecificationVersion() : version.toString(),
+                useInCompiler, false);
+        pxm.addDependency(md);
     }
     
     private static URL findJavadocURL(final String cnbdashes, final URL[] roots) {
