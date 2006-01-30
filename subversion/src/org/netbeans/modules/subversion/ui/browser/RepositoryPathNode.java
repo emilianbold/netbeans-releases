@@ -14,6 +14,7 @@
 package org.netbeans.modules.subversion.ui.browser;
 
 import java.awt.event.ActionEvent;
+import org.openide.ErrorManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -32,22 +33,17 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
- * Represents a path in repository, its children
- * subfolders.
- *
- * <p>Lookup contains a string identifing represented url.
+ * Represents a path in the repository.
  *
  * @author Tomas Stupka
  *
- * XXX is there any way to run getLogMAssage in a "batch" for all child nodes at once?
  */
 public class RepositoryPathNode extends AbstractNode {
     
     private final RepositoryPathEntry entry;
     private final SVNClient client;
     
-    interface SVNClient {
-        public void annotate(Node node, SVNUrl url); // XXX do we realy need this ???
+    interface SVNClient {        
         public List listRepositoryPath(RepositoryPathEntry entry) throws SVNClientException;
         public void createFolder(SVNUrl url, String name, String message);
         public boolean isReadOnly();
@@ -81,19 +77,19 @@ public class RepositoryPathNode extends AbstractNode {
     }
 
     private RepositoryPathNode(Children children, SVNClient client, RepositoryPathEntry entry) {
-        super(children, Lookups.singleton(entry));    // XXX lookup ???     
+        super(children);
         this.entry = entry;
         this.client = client;
         
         if(entry.getSvnNodeKind()==SVNNodeKind.DIR){
-            setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/defaultFolder.gif"); // NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/defaultFolder.gif");       // NOI18N
         }        
     }
 
     public Image getIcon(int type) {
         Image img = null;
         if (type == BeanInfo.ICON_COLOR_16x16) {
-            img = (Image) UIManager.get("Nb.Explorer.Folder.icon");  // NOI18N
+            img = (Image) UIManager.get("Nb.Explorer.Folder.icon");                                         // NOI18N
         }
         if (img == null) {
             img = super.getIcon(type);
@@ -104,7 +100,7 @@ public class RepositoryPathNode extends AbstractNode {
     public Image getOpenedIcon(int type) {
         Image img = null;
         if (type == BeanInfo.ICON_COLOR_16x16) {
-            img = (Image) UIManager.get("Nb.Explorer.Folder.openedIcon");  // NOI18N
+            img = (Image) UIManager.get("Nb.Explorer.Folder.openedIcon");                                   // NOI18N
         }
         if (img == null) {
             img = super.getIcon(type);
@@ -164,7 +160,7 @@ public class RepositoryPathNode extends AbstractNode {
             try {
                 setKeys(client.listRepositoryPath(pathEntry));
             } catch (SVNClientException ex) {
-                ex.printStackTrace(); // XXX notify ???
+                org.openide.ErrorManager.getDefault().notify(ex);                
                 setKeys(Collections.singleton(errorNode(ex)));
                 return;
             }  
@@ -184,15 +180,12 @@ public class RepositoryPathNode extends AbstractNode {
 
     private class CreateFolderAction extends AbstractAction {
         public CreateFolderAction() {
-           putValue(Action.NAME, org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "CTL_Action_MakeDir"));
+           putValue(Action.NAME, org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "CTL_Action_MakeDir")); // NOI18N
         }
         public void actionPerformed(ActionEvent e) {
-            client.createFolder(entry.getSvnUrl(), entry.getSvnUrl().getLastPathSegment() + "newdir", "message");
-//            try {
-//                ((RepositoryPathChildren)getChildren()).setKeys(client.listRepositoryPath(entry)); // XXX hm ...
-//            } catch (SVNClientException ex) {
-//                ex.printStackTrace();
-//            } // XXX hm ...
+            client.createFolder(entry.getSvnUrl(), 
+                                entry.getSvnUrl().getLastPathSegment() + "newdir", // NOI18N // XXX new dir name ???
+                                "message");                                        // NOI18N // XXX message ???   
         }
         public boolean isEnabled() {
             return !client.isReadOnly() && entry.getSvnNodeKind() == SVNNodeKind.DIR;

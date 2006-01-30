@@ -71,12 +71,10 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider{
         return manager;
     }
     
-    // XXX ist there some another way to get the tree?
     private class BrowserBeanTreeView extends BeanTreeView {
         public JTree getTree() {
             return tree;
         } 
     } 
-
 
 }

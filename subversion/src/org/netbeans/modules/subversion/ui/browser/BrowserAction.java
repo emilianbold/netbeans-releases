@@ -44,7 +44,8 @@ public final class BrowserAction extends CallableSystemAction {
         SVNUrl svnURL = null;
         try {
             //svnURL = new SVNUrl("https://peterp.czech.sun.com/svnsecure"); 
-            svnURL = new SVNUrl("file:///data/subversion/");
+            svnURL = new SVNUrl("http://peterp.czech.sun.com/svn"); 
+            //svnURL = new SVNUrl("file:///data/subversion/");
         } catch (MalformedURLException ex) {
             ex.printStackTrace(); 
             return;
