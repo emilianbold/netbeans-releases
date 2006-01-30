@@ -13,13 +13,14 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.updatecenter;
 
-import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Data model used across the <em>New Update Center Wizard</em>.
@@ -28,7 +29,8 @@ import org.openide.WizardDescriptor;
 final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     static private String AUTOUPDATE_TYPES = "Services/AutoupdateType"; //NOI18N
-    static private String AUTOUPDATE_SERVICE_TYPE = "update_center.settings"; //NOI18N
+    static private String AUTOUPDATE_SERVICE_TYPE = "update_center"; //NOI18N
+    static private String AUTOUPDATE_SERVICE_TYPE_EXT = "settings"; //NOI18N
     static private String UC_LOCALIZING_BUNDLE = "SystemFileSystem.localizingBundle"; //NOI18N
 
     private CreatedModifiedFiles cmf;
@@ -51,22 +53,33 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         URL url = DataModel.class.getResource ("update_center.xml"); //NOI18N
         assert url != null : "File 'update_center.xml must exist in package " + getClass ().getPackage () + "!";
         
-        // XXX check if the name service type is free
-        cmf.add (cmf.createLayerEntry (AUTOUPDATE_TYPES + '/' + AUTOUPDATE_SERVICE_TYPE, url, null, null, null));
+        FileSystem layer = LayerUtils.layerForProject (getProject ()).layer (false);
+        String pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + AUTOUPDATE_SERVICE_TYPE + '.' + AUTOUPDATE_SERVICE_TYPE_EXT;
+        int sequence = 0;
+        if (layer != null) {
+            FileObject f;
+            do {
+                f = layer.findResource (pathToAutoUpdateType);
+                if (f != null) {
+                    pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + AUTOUPDATE_SERVICE_TYPE + '_' + ++sequence + '.' + AUTOUPDATE_SERVICE_TYPE_EXT;
+                }
+            } while (f != null);
+        }
+        cmf.add (cmf.createLayerEntry (pathToAutoUpdateType, url, null, null, null));
         
-        // XXX check of the url_key is free
-        String url_key = getProject ().getCodeNameBase ().replace ('.', '_') + "_update_center"; //NOI18N
-        cmf.add (cmf.createLayerAttribute (AUTOUPDATE_TYPES + '/' + AUTOUPDATE_SERVICE_TYPE, "url_key", url_key)); //NOI18N
-        cmf.add (cmf.createLayerAttribute (AUTOUPDATE_TYPES + '/' + AUTOUPDATE_SERVICE_TYPE, "enabled", Boolean.TRUE)); //NOI18N
+        String url_key_base = getProject ().getCodeNameBase ().replace ('.', '_') + '_' + AUTOUPDATE_SERVICE_TYPE; //NOI18N
+        String url_key = sequence == 0 ? url_key_base : url_key_base + '_' + sequence; // NOI18N
+        cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "url_key", url_key)); //NOI18N
+        cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "enabled", Boolean.TRUE)); //NOI18N
         
         // write into bundle
         ManifestManager mm = ManifestManager.getInstance(getProject ().getManifest (), false);
         String localizingBundle = mm.getLocalizingBundle ();
         localizingBundle = localizingBundle.substring (0, localizingBundle.indexOf ('.'));
         localizingBundle = localizingBundle.replace ('/', '.');
-        cmf.add (cmf.createLayerAttribute (AUTOUPDATE_TYPES + '/' + AUTOUPDATE_SERVICE_TYPE, UC_LOCALIZING_BUNDLE, localizingBundle));
+        cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, UC_LOCALIZING_BUNDLE, localizingBundle));
         
-        cmf.add (cmf.bundleKeyDefaultBundle (AUTOUPDATE_TYPES + '/' + AUTOUPDATE_SERVICE_TYPE, ucDisplayName));
+        cmf.add (cmf.bundleKeyDefaultBundle (pathToAutoUpdateType, ucDisplayName));
         cmf.add (cmf.bundleKeyDefaultBundle (url_key, ucUrl));
         
         return cmf;

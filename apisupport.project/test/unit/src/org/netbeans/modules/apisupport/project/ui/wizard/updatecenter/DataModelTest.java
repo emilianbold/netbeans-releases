@@ -42,7 +42,7 @@ public class DataModelTest extends LayerTestBase {
         project = TestBase.generateStandaloneModule (getWorkDir(), "module1");
     }
     
-    private void testAddUpdateCenter (String pathToSettingsFile) throws Exception {
+    private void testAddUpdateCenter (String pathToSettingsFile, String[] supposedContent) throws Exception {
         WizardDescriptor wd = new WizardDescriptor (new Panel [] {});
         wd.putProperty (ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
         DataModel data = new DataModel (wd);
@@ -61,6 +61,11 @@ public class DataModelTest extends LayerTestBase {
         
         cmf.run();
         
+        CreatedModifiedFilesTest.assertLayerContent(supposedContent,
+                new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml"));
+    }
+    
+    public void testAddUpdateCenterWithDefaultValues () throws Exception {
         String[] supposedContent = new String [] {
             "<filesystem>",
                 "<folder name=\"Services\">",
@@ -75,17 +80,31 @@ public class DataModelTest extends LayerTestBase {
             "</filesystem>"
         };
 
-        CreatedModifiedFilesTest.assertLayerContent(supposedContent,
-                new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml"));
-    }
-    
-    public void testAddUpdateCenterWithDefaultValues () throws Exception {
-        testAddUpdateCenter ("src/org/example/module1/resources/update_centerSettings.xml");
+        testAddUpdateCenter ("src/org/example/module1/resources/update_centerSettings.xml", supposedContent);
     }
     
     public void testAddUpdateCenterDouble () throws Exception {
+        String[] supposedContent = new String [] {
+            "<filesystem>",
+                "<folder name=\"Services\">",
+                    "<folder name=\"AutoupdateType\">",
+                        "<file name=\"update_center.settings\" url=\"update_centerSettings.xml\">",
+                            "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
+                            "<attr name=\"enabled\" boolvalue=\"true\"/>",
+                            "<attr name=\"url_key\" stringvalue=\"org_example_module1_update_center\"/>",
+                        "</file>",
+                        "<file name=\"update_center_1.settings\" url=\"update_center_1Settings.xml\">",
+                            "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
+                            "<attr name=\"enabled\" boolvalue=\"true\"/>",
+                            "<attr name=\"url_key\" stringvalue=\"org_example_module1_update_center_1\"/>",
+                        "</file>",
+                    "</folder>",
+                "</folder>",
+            "</filesystem>"
+        };
+
         testAddUpdateCenterWithDefaultValues ();
-        testAddUpdateCenter ("src/org/example/module1/resources/update_centerSettings_1.xml");
+        testAddUpdateCenter ("src/org/example/module1/resources/update_center_1Settings.xml", supposedContent);
     }
     
 }
