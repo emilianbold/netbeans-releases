@@ -395,7 +395,14 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
                 <pathelement location="nbantext.jar"/>
             </classpath>
         </taskdef>
-        <checklinks basedir="${netbeans.javadoc.dir}" checkexternal="${javadoc.check.external.links}" checkspaces="false" failonerror="true" >
+        <property name="javadoc.check.forbidden.links" value="true" />
+        <checklinks 
+        	basedir="${netbeans.javadoc.dir}" 
+          checkexternal="${javadoc.check.external.links}" 
+          checkforbidden="${javadoc.check.forbidden.links}" 
+          checkspaces="false" 
+          failonerror="true" 
+        >
             <include name="*/overview-summary.html"/>
             <include name="*/apichanges.html"/>
             <include name="*/architecture-summary.html"/>

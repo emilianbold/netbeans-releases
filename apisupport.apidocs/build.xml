@@ -37,7 +37,16 @@ Microsystems, Inc. All Rights Reserved.
             <!-- Stable only: -->
             <property name="config.javadoc.all" value="${config.javadoc.stable}"/>
             <property name="building.apisupport/apidocs" value="true"/><!-- avoid recursion -->
-            <property name="javadoc.skip.brokenlinks.check" value="true" />
+            
+            <!-- these modules do not have stable API, so we need to link
+              to them on website -->
+            <property name="javadoc.docs.org-netbeans-modules-editor-util" value="http://www.netbeans.org/download/dev/javadoc/org-netbeans-modules-editor-util/"/>
+            <property name="javadoc.docs.org-netbeans-modules-editor-lib" value="http://www.netbeans.org/download/dev/javadoc/org-netbeans-modules-editor-lib/"/>
+            <property name="javadoc.docs.org-netbeans-modules-editor" value="http://www.netbeans.org/download/dev/javadoc/org-netbeans-modules-editor/"/>
+            <!-- moreover we need to allow references to http://www.netbeans.org/download/dev/javadoc/
+              so skip forbidden links check
+            -->
+		        <property name="javadoc.check.forbidden.links" value="false" />
         </ant>
         <mkdir dir="${docs.dir}"/>
         <zip zipfile="${docs.zip}" compress="true">

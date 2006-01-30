@@ -39,6 +39,7 @@ public class CheckLinks extends MatchingTask {
     private File basedir;
     private boolean checkexternal = true;
     private boolean checkspaces = true;
+    private boolean checkforbidden = true;
     private List mappers = new LinkedList(); // List<Mapper>
     private boolean failOnError;
     private List filters = new ArrayList ();
@@ -55,6 +56,12 @@ public class CheckLinks extends MatchingTask {
      */
     public void setCheckspaces (boolean s) {
         checkspaces = s;
+    }
+
+    /** Allows to disable check for forbidden links.
+     */
+    public void setCheckforbidden(boolean s) {
+        checkforbidden = s;
     }
     
     /** Set to true, if you want the build to fail if a url is wrong.
@@ -100,7 +107,7 @@ public class CheckLinks extends MatchingTask {
             URI fileurl = file.toURI();
             log ("Scanning " + file, Project.MSG_VERBOSE);
             try {
-                scan(this, getLocation().toString(), "", fileurl, okurls, badurls, cleanurls, checkexternal, checkspaces, 1, mappers, filters);
+                scan(this, getLocation().toString(), "", fileurl, okurls, badurls, cleanurls, checkexternal, checkspaces, checkforbidden, 1, mappers, filters);
             } catch (IOException ioe) {
                 throw new BuildException("Could not scan " + file + ": " + ioe, ioe, getLocation());
             }
@@ -130,11 +137,11 @@ public class CheckLinks extends MatchingTask {
      *                2 - recurse
      * @param mappers a list of Mappers to apply to get source files from HTML files
      */
-    public static void scan(Task task, String referrer, String referrerLocation, URI u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, boolean checkspaces, int recurse, List mappers) throws IOException {
-        scan (task, referrer, referrerLocation, u, okurls, badurls, cleanurls, checkexternal, checkspaces, recurse, mappers, Collections.EMPTY_LIST);
+    public static void scan(Task task, String referrer, String referrerLocation, URI u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, boolean checkspaces, boolean checkforbidden, int recurse, List mappers) throws IOException {
+        scan (task, referrer, referrerLocation, u, okurls, badurls, cleanurls, checkexternal, checkspaces, checkforbidden, recurse, mappers, Collections.EMPTY_LIST);
     }
     
-    private static void scan(Task task, String referrer, String referrerLocation, URI u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, boolean checkspaces, int recurse, List mappers, List filters) throws IOException {
+    private static void scan(Task task, String referrer, String referrerLocation, URI u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, boolean checkspaces, boolean checkforbidden, int recurse, List mappers, List filters) throws IOException {
         //task.log("scan: u=" + u + " referrer=" + referrer + " okurls=" + okurls + " badurls=" + badurls + " cleanurls=" + cleanurls + " recurse=" + recurse, Project.MSG_DEBUG);
         if (okurls.contains(u) && recurse == 0) {
             // Yes it is OK.
@@ -166,7 +173,7 @@ public class CheckLinks extends MatchingTask {
             return;
         }
 
-        {
+        if (checkforbidden) {
             Iterator it = filters.iterator ();
             while (it.hasNext ()) {
                 Filter f = (Filter)it.next ();
@@ -307,7 +314,7 @@ public class CheckLinks extends MatchingTask {
                 Map.Entry entry = (Map.Entry)it.next();
                 URI other = (URI)entry.getKey();
                 String location = (String)entry.getValue();
-                scan(task, basepath, location, other, okurls, badurls, cleanurls, checkexternal, checkspaces, recurse == 1 ? 0 : 2, mappers, filters);
+                scan(task, basepath, location, other, okurls, badurls, cleanurls, checkexternal, checkspaces, checkforbidden, recurse == 1 ? 0 : 2, mappers, filters);
             }
         }
     }

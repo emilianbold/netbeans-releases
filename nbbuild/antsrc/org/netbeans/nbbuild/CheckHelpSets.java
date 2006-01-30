@@ -105,7 +105,7 @@ public class CheckHelpSets extends Task {
                 throw new BuildException("Bogus map ID: " + id.id, new Location(hsfile.getAbsolutePath()));
             }
             log("Checking ID " + id.id, Project.MSG_VERBOSE);
-            CheckLinks.scan(this, id.id, "", new URI(u.toExternalForm()), okurls, badurls, cleanurls, false, false, 2, Collections.EMPTY_LIST);
+            CheckLinks.scan(this, id.id, "", new URI(u.toExternalForm()), okurls, badurls, cleanurls, false, false, false, 2, Collections.EMPTY_LIST);
         }
     }
     
