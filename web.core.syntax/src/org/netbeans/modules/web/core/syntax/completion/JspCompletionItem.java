@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -415,7 +415,7 @@ public class JspCompletionItem {
         }
         
         public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            return substituteText(c, offset, len, "%@" + getItemText() + " %>", 2);    // NOI18N
+            return substituteText(c, offset, len, "%@ " + getItemText() + "  %>", 3);    // NOI18N
         }
         
         public boolean substituteCommonText( JTextComponent c, int offset, int len, int subLen ) {
