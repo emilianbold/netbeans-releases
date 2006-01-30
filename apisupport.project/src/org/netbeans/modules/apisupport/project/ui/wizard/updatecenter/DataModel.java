@@ -30,15 +30,13 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     static private String AUTOUPDATE_TYPES = "Services/AutoupdateType"; //NOI18N
     static private String AUTOUPDATE_SERVICE_TYPE = "update_center.settings"; //NOI18N
     static private String UC_LOCALIZING_BUNDLE = "SystemFileSystem.localizingBundle"; //NOI18N
-    static private String UC_ICON = "SystemFileSystem.icon"; //NOI18N
 
     private CreatedModifiedFiles cmf;
     
-    // third panel data (Name, Icon, and Location)
+    // third panel data (Name, and Location)
     private String ucUrl;
     private String ucDisplayName;
-    private String ucIconPath;
-    
+
     // helper
     private String bundlePath;
     
@@ -68,20 +66,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         localizingBundle = localizingBundle.replace ('/', '.');
         cmf.add (cmf.createLayerAttribute (AUTOUPDATE_TYPES + '/' + AUTOUPDATE_SERVICE_TYPE, UC_LOCALIZING_BUNDLE, localizingBundle));
         
-        // handle icon
-        if (getUpdateCenterIconPath () != null && new File (getUpdateCenterIconPath ()).exists()) {
-            String relativeIconPath = addCreateIconOperation (cmf, getUpdateCenterIconPath ());
-            URL iconUrl = null;
-            try {
-                iconUrl = new URL ("nbresloc:/" + relativeIconPath); // NOI18N
-            } catch (MalformedURLException ex) {
-                assert false : ex;
-            }
-            if (iconUrl != null) {
-                cmf.add (cmf.createLayerAttribute (AUTOUPDATE_TYPES + '/' + AUTOUPDATE_SERVICE_TYPE, UC_ICON, iconUrl));
-            }
-        }
-        
         cmf.add (cmf.bundleKeyDefaultBundle (AUTOUPDATE_TYPES + '/' + AUTOUPDATE_SERVICE_TYPE, ucDisplayName));
         cmf.add (cmf.bundleKeyDefaultBundle (url_key, ucUrl));
         
@@ -106,14 +90,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     String getUpdateCenterDisplayName () {
         return ucDisplayName != null ? ucDisplayName : ""; //NOI18N
-    }
-    
-    void setUpdateCenterIconPath (String iconPath) {
-        this.ucIconPath = iconPath;
-    }
-    
-    String getUpdateCenterIconPath () {
-        return ucIconPath != null ? ucIconPath : ""; //NOI18N
     }
     
 }
