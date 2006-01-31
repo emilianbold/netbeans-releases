@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,6 @@ package org.netbeans.api.project;
 
 import java.io.IOException;
 import java.lang.ref.Reference;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -233,6 +232,7 @@ public final class ProjectManager {
                         Project p = createProject(projectDirectory);
                         if (ERR.isLoggable(ERR_LVL)) {
                             ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": created new project");
+                            Thread.dumpStack();
                         }
                         synchronized (dir2Proj) {
                             dir2Proj.notifyAll();
@@ -448,6 +448,9 @@ public final class ProjectManager {
         
         public void markModified() {
             assert p != null;
+            if (ERR.isLoggable(ERR_LVL)) {
+                ERR.log(ERR_LVL, "markModified(" + p.getProjectDirectory()+ ")");
+            }
             mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
                     if (!proj2Factory.containsKey(p)) {
@@ -535,6 +538,9 @@ public final class ProjectManager {
                     if (modifiedProjects.contains(p)) {
                         ProjectFactory f = (ProjectFactory)proj2Factory.get(p);
                         f.saveProject(p);
+                        if (ERR.isLoggable(ERR_LVL)) {
+                            ERR.log(ERR_LVL, "saveProject(" + p.getProjectDirectory()+ ")");
+                        }
                         modifiedProjects.remove(p);
                     }
                     return null;
@@ -560,6 +566,9 @@ public final class ProjectManager {
                         ProjectFactory f = (ProjectFactory)proj2Factory.get(p);
                         assert f != null : p;
                         f.saveProject(p);
+                        if (ERR.isLoggable(ERR_LVL)) {
+                            ERR.log(ERR_LVL, "saveProject(" + p.getProjectDirectory()+ ")");
+                        }
                         it.remove();
                     }
                     return null;
