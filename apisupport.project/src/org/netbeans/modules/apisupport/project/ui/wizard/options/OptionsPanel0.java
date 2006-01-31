@@ -77,19 +77,23 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
     }
     
     private void updateData() {
-        int errCode = 0;
+        int retCode = 0;
         if (AdvancedButton.isSelected()) {
             assert !OptinsCategoryButton.isSelected();
-            errCode = data.setDataForAdvanced(displayNameField1.getText(), tooltipField1.getText());
+            retCode = data.setDataForAdvanced(displayNameField1.getText(), tooltipField1.getText());
         } else {
             assert OptinsCategoryButton.isSelected();
-            errCode = data.setDataForOptionCategory(titleField.getText(), descriptionField.getText(),
+            retCode = data.setDataForOptionCategory(titleField.getText(), descriptionField.getText(),
                     categoryNameField.getText(), iconField.getText());
         }
-        if (errCode == 0) {
+        if (data.isSuccesCode(retCode)) {
             setErrorMessage(null);
+        } else if (data.isErrorCode(retCode)) {
+            setErrorMessage(data.getErrorMessage(retCode));
+        }  else if (data.isWarningCode(retCode)) {
+            setWarningMessage(data.getWarningMessage(retCode));
         } else {
-            setErrorMessage(data.getErrorMessage(errCode));
+            assert false : retCode;
         }
     }
     

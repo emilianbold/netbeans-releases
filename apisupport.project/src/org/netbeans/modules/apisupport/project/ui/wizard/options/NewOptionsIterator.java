@@ -15,15 +15,18 @@ package org.netbeans.modules.apisupport.project.ui.wizard.options;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -114,7 +117,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
             this.advanced = true;
             this.displayName = displayName;
             this.tooltip = tooltip;
-            return getErrorCode();
+            return getCheckCode();
         }
         
         int setDataForOptionCategory(final String title, final String description,
@@ -124,7 +127,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
             this.description = description;
             this.categoryName = categoryName;
             this.iconPath = iconPath;
-            return getErrorCode();
+            return getCheckCode();
         }
         
         
@@ -140,7 +143,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
         
         public int setPackage(String packageName) {
             setPackageName(packageName);
-            int errCode = getErrorCode();
+            int errCode = getCheckCode();
             if (errCode == 0) {
                 generateCreatedModifiedFiles();
             }
@@ -205,7 +208,8 @@ public class NewOptionsIterator extends BasicWizardIterator {
          * getErrorCode() and getErrorMessage are tigthly coupled. Moreover the
          * order should depend on ordering of textfields in panels.
          */
-        static String getErrorMessage(int errCode) {
+        String getErrorMessage(int errCode) {
+            assert errCode > 0;
             String field = null;
             switch(errCode) {
                 case 1:
@@ -233,11 +237,54 @@ public class NewOptionsIterator extends BasicWizardIterator {
             assert field != null : errCode;
             field = NbBundle.getMessage(NewOptionsIterator.class, field);
             assert field != null : errCode;            
-            return NbBundle.getMessage(NewOptionsIterator.class, "ERR_FieldInvalid",field);//NOI18N
+            return (errCode > 0) ? 
+                NbBundle.getMessage(NewOptionsIterator.class, "ERR_FieldInvalid",field) : "";//NOI18N
+        }
+
+        /**
+         * getErrorCode() and getWarningMessage are tigthly coupled. Moreover the
+         * order should depend on ordering of textfields in panels.
+         */
+        String getWarningMessage(int warningCode) {
+            assert warningCode < 0;
+            String field = null;
+            switch(warningCode) {
+                case -7:
+                    File icon = new File(getIconPath());
+                    assert icon.exists();
+                    ImageIcon ic = null;                    
+                    try {
+                        ic = new ImageIcon(icon.toURL());
+                        assert ic.getIconHeight() != 32;
+                        assert ic.getIconWidth() != 32;
+                    } catch (MalformedURLException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                        assert false;
+                        return "";//NOI18N
+                    }
+                    
+                    return NbBundle.getMessage(NewOptionsIterator.class, "MSG_IconSize",//NOI18N
+                            Integer.toString(ic.getIconWidth()),Integer.toString(ic.getIconHeight()));
+            }
+            assert false : warningCode;
+            return "";//NOI18N
+        }
+        
+
+        static boolean isSuccesCode(int code) {
+            return code == 0;
+        }
+        
+        static boolean isErrorCode(int code) {
+            return code > 0;
+        }
+        
+        static boolean isWarningCode(int code) {
+            return code < 0;
         }
         
         
-        private int getErrorCode() {
+        private int getCheckCode() {
             if (advanced) {
                 int emptyCode = checkIfEmpty(new String[] {getDisplayName(), getTooltip(), getAdvancedOptionClassName()});
                 if (emptyCode != 0) {
@@ -251,6 +298,16 @@ public class NewOptionsIterator extends BasicWizardIterator {
                     File icon = new File(getIconPath());
                     if (!icon.exists()) {
                         return 7;
+                    } else {
+                        ImageIcon ic = null;
+                        try {
+                            ic = new ImageIcon(icon.toURL());
+                            if (ic.getIconHeight() != 32 || ic.getIconWidth() != 32) {
+                                return -7;
+                            }
+                        } catch (MalformedURLException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
                     }
                 }
             }
@@ -281,7 +338,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
         }
         
         private CreatedModifiedFiles generateCreatedModifiedFiles() {
-            assert getErrorCode() == 0;
+            assert getCheckCode() == 0;
             files = new CreatedModifiedFiles(getProject());
             generateFiles();
             generateBundleKeys();

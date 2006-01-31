@@ -41,6 +41,15 @@ public abstract class BasicVisualPanel extends JPanel {
     protected final void setErrorMessage(String errorMessage) {
         setErrorMessage(errorMessage, true);
     }
+
+    /**
+     * Set an warning message and makes panel to be valid. See {@link
+     * #setErrorMessage(String, boolean)} for more details.
+     */    
+    protected final void setWarningMessage(String errorMessage) {
+        setErrorMessage(null);
+        setErrorMessage(errorMessage, false);
+    }
     
     /**
      * Set an error message and eventually update panel's validity. If an
