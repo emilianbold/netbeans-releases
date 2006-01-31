@@ -17,10 +17,10 @@ import java.awt.Component;
 import java.io.CharConversionException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -62,7 +62,7 @@ public final class CustomizerComponentFactory {
             + NbBundle.getMessage(CustomizerComponentFactory.class, "MSG_InvalidPlatform")
             + "&gt;</font></html>"; // NOI18N
     
-    private CustomizerComponentFactory(final Project project) {
+    private CustomizerComponentFactory() {
         // don't allow instances
     }
     
@@ -111,10 +111,10 @@ public final class CustomizerComponentFactory {
      * Creates a list model for a set of module dependencies.
      * The dependencies will be sorted by module display name.
      */
-    static CustomizerComponentFactory.DependencyListModel createDependencyListModel(
+    static CustomizerComponentFactory.DependencyListModel createSortedDependencyListModel(
             final Set/*<ModuleDependency>*/ deps) {
         assert deps != null;
-        return new CustomizerComponentFactory.DependencyListModel(deps);
+        return new CustomizerComponentFactory.DependencyListModel(deps, true);
     }
     
     /**
@@ -122,16 +122,15 @@ public final class CustomizerComponentFactory {
      * The dependencies will be left in the order given.
      */
     static CustomizerComponentFactory.DependencyListModel createDependencyListModel(
-            final List/*<ModuleDependency>*/ deps) {
+            final Set/*<ModuleDependency>*/ deps) {
         assert deps != null;
-        return new CustomizerComponentFactory.DependencyListModel(deps);
+        return new CustomizerComponentFactory.DependencyListModel(deps, false);
     }
     
     static CustomizerComponentFactory.DependencyListModel getInvalidDependencyListModel() {
         if (INVALID_DEP_LIST_MODEL == null) {
-            Set s = new HashSet();
-            s.add(CustomizerComponentFactory.INVALID_PLATFORM);
-            INVALID_DEP_LIST_MODEL = createDependencyListModel(s);
+            INVALID_DEP_LIST_MODEL = createDependencyListModel(
+                    Collections.singleton(CustomizerComponentFactory.INVALID_PLATFORM));
         }
         return INVALID_DEP_LIST_MODEL;
     }
@@ -149,20 +148,20 @@ public final class CustomizerComponentFactory {
     
     static final class DependencyListModel extends AbstractListModel {
         
-        private final Collection/*<ModuleDependency>*/ currentDeps;
+        private final Set/*<ModuleDependency>*/ currentDeps;
         private Set/*<ModuleDependency>*/ addedDeps = new HashSet();
         private Set/*<ModuleDependency>*/ removedDeps = new HashSet();
         private Map/*<ModuleDependency, ModuleDependency>*/ editedDeps = new HashMap();
         
         private boolean changed;
         
-        DependencyListModel(Set/*<ModuleDependency>*/ deps) {
-            currentDeps = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
-            currentDeps.addAll(deps);
-        }
-        
-        DependencyListModel(List/*<ModuleDependency>*/ deps) {
-            currentDeps = deps;
+        DependencyListModel(Set/*<ModuleDependency>*/ deps, boolean sorted) {
+            if (sorted) {
+                currentDeps = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
+                currentDeps.addAll(deps);
+            } else {
+                currentDeps = deps;
+            }
         }
         
         public int getSize() {
@@ -178,14 +177,13 @@ public final class CustomizerComponentFactory {
         }
         
         void addDependency(ModuleDependency dep) {
-            int origSize = currentDeps.size();
-            currentDeps.add(dep);
-            boolean added = addedDeps.add(dep);
-            assert added : "It shouldnt be possible to add the same " + // NOI18N
-                    "module dependency twice!"; // NOI18N
-            removedDeps.remove(dep); // be sure it won't get removed
-            changed = true;
-            this.fireContentsChanged(this, 0, origSize);
+            if (!currentDeps.contains(dep)) {
+                int origSize = currentDeps.size();
+                currentDeps.add(dep);
+                removedDeps.remove(dep); // be sure it won't get removed
+                changed = true;
+                this.fireContentsChanged(this, 0, origSize);
+            }
         }
         
         void removeDependencies(Collection deps) {
@@ -210,7 +208,7 @@ public final class CustomizerComponentFactory {
         }
         
         Set/*<ModuleDependency>*/ getDependencies() {
-            return new HashSet(currentDeps);
+            return Collections.unmodifiableSet(currentDeps);
         }
         
         Set/*<ModuleDependency>*/ getRemovedDependencies() {

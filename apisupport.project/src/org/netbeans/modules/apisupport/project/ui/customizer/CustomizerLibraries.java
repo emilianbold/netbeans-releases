@@ -19,6 +19,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -30,6 +31,8 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -51,6 +54,10 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         super(props, CustomizerLibraries.class);
         initComponents();
         initAccessibility();
+        if (!getProperties().isSuiteComponent()) {
+            addLibrary.setVisible(false);
+            Mnemonics.setLocalizedText(addDepButton, getMessage("CTL_AddButton"));
+        }
         refresh();
         dependencyList.setCellRenderer(CustomizerComponentFactory.getDependencyCellRenderer(false));
         platformValue.addItemListener(new ItemListener() {
@@ -142,6 +149,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         modDepLabel = new javax.swing.JLabel();
         depButtonPanel = new javax.swing.JPanel();
         addDepButton = new javax.swing.JButton();
+        addLibrary = new javax.swing.JButton();
         removeDepButton = new javax.swing.JButton();
         space1 = new javax.swing.JLabel();
         editDepButton = new javax.swing.JButton();
@@ -175,7 +183,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
 
         depButtonPanel.setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(addDepButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_AddButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(addDepButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_AddDependency"));
         addDepButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addModuleDependency(evt);
@@ -186,6 +194,19 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         depButtonPanel.add(addDepButton, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(addLibrary, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_AddNewLibrary"));
+        addLibrary.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addLibraryActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        depButtonPanel.add(addLibrary, gridBagConstraints);
+
         org.openide.awt.Mnemonics.setLocalizedText(removeDepButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_RemoveButton"));
         removeDepButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -195,14 +216,14 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         depButtonPanel.add(removeDepButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.weighty = 1.0;
         depButtonPanel.add(space1, gridBagConstraints);
 
@@ -215,7 +236,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
         depButtonPanel.add(editDepButton, gridBagConstraints);
@@ -344,6 +365,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
         tokenButtonPanel.add(addTokenButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(removeTokenButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_RemoveButton_NoMnem"));
@@ -357,16 +379,32 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         tokenButtonPanel.add(removeTokenButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(tokenButtonPanel, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
+    
+    private void addLibraryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addLibraryActionPerformed
+        NbModuleProject project = UIUtil.runLibraryWrapperWizard(getProperties().getProject());
+        if (project != null) {
+            try {
+                getProperties().libraryWrapperAdded();
+                ModuleDependency dep = new ModuleDependency(
+                        getProperties().getModuleList().getEntry(project.getCodeNameBase()));
+                getDepListModel().addDependency(dep);
+            } catch (IOException e) {
+                assert false : e;
+            }
+        }
+    }//GEN-LAST:event_addLibraryActionPerformed
     
     private void javaPlatformButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaPlatformButtonActionPerformed
         PlatformsCustomizer.showCustomizer((JavaPlatform) javaPlatformCombo.getSelectedItem());
@@ -472,9 +510,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
             ModuleDependency[] newDeps = addPanel.getSelectedDependencies();
             for (int i = 0; i < newDeps.length; i++) {
-                if (!getDepListModel().getDependencies().contains(newDeps[i])) {
-                    getDepListModel().addDependency(newDeps[i]);
-                }
+                getDepListModel().addDependency(newDeps[i]);
                 dependencyList.setSelectedValue(newDeps[i], true);
             }
         }
@@ -484,6 +520,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addDepButton;
+    private javax.swing.JButton addLibrary;
     private javax.swing.JButton addTokenButton;
     private javax.swing.JPanel depButtonPanel;
     private javax.swing.JList dependencyList;

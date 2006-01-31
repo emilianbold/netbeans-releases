@@ -92,7 +92,7 @@ public class AddModuleFilterTest extends TestBase {
     }
     
     private void assertMatches(String text, String[] cnbs) {
-        List/*<ModuleDependency>*/ matches = filter.getMatches(text);
+        Set/*<ModuleDependency>*/ matches = filter.getMatches(text);
         Set/*<String>*/ matchedCNBs = new HashSet();
         Iterator it = matches.iterator();
         while (it.hasNext()) {

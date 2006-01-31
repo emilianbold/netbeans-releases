@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.InputEvent;
@@ -23,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.Collator;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,17 +59,20 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
+import org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -582,6 +587,36 @@ public final class UIUtil {
             g.dispose();
             return bImage;
         }
+    }
+    
+    public static NbModuleProject runLibraryWrapperWizard(final Project suiteProvider) {
+        NewNbModuleWizardIterator iterator = NewNbModuleWizardIterator.createLibraryModuleIterator(suiteProvider);
+        return UIUtil.runProjectWizard(iterator, "CTL_NewLibraryWrapperProject"); // NOI18N
+    }
+    
+    public static NbModuleProject runProjectWizard(
+            final NewNbModuleWizardIterator iterator, final String titleBundleKey) {
+        WizardDescriptor wd = new WizardDescriptor(iterator);
+        wd.setTitleFormat(new MessageFormat("{0}")); // NOI18N
+        wd.setTitle(NbBundle.getMessage(UIUtil.class, titleBundleKey));
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(wd);
+        dialog.setVisible(true);
+        dialog.toFront();
+        NbModuleProject project = null;
+        boolean cancelled = wd.getValue() != WizardDescriptor.FINISH_OPTION;
+        if (!cancelled) {
+            FileObject folder = iterator.getCreateProjectFolder();
+            try {
+                project = (NbModuleProject) ProjectManager.getDefault().findProject(folder);
+                OpenProjects.getDefault().open(new Project[] { project }, false);
+                if (wd.getProperty("setAsMain") == Boolean.TRUE) { // NOI18N
+                    OpenProjects.getDefault().setMainProject(project);
+                }
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        return project;
     }
     
     /**

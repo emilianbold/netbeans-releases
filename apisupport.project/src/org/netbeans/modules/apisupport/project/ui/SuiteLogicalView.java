@@ -13,14 +13,12 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
-import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -48,7 +46,6 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.WizardDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -287,7 +284,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         public void actionPerformed(ActionEvent evt) {
             NewNbModuleWizardIterator iterator = NewNbModuleWizardIterator.createSuiteComponentIterator(suite);
-            runProjectWizard(iterator, "CTL_NewModuleProject"); // NOI18N
+            UIUtil.runProjectWizard(iterator, "CTL_NewModuleProject"); // NOI18N
         }
         
     }
@@ -308,8 +305,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         }
         
         public void actionPerformed(ActionEvent evt) {
-            NewNbModuleWizardIterator iterator = NewNbModuleWizardIterator.createLibraryModuleIterator(suiteProvider);
-            NbModuleProject project = runProjectWizard(iterator, "CTL_NewLibraryWrapperProject"); // NOI18N
+            NbModuleProject project = UIUtil.runLibraryWrapperWizard(suiteProvider);
             if (project != null) {
                 try {
                     Util.addDependency(target, project);
@@ -320,30 +316,6 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             }
         }
         
-    }
-    
-    private static NbModuleProject runProjectWizard(final NewNbModuleWizardIterator iterator, final String titleBundleKey) {
-        WizardDescriptor wd = new WizardDescriptor(iterator);
-        wd.setTitleFormat(new MessageFormat("{0}")); // NOI18N
-        wd.setTitle(NbBundle.getMessage(SuiteLogicalView.class, titleBundleKey));
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(wd);
-        dialog.setVisible(true);
-        dialog.toFront();
-        NbModuleProject project = null;
-        boolean cancelled = wd.getValue() != WizardDescriptor.FINISH_OPTION;
-        if (!cancelled) {
-            FileObject folder = iterator.getCreateProjectFolder();
-            try {
-                project = (NbModuleProject) ProjectManager.getDefault().findProject(folder);
-                OpenProjects.getDefault().open(new Project[] { project }, false);
-                if (wd.getProperty("setAsMain") == Boolean.TRUE) { // NOI18N
-                    OpenProjects.getDefault().setMainProject(project);
-                }
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-        }
-        return project;
     }
     
     /** Represent one module (a suite component) node. */

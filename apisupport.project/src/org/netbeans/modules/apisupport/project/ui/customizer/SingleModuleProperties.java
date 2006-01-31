@@ -218,6 +218,11 @@ public final class SingleModuleProperties extends ModuleProperties {
         firePropertiesRefreshed();
     }
     
+    void libraryWrapperAdded() {
+        // presuambly we do not need to reset anything else
+        universeDependencies = null;
+    }
+    
     Map/*<String, String>*/ getDefaultValues() {
         return DEFAULTS;
     }
@@ -393,7 +398,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             if (isActivePlatformValid()) {
                 try {
                     dependencyListModel = new DependencyListModel(
-                            getProjectXMLManager().getDirectDependencies(getActivePlatform()));
+                            getProjectXMLManager().getDirectDependencies(getActivePlatform()), true);
                     // add listener and fire DEPENDENCIES_PROPERTY when deps are changed
                     dependencyListModel.addListDataListener(new ListDataListener() {
                         public void contentsChanged(ListDataEvent e) {
@@ -422,7 +427,7 @@ public final class SingleModuleProperties extends ModuleProperties {
      * Returns a set of available {@link ModuleDependency modules dependencies}
      * in the module's universe according to the currently selected {@link
      * #getActivePlatform() platform}.<p>
-     * 
+     *
      * <strong>Note:</strong> Don't call this method from EDT, since it may be
      * really slow. The {@link AssertionError} will be thrown if you try to do
      * so.
@@ -854,6 +859,16 @@ public final class SingleModuleProperties extends ModuleProperties {
     File evaluateFile(final String currentLicence) {
         String evaluated = getEvaluator().evaluate(currentLicence);
         return evaluated == null ? null : getHelper().resolveFile(evaluated);
+    }
+    
+    Project getProject() {
+        Project p = null;
+        try {
+            p = ProjectManager.getDefault().findProject(getHelper().getProjectDirectory());
+        } catch (IOException e) {
+            assert false : e;
+        }
+        return p;
     }
     
 }

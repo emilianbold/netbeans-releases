@@ -14,9 +14,8 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.text.Collator;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
@@ -49,7 +48,7 @@ final class AddModuleFilter {
     /**
      * Find matches for a search string.
      */
-    public List/*<ModuleDependency>*/ getMatches(String text) {
+    public Set/*<ModuleDependency>*/ getMatches(String text) {
         String textLC = text.toLowerCase(Locale.ENGLISH);
         Set/*<ModuleDependency>*/[] matches = new Set[3];
         for (int i = 0; i < matches.length; i++) {
@@ -80,7 +79,7 @@ final class AddModuleFilter {
                 matches[matchLevel].add(dep);
             }
         }
-        List result = new ArrayList();
+        Set result = new LinkedHashSet();
         for (int i = 0; i < matches.length; i++) {
             result.addAll(matches[i]);
         }

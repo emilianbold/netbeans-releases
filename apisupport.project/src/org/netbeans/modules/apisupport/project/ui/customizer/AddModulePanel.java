@@ -17,9 +17,7 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -153,7 +151,7 @@ public final class AddModulePanel extends JPanel {
                 final Set universeDeps = props.getUniverseDependencies(true, !nonApiDeps);
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        universeModules = CustomizerComponentFactory.createDependencyListModel(universeDeps);
+                        universeModules = CustomizerComponentFactory.createSortedDependencyListModel(universeDeps);
                         filterer = null;
                         moduleList.setModel(universeModules);
                         moduleList.setEnabled(true);
@@ -247,7 +245,7 @@ public final class AddModulePanel extends JPanel {
         } else {
             final Runnable compute = new Runnable() {
                 public void run() {
-                    final List/*<ModuleDependency>*/ matches = filterer.getMatches(text);
+                    final Set/*<ModuleDependency>*/ matches = filterer.getMatches(text);
                     filterTask = null;
                     Mutex.EVENT.readAccess(new Runnable() {
                         public void run() {
