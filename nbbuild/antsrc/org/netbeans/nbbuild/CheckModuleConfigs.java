@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -80,12 +80,15 @@ public final class CheckModuleConfigs extends Task {
         } catch (IOException e) {
             throw new BuildException("Could not write to " + masterProjectXml, e, getLocation());
         }
+        Set/*<String>*/ s;
+        /* Apparently wanted now?
         // Check that stable != daily-alpha-nbms:
-        Set/*<String>*/ s = new TreeSet((Set) configs.get("stable"));
+        s = new TreeSet((Set) configs.get("stable"));
         s.retainAll((Set) configs.get("daily-alpha-nbms"));
         if (!s.isEmpty()) {
             log(buildPropertiesFile + ": warning: stable and daily-alpha-nbms configs overlap: " + s);
         }
+        */
         /* This is not actually desired; just includes everything:
         // Check that sigtest <= javadoc:
         s = new TreeSet((Set) configs.get("sigtest"));
@@ -94,12 +97,14 @@ public final class CheckModuleConfigs extends Task {
             log(buildPropertiesFile + ": warning: sigtest config contains entries not in javadoc config: " + s);
         }
         */
+        /* This config is no more?
         // Check that platform-javadoc <= javadoc:
         s = new TreeSet((Set) configs.get("platform-javadoc"));
         s.removeAll((Set) configs.get("javadoc"));
         if (!s.isEmpty()) {
             log(buildPropertiesFile + ": warning: platform-javadoc config contains entries not in javadoc config: " + s);
         }
+        */
         // Check that javadoc <= stable + daily-alpha-nbms:
         s = new TreeSet((Set) configs.get("javadoc"));
         s.removeAll((Set) configs.get("stable"));
@@ -107,9 +112,10 @@ public final class CheckModuleConfigs extends Task {
         if (!s.isEmpty()) {
             log(buildPropertiesFile + ": warning: javadoc config contains entries not in stable and daily-alpha-nbms configs: " + s);
         }
+        /*
         // Check that platform-javadoc = javadoc where module in platform cluster:
-        Set/*<String>*/ platformJavadoc = (Set) configs.get("platform-javadoc");
-        Set/*<String>*/ platformClusterJavadoc = (Set) configs.get("javadoc");
+        Set/ *<String>* / platformJavadoc = (Set) configs.get("platform-javadoc");
+        Set/ *<String>* / platformClusterJavadoc = (Set) configs.get("javadoc");
         platformClusterJavadoc.retainAll((Set) clusters.get("nb.cluster.platform"));
         s = new TreeSet(platformJavadoc);
         s.removeAll(platformClusterJavadoc);
@@ -121,6 +127,7 @@ public final class CheckModuleConfigs extends Task {
         if (!s.isEmpty()) {
             log(buildPropertiesFile + ": warning: platform-javadoc config not equal to javadoc config restricted to platform cluster modules: " + s);
         }
+        */
         // Check that stable = modules in enumerated clusters:
         Set/*<String>*/ stable = (Set) configs.get("stable");
         s = new TreeSet(stable);
