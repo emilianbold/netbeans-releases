@@ -19,6 +19,7 @@ import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -207,7 +208,7 @@ public final class AddModulePanel extends JPanel {
                         doc.setCharacterAttributes(loc + start, filterTextLC.length(), match, true);
                         start = hit.toLowerCase(Locale.US).indexOf(filterTextLC, start + 1);
                     }
-                    doc.insertString(doc.getLength(), ";\n", (isEven ? even : null)); // NOI18N
+                    doc.insertString(doc.getLength(), "\n", (isEven ? even : null)); // NOI18N
                     isEven =! isEven;
                 }
             } else {
@@ -246,8 +247,7 @@ public final class AddModulePanel extends JPanel {
         } else {
             final Runnable compute = new Runnable() {
                 public void run() {
-                    final Set/*<ModuleDependency>*/ matches
-                            = new HashSet(filterer.getMatches(text));
+                    final List/*<ModuleDependency>*/ matches = filterer.getMatches(text);
                     filterTask = null;
                     Mutex.EVENT.readAccess(new Runnable() {
                         public void run() {
@@ -269,7 +269,7 @@ public final class AddModulePanel extends JPanel {
                 filterTask = RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         if (filterer == null) {
-                            filterer = new AddModuleFilter(universeModules.getDependencies());
+                            filterer = new AddModuleFilter(universeModules.getDependencies(), props.getCodeNameBase());
                             compute.run();
                         }
                     }

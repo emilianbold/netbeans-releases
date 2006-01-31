@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -107,10 +108,21 @@ public final class CustomizerComponentFactory {
     }
     
     /**
-     * Returns ListModel for the given <code>modules</code> set.
+     * Creates a list model for a set of module dependencies.
+     * The dependencies will be sorted by module display name.
      */
     static CustomizerComponentFactory.DependencyListModel createDependencyListModel(
             final Set/*<ModuleDependency>*/ deps) {
+        assert deps != null;
+        return new CustomizerComponentFactory.DependencyListModel(deps);
+    }
+    
+    /**
+     * Creates a list model for a set of module dependencies.
+     * The dependencies will be left in the order given.
+     */
+    static CustomizerComponentFactory.DependencyListModel createDependencyListModel(
+            final List/*<ModuleDependency>*/ deps) {
         assert deps != null;
         return new CustomizerComponentFactory.DependencyListModel(deps);
     }
@@ -137,15 +149,20 @@ public final class CustomizerComponentFactory {
     
     static final class DependencyListModel extends AbstractListModel {
         
-        private Set/*<ModuleDependency>*/ currentDeps = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
+        private final Collection/*<ModuleDependency>*/ currentDeps;
         private Set/*<ModuleDependency>*/ addedDeps = new HashSet();
         private Set/*<ModuleDependency>*/ removedDeps = new HashSet();
         private Map/*<ModuleDependency, ModuleDependency>*/ editedDeps = new HashMap();
         
         private boolean changed;
         
-        DependencyListModel(final Set/*<ModuleDependency>*/ deps) {
-            this.currentDeps.addAll(deps);
+        DependencyListModel(Set/*<ModuleDependency>*/ deps) {
+            currentDeps = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
+            currentDeps.addAll(deps);
+        }
+        
+        DependencyListModel(List/*<ModuleDependency>*/ deps) {
+            currentDeps = deps;
         }
         
         public int getSize() {
@@ -193,7 +210,7 @@ public final class CustomizerComponentFactory {
         }
         
         Set/*<ModuleDependency>*/ getDependencies() {
-            return currentDeps;
+            return new HashSet(currentDeps);
         }
         
         Set/*<ModuleDependency>*/ getRemovedDependencies() {

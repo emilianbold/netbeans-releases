@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,7 +37,8 @@ public final class ModuleDependency implements Comparable {
     
     private ModuleEntry me;
     
-    private Set/*<String>*/ filterTokens;
+    private Set/*<String>*/ filterTokensNotFriend;
+    private Set/*<String>*/ filterTokensFriend;
     
     public static final Comparator LOCALIZED_NAME_COMPARATOR;
     
@@ -129,8 +130,11 @@ public final class ModuleDependency implements Comparable {
      * </ol>
      * Note that the last item means that this can behave differently according to the depending
      * module (according to whether or not it would be listed as a friend).
+     * @param dependingModuleCNB the CNB of the module depending on this one
      */
-    Set/*<String>*/ getFilterTokens() {
+    Set/*<String>*/ getFilterTokens(String dependingModuleCNB) {
+        boolean friend = me.isDeclaredAsFriend(dependingModuleCNB);
+        Set/*<String>*/ filterTokens = friend ? filterTokensFriend : filterTokensNotFriend;
         if (filterTokens == null) {
             filterTokens = new HashSet();
             filterTokens.add(me.getCodeNameBase());
@@ -140,13 +144,17 @@ public final class ModuleDependency implements Comparable {
             for (int i = 0; i < cpext.length; i++) {
                 filterTokens.add(cpext[i]);
             }
-            boolean friend = true; // XXX ModuleDependency has to include a ref to the depending module!
             if (friend) {
                 Iterator it = me.getPublicClassNames().iterator();
                 while (it.hasNext()) {
                     String clazz = (String) it.next();
                     filterTokens.add(clazz.replace('$', '.'));
                 }
+            }
+            if (friend) {
+                filterTokensFriend = filterTokens;
+            } else {
+                filterTokensNotFriend = filterTokens;
             }
         }
         return filterTokens;
