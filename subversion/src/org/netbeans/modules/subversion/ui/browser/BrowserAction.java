@@ -51,7 +51,8 @@ public final class BrowserAction extends CallableSystemAction {
             return;
         }
         
-        BrowserSelector selector = new BrowserSelector(svnClient, svnURL, true, true, false);        
+        BrowserSelector selector = new BrowserSelector("LBL_RepositoryBrowser", false, false, false);        
+        selector.setup(svnClient, svnURL);
         
         DialogDescriptor dd = new DialogDescriptor(selector.getBrowserPanel(), "test dialog");
         dd.setModal(true);

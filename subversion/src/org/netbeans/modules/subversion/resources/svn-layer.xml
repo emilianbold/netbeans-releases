@@ -16,9 +16,9 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
     <folder name="Actions">
-        <folder name="Build">
-            <file name="org-netbeans-modules-subversion-ui-browser-BrowserAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.browser.BrowserAction"/>
+        <folder name="Build">            
+            <file name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.checkout.CheckoutAction"/>
             </file>
         </folder>
         <folder name="Repository">
@@ -100,10 +100,6 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="SVN">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.subversion.resources.Bundle"/>
-
-            <file name="org-netbeans-modules-subversion-ui-browser-BrowserAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-subversion-ui-browser-BrowserAction.instance"/>
-            </file>
 <!--
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffProjectsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffProjectsAction.instance"/>
@@ -215,10 +211,22 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="Separator5.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-update-GetCleanAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-GetCleanAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ResolveConflictsAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ResolveConflictsAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-ignore-IgnoreAction.shadow" boolvalue="true" />
-            -->
-            <attr name="org-netbeans-modules-subversion-ui-browser-BrowserAction.shadow/org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.shadow" boolvalue="true"/>
-            <file name="org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.instance"/>
+<<<<<<< svn-layer.xml
+            -->            
+            <file name="org-netbeans-modules-subversion-actions-ShowAllChangesAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-actions-ShowAllChangesAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-subversion-actions-ShowAllChangesAction.shadow/org-netbeans-modules-subversion-ui-checkout-separatorBefore.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-subversion-ui-checkout-separatorBefore.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="org-netbeans-modules-subversion-ui-checkout-separatorBefore.instance/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow/org-netbeans-modules-subversion-ui-checkout-separatorAfter.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-subversion-ui-checkout-separatorAfter.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
         </folder>
         <folder name="Window">

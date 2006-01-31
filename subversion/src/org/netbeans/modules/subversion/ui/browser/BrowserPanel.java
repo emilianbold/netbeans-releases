@@ -37,16 +37,18 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider{
     private BrowserBeanTreeView treeView;
     private JLabel label;
     private final ExplorerManager manager;
-
+    
     /** Creates new form BrowserPanel */
-    public BrowserPanel(String title, String browserAcsn, String browserAcsd, boolean singelSelectionOnly) {      
+    public BrowserPanel(String title, String browserAcsn, String browserAcsd, boolean singelSelectionOnly) {              
+        setName(title);
+        
         manager = new ExplorerManager();
         
         setLayout(new BorderLayout(6, 6));
         
         treeView = new BrowserBeanTreeView();
         treeView.setDragSource(true);
-        treeView.setDropTarget(true);        
+        treeView.setDropTarget(true);
       
         treeView.setPopupAllowed (false);
         treeView.setDefaultActionAllowed (false);
@@ -75,6 +77,5 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider{
         public JTree getTree() {
             return tree;
         } 
-    } 
-
+    }     
 }
