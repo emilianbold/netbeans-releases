@@ -7,13 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.project.ui;
 
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Rectangle;
@@ -49,8 +48,6 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -64,7 +61,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
@@ -360,6 +356,14 @@ public final class OpenProjectList {
         }
         if ( someClosed ) {
             pchSupport.firePropertyChange( PROPERTY_RECENT_PROJECTS, null, null );
+        }
+        // Noticed in #72006: save them, in case e.g. editor stored bookmarks when receiving PROPERTY_OPEN_PROJECTS.
+        for (int i = 0; i < projects.length; i++) {
+            try {
+                ProjectManager.getDefault().saveProject(projects[i]);
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
         }
     }
         

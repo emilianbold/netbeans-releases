@@ -7,34 +7,52 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.versioning.system.cvss.util;
 
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataShadow;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
-import org.netbeans.modules.versioning.system.cvss.FileInformation;
-import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
-import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.project.*;
-import org.netbeans.lib.cvsclient.admin.Entry;
-
-import java.io.*;
-import java.util.*;
-import java.awt.Window;
-import java.awt.KeyboardFocusManager;
 import java.awt.Dialog;
 import java.awt.Frame;
+import java.awt.KeyboardFocusManager;
+import java.awt.Window;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.lib.cvsclient.admin.Entry;
+import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.FileInformation;
+import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Provides static utility methods for CVS module.
@@ -43,7 +61,7 @@ import java.awt.Frame;
  */
 public class Utils {
 
-    private static Node []  contextNodesCached;
+    private static Reference/*<Node[]>*/ contextNodesCached = new /* #72006 */ WeakReference(null);
     private static Context  contextCached;
 
     /**
@@ -59,7 +77,7 @@ public class Utils {
         if (nodes == null) {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
-        if (Arrays.equals(contextNodesCached, nodes)) return contextCached;
+        if (Arrays.equals((Node[]) contextNodesCached.get(), nodes)) return contextCached;
         List files = new ArrayList(nodes.length);
         List rootFiles = new ArrayList(nodes.length);
         List rootFileExclusions = new ArrayList(5);
@@ -80,7 +98,7 @@ public class Utils {
         }
         
         contextCached = new Context(files, rootFiles, rootFileExclusions);
-        contextNodesCached = nodes;
+        contextNodesCached = new WeakReference(nodes);
         return contextCached;
     }
 

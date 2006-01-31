@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -64,7 +64,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     
     private Boolean tempSetAsMain;
     
-    private final Map/*<Project,Set<Project>>*/ subprojectsCache = new HashMap(); // #59098
+    private Map/*<Project,Set<Project>>*/ subprojectsCache = new HashMap(); // #59098
     
     /** Creates new form ProjectChooserAccessory */
     public ProjectChooserAccessory( JFileChooser chooser, boolean isOpenSubprojects, boolean isOpenAsMain ) {
@@ -484,8 +484,14 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         return chooser;    
         
     }
-    
-    
+
+    public void removeNotify() { // #72006
+        super.removeNotify();
+        modelUpdater = null;
+        subprojectsCache = null;
+        updateSubprojectsTask = null;
+    }
+
     // Aditional innerclasses for the file chooser -----------------------------
     
     private static class ProjectFileChooser extends JFileChooser {
@@ -616,6 +622,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             if ( !SwingUtilities.isEventDispatchThread() ) {
                 List currentProjects = projects;
                 if ( currentProjects == null ) {
+                    return;
+                }
+                if (subprojectsCache == null) {
                     return;
                 }
 
