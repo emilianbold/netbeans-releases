@@ -213,6 +213,13 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
     private static ByteArrayOutputStream out;
     private static ByteArrayOutputStream err;
     
+    final static String getStdOut() {
+        return out.toString();
+    }
+    final static String getStdErr() {
+        return err.toString();
+    }
+    
     final static void execute(File f, String[] args) throws Exception {
         // we need security manager to prevent System.exit
         if (! (System.getSecurityManager () instanceof MySecMan)) {
@@ -223,6 +230,8 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             
             System.setSecurityManager (new MySecMan ());
         }
+        
+        MySecMan sec = (MySecMan)System.getSecurityManager();
         
         // Jesse claims that this is not the right way how the execution
         // of an ant script should be invoked:
@@ -248,13 +257,16 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         err.reset ();
         
         try {
+            sec.setActive(true);
             org.apache.tools.ant.Main.main ((String[])arr.toArray (new String[0]));
         } catch (MySecExc ex) {
-            assertNotNull ("The only one to throw security exception is MySecMan and should set exitCode", MySecMan.exitCode);
+            assertNotNull ("The only one to throw security exception is MySecMan and should set exitCode", sec.exitCode);
             ExecutionError.assertExitCode (
                 "Execution has to finish without problems", 
-                MySecMan.exitCode.intValue ()
+                sec.exitCode.intValue ()
             );
+        } finally {
+            sec.setActive(false);
         }
     }
     
@@ -287,11 +299,15 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
     }
     
     private static class MySecMan extends SecurityManager {
-        public static Integer exitCode;
+        public Integer exitCode;
+        
+        private boolean active;
         
         public void checkExit (int status) {
-            exitCode = new Integer (status);
-            throw new MySecExc ();
+            if (active) {
+                exitCode = new Integer (status);
+                throw new MySecExc ();
+            }
         }
 
         public void checkPermission(Permission perm, Object context) {
@@ -386,6 +402,10 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         }
 
         public void checkPropertiesAccess () {
+        }
+
+        void setActive(boolean b) {
+            active = b;
         }
     } // end of MySecMan
 }
