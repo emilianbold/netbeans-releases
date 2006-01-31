@@ -13,8 +13,11 @@
 
 package org.netbeans.modules.apisupport.project.universe;
 
+import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -134,6 +137,9 @@ abstract class AbstractEntry implements ModuleEntry {
                         continue ENTRY;
                     }
                 }
+                if (!isPublic(jf, entry)) {
+                    continue;
+                }
                 result.add(path.substring(0, path.length() - 6).replace('/', '.'));
             }
         } finally {
@@ -150,6 +156,54 @@ abstract class AbstractEntry implements ModuleEntry {
      */
     protected static boolean isDeclaredAsFriend(String[] friends, String cnb) {
         return friends == null ? true : Arrays.binarySearch(friends, cnb) >= 0;
+    }
+
+    /** Checks whether a .class file is marked as public or not. */
+    private static boolean isPublic(JarFile jf, JarEntry entry) throws IOException {
+        InputStream is = jf.getInputStream(entry);
+        try {
+            DataInput input = new DataInputStream(is);
+            skip(input, 8); // magic, minor_version, major_version
+            // Have to partially parse constant pool to skip over it:
+            int size = input.readUnsignedShort() - 1; // constantPoolCount
+            for (int i = 0; i < size; i++) {
+                byte tag = input.readByte();
+                switch (tag) {
+                    case 1: // CONSTANT_Utf8
+                        input.readUTF();
+                        break;
+                    case 3: // CONSTANT_Integer
+                    case 4: // CONSTANT_Float
+                    case 9: // CONSTANT_Fieldref
+                    case 10: // CONSTANT_Methodref
+                    case 11: // CONSTANT_InterfaceMethodref
+                    case 12: // CONSTANT_NameAndType
+                        skip(input, 4);
+                        break;
+                    case 7: // CONSTANT_Class
+                    case 8: // CONSTANT_String
+                        skip(input, 2);
+                        break;
+                    case 5: // CONSTANT_Long
+                    case 6: // CONSTANT_Double
+                        skip(input, 8);
+                        i++; // weirdness in spec
+                        break;
+                    default:
+                        throw new IOException("Unrecognized constant pool tag " + tag + " at index " + i); // NOI18N
+                }
+            }
+            int accessFlags = input.readUnsignedShort();
+            return (accessFlags & 0x0001) > 0;
+        } finally {
+            is.close();
+        }
+    }
+    private static void skip(DataInput input, int bytes) throws IOException {
+        int skipped = input.skipBytes(bytes);
+        if (skipped != bytes) {
+            throw new IOException();
+        }
     }
     
 }
