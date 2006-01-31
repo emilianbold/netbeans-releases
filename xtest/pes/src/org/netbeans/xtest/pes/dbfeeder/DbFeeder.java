@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -50,7 +50,9 @@ public class DbFeeder {
 
     
     private DbFeederConfig config;
-    
+    /** Reason why report is not accepted by database. */
+    private String notAcceptedReason = "";
+
     
     /** Creates a new instance of DbFeeder */
     public DbFeeder(DbFeederConfig config) {
@@ -155,9 +157,8 @@ public class DbFeeder {
         }
         return false;
     }
-    
-    
-   private void processUnpackedFiles(UploadMetadata metadata) throws IOException {
+
+    private void processUnpackedFiles(UploadMetadata metadata) throws IOException {
        // process everything found in workdir      
        File workdir = config.getWorkDirs().getWork();       
       
@@ -194,10 +195,15 @@ public class DbFeeder {
                        xtrFile.delete();
                    } else {
                        // XTestResultsReport is invalid
-                       PESLogger.logger.warning("XTestResultsReport from file "+xtrFile.getName()+", is not accepted, moving it to 'invalid' directory");
+                       PESLogger.logger.warning("XTestResultsReport from file "+
+                               xtrFile.getName()+", is not accepted, moving it to 'invalid' directory. "+
+                               "The reason is: "+xtr.getInvalidMessage());
                        // notify zip sender - we should give more accurate reason why the report was rejected
-                       notifyUser(metadata.getMailContact(),"PES: DbFeeder notification","Database refuses to upload submitted report "+xtrFile.getName()+"\n"+
-                               "For more details contact DbFeeder administrator (hit reply in your email client)");
+                       notifyUser(metadata.getMailContact(), 
+                                  "PES: DbFeeder notification",
+                                  "Database refuses to upload submitted report "+xtrFile.getName()+".\n"+
+                                  "The reason is: "+xtr.getInvalidMessage()+".\n"+
+                                  "For more details contact DbFeeder administrator (hit reply in your email client).");
                         // skip this stuff and move it to invalids
                         moveReportPairToInvalids(irFiles[i],xtrFile);
                    }
@@ -210,10 +216,15 @@ public class DbFeeder {
                }
            } else {
                // incoming report is refused !!!!
-               PESLogger.logger.warning("IncomingReport from file "+ir.getReportRoot()+" is not accepted, moving it to 'invalid' directory");
+               PESLogger.logger.warning("IncomingReport from file "+ir.getReportRoot()+
+                                        " is not accepted, moving it to 'invalid' directory"+
+                                        "The reason is: "+getNotAcceptedReason()+".");
                // notify zip sender - we should give more accurate reason why the report was rejected
-               notifyUser(metadata.getMailContact(),"PES: DbFeeder notification","Database refuses to upload submitted report "+ir.getReportRoot()+"\n"+
-                            "For more details contact DbFeeder administrator (hit reply in your email client)");
+               notifyUser(metadata.getMailContact(),
+                          "PES: DbFeeder notification",
+                          "Database refuses to upload submitted report "+ir.getReportRoot()+"\n"+
+                          "The reason is: "+getNotAcceptedReason()+".\n"+
+                          "For more details contact DbFeeder administrator (hit reply in your email client).");
                // skip this stuff and move it to invalids
                moveReportPairToInvalids(irFiles[i],xtrFile);               
            }
@@ -237,10 +248,23 @@ public class DbFeeder {
        }
    }
    
-   
+    
+    /** Returns a reason why this report is not acceptable by database.
+     * @return reason
+     */
+    private String getNotAcceptedReason() {
+        return notAcceptedReason;
+    }
+    
+    /** Sets a reason why report was not accepted by database. */
+    private void setNotAcceptedReason(String reason) {
+        this.notAcceptedReason += " "+reason;
+    }
+    
    
    private boolean isIncomingReportAcceptable(IncomingReport ir) {
        boolean result = false;
+       notAcceptedReason = "";
        try {
            // check for team           
            
@@ -253,6 +277,10 @@ public class DbFeeder {
            if (dbUtils.anyResultsFromQuery(projectQuery)) {
                result = true;
            } else {
+               setNotAcceptedReason("Project_id '"+ir.getProject_id()+
+                                    "' not found in table Project or build number '"
+                                    +ir.getBuild()+
+                                    "' is not between Project.FIRSTBUILD and Project.LASTBUILD");
                result = false;
            }
            
@@ -260,11 +288,14 @@ public class DbFeeder {
            if (dbUtils.anyResultsFromQuery(teamQuery)) {
                result &= true;
            } else {
+               setNotAcceptedReason("Team '"+ir.getTeam()+"' doesn't have this URL '"+
+                                    ir.getWebLink()+"' assigned in table Team.");
                result = false;
            }
            // hmm, no luck - return false;
        } catch (SQLException sqle) {
            PESLogger.logger.log(Level.SEVERE,"Caught SQLException when getting connection from database",sqle);
+           setNotAcceptedReason("Caught SQLException when getting connection from database"+sqle.getMessage());
            result = false;
        } 
        return result;
