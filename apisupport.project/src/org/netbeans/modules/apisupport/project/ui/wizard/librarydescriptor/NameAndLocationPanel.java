@@ -7,25 +7,20 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
 
-import java.io.IOException;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils.LayerHandle;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -102,17 +97,17 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     
     private boolean checkValidity(final NewLibraryDescriptor.DataModel _data) {
         if (!_data.isValidLibraryName()) {
-            setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_EmptyName")); // NOI18N
+            setError(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_EmptyName")); // NOI18N
             return false;
         } else if (!_data.isValidLibraryDisplayName()) {
-            setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_EmptyDescName")); // NOI18N
+            setError(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_EmptyDescName")); // NOI18N
             return false;
         }else if (_data.libraryAlreadyExists()) {
-            setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,
+            setError(NbBundle.getMessage(NameAndLocationPanel.class,
                     "ERR_LibraryExists", _data.getLibraryName()));
             return false;
         }
-        setErrorMessage(null);
+        markValid();
         return true;
     }
     

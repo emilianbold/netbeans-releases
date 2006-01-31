@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -97,12 +97,12 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     
     private void checkCodeNameBase() {
         if (!Util.isValidCodeNameBase(getCodeNameBaseValue())) {
-            setErrorMessage(getMessage("MSG_InvalidCNB"));
+            setError(getMessage("MSG_InvalidCNB"));
         } else if (data.isSuiteComponent() && cnbIsAlreadyInSuite(data.getSuiteRoot(), getCodeNameBaseValue())) {
-            setErrorMessage(NbBundle.getMessage(BasicConfVisualPanel.class, "MSG_ComponentWithSuchCNBAlreadyInSuite", 
+            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "MSG_ComponentWithSuchCNBAlreadyInSuite", 
                     getCodeNameBaseValue()));
         } else {
-            setErrorMessage(null);
+            markValid();
             // update layer and bundle from the cnb
             String dotName = getCodeNameBaseValue();
             String slashName = dotName.replace('.', '/');
@@ -128,18 +128,18 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     /** Used for Layer and Bundle entries. */
     private void checkEntry(String path, String resName, String extension) {
         if (path.length() == 0) {
-            setErrorMessage(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_empty"));
+            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_empty"));
             return;
         }
         if (path.indexOf('/') == -1) {
-            setErrorMessage(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_def_pkg"));
+            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_def_pkg"));
             return;
         }
         if (!path.endsWith(extension)) {
-            setErrorMessage(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_ext", extension));
+            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_ext", extension));
             return;
         }
-        setErrorMessage(null);
+        markValid();
     }
     
     void refreshData() {

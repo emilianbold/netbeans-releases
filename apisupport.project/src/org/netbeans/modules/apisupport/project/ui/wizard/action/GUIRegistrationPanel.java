@@ -202,16 +202,16 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     boolean checkValidity() {
         boolean result = false;
         if (globalKeyboardShortcut.isSelected() && ((DefaultListModel)shortcutsList.getModel()).isEmpty()) { // NOI18N
-            setErrorMessage(getMessage("MSG_YouMustSpecifyShortcut"));
+            setError(getMessage("MSG_YouMustSpecifyShortcut"));
         } else if (!check(globalMenuItem, menu, menuPosition) ||
                 !check(globalToolbarButton, toolbar, toolbarPosition) ||
                 !check(fileTypeContext, ftContentType, ftPosition) ||
                 !check(editorContext, edContentType, edPosition)) {
-            setValid(Boolean.FALSE);
+            markInvalid();
         } else if (!Util.isValidSFSPath(getCategoryPath())) {
-            setErrorMessage(getMessage("ERR_Category_Invalid"));
+            setError(getMessage("ERR_Category_Invalid"));
         } else {
-            setErrorMessage(null);
+            markValid();
             result = true;
         }
         return result;
@@ -237,7 +237,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     }
     
     private void readSFS() {
-        setValid(Boolean.FALSE);
+        markInvalid();
         loadComboAndPositions(ACTIONS_DIR, category, null, null, true);
         loadComboAndPositions("Menu", menu, menuPosition, null); // NOI18N
         loadComboAndPositions("Toolbars", toolbar, toolbarPosition, null); // NOI18N

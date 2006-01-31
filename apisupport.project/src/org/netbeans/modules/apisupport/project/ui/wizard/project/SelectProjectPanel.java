@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
 import java.awt.event.ItemEvent;
@@ -169,15 +170,15 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
     private void checkValidity() {
         Object sel = comProject.getModel().getSelectedItem();
         if (sel == EMPTY) {
-            setErrorMessage(getMessage("MSG_NoProjectSelected"));
+            setError(getMessage("MSG_NoProjectSelected"));
             return;
         }
         Sources srcs = ProjectUtils.getSources((Project) sel); // #63247: don't use lookup directly
         if (srcs.getSourceGroups(Sources.TYPE_GENERIC).length > 1) {
-            setErrorMessage(getMessage("MSG_NoExternalRoots"));
+            setError(getMessage("MSG_NoExternalRoots"));
             return;
         }
-        setErrorMessage(null);
+        markValid();
     }
     
     protected String getPanelName() {

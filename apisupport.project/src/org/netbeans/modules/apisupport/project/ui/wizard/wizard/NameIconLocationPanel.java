@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -119,7 +119,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
                 packageName.setSelectedItem(data.getPackageName());
             }
             firstTime = false;
-            setValid(Boolean.FALSE);
+            markInvalid();
         } else {
             updateData();
         }
@@ -139,20 +139,20 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         boolean valid = false;
         String pName = packageName.getEditor().getItem().toString().trim();
         if (!Utilities.isJavaIdentifier(getClassNamePrefix())) {
-            setErrorMessage(getMessage("MSG_ClassNameMustBeValidJavaIdentifier"));
+            setError(getMessage("MSG_ClassNameMustBeValidJavaIdentifier"));
         } else if (data.isFileTemplateType() &&
                 (getDisplayName().equals("") || getDisplayName().equals(ENTER_LABEL))) {
-            setErrorMessage(getMessage("MSG_DisplayNameMustBeEntered"));
+            setError(getMessage("MSG_DisplayNameMustBeEntered"));
         } else if (pName.length() == 0 || !UIUtil.isValidPackageName(pName)) {
-            setErrorMessage(getMessage("ERR_Package_Invalid"));
+            setError(getMessage("ERR_Package_Invalid"));
         } else if (data.getCreatedModifiedFiles().getInvalidPaths().length > 0) {
             //#68294 check if the paths for newly created files are valid or not..
             String[] invalid  = data.getCreatedModifiedFiles().getInvalidPaths();
-            setErrorMessage(NbBundle.getMessage(NameIconLocationPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));
+            setError(NbBundle.getMessage(NameIconLocationPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));
         } else if (!Util.isValidSFSPath(getCategoryPath())) {
-            setErrorMessage(getMessage("ERR_Category_Invalid"));
+            setError(getMessage("ERR_Category_Invalid"));
         } else  {
-            setErrorMessage(null);
+            markValid();
             valid = true;
         }
         return valid;

@@ -7,15 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.javahelp;
 
 import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -51,9 +49,9 @@ final class JavaHelpPanel extends BasicWizardIterator.Panel {
         //#68294 check if the paths for newly created files are valid or not..
         String[] invalid  = data.getCreatedModifiedFiles().getInvalidPaths();
         if (invalid.length > 0) {
-            setErrorMessage(NbBundle.getMessage(JavaHelpPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));//NOI18N
+            setError(NbBundle.getMessage(JavaHelpPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));//NOI18N
         } else {
-            setErrorMessage(null);            
+            markValid();
         }
     }
     

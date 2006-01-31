@@ -94,23 +94,23 @@ final class ModuleInstallPanel extends BasicWizardIterator.Panel {
     private boolean checkValidity() {
         String moduleInstall = getModuleInstall();
         if (moduleInstall != null) {
-            setErrorMessage(NbBundle.getMessage(ModuleInstallPanel.class, "ERR_ModuleInstallAlreadyPresented", moduleInstall));
+            setError(NbBundle.getMessage(ModuleInstallPanel.class, "ERR_ModuleInstallAlreadyPresented", moduleInstall));
             return false;
         }
         // #68294 check if the paths for newly created files are valid or not..
         String pName = packageName.getEditor().getItem() == null ? ""
                 : packageName.getEditor().getItem().toString().trim();
         if (pName.length() == 0 || !UIUtil.isValidPackageName(pName)) {
-            setErrorMessage(getMessage("ERR_PackageInvalid"));
+            setError(getMessage("ERR_PackageInvalid"));
             return false;
         }
         String[] invalid = data.getCreatedModifiedFiles().getInvalidPaths();
         if (invalid.length > 0) {
-            setErrorMessage(NbBundle.getMessage(ModuleInstallPanel.class,
+            setError(NbBundle.getMessage(ModuleInstallPanel.class,
                     "ERR_ToBeCreateFileExists", invalid[0])); // NOI18N
             return false;
         } else {
-            setErrorMessage(null);
+            markValid();
             return true;
         }
     }

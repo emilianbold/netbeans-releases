@@ -13,17 +13,14 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.updatecenter;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicVisualPanel;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -101,14 +98,13 @@ final class UpdateCenterRegistrationPanel extends BasicWizardIterator.Panel {
     private boolean checkValidity() {
         boolean result = false;
         if (data.getUpdateCenterURL ().length () == 0) {
-            setErrorMessage (getMessage ("ERR_Url_Is_Empty")); //NOI18N
+            setError(getMessage ("ERR_Url_Is_Empty")); //NOI18N
         } else if (data.getUpdateCenterDisplayName ().length () == 0) {
-            setErrorMessage (getMessage ("ERR_Empty_Display_Name")); //NOI18N
+            setError(getMessage ("ERR_Empty_Display_Name")); //NOI18N
         } else {
-            setValid (Boolean.TRUE);
             result = true;
             if (! data.getUpdateCenterURL ().endsWith (".xml")) {
-                setErrorMessage (getMessage ("WRN_Url_dont_xml_file"), false); //NOI18N
+                setWarning(getMessage("WRN_Url_dont_xml_file")); // NOI18N
             } else {
                 
                 try {
@@ -116,9 +112,9 @@ final class UpdateCenterRegistrationPanel extends BasicWizardIterator.Panel {
                     new URL (data.getUpdateCenterURL ());
 
                     // all is ok
-                    setErrorMessage (null);
+                    markValid();
                 } catch (MalformedURLException ex) {
-                    setErrorMessage (NbBundle.getMessage (UpdateCenterRegistrationPanel.class, "WRN_Url_cannot_be_created", ex.getLocalizedMessage ()), false);
+                    setWarning(NbBundle.getMessage(UpdateCenterRegistrationPanel.class, "WRN_Url_cannot_be_created", ex.getLocalizedMessage()));
                 }
                 
             }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -81,7 +81,7 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     
     protected void readFromDataModel() {
         condionallyEnabledActionPerformed(null);
-        setValid(Boolean.TRUE);
+        markValid();
     }
     
     protected HelpCtx getHelp() {

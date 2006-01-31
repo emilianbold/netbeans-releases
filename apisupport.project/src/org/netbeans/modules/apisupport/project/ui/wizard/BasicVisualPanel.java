@@ -35,41 +35,54 @@ public abstract class BasicVisualPanel extends JPanel {
     }
     
     /**
-     * Set an error message and always update panel's validity. See {@link
-     * #setErrorMessage(String, boolean)} for more details.
+     * Set an error message and mark the panel as invalid.
      */
-    protected final void setErrorMessage(String errorMessage) {
-        setErrorMessage(errorMessage, true);
+    protected final void setError(String message) {
+        if (message == null) {
+            throw new NullPointerException();
+        }
+        setMessage(message);
+        setValid(false);
     }
 
     /**
-     * Set an warning message and makes panel to be valid. See {@link
-     * #setErrorMessage(String, boolean)} for more details.
+     * Set an warning message but mark the panel as valid.
      */    
-    protected final void setWarningMessage(String errorMessage) {
-        setErrorMessage(null);
-        setErrorMessage(errorMessage, false);
+    protected final void setWarning(String message) {
+        if (message == null) {
+            throw new NullPointerException();
+        }
+        setMessage(message);
+        setValid(true);
     }
     
     /**
-     * Set an error message and eventually update panel's validity. If an
-     * <em>updateValidity</em> is <code>true</code> also set a validity of this
-     * panel. i.e. if the given error message is equal to <code>null</code>
-     * panel is treat as valid; invalid otherwise.
+     * Mark the panel as invalid without any message.
+     * Use with restraint; generally {@link #setError} is better.
      */
-    protected final void setErrorMessage(String errorMessage, boolean updateValidity) {
-        settings.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
-        if (updateValidity) {
-            setValid(Boolean.valueOf(errorMessage == null));
-        }
+    protected final void markInvalid() {
+        setMessage(null);
+        setValid(false);
+    }
+    
+    /**
+     * Mark the panel as valid and clear any error or warning message.
+     */
+    protected final void markValid() {
+        setMessage(null);
+        setValid(true);
+    }
+    
+    private final void setMessage(String message) {
+        settings.putProperty("WizardPanel_errorMessage", message); // NOI18N
     }
     
     /**
      * Sets this panel's validity and fires event to it's wrapper wizard panel.
      * See {@link BasicWizardPanel#propertyChange} for what happens further.
      */
-    protected final void setValid(Boolean newValid) {
-        firePropertyChange("valid", Boolean.valueOf(!newValid.booleanValue()), newValid); // NOI18N
+    private final void setValid(boolean valid) {
+        firePropertyChange("valid", null, Boolean.valueOf(valid)); // NOI18N
     }
     
     abstract static class NewTemplatePanel extends BasicVisualPanel {

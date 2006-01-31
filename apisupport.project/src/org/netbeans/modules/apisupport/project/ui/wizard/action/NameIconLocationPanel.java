@@ -126,17 +126,17 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private boolean checkValidity() {
         String pName = packageName.getEditor().getItem() == null ? "" : packageName.getEditor().getItem().toString().trim();
         if (!Utilities.isJavaIdentifier(getClassName())) {
-            setErrorMessage(getMessage("MSG_ClassNameMustBeValidJavaIdentifier"));
+            setError(getMessage("MSG_ClassNameMustBeValidJavaIdentifier"));
         } else if (getDisplayName().equals("") || getDisplayName().equals(ENTER_LABEL)) {
-            setErrorMessage(getMessage("MSG_DisplayNameMustBeEntered"));
+            setError(getMessage("MSG_DisplayNameMustBeEntered"));
         } else if (pName.length() == 0 || !UIUtil.isValidPackageName(pName)) {
-            setErrorMessage(getMessage("ERR_Package_Invalid"));
+            setError(getMessage("ERR_Package_Invalid"));
         } else if (classAlreadyExists()) {
-            setErrorMessage(getMessage("MSG_ClassAlreadyExists"));
+            setError(getMessage("MSG_ClassAlreadyExists"));
         } else if (data.isToolbarEnabled() && getIconPath() == null) {
-            setErrorMessage(getMessage("MSG_IconRequiredForToolbar"));
+            setError(getMessage("MSG_IconRequiredForToolbar"));
         } else {
-            setErrorMessage(null);
+            markValid();
             if (data.isToolbarEnabled()) {
                 checkIconValidity();
             }
@@ -148,10 +148,10 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private void checkIconValidity() {
         if (smallIconPath != null) {            
             if (largeIconPath == null) {
-                setErrorMessage(getMessage("MSG_NoLargeIcontSelected"),false);
+                setWarning(getMessage("MSG_NoLargeIcontSelected"));
             } 
         } else {
-            setErrorMessage(getMessage("MSG_NoSmallIcontSelected"),false);
+            setWarning(getMessage("MSG_NoSmallIcontSelected"));
         }
     }
 

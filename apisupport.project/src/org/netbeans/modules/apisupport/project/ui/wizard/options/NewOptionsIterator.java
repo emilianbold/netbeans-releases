@@ -133,7 +133,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
 
         private int getCheckCode() {
             int retval = getErrorCode();                    
-            return isSuccesCode(retval) ? getWarningCode() : retval;
+            return isSuccessCode(retval) ? getWarningCode() : retval;
         }
         
         int setDataForOptionCategory(final String title, final String description,
@@ -160,7 +160,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
         public int setPackage(String packageName) {
             setPackageName(packageName);
             int errCode = getErrorCode();
-            if (isSuccesCode(errCode)) {
+            if (isSuccessCode(errCode)) {
                 generateCreatedModifiedFiles();
             }
             return errCode;
@@ -286,8 +286,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
             return "";//NOI18N
         }
         
-        
-        static boolean isSuccesCode(int code) {
+        static boolean isSuccessCode(int code) {
             return code == 0;
         }
         
@@ -357,7 +356,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
         }
         
         private CreatedModifiedFiles generateCreatedModifiedFiles() {
-            assert isSuccesCode(getErrorCode());
+            assert isSuccessCode(getErrorCode());
             files = new CreatedModifiedFiles(getProject());
             generateFiles();
             generateBundleKeys();

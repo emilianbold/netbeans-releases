@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -73,18 +73,16 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
                     setPlafLabel(plafDir.getAbsolutePath());
                 }
                 if (!NbPlatform.isSupportedPlatform(plafDir)) {
-                    setErrorMessage(getMessage("MSG_UnsupportedPlatform"));
+                    setError(getMessage("MSG_UnsupportedPlatform"));
                 } else if (NbPlatform.contains(plafDir)) {
-                    setErrorMessage(getMessage("MSG_AlreadyAddedPlatform"));
+                    setError(getMessage("MSG_AlreadyAddedPlatform"));
                 } else if (!NbPlatform.isLabelValid(plafLabelValue.getText())) {
-                    setErrorMessage(getMessage("MSG_NameIsAlreadyUsedGoToNext"));
-                    setValid(Boolean.TRUE);
+                    setWarning(getMessage("MSG_NameIsAlreadyUsedGoToNext"));
                 } else {
-                    setErrorMessage(null);
+                    markValid();
                 }
             } else {
-                setErrorMessage(null);
-                setValid(Boolean.FALSE);
+                markInvalid();
                 setPlafLabel(null);
                 storeData();
             }

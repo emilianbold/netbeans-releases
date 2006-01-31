@@ -29,7 +29,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class BasicWizardPanel implements WizardDescriptor.Panel, PropertyChangeListener {
     
-    private boolean valid;
+    private boolean valid = true;
     private WizardDescriptor settings;
     
     private EventListenerList listeners = new EventListenerList();
@@ -78,11 +78,6 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
     
     public void readSettings(Object settings) {}
     
-    protected void setValid(boolean valid) {
-        this.valid = valid;
-        fireChange();
-    }
-    
     public boolean isValid() {
         return valid;
     }
@@ -94,8 +89,11 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
      */
     public void propertyChange(PropertyChangeEvent evt) {
         if ("valid".equals(evt.getPropertyName())) { // NOI18N
-            this.valid = ((Boolean) evt.getNewValue()).booleanValue();
-            fireChange();
+            boolean nueValid = ((Boolean) evt.getNewValue()).booleanValue();
+            if (nueValid != valid) {
+                valid = nueValid;
+                fireChange();
+            }
         }
     }
     

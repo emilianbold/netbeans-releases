@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -53,11 +53,11 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
     private void checkForm() {
         String plafName = plafNameValue.getText().trim();
         if (plafName.equals("")) {
-            setErrorMessage(getMessage("MSG_BlankPlatformName"));
+            setError(getMessage("MSG_BlankPlatformName"));
         } else if (!NbPlatform.isLabelValid(plafName)) {
-            setErrorMessage(getMessage("MSG_NameIsAlreadyUsed"));
+            setError(getMessage("MSG_NameIsAlreadyUsed"));
         } else {
-            setErrorMessage(null);
+            markValid();
         }
     }
     

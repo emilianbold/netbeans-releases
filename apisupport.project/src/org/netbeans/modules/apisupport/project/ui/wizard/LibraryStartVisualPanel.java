@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -80,35 +80,34 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                 String one = tokens.nextToken();
                 File fil = new File(one);
                 if (!fil.exists()) {
-                    setErrorMessage(getMessage("MSG_Invalid_Library_Path"));
+                    setError(getMessage("MSG_Invalid_Library_Path"));
                     return;
                 }
                 try {
                     new JarFile(fil); // just checking whether the jar is valid
                 } catch (IOException exc) {
-                    setErrorMessage(getMessage("MSG_Invalid_Library_Path"));
+                    setError(getMessage("MSG_Invalid_Library_Path"));
                     return;
                 }
                 String badOnes = populateProjectData(data, text, false);
                 if (badOnes != null) {
-                    setErrorMessage(NbBundle.getMessage(LibraryStartVisualPanel.class, "MSG_ClassInDefaultPackage", badOnes), true);
-                    setValid(Boolean.TRUE);
+                    setWarning(NbBundle.getMessage(LibraryStartVisualPanel.class, "MSG_ClassInDefaultPackage", badOnes));
                     return;
                 }
             }
         } else  {
-            setErrorMessage(getMessage("MSG_Library_Path_Not_Defined"));
+            setError(getMessage("MSG_Library_Path_Not_Defined"));
             return;
         }
         text = txtLicense.getText().trim();
         if (text.length() > 0) {
             File fil = new File(text);
             if (!fil.exists()) {
-                setErrorMessage(getMessage("MSG_Invalid_License_Path"));
+                setError(getMessage("MSG_Invalid_License_Path"));
                 return;
             }
         }
-        setErrorMessage(null);
+        markValid();
     }
     
     void refreshData() {

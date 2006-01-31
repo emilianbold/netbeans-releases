@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -74,33 +74,32 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
     }
     
     private void checkValidity() {
-        String message = null;
+        markValid();
         String txt = txtMimeType.getText().trim();
         
         if (txt.length() == 0 || DEFAULT_MIME_TYPE.equals(txt) || (!MIME_TYPE_PATTERN.matcher(txt).matches())) {
-            message = getMessage("MSG_NotValidMimeType");
+            setError(getMessage("MSG_NotValidMimeType"));
         } else {
             if (rbByElement.isSelected()) {
                 if (txtNamespace.getText().trim().length() == 0) {
-                    message = getMessage("MSG_NoNamespace");
+                    setError(getMessage("MSG_NoNamespace"));
                 } else {
                     Matcher match = ELEMENT_PATTERN.matcher(txt);
                     if (!match.matches()) {
-                        message = getMessage("MSG_BadMimeTypeForXML");
+                        setError(getMessage("MSG_BadMimeTypeForXML"));
                     }
                 }
             } else {
                 if (txtExtension.getText().trim().length() == 0) {
-                    message = getMessage("MSG_NoExtension");
+                    setError(getMessage("MSG_NoExtension"));
                 } else {
                     Matcher match = EXTENSION_PATTERN.matcher(txtExtension.getText());
                     if (!match.matches()) {
-                        message = getMessage("MSG_BadExtensionPattern");
+                        setError(getMessage("MSG_BadExtensionPattern"));
                     }
                 }
             }
         }
-        setErrorMessage(message);
     }
     
     public void addNotify() {

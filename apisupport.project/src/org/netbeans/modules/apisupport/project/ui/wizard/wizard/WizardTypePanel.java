@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -61,7 +61,7 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
     protected void readFromDataModel() {
         if (firstTime) {
             firstTime = false;
-            setValid(Boolean.FALSE);
+            markInvalid();
         } else {
             checkValidity();
         }
@@ -69,9 +69,9 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
     
     private void checkValidity() {
         if (!isNumberOfStepsValid()) {
-            setErrorMessage(getMessage("MSG_IncorrectNumberOfSteps"));
+            setError(getMessage("MSG_IncorrectNumberOfSteps"));
         } else {
-            setErrorMessage(null);
+            markValid();
         }
     }
     

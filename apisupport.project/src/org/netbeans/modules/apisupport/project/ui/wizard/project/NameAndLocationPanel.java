@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -98,7 +98,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         //#68294 check if the paths for newly created files are valid or not..
         String[] invalid  = data.getCreatedModifiedFiles().getInvalidPaths();
         if (invalid.length > 0) {
-            setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));
+            setError(NbBundle.getMessage(NameAndLocationPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));
         }
         
     }
@@ -120,30 +120,30 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             return false;
         }
         if (txtName.getText().trim().length() == 0) {
-            setErrorMessage(getMessage("ERR_Name_Prefix_Empty"));
+            setError(getMessage("ERR_Name_Prefix_Empty"));
             return false;
         }
         if (!Utilities.isJavaIdentifier(txtName.getText().trim())) {
-            setErrorMessage(getMessage("ERR_Name_Prefix_Invalid"));
+            setError(getMessage("ERR_Name_Prefix_Invalid"));
             return false;
         }
         String packageName = comPackageName.getEditor().getItem().toString().trim();
         if (packageName.length() == 0 || !UIUtil.isValidPackageName(packageName)) {
-            setErrorMessage(getMessage("ERR_Package_Invalid"));
+            setError(getMessage("ERR_Package_Invalid"));
             return false;
         }
         if (!Util.isValidSFSPath(getCategoryPath())) {
-            setErrorMessage(getMessage("ERR_Category_Invalid"));
+            setError(getMessage("ERR_Category_Invalid"));
             return false;
         }
-        setErrorMessage(null);
+        markValid();
         return true;
     }
     
     private boolean checkPlatformValidity() {
         NbPlatform platform = data.getProject().getPlatform(false);
         if (platform == null) {
-            setErrorMessage(getMessage("ERR_No_Platform"));
+            setError(getMessage("ERR_No_Platform"));
             return false;
         }
         ModuleEntry[] entries = platform.getModules();
@@ -153,7 +153,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             modules.remove(entries[i].getCodeNameBase());
         }
         if (modules.size() > 0) {
-            setErrorMessage(getMessage("ERR_Missing_Modules"));
+            setError(getMessage("ERR_Missing_Modules"));
             return false;
         }
         return true;

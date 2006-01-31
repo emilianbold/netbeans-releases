@@ -200,25 +200,25 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         updateGUI();
         
         if ("".equals(getNameValue())) {
-            setErrorMessage(getMessage("MSG_NameCannotBeEmpty"));
+            setError(getMessage("MSG_NameCannotBeEmpty"));
         } else if ("".equals(getLocationValue())) {
-            setErrorMessage(getMessage("MSG_LocationCannotBeEmpty"));
+            setError(getMessage("MSG_LocationCannotBeEmpty"));
         } else if (suiteModule.isSelected() && moduleSuiteValue.getSelectedItem() == null) {
-            setErrorMessage(getMessage("MSG_ChooseRegularSuite"));
+            setError(getMessage("MSG_ChooseRegularSuite"));
         } else if (standAloneModule.isSelected() &&
                 (platformValue.getSelectedItem() == null || !((NbPlatform) platformValue.getSelectedItem()).isValid())) {
-            setErrorMessage(getMessage("MSG_ChosenPlatformIsInvalid"));
+            setError(getMessage("MSG_ChosenPlatformIsInvalid"));
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE &&
                 (suitePlatformValue.getSelectedItem() == null || !((NbPlatform) suitePlatformValue.getSelectedItem()).isValid())) {
-            setErrorMessage(getMessage("MSG_ChosenPlatformIsInvalid"));
+            setError(getMessage("MSG_ChosenPlatformIsInvalid"));
         } else if (getFolder().exists()) {
-            setErrorMessage(getMessage("MSG_ProjectFolderExists"));
+            setError(getMessage("MSG_ProjectFolderExists"));
         } else if (!getLocationFile().exists()) {
-            setErrorMessage(getMessage("MSG_LocationMustExist"));
+            setError(getMessage("MSG_LocationMustExist"));
         } else if (!getLocationFile().canWrite()) {
-            setErrorMessage(getMessage("MSG_LocationNotWritable"));
+            setError(getMessage("MSG_LocationNotWritable"));
         } else {
-            setErrorMessage(null);
+            markValid();
         }
     }
     

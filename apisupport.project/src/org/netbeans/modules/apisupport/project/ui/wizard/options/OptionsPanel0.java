@@ -86,12 +86,12 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
             retCode = data.setDataForOptionCategory(titleField.getText(), descriptionField.getText(),
                     categoryNameField.getText(), iconField.getText());
         }
-        if (data.isSuccesCode(retCode)) {
-            setErrorMessage(null);
+        if (data.isSuccessCode(retCode)) {
+            markValid();
         } else if (data.isErrorCode(retCode)) {
-            setErrorMessage(data.getErrorMessage(retCode));
+            setError(data.getErrorMessage(retCode));
         }  else if (data.isWarningCode(retCode)) {
-            setWarningMessage(data.getWarningMessage(retCode));
+            setWarning(data.getWarningMessage(retCode));
         } else {
             assert false : retCode;
         }

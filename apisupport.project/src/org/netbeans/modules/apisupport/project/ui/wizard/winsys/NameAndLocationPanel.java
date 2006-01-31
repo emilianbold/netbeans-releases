@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -76,7 +76,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         //#68294 check if the paths for newly created files are valid or not..
         String[] invalid  = data.getCreatedModifiedFiles().getInvalidPaths();
         if (invalid.length > 0) {
-            setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));
+            setError(NbBundle.getMessage(NameAndLocationPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));
         }
         
     }
@@ -96,28 +96,28 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     
     private boolean checkValidity() {
         if (txtPrefix.getText().trim().length() == 0) {
-            setErrorMessage(getMessage("ERR_Name_Prefix_Empty"));
+            setError(getMessage("ERR_Name_Prefix_Empty"));
             return false;
         }
         if (!Utilities.isJavaIdentifier(txtPrefix.getText().trim())) {
-            setErrorMessage(getMessage("ERR_Name_Prefix_Invalid"));
+            setError(getMessage("ERR_Name_Prefix_Invalid"));
             return false;
         }
         String path = txtIcon.getText().trim();
         if (path.length() != 0) {
             File fil = new File(path);
             if (!fil.exists()) {
-                setErrorMessage(NbBundle.getMessage(getClass(), "ERR_Icon_Invalid"));
+                setError(NbBundle.getMessage(getClass(), "ERR_Icon_Invalid"));
                 return false;
             }
         }
         String packageName = comPackageName.getEditor().getItem().toString().trim();
         if (packageName.length() == 0 || !UIUtil.isValidPackageName(packageName)) {
-            setErrorMessage(NbBundle.getMessage(getClass(), "ERR_Package_Invalid"));
+            setError(NbBundle.getMessage(getClass(), "ERR_Package_Invalid"));
             return false;
         }
         
-        setErrorMessage(null);
+        markValid();
         return true;
     }
     
