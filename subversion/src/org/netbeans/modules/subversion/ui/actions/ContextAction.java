@@ -55,7 +55,7 @@ public abstract class ContextAction extends SystemAction implements DynamicMenuC
 
     /**
      * Synchronizes memory modificatios with disk and calls
-     * {@link  #performCvsAction}.
+     * {@link  #performContextAction}.
      */
     public final void actionPerformed(ActionEvent ev) {
         // TODO try to save files in invocation context only
@@ -89,7 +89,7 @@ public abstract class ContextAction extends SystemAction implements DynamicMenuC
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         }
 
-        File [] nodes = null;//SvnUtils.getCurrentContext(getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = SvnUtils.getCurrentContext(null, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -153,7 +153,7 @@ public abstract class ContextAction extends SystemAction implements DynamicMenuC
      */ 
     public String getContextDisplayName() {
         // TODO: reuse this code in getName() 
-        File [] nodes = null;//SvnUtils.getCurrentContext(getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = SvnUtils.getCurrentContext(null, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -210,7 +210,7 @@ public abstract class ContextAction extends SystemAction implements DynamicMenuC
     }
 
     protected Context getContext() {
-        return null;//SvnUtils.getCurrentContext(getFileEnabledStatus(), getDirectoryEnabledStatus());
+        return SvnUtils.getCurrentContext(null, getFileEnabledStatus(), getDirectoryEnabledStatus());
     }
     
     public boolean isEnabled() {

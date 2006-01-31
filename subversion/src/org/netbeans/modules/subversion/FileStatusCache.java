@@ -419,7 +419,9 @@ public class FileStatusCache {
         ISVNStatus [] entries = null;
         try {
             ISVNClientAdapter client = Subversion.getInstance().getClient();
-            entries = client.getStatus(dir, false, false);  // XXX should contact server: , true);
+            if (Subversion.getInstance().isManaged(dir)) {
+                entries = client.getStatus(dir, false, false);  // XXX should contact server: , true);
+            }
         } catch (SVNClientException e) {
             // no or damaged entries
             ErrorManager.getDefault().annotate(e, "Can not status " + dir.getAbsolutePath() + ", guessing it...");  // NOI18N

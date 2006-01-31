@@ -19,7 +19,7 @@ import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.subversion.util.FlatFolder;
 import org.netbeans.modules.subversion.settings.SvnModuleConfig;
-//import org.netbeans.modules.subversion.actions.SvnCommandsMenuItem;
+import org.netbeans.modules.subversion.ui.actions.SvnCommandsMenuItem;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -112,8 +112,9 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     }
 
     public Action[] actions(Set files) {
+        // XXX cover by isManaged?
         return new Action[] {
-//            SystemAction.get(SvnCommandsMenuItem.class)
+            SystemAction.get(SvnCommandsMenuItem.class)
         };
     }
 

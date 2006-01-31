@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.subversion;
 
+import org.netbeans.modules.subversion.ui.actions.*;
+import org.netbeans.modules.subversion.ui.status.ShowChangesAction;
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
@@ -391,8 +393,8 @@ public class Annotator {
     }
 
     /**
-     * Returns array of versioning actions that may be used to construct a popup menu. These actions
-     * will act on the supplied Lookup context.
+     * Returns array of versioning actions that may be used to construct a {@link FileSystemAction}
+     * popup menu. These actions will act on the supplied Lookup context.
      *
      * @param context context similar to {@link org.openide.util.ContextAwareAction#createContextAwareInstance(org.openide.util.Lookup)}   
      * @return Action[] array of versioning actions that may be used to construct a popup menu. These actions
@@ -404,8 +406,8 @@ public class Annotator {
         File [] files = SvnUtils.getCurrentContext(nodes).getRootFiles();
         if (onlyFolders(files)) {
             return new Action [] {
-/*
-                SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context),
+                SystemActionBridge.createAction(SystemAction.get(ShowChangesAction.class), loc.getString("CTL_PopupMenuItem_Status"), context),
+/*                
                 SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context),
                 SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context),
                 SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context),
@@ -428,8 +430,8 @@ public class Annotator {
             };
         } else {
             return new Action [] {
+                SystemActionBridge.createAction(SystemAction.get(ShowChangesAction.class), loc.getString("CTL_PopupMenuItem_Status"), context),                
 /*
-                SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context),
                 SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context),
                 SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context),
                 SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context),
@@ -492,7 +494,7 @@ public class Annotator {
 
     private static MessageFormat getFormat(String key) {
         String format = NbBundle.getMessage(Annotator.class, key);
-        return new MessageFormat(format);
+        return new MessageFormat(format + " svn");  // FIXME remove after resolving multi annotator oddities
     }
 
 }

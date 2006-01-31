@@ -133,8 +133,9 @@ public class Subversion {
         if (isAdministrative(file)) return false;
         if (file.isFile()) file = file.getParentFile();
         for (; file != null; file = file.getParentFile()) {
-            if (new File(file, ".svn/entries").canRead()) return true;
-            if (new File(file, "_svn/entries").canRead()) return true;
+            if (new File(file, ".svn/entries").canRead() || new File(file, "_svn/entries").canRead()) {
+                return true;
+            }
         }
         return false;
     }

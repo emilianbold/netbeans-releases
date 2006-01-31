@@ -211,10 +211,9 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="Separator5.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-update-GetCleanAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-GetCleanAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ResolveConflictsAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ResolveConflictsAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-ignore-IgnoreAction.shadow" boolvalue="true" />
-<<<<<<< svn-layer.xml
             -->            
-            <file name="org-netbeans-modules-subversion-actions-ShowAllChangesAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-actions-ShowAllChangesAction.instance"/>
+            <file name="org-netbeans-modules-subversion-ui-statuss-ShowAllChangesAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.instance"/>
             </file>
             <attr name="org-netbeans-modules-subversion-actions-ShowAllChangesAction.shadow/org-netbeans-modules-subversion-ui-checkout-separatorBefore.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-subversion-ui-checkout-separatorBefore.instance">
