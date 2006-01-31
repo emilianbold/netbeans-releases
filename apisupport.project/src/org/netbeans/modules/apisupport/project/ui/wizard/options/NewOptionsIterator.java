@@ -37,7 +37,6 @@ import org.openide.util.NbBundle;
  */
 public class NewOptionsIterator extends BasicWizardIterator {
     
-    private static final long serialVersionUID = 1L;
     private NewOptionsIterator.DataModel data;
     
     public static NewOptionsIterator createIterator() {
@@ -81,7 +80,6 @@ public class NewOptionsIterator extends BasicWizardIterator {
             "@@OptionsCategory_CLASS_NAME@@",//NOIN18N
             "@@Panel_CLASS_NAME@@",//NOIN18N
             "@@OptionsPanelController_CLASS_NAME@@",//NOIN18N
-            "@@MODULE_CNB@@",//NOIN18N
             "@@ICON_PATH@@"//NOIN18N
         };
         
@@ -132,7 +130,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
         }
 
         private int getCheckCode() {
-            int retval = getErrorCode();                    
+            int retval = getErrorCode();
             return isSuccessCode(retval) ? getWarningCode() : retval;
         }
         
@@ -188,8 +186,6 @@ public class NewOptionsIterator extends BasicWizardIterator {
                 return getPanelClassName();
             } else if ("@@OptionsPanelController_CLASS_NAME@@".equals(key)) {// NOI18N
                 return getOptionsPanelControllerClassName();
-            } else if ("@@MODULE_CNB@@".equals(key)) {// NOI18N
-                return getCodeNameBase();
             } else if ("@@ICON_PATH@@".equals(key)) {// NOI18N
                 return addCreateIconOperation(new CreatedModifiedFiles(getProject()), getIconPath());
             }
@@ -213,11 +209,6 @@ public class NewOptionsIterator extends BasicWizardIterator {
             
             assert false;
             throw new IllegalArgumentException(key);
-        }
-        
-        
-        private String getDefaultPackagePath() {
-            return getDefaultPackagePath("");
         }
         
         /**
@@ -384,7 +375,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
         private void generateBundleKeys() {
             String[] bundleKeys = (isAdvanced()) ? ADVANCED_BUNDLE_KEYS : CATEGORY_BUNDLE_KEYS;
             for (int i = 0; i < bundleKeys.length; i++) {
-                files.add(files.bundleKey(getDefaultPackagePath()+"/Bundle.properties",// NOI18N
+                files.add(files.bundleKey(getDefaultPackagePath("Bundle.properties"),// NOI18N
                         bundleKeys[i],getBundleValue(bundleKeys[i])));
             }
         }
@@ -494,4 +485,3 @@ public class NewOptionsIterator extends BasicWizardIterator {
         }
     }
 }
-

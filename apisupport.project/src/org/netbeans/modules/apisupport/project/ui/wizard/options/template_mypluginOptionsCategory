@@ -8,34 +8,25 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public final class @@OptionsCategory_CLASS_NAME@@ extends OptionsCategory {
-    private static Icon icon;
 
-    private static String loc (String key) {
-        return NbBundle.getMessage (@@OptionsCategory_CLASS_NAME@@.class, key);
-    }
-            
-    public Icon getIcon () {
-        if (icon == null)
-            icon = new ImageIcon (
-                Utilities.loadImage 
-                    ("@@ICON_PATH@@")
-            );
-        return icon;
+    public Icon getIcon() {
+        return new ImageIcon(Utilities.loadImage("@@ICON_PATH@@"));
     }
 
-    public String getCategoryName () {
-        return loc ("OptionsCategory_Name");
+    public String getCategoryName() {
+        return NbBundle.getMessage(@@OptionsCategory_CLASS_NAME@@.class, "OptionsCategory_Name");
     }
 
-    public String getTitle () {
-        return loc ("OptionsCategory_Title");
+    public String getTitle() {
+        return NbBundle.getMessage(@@OptionsCategory_CLASS_NAME@@.class, "OptionsCategory_Title");
     }
     
-    public String getDescription () {
-        return loc ("OptionsCategory_Description");
+    public String getDescription() {
+        return NbBundle.getMessage(@@OptionsCategory_CLASS_NAME@@.class, "OptionsCategory_Description");
     }
 
-    public OptionsPanelController create () {        
-        return new @@OptionsPanelController_CLASS_NAME@@ ();                
+    public OptionsPanelController create() {
+        return new @@OptionsPanelController_CLASS_NAME@@();
     }
+
 }

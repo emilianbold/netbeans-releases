@@ -5,36 +5,36 @@ import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-
   
-public final class @@OptionsPanelController_CLASS_NAME@@  extends OptionsPanelController {
-  private @@Panel_CLASS_NAME@@ panel;     
-        
-    public void update () {
+public final class @@OptionsPanelController_CLASS_NAME@@ extends OptionsPanelController {
+
+    private @@Panel_CLASS_NAME@@ panel;
+
+    public void update() {
         getPanel().update();
     }
     
-    public void applyChanges () {
-        getPanel().applyChanges ();
+    public void applyChanges() {
+        getPanel().applyChanges();
     }
     
-    public void cancel () {
+    public void cancel() {
         getPanel().cancel();
     }
     
-    public boolean isValid () {
-        return getPanel().dataValid ();
+    public boolean isValid() {
+        return getPanel().dataValid();
     }
     
-    public boolean isChanged () {
+    public boolean isChanged() {
         return getPanel().isChanged();
     }
     
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx ("netbeans.optionsDialog.@@MODULE_CNB@@");
+    public HelpCtx getHelpCtx() {
+        return null; // new HelpCtx("...ID") if you have a help set
     }
     
-    public JComponent getComponent (Lookup masterLookup) {
+    public JComponent getComponent(Lookup masterLookup) {
         return getPanel();
     }
 
@@ -46,10 +46,11 @@ public final class @@OptionsPanelController_CLASS_NAME@@  extends OptionsPanelCo
         getPanel().removePropertyChangeListener(l);
     }
 
-private @@Panel_CLASS_NAME@@ getPanel() {
+    private @@Panel_CLASS_NAME@@ getPanel() {
         if (panel == null) {
-            panel = new @@Panel_CLASS_NAME@@ ();                        
+            panel = new @@Panel_CLASS_NAME@@();
         }
         return panel;
     }
+
 }

@@ -26,62 +26,30 @@ public class @@Panel_CLASS_NAME@@ extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     
-    /**
-     * Component should load its data here. You should not do any 
-     * time-consuming operations inside the constructor, because it 
-     * blocks initialization of OptionsDialog. Initialization 
-     * should be implemented in update method.
-     * This method is called after {@link #getComponent} method.
-     * Update method can be called more than one time for the same instance 
-     * of JComponent obtained from {@link #getComponent} call.
-     */
     void update() {
         // TODO read settings and initialize accordingly this panel
-       // Example:
+        // Example:
         // Preferences.userNodeForPackage(this.getClass()).get(...);
     }
     
-    /**
-     * This method is called when Options Dialog "OK" button is pressed.
-     * This method can be called even before update () method is called.
-     */
     void applyChanges() {
         // TODO store modified settings
-       // Example:
+        // Example:
         // Preferences.userNodeForPackage(this.getClass()).put(...);
     }
     
-    /**
-     * This method is called when Options Dialog "Cancel" button is pressed.
-     * This method can be called even before update () method is called.
-     */
     void cancel() {
-        // TODO 
+        // TODO
     }
     
-    /**
-     * Should return <code>true</code> if some option value in this 
-     * category is valid.
-     * 
-     * 
-     * @return <code>true</code> if some option value in this 
-     * category is valid
-     */
     boolean dataValid() {
-        return true;
+        return true; // TODO
     }
     
-    /**
-     * Should return <code>true</code> if some option value in this 
-     * category has been changed.
-     * 
-     * 
-     * @return <code>true</code> if some option value in this 
-     * category has been changed
-     */
     boolean isChanged() {
-        return false;
-    }        
+        return false; // TODO
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
     
