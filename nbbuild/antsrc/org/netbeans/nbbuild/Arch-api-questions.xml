@@ -189,7 +189,7 @@ and commits any changes to openide/www/tutorial/questions.html.
             NetBeans module system allows restriction of access rights to
             public classes of your module from other modules. This prevents
             unwanted dependencies of others on your code and should be used
-            whenever possible (<a href="http://www.netbeans.org/download/javadoc/OpenAPIs/org/openide/doc-files/upgrade.html#3.4-public-packages">
+            whenever possible (<a href="http://www.netbeans.org/download/dev/javadoc/org-openide-modules/apichanges.html#issue-19621">
             public packages
             </a>). If you do not restrict access to your classes you are
             making it too easy for other people to misuse your implementation
