@@ -241,11 +241,10 @@ Microsystems, Inc. All Rights Reserved.
           <mapper type="glob" from="${nb_all}/*" to="*" />
       </pathconvert>
       
-      <mkdir dir="build/ModulesExportedInterfaces" />
       <property name="export.interfaces" location="build/ModulesExportedInterfaces" />
-
-      <mkdir dir="build/APIChanges" />
       <property name="export.apichanges" location="build/APIChanges" />
+      <mkdir dir="${export.interfaces}" />
+      <mkdir dir="${export.apichanges}" />
       
       <for-each startdir=".." target="netbeans-javadoc" locations="${modules.foreach}"/>
       
