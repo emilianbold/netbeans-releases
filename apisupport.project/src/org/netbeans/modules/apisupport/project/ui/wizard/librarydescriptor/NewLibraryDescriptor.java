@@ -31,7 +31,6 @@ import org.openide.filesystems.FileSystem;
  */
 final class NewLibraryDescriptor extends BasicWizardIterator {
     
-    private static final long serialVersionUID = 1L;
     NewLibraryDescriptor.DataModel data;
     
     public static NewLibraryDescriptor createIterator() {

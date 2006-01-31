@@ -28,7 +28,6 @@ import org.openide.WizardDescriptor;
  */
 final class NewUpdateCenterIterator extends BasicWizardIterator {
     
-    private static final long serialVersionUID = 1L;
     private DataModel data;
     
     public static NewUpdateCenterIterator createIterator() {

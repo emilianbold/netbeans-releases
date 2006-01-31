@@ -100,7 +100,7 @@ public final class @@ITERATOR_CLASS@@ implements WizardDescriptor.Iterator {
     // the number of panels changes in response to user input, then uncomment
     // the following and call when needed: fireChangeEvent();
     /*
-    private transient Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -121,11 +121,6 @@ public final class @@ITERATOR_CLASS@@ implements WizardDescriptor.Iterator {
             it.next().stateChanged(ev);
         }
     }
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        listeners = new HashSet<ChangeListener>(1);
-    }
      */
 
 }
-

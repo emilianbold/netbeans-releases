@@ -41,7 +41,6 @@ import org.openide.util.NbBundle;
  */
 final class NewTCIterator extends BasicWizardIterator {
 
-    private static final long serialVersionUID = 1L;
     private NewTCIterator.DataModel data;
     
     public static NewTCIterator createIterator() {

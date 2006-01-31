@@ -25,11 +25,9 @@ import org.openide.util.NbBundle;
 
 public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.InstantiatingIterator {
     
-    private static final long serialVersionUID = 1L;
-
-    private transient int index;
-    private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor wiz;
+    private int index;
+    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor wiz;
     
     public @@TEMPLATENAME@@WizardIterator() {}
     

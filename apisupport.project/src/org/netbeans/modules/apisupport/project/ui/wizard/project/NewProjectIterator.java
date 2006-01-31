@@ -54,7 +54,6 @@ import org.openide.filesystems.FileUtil;
  */
 final class NewProjectIterator extends BasicWizardIterator {
     
-    private static final long serialVersionUID = 1L;
     private NewProjectIterator.DataModel data;
     
     public static String[] MODULES = {

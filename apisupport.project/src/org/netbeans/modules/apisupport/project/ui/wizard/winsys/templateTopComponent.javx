@@ -17,8 +17,6 @@ import org.openide.windows.WindowManager;
  */
 final class @@TEMPLATENAME@@TopComponent extends TopComponent {
 
-    private static final long serialVersionUID = 1L;
-
     private static @@TEMPLATENAME@@TopComponent instance;
     /** path to the icon used by the component and its open action */
 @@COMMENTICON@@    static final String ICON_PATH = "@@ICONPATH@@";

@@ -49,7 +49,6 @@ import org.openide.xml.XMLUtil;
  */
 public class NewLoaderIterator extends BasicWizardIterator {
     
-    private static final long serialVersionUID = 1L;
     private NewLoaderIterator.DataModel data;
     
     public static NewLoaderIterator createIterator() {

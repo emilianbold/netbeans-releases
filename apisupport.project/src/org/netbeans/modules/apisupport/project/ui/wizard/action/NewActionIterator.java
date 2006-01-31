@@ -27,7 +27,6 @@ import org.openide.filesystems.FileObject;
  */
 final class NewActionIterator extends BasicWizardIterator {
     
-    private static final long serialVersionUID = 1L;
     private DataModel data;
     
     private NewActionIterator() {}

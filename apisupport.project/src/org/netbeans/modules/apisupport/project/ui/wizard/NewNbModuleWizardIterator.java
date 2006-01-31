@@ -41,8 +41,6 @@ import org.openide.util.NbBundle;
  */
 public class NewNbModuleWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
-    private static final long serialVersionUID = 1L;
-    
     /** Either standalone module, suite component or NB CVS module. */
     final static int TYPE_MODULE = 1;
     
@@ -55,11 +53,11 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     /** Pure suite component wizard. */
     final static int TYPE_SUITE_COMPONENT = 4;
     
-    private transient int position;
-    private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor settings;
+    private int position;
+    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor settings;
     
-    private transient int type;
+    private int type;
     
     private FileObject createdProjectFolder;
     

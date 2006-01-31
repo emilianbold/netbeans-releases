@@ -26,7 +26,6 @@ import org.openide.WizardDescriptor;
  */
 final class NewModuleInstallIterator extends BasicWizardIterator {
     
-    private static final long serialVersionUID = 1L;
     private DataModel data;
     
     private NewModuleInstallIterator() {}

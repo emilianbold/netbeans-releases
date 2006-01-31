@@ -52,9 +52,8 @@ import org.openide.util.NbBundle;
  */
 public abstract class BasicWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
-    private static final long serialVersionUID = 1L;
-    private transient int position = 0;
-    private transient BasicWizardIterator.PrivateWizardPanel[] wizardPanels;
+    private int position = 0;
+    private BasicWizardIterator.PrivateWizardPanel[] wizardPanels;
     
     /** Create a new wizard iterator. */
     protected BasicWizardIterator() {}
