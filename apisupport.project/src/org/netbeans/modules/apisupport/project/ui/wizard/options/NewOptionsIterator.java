@@ -64,6 +64,17 @@ public class NewOptionsIterator extends BasicWizardIterator {
     }
     
     static final class DataModel extends BasicWizardIterator.BasicDataModel {
+        static final int ERR_Blank_DisplayName = 1;
+        static final int ERR_Blank_Tooltip = 2;
+        static final int ERR_Blank_Description = 3;
+        static final int ERR_Blank_Title = 4;
+        static final int ERR_Blank_CategoryName = 5;
+        static final int ERR_Blank_IconPath = 6;
+        static final int ERR_Blank_PackageName = 7;
+        
+        static final int WARNING_Incorrect_IconSize = -1;
+        
+        
         private static String[] TOKENS = new String[] {
             "@@PACKAGE_NAME@@",//NOIN18N
             "@@AdvancedOption_CLASS_NAME@@",//NOIN18N
@@ -84,8 +95,8 @@ public class NewOptionsIterator extends BasicWizardIterator {
             "AdvancedOption_DisplayName",//NOIN18N
             "AdvancedOption_Tooltip"//NOIN18N
         };
-
-        private static final String FORM_TEMPLATE_SUFFIXES[] = new String[]{"Panel"};//NOIN18N        
+        
+        private static final String FORM_TEMPLATE_SUFFIXES[] = new String[]{"Panel"};//NOIN18N
         private static final String[] JAVA_TEMPLATE_SUFFIXES = new String[] {
             "AdvancedOption",//NOI18N
             "OptionsCategory",//NOI18N
@@ -108,7 +119,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
         private String description;
         private String categoryName;
         private String iconPath;
-                
+        
         DataModel(WizardDescriptor wiz) {
             super(wiz);
         }
@@ -118,6 +129,11 @@ public class NewOptionsIterator extends BasicWizardIterator {
             this.displayName = displayName;
             this.tooltip = tooltip;
             return getCheckCode();
+        }
+
+        private int getCheckCode() {
+            int retval = getErrorCode();                    
+            return isSuccesCode(retval) ? getWarningCode() : retval;
         }
         
         int setDataForOptionCategory(final String title, final String description,
@@ -143,8 +159,8 @@ public class NewOptionsIterator extends BasicWizardIterator {
         
         public int setPackage(String packageName) {
             setPackageName(packageName);
-            int errCode = getCheckCode();
-            if (errCode == 0) {
+            int errCode = getErrorCode();
+            if (isSuccesCode(errCode)) {
                 generateCreatedModifiedFiles();
             }
             return errCode;
@@ -212,35 +228,35 @@ public class NewOptionsIterator extends BasicWizardIterator {
             assert errCode > 0;
             String field = null;
             switch(errCode) {
-                case 1:
+                case ERR_Blank_DisplayName:
                     field = "FIELD_DisplayName";//NOI18N
                     break;
-                case 2:
+                case ERR_Blank_Tooltip:
                     field = "FIELD_Tooltip";//NOI18N
                     break;
-                case 4:
+                case ERR_Blank_Description:
                     field = "FIELD_Description";//NOI18N
                     break;
-                case 5:
+                case ERR_Blank_Title:
                     field = "FIELD_Title";//NOI18N
-                    break;                    
-                case 6:
+                    break;
+                case ERR_Blank_CategoryName:
                     field = "FIELD_CategoryName";//NOI18N
                     break;
-                case 7:
+                case ERR_Blank_IconPath:
                     field = "FIELD_IconPath";//NOI18N
                     break;
-                case 11:
+                case ERR_Blank_PackageName:
                     field = "FIELD_PackageName";//NOI18N
-                    break;                                        
+                    break;
             }
             assert field != null : errCode;
             field = NbBundle.getMessage(NewOptionsIterator.class, field);
-            assert field != null : errCode;            
-            return (errCode > 0) ? 
+            assert field != null : errCode;
+            return (errCode > 0) ?
                 NbBundle.getMessage(NewOptionsIterator.class, "ERR_FieldInvalid",field) : "";//NOI18N
         }
-
+        
         /**
          * getErrorCode() and getWarningMessage are tigthly coupled. Moreover the
          * order should depend on ordering of textfields in panels.
@@ -249,10 +265,10 @@ public class NewOptionsIterator extends BasicWizardIterator {
             assert warningCode < 0;
             String field = null;
             switch(warningCode) {
-                case -7:
+                case WARNING_Incorrect_IconSize:
                     File icon = new File(getIconPath());
                     assert icon.exists();
-                    ImageIcon ic = null;                    
+                    ImageIcon ic = null;
                     try {
                         ic = new ImageIcon(icon.toURL());
                         assert ic.getIconHeight() != 32;
@@ -270,7 +286,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
             return "";//NOI18N
         }
         
-
+        
         static boolean isSuccesCode(int code) {
             return code == 0;
         }
@@ -284,51 +300,54 @@ public class NewOptionsIterator extends BasicWizardIterator {
         }
         
         
-        private int getCheckCode() {
+        private int getErrorCode() {
             if (advanced) {
-                int emptyCode = checkIfEmpty(new String[] {getDisplayName(), getTooltip(), getAdvancedOptionClassName()});
-                if (emptyCode != 0) {
-                    return emptyCode;
+                if (getDisplayName().length() == 0) {
+                    return ERR_Blank_DisplayName;
+                } else if (getTooltip().length() == 0) {
+                    return ERR_Blank_Tooltip;
                 }
             } else {
-                int emptyCode = checkIfEmpty(new String[] {getDescription(), getTitle(), getCategoryName(), getIconPath(), getOptionsCategoryClassName()});
-                if (emptyCode != 0) {
-                    return 3+emptyCode;
+                if (getDescription().length() == 0) {
+                    return ERR_Blank_Description;
+                } else if (getTitle().length() == 0) {
+                    return ERR_Blank_Title;
+                } else if (getCategoryName().length() == 0) {
+                    return ERR_Blank_CategoryName;
+                } else if (getIconPath().length() == 0) {
+                    return ERR_Blank_IconPath;
+                } else if (getTitle().length() == 0) {
+                    return ERR_Blank_Title;
                 } else {
                     File icon = new File(getIconPath());
                     if (!icon.exists()) {
-                        return 7;
-                    } else {
-                        ImageIcon ic = null;
-                        try {
-                            ic = new ImageIcon(icon.toURL());
-                            if (ic.getIconHeight() != 32 || ic.getIconWidth() != 32) {
-                                return -7;
-                            }
-                        } catch (MalformedURLException ex) {
-                            ErrorManager.getDefault().notify(ex);
-                        }
+                        return ERR_Blank_IconPath;
                     }
                 }
             }
             
-            int emptyCode = checkIfEmpty(new String[] {getFileNamePrefix(),getCodeNameBase(), getPackageName(), getPanelClassName(),getOptionsPanelControllerClassName()});
-            if (emptyCode != 0) {
-                return 8+emptyCode;
+            if (getPackageName().length() == 0) {
+                return ERR_Blank_PackageName;
             }
             return 0;
         }
         
-        private int checkIfEmpty(final String[] checked) {
-            for (int i = 0; i < checked.length; i++) {
-                assert (checked[i] != null) : i;
-                if (checked[i].length() == 0) {
-                    return i+1;
+        private int getWarningCode() {
+            if (!advanced) {
+                ImageIcon ic = null;
+                File icon = new File(getIconPath());
+                assert icon.exists();
+                try {
+                    ic = new ImageIcon(icon.toURL());
+                    if (ic.getIconHeight() != 32 || ic.getIconWidth() != 32) {
+                        return WARNING_Incorrect_IconSize;
+                    }
+                } catch (MalformedURLException ex) {
+                    ErrorManager.getDefault().notify(ex);
                 }
             }
             return 0;
         }
-        
         
         public CreatedModifiedFiles getCreatedModifiedFiles() {
             if (files == null) {
@@ -338,7 +357,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
         }
         
         private CreatedModifiedFiles generateCreatedModifiedFiles() {
-            assert getCheckCode() == 0;
+            assert isSuccesCode(getErrorCode());
             files = new CreatedModifiedFiles(getProject());
             generateFiles();
             generateBundleKeys();

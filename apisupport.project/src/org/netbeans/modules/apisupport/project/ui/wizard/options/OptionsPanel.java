@@ -97,13 +97,13 @@ final class OptionsPanel extends BasicWizardIterator.Panel {
         
         //#68294 check if the paths for newly created files are valid or not..
         String[] invalid  = data.getCreatedModifiedFiles().getInvalidPaths();
-        if (errCode != 0) {
+        if (data.isSuccesCode(errCode)) {
+            setErrorMessage(null);
+        } else if (data.isErrorCode(errCode)) {
             setErrorMessage(data.getErrorMessage(errCode));//NOI18N
         } else if (invalid.length > 0) {
             setErrorMessage(NbBundle.getMessage(OptionsPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));//NOI18N
-        } else {
-            setErrorMessage(null);
-        }
+        } 
     }
     
     
