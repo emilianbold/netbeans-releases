@@ -480,6 +480,8 @@ public class MakeNBM extends Task {
         if (mostRecentInput < file.lastModified()) {
             log("Skipping NBM creation as most recent input is younger: " + mostRecentInput + " than the target file: " + file.lastModified(), Project.MSG_VERBOSE);
             return;
+        } else {
+            log("Most recent input: " + mostRecentInput + " file: " + file.lastModified(), Project.MSG_DEBUG);
         }
         
         

@@ -109,11 +109,11 @@ public class MakeNBMTest extends NbTestCase {
         Thread.sleep(1300);
 
         // execute once again
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Ddo.fail=true"});
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-debug", "-Ddo.fail=true"});
         
         long newTime = output.listFiles()[0].lastModified();
         
-        assertEquals("The file has not been modified", time, newTime);
+        assertEquals("The file has not been modified:\n" + PublicPackagesInProjectizedXMLTest.getStdOut(), time, newTime);
         
         
         CHECK_SIGNED: {
