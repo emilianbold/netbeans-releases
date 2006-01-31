@@ -3,7 +3,7 @@
 <helpset version="2.0">
     <title>@@DISPLAY_NAME@@ Help</title>
     <maps>
-        <homeID>@@CODE_NAME@@-about</homeID>
+        <homeID>@@FULL_CODE_NAME@@.about</homeID>
         <mapref location="@@CODE_NAME@@-map.xml"/>
     </maps>
     <view mergetype="javax.help.AppendMerge">

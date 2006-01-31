@@ -77,10 +77,6 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
             "template_myplugin-about.html", // NOI18N
         };
         
-        private static final String TOKEN_CODE_NAME = "@@CODE_NAME@@"; // NOI18N
-        private static final String TOKEN_DISPLAY_NAME = "@@DISPLAY_NAME@@"; // NOI18N
-        private static final String TOKEN_HELPSET_PATH = "@@HELPSET_PATH@@"; // NOI18N
-        
         private CreatedModifiedFiles files;
         
         DataModel(WizardDescriptor wiz) {
@@ -98,9 +94,10 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                 
                 files = new CreatedModifiedFiles(getProject());
                 Map tokens = new HashMap();
-                tokens.put(TOKEN_CODE_NAME, basename);
-                tokens.put(TOKEN_DISPLAY_NAME, ProjectUtils.getInformation(getProject()).getDisplayName());
-                tokens.put(TOKEN_HELPSET_PATH, path + basename + TEMPLATE_SUFFIX_HS); // NOI18N
+                tokens.put("@@CODE_NAME@@", basename); // NOI18N
+                tokens.put("@@FULL_CODE_NAME@@", codeNameBase); // NOI18N
+                tokens.put("@@DISPLAY_NAME@@", ProjectUtils.getInformation(getProject()).getDisplayName()); // NOI18N
+                tokens.put("@@HELPSET_PATH@@", path + basename + TEMPLATE_SUFFIX_HS); // NOI18N
                 
                 //layer registration
                 files.add(files.createLayerEntry("Services/JavaHelp/" + basename + "-helpset.xml", // NOI18N
