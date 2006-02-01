@@ -165,9 +165,11 @@ public class ShortcutEnterPanel extends javax.swing.JPanel {
             if (e.getSource() == bClear) {
                 key = "";
                 tfShortcut.setText(key);
-            } else
-                if (e.getSource() == bTab)
-                    addKeyStroke(tabKS, true);
+                tfShortcut.requestFocusInWindow();
+            } else if (e.getSource() == bTab) {
+                addKeyStroke(tabKS, true);
+                tfShortcut.requestFocusInWindow();
+            }
         }
         
         

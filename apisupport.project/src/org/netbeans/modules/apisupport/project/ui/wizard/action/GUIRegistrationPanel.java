@@ -185,7 +185,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         
         boolean alwaysEnabled = data.isAlwaysEnabled();
         globalKeyboardShortcut.setEnabled(alwaysEnabled);
-        setGroupEnabled(shortcutGroup, globalKeyboardShortcut.isSelected());
+        setShortcutGroupEnabled();
         
         if (alwaysEnabled) {
             fileTypeContext.setSelected(false);
@@ -230,7 +230,14 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             }
         }
     }
-    
+
+    private void setShortcutGroupEnabled() {
+        boolean isEnabled = globalKeyboardShortcut.isSelected();        
+        setGroupEnabled(shortcutGroup, isEnabled);
+        isEnabled = isEnabled && shortcutsList.getSelectedValues().length > 0;
+        keyStrokeRemove.setEnabled(isEnabled);
+    }
+
     private boolean isEmptyCombo(JComponent c) {
         return c instanceof JComboBox &&
                 CustomizerComponentFactory.hasOnlyValue(((JComboBox) c).getModel(), CustomizerComponentFactory.EMPTY_VALUE);
@@ -603,6 +610,13 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(keyStrokeTxt, gridBagConstraints);
 
+        shortcutsList.setVisibleRowCount(3);
+        shortcutsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                shortcutsListChanged(evt);
+            }
+        });
+
         jScrollPane1.setViewportView(shortcutsList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -808,12 +822,23 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
 
     }// </editor-fold>//GEN-END:initComponents
 
+    private void shortcutsListChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_shortcutsListChanged
+        setShortcutGroupEnabled();
+    }//GEN-LAST:event_shortcutsListChanged
+
     private void keyStrokeRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyStrokeRemoveActionPerformed
         DefaultListModel lm = (DefaultListModel)shortcutsList.getModel();
         Object[] selected = shortcutsList.getSelectedValues();
-        for (int i = 0; i < selected.length; i++) {
-            lm.removeElement(selected[i]);    
-        }        
+        if (selected.length > 0) {
+            int idx = shortcutsList.getSelectionModel().getMinSelectionIndex();
+            for (int i = 0; i < selected.length; i++) {
+                lm.removeElement(selected[i]);
+            }
+            if (lm.getSize() > 0) {
+                idx = (idx > 0) ? idx -1 : 0;
+               shortcutsList.setSelectedIndex(idx); 
+            }
+        }
         checkValidity();
     }//GEN-LAST:event_keyStrokeRemoveActionPerformed
     
@@ -839,7 +864,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     }//GEN-LAST:event_globalToolbarButtonActionPerformed
     
     private void globalKeyboardShortcutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_globalKeyboardShortcutActionPerformed
-        setGroupEnabled(shortcutGroup, globalKeyboardShortcut.isSelected());
+        setShortcutGroupEnabled();
         checkValidity();
     }//GEN-LAST:event_globalKeyboardShortcutActionPerformed
     
@@ -851,6 +876,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             if (!lm.contains(newShortcut)) {
                 lm.addElement(newShortcut);
                 data.setKeyStroke(UIUtil.keyStrokesToLogicalString(keyStrokes));
+                shortcutsList.setSelectedValue(newShortcut, true);
                 checkValidity();
             }
         }        
