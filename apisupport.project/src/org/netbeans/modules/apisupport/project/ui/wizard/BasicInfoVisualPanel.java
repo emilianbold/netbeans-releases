@@ -169,6 +169,12 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         return (String) getSettings().getProperty(NewNbModuleWizardIterator.PREFERRED_SUITE_DIR);
     }
     
+    private boolean isOneSuiteDedicatedMode() {
+        Boolean b = (Boolean) getSettings().getProperty(
+                NewNbModuleWizardIterator.ONE_SUITE_DEDICATED_MODE);
+        return b != null ? b.booleanValue() : false;
+    }
+    
     private String getNameValue() {
         return nameValue.getText().trim();
     }
@@ -192,8 +198,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         platformValue.setEnabled(standalone);
         managePlatform.setEnabled(standalone);
         moduleSuite.setEnabled(suiteModuleSelected);
-        moduleSuiteValue.setEnabled(suiteModuleSelected && getPreferredSuiteDir() == null);
-        browseSuiteButton.setEnabled(suiteModuleSelected && getPreferredSuiteDir() == null);
+        moduleSuiteValue.setEnabled(suiteModuleSelected && !isOneSuiteDedicatedMode());
+        browseSuiteButton.setEnabled(suiteModuleSelected && !isOneSuiteDedicatedMode());
     }
     
     void updateAndCheck() {

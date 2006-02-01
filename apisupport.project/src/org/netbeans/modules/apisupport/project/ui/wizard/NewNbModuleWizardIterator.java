@@ -42,24 +42,16 @@ import org.openide.util.NbBundle;
 public class NewNbModuleWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
     /** Either standalone module, suite component or NB CVS module. */
-    final static int TYPE_MODULE = 1;
+    static final int TYPE_MODULE = 1;
     
     /** Suite wizard. */
-    final static int TYPE_SUITE = 2;
+    static final int TYPE_SUITE = 2;
     
     /** Library wrapper module wizard. */
-    final static int TYPE_LIBRARY_MODULE = 3;
+    static final int TYPE_LIBRARY_MODULE = 3;
     
     /** Pure suite component wizard. */
-    final static int TYPE_SUITE_COMPONENT = 4;
-    
-    private int position;
-    private WizardDescriptor.Panel[] panels;
-    private WizardDescriptor settings;
-    
-    private int type;
-    
-    private FileObject createdProjectFolder;
+    static final int TYPE_SUITE_COMPONENT = 4;
     
     /**
      * Property under which a suite to be selected in the suite combo can be
@@ -67,7 +59,20 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
      */
     static final String PREFERRED_SUITE_DIR = "preferredSuiteDir"; // NOI18N
     
+    /** Tells whether the wizard should be run in a suite dedicate mode. */
+    static final String ONE_SUITE_DEDICATED_MODE = "oneSuiteDedicatedMode"; // NOI18N
+    
+    private int position;
+    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor settings;
+    private int type;
+    private FileObject createdProjectFolder;
+    
+    /** See {@link #PREFERRED_SUITE_DIR}. */
     private String preferredSuiteDir;
+    
+    /** See {@link #ONE_SUITE_DEDICATED_MODE}. */
+    private Boolean suiteDedicated = Boolean.FALSE; // default
     
     /** Create a new wizard iterator. */
     private NewNbModuleWizardIterator(int type) {
@@ -88,6 +93,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     public static NewNbModuleWizardIterator createSuiteComponentIterator(final SuiteProject suite) {
         NewNbModuleWizardIterator iterator = new NewNbModuleWizardIterator(TYPE_SUITE_COMPONENT);
         iterator.preferredSuiteDir = FileUtil.toFile(suite.getProjectDirectory()).getAbsolutePath();
+        iterator.suiteDedicated = Boolean.TRUE;
         return iterator;
     }
     
@@ -104,6 +110,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         NewNbModuleWizardIterator iterator = new NewNbModuleWizardIterator(TYPE_LIBRARY_MODULE);
         iterator.preferredSuiteDir = SuiteUtils.getSuiteDirectoryPath(project);
         assert iterator.preferredSuiteDir != null : project + " does not have a SuiteProvider in its lookup?"; // NOI18N
+        iterator.suiteDedicated = Boolean.TRUE;
         return iterator;
     }
     
@@ -182,7 +189,9 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         }
         if (preferredSuiteDir != null) {
             settings.putProperty(PREFERRED_SUITE_DIR, preferredSuiteDir);
+            settings.putProperty(ONE_SUITE_DEDICATED_MODE, suiteDedicated);
         }
+        
         position = 0;
         String[] steps = null;
         switch (type) {
