@@ -232,7 +232,7 @@ public final class ProjectManager {
                         Project p = createProject(projectDirectory);
                         if (ERR.isLoggable(ERR_LVL)) {
                             ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": created new project");
-                            Thread.dumpStack();
+                            //Thread.dumpStack();
                         }
                         synchronized (dir2Proj) {
                             dir2Proj.notifyAll();
