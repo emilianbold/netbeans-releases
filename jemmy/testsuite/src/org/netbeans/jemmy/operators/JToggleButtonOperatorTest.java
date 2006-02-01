@@ -138,6 +138,7 @@ public class JToggleButtonOperatorTest extends TestCase {
         JToggleButtonOperator operator2 = new JToggleButtonOperator(operator1);
         assertNotNull(operator2);
         
-        operator2.makeComponentVisible();
+        operator2.prepareToClick();
+        assertTrue(toggleButton.isVisible());
     }
 }
