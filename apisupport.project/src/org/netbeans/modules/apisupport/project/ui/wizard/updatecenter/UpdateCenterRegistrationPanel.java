@@ -33,9 +33,6 @@ import org.openide.util.NbBundle;
  */
 final class UpdateCenterRegistrationPanel extends BasicWizardIterator.Panel {
     
-    private static final String ENTER_LABEL = getMessage("CTL_EnterLabel"); //NOI18N
-    private static final String NONE_LABEL = getMessage("CTL_None"); //NOI18N
-    
     private DataModel data;
     private DocumentListener updateListener;
     
