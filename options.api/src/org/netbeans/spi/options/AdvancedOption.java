@@ -27,11 +27,7 @@ package org.netbeans.spi.options;
  *     &lt;/folder&gt;
  * &lt;/folder&gt;</pre>
  * 
- * Use standard way how to sort items registered in layers:
- * 
- * <pre style="background-color: rgb(255, 255, 153);">
- * &lt;attr name="GeneralPanel/Advanced" boolvalue="true"/&gt;
- * </pre>
+ * No explicit sorting recognized (may be sorted e.g. by display name).
  *
  * @see OptionsCategory
  * @see OptionsPanelController 

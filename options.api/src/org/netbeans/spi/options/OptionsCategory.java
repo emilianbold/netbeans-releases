@@ -32,7 +32,7 @@ import org.openide.util.Utilities;
  * Use standard way how to sort items registered in layers:
  * 
  * <pre style="background-color: rgb(255, 255, 153);">
- * &lt;attr name="GeneralPanel/Advanced" boolvalue="true"/&gt;
+ * &lt;attr name="GeneralPanel.instance/FooOptionsPanel.instance" boolvalue="true"/&gt;
  * </pre>
  *
  * @see AdvancedOption
