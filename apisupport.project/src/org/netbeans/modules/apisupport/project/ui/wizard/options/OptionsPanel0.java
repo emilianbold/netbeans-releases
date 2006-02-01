@@ -122,6 +122,11 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         updateData();
     }
     
+    public void removeNotify() {
+        super.removeNotify();
+        removeListeners();
+    }
+    
     private void enableDisable() {
         boolean advancedEnabled = AdvancedButton.isSelected();
         assert advancedEnabled != OptinsCategoryButton.isSelected();

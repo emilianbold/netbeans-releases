@@ -69,6 +69,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
         static final int ERR_Blank_CategoryName = 5;
         static final int ERR_Blank_IconPath = 6;
         static final int ERR_Blank_PackageName = 7;
+        static final int ERR_Blank_ClassNamePrefix = 8;
         
         static final int WARNING_Incorrect_IconSize = -1;
         
@@ -115,6 +116,8 @@ public class NewOptionsIterator extends BasicWizardIterator {
         private String categoryName;
         private String iconPath;
         
+        private String classNamePrefix;
+        
         DataModel(WizardDescriptor wiz) {
             super(wiz);
         }
@@ -123,21 +126,16 @@ public class NewOptionsIterator extends BasicWizardIterator {
             this.advanced = true;
             this.displayName = displayName;
             this.tooltip = tooltip;
-            return getCheckCode();
+            return checkFirstPanel();
         }
 
-        private int getCheckCode() {
-            int retval = getErrorCode();
-            return isSuccessCode(retval) ? getWarningCode() : retval;
-        }
-        
         int setDataForOptionCategory(final String title,
                 final String categoryName, final String iconPath) {
             this.advanced = false;
             this.title = title;
             this.categoryName = categoryName;
             this.iconPath = iconPath;
-            return getCheckCode();
+            return checkFirstPanel();
         }
         
         
@@ -151,9 +149,10 @@ public class NewOptionsIterator extends BasicWizardIterator {
             return retValue;
         }
         
-        public int setPackage(String packageName) {
+        public int setPackageAndPrefix(String packageName, String classNamePrefix) {
             setPackageName(packageName);
-            int errCode = getErrorCode();
+            this.classNamePrefix = classNamePrefix;
+            int errCode = checkFinalPanel();
             if (isSuccessCode(errCode)) {
                 generateCreatedModifiedFiles();
             }
@@ -230,6 +229,9 @@ public class NewOptionsIterator extends BasicWizardIterator {
                 case ERR_Blank_PackageName:
                     field = "FIELD_PackageName";//NOI18N
                     break;
+                case ERR_Blank_ClassNamePrefix:
+                    field = "FIELD_ClassNamePrefix";//NOI18N
+                    break;
             }
             assert field != null : errCode;
             field = NbBundle.getMessage(NewOptionsIterator.class, field);
@@ -278,9 +280,8 @@ public class NewOptionsIterator extends BasicWizardIterator {
         static boolean isWarningCode(int code) {
             return code < 0;
         }
-        
-        
-        private int getErrorCode() {
+                
+        private int checkFirstPanel() {
             if (advanced) {
                 if (getDisplayName().length() == 0) {
                     return ERR_Blank_DisplayName;
@@ -302,16 +303,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
                         return ERR_Blank_IconPath;
                     }
                 }
-            }
-            
-            if (getPackageName().length() == 0) {
-                return ERR_Blank_PackageName;
-            }
-            return 0;
-        }
-        
-        private int getWarningCode() {
-            if (!advanced) {
+                //warnings should go at latest
                 ImageIcon ic = null;
                 File icon = new File(getIconPath());
                 assert icon.exists();
@@ -322,7 +314,16 @@ public class NewOptionsIterator extends BasicWizardIterator {
                     }
                 } catch (MalformedURLException ex) {
                     ErrorManager.getDefault().notify(ex);
-                }
+                }                
+            }
+            return 0;
+        }
+
+        private int checkFinalPanel() {            
+            if (getPackageName().length() == 0) {
+                return ERR_Blank_PackageName;
+            } else if (getClassNamePrefix().length() == 0) {
+                return ERR_Blank_ClassNamePrefix;
             }
             return 0;
         }
@@ -335,7 +336,8 @@ public class NewOptionsIterator extends BasicWizardIterator {
         }
         
         private CreatedModifiedFiles generateCreatedModifiedFiles() {
-            assert isSuccessCode(getErrorCode());
+            assert isSuccessCode(checkFirstPanel()) || isWarningCode(checkFirstPanel());            
+            assert isSuccessCode(checkFinalPanel());
             files = new CreatedModifiedFiles(getProject());
             generateFiles();
             generateBundleKeys();
@@ -388,25 +390,18 @@ public class NewOptionsIterator extends BasicWizardIterator {
         }
         
         private String getFilePath(final String templateSuffix) {
-            String fileName = getFileNamePrefix()+templateSuffix+ ".java";
+            String fileName = getClassNamePrefix()+templateSuffix+ ".java";
             return getDefaultPackagePath(fileName);//NOI18N
         }
         
         private CreatedModifiedFiles.Operation createFormFileCopyOperation(final String templateSuffix) {
             URL template = NewOptionsIterator.class.getResource(FORM_TEMPLATE_PREFIX+templateSuffix);
             assert template != null : JAVA_TEMPLATE_PREFIX+templateSuffix;
-            String fileName = getFileNamePrefix()+templateSuffix+ ".form";// NOI18N
+            String fileName = getClassNamePrefix()+templateSuffix+ ".form";// NOI18N
             String filePath = getDefaultPackagePath(fileName);
             return files.createFile(filePath, template);
         }
-        
-        private String getFileNamePrefix() {
-            String replacement;
-            String codeNameBase = getCodeNameBase();
-            replacement = codeNameBase.substring(codeNameBase.lastIndexOf(".")+1);// NOI18N
-            return replacement.substring(0,1).toUpperCase()+replacement.substring(1);// NOI18N
-        }
-        
+                
         private String getCodeNameBase() {
             if (codeNameBase == null) {
                 ManifestManager mm = ManifestManager.getInstance(getProject().getManifest(), false);
@@ -440,8 +435,16 @@ public class NewOptionsIterator extends BasicWizardIterator {
             assert isAdvanced() || iconPath != null;
             return iconPath;
         }
-        
-        
+
+        String getClassNamePrefix() {
+            if (classNamePrefix == null) {
+                classNamePrefix = getCodeNameBase();
+                classNamePrefix = classNamePrefix.substring(classNamePrefix.lastIndexOf(".")+1);// NOI18N
+                classNamePrefix = classNamePrefix.substring(0,1).toUpperCase()+classNamePrefix.substring(1);// NOI18N
+            }
+            return classNamePrefix;
+        }
+                
         private boolean isAdvanced() {
             return advanced;
         }
@@ -463,7 +466,8 @@ public class NewOptionsIterator extends BasicWizardIterator {
         }
         
         private String getClassName(String suffix) {
-            return getFileNamePrefix() + suffix;
+            return getClassNamePrefix() + suffix;
         }
+
     }
 }
