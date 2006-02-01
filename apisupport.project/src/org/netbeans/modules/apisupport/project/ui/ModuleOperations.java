@@ -58,7 +58,10 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         
         SuiteProject suite = SuiteUtils.findSuite(project);
         if (suite != null) {
-            SuiteUtils.removeModuleFromSuite(project);
+            // XXX we should ask the user in the same way as when we removing the
+            // module in suite logical view. But it is not possible with the
+            // current Project API. (maybe by some wrapper in the ModuleActions)
+            SuiteUtils.removeModuleFromSuiteWithDependencies(project);
         }
         
         project.notifyDeleting();
@@ -153,7 +156,7 @@ public final class ModuleOperations implements DeleteOperationImplementation,
     
     private void adjustDisplayName() throws IOException {
         // XXX what if the user makes two copies from one module?
-        setDisplayName(ProjectUtils.getInformation(project).getDisplayName() + " (0)");
+        setDisplayName(ProjectUtils.getInformation(project).getDisplayName() + " (0)"); // NOI18N
     }
     
     private void setDisplayName(String nueName) throws IOException {

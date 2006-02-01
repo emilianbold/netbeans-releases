@@ -19,6 +19,7 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Martin Krauskopf
@@ -36,10 +37,15 @@ public class LibrariesNodeTest extends TestBase {
         Node root = lvp.createLogicalView();
         Node libraries = root.getChildren().findChild(LibrariesNode.LIBRARIES_NAME);
         assertNotNull("have the Libraries node", libraries);
+        libraries.getChildren().getNodes(); // ping
+        
+        flushProjectMutex();
         assertEquals("just jdk node is present", 1, libraries.getChildren().getNodesCount());
         
         Util.addDependency(p, "org.netbeans.modules.java.project");
         ProjectManager.getDefault().saveProject(p);
+        
+        flushProjectMutex();
         assertEquals("dependency noticed", 2, libraries.getChildren().getNodesCount());
     }
     
@@ -51,9 +57,22 @@ public class LibrariesNodeTest extends TestBase {
         
         Util.addDependency(p, "org.netbeans.modules.java.project");
         ProjectManager.getDefault().saveProject(p);
-        
+        libraries.getChildren().getNodes(); // ping
+        flushProjectMutex();
         assertEquals("dependency noticed", 2, libraries.getChildren().getNodesCount());
         assertEquals("dependency noticed", 4, libraries.getChildren().getNodes()[1].getActions(false).length);
+    }
+    
+    private void flushProjectMutex() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                ProjectManager.mutex().writeAccess(new Runnable() {
+                    public void run() {
+                        // flush
+                    }
+                });
+            }
+        }).waitFinished();
     }
     
     // XXX Much more needed

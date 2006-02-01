@@ -14,7 +14,9 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.io.File;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
@@ -72,6 +74,29 @@ public class SuiteUtilsTest extends TestBase {
         assertEquals("doesn't have suite component", 0, spp.getSubprojects().size());
         suiteProvider = (SuiteProvider) module1.getLookup().lookup(SuiteProvider.class);
         assertNull("module1 became standalone module - doesn't have valid SuiteProvider", suiteProvider.getSuiteDirectory());
+    }
+    
+    public void testRemoveModuleFromSuiteWithDependencies() throws Exception {
+        SuiteProject suite1 = generateSuite("suite1");
+        NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
+        NbModuleProject module2 = TestBase.generateSuiteComponent(suite1, "module2");
+        
+        SubprojectProvider spp = SuitePropertiesTest.getSubProjectProvider(suite1);
+        assertEquals("two suite components", 2, spp.getSubprojects().size());
+        
+        Util.addDependency(module2, module1);
+        ProjectManager.getDefault().saveProject(module2);
+        ProjectXMLManager pxm2 = new ProjectXMLManager(module2);
+        assertEquals("one dependency", 1, pxm2.getDirectDependencies().size());
+        
+        SuiteUtils.removeModuleFromSuiteWithDependencies(module1);
+        spp = SuitePropertiesTest.getSubProjectProvider(suite1);
+        assertEquals("one suite component", 1, spp.getSubprojects().size());
+        SuiteProvider suiteProvider = (SuiteProvider) module1.getLookup().lookup(SuiteProvider.class);
+        assertNull("module1 became standalone module - doesn't have valid SuiteProvider", suiteProvider.getSuiteDirectory());
+        
+        pxm2 = new ProjectXMLManager(module2);
+        assertEquals("dependency was removed", 0, pxm2.getDirectDependencies().size());
     }
     
     /** Simulates scenario when deadlock occurs when playing with 64582. */

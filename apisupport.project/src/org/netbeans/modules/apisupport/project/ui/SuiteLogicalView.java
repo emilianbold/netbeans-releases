@@ -357,12 +357,31 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         protected void performAction(Node[] activatedNodes) {
             for (int i = 0; i < activatedNodes.length; i++) {
-                NbModuleProject suiteComponent =
+                final NbModuleProject suiteComponent =
                         (NbModuleProject) activatedNodes[i].getLookup().lookup(NbModuleProject.class);
                 assert suiteComponent != null : "NbModuleProject in lookup"; // NOI18N
                 try {
-                    SuiteUtils.removeModuleFromSuite(suiteComponent);
-                    ProjectManager.getDefault().saveProject(suiteComponent);
+                    NbModuleProject[] modules = SuiteUtils.getDependentModules(suiteComponent);
+                    boolean remove = true;
+                    if (modules.length > 0) {
+                        StringBuffer sb = new StringBuffer("<ul>"); // NOI18N
+                        for (int j = 0; j < modules.length; j++) {
+                            sb.append("<li>" + ProjectUtils.getInformation(modules[j]).getDisplayName() + "</li>"); // NOI18N
+                        }
+                        sb.append("</ul>"); // NOI18N
+                        String confirmMessage = NbBundle.getMessage(SuiteLogicalView.class, "MSG_RemovingModuleMessage",
+                                ProjectUtils.getInformation(suiteComponent).getDisplayName(), sb.toString());
+                        NotifyDescriptor.Confirmation confirm = new NotifyDescriptor.Confirmation(confirmMessage,
+                                NbBundle.getMessage(SuiteLogicalView.class, "CTL_RemovingModuleTitle"),
+                                NotifyDescriptor.OK_CANCEL_OPTION);
+                        DialogDisplayer.getDefault().notify(confirm);
+                        if (confirm.getValue() == NotifyDescriptor.CANCEL_OPTION) {
+                            remove = false;
+                        }
+                    }
+                    if (remove) {
+                        SuiteUtils.removeModuleFromSuiteWithDependencies(suiteComponent);
+                    }
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }

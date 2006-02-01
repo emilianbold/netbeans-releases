@@ -69,6 +69,8 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -177,18 +179,32 @@ final class LibrariesNode extends AbstractNode {
         }
         
         private void refreshKeys() {
-            ProjectXMLManager pxm = new ProjectXMLManager(project);
-            try {
-                List keys = new ArrayList();
-                keys.add(JDK_PLATFORM_NAME);
-                SortedSet deps = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
-                deps.addAll(pxm.getDirectDependencies());
-                keys.addAll(deps);
-                setKeys(Collections.EMPTY_SET); // XXX workaround for bad ModuleDependency comparision mechanism implementation
-                setKeys(Collections.unmodifiableList(keys));
-            } catch (IOException e) {
-                assert false : e;
-            }
+            // Since miscellaneous operations may be run upon the project.xml
+            // of individual projects we could be called from the same thread
+            // with already acquired ProjectManager.mutex. This could lead to
+            // refreshing during the misconfigurated suite/suite_component
+            // relationship.
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
+                            public Object run() throws Exception {
+                                ProjectXMLManager pxm = new ProjectXMLManager(project);
+                                List keys = new ArrayList();
+                                keys.add(JDK_PLATFORM_NAME);
+                                SortedSet deps = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
+                                deps.addAll(pxm.getDirectDependencies());
+                                keys.addAll(deps);
+                                setKeys(Collections.EMPTY_SET); // XXX workaround for bad ModuleDependency comparision mechanism implementation
+                                setKeys(Collections.unmodifiableList(keys));
+                                return null;
+                            }
+                        });
+                    } catch (MutexException e) {
+                        assert false : e.getException();
+                    }
+                }
+            });
         }
         
         protected Node[] createNodes(Object key) {

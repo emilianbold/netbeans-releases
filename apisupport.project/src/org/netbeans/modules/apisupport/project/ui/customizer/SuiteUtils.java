@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -45,7 +46,10 @@ import org.openide.util.MutexException;
 /**
  * Utility methods for miscellaneous suite module operations like moving its
  * subModules between individual suites, removing subModules, adding and other
- * handy methods.
+ * handy methods.<br>
+ * Note that some of the methods may acquire {@link ProjectManager#mutex} read
+ * or write access. See javadoc to individual methods.
+ *
  *
  * @author Martin Krauskopf
  */
@@ -65,9 +69,40 @@ public final class SuiteUtils {
     }
     
     /**
+     * Gets suite components from the same suite which have set a given suite
+     * component as a dependency.
+     */
+    public static NbModuleProject[] getDependentModules(final NbModuleProject suiteComponent) throws IOException {
+        final String cnb = suiteComponent.getCodeNameBase();
+        try {
+            return (NbModuleProject[]) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction(){
+                public Object run() throws Exception {
+                    Set/*NbModuleProject*/ result = new HashSet();
+                    SuiteProject suite = SuiteUtils.findSuite(suiteComponent);
+                    Set/*<Project>*/ subProjects = SuiteUtils.getSubProjects(suite);
+                    PROJECTS: for (Iterator it = subProjects.iterator(); it.hasNext();) {
+                        NbModuleProject p = (NbModuleProject) it.next();
+                        ProjectXMLManager pxm = new ProjectXMLManager(p);
+                        for (Iterator depsIt = pxm.getDirectDependencies().iterator(); depsIt.hasNext();) {
+                            ModuleDependency dep = (ModuleDependency) depsIt.next();
+                            if (dep.getModuleEntry().getCodeNameBase().equals(cnb)) {
+                                result.add(p);
+                                continue PROJECTS;
+                            }
+                        }
+                    }
+                    return (NbModuleProject[]) result.toArray(new NbModuleProject[result.size()]);
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
+        }
+    }
+    
+    /**
      * Reads needed information from the given {@link SuiteProperties} and
      * appropriately replace its all modules with new ones.
-     * Acquires write access.
+     * <p>Acquires write access.</p>
      */
     public static void replaceSubModules(final SuiteProperties suiteProps) throws IOException {
         try {
@@ -108,7 +143,7 @@ public final class SuiteUtils {
      * there. If the module is already suite component of another suite it will
      * be appropriatelly removed from it (i.e moved from module's current suite
      * to the given suite).
-     * Acquires write access.
+     * <p>Acquires write access.</p>
      */
     public static void addModule(final SuiteProject suite, final NbModuleProject project) throws IOException {
         try {
@@ -134,8 +169,36 @@ public final class SuiteUtils {
     
     /**
      * Removes module from its current suite if the given module is a suite
+     * component and also remove all dependencies on this module from the suite
+     * components in the same suite.
+     * <p>Acquires write access.</p>
+     */
+    public static void removeModuleFromSuiteWithDependencies(final NbModuleProject suiteComponent) throws IOException {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                public Object run() throws Exception {
+                    NbModuleProject[] modules = SuiteUtils.getDependentModules(suiteComponent);
+                    // remove all dependencies on the being removed suite component
+                    String cnb = suiteComponent.getCodeNameBase();
+                    for (int j = 0; j < modules.length; j++) {
+                        ProjectXMLManager pxm = new ProjectXMLManager(modules[j]);
+                        pxm.removeDependency(cnb);
+                        ProjectManager.getDefault().saveProject(modules[j]);
+                    }
+                    // finally remove suite component itself
+                    SuiteUtils.removeModuleFromSuite(suiteComponent);
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
+        }
+    }
+    
+    /**
+     * Removes module from its current suite if the given module is a suite
      * component. Does nothing otherwise.
-     * Acquires write access.
+     * <p>Acquires write access.</p>
      */
     public static void removeModuleFromSuite(final NbModuleProject suiteComponent) throws IOException {
         try {
@@ -329,12 +392,13 @@ public final class SuiteUtils {
     }
     
     /**
-     * Returns suite for the given suite component.
-     * Acquires write access.
+     * Returns suite for the given suite component. May return
+     * <code>null</code>.<p>
+     * <p>Acquires read access.</p>
      */
     public static SuiteProject findSuite(final Project suiteComponent) throws IOException {
         try {
-            return (SuiteProject) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction(){
+            return (SuiteProject) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction(){
                 public Object run() throws Exception {
                     File suiteDir = SuiteUtils.getSuiteDirectory(suiteComponent);
                     return suiteDir == null ? null :
@@ -396,5 +460,5 @@ public final class SuiteUtils {
         File suiteDir = getSuiteDirectory(project);
         return suiteDir != null ? suiteDir.getAbsolutePath() : null;
     }
-
+    
 }
