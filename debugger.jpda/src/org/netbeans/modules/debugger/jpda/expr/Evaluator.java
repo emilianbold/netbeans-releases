@@ -1615,6 +1615,11 @@ public class Evaluator implements JavaParserVisitor {
         List args
      ) throws InvalidExpressionException {
         
+        if (verbose)
+            throw new UnsupportedOperationException (NbBundle.getMessage (
+                Evaluator.class,
+                "CTL_UnsupportedOperationException"
+            ));
         try {
             Value value =
                     objectReference.invokeMethod(evaluationThread, method,

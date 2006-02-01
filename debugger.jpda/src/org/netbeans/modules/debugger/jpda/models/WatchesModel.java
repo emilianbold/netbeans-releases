@@ -485,11 +485,10 @@ public class WatchesModel implements TreeModel {
                         m.fireTreeChanged ();
                     }
                 });
+                if (verbose)
+                    System.out.println("WM  create task " + task);
             }
             task.schedule(100);
-
-            if (verbose)
-                System.out.println("WM  create task " + task);
         }
         
         private void destroy () {
