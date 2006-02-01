@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
         <property name="public.package.jar.dir" location="build/public-package-jars"/>
         <mkdir dir="${public.package.jar.dir}"/>
-        <!-- Similar to projectized.xml but does not try to set NBM homepage/distribution, nor is javahelp.excludes predefined, but javadoc.title is defaulted. -->
+        <!-- Similar to projectized.xml but does not try to set NBM homepage/distribution, nor is javahelp.excludes predefined. -->
         <parseprojectxml
             project="."
             publicpackagesproperty="public.packages"
@@ -93,7 +93,6 @@ Microsystems, Inc. All Rights Reserved.
         <property name="build.javahelp.dir" location="build/javahelp"/>
         <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
         <property name="javahelp.search" value="JavaHelpSearch"/>
-        <property name="javadoc.title" value="${code.name.base.dashes}"/>
     </target>
 
     <target name="test-lib-init" depends="init">
@@ -147,12 +146,13 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
 
-    <target name="javadoc" depends="build-init">
+    <target name="javadoc" depends="build-init,-javadoc-init">
         <mkdir dir="${netbeans.javadoc.dir}/${code.name.base.dashes}"/>
-        <javadoc destdir="${netbeans.javadoc.dir}/${code.name.base.dashes}" packagenames="${module.javadoc.packages}" source="${javac.source}">
+        <javadoc destdir="${netbeans.javadoc.dir}/${code.name.base.dashes}" packagenames="${module.javadoc.packages}" source="${javac.source}" windowtitle="${javadoc.title}">
             <classpath refid="cp"/>
             <sourcepath location="${src.dir}"/>
             <doctitle>${javadoc.title}</doctitle>
+            <header>${javadoc.header}</header>
         </javadoc>
     </target>
 

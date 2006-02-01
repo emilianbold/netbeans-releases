@@ -80,13 +80,12 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
         ProjectCustomizer.Category versioning = createCategory(CATEGORY_VERSIONING, "LBL_ConfigVersioning"); // NOI18N
         ProjectCustomizer.Category compiling = createCategory(CATEGORY_COMPILING, "LBL_ConfigCompiling"); // NOI18N
         ProjectCustomizer.Category packaging = createCategory(CATEGORY_PACKAGING, "LBL_ConfigPackaging"); // NOI18N
-        ProjectCustomizer.Category documenting = createCategory(CATEGORY_DOCUMENTING, "LBL_ConfigDocumenting"); // NOI18N
         
         ProjectCustomizer.Category build = ProjectCustomizer.Category.create(
                 CATEGORY_BUILD,
                 NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_ConfigBuild"),
                 null,
-                new ProjectCustomizer.Category[] { compiling, packaging, documenting }
+                new ProjectCustomizer.Category[] { compiling, packaging }
         );
         
         setCategories(new ProjectCustomizer.Category[] {
@@ -99,10 +98,8 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
         createPanel(versioning, new CustomizerVersioning(moduleProps));
         createPanel(compiling, new CustomizerCompiling(moduleProps));
         createPanel(packaging, new CustomizerPackaging(moduleProps));
-        createPanel(documenting, new CustomizerDocumenting(moduleProps));
         
         listenToPanels();
     }
     
 }
-

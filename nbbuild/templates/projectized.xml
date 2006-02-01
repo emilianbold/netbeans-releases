@@ -82,8 +82,7 @@ Microsystems, Inc. All Rights Reserved.
         </path>
     </target>
 
-    <target name="javadoc" depends="build-init">
-        <fail unless="javadoc.title">Must set javadoc.title</fail>
+    <target name="javadoc" depends="build-init,-javadoc-init">
         <property name="javadoc.check.failonerror" value="false" />
         <!-- This should become an import at some point, perhaps: -->
         <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">

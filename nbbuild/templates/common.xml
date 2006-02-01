@@ -470,6 +470,22 @@ Microsystems, Inc. All Rights Reserved.
         <fail if="tests.failed">Some tests failed; see details above.</fail>
     </target>
     
+    <target name="-javadoc-init" depends="init">
+        <!-- #71884: default Javadoc title and header -->
+        <property file="${manifest.mf}" prefix="mf."/>
+        <property file="${src.dir}/${mf.OpenIDE-Module-Localizing-Bundle}" prefix="bundle."/>
+        <condition property="javadoc.title" value="${bundle.OpenIDE-Module-Name}">
+            <isset property="bundle.OpenIDE-Module-Name"/>
+        </condition>
+        <property name="javadoc.title" value="${code.name.base.dashes}"/> <!-- fallback -->
+        <condition property="mf.OpenIDE-Module-Specification-Version" value="${spec.version.base}"> <!-- fallback -->
+            <isset property="spec.version.base"/>
+        </condition>
+        <property name="mf.OpenIDE-Module" value="${code.name.base.dashes}"/> <!-- fallback -->
+        <property name="mf.OpenIDE-Module-Implementation-Version" value=""/> <!-- fallback -->
+        <property name="javadoc.header" value="${mf.OpenIDE-Module} ${mf.OpenIDE-Module-Specification-Version} ${mf.OpenIDE-Module-Implementation-Version}"/>
+    </target>
+    
     <target name="arch" depends="init" description="Process an arch.xml, creating it if it does not yet exist.">
         <fail unless="javadoc.arch">You must define e.g. javadoc.arch=$${basedir}/arch.xml in project.properties</fail>
         <mkdir dir="build"/>

@@ -497,6 +497,7 @@ since it disables the default content which links to various generated documents
 which you would need to manually add to your own overview.
 
 javadoc.title - title for Javadoc build. Optional for external modules.
+DEPRECATED since 5.0u1; taken from other module metadata.
 
 javahelp.base - "${code.name.base.slashes}/docs" by default; directory
 containing your help set, under "javahelp/".
