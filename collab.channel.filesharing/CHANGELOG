@@ -28,3 +28,5 @@
 
 1.6:	Additional fix for #69812. Now works properly even if you don't have
 	opened the remote document.
+
+1.7:	Better way of sharing form files. Remote can view, owner can edit. #69657

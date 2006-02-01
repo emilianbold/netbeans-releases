@@ -142,12 +142,26 @@ public class CollabFormFileHandler extends CollabDefaultFileHandler implements C
 
                 //add listener for this document
                 FileObject fileObject = getFileObject();
+                // and mark it immediatelly read-only (#69657)
+                File fil = FileUtil.toFile(fileObject);
+                fil.setReadOnly();
                 fileObject.addFileChangeListener(new DefaultFileChangeListener());
             } else {
                 inReceiveSendFile = true;
+                // delete the r/o file first and recreate empty one (#69657)
+                File fil = FileUtil.toFile(fileObject);
+                if (!fil.canWrite()) {
+                    fil.delete();
+                    fil.createNewFile();
+                }
                 updateFileObject(fileContent);
+                // and mark it immediatelly read-only again (#69657)
+                fil.setReadOnly();
                 getFileObject().refresh(false);
-
+                
+                // don't force explicit reload, form will pickup the file event
+                // if necessary (#69657)
+                /*
                 Object tmpcookie = getEditorCookie();
 
                 if (tmpcookie != null) {
@@ -166,7 +180,7 @@ public class CollabFormFileHandler extends CollabDefaultFileHandler implements C
                         }
                     }
                 }
-
+                */
                 inReceiveSendFile = false;
             }
 
