@@ -930,7 +930,9 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private void updateJavaPlatformEnabled() { // #71631
-        javaPlatformCombo.setEnabled(((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1);
+        boolean enabled = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1;
+        javaPlatformCombo.setEnabled(enabled);
+        javaPlatformButton.setEnabled(enabled); // #72061
     }
     
 }
