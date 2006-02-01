@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -49,7 +49,7 @@ public class JHIndexer extends MatchingTask {
     private String locale;
     private List brandings = new LinkedList(); // List<BrandedFileSet>
 
-    /** Set the location of <samp>jhall.jar</samp> (JavaHelp tools library). */
+    /** Set the location of <samp>jhall.jar</samp> or <samp>jsearch.jar</samp> (JavaHelp tools library). */
     public Path createClasspath() {
         // JavaHelp release notes say jhtools.jar is enough, but class NoClassDefFoundError
         // on javax.help.search.IndexBuilder when I tried it...
@@ -163,7 +163,7 @@ public class JHIndexer extends MatchingTask {
     }
     
     public void execute () throws BuildException {
-        if (classpath == null) throw new BuildException ("Must specify the classpath attribute to find jhall.jar");
+        if (classpath == null) throw new BuildException ("Must specify the classpath attribute to find jhall.jar or jsearch.jar");
         if (db == null) throw new BuildException ("Must specify the db attribute");
         if (basedir == null) throw new BuildException ("Must specify the basedir attribute");
         FileScanner scanner = getDirectoryScanner (basedir);

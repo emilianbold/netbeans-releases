@@ -512,7 +512,8 @@ directory, relative to your help set. Must match what your help set specifies.
 
 jhall.jar - for external modules, if you wish to build JavaHelp, you must define
 the location of jhall.jar from the JavaHelp distribution, as this is needed to
-run the search indexer.
+run the search indexer. DEPRECATED since 5.0u1; the 5.0u1 harness now includes
+jsearch-*.jar so you do not need to specify this property any longer.
 
 keystore - Key store for signing NBMs. A candidate for private.properties - you
 do *not* want to share this file! Also ${nbm_alias} and ${storepass} are used in

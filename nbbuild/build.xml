@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE someant  [
@@ -48,7 +48,9 @@ Microsystems, Inc. All Rights Reserved.
      <pathelement location="${ant.jar}"/>
      <fileset dir="..">
         <!-- For JavaHelp indexing: -->
-        <include name="nbbuild/external/jhall*.jar"/>
+        <include name="apisupport/external/jsearch*.jar"/>
+        <!-- For JavaHelp link checking: -->
+        <include name="core/external/jh*.jar"/>
       </fileset>
     </path>
     <!-- Sanity check: -->

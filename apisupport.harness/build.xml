@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="apisupport/harness" default="netbeans" basedir=".">
@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="init,nbantext,jar-jnlp-launcher">
         <copy file="${nb_all}/nbbuild/templates/common.xml" tofile="${cluster}/common.xml"/>
         <copy file="${nb_all}/nbbuild/jdk.xml" tofile="${cluster}/jdk.xml"/>
+        <copy file="../external/jsearch-2.0_02.jar" todir="${cluster}"/>
     </target>
  
     <target name="compile-jnlp-launcher" depends="init,compile">
@@ -46,6 +47,26 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="build/jnlp-launcher-classes"/>
         </jar>
     </target>
-  
+
+    <target name="nbm" depends="init,netbeans,-nbm-prompt-for-storepass" description="Build NBM archive.">
+        <mkdir dir="build"/>
+        <makenbm file="build/${nbm}"
+                 productdir="${cluster}"
+                 module="${module.jar}"
+                 homepage="${nbm.homepage}"
+                 distribution="${nbm.distribution}"
+                 needsrestart="${nbm.needs.restart}"
+                 global="${nbm.is.global}"
+                 releasedate="${nbm.release.date}"
+		 moduleauthor="${nbm.module.author}"> 
+            <license name="apisupport-harness-license.txt">
+                <text>For the main build harness:</text>
+                <file location="${license.file}"/>
+                <text>For the bundled JavaHelp search indexer library:</text>
+                <file location="../external/jsearch-2.0_02-license.txt"/>
+            </license>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
 
 </project>

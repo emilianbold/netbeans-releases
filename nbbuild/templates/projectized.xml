@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="projectized" basedir=".">
@@ -154,8 +154,8 @@ Microsystems, Inc. All Rights Reserved.
         <jhindexer basedir="${build.javahelp.dir}/${javahelp.base}"
                    db="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}">
             <classpath>
-                <fileset dir="${nb_all}/nbbuild/external">
-                    <include name="jhall*.jar"/>
+                <fileset dir="${nb_all}/apisupport/external">
+                    <include name="jsearch*.jar"/>
                 </fileset>
             </classpath>
             <include name="**/*.html"/>
@@ -182,8 +182,8 @@ Microsystems, Inc. All Rights Reserved.
         <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
             <classpath>
                 <pathelement location="${nb_all}/nbbuild/nbantext.jar"/>
-                <fileset dir="${nb_all}/nbbuild/external">
-                    <include name="jhall*.jar"/>
+                <fileset dir="${nb_all}/core/external">
+                    <include name="jh*.jar"/>
                 </fileset>
             </classpath>
         </taskdef>
