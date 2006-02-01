@@ -306,7 +306,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         public void actionPerformed(ActionEvent evt) {
             NbModuleProject project = UIUtil.runLibraryWrapperWizard(suiteProvider);
-            if (project != null) {
+            if (project != null && target != null) {
                 try {
                     Util.addDependency(target, project);
                     ProjectManager.getDefault().saveProject(target);
