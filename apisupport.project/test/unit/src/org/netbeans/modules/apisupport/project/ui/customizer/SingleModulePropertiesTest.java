@@ -488,6 +488,16 @@ public class SingleModulePropertiesTest extends TestBase {
         assertTrue(apiDepsFilterExcluded.contains(apiPrjDep));
         assertTrue(apiDepsFilterExcluded.contains(friendPrjDep));
         assertFalse(apiDepsFilterExcluded.contains(nonApiPrjDep));
+        
+        // #72124: check that cluster include/exclude lists do not affect suite components:
+        EditableProperties ep = suite.getHelper().getProperties("nbproject/platform.properties");
+        ep.setProperty(SuiteProperties.ENABLED_CLUSTERS_PROPERTY, "crazy99"); // should not match any platform modules
+        suite.getHelper().putProperties("nbproject/platform.properties", ep);
+        ProjectManager.getDefault().saveProject(suite);
+        allDepsFilterExcluded = testProps.getUniverseDependencies(true);
+        assertTrue(allDepsFilterExcluded.contains(apiPrjDep));
+        assertTrue(allDepsFilterExcluded.contains(friendPrjDep));
+        assertTrue(allDepsFilterExcluded.contains(nonApiPrjDep));
     }
     
 //    public void testReloadNetBeansModulueListSpeedHid() throws Exception {

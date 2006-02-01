@@ -446,7 +446,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         if (universeDependencies == null) {
             reloadModuleListInfo();
         }
-        Set/*<ModuleDependency>*/ result = null;
+        Set/*<ModuleDependency>*/ result = new HashSet(universeDependencies);
         if (filterExcludedModules && isSuiteComponent()) {
             SuiteProject suite = getSuite();
             String[] disableModules = SuiteProperties.getArrayProperty(
@@ -455,17 +455,19 @@ public final class SingleModuleProperties extends ModuleProperties {
                     suite.getEvaluator(), SuiteProperties.ENABLED_CLUSTERS_PROPERTY);
             String[] disableClusters = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
-            Set/*<ModuleDependency>*/ filtered = new HashSet(universeDependencies);
-            for (Iterator it = filtered.iterator(); it.hasNext();) {
+            String suiteClusterProp = getEvaluator().getProperty("cluster"); // NOI18N
+            File suiteClusterDir = suiteClusterProp != null ? getHelper().resolveFile(suiteClusterProp) : null;
+            for (Iterator it = result.iterator(); it.hasNext();) {
                 ModuleDependency dep = (ModuleDependency) it.next();
-                if (isExcluded(dep.getModuleEntry(), disableModules, enableClusters, disableClusters)) {
+                ModuleEntry me = dep.getModuleEntry();
+                if (me.getClusterDirectory().equals(suiteClusterDir)) {
+                    // #72124: do not filter other modules in the same suite.
+                    continue;
+                }
+                if (isExcluded(me, disableModules, enableClusters, disableClusters)) {
                     it.remove();
                 }
             }
-            result = filtered;
-        }
-        if (result == null) {
-            result = new HashSet(universeDependencies);
         }
         if (apiProvidersOnly) { // remove module without public/friend API
             for (Iterator it = result.iterator(); it.hasNext();) {
