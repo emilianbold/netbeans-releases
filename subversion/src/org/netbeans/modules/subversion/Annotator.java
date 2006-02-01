@@ -14,7 +14,10 @@
 package org.netbeans.modules.subversion;
 
 import org.netbeans.modules.subversion.ui.actions.*;
-import org.netbeans.modules.subversion.ui.status.ShowChangesAction;
+import org.netbeans.modules.subversion.ui.status.StatusAction;
+import org.netbeans.modules.subversion.ui.commit.CommitAction;
+import org.netbeans.modules.subversion.ui.update.UpdateAction;
+import org.netbeans.modules.subversion.ui.diff.DiffAction;
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
@@ -406,11 +409,11 @@ public class Annotator {
         File [] files = SvnUtils.getCurrentContext(nodes).getRootFiles();
         if (onlyFolders(files)) {
             return new Action [] {
-                SystemActionBridge.createAction(SystemAction.get(ShowChangesAction.class), loc.getString("CTL_PopupMenuItem_Status"), context),
-/*                
+                SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context),
                 SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context),
                 SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context),
                 SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context),
+/*
                 null,
                 SystemActionBridge.createAction(SystemAction.get(TagAction.class), loc.getString("CTL_PopupMenuItem_Tag"), context),
                 null,
@@ -430,11 +433,11 @@ public class Annotator {
             };
         } else {
             return new Action [] {
-                SystemActionBridge.createAction(SystemAction.get(ShowChangesAction.class), loc.getString("CTL_PopupMenuItem_Status"), context),                
-/*
+                SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context),
                 SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context),
                 SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context),
                 SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context),
+/*                
                 null,
                 SystemActionBridge.createAction(SystemAction.get(TagAction.class), loc.getString("CTL_PopupMenuItem_Tag"), context),
                 null,

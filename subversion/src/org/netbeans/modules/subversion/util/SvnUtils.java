@@ -370,6 +370,13 @@ public class SvnUtils {
     }
 
     /**
+     * Translate to relative path to repository root
+     */
+    public static String getRelativePath(File file) {
+        return "TODO getRelativePath(File file)";  // TODO
+    }
+
+    /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */ 
     public static class ByImportanceComparator implements Comparator {

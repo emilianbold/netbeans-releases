@@ -478,6 +478,21 @@ public class FileStatusCache {
     private FileInformation createVersionedFileInformation(File file, ISVNStatus status) {
 
         SVNStatusKind kind = status.getTextStatus();
+        SVNStatusKind pkind = status.getPropStatus();
+        if (SVNStatusKind.NONE.equals(pkind)) {
+            // no influence
+        } else if (SVNStatusKind.NORMAL.equals(pkind)) {
+            // no influence
+        } else if (SVNStatusKind.MODIFIED.equals(pkind)) {
+            if (SVNStatusKind.NORMAL.equals(kind)) {
+                return new FileInformation(FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY, status);
+            }
+        } else if (SVNStatusKind.CONFLICTED.equals(pkind)) {
+            return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, status);
+        } else {
+            throw new IllegalArgumentException("Unknown prop status: " + status.getPropStatus());
+        }
+
         if (SVNStatusKind.NONE.equals(kind)) {
             return FILE_INFORMATION_UNKNOWN;
         } else if (SVNStatusKind.NORMAL.equals(kind)) {

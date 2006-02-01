@@ -34,61 +34,65 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffProjectsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffProjectsAction"/>
-            </file>                                    
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateProjectsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateProjectsAction"/>
-            </file>                                    
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitProjectsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitProjectsAction"/>
-            </file>                                    
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-checkout-CheckoutAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutAction"/>
-            </file>                                    
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction"/>
-            </file>                                    
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.project.UpdateWithDependenciesAction"/>
-            </file>                                    
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusAction"/>
-            </file>                                    
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffAction"/>
             </file>
+            -->
+            <file name="org-netbeans-modules-subversion-ui-status-StatusAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.status.StatusAction"/>
+            </file>
+            <file name="org-netbeans-modules-subversion-ui-diff-DiffAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.diff.DiffAction"/>
+            </file>
+            <!--
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ExportDiffAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ExportDiffAction"/>
             </file>
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction"/>
-            </file>                                    
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitAction"/>
-            </file>                                    
+            -->
+            <file name="org-netbeans-modules-subversion-ui-update-UpdateAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.update.UpdateAction"/>
+            </file>
+            <file name="org-netbeans-modules-subversion-ui-commit-CommitAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.commit.CommitAction"/>
+            </file>
+            <!--
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-TagAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction"/>
-            </file>                                    
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.BranchAction"/>
-            </file>                                    
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchesMenu.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.BranchesMenu"/>
             </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-log-AnnotationsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.log.AnnotationsAction"/>
-            </file>                                    
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-log-SearchHistoryAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction"/>
-            </file>                                    
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-GetCleanAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction"/>
-            </file>                                    
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ResolveConflictsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ResolveConflictsAction"/>
-            </file>                                    
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-ignore-IgnoreAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.ignore.IgnoreAction"/>
-            </file>                                    
+            </file>
             -->
         </folder>
     </folder>
@@ -100,13 +104,18 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="SVN">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.subversion.resources.Bundle"/>
+
+            <file name="org-netbeans-modules-subversion-ui-statuss-ShowAllChangesAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.instance"/>
+            </file>
+
 <!--
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffProjectsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffProjectsAction.instance"/>
-            </file>            
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateProjectsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateProjectsAction.instance"/>
-            </file>            
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitProjectsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitProjectsAction.instance"/>
             </file>
@@ -115,28 +124,25 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.instance"/>
-            </file>                                    
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.instance"/>
-            </file>                                    
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusAction.instance"/>
-            </file>            
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffAction.instance"/>
-            </file>            
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateAction.instance"/>
-            </file>            
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitAction.instance"/>
             </file>
+            -->
+            <attr name="org-netbeans-modules-subversion-actions-ShowAllChangesAction.shadow/org-netbeans-modules-subversion-ui-checkout-separatorBefore.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-subversion-ui-statuss-ShowAllChangesAction.shadow/org-netbeans-modules-subversion-ui-checkout-separatorBefore.instance" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-subversion-ui-checkout-separatorBefore.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="org-netbeans-modules-subversion-ui-checkout-separatorBefore.instance/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow" boolvalue="true"/>
+            <!--
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ExportDiffAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ExportDiffAction.instance"/>
             </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-log-SearchHistoryAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-log-SearchHistoryAction.instance"/>
-            </file>            
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-TagAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-TagAction.instance"/>
             </file>
@@ -145,7 +151,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-log-AnnotationsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-log-AnnotationsAction.instance"/>
-            </file>            
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-GetCleanAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-update-GetCleanAction.instance"/>
             </file>
@@ -154,8 +160,8 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-ignore-IgnoreAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-ignore-IgnoreAction.instance"/>
-            </file>            
-            
+            </file>
+
             <file name="Separator1.instance">
         		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	        </file>
@@ -183,17 +189,17 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffProjectsAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateProjectsAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateProjectsAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitProjectsAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitProjectsAction.shadow/Separator1.instance" boolvalue="true" />
-            
+
             <attr name="Separator1.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-checkout-CheckoutAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-checkout-CheckoutAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.shadow/Separator2.instance" boolvalue="true" />
-            
-            <attr name="Separator2.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.shadow" boolvalue="true" />            
+
+            <attr name="Separator2.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.shadow/Separator6.instance" boolvalue="true" />
-            
-            <attr name="Separator6.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusAction.shadow" boolvalue="true" />            
-            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffAction.shadow" boolvalue="true" />            
-            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateAction.shadow" boolvalue="true" />            
+
+            <attr name="Separator6.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitAction.shadow/Separator3.instance" boolvalue="true" />
 
@@ -208,18 +214,12 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-log-AnnotationsAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-log-SearchHistoryAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-log-SearchHistoryAction.shadow/Separator5.instance" boolvalue="true" />
 
+
+
             <attr name="Separator5.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-update-GetCleanAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-GetCleanAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ResolveConflictsAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ResolveConflictsAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-ignore-IgnoreAction.shadow" boolvalue="true" />
-            -->            
-            <file name="org-netbeans-modules-subversion-ui-statuss-ShowAllChangesAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-ui-status-ShowAllChangesAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-actions-ShowAllChangesAction.shadow/org-netbeans-modules-subversion-ui-checkout-separatorBefore.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-subversion-ui-checkout-separatorBefore.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            <attr name="org-netbeans-modules-subversion-ui-checkout-separatorBefore.instance/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow" boolvalue="true"/>
+            -->
             <file name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance"/>
             </file>
@@ -227,6 +227,30 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-subversion-ui-checkout-separatorAfter.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
+            <attr name="org-netbeans-modules-subversion-ui-checkout-separatorAfter.instance/org-netbeans-modules-subversion-ui-commit-CommitAction.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-subversion-ui-commit-CommitAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-ui-commit-CommitAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-subversion-ui-commit-CommitAction.shadow/org-netbeans-modules-subversion-ui-diff-DiffAction.shadow" boolvalue="false"/>
+            <file name="org-netbeans-modules-subversion-ui-diff-DiffAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-ui-diff-DiffAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-subversion-ui-diff-DiffAction.shadow/org-netbeans-modules-subversion-ui-status-StatusAction.shadow" boolvalue="false"/>
+            <attr name="org-netbeans-modules-subversion-ui-checkout-separatorAfter.instance/org-netbeans-modules-subversion-ui-status-StatusAction.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-subversion-ui-status-StatusAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-ui-status-StatusAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-subversion-ui-status-StatusAction.shadow/org-netbeans-modules-subversion-ui-update-UpdateAction.shadow" boolvalue="true"/>
+            <file name="org-netbeans-modules-subversion-ui-update-UpdateAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-ui-update-UpdateAction.instance"/>
+            </file>
+            <!-- Autogenerated by Api support layer customizer. Thanks god! -->
+            <attr name="org-netbeans-modules-subversion-ui-status-StatusAction.shadow/org-netbeans-modules-subversion-ui-commit-CommitAction.shadow" boolvalue="true"/>
+            <attr name="org-netbeans-modules-subversion-ui-diff-DiffAction.shadow/org-netbeans-modules-subversion-ui-update-UpdateAction.shadow" boolvalue="true"/>
+            <attr name="org-netbeans-modules-subversion-ui-status-StatusAction.shadow/org-netbeans-modules-subversion-ui-diff-DiffAction.shadow" boolvalue="true"/>
+            <attr name="org-netbeans-modules-subversion-ui-diff-DiffAction.shadow/org-netbeans-modules-subversion-ui-commit-CommitAction.shadow" boolvalue="true"/>
+            <attr name="org-netbeans-modules-subversion-ui-commit-CommitAction.shadow/org-netbeans-modules-subversion-ui-update-UpdateAction.shadow" boolvalue="true"/>
+            <attr name="org-netbeans-modules-subversion-ui-update-UpdateAction.shadow/org-netbeans-modules-subversion-ui-commit-CommitAction.shadow" boolvalue="true"/>
         </folder>
         <folder name="Window">
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow/org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow" boolvalue="true"/>
