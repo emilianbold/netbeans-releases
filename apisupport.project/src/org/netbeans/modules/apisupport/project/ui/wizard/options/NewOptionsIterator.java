@@ -376,11 +376,9 @@ public class NewOptionsIterator extends BasicWizardIterator {
         
         private void generateLayerEntry() {
             String resourcePathPrefix = (isAdvanced()) ? "OptionsDialog/Advanced/" : "OptionsDialog/";// NOI18N
-            String instanceName = (isAdvanced()) ? getAdvancedOptionClassName() : getOptionsCategoryClassName();
-            String instanceFullPath = resourcePathPrefix + getPackageName().replace('.','/')+"/"+instanceName+".instance";//NOI18N
+            String instanceName = isAdvanced() ? getAdvancedOptionClassName() : getOptionsCategoryClassName();
+            String instanceFullPath = resourcePathPrefix + getPackageName().replace('.','-') + "-" + instanceName + ".instance";//NOI18N
             files.add(files.createLayerEntry(instanceFullPath, null, null, null, null));
-            String suffix = (isAdvanced()) ? "@@AdvancedOption_CLASS_NAME@@" : "@@OptionsCategory_CLASS_NAME@@"; //NOI18N
-            files.add(files.createLayerAttribute(instanceFullPath, "instanceClass", getPackageName() + "."+ instanceName)); // NOI18N
         }
         
         private CreatedModifiedFiles.Operation createJavaFileCopyOperation(final String templateSuffix) {
