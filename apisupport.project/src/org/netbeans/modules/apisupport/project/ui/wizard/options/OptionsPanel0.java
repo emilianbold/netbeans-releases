@@ -47,7 +47,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
             };
             
             categoryNameField.getDocument().addDocumentListener(fieldsDL);
-            descriptionField.getDocument().addDocumentListener(fieldsDL);
             displayNameField1.getDocument().addDocumentListener(fieldsDL);
             iconField.getDocument().addDocumentListener(fieldsDL);
             titleField.getDocument().addDocumentListener(fieldsDL);
@@ -58,7 +57,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
     private void removeListeners() {
         if (fieldsDL != null) {        
             categoryNameField.getDocument().removeDocumentListener(fieldsDL);
-            descriptionField.getDocument().removeDocumentListener(fieldsDL);
             displayNameField1.getDocument().removeDocumentListener(fieldsDL);
             iconField.getDocument().removeDocumentListener(fieldsDL);
             titleField.getDocument().removeDocumentListener(fieldsDL);
@@ -83,7 +81,7 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
             retCode = data.setDataForAdvanced(displayNameField1.getText(), tooltipField1.getText());
         } else {
             assert OptinsCategoryButton.isSelected();
-            retCode = data.setDataForOptionCategory(titleField.getText(), descriptionField.getText(),
+            retCode = data.setDataForOptionCategory(titleField.getText(),
                     categoryNameField.getText(), iconField.getText());
         }
         if (data.isSuccessCode(retCode)) {
@@ -113,7 +111,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
     private void initAccessibility() {
         titleField.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Title"));
         tooltipField1.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Tooltip"));
-        descriptionField.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_Description"));
         displayNameField1.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_DisplayName"));
         categoryNameField.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CategoryName"));
         iconField.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_IconPath"));
@@ -131,8 +128,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         
         categoryNameField.setEnabled(!advancedEnabled);
         categoryNameLbl.setEnabled(!advancedEnabled);
-        descriptionField.setEnabled(!advancedEnabled);
-        descriptionLbl.setEnabled(!advancedEnabled);
         iconButton.setEnabled(!advancedEnabled);
         iconField.setEnabled(!advancedEnabled);
         iconLbl.setEnabled(!advancedEnabled);
@@ -164,9 +159,7 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         displayNameField1 = new javax.swing.JTextField();
         tooltipLbl1 = new javax.swing.JLabel();
         tooltipField1 = new javax.swing.JTextField();
-        descriptionLbl = new javax.swing.JLabel();
         titleLbl = new javax.swing.JLabel();
-        descriptionField = new javax.swing.JTextField();
         titleField = new javax.swing.JTextField();
         iconLbl = new javax.swing.JLabel();
         iconField = new javax.swing.JTextField();
@@ -275,16 +268,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         gridBagConstraints.weightx = 1.0;
         add(tooltipField1, gridBagConstraints);
 
-        descriptionLbl.setLabelFor(descriptionField);
-        org.openide.awt.Mnemonics.setLocalizedText(descriptionLbl, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle").getString("LBL_Description"));
-        descriptionLbl.setEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 18, 6, 12);
-        add(descriptionLbl, gridBagConstraints);
-
         titleLbl.setLabelFor(titleField);
         org.openide.awt.Mnemonics.setLocalizedText(titleLbl, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle").getString("LBL_Title"));
         titleLbl.setEnabled(false);
@@ -294,16 +277,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 18, 6, 12);
         add(titleLbl, gridBagConstraints);
-
-        descriptionField.setEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        add(descriptionField, gridBagConstraints);
 
         titleField.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -377,8 +350,6 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JTextField categoryNameField;
     private javax.swing.JLabel categoryNameLbl;
-    private javax.swing.JTextField descriptionField;
-    private javax.swing.JLabel descriptionLbl;
     private javax.swing.JTextField displayNameField1;
     private javax.swing.JLabel displayNameLbl1;
     private javax.swing.JButton iconButton;

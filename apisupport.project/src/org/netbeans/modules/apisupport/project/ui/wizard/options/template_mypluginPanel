@@ -1,9 +1,13 @@
 package @@PACKAGE_NAME@@;
 
-public class @@Panel_CLASS_NAME@@ extends javax.swing.JPanel {
+final class @@Panel_CLASS_NAME@@ extends javax.swing.JPanel {
+
+    private final @@OptionsPanelController_CLASS_NAME@@ controller;
     
-    public @@Panel_CLASS_NAME@@() {
+    @@Panel_CLASS_NAME@@(@@OptionsPanelController_CLASS_NAME@@ controller) {
+        this.controller = controller;
         initComponents();
+        // TODO listen to changes in form fields and call controller.changed()
     }
     
     /** This method is called from within the constructor to
@@ -13,6 +17,8 @@ public class @@Panel_CLASS_NAME@@ extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
+        setBackground(java.awt.Color.white);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -26,30 +32,27 @@ public class @@Panel_CLASS_NAME@@ extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     
-    void update() {
-        // TODO read settings and initialize accordingly this panel
+    void load() {
+        // TODO read settings and initialize GUI
         // Example:
-        // Preferences.userNodeForPackage(this.getClass()).get(...);
+        // someCheckBox.setSelected(Preferences.userNodeForPackage(@@Panel_CLASS_NAME@@.class).getBoolean("someFlag", false));
+        // or:
+        // someTextField.setText(SomeSystemOption.getDefault().getSomeStringProperty());
     }
     
-    void applyChanges() {
+    void store() {
         // TODO store modified settings
         // Example:
-        // Preferences.userNodeForPackage(this.getClass()).put(...);
+        // Preferences.userNodeForPackage(@@Panel_CLASS_NAME@@.class).putBoolean("someFlag", someCheckBox.isSelected());
+        // or:
+        // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
     }
     
-    void cancel() {
-        // TODO
+    boolean valid() {
+        // TODO check whether form is consistent and complete
+        return true;
     }
     
-    boolean dataValid() {
-        return true; // TODO
-    }
-    
-    boolean isChanged() {
-        return false; // TODO
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
     

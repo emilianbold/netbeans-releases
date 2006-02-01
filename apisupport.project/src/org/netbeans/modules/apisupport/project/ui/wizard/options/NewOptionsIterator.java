@@ -65,7 +65,6 @@ public class NewOptionsIterator extends BasicWizardIterator {
     static final class DataModel extends BasicWizardIterator.BasicDataModel {
         static final int ERR_Blank_DisplayName = 1;
         static final int ERR_Blank_Tooltip = 2;
-        static final int ERR_Blank_Description = 3;
         static final int ERR_Blank_Title = 4;
         static final int ERR_Blank_CategoryName = 5;
         static final int ERR_Blank_IconPath = 6;
@@ -84,7 +83,6 @@ public class NewOptionsIterator extends BasicWizardIterator {
         };
         
         private static final String[] CATEGORY_BUNDLE_KEYS = new String[] {
-            "OptionsCategory_Description",//NOIN18N
             "OptionsCategory_Title",//NOIN18N
             "OptionsCategory_Name",//NOIN18N
         };
@@ -114,7 +112,6 @@ public class NewOptionsIterator extends BasicWizardIterator {
         
         //OptionsCategory
         private String title;
-        private String description;
         private String categoryName;
         private String iconPath;
         
@@ -134,11 +131,10 @@ public class NewOptionsIterator extends BasicWizardIterator {
             return isSuccessCode(retval) ? getWarningCode() : retval;
         }
         
-        int setDataForOptionCategory(final String title, final String description,
+        int setDataForOptionCategory(final String title,
                 final String categoryName, final String iconPath) {
             this.advanced = false;
             this.title = title;
-            this.description = description;
             this.categoryName = categoryName;
             this.iconPath = iconPath;
             return getCheckCode();
@@ -188,16 +184,14 @@ public class NewOptionsIterator extends BasicWizardIterator {
                 return getOptionsPanelControllerClassName();
             } else if ("@@ICON_PATH@@".equals(key)) {// NOI18N
                 return addCreateIconOperation(new CreatedModifiedFiles(getProject()), getIconPath());
+            } else {
+                throw new AssertionError(key);
             }
-            assert false;
-            throw new IllegalArgumentException(key);
         }
         
         
         private String getBundleValue(String key) {
-            if ("OptionsCategory_Description".equals(key)) {// NOI18N
-                return getDescription();
-            } else if ("OptionsCategory_Title".equals(key)) {// NOI18N
+            if ("OptionsCategory_Title".equals(key)) {// NOI18N
                 return getTitle();
             } else if ("OptionsCategory_Name".equals(key)) {// NOI18N
                 return getCategoryName();
@@ -205,10 +199,9 @@ public class NewOptionsIterator extends BasicWizardIterator {
                 return getDisplayName();
             } else if ("AdvancedOption_Tooltip".equals(key)) {// NOI18N
                 return getTooltip();
+            } else {
+                throw new AssertionError(key);
             }
-            
-            assert false;
-            throw new IllegalArgumentException(key);
         }
         
         /**
@@ -224,9 +217,6 @@ public class NewOptionsIterator extends BasicWizardIterator {
                     break;
                 case ERR_Blank_Tooltip:
                     field = "FIELD_Tooltip";//NOI18N
-                    break;
-                case ERR_Blank_Description:
-                    field = "FIELD_Description";//NOI18N
                     break;
                 case ERR_Blank_Title:
                     field = "FIELD_Title";//NOI18N
@@ -298,9 +288,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
                     return ERR_Blank_Tooltip;
                 }
             } else {
-                if (getDescription().length() == 0) {
-                    return ERR_Blank_Description;
-                } else if (getTitle().length() == 0) {
+                if (getTitle().length() == 0) {
                     return ERR_Blank_Title;
                 } else if (getCategoryName().length() == 0) {
                     return ERR_Blank_CategoryName;
@@ -383,6 +371,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
         private void generateDependencies() {
             files.add(files.addModuleDependency("org.openide.util")); // NOI18N
             files.add(files.addModuleDependency("org.netbeans.modules.options.api"));// NOI18N
+            files.add(files.addModuleDependency("org.openide.awt")); // NOI18N
         }
         
         private void generateLayerEntry() {
@@ -457,11 +446,6 @@ public class NewOptionsIterator extends BasicWizardIterator {
         
         private boolean isAdvanced() {
             return advanced;
-        }
-        
-        private String getDescription() {
-            assert isAdvanced() || description != null;
-            return description;
         }
         
         private String getAdvancedOptionClassName() {
