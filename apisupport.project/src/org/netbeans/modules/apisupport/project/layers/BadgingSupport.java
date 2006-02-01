@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -176,14 +176,14 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                     if (name != null) {
                         return Actions.cutAmpersand(name);
                     } else {
-                        return o.toString();
+                        return toStringOf(o);
                     }
                 } else if (o instanceof Presenter.Menu) {
                     return ((Presenter.Menu) o).getMenuPresenter().getText();
                 } else if (o instanceof JSeparator) {
                     return NbBundle.getMessage(BadgingSupport.class, "LBL_separator");
                 } else {
-                    return o.toString();
+                    return toStringOf(o);
                 }
             }
         } catch (IOException e) {
@@ -205,6 +205,17 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         }
         String clazzDisplayLabel = clazz.substring(clazz.lastIndexOf('.') + 1);
         return NbBundle.getMessage(BadgingSupport.class, "LBL_instance_of", clazzDisplayLabel);
+    }
+    private static String toStringOf(Object o) {
+        String s = o.toString();
+        if ((o.getClass().getName() + "@" + Integer.toHexString(o.hashCode())).equals(s)) {
+            // Does not override toString, so no point in using pkg.Clazz@123456.
+            String clazz = o.getClass().getName();
+            String clazzDisplayLabel = clazz.substring(clazz.lastIndexOf('.') + 1);
+            return NbBundle.getMessage(BadgingSupport.class, "LBL_instance_of", clazzDisplayLabel);
+        } else {
+            return s;
+        }
     }
     
     public Image annotateIcon(Image icon, int type, Set files) {
