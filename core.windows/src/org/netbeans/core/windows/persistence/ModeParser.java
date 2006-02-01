@@ -1191,14 +1191,14 @@ class ModeParser {
                     "[WinSys.ModeParser.handleState]" // NOI18N
                     + " Warning: Invalid value of attribute \"type\"" // NOI18N
                     + " of element \"state\"."); // NOI18N
-                    modeConfig.kind = Constants.MODE_STATE_JOINED;
+                    modeConfig.state = Constants.MODE_STATE_JOINED;
                 }
             } else {
                 ErrorManager.getDefault().log(ErrorManager.WARNING,
                 "[WinSys.ModeParser.handleState]" // NOI18N
                 + " Error: Missing required attribute \"type\""
                 + " of element \"state\"."); // NOI18N
-                modeConfig.kind = Constants.MODE_STATE_JOINED;
+                modeConfig.state = Constants.MODE_STATE_JOINED;
             }
         }
         
