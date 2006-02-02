@@ -292,14 +292,12 @@ public class L10nTask extends MatchingTask {
 						mkTars(topdirs[i]+File.separator, buildDir+File.separator+shortTopdir+File.separator+modules[j]+".tar", topdirs[i]+File.separator+modules[j]+File.separator+modules[j]+"."+changedFile, modules[j]); 
 					// if (! changed.isEmpty() ) {
 						Delete delete = (Delete)p.createTask("delete");
-						delete.setDir(new File(topdirs[i]+File.separator+modules[j]));
 						FileSet fs = new FileSet();
 						fs.setDir(new File(topdirs[i]+File.separator+modules[j]));
 						String includes = modules[j]+"."+generatedFile+","+ modules[j]+"."+changedFile+","+ modules[j]+"."+allFile;
 						fs.setIncludes(includes);
 						delete.addFileset(fs);
 
-						delete.setIncludes(includes);
 						delete.setVerbose(true);
 						delete.execute();
 					//}
@@ -331,8 +329,10 @@ public class L10nTask extends MatchingTask {
 
 			Tar tar = (Tar)p.createTask("tar");
 			tar.setBasedir(bd);
-			tar.setTarfile(tarFile);
-			tar.setLongfile("gnu");
+			tar.setDestFile(tarFile);
+                        Tar.TarLongFileMode mode = new Tar.TarLongFileMode();
+                        mode.setValue(Tar.TarLongFileMode.GNU);
+			tar.setLongfile(mode);
 			////// automatically includes all in the basedir
 			tar.execute();
 
@@ -372,7 +372,9 @@ public class L10nTask extends MatchingTask {
 			tar.setIncludes(module+File.separator+module+"."+generatedFile);
 			tar.setIncludes(module+File.separator+module+"."+changedFile);
 			tar.setIncludesfile(incFile);
-			tar.setLongfile("gnu");
+                        Tar.TarLongFileMode mode = new Tar.TarLongFileMode();
+                        mode.setValue(Tar.TarLongFileMode.GNU);
+			tar.setLongfile(mode);
 			tar.execute();
 		}
 
