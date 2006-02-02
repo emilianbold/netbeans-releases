@@ -28,18 +28,7 @@ import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFa
 
 public final class BrowserAction extends CallableSystemAction {
     
-    private static ISVNClientAdapter svnClient;
-    
-    public void performAction() {
-        
-        if(svnClient == null) {
-            try {   
-                CmdLineClientAdapterFactory.setup();
-            } catch (SVNClientException ex) {
-                ex.printStackTrace();
-            }
-            svnClient = CmdLineClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
-        }
+    public void performAction() {                
         
         SVNUrl svnURL = null;
         try {
@@ -52,7 +41,7 @@ public final class BrowserAction extends CallableSystemAction {
         }
         
         BrowserSelector selector = new BrowserSelector("LBL_RepositoryBrowser", false, false, false);        
-        selector.setup(svnClient, svnURL);
+        selector.setup(svnURL);
         
         DialogDescriptor dd = new DialogDescriptor(selector.getBrowserPanel(), "test dialog");
         dd.setModal(true);
