@@ -7,23 +7,18 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.freeform.ui;
 
-import java.awt.event.ItemEvent;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
@@ -320,21 +315,21 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         return sf.toString();
     }
     
-    private void setClasspath(String classpath){
+    private void setClasspath(String classpath, PropertyEvaluator evaluator){
         if (classpath == null)
             return;
         StringTokenizer ts = new StringTokenizer(classpath, "" + File.pathSeparatorChar ); //NOI18N
         listModel.clear();
         listModel.addElement(JAVA_SOURCES_CLASSPATH);
-        while (ts.hasMoreTokens()){
-            String path = ts.nextToken();
-            path = org.netbeans.spi.project.support.ant.PropertyUtils.resolveFile(
-                    nbProjectFolder, path).getAbsolutePath();
+        
+        String[] cpa = PropertyUtils.tokenizePath(evaluator.evaluate(classpath));
+        for (int i=0; i<cpa.length; i++) {
+            String path = cpa[i];
+            path = PropertyUtils.resolveFile(nbProjectFolder, path).getAbsolutePath();
             if (path != null) {
                 listModel.addElement(path);
             }
         }
-        
     }
     
     public static class Panel implements ProjectPropertiesPanel{
@@ -379,7 +374,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
                     WebProjectGenerator.WebModule wm = (WebProjectGenerator.WebModule)l.get(0);
                     panel.setProjectFolders(Util.getProjectLocation(projectHelper, projectEvaluator), 
                             FileUtil.toFile(projectHelper.getProjectDirectory()));
-                    panel.setClasspath(wm.classpath);
+                    panel.setClasspath(wm.classpath, projectEvaluator);
                     panel.updateButtons();
                 }
             }
