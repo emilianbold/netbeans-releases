@@ -14,6 +14,8 @@
 package org.netbeans.modules.apisupport.project.ui;
 
 import java.util.Arrays;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
@@ -22,10 +24,12 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Test ModuleOperations.
@@ -109,6 +113,30 @@ public class SuiteOperationsTest extends TestBase {
         
         assertEquals("module1 became standalone module", NbModuleTypeProvider.STANDALONE, Util.getModuleType(module1));
         assertEquals("module2 became standalone module", NbModuleTypeProvider.STANDALONE, Util.getModuleType(module2));
+    }
+    
+    public void testMoveModule() throws Exception {
+        SuiteProject suite = generateSuite("suite");
+        NbModuleProject outer = generateSuiteComponent(suite, getWorkDir(), "outer");
+        outer.open();
+        NbModuleProject customOuter = generateSuiteComponent(suite, getWorkDir(), "customOuter");
+        FileUtil.createData(customOuter.getProjectDirectory(), "mydocs/index.html");
+        customOuter.open();
+        
+        Project inner = SuiteOperations.moveModule(outer, suite.getProjectDirectory());
+        assertNotNull("inner successfully moved", inner);
+        assertSame("inner is still in the same suite component", suite, SuiteUtils.findSuite(inner));
+        assertFalse(ProjectManager.getDefault().isValid(outer));
+        assertFalse(outer.getProjectDirectory().isValid());
+        
+        Project customInner = SuiteOperations.moveModule(customOuter, suite.getProjectDirectory());
+        assertNotNull("customInner successfully moved", customInner);
+        assertSame("customInner is still in the same suite component", suite, SuiteUtils.findSuite(customInner));
+        assertFalse(ProjectManager.getDefault().isValid(customOuter));
+        assertFalse("customOuter directory is not valid anymore", customOuter.getProjectDirectory().isValid());
+        FileObject mydocsIndex = customInner.getProjectDirectory().getFileObject("mydocs/index.html");
+        assertNotNull("mydocs was also moved", mydocsIndex);
+        assertTrue("mydocs is valid", mydocsIndex.isValid());
     }
     
 }

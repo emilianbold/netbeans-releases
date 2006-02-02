@@ -362,15 +362,27 @@ public abstract class TestBase extends NbTestCase {
     
     /**
      * Generates a suite component module which becomes a part of the given
+     * <code>suiteProject</code>. Module will be generated inside of the
+     * suite's project directory. <p>
+     * See {@link #generateStandaloneModule(File, String)} for details about
+     * what is generated.
+     */
+    public static NbModuleProject generateSuiteComponent(SuiteProject suiteProject, String prjDir) throws Exception {
+        File suiteDir = FileUtil.toFile(suiteProject.getProjectDirectory());
+        return generateSuiteComponent(suiteProject, suiteDir, prjDir);
+    }
+    
+    /**
+     * Generates a suite component module which becomes a part of the given
      * <code>suiteProject</code>.
      * <p>
      * See {@link #generateStandaloneModule(File, String)} for details about
      * what is generated.
      */
-    public static NbModuleProject generateSuiteComponent(SuiteProject suiteProject, String prjDir) throws Exception {
+    public static NbModuleProject generateSuiteComponent(SuiteProject suiteProject, File parentDir, String prjDir) throws Exception {
         String prjDirDotted = prjDir.replace('/', '.');
         File suiteDir = FileUtil.toFile(suiteProject.getProjectDirectory());
-        File prjDirF = file(suiteDir, prjDir);
+        File prjDirF = file(parentDir, prjDir);
         NbModuleProjectGenerator.createSuiteComponentModule(
                 prjDirF,
                 "org.example." + prjDirDotted, // cnb

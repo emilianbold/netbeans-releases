@@ -13,19 +13,25 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
@@ -35,10 +41,16 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Martin Krauskopf
@@ -60,6 +72,7 @@ public final class SuiteOperations implements DeleteOperationImplementation,
         FileObject buildXML = projectDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         ActionUtils.runTarget(buildXML, new String[] { ActionProvider.COMMAND_CLEAN }, null).waitFinished();
         
+        // remove all suite components from the suite - i.e. make them standalone
         SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
         for (Iterator it = spp.getSubprojects().iterator(); it.hasNext();) {
             NbModuleProject suiteComponent = (NbModuleProject) it.next();
@@ -78,6 +91,9 @@ public final class SuiteOperations implements DeleteOperationImplementation,
             // store some "private" property and than read it.
             TEMPORARY_CACHE.put(ProjectUtils.getInformation(suite).getName(), subprojects);
         }
+        // this will temporarily remove all suite components - this is needed
+        // to prevent infrastructure confusion about lost suite. They will be
+        // readded in the notifyMoved.
         notifyDeleting();
     }
     
@@ -88,15 +104,34 @@ public final class SuiteOperations implements DeleteOperationImplementation,
             String name = ProjectUtils.getInformation(suite).getName();
             Set/*<Project>*/ subprojects = (Set) TEMPORARY_CACHE.remove(name);
             if (subprojects != null) {
+                Set toOpen = new HashSet();
                 for (Iterator it = subprojects.iterator(); it.hasNext();) {
-                    NbModuleProject p = (NbModuleProject) it.next();
-                    SuiteUtils.addModule(suite, p);
+                    NbModuleProject originalComp = (NbModuleProject) it.next();
+                    
+                    boolean directoryChanged = !original.getProjectDirectory().
+                            equals(suite.getProjectDirectory());
+                    if (directoryChanged && FileUtil.isParentOf( // wasRelative
+                            original.getProjectDirectory(), originalComp.getProjectDirectory())) {
+                        boolean isOpened = SuiteOperations.isOpened(originalComp);
+                        Project nueComp = SuiteOperations.moveModule(originalComp, suite.getProjectDirectory());
+                        SuiteUtils.addModule(suite, (NbModuleProject) nueComp);
+                        if (isOpened) {
+                            toOpen.add(nueComp);
+                        }
+                    } else {
+                        SuiteUtils.addModule(suite, originalComp);
+                    }
                 }
+                OpenProjects.getDefault().open((Project[]) toOpen.toArray(new Project[toOpen.size()]), false);
             }
             boolean isRename = original.getProjectDirectory().getParent().equals(
                     suite.getProjectDirectory().getParent());
             if (isRename) {
                 setDisplayName(nueName);
+            }
+            FileObject origSuiteFO = FileUtil.toFileObject(originalPath);
+            if (origSuiteFO.getChildren().length == 0) {
+                origSuiteFO.delete();
             }
         }
     }
@@ -139,5 +174,106 @@ public final class SuiteOperations implements DeleteOperationImplementation,
             }
         }
     }
+    
+    /** Package private for unit tests <strong>only</strong>. */
+    static Project moveModule(final NbModuleProject original, final FileObject targetParent) throws IOException, IllegalArgumentException {
+        ProjectOperations.notifyMoving(original);
+        SuiteOperations.close(original);
+        FileObject origDir = original.getProjectDirectory();
+        FileObject copy = doCopy(original, origDir, targetParent);
+        ProjectManager.getDefault().clearNonProjectCache();
+        Project nueComp = ProjectManager.getDefault().findProject(copy);
+        assert nueComp != null;
+        File originalPath = FileUtil.toFile(origDir);
+        doDelete(original, origDir);
+        ProjectOperations.notifyMoved(original, nueComp, originalPath, originalPath.getName());
+        return nueComp;
+    }
+    
+    private static boolean isOpened(final Project original) {
+        boolean opened = false;
+        Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < openProjects.length; i++) {
+            if (openProjects[i] == original) {
+                opened = true;
+                break;
+            }
+        }
+        return opened;
+    }
+    
+    // XXX following is copy-pasted from the Project APIs
+    //<editor-fold defaultstate="collapsed" desc="copy-pasted from Project API">
+    private static FileObject doCopy(final Project original,
+            final FileObject from, final FileObject toParent) throws IOException {
+        if (!VisibilityQuery.getDefault().isVisible(from)) {
+            //Do not copy invisible files/folders.
+            return null;
+        }
+        
+        if (!original.getProjectDirectory().equals(FileOwnerQuery.getOwner(from).getProjectDirectory())) {
+            return null;
+        }
+        
+        FileObject copy;
+        if (from.isFolder()) {
+            copy = toParent.createFolder(from.getNameExt());
+            FileObject[] kids = from.getChildren();
+            for (int i = 0; i < kids.length; i++) {
+                doCopy(original, kids[i], copy);
+            }
+        } else {
+            assert from.isData();
+            copy = FileUtil.copyFile(from, toParent, from.getName(), from.getExt());
+        }
+        return copy;
+    }
+    
+    private static boolean doDelete(final Project original,
+            final FileObject toDelete) throws IOException {
+        if (!original.getProjectDirectory().equals(FileOwnerQuery.getOwner(toDelete).getProjectDirectory())) {
+            return false;
+        }
+        
+        if (toDelete.isFolder()) {
+            FileObject[] kids = toDelete.getChildren();
+            boolean delete = true;
+            
+            for (int i = 0; i < kids.length; i++) {
+                delete &= doDelete(original, kids[i]);
+            }
+            
+            if (delete) {
+                toDelete.delete();
+            }
+            
+            return delete;
+        } else {
+            assert toDelete.isData();
+            toDelete.delete();
+            return true;
+        }
+    }
+    
+    private static void close(final Project prj) {
+        Mutex.EVENT.readAccess(new Mutex.Action() {
+            public Object run() {
+                LifecycleManager.getDefault().saveAll();
+                
+                Action closeAction = CommonProjectActions.closeProjectAction();
+                closeAction = closeAction instanceof ContextAwareAction ? ((ContextAwareAction) closeAction).createContextAwareInstance(Lookups.fixed(new Object[] {prj})) : null;
+                
+                if (closeAction != null && closeAction.isEnabled()) {
+                    closeAction.actionPerformed(new ActionEvent(prj, -1, "")); // NOI18N
+                } else {
+                    //fallback:
+                    OpenProjects.getDefault().close(new Project[] {prj});
+                }
+                
+                return null;
+            }
+        });
+    }
+    //</editor-fold>
     
 }
