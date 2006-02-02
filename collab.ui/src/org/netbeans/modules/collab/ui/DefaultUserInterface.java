@@ -798,8 +798,9 @@ public class DefaultUserInterface extends UserInterface {
             //				return false;				
             //			}
             try {
-                String[] conversations = session.getPublicConversations();
+                String[] conversations = session.findPublicConversations(CollabSession.SEARCHTYPE_STARTSWITH, conversationName);
 
+                /* doesn't seem to be necessary anymore
                 // workaround for #6180229
                 if (session.findPrincipals(CollabSession.SEARCHTYPE_EQUALS, conversationName).length > 0) {
                     final NotifyDescriptor descriptor2 = new NotifyDescriptor.Message(
@@ -819,6 +820,7 @@ public class DefaultUserInterface extends UserInterface {
 
                     return false;
                 }
+                */
 
                 if ((conversations != null) && (conversations.length > 0)) {
                     for (int i = 0; i < conversations.length; i++) {
