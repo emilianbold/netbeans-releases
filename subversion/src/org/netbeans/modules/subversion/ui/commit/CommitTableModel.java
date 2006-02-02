@@ -60,8 +60,17 @@ class CommitTableModel extends AbstractTableModel {
     
     private String [] columns;
 
+    /**
+     * Create stable with name, status, action and path columns
+     * and empty nodes {@link #setNodes model}.
+     */
     public CommitTableModel() {
-        setColumns(new String [0]);
+        setColumns(new String [] {
+            COLUMN_NAME_NAME,
+            COLUMN_NAME_STATUS,
+            COLUMN_NAME_ACTION,
+            COLUMN_NAME_PATH
+        });
         setNodes(new SvnFileNode[0]);
     }
 
@@ -77,6 +86,9 @@ class CommitTableModel extends AbstractTableModel {
         fireTableStructureChanged();
     }
 
+    /**
+     * @return Map&lt;SvnFileNode, CommitOptions>
+     */
     public Map getCommitFiles() {
         Map ret = new HashMap(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
@@ -139,7 +151,8 @@ class CommitTableModel extends AbstractTableModel {
         commitOptions = new CommitOptions[nodes.length];
         for (int i = 0; i < nodes.length; i++) {
             SvnFileNode node = nodes[i];
-            if (SvnModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
+            File file = node.getFile();
+            if (SvnModuleConfig.getDefault().isExcludedFromCommit(file.getAbsolutePath())) {
                 commitOptions[i] = CommitOptions.EXCLUDE;
             } else {
                 switch (node.getInformation().getStatus()) {
@@ -166,9 +179,8 @@ class CommitTableModel extends AbstractTableModel {
     }
 
     private CommitOptions getDefaultCommitOptions(File file) {
-//        KeywordSubstitutionOptions options = CvsVersioningSystem.getInstance().getDefaultKeywordSubstitution(file);
-//        return options == KeywordSubstitutionOptions.BINARY ? CommitOptions.ADD_BINARY : CommitOptions.ADD_TEXT;
-        return null;
+        // XXX probe
+        return CommitOptions.ADD_TEXT;
     }
 
 }

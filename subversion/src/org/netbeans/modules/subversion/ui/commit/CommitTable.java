@@ -130,11 +130,17 @@ class CommitTable implements AncestorListener, TableModelListener {
     void setNodes(SvnFileNode[] nodes) {
         tableModel.setNodes(nodes);
     }
-    
+
+    /**
+     * @return Map&lt;SvnFileNode, CommitOptions>
+     */
     public Map getCommitFiles() {
         return tableModel.getCommitFiles();
     }
-    
+
+    /**
+     * @return table in a scrollpane 
+     */
     public JComponent getComponent() {
         return component;
     }

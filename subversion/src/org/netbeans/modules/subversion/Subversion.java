@@ -15,6 +15,8 @@ package org.netbeans.modules.subversion;
 
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.SvnClientImpl;
 import org.openide.ErrorManager;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
@@ -108,9 +110,21 @@ public class Subversion {
     public Annotator getAnnotator() {
         return annotator;
     }
-    
-    public ISVNClientAdapter getClient() {
-        return SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
+
+    /**
+     * <b>Creates</b> ClientAtapter implementation that already handles:
+     * <ul>
+     *    <li>prompts user for password if necessary,
+     *    <li>let user specify proxy setting on network errors or
+     *    <li>let user cancel operation (XXX then it throws SVN exception subclass)
+     * </ul>
+     *
+     * <p>It hanldes cancellability, XXX e.g. by Thread,interrupt?
+     */
+    public SvnClient getClient() {
+        ISVNClientAdapter adapter = SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
+        SvnClient client = new SvnClientImpl(adapter);
+        return client;
     }
     
     public ISVNStatus getLocalStatus(File file) throws SVNClientException {
