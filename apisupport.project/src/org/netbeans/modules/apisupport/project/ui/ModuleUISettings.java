@@ -31,6 +31,7 @@ public class ModuleUISettings extends SystemOption {
     private static final String NEW_SUITE_COUNTER = "newSuiteCounter";  //NOI18N
     private static final String CONFIRM_RELOAD_IN_IDE = "confirmReloadInIDE"; // NOI18N
     private static final String LAST_USED_PLATFORM_ID = "lastUsedPlatformId"; // NOI18N
+    private static final String HARNESSES_UPGRADED = "harnessesUpgraded"; // NOI18N
     
     public static ModuleUISettings getDefault() {
         return (ModuleUISettings) SystemOption.findObject(ModuleUISettings.class, true);
@@ -106,6 +107,14 @@ public class ModuleUISettings extends SystemOption {
     public void setLastUsedPlatformID(String id) {
         assert id != null : "Platform ID can not be null"; // NOI18N
         putProperty(LAST_USED_PLATFORM_ID, id, true);
+    }
+
+    public boolean getHarnessesUpgraded() {
+        return ((Boolean) getProperty(HARNESSES_UPGRADED, Boolean.FALSE)).booleanValue();
+    }
+
+    public void setHarnessesUpgraded(boolean b) {
+        putProperty(HARNESSES_UPGRADED, Boolean.valueOf(b), true);
     }
     
 }

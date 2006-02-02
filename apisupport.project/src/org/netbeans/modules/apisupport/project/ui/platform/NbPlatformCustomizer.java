@@ -50,6 +50,7 @@ public final class NbPlatformCustomizer extends JPanel {
     private NbPlatformCustomizerHarness harnessTab;
     
     public static void showCustomizer() {
+        HarnessUpgrader.checkForUpgrade();
         NbPlatformCustomizer customizer = new NbPlatformCustomizer();
         JButton closeButton = new JButton();
         Mnemonics.setLocalizedText(closeButton,
