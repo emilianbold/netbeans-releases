@@ -32,6 +32,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     static private String AUTOUPDATE_SERVICE_TYPE = "update_center"; //NOI18N
     static private String AUTOUPDATE_SERVICE_TYPE_EXT = "settings"; //NOI18N
     static private String UC_LOCALIZING_BUNDLE = "SystemFileSystem.localizingBundle"; //NOI18N
+    static private String AUTOUPDATE_MODULE = "org.netbeans.modules.autoupdate"; // NOI18N
 
     private CreatedModifiedFiles cmf;
     
@@ -81,6 +82,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         cmf.add (cmf.bundleKeyDefaultBundle (pathToAutoUpdateType, ucDisplayName));
         cmf.add (cmf.bundleKeyDefaultBundle (url_key, ucUrl));
+        
+        // add dependency to autoupdate module
+        cmf.add (cmf.addModuleDependency (AUTOUPDATE_MODULE)); // NOI18N
         
         return cmf;
     }

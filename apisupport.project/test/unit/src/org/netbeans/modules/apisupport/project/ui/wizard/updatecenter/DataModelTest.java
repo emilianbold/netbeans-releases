@@ -56,7 +56,7 @@ public class DataModelTest extends LayerTestBase {
                 Arrays.asList (new String[] {pathToSettingsFile}),
                 Arrays.asList (cmf.getCreatedPaths ()));
         assertEquals(
-                Arrays.asList(new String[] {"src/org/example/module1/resources/Bundle.properties", "src/org/example/module1/resources/layer.xml"}),
+                Arrays.asList(new String[] {"nbproject/project.xml", "src/org/example/module1/resources/Bundle.properties", "src/org/example/module1/resources/layer.xml"}),
                 Arrays.asList(cmf.getModifiedPaths()));
         
         cmf.run();
