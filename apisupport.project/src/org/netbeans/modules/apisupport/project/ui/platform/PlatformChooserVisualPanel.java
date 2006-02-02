@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicVisualPanel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.WizardDescriptor;
@@ -38,6 +39,10 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
         super(setting);
         initComponents();
         initAccessibility();
+        String location = ModuleUISettings.getDefault().getLastUsedNbPlatformLocation();
+        if (location != null) {
+            platformChooser.setCurrentDirectory(new File(location));
+        }
         platformChooser.setAcceptAllFileFilterUsed(false);
         platformChooser.setFileFilter(new FileFilter() {
             public boolean accept(File f)  {
@@ -80,6 +85,7 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
                     setWarning(getMessage("MSG_NameIsAlreadyUsedGoToNext"));
                 } else {
                     markValid();
+                    ModuleUISettings.getDefault().setLastUsedNbPlatformLocation(plafDir.getParentFile().getAbsolutePath());
                 }
             } else {
                 markInvalid();
@@ -143,9 +149,9 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
     private javax.swing.JTextField plafLabelValue;
     private javax.swing.JFileChooser platformChooser;
     // End of variables declaration//GEN-END:variables
-
+    
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_PlatformChooserVisualPanel"));        
+        this.getAccessibleContext().setAccessibleDescription(getMessage("ACS_PlatformChooserVisualPanel"));
         plafLabelValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_plafLabelValue"));
     }
     

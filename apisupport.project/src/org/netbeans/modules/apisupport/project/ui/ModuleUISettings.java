@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,6 +26,7 @@ public class ModuleUISettings extends SystemOption {
     
     private static final String LAST_USED_MODULE_LOCATION = "lastUsedModuleLocation"; // NOI18N
     private static final String LAST_CHOSEN_LIBRARY_LOCATION = "lastChosenLibraryLocation"; // NOI18N
+    private static final String LAST_USED_NB_PLATFORM_LOCATION = "lastUsedNbPlatformLocation"; // NOI18N
     private static final String NEW_MODULE_COUNTER = "newModuleCounter";  //NOI18N
     private static final String NEW_SUITE_COUNTER = "newSuiteCounter";  //NOI18N
     private static final String CONFIRM_RELOAD_IN_IDE = "confirmReloadInIDE"; // NOI18N
@@ -38,7 +39,7 @@ public class ModuleUISettings extends SystemOption {
     public String displayName() {
         return "NBMProjectUISetting"; // NOI18N (not shown in UI)
     }
-
+    
     private Object getProperty(Object key, Object fallback) {
         Object value = getProperty(key);
         return value == null ? fallback : value;
@@ -71,6 +72,15 @@ public class ModuleUISettings extends SystemOption {
         putProperty(LAST_USED_MODULE_LOCATION, location, true);
     }
     
+    public String getLastUsedNbPlatformLocation() {
+        return (String) getProperty(LAST_USED_NB_PLATFORM_LOCATION, System.getProperty("user.home")); // NOI18N
+    }
+    
+    public void setLastUsedNbPlatformLocation(String location) {
+        assert location != null : "Location can not be null"; // NOI18N
+        putProperty(LAST_USED_NB_PLATFORM_LOCATION, location, true);
+    }
+    
     public boolean getConfirmReloadInIDE() {
         Boolean b = (Boolean) getProperty(CONFIRM_RELOAD_IN_IDE, Boolean.TRUE);
         return b.booleanValue();
@@ -94,7 +104,7 @@ public class ModuleUISettings extends SystemOption {
     }
     
     public void setLastUsedPlatformID(String id) {
-        assert id != null : "Location can not be null"; // NOI18N
+        assert id != null : "Platform ID can not be null"; // NOI18N
         putProperty(LAST_USED_PLATFORM_ID, id, true);
     }
     
