@@ -23,6 +23,7 @@ import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicVisualPanel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,7 +71,7 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
         if (propName.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
-            File plafDir = platformChooser.getSelectedFile();
+            File plafDir = FileUtil.normalizeFile(platformChooser.getSelectedFile());
             if (/* #60133 */ plafDir != null && NbPlatform.isPlatformDirectory(plafDir)) {
                 try {
                     setPlafLabel(NbPlatform.computeDisplayName(plafDir));

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.queries.GlobalSourceForBinaryImpl;
+import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -200,7 +201,7 @@ final class NbPlatformCustomizerSources extends JPanel {
     }//GEN-LAST:event_removeFolder
     
     private void addZipOrFolder(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addZipOrFolder
-        JFileChooser chooser = new JFileChooser();
+        JFileChooser chooser = new JFileChooser(ModuleUISettings.getDefault().getLastUsedNbPlatformLocation());
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setFileFilter(new FileFilter() {
@@ -208,7 +209,7 @@ final class NbPlatformCustomizerSources extends JPanel {
                 return f.isDirectory() || isValidNbSourceRoot(f);
             }
             public String getDescription() {
-                return NbBundle.getMessage(NbPlatformCustomizerJavadoc.class, "CTL_SourcesTab");
+                return getMessage("CTL_SourcesTab");
             }
         });
         int ret = chooser.showOpenDialog(this);
@@ -218,6 +219,7 @@ final class NbPlatformCustomizerSources extends JPanel {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         getMessage("MSG_NotValidNBSrcZIP")));
             } else {
+                ModuleUISettings.getDefault().setLastUsedNbPlatformLocation(file.getParentFile().getAbsolutePath());
                 URL newUrl = Util.urlForDirOrJar(file);
                 model.addSourceRoot(newUrl);
                 sourceList.setSelectedValue(newUrl, true);

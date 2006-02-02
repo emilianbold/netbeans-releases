@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,6 +22,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -196,7 +197,7 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
     }//GEN-LAST:event_removeFolder
     
     private void addZipFolder(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addZipFolder
-        JFileChooser chooser = new JFileChooser();
+        JFileChooser chooser = new JFileChooser(ModuleUISettings.getDefault().getLastUsedNbPlatformLocation());
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setFileFilter(new FileFilter() {
@@ -206,12 +207,14 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
                         f.getName().toLowerCase(Locale.US).endsWith(".zip"); // NOI18N
             }
             public String getDescription() {
-                return NbBundle.getMessage(NbPlatformCustomizerJavadoc.class, "CTL_JavadocTab"); // NOI18N
+                return getMessage("CTL_JavadocTab");
             }
         });
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            URL newUrl = Util.urlForDirOrJar(FileUtil.normalizeFile(chooser.getSelectedFile()));
+            File javadocRoot = FileUtil.normalizeFile(chooser.getSelectedFile());
+            ModuleUISettings.getDefault().setLastUsedNbPlatformLocation(javadocRoot.getParentFile().getAbsolutePath());
+            URL newUrl = Util.urlForDirOrJar(javadocRoot);
             model.addJavadocRoot(newUrl);
             javadocList.setSelectedValue(newUrl, true);
         }
