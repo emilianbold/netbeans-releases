@@ -16,10 +16,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JButton;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
@@ -49,18 +46,12 @@ final class CustomizerSources extends NbPropertyPanel.Single {
                 if (new SpecificationVersion(oldLevel).compareTo(jdk5) < 0 && new SpecificationVersion(newLevel).compareTo(jdk5) >= 0) {
                     EventQueue.invokeLater(new Runnable() { // wait for combo to close, at least
                         public void run() {
-                            DialogDescriptor d = new DialogDescriptor(
+                            if (!UIUtil.showAcceptCancelDialog(
+                                    getMessage("CustomizerSources.title.enable_lint_unchecked"),
                                     getMessage("CustomizerSources.text.enable_lint_unchecked"),
-                                    getMessage("CustomizerSources.title.enable_lint_unchecked"));
-                            d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
-                            d.setModal(true);
-                            JButton enable = new JButton(getMessage("CustomizerSources.button.enable_lint_unchecked"));
-                            enable.setDefaultCapable(true);
-                            d.setOptions(new Object[] {
-                                enable,
-                                new JButton(getMessage("CustomizerSources.button.skip_lint_unchecked")),
-                            });
-                            if (!DialogDisplayer.getDefault().notify(d).equals(enable)) {
+                                    getMessage("CustomizerSources.button.enable_lint_unchecked"),
+                                    getMessage("CustomizerSources.button.skip_lint_unchecked"),
+                                    NotifyDescriptor.QUESTION_MESSAGE)) {
                                 return;
                             }
                             String options = getProperty(SingleModuleProperties.JAVAC_COMPILERARGS);

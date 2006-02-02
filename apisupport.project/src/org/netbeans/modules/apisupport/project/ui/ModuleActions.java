@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -46,13 +45,11 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
-import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -444,18 +441,12 @@ public final class ModuleActions implements ActionProvider {
     
     private void promptForPublicPackagesToDocument() {
         // #61372: warn the user, rather than disabling the action.
-        String msg = NbBundle.getMessage(ModuleActions.class, "ERR_javadoc_disabled");
-        DialogDescriptor d = new DialogDescriptor(msg, NbBundle.getMessage(ModuleActions.class, "TITLE_javadoc_disabled"));
-        d.setModal(true);
-        JButton configure = new JButton();
-        Mnemonics.setLocalizedText(configure, NbBundle.getMessage(ModuleActions.class, "LBL_configure_pubpkg"));
-        configure.setDefaultCapable(true);
-        d.setOptions(new Object[] {
-            configure,
-            NotifyDescriptor.CANCEL_OPTION,
-        });
-        d.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
-        if (DialogDisplayer.getDefault().notify(d).equals(configure)) {
+        if (UIUtil.showAcceptCancelDialog(
+                NbBundle.getMessage(ModuleActions.class, "TITLE_javadoc_disabled"),
+                NbBundle.getMessage(ModuleActions.class, "ERR_javadoc_disabled"),
+                NbBundle.getMessage(ModuleActions.class, "LBL_configure_pubpkg"),
+                null,
+                NotifyDescriptor.WARNING_MESSAGE)) {
             CustomizerProviderImpl cpi = ((CustomizerProviderImpl) project.getLookup().lookup(CustomizerProviderImpl.class));
             cpi.showCustomizer(CustomizerProviderImpl.CATEGORY_VERSIONING, CustomizerProviderImpl.SUBCATEGORY_VERSIONING_PUBLIC_PACKAGES);
         }

@@ -42,6 +42,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -69,6 +70,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -695,6 +697,30 @@ public final class UIUtil {
         public String getDescription() {
             return "*.gif, *.png"; // NOI18N
         }
+    }
+    
+    /**
+     * Show an OK/cancel-type dialog with customized button texts.
+     * Only a separate method because it is otherwise cumbersome to replace
+     * the OK button with a button that is set as the default.
+     * @param title the dialog title
+     * @param message the body of the message (usually HTML text)
+     * @param acceptButton a label for the default accept button; should not use mnemonics
+     * @param cancelButton a label for the cancel button (or null for default); should not use mnemonics
+     * @param messageType {@link NotifyDescriptor#WARNING_MESSAGE} or similar
+     * @return true if user accepted the dialog
+     */
+    public static boolean showAcceptCancelDialog(String title, String message, String acceptButton, String cancelButton, int messageType) {
+        DialogDescriptor d = new DialogDescriptor(message, title);
+        d.setModal(true);
+        JButton accept = new JButton(acceptButton);
+        accept.setDefaultCapable(true);
+        d.setOptions(new Object[] {
+            accept,
+            cancelButton != null ? new JButton(cancelButton) : NotifyDescriptor.CANCEL_OPTION,
+        });
+        d.setMessageType(messageType);
+        return DialogDisplayer.getDefault().notify(d).equals(accept);
     }
     
 }

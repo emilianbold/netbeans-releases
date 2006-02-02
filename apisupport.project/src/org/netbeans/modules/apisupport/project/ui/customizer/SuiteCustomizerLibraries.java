@@ -31,7 +31,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -42,12 +41,11 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
@@ -434,18 +432,12 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 }
             }
             // #64443: prompt first.
-            DialogDescriptor d = new DialogDescriptor(
+            if (!UIUtil.showAcceptCancelDialog(
+                    getMessage("SuiteCustomizerLibraries.title.exclude_ide_modules"),
                     getMessage("SuiteCustomizerLibraries.text.exclude_ide_modules"),
-                    getMessage("SuiteCustomizerLibraries.title.exclude_ide_modules"));
-            d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
-            d.setModal(true);
-            JButton exclude = new JButton(getMessage("SuiteCustomizerLibraries.button.exclude"));
-            exclude.setDefaultCapable(true);
-            d.setOptions(new Object[] {
-                exclude,
-                new JButton(getMessage("SuiteCustomizerLibraries.button.skip")),
-            });
-            if (!DialogDisplayer.getDefault().notify(d).equals(exclude)) {
+                    getMessage("SuiteCustomizerLibraries.button.exclude"),
+                    getMessage("SuiteCustomizerLibraries.button.skip"),
+                    NotifyDescriptor.QUESTION_MESSAGE)) {
                 return;
             }
             // OK, continue.
