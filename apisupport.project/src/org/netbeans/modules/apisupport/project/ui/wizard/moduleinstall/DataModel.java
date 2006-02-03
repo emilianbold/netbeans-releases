@@ -62,7 +62,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         URL template = DataModel.class.getResource("moduleInstall.javx"); // NOI18N
         cmf.add(cmf.createFileWithSubstitutions(path, template, basicTokens));
         
-        // XXX what if these deps are already there? (cf. other wizards)
         cmf.add(cmf.addModuleDependency("org.openide.modules")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
         

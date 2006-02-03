@@ -18,14 +18,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.api.project.Project;
@@ -36,9 +33,8 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.ProjectXMLManager;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -56,7 +52,7 @@ final class NewProjectIterator extends BasicWizardIterator {
     
     private NewProjectIterator.DataModel data;
     
-    public static String[] MODULES = {
+    public static final String[] MODULES = {
         "org.openide.filesystems", // NOI18N
         "org.openide.loaders", // NOI18N
         "org.openide.dialogs", // NOI18N
@@ -65,6 +61,8 @@ final class NewProjectIterator extends BasicWizardIterator {
         "org.netbeans.modules.projectapi", // NOI18N
         "org.openide.awt" // NOI18N
     };
+    
+    private NewProjectIterator() { /* Use factory method. */ };
     
     public static NewProjectIterator createIterator() {
         return new NewProjectIterator();
@@ -75,12 +73,12 @@ final class NewProjectIterator extends BasicWizardIterator {
         cmf.run();
         return getCreatedFiles(cmf, data.getProject());
     }
-
+    
     protected BasicWizardIterator.Panel[] createPanels(WizardDescriptor wiz) {
         data = new NewProjectIterator.DataModel(wiz);
         return new BasicWizardIterator.Panel[] {
             new SelectProjectPanel(wiz, data),
-                    new NameAndLocationPanel(wiz, data)
+            new NameAndLocationPanel(wiz, data)
         };
     }
     
@@ -175,25 +173,9 @@ final class NewProjectIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.createFileWithSubstitutions(descName, template, replaceTokens));
         
         // 2. update project dependencies
-        ProjectXMLManager manager = new ProjectXMLManager(project);
-        try {
-            SortedSet/*<ModuleDependency>*/ currentDeps = manager.getDirectDependencies();
-            Set cnbsToAdd = new HashSet(Arrays.asList(NewProjectIterator.MODULES));
-            for (Iterator it = currentDeps.iterator(); it.hasNext();) {
-                ModuleDependency dep = (ModuleDependency) it.next();
-                cnbsToAdd.remove(dep.getModuleEntry().getCodeNameBase());
-                if (cnbsToAdd.size() == 0) {
-                    break;
-                }
-            }
-            for (Iterator it = cnbsToAdd.iterator(); it.hasNext();) {
-                String cnb = (String) it.next();
-                fileChanges.add(fileChanges.addModuleDependency(cnb));
-            }
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+        for (int i = 0; i < MODULES.length; i++) {
+            fileChanges.add(fileChanges.addModuleDependency(MODULES[i]));
         }
-        
         
         // 3. create sample template
         FileObject xml = LayerUtils.layerForProject(project).getLayerFile();
@@ -201,10 +183,9 @@ final class NewProjectIterator extends BasicWizardIterator {
         // XXX this is not fully accurate since if two ops would both create the same file,
         // really the second one would automatically generate a uniquified name... but close enough!
         Set externalFiles = Collections.singleton(LayerUtils.findGeneratedName(parent, name + "Project.zip")); // NOI18N
-        fileChanges.add(fileChanges.layerModifications(new CreateProjectZipOperation(project, model.getTemplate(),
-                name, packageName, category),
-                externalFiles
-                ));
+        fileChanges.add(fileChanges.layerModifications(
+                new CreateProjectZipOperation(model.getTemplate(), name, packageName, category),
+                externalFiles));
         fileChanges.add(fileChanges.bundleKeyDefaultBundle(category + "/" + name +  "Project.zip", displayName)); // NOI18N
         fileChanges.add(fileChanges.bundleKeyDefaultBundle("LBL_CreateProjectStep",  "Name and Location")); // NOI18N
         
@@ -219,7 +200,7 @@ final class NewProjectIterator extends BasicWizardIterator {
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         template = NewProjectIterator.class.getResource("templateWizardPanel.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(panelName, template, replaceTokens));
-
+        
         final String formName = getRelativePath(project, packageName,
                 name, "PanelVisual.form"); //NOI18N
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
@@ -239,11 +220,10 @@ final class NewProjectIterator extends BasicWizardIterator {
     private static String getRelativePath(NbModuleProject project, String fullyQualifiedPackageName,
             String prefix, String postfix) {
         StringBuffer sb = new StringBuffer();
-        
-        sb.append(project.getSourceDirectoryPath()).append("/").append(fullyQualifiedPackageName.replace('.','/')) //NOI18N
-        .append("/").append(prefix).append(postfix);//NOI18N
-        
-        return sb.toString();//NOI18N
+        sb.append(project.getSourceDirectoryPath()).append('/').
+                append(fullyQualifiedPackageName.replace('.','/')).
+                append('/').append(prefix).append(postfix);
+        return sb.toString();
     }
     
     private static void createProjectZip(OutputStream target, Project source) throws IOException {
@@ -316,13 +296,12 @@ final class NewProjectIterator extends BasicWizardIterator {
     
     static class CreateProjectZipOperation implements CreatedModifiedFiles.LayerOperation {
         
-        private String name;
-        private String packageName;
-        private Project templateProject;
-        private String category;
+        private final String name;
+        private final String packageName;
+        private final Project templateProject;
+        private final String category;
         
-        public CreateProjectZipOperation(NbModuleProject project, Project template,
-                                         String name, String packageName, String category) {
+        public CreateProjectZipOperation(Project template, String name, String packageName, String category) {
             this.packageName = packageName;
             this.name = name;
             this.category = category;
@@ -338,8 +317,8 @@ final class NewProjectIterator extends BasicWizardIterator {
             FileLock lock = file.lock();
             try {
                 createProjectZip(file.getOutputStream(lock), templateProject);
-            } catch (IOException exc) {
-                exc.printStackTrace();
+            } catch (IOException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
             } finally {
                 lock.releaseLock();
             }
@@ -349,6 +328,7 @@ final class NewProjectIterator extends BasicWizardIterator {
             file.setAttribute("instantiatingWizardURL", descURL); // NOI18N
             file.setAttribute("instantiatingIterator", "methodvalue:" + packageName + "." + name + "WizardIterator.createIterator"); // NOI18N
         }
+        
     }
     
 }

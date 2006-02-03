@@ -18,13 +18,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.SortedSet;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.ProjectXMLManager;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -42,6 +38,8 @@ import org.openide.util.NbBundle;
 final class NewTCIterator extends BasicWizardIterator {
 
     private NewTCIterator.DataModel data;
+    
+    private NewTCIterator() { /* Use factory method. */ };
     
     public static NewTCIterator createIterator() {
         return new NewTCIterator();
@@ -176,42 +174,12 @@ final class NewTCIterator extends BasicWizardIterator {
         
         
         // 2. update project dependencies
-        ProjectXMLManager manager = new ProjectXMLManager(project);
         replaceTokens.put("@@MODULENAME@@", project.getCodeNameBase()); // NOI18N
         //TODO how to figure the currect specification version for module?
         replaceTokens.put("@@SPECVERSION@@", project.getSpecVersion()); // NOI18N
-        try {
-            SortedSet set = manager.getDirectDependencies();
-            if (set != null) {
-                Iterator it = set.iterator();
-                boolean windows = false;
-                boolean util = false;
-                boolean awt = false;
-                while (it.hasNext()) {
-                    ModuleDependency dep = (ModuleDependency)it.next();
-                    if ("org.openide.windows".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        windows = true;
-                    }
-                    if ("org.openide.util".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        util = true;
-                    }
-                    if ("org.openide.awt".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        awt = true;
-                    }
-                }
-                if (!windows) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
-                }
-                if (!util) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
-                }
-                if (!awt) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N
-                }
-            }
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
+        fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
+        fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
+        fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N
         
         // x. generate java classes
         final String tcName = getRelativePath(project, packageName,
@@ -261,10 +229,10 @@ final class NewTCIterator extends BasicWizardIterator {
             String prefix, String postfix) {
         StringBuffer sb = new StringBuffer();
         
-        sb.append(project.getSourceDirectoryPath()).append("/").append(fullyQualifiedPackageName.replace('.','/')) //NOI18N
-                        .append("/").append(prefix).append(postfix);//NOI18N
+        sb.append(project.getSourceDirectoryPath()).append('/').append(fullyQualifiedPackageName.replace('.','/'))
+                        .append('/').append(prefix).append(postfix);
         
-        return sb.toString();//NOI18N
+        return sb.toString();
     }
     
     static class CreateActionEntryOperation implements CreatedModifiedFiles.LayerOperation {

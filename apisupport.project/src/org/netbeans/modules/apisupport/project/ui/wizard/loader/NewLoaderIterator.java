@@ -25,14 +25,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ProjectXMLManager;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -47,9 +43,11 @@ import org.openide.xml.XMLUtil;
  *
  * @author Milos Kleint
  */
-public class NewLoaderIterator extends BasicWizardIterator {
+final class NewLoaderIterator extends BasicWizardIterator {
     
     private NewLoaderIterator.DataModel data;
+    
+    private NewLoaderIterator() { /* Use factory method. */ };
     
     public static NewLoaderIterator createIterator() {
         return new NewLoaderIterator();
@@ -217,59 +215,15 @@ public class NewLoaderIterator extends BasicWizardIterator {
                 null));
         
         //5. update project.xml with dependencies
-        ProjectXMLManager manager = new ProjectXMLManager(model.getProject());
-        try {
-            SortedSet set = manager.getDirectDependencies();
-            if (set != null) {
-                Iterator it = set.iterator();
-                boolean filesystems = false;
-                boolean loaders = false;
-                boolean nodes = false;
-                boolean util = false;
-                boolean windows = false;
-                boolean text = false;
-                while (it.hasNext()) {
-                    ModuleDependency dep = (ModuleDependency)it.next();
-                    if ("org.openide.filesystems".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        filesystems = true;
-                    }
-                    if ("org.openide.loaders".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        loaders = true;
-                    }
-                    if ("org.openide.nodes".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        nodes = true;
-                    }
-                    if ("org.openide.util".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        util = true;
-                    }
-                    if ("org.openide.windows".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        windows = true;
-                    }
-                    if ("org.openide.text".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        text = true;
-                    }
-                }
-                if (!filesystems) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.filesystems")); //NOI18N
-                }
-                if (!loaders) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.loaders")); //NOI18N
-                }
-                if (!nodes) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.nodes")); //NOI18N
-                }
-                if (!util) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
-                }
-                if (!text && isEditable) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.text")); //NOI18N
-                }
-                if (!windows && isEditable) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
-                }
-            }
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+        fileChanges.add(fileChanges.addModuleDependency("org.openide.filesystems")); //NOI18N
+        fileChanges.add(fileChanges.addModuleDependency("org.openide.loaders")); //NOI18N
+        fileChanges.add(fileChanges.addModuleDependency("org.openide.nodes")); //NOI18N
+        fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
+        if (isEditable) {
+            fileChanges.add(fileChanges.addModuleDependency("org.openide.text")); //NOI18N
+        }
+        if (isEditable) {
+            fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
         }
         
         // 6. update/create bundle file

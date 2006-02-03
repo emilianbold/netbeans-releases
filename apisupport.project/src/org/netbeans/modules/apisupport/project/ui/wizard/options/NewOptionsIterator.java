@@ -36,9 +36,11 @@ import org.openide.util.NbBundle;
  *
  * @author Radek Matous
  */
-public class NewOptionsIterator extends BasicWizardIterator {
+final class NewOptionsIterator extends BasicWizardIterator {
     
     private NewOptionsIterator.DataModel data;
+    
+    private NewOptionsIterator() {  /* Use factory method. */ }
     
     public static NewOptionsIterator createIterator() {
         return new NewOptionsIterator();
@@ -247,7 +249,6 @@ public class NewOptionsIterator extends BasicWizardIterator {
          */
         String getWarningMessage(int warningCode) {
             assert warningCode < 0;
-            String field = null;
             switch(warningCode) {
                 case WARNING_Incorrect_IconSize:
                     File icon = new File(getIconPath());
@@ -355,7 +356,9 @@ public class NewOptionsIterator extends BasicWizardIterator {
             for (int i = 0; i < JAVA_TEMPLATE_SUFFIXES.length; i++) {
                 boolean ommit = (isAdvanced()) ? "OptionsCategory".equals(JAVA_TEMPLATE_SUFFIXES[i]) : // NOI18N
                     "AdvancedOption".equals(JAVA_TEMPLATE_SUFFIXES[i]);// NOI18N
-                if (ommit) continue;
+                if (ommit) {
+                    continue;
+                }
                 files.add(createJavaFileCopyOperation(JAVA_TEMPLATE_SUFFIXES[i]));
                 if (allForms.contains(JAVA_TEMPLATE_SUFFIXES[i])) {
                     files.add(createFormFileCopyOperation(JAVA_TEMPLATE_SUFFIXES[i]));

@@ -90,11 +90,10 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             
             panelsDefinitionBlock.append("new " + wizardPanelClass + "()"); // NOI18N
             if (stepNumber != nOfSteps) {
-                panelsDefinitionBlock.append(',' + newLine);
+                panelsDefinitionBlock.append(',').append(newLine);
             }
         }
 
-        // XXX what if these deps are already there? (cf. other wizards)
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.dialogs")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.awt")); // NOI18N
