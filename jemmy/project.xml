@@ -62,7 +62,6 @@
         <report>maven-faq-plugin</report>
         <report>maven-file-activity-plugin</report>
         <report>maven-javadoc-plugin</report>
-        <report>maven-jcoverage-plugin</report>
         <report>maven-jdepend-plugin</report>
         <report>maven-junit-report-plugin</report>
         <report>maven-jxr-plugin</report>
