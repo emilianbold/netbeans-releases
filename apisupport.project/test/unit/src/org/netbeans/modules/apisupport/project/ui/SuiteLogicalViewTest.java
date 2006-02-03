@@ -17,6 +17,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
@@ -28,6 +29,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.util.Mutex;
@@ -95,6 +97,52 @@ public class SuiteLogicalViewTest extends TestBase {
         }
         ));
         assertTrue(expected.equals(rootNode.getProjectFiles()));
+    }
+    
+    public void testImportantFiles() throws Exception {
+        // so getDisplayName is taken from english bundle
+        Locale.setDefault(Locale.US);
+        
+        SuiteProject suite = generateSuite("sweet");
+        FileObject master = suite.getProjectDirectory().createData("master.jnlp");
+        
+        LogicalViewProvider viewProv = (LogicalViewProvider) suite.getLookup().lookup(LogicalViewProvider.class);
+        Node n = viewProv.createLogicalView();
+        
+        Node[] arr = n.getChildren().getNodes(true);
+        assertEquals("Two childs are there", 2, arr.length);
+        assertEquals("Named modules", "modules", arr[0].getName());
+        assertEquals("Named imp files", "important.files", arr[1].getName());
+        
+        Node[] nodes = n.getChildren().getNodes(true);
+        assertEquals("Now there are two", 2, nodes.length);
+        assertEquals("Named modules", "modules", nodes[0].getName());
+        assertEquals("Named imp files", "important.files", nodes[1].getName());
+        
+        Node[] subnodes = nodes[1].getChildren().getNodes(true);
+        assertEquals("One important node", 1, subnodes.length);
+        
+        
+        DataObject obj = (DataObject) subnodes[0].getCookie(DataObject.class);
+        assertNotNull("It represents a data object", obj);
+        assertEquals("And it is the master one", master, obj.getPrimaryFile());
+        assertEquals("Name of node is localized", "JNLP Descriptor", subnodes[0].getDisplayName());
+        
+        Node nodeForObj = viewProv.findPath(n, obj);
+        Node nodeForFO = viewProv.findPath(n, obj.getPrimaryFile());
+        
+        assertEquals("For data object we have our node", subnodes[0], nodeForObj);
+        assertEquals("For file object we have our node", subnodes[0], nodeForFO);
+        
+        master.delete();
+        
+        Node[] newSubN = nodes[0].getChildren().getNodes(true);
+        assertEquals("No important nodes", 0, newSubN.length);
+        nodeForObj = viewProv.findPath(n, obj);
+        nodeForFO = viewProv.findPath(n, obj.getPrimaryFile());
+        
+        assertNull("For data object null", nodeForObj);
+        assertNull("For file object null", nodeForFO);
     }
     
     private static final class NL extends NodeAdapter {

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Locale;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.netbeans.api.project.ProjectManager;
@@ -37,15 +36,12 @@ import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 
 /**
  * Checks JNLP support behaviour.
@@ -67,9 +63,6 @@ public class GenerateJNLPApplicationTest extends TestBase {
     }
 
     protected void setUp() throws Exception {
-        // so getDisplayName is taken from english bundle
-        Locale.setDefault(Locale.US);
-        
         super.setUp();
 
         InstalledFileLocatorImpl.registerDestDir(destDirF);
@@ -211,16 +204,6 @@ public class GenerateJNLPApplicationTest extends TestBase {
     }
     
     public void testItIsPossibleToGenerateStaticRepository() throws Exception {
-        LogicalViewProvider viewProv = (LogicalViewProvider)suite.getLookup().lookup(LogicalViewProvider.class);
-        Node n = viewProv.createLogicalView();
-        
-        {
-            Node[] arr = n.getChildren().getNodes(true);
-            assertEquals("Two childs are there", 2, arr.length);
-            assertEquals("Named modules", "modules", arr[0].getName());
-            assertEquals("Named imp files", "important.files", arr[1].getName());
-        }
-
         EditableProperties ep = suite.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty("app.name", "fakeapp");
         
@@ -371,41 +354,6 @@ public class GenerateJNLPApplicationTest extends TestBase {
             fail("There should be no created directories in the suite dir: " + subobj);
         }   
         
-        {
-            Node[] nodes = n.getChildren().getNodes(true);
-            assertEquals("Now there are two", 2, nodes.length);
-            assertEquals("Named modules", "modules", nodes[0].getName());
-            assertEquals("Named imp files", "important.files", nodes[1].getName());
-            
-            Node[] subnodes = nodes[1].getChildren().getNodes(true);
-            assertEquals("One important node", 1, subnodes.length);
-            
-            
-            DataObject obj = (DataObject)subnodes[0].getCookie(DataObject.class);
-            assertNotNull("It represents a data object", obj);
-            assertEquals("And it is the master one", master, obj.getPrimaryFile());
-            assertEquals("Name of node is localized", "JNLP Descriptor", subnodes[0].getDisplayName());
-
-            {
-                Node nodeForObj = viewProv.findPath(n, obj);
-                Node nodeForFO = viewProv.findPath(n, obj.getPrimaryFile());
-
-                assertEquals("For data object we have our node", subnodes[0], nodeForObj);
-                assertEquals("For file object we have our node", subnodes[0], nodeForFO);
-            }
-            
-            master.delete();
-            
-            Node[] newSubN = nodes[0].getChildren().getNodes(true);
-            assertEquals("No important nodes", 0, newSubN.length);
-            {
-                Node nodeForObj = viewProv.findPath(n, obj);
-                Node nodeForFO = viewProv.findPath(n, obj.getPrimaryFile());
-
-                assertNull("For data object null", nodeForObj);
-                assertNull("For file object null", nodeForFO);
-            }
-        }
     }
 
     private static String readFile(final FileObject fo) throws IOException, FileNotFoundException {
