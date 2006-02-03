@@ -358,10 +358,9 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="test" depends="init,test-init,test-build">
         <mkdir dir="${build.test.unit.results.dir}"/>
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}">
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.unit.results.dir}">
             <batchtest todir="${build.test.unit.results.dir}">
                 <fileset dir="${test.unit.src.dir}">
-                    <!-- XXX could include only out-of-date tests... -->
                     <include name="**/*Test.java"/>
                 </fileset>
             </batchtest>
@@ -378,7 +377,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="test-single" depends="init,test-init,test-build">
         <fail unless="test.includes">Must set test.includes</fail>
         <mkdir dir="${build.test.unit.results.dir}"/>
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}">
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.unit.results.dir}">
             <batchtest todir="${build.test.unit.results.dir}">
                 <fileset dir="${test.unit.src.dir}" includes="${test.includes}"/>
             </batchtest>
