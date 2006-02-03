@@ -83,8 +83,11 @@ public final class CheckoutAction extends CallableSystemAction {
                 
         Executor.Command cmd = new Executor.Command () {
             protected void executeCommand(ISVNClientAdapter client) throws SVNClientException {                                
-                for (int i = 0; i < svnUrls.length; i++) {                    
-                    client.checkout(svnUrls[i], workingFolder, SVNRevision.HEAD, true);    
+                for (int i = 0; i < svnUrls.length; i++) {                                        
+                    File destination = new File(workingFolder.getAbsolutePath() + "/" + svnUrls[i].getLastPathSegment());
+                    destination.mkdir();                    
+                    
+                    client.checkout(svnUrls[i], destination, SVNRevision.HEAD, true);    
                 }                    
             }
             // XXX onError
@@ -93,6 +96,7 @@ public final class CheckoutAction extends CallableSystemAction {
         ProgressHandle progressHandle = 
             ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(CheckoutAction.class, "BK0001"));       // NOI18N
         progressHandle.start();
+                
         
         try {
             Executor.getInstance().execute(cmd);
@@ -144,7 +148,7 @@ public final class CheckoutAction extends CallableSystemAction {
                 // XXX test me! 
                 checkedOutProjects = ProjectUtilities.scanForProjects(fo);
                 
-//                //String name = NbBundle.getMessage(CheckoutAction.class, "BK1007");
+//                //String name = NbBundle.getMessage(CheckoutAction.class, "BK3007");
 //                //executor.getGroup().progress(name);
 //                Iterator it = executor.getExpandedModules().iterator();
 //                while (it.hasNext()) {
@@ -168,7 +172,7 @@ public final class CheckoutAction extends CallableSystemAction {
             panel.closeButton.addActionListener(this);
             panel.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
             panel.againCheckBox.setVisible(openProject == false);
-            String title = NbBundle.getMessage(CheckoutAction.class, "BK1008");
+            String title = NbBundle.getMessage(CheckoutAction.class, "BK3008");
             DialogDescriptor descriptor = new DialogDescriptor(panel, title);
             descriptor.setModal(true);
 
@@ -179,7 +183,7 @@ public final class CheckoutAction extends CallableSystemAction {
 
             Object[] options = null;
             if (checkedOutProjects.size() > 1) {
-                String msg = NbBundle.getMessage(CheckoutAction.class, "BK1009", new Integer(checkedOutProjects.size()));
+                String msg = NbBundle.getMessage(CheckoutAction.class, "BK3009", new Integer(checkedOutProjects.size()));
                 panel.jLabel1.setText(msg);
                 options = new Object[] {
                     panel.openButton,
@@ -190,15 +194,15 @@ public final class CheckoutAction extends CallableSystemAction {
                 projectToBeOpened = project;
                 ProjectInformation projectInformation = ProjectUtils.getInformation(project);
                 String projectName = projectInformation.getDisplayName();
-                String msg = NbBundle.getMessage(CheckoutAction.class, "BK1011", projectName);
+                String msg = NbBundle.getMessage(CheckoutAction.class, "BK3011", projectName);
                 panel.jLabel1.setText(msg);
-                panel.openButton.setText(NbBundle.getMessage(CheckoutAction.class, "BK1012"));
+                panel.openButton.setText(NbBundle.getMessage(CheckoutAction.class, "BK3012"));
                 options = new Object[] {
                     panel.openButton,
                     panel.closeButton
                 };
             } else {
-                String msg = NbBundle.getMessage(CheckoutAction.class, "BK1010");
+                String msg = NbBundle.getMessage(CheckoutAction.class, "BK3010");
                 panel.jLabel1.setText(msg);
                 options = new Object[] {
                     panel.createButton,
@@ -254,7 +258,7 @@ public final class CheckoutAction extends CallableSystemAction {
                                 }
                             } catch (IOException e1) {
                                 ErrorManager err = ErrorManager.getDefault();
-                                err.annotate(e1, NbBundle.getMessage(CheckoutAction.class, "BK1014", projectFolder));
+                                err.annotate(e1, NbBundle.getMessage(CheckoutAction.class, "BK3014", projectFolder));
                                 err.notify(e1);
                             }
                         }
