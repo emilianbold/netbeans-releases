@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -294,7 +295,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             Map/*<String,String>*/ buildDefaults = new HashMap();
             buildDefaults.put("cp.extra", ""); // NOI18N
             buildDefaults.put("cp", "${module.classpath}:${cp.extra}"); // NOI18N
-            buildDefaults.put("run.cp", "${cp}:${build.classes.dir}"); // NOI18N
+            buildDefaults.put("run.cp", computeRuntimeModuleClasspath(ml) + ":${cp.extra}:${build.classes.dir}"); // NOI18N
             baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
             buildDefaults.put("test.unit.cp.extra", ""); // NOI18N
             String testJars; // #68685 - follow Ant script
@@ -541,9 +542,6 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));
                 continue;
             }
-            // XXX if that module is projectized, check its public packages;
-            // if it has none, skip it and issue a warning, unless we are
-            // declaring an impl dependency
             File moduleJar = module.getJarLocation();
             if (cp.length() > 0) {
                 cp.append(File.pathSeparatorChar);
@@ -557,6 +555,39 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             return "";
         }
         cp.append(myself.getClassPathExtensions());
+        return cp.toString();
+    }
+    
+    /**
+     * Follows transitive runtime dependencies.
+     * @see "issue #70206"
+     */
+    private String computeRuntimeModuleClasspath(ModuleList ml) {
+        Set/*<String>*/ unprocessed = new HashSet();
+        unprocessed.add(project.getCodeNameBase());
+        Set/*<String>*/ processed = new HashSet();
+        StringBuffer cp = new StringBuffer();
+        while (!unprocessed.isEmpty()) { // crude breadth-first search
+            Iterator it = unprocessed.iterator();
+            String cnb = (String) it.next();
+            it.remove();
+            if (processed.add(cnb)) {
+                ModuleEntry module = ml.getEntry(cnb);
+                if (module == null) {
+                    Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));
+                    continue;
+                }
+                if (!cnb.equals(project.getCodeNameBase())) { // build/classes for this is special
+                    if (cp.length() > 0) {
+                        cp.append(File.pathSeparatorChar);
+                    }
+                    cp.append(module.getJarLocation().getAbsolutePath());
+                    cp.append(module.getClassPathExtensions());
+                }
+                String[] newDeps = module.getRunDependencies();
+                unprocessed.addAll(Arrays.asList(newDeps));
+            }
+        }
         return cp.toString();
     }
     

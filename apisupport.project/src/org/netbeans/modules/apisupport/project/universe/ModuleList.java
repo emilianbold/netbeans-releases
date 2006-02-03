@@ -612,7 +612,7 @@ public final class ModuleList {
                     }
                     ModuleEntry entry = new BinaryEntry(codenamebase, m, exts, root, clusters[i], 
                             mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(),
-                            mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated());
+                            mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated(), mm.getModuleDependencies());
                     if (entries.containsKey(codenamebase)) {
                         Util.err.log(ErrorManager.WARNING, "Warning: two modules found with the same code name base (" + codenamebase + "): " + entries.get(codenamebase) + " and " + entry);
                     } else {

@@ -16,9 +16,12 @@ package org.netbeans.modules.apisupport.project.universe;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
+import org.openide.modules.Dependency;
 
 final class BinaryEntry extends AbstractEntry {
     
@@ -34,11 +37,12 @@ final class BinaryEntry extends AbstractEntry {
     private final ManifestManager.PackageExport[] publicPackages;
     private final String[] friends;
     private final boolean deprecated;
+    private final String[] runDependencies;
     
     public BinaryEntry(String cnb, File jar, File[] exts, File nbdestdir, File clusterDir,
             String releaseVersion, String specVersion, String[] providedTokens,
             ManifestManager.PackageExport[] publicPackages, String[] friends,
-            boolean deprecated) {
+            boolean deprecated, Set/*<Dependency>*/ moduleDependencies) {
         this.cnb = cnb;
         this.jar = jar;
         this.nbdestdir = nbdestdir;
@@ -55,6 +59,18 @@ final class BinaryEntry extends AbstractEntry {
         this.publicPackages = publicPackages;
         this.friends = friends;
         this.deprecated = deprecated;
+        Set/*<String>*/ deps = new TreeSet();
+        Iterator it = moduleDependencies.iterator();
+        while (it.hasNext()) {
+            String codename = ((Dependency) it.next()).getName();
+            int slash = codename.lastIndexOf('/');
+            if (slash == -1) {
+                deps.add(codename);
+            } else {
+                deps.add(codename.substring(0, slash));
+            }
+        }
+        runDependencies = (String[]) deps.toArray(new String[deps.size()]);
     }
     
     //private boolean recurring;
@@ -140,6 +156,10 @@ final class BinaryEntry extends AbstractEntry {
         Set/*<String>*/ result = new HashSet();
         scanJarForPublicClassNames(result, jar);
         return result;
+    }
+
+    public String[] getRunDependencies() {
+        return runDependencies;
     }
     
 }

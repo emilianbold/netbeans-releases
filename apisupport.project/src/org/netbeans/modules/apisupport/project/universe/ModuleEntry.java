@@ -135,4 +135,9 @@ public interface ModuleEntry extends Comparable {
      */
     boolean isDeprecated();
 
+    /**
+     * Get a list of code name bases for modules which this module has (runtime) dependencies on.
+     */
+    String[] getRunDependencies();
+
 }

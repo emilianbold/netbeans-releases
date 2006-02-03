@@ -37,6 +37,7 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -153,7 +154,9 @@ public class ClassPathProviderImplTest extends TestBase {
         assertNotNull("have an EXECUTE classpath", cp);
         // #48099: need to include build/classes here too
         expectedRoots.add(urlForDir("ant/build/classes"));
-        assertEquals("right EXECUTE classpath (COMPILE plus classes)", expectedRoots, urlsOfCp(cp));
+        // And #70206: transitive runtime deps too.
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-modules-queries.jar"));
+        assertEquals("right EXECUTE classpath (COMPILE plus classes)", expectedRoots.toString(), urlsOfCp(cp).toString());
         cp = ClassPath.getClassPath(src, ClassPath.SOURCE);
         assertNotNull("have a SOURCE classpath", cp);
         assertEquals("right SOURCE classpath", Collections.singleton(src), new HashSet(Arrays.asList(cp.getRoots())));
@@ -483,7 +486,9 @@ public class ClassPathProviderImplTest extends TestBase {
         copyOfMiscXMLManager.addDependencies(Collections.singleton(new ModuleDependency(ioEntry)));
         assertTrue("got changes", l.changed.contains(ClassPath.PROP_ROOTS));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-io.jar"));
-        assertEquals("right EXECUTE classpath after changing project.xml", expectedRoots, urlsOfCp(cp));
+        // #70206: transitive deps added too:
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-util.jar"));
+        assertEquals("right EXECUTE classpath after changing project.xml", expectedRoots.toString(), urlsOfCp(cp).toString());
     }
     
     public void testUnitTestCompileClasspathChanges() throws Exception {
@@ -574,6 +579,27 @@ public class ClassPathProviderImplTest extends TestBase {
     
     private void assertClassPathsHaveTheSameResources(ClassPath actual, ClassPath expected) {
         assertEquals(urlsOfCp(expected).toString(), urlsOfCp(actual).toString());
+    }
+    
+    public void testTransitiveExecuteClasspath() throws Exception { // #70206
+        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "prj");
+        ProjectXMLManager mgr = new ProjectXMLManager(p);
+        ModuleList ml = p.getModuleList();
+        mgr.addDependency(new ModuleDependency(ml.getEntry("org.openide.windows")));
+        ProjectManager.getDefault().saveProject(p);
+        ClassPath cp = ClassPath.getClassPath(p.getSourceDirectory(), ClassPath.EXECUTE);
+        Set/*<String>*/ expectedRoots = new TreeSet();
+        // What we just added:
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-windows.jar"));
+        // And its transitive deps:
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-dialogs.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-nodes.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-awt.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-util.jar"));
+        // And the usual:
+        expectedRoots.add(Util.urlForDir(new File(FileUtil.toFile(p.getProjectDirectory()), "build/classes")).toExternalForm());
+        assertEquals("right EXECUTE classpath incl. transitive deps",
+            expectedRoots.toString(), urlsOfCp(cp).toString());
     }
     
 }
