@@ -128,16 +128,6 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="../java/storagebuilder" target="jar"/>
   </target>
 
-  <target name="all-ide/branding" depends="init">
-    <echo message="Building module ide/branding..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../ide/branding" target="netbeans"/>
-  </target>
-
   <target name="all-installer" description="Dummy target for build system compatibility"/>
 
   <target name="all-tomcatint/tomcat5/bundled" depends="init">
