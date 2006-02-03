@@ -298,7 +298,7 @@ public final class CreatedModifiedFiles {
     }
     
     /**
-     * Delegates to {@link #addModuleDependency(String, int,
+     * Delegates to {@link #addModuleDependency(String, String,
      * SpecificationVersion, boolean)} passing a given code name base,
      * <code>null</code> as release version, <code>null</code> as version and
      * <code>true</code> as useInCompiler arguments.
