@@ -7,34 +7,35 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide.windows;
 
-import org.openide.ErrorManager;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
+package org.openide.windows;
 
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-
 import java.net.URL;
-
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.WeakHashMap;
 import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-
+import org.openide.nodes.Node;
+import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Trivial window manager that just keeps track of "workspaces" and "modes"
@@ -245,11 +246,7 @@ final class DummyWindowManager extends WindowManager {
 
     private static Action[] loadActions(String[] names) {
         ArrayList arr = new ArrayList();
-        ClassLoader loader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
-
-        if (loader == null) {
-            loader = DummyWindowManager.class.getClassLoader();
-        }
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
         for (int i = 0; i < names.length; i++) {
             if (names[i] == null) {
@@ -259,11 +256,9 @@ final class DummyWindowManager extends WindowManager {
             }
 
             try {
-                arr.add(SystemAction.get(Class.forName("org.openide.actions." + names[i] + "Action") // NOI18N
-                    )
-                );
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
+                arr.add(SystemAction.get(Class.forName("org.openide.actions." + names[i] + "Action", true, loader))); // NOI18N
+            } catch (ClassNotFoundException e) {
+                // ignore it, missing org-openide-actions.jar
             }
         }
 
