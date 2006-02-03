@@ -40,13 +40,13 @@ public class LibrariesNodeTest extends TestBase {
         libraries.getChildren().getNodes(); // ping
         
         flushProjectMutex();
-        assertEquals("just jdk node is present", 1, libraries.getChildren().getNodesCount());
+        assertEquals("just jdk node is present", 1, libraries.getChildren().getNodes(true).length);
         
         Util.addDependency(p, "org.netbeans.modules.java.project");
         ProjectManager.getDefault().saveProject(p);
         
         flushProjectMutex();
-        assertEquals("dependency noticed", 2, libraries.getChildren().getNodesCount());
+        assertEquals("dependency noticed", 2, libraries.getChildren().getNodes(true).length);
     }
     
     public void testDependencyNodeActions() throws Exception {
@@ -59,8 +59,9 @@ public class LibrariesNodeTest extends TestBase {
         ProjectManager.getDefault().saveProject(p);
         libraries.getChildren().getNodes(); // ping
         flushProjectMutex();
-        assertEquals("dependency noticed", 2, libraries.getChildren().getNodesCount());
-        assertEquals("dependency noticed", 4, libraries.getChildren().getNodes()[1].getActions(false).length);
+        Node[] nodes = libraries.getChildren().getNodes(true);
+        assertEquals("dependency noticed", 2, nodes.length);
+        assertEquals("dependency noticed", 4, nodes[1].getActions(false).length);
     }
     
     private void flushProjectMutex() {
