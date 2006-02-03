@@ -605,6 +605,11 @@ public class NodeTableModel extends AbstractTableModel {
 
         javax.swing.JPanel panel = new javax.swing.JPanel();
         panel.setLayout(new GridBagLayout());
+        
+        panel.getAccessibleContext().setAccessibleName( 
+                NbBundle.getBundle(NodeTableModel.class).getString("ACSN_ColumnDialog") );
+        panel.getAccessibleContext().setAccessibleDescription( 
+                NbBundle.getBundle(NodeTableModel.class).getString("ACSD_ColumnDialog") );
 
         ArrayList boxes = new ArrayList(allPropertyColumns.length);
         boolean[] oldvalues = new boolean[allPropertyColumns.length];
