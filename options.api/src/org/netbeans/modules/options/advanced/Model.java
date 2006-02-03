@@ -7,13 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.options.advanced;
 
 import java.awt.Color;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,14 +36,13 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ProxyLookup;
 
-
 /**
  *
  * @author Jan Jancura
  */
 public final class Model extends TabbedPanelModel {
     
-    private Map         categoryToOption = new HashMap ();
+    private Map/*<String,AdvancedOption>*/ categoryToOption = new HashMap();
     private Map         categoryToPanel = new HashMap ();
     private Map         categoryToController = new HashMap ();
     private Lookup      masterLookup;
@@ -51,7 +51,7 @@ public final class Model extends TabbedPanelModel {
     public List getCategories () {
         init ();
         List l = new ArrayList (categoryToOption.keySet ());
-        Collections.sort (l);
+        Collections.sort(l, Collator.getInstance());
         return l;
     }
     
