@@ -26,6 +26,12 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
 
+/**
+ *
+ *
+ *
+ * @author Tomas Stupka
+ */
 public final class BrowserAction extends CallableSystemAction {
     
     public void performAction() {                
