@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -95,21 +96,27 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             return null;
         }
         
-        FileObject file;
-        
+        DataObject file;
         if (target instanceof FileObject) {
-            file = (FileObject)target;
+            try {
+                file = DataObject.find((FileObject) target);
+            } catch (DataObjectNotFoundException e) {
+                return null; // OK
+            }
         } else if (target instanceof DataObject) {
-            file = ((DataObject) target).getPrimaryFile();
+            file = (DataObject) target;
         } else {
             // What is it?
             return null;
         }
         
-        if (file.getNameExt().equals("master.jnlp") && suite.getProjectDirectory().equals(file.getParent())) { // NOI18N
-            Node n = root.getChildren().findChild("important.files"); // NOI18N
-            if (n != null) {
-                return n.getChildren().findChild("master.jnlp"); // NOI18N
+        Node impFilesNode = root.getChildren().findChild("important.files"); // NOI18N
+        if (impFilesNode != null) {
+            Node[] impFiles = impFilesNode.getChildren().getNodes(true);
+            for (int i = 0; i < impFiles.length; i++) {
+                if (impFiles[i].getCookie(DataObject.class) == file) {
+                    return impFiles[i];
+                }
             }
         }
         
@@ -494,6 +501,11 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         private static final java.util.Map/*<String,String>*/ FILES = new LinkedHashMap();
         static {
             FILES.put("master.jnlp", NbBundle.getMessage(SuiteLogicalView.class, "LBL_jnlp_master"));
+            FILES.put("build.xml", NbBundle.getMessage(SuiteLogicalView.class, "LBL_build.xml"));
+            FILES.put("nbproject/project.properties", NbBundle.getMessage(SuiteLogicalView.class, "LBL_project.properties"));
+            FILES.put("nbproject/private/private.properties", NbBundle.getMessage(SuiteLogicalView.class, "LBL_private.properties"));
+            FILES.put("nbproject/platform.properties", NbBundle.getMessage(SuiteLogicalView.class, "LBL_platform.properties"));
+            FILES.put("nbproject/private/platform-private.properties", NbBundle.getMessage(SuiteLogicalView.class, "LBL_platform-private.properties"));
         }
         
         private final SuiteProject project;
@@ -515,38 +527,35 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         }
         
         protected Node[] createNodes(Object key) {
-            String f = (String)key;
-            FileObject file = project.getProjectDirectory().getFileObject(f);
-            if (file == null) {
-                return null;
-            }
+            final String loc = (String) key;
+            String locEval = project.getEvaluator().evaluate(loc);
+            FileObject file = project.getHelper().resolveFileObject(locEval);
 
             try {
                 Node orig = DataObject.find(file).getNodeDelegate();
-                
-                final String loc = (String) FILES.get(file.getNameExt());
-                if (loc != null) {
-                    orig = new FilterNode(orig) {
-                        {
-                            disableDelegation(FilterNode.DELEGATE_SET_DISPLAY_NAME | FilterNode.DELEGATE_GET_DISPLAY_NAME);
-                            setDisplayName(loc);
-                        }
-                    };
-                }
-                
-                return new Node[] { orig };
+                // XXX use ModuleLogicalView.SpecialFileNode, better behaved
+                return new Node[] {new FilterNode(orig) {
+                    {
+                        disableDelegation(FilterNode.DELEGATE_SET_DISPLAY_NAME | FilterNode.DELEGATE_GET_DISPLAY_NAME);
+                        setDisplayName((String) FILES.get(loc));
+                    }
+                }};
             } catch (DataObjectNotFoundException e) {
                 throw new AssertionError(e);
             }
         }
         
         private void refreshKeys() {
-            List newVisibleFiles = new ArrayList();
-            java.util.Iterator it = FILES.keySet().iterator();
+            List/*<FileObject>*/ newVisibleFiles = new ArrayList();
+            Iterator it = FILES.keySet().iterator();
             Set files = new HashSet();
             while (it.hasNext()) {
                 String loc = (String) it.next();
-                FileObject file = project.getProjectDirectory().getFileObject(loc);
+                String locEval = project.getEvaluator().evaluate(loc);
+                if (locEval == null) {
+                    continue;
+                }
+                FileObject file = project.getHelper().resolveFileObject(locEval);
                 if (file != null) {
                     newVisibleFiles.add(loc);
                     files.add(file);
@@ -555,6 +564,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             if (!isInitialized() || !newVisibleFiles.equals(visibleFiles)) {
                 visibleFiles = newVisibleFiles;
                 setKeys(visibleFiles);
+                // For CVS: ((ImportantFilesNode) getNode()).setFiles(files);
             }
         }
         

@@ -109,39 +109,25 @@ public class SuiteLogicalViewTest extends TestBase {
         LogicalViewProvider viewProv = (LogicalViewProvider) suite.getLookup().lookup(LogicalViewProvider.class);
         Node n = viewProv.createLogicalView();
         
-        Node[] arr = n.getChildren().getNodes(true);
-        assertEquals("Two childs are there", 2, arr.length);
-        assertEquals("Named modules", "modules", arr[0].getName());
-        assertEquals("Named imp files", "important.files", arr[1].getName());
-        
         Node[] nodes = n.getChildren().getNodes(true);
         assertEquals("Now there are two", 2, nodes.length);
         assertEquals("Named modules", "modules", nodes[0].getName());
         assertEquals("Named imp files", "important.files", nodes[1].getName());
         
-        Node[] subnodes = nodes[1].getChildren().getNodes(true);
-        assertEquals("One important node", 1, subnodes.length);
+        FileObject projProps = suite.getProjectDirectory().getFileObject("nbproject/project.properties");
+        assertNotNull(projProps);
+        Node nodeForFO = viewProv.findPath(n, projProps);
+        assertNotNull("found project.properties node", nodeForFO);
+        assertEquals("Name of node is localized", "Project Properties", nodeForFO.getDisplayName());
         
-        
-        DataObject obj = (DataObject) subnodes[0].getCookie(DataObject.class);
-        assertNotNull("It represents a data object", obj);
-        assertEquals("And it is the master one", master, obj.getPrimaryFile());
-        assertEquals("Name of node is localized", "JNLP Descriptor", subnodes[0].getDisplayName());
-        
-        Node nodeForObj = viewProv.findPath(n, obj);
-        Node nodeForFO = viewProv.findPath(n, obj.getPrimaryFile());
-        
-        assertEquals("For data object we have our node", subnodes[0], nodeForObj);
-        assertEquals("For file object we have our node", subnodes[0], nodeForFO);
+        nodeForFO = viewProv.findPath(n, master);
+        assertNotNull("found master.jnlp node", nodeForFO);
+        assertEquals("same by DataObject", nodeForFO, viewProv.findPath(n, DataObject.find(master)));
+        assertEquals("Name of node is localized", "JNLP Descriptor", nodeForFO.getDisplayName());
         
         master.delete();
         
-        Node[] newSubN = nodes[0].getChildren().getNodes(true);
-        assertEquals("No important nodes", 0, newSubN.length);
-        nodeForObj = viewProv.findPath(n, obj);
-        nodeForFO = viewProv.findPath(n, obj.getPrimaryFile());
-        
-        assertNull("For data object null", nodeForObj);
+        nodeForFO = viewProv.findPath(n, master);
         assertNull("For file object null", nodeForFO);
     }
     
