@@ -36,8 +36,8 @@ Microsystems, Inc. All Rights Reserved.
   </information>
   <security><all-permissions/></security>
   <resources>
-<!-- following line is going to be replaced with automatically generated list of resources-->    
-]]>&lt;<![CDATA[!--$${jnlp.resources}--]]>&gt;<![CDATA[
+<!-- The following line will be replaced with an automatically generated list of resources: -->    
+<!--$${jnlp.resources}-->
   </resources>
   <resources os="Mac OS X"> 
       <property name="netbeans.user" value="$${user.home}/Library/Application Support/$${app.name}"/>
