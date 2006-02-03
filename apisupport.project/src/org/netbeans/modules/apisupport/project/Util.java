@@ -478,8 +478,7 @@ public final class Util {
     public static EditableManifest loadManifest(FileObject manifestFO) throws IOException {
         InputStream mfIS = manifestFO.getInputStream();
         try {
-            EditableManifest mf = new EditableManifest(mfIS);
-            return mf;
+            return new EditableManifest(mfIS);
         } finally {
             mfIS.close();
         }
@@ -549,7 +548,7 @@ public final class Util {
     }
     
     /**
-     * Delegates to {@link #addDependency(NbModuleProject, String}.
+     * Delegates to {@link #addDependency(NbModuleProject, String)}.
      */
     public static void addDependency(final NbModuleProject target,
             final NbModuleProject dependency) throws IOException {
@@ -584,12 +583,6 @@ public final class Util {
      * @param useInCompiler whether this this module needs a
      *        <code>dependency</code> module at a compile time.
      */
-    /*public static void addDependency(final NbModuleProject target,
-            final String codeNameBase, final int releaseVersion,
-            final SpecificationVersion version, final boolean useInCompiler) throws IOException {
-        addDependency(target, codeNameBase, (String)(releaseVersion == -1 ? null : String.valueOf(releaseVersion)), 
-                version, useInCompiler);
-    }*/    
     public static void addDependency(final NbModuleProject target, final String codeNameBase, final String releaseVersion, final SpecificationVersion version, final boolean useInCompiler) throws IOException {        
         ModuleEntry me = target.getModuleList().getEntry(codeNameBase);        
         assert me != null : "Cannot find module with the given codeNameBase (" + // NOI18N
