@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -722,6 +722,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     /** Sets localized html display name of this <code>TopComponent</code>.
      * Hmtl name usually contains basic html tags for text coloring and style.
      * Html name may be null if not needed.
+     * Must apparently begin with <code>&lt;html&gt;</code>.
      *
      * @param htmlDisplayName localized html display name which is set
      *
@@ -742,6 +743,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
 
     /** Gets localized display name of this <code>TopComponent</code> with added
      * html tags for text coloring and/or font style. May return null.
+     * Must apparently begin with <code>&lt;html&gt;</code>.
      *
      * @return localized html display name or <code>null</code> if there is none
      *
@@ -953,7 +955,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      */
     public AccessibleContext getAccessibleContext() {
         if (accessibleContext == null) {
-            accessibleContext = new AccessibleJComponent() {
+            accessibleContext = new JComponent.AccessibleJComponent() {
                         public AccessibleRole getAccessibleRole() {
                             return AccessibleRole.PANEL;
                         }
