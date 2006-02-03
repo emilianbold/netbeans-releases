@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,7 +17,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -47,8 +46,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JComponent;
-
-
 
 /**
  *
@@ -479,7 +476,6 @@ final class DragManager implements DragGestureListener, DragSourceListener,
             public void updateSize(Rectangle currentDragRect) {
                 assert resizeMode != -1;
                 int inset = 5;
-                Dimension d = new Dimension(inset*2,inset*2);
                 switch(resizeMode) {
                     case OneSideScaleMode.N_RESIZE_MODE:
                         rec = new Rectangle(currentDragRect.x+inset,currentDragRect.y-2*inset,currentDragRect.width-inset,2*inset);

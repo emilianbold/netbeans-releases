@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Position;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -112,7 +111,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Instantiat
             // XXX never cast to NbModuleProject... use lookup instead
             if (!(tmpProject instanceof NbModuleProject)) {
                 // XXX this happens after apisupport/project reload, which is annoying...
-                throw new IllegalArgumentException(project.getClass().toString());
+                throw new IllegalArgumentException(tmpProject.getClass().toString());
             }
             
             project = (NbModuleProject) tmpProject;
@@ -363,12 +362,9 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Instantiat
             panel.addPropertyChangeListener(this);
             panel.setName(panel.getPanelName()); // NOI18N
             this.panel = panel;
-            if (panel instanceof JComponent) { // assume Swing components
-                JComponent jc = (JComponent)panel;
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(stepIndex)); // NOI18N
-                // names of currently used steps
-                jc.putClientProperty("WizardPanel_contentData", allSteps); // NOI18N
-            }
+            panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(stepIndex)); // NOI18N
+            // names of currently used steps
+            panel.putClientProperty("WizardPanel_contentData", allSteps); // NOI18N
         }
         
         private BasicWizardIterator.Panel getPanel() {
@@ -390,15 +386,15 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Instantiat
         }
         
         public void readSettings(Object settings) {
+            WizardDescriptor wiz = (WizardDescriptor) settings;
             // mkleint - copied from someplace.. is definitely weird..
             // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
             // this name is used in NewProjectWizard to modify the title
-            Object substitute = ((JComponent)getPanel()).getClientProperty("NewFileWizard_Title"); // NOI18N
+            Object substitute = getPanel().getClientProperty("NewFileWizard_Title"); // NOI18N
             if (substitute != null) {
-                ((WizardDescriptor) settings).putProperty("NewFileWizard_Title", substitute); // NOI18N
+                wiz.putProperty("NewFileWizard_Title", substitute); // NOI18N
             }
             
-            WizardDescriptor wiz = (WizardDescriptor) settings;
             if (WizardDescriptor.NEXT_OPTION.equals(wiz.getValue()) || wiz.getValue() == null) {
                 panel.readFromDataModel();
             }

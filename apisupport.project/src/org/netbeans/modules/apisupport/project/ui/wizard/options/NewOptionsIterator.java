@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -440,7 +441,7 @@ public class NewOptionsIterator extends BasicWizardIterator {
             if (classNamePrefix == null) {
                 classNamePrefix = getCodeNameBase();
                 classNamePrefix = classNamePrefix.substring(classNamePrefix.lastIndexOf(".")+1);// NOI18N
-                classNamePrefix = classNamePrefix.substring(0,1).toUpperCase()+classNamePrefix.substring(1);// NOI18N
+                classNamePrefix = classNamePrefix.substring(0,1).toUpperCase(Locale.ENGLISH) + classNamePrefix.substring(1); // NOI18N
             }
             return classNamePrefix;
         }

@@ -120,10 +120,6 @@ final class UpdateCenterRegistrationPanel extends BasicWizardIterator.Panel {
         return result;
     }
     
-    private String getDisplayName() {
-        return displayName.getText().trim();
-    }
-    
     protected HelpCtx getHelp() {
         return new HelpCtx(UpdateCenterRegistrationPanel.class);
     }

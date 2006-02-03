@@ -148,8 +148,8 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
         }
         
-        getProperties().setEnabledClusters((String[])enabledClusters.toArray(new String[0]));
-        getProperties().setDisabledModules((String[])disabledModules.toArray(new String[0]));
+        getProperties().setEnabledClusters((String[]) enabledClusters.toArray(new String[enabledClusters.size()]));
+        getProperties().setDisabledModules((String[]) disabledModules.toArray(new String[disabledModules.size()]));
     }
     
     /** This method is called from within the constructor to

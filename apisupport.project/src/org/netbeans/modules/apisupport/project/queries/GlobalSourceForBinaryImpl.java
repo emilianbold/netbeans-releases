@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -248,11 +248,6 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 }
             }
             return nbRoot;
-        }
-        
-        private static boolean isValidNbBuild(String name) {
-            return name.equals(NBBUILD_ENTRY) ||
-                    (name.endsWith(NBBUILD_ENTRY) && name.substring(name.indexOf('/') + 1).equals(NBBUILD_ENTRY));
         }
         
         private void doScanZippedNetBeansOrgSources() throws IOException {

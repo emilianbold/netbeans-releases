@@ -976,7 +976,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         Vector result = new Vector();
         while (folders.hasMoreElements()) {
             DataFolder dObj = (DataFolder) folders.nextElement();
-            if (dObj instanceof DataFolder && subFoldersName.equals(dObj.getName()) &&
+            if (subFoldersName.equals(dObj.getName()) &&
                     dObj.getPrimaryFile().getParent() != startFolder.getPrimaryFile()) {
                 result.add(dObj);
             }

@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
@@ -22,6 +21,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.Locale;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.event.ChangeEvent;
@@ -107,7 +107,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
                 if (e != null || fontSize.isFocusOwner()) {
                     try {
                         fontSize.commitEdit();
-                        int val = ((Number)fontSize.getValue()).intValue();
+                        ((Number) fontSize.getValue()).intValue();
                         setErrorMessage(null);
                         resetSplashPreview();
                     } catch (ParseException ex) {
@@ -182,7 +182,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         barColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarColor().getValue()));//
         edgeColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarEdgeColor().getValue()));
         cornerColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarCornerColor().getValue()));
-        progressBarEnabled.setSelected(getBrandingModel().getSplashShowProgressBar().getValue().trim().toLowerCase().equals("true")); // NOI18N
+        progressBarEnabled.setSelected(getBrandingModel().getSplashShowProgressBar().getValue().trim().toLowerCase(Locale.ENGLISH).equals("true")); // NOI18N
         
         splashSource = getBrandingModel().getSplash().getBrandingSource();
         resetSplashPreview();
@@ -478,9 +478,13 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
                 Image oldImage = splashImage.image;
                 splashImage.setSplashImageIcon(splashSource);
                 Image newImage = splashImage.image;
-                double xRatio = newImage.getWidth(null)/((double)oldImage.getWidth(null));
-                double yRatio = newImage.getHeight(null)/((double)oldImage.getHeight(null));
-                if (xRatio != 1.0 || yRatio != 1.0) {
+                int newWidth = newImage.getWidth(null);
+                int newHeight = newImage.getHeight(null);
+                int oldWidth = oldImage.getWidth(null);
+                int oldHeight = oldImage.getHeight(null);
+                if (newWidth != oldWidth || newHeight != oldHeight) {
+                    double xRatio = newWidth / ((double) oldWidth);
+                    double yRatio = newHeight / ((double) oldHeight);
                     Rectangle tRectangle = (Rectangle)runningTextBounds.getValue();
                     Rectangle pRectangle = (Rectangle)progressBarBounds.getValue();
                     

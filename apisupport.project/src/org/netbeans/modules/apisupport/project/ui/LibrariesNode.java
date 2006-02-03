@@ -61,8 +61,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -240,7 +238,8 @@ final class LibrariesNode extends AbstractNode {
         public void propertiesChanged(AntProjectEvent ev) {
             // do not need
         }
-        
+
+        /*
         private Node getNodeDelegate(final File jarF) {
             Node n = null;
             assert jarF != null;
@@ -258,6 +257,7 @@ final class LibrariesNode extends AbstractNode {
             }
             return n;
         }
+         */
         
         private Icon getLibrariesIcon() {
             if (librariesIcon == null) {

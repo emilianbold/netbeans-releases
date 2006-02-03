@@ -196,12 +196,11 @@ public abstract class ModuleProperties {
      * Helper method for storing platform into the appropriate place.
      */
     static void storePlatform(AntProjectHelper helper, NbPlatform platform) {
-        String platformID = platform.getID();
         if (platform != null) {
             // store platform properties
             EditableProperties props = helper.getProperties(
                     NbModuleProjectGenerator.PLATFORM_PROPERTIES_PATH);
-            props.put("nbplatform.active", platformID); // NOI18N
+            props.put("nbplatform.active", platform.getID()); // NOI18N
             helper.putProperties(
                     NbModuleProjectGenerator.PLATFORM_PROPERTIES_PATH, props);
         }

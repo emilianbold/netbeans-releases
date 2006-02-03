@@ -76,11 +76,11 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
     
     private void updateData() {
         int retCode = 0;
-        if (AdvancedButton.isSelected()) {
-            assert !OptinsCategoryButton.isSelected();
+        if (advancedButton.isSelected()) {
+            assert !optionsCategoryButton.isSelected();
             retCode = data.setDataForAdvanced(displayNameField1.getText(), tooltipField1.getText());
         } else {
-            assert OptinsCategoryButton.isSelected();
+            assert optionsCategoryButton.isSelected();
             retCode = data.setDataForOptionCategory(titleField.getText(),
                     categoryNameField.getText(), iconField.getText());
         }
@@ -128,8 +128,8 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
     }
     
     private void enableDisable() {
-        boolean advancedEnabled = AdvancedButton.isSelected();
-        assert advancedEnabled != OptinsCategoryButton.isSelected();
+        boolean advancedEnabled = advancedButton.isSelected();
+        assert advancedEnabled != optionsCategoryButton.isSelected();
         
         categoryNameField.setEnabled(!advancedEnabled);
         categoryNameLbl.setEnabled(!advancedEnabled);
@@ -155,9 +155,9 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        AdvancedButton = new javax.swing.JRadioButton();
-        OptinsCategoryButton = new javax.swing.JRadioButton();
-        jPanel1 = new javax.swing.JPanel();
+        advancedButton = new javax.swing.JRadioButton();
+        optionsCategoryButton = new javax.swing.JRadioButton();
+        dummyPanel = new javax.swing.JPanel();
         categoryNameLbl = new javax.swing.JLabel();
         categoryNameField = new javax.swing.JTextField();
         displayNameLbl1 = new javax.swing.JLabel();
@@ -172,14 +172,14 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        buttonGroup1.add(AdvancedButton);
-        AdvancedButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(AdvancedButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle").getString("LBL_Advanced"));
-        AdvancedButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        AdvancedButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        AdvancedButton.addActionListener(new java.awt.event.ActionListener() {
+        buttonGroup1.add(advancedButton);
+        advancedButton.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(advancedButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle").getString("LBL_Advanced"));
+        advancedButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        advancedButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        advancedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                AdvancedButtonActionPerformed(evt);
+                advancedButtonActionPerformed(evt);
             }
         });
 
@@ -188,15 +188,15 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        add(AdvancedButton, gridBagConstraints);
+        add(advancedButton, gridBagConstraints);
 
-        buttonGroup1.add(OptinsCategoryButton);
-        org.openide.awt.Mnemonics.setLocalizedText(OptinsCategoryButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle").getString("LBL_OptionsCategory"));
-        OptinsCategoryButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        OptinsCategoryButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        OptinsCategoryButton.addActionListener(new java.awt.event.ActionListener() {
+        buttonGroup1.add(optionsCategoryButton);
+        org.openide.awt.Mnemonics.setLocalizedText(optionsCategoryButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle").getString("LBL_OptionsCategory"));
+        optionsCategoryButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        optionsCategoryButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        optionsCategoryButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                OptinsCategoryButtonActionPerformed(evt);
+                optionsCategoryButtonActionPerformed(evt);
             }
         });
 
@@ -207,7 +207,7 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
-        add(OptinsCategoryButton, gridBagConstraints);
+        add(optionsCategoryButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -215,7 +215,7 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
+        add(dummyPanel, gridBagConstraints);
 
         categoryNameLbl.setLabelFor(categoryNameField);
         org.openide.awt.Mnemonics.setLocalizedText(categoryNameLbl, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/options/Bundle").getString("LBL_CategoryName"));
@@ -329,15 +329,15 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
 
     }// </editor-fold>//GEN-END:initComponents
     
-    private void OptinsCategoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OptinsCategoryButtonActionPerformed
+    private void optionsCategoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_optionsCategoryButtonActionPerformed
         enableDisable();
         updateData();
-    }//GEN-LAST:event_OptinsCategoryButtonActionPerformed
+    }//GEN-LAST:event_optionsCategoryButtonActionPerformed
     
-    private void AdvancedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AdvancedButtonActionPerformed
+    private void advancedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_advancedButtonActionPerformed
         enableDisable();
         updateData();
-    }//GEN-LAST:event_AdvancedButtonActionPerformed
+    }//GEN-LAST:event_advancedButtonActionPerformed
     
     private void iconButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iconButtonActionPerformed
         JFileChooser chooser = UIUtil.getIconFileChooser(iconField.getText());
@@ -350,17 +350,17 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
     }//GEN-LAST:event_iconButtonActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JRadioButton AdvancedButton;
-    private javax.swing.JRadioButton OptinsCategoryButton;
+    private javax.swing.JRadioButton advancedButton;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JTextField categoryNameField;
     private javax.swing.JLabel categoryNameLbl;
     private javax.swing.JTextField displayNameField1;
     private javax.swing.JLabel displayNameLbl1;
+    private javax.swing.JPanel dummyPanel;
     private javax.swing.JButton iconButton;
     private javax.swing.JTextField iconField;
     private javax.swing.JLabel iconLbl;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JRadioButton optionsCategoryButton;
     private javax.swing.JTextField titleField;
     private javax.swing.JLabel titleLbl;
     private javax.swing.JTextField tooltipField1;

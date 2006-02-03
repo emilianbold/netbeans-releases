@@ -360,7 +360,7 @@ public final class CustomizerComponentFactory {
         String[] getSelectedPackages() {
             Set s = new TreeSet();
             for (int i = 0; i < pkgNames.length; i++) {
-                if (Boolean.TRUE == selected[i]) {
+                if (selected[i].booleanValue()) {
                     s.add(pkgNames[i]);
                 }
             }

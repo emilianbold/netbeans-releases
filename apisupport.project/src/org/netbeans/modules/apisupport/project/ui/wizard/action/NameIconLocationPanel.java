@@ -415,7 +415,6 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
             icon.setText(iconFile.getAbsolutePath());
             {
                 Set allFiles = getPossibleIcons(getIconPath());
-                assert iconFile != null;
                 assert allFiles.contains(iconFile);
                 allFiles.remove(iconFile);
                 Boolean isIconSmall = isIconSmall(iconFile);

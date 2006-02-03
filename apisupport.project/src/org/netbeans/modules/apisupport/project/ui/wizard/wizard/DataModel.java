@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard.wizard;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.Util;
@@ -111,7 +112,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             
             if (fileTemplateType) {
                 // generate .html description for the template
-                String lowerCasedPrefix = prefix.substring(0, 1).toLowerCase() + prefix.substring(1);
+                String lowerCasedPrefix = prefix.substring(0, 1).toLowerCase(Locale.ENGLISH) + prefix.substring(1);
                 template = DataModel.class.getResource("wizardDescription.html"); // NOI18N
                 cmf.add(cmf.createFile(getDefaultPackagePath(lowerCasedPrefix) + ".html", template)); // NOI18N
                 

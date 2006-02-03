@@ -40,7 +40,7 @@ import org.openide.util.NbBundle;
  * @author Martin Krauskopf
  */
 final class CustomizerVersioning extends NbPropertyPanel.Single
-        implements PropertyChangeListener, BasicCustomizer.SubCategoryProvider {
+        implements BasicCustomizer.SubCategoryProvider {
     
     private static final int CHECKBOX_WIDTH = new JCheckBox().getWidth();
     
@@ -198,7 +198,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
         String pName = evt.getPropertyName();
         if (SingleModuleProperties.DEPENDENCIES_PROPERTY == pName) {
             updateAppendImpl();
-        } else if (SingleModuleProperties.PROPERTIES_REFRESHED == pName) {
+        } else if (ModuleProperties.PROPERTIES_REFRESHED == pName) {
             refresh();
             checkForm();
         }

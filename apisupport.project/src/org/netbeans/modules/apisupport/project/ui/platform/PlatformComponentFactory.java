@@ -142,7 +142,8 @@ public final class PlatformComponentFactory {
             implements ComboBoxModel {
         
         private static NbPlatform[] getSortedPlatforms() {
-            NbPlatform[] platforms = (NbPlatform[]) NbPlatform.getPlatforms().toArray(new NbPlatform[0]);
+            Set _platforms = NbPlatform.getPlatforms();
+            NbPlatform[] platforms = (NbPlatform[]) _platforms.toArray(new NbPlatform[_platforms.size()]);
             Arrays.sort(platforms, new Comparator() {
                 public int compare(Object o1, Object o2) {
                     int res = Collator.getInstance().compare(((NbPlatform) o1).getLabel(), ((NbPlatform) o2).getLabel());

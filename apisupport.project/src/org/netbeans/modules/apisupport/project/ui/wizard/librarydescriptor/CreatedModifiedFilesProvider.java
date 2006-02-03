@@ -7,16 +7,15 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
-import java.io.File;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,14 +24,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.swing.JTextArea;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFilesFactory;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -83,14 +79,6 @@ final class CreatedModifiedFilesProvider  {
         }
         
         return bundle;
-    }
-    
-    private static String getLibraryDescriptorRelativePath(String packageRelativePath, String libraryName) {
-        StringBuffer sb = new StringBuffer();
-        
-        sb.append(packageRelativePath).append("/").append(libraryName).append(".xml");//NOI18N
-        
-        return sb.toString();//NOI18N
     }
     
     static String getLibraryDescriptorEntryPath(String libraryName) {

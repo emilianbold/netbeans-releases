@@ -32,6 +32,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.Stack;
@@ -151,8 +152,7 @@ public final class UIUtil {
         }
         KeyStroke ks = Utilities.stringToKey(keyStroke);
         if (ks == null) {
-            ErrorManager.getDefault().notify(
-                    new IllegalArgumentException(keyStroke));
+            return null;
         }
         KeyStroke result = KeyStroke.getKeyStroke(ks.getKeyCode(), modifiers);
         return result;
@@ -691,8 +691,8 @@ public final class UIUtil {
     private static final class IconFilter extends FileFilter {
         public boolean accept(File pathname) {
             return pathname.isDirectory() ||
-                    pathname.getName().toLowerCase().endsWith("gif") || // NOI18N
-                    pathname.getName().toLowerCase().endsWith("png"); // NOI18N
+                    pathname.getName().toLowerCase(Locale.ENGLISH).endsWith("gif") || // NOI18N
+                    pathname.getName().toLowerCase(Locale.ENGLISH).endsWith("png"); // NOI18N
         }
         public String getDescription() {
             return "*.gif, *.png"; // NOI18N

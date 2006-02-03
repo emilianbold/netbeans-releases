@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -230,7 +231,7 @@ public final class Util {
      * @param value to be normalized
      */
     public static String normalizeCNB(String value) {
-        StringTokenizer tk = new StringTokenizer(value.toLowerCase(), ".", true); //NOI18N
+        StringTokenizer tk = new StringTokenizer(value.toLowerCase(Locale.ENGLISH), ".", true); // NOI18N
         StringBuffer normalizedCNB = new StringBuffer();
         boolean delimExpected = false;
         while (tk.hasMoreTokens()) {

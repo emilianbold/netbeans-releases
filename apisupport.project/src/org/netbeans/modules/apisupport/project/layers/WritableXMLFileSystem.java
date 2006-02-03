@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -44,8 +44,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
@@ -68,9 +66,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Enumerations;
@@ -219,7 +214,9 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         return res;
     }
     
+    /*
     private static final Set warnedAboutDupeKids = new HashSet(1); // Set<String>
+     */
     public String[] children(String f) {
         TreeElement el = findElement(f);
         if (el == null) {
@@ -240,17 +237,19 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 String name = attr.getValue(); // NOI18N
                 if (allNames.add(name)) {
                     kids.add(name);
+                        /*
                 } else {
                     if (warnedAboutDupeKids.add(location + ":" + f + "/" + name)) { // NOI18N
                         // #18699: will deadlock if you try to change anything.
                         if (f.equals("")) { // NOI18N
-                            //LayerDataNode.getErr().println("WARNING: in " + xmlfile + " the root folder contains the child " + name + " more than once.");
+                            LayerDataNode.getErr().println("WARNING: in " + xmlfile + " the root folder contains the child " + name + " more than once.");
                         } else {
-                            //LayerDataNode.getErr().println("WARNING: in " + xmlfile + " the folder " + f + " contains the child " + name + " more than once.");
+                            LayerDataNode.getErr().println("WARNING: in " + xmlfile + " the folder " + f + " contains the child " + name + " more than once.");
                         }
                         //LayerDataNode.getErr().println("The Open APIs Support module will not work properly with such a layer.");
                         //LayerDataNode.getErr().println("Please edit the XML text and merge together all children of a <folder> with the same name.");
                     }
+                         */
                 }
             }
         }

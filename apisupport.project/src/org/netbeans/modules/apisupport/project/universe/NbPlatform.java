@@ -91,13 +91,14 @@ public final class NbPlatform {
             platforms = new HashSet();
             Map/*<String,String>*/ p = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {PropertyUtils.globalPropertyProvider()}).getProperties();
             boolean foundDefault = false;
-            Iterator keys = p.keySet().iterator();
-            while (keys.hasNext()) {
-                String key = (String) keys.next();
+            Iterator entries = p.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry) entries.next();
+                String key = (String) entry.getKey();
                 if (key.startsWith(PLATFORM_PREFIX) && key.endsWith(PLATFORM_DEST_DIR_SUFFIX)) {
                     String id = key.substring(PLATFORM_PREFIX.length(), key.length() - PLATFORM_DEST_DIR_SUFFIX.length());
                     String label = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX);
-                    String destdir = (String) p.get(key);
+                    String destdir = (String) entry.getValue();
                     String harnessdir = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX);
                     String sources = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_SOURCES_SUFFIX);
                     String javadoc = (String) p.get(PLATFORM_PREFIX + id + PLATFORM_JAVADOC_SUFFIX);

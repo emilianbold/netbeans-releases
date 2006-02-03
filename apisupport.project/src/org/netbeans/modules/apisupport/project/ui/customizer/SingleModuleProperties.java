@@ -312,7 +312,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     void setMajorReleaseVersion(String ver) {
-        if (majorReleaseVersion != ver) {
+        if (!Utilities.compareObjects(majorReleaseVersion, ver)) {
             majorReleaseVersion = ver;
             majorReleaseVersionChanged = true;
         }
@@ -323,7 +323,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     void setSpecificationVersion(String ver) {
-        if (specificationVersion != ver) {
+        if (!Utilities.compareObjects(specificationVersion, ver)) {
             specificationVersion = ver;
             specificationVersionChanged = true;
         }
@@ -334,7 +334,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     void setImplementationVersion(String ver) {
-        if (implementationVersion != ver) {
+        if (!Utilities.compareObjects(implementationVersion, ver)) {
             implementationVersion = ver;
             implementationVersionChange = true;
         }
@@ -345,7 +345,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     void setProvidedTokens(String tokens) {
-        if (provTokensString != tokens) {
+        if (!Utilities.compareObjects(provTokensString, tokens)) {
             provTokensString = tokens;
             providedTokensChanged = true;
         }
@@ -523,7 +523,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                 set.add(dep.getModuleEntry().getCodeNameBase());
             }
         } // else standalone module - leave empty (see the UI spec)
-        return (String[]) set.toArray(new String[0]);
+        return (String[]) set.toArray(new String[set.size()]);
     }
     
     FriendListModel getFriendListModel() {

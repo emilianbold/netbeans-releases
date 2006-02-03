@@ -195,11 +195,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return createPathFromProperty("cp"); // NOI18N
     }
     
-    private void addPathFromProject(List/*<PathResourceImplementation>*/ entries, String propertyName) {
-        String path = project.evaluator().getProperty(propertyName);
-        addPathFromProjectEvaluated(entries, path);
-    }
-    
     private void addPathFromProjectEvaluated(List/*<PathResourceImplementation>*/ entries, String path) {
         if (path != null) {
             String[] pieces = PropertyUtils.tokenizePath(path);

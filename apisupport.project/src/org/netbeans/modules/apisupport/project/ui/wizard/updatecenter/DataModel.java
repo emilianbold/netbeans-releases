@@ -40,9 +40,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     private String ucUrl;
     private String ucDisplayName;
 
-    // helper
-    private String bundlePath;
-    
     DataModel(WizardDescriptor wiz) {
         super(wiz);
     }

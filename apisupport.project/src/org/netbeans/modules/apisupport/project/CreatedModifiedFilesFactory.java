@@ -101,9 +101,10 @@ public final class CreatedModifiedFilesFactory {
             Map/*<String, String>*/ attributes) {
         CreatedModifiedFilesFactory.ModifyManifest retval =
                 new CreatedModifiedFilesFactory.ModifyManifest(project);
-        for (Iterator it = attributes.keySet().iterator(); it.hasNext();) {
-            String name = (String) it.next();
-            String value = (String) attributes.get(name);
+        for (Iterator it = attributes.entrySet().iterator(); it.hasNext();) {
+            Map.Entry entry = (Map.Entry) it.next();
+            String name = (String) entry.getKey();
+            String value = (String) entry.getValue();
             retval.setAttribute(name, value, section);
         }
         return retval;
@@ -113,9 +114,10 @@ public final class CreatedModifiedFilesFactory {
             String propertyPath, Map/*<String, String>*/ properties) {
         CreatedModifiedFilesFactory.ModifyProperties retval =
                 new CreatedModifiedFilesFactory.ModifyProperties(project, propertyPath);
-        for (Iterator it = properties.keySet().iterator(); it.hasNext();) {
-            String name = (String) it.next();
-            String value = (String) properties.get(name);
+        for (Iterator it = properties.entrySet().iterator(); it.hasNext();) {
+            Map.Entry entry = (Map.Entry) it.next();
+            String name = (String) entry.getKey();
+            String value = (String) entry.getValue();
             retval.setProperty(name, value);
         }
         return retval;
@@ -304,9 +306,9 @@ public final class CreatedModifiedFilesFactory {
     
     private static final class BundleKey extends OperationBase {
         
-        protected String bundlePath;
-        protected String key;
-        protected String value;
+        private final String bundlePath;
+        private final String key;
+        private final String value;
         
         public BundleKey(NbModuleProject project, String key, String value) {
             this(project, key, value, null);
@@ -420,8 +422,8 @@ public final class CreatedModifiedFilesFactory {
             String line = null;
             List lines = new ArrayList();
             InputStream serviceIS = service.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(serviceIS, "UTF-8")); // NOI18N
             try {
+                BufferedReader br = new BufferedReader(new InputStreamReader(serviceIS, "UTF-8")); // NOI18N
                 while ((line = br.readLine()) != null) {
                     lines.add(line);
                 }
@@ -644,9 +646,10 @@ public final class CreatedModifiedFilesFactory {
                 Map attributes = getAttributes(section);
                 assert attributes != null;
                 
-                for (Iterator namesIterator = attributes.keySet().iterator(); namesIterator.hasNext();) {
-                    String name = (String) namesIterator.next();
-                    String value = (String)attributes.get(name);
+                for (Iterator attrsIterator = attributes.entrySet().iterator(); attrsIterator.hasNext();) {
+                    Map.Entry entry = (Map.Entry) attrsIterator.next();
+                    String name = (String) entry.getKey();
+                    String value = (String) entry.getValue();
                     performModification(em, name, value, (("null".equals(section)) ? null : section)); // NOI18N
                 }
             }

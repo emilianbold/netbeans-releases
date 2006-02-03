@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,7 +18,6 @@ import java.util.Set;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 
 /**
  * Wizard for creating new Actions.
@@ -39,10 +38,6 @@ final class NewActionIterator extends BasicWizardIterator {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
         cmf.run();
         return getCreatedFiles(cmf, data.getProject());
-    }
-    
-    private boolean isIcon(FileObject icon) {
-        return icon.getExt().equals("gif") || icon.getExt().equals("png"); // NOI18N
     }
     
     protected BasicWizardIterator.Panel[] createPanels(WizardDescriptor wiz) {

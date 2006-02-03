@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -313,10 +313,11 @@ public final class BrandingSupport {
             }
         }
         
-        for (Iterator it = mentryToEditProp.keySet().iterator();it.hasNext();) {
-            File bundle = (File)it.next();
+        for (Iterator it = mentryToEditProp.entrySet().iterator();it.hasNext();) {
+            Map.Entry entry = (Map.Entry) it.next();
+            File bundle = (File) entry.getKey();
             assert bundle.exists();
-            storeEditableProperties((EditableProperties)mentryToEditProp.get(bundle), bundle);
+            storeEditableProperties((EditableProperties) entry.getValue(), bundle);
             for (Iterator it2 = bundleKeys.iterator();it2.hasNext();) {
                 BundleKey bKey = (BundleKey)it2.next();
                 File bundle2 = bKey.getBrandingBundle();
@@ -358,9 +359,6 @@ public final class BrandingSupport {
             }
             if (foundEntry != null) {
                 brandedModules.add(foundEntry);
-            } else {
-                //TODO: just for testing should be deleted
-                assert foundEntry != null;
             }
         } else {
             String[] kids = srcDir.list();
@@ -383,10 +381,8 @@ public final class BrandingSupport {
         for (int i = 0; i < kids.length; i++) {
             File kid = new File(srcDir, kids[i]);
             if (!kid.isDirectory()) {
-                if (kid.getName().endsWith(BUNDLE_NAME)) {//NOI18N
-                    if (kid != null ) {
-                        loadBundleKeys(mEntry, kid);
-                    }
+                if (kid.getName().endsWith(BUNDLE_NAME)) {
+                    loadBundleKeys(mEntry, kid);
                 } else {
                     loadBrandedFiles(mEntry, kid);
                 }
@@ -538,6 +534,10 @@ public final class BrandingSupport {
             return  retval;
         }
         
+        public int hashCode() {
+            return 0;
+        }
+        
         boolean isModified() {
             return modified;
         }
@@ -545,6 +545,7 @@ public final class BrandingSupport {
         public File getBrandingBundle() {
             return brandingBundle;
         }
+
     }
     
     public class BrandedFile {
@@ -612,5 +613,10 @@ public final class BrandingSupport {
             //if ()
             return  retval;
         }
+
+        public int hashCode() {
+            return 0;
+        }
+        
     }
 }

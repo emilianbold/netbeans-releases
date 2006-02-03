@@ -88,7 +88,7 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
         if (plat != null) {
             name = plat.getDisplayName();
         } else {
-            String platformId = pp.getPlatformId();
+            String platformId = pp.getPlatformID();
             if (platformId == null) {
                 name = NbBundle.getMessage(PlatformNode.class,"TXT_BrokenPlatform");
             } else {
@@ -206,13 +206,13 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
             this.evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this,evaluator));
         }
         
-        public String getPlatformId() {
+        public String getPlatformID() {
             return this.evaluator.getProperty(this.platformPropName);
         }
         
         public JavaPlatform getPlatform() {
             if (platformCache == null) {
-                final String platformPropName = getPlatformId();
+                final String platformPropName = getPlatformID();
                 platformCache = ModuleProperties.findJavaPlatformByLocation(platformPropName);
                 if (platformCache != null && platformCache.getInstallFolders().size() == 0) {
                     //Deleted platform

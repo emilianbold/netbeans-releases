@@ -472,8 +472,7 @@ public final class ProjectXMLManager {
                 }
             }
         }
-        String[] result = new String[binaryOrigs.size()];
-        return (String[]) binaryOrigs.toArray(result);
+        return cpExtensions = (String[]) binaryOrigs.toArray(new String[binaryOrigs.size()]);
     }
     
     /** Returns code-name-base. */

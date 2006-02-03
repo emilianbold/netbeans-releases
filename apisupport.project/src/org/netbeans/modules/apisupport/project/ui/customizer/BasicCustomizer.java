@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -168,16 +168,14 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
     public void save() {
         try {
             // Store properties
-            Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
                     storeProperties();
-                    return Boolean.TRUE;
+                    return null;
                 }
             });
             // and save the project
-            if (result == Boolean.TRUE) {
-                ProjectManager.getDefault().saveProject(project);
-            }
+            ProjectManager.getDefault().saveProject(project);
         } catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());
         } catch (IOException ex) {

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 import javax.swing.ComboBoxEditor;
@@ -90,7 +91,7 @@ class SplashUISupport {
     }
     
     static String colorToString(final Color  color) throws NumberFormatException {
-        return "0x" + Integer.toString((~0xff000000 & color.getRGB()), 16).toUpperCase(); // NOI18N
+        return "0x" + Integer.toString((~0xff000000 & color.getRGB()), 16).toUpperCase(Locale.ENGLISH); // NOI18N
     }
     
     static int stringToInteger(final String integer) throws NumberFormatException {
