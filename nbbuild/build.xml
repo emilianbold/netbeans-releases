@@ -130,18 +130,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="all-installer" description="Dummy target for build system compatibility"/>
 
-  <target name="all-tomcatint/tomcat5/bundled" depends="init">
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <!-- XXX this and xtest are clumsy: <antcall target="all-monitor"/> will not work since the subproject used by antcall does *not* have the synthetic targets! -->
-    <ant dir="../monitor"/>
-    <echo message="Building module tomcatint/tomcat5/bundled..."/>
-    <ant dir="../tomcatint/tomcat5/bundled" target="netbeans"/>
-  </target>
-
   <target name="all-translatedfiles" depends="init">
     <echo message="Building module translatedfiles..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -1632,6 +1620,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <include name="enterprise*/**" />
         <include name="nb*/**" />
         <include name="harness*/**" />
+        <exclude name="*.built"/>
     </fileset>
     
     <pathconvert property="check-file-layout" refid="check-file-layout" dirsep="/" pathsep="," >
