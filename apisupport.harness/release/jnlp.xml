@@ -36,7 +36,8 @@ Microsystems, Inc. All Rights Reserved.
   </information>
   <security><all-permissions/></security>
   <resources>
-$${jnlp.resources}
+<!-- following line is going to be replaced with automatically generated list of resources-->    
+]]>&lt;<![CDATA[!--$${jnlp.resources}--]]>&gt;<![CDATA[
   </resources>
   <resources os="Mac OS X"> 
       <property name="netbeans.user" value="$${user.home}/Library/Application Support/$${app.name}"/>
@@ -256,6 +257,7 @@ $${jnlp.resources}
         <copy file="${app.icon}" tofile="${jnlp.dest.dir}/master.png" failonerror="false"/>
         <copy file="master.jnlp" tofile="${jnlp.dest.dir}/master.jnlp">
             <filterchain>
+                <replacestring from="&lt;!--$${jnlp.resources}--&gt;" to="${jnlp.resources}"/>
                 <replacestring from="$${jnlp.resources}" to="${jnlp.resources}"/>
                 <replacestring from="$${app.name}" to="${app.name}"/>
                 <replacestring from="$${app.title}" to="${app.title}"/>
