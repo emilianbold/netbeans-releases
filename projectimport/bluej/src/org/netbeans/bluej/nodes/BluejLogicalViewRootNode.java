@@ -168,6 +168,7 @@ public class BluejLogicalViewRootNode extends AbstractNode {
                 if ("bluej.pkg".equals(fo.getNameExt()) ||
                         "build.xml".equals(fo.getNameExt()) ||
                         "bluej.pkh".equals(fo.getNameExt()) ||
+                        ("+libs".equals(fo.getName()) && fo.isFolder()) ||
                         "ctxt".equals(fo.getExt()) ||
                         "class".equals(fo.getExt()) ||
                         (fo.isFolder() && fo.getFileObject("bluej.pkg") == null)) {

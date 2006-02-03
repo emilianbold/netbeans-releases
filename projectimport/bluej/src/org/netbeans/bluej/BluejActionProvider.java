@@ -24,6 +24,8 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
@@ -42,18 +44,18 @@ class BluejActionProvider implements ActionProvider {
     
     // Commands available from J2SE project
     private static final String[] supportedActions = {
-        COMMAND_BUILD, 
-        COMMAND_CLEAN, 
-        COMMAND_REBUILD, 
-        COMMAND_COMPILE_SINGLE, 
-        COMMAND_RUN, 
-        COMMAND_RUN_SINGLE, 
-        COMMAND_DEBUG, 
+        COMMAND_BUILD,
+        COMMAND_CLEAN,
+        COMMAND_REBUILD,
+        COMMAND_COMPILE_SINGLE,
+        COMMAND_RUN,
+        COMMAND_RUN_SINGLE,
+        COMMAND_DEBUG,
         COMMAND_DEBUG_SINGLE,
-        JavaProjectConstants.COMMAND_JAVADOC,         
-        COMMAND_TEST, 
-        COMMAND_TEST_SINGLE, 
-        COMMAND_DEBUG_TEST_SINGLE, 
+        JavaProjectConstants.COMMAND_JAVADOC,
+        COMMAND_TEST,
+        COMMAND_TEST_SINGLE,
+        COMMAND_DEBUG_TEST_SINGLE,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_DEBUG_STEP_INTO,
     };
@@ -65,28 +67,28 @@ class BluejActionProvider implements ActionProvider {
 ////    // Ant project helper of the project
 ////    private UpdateHelper updateHelper;
     
-        
+    
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
     
     public BluejActionProvider(BluejProject project) {
         
         commands = new HashMap();
-            commands.put(COMMAND_BUILD, new String[] {"jar"}); // NOI18N
-            commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
-            commands.put(COMMAND_REBUILD, new String[] {"clean", "jar"}); // NOI18N
-            commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
-            // commands.put(COMMAND_COMPILE_TEST_SINGLE, new String[] {"compile-test-single"}); // NOI18N
-            commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
-            commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
-            commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-            commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
-            commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
-            commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
-            commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
-            commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[] {"debug-test"}); // NOI18N
-            commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
-            commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
+        commands.put(COMMAND_BUILD, new String[] {"jar"}); // NOI18N
+        commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
+        commands.put(COMMAND_REBUILD, new String[] {"clean", "jar"}); // NOI18N
+        commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
+        // commands.put(COMMAND_COMPILE_TEST_SINGLE, new String[] {"compile-test-single"}); // NOI18N
+        commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
+        commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
+        commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
+        commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
+        commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
+        commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
+        commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
+        commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[] {"debug-test"}); // NOI18N
+        commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
+        commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
         
 //        this.updateHelper = updateHelper;
         this.project = project;
@@ -101,11 +103,11 @@ class BluejActionProvider implements ActionProvider {
     }
     
     public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
-        Runnable action = new Runnable () {
-            public void run () {
+        Runnable action = new Runnable() {
+            public void run() {
                 Properties p = new Properties();
                 String[] targetNames;
-        
+                
                 targetNames = getTargetNames(command, context, p);
                 if (targetNames == null) {
                     return;
@@ -123,20 +125,18 @@ class BluejActionProvider implements ActionProvider {
                         NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(BluejActionProvider.class,
                                 "LBL_No_Build_XML_Found"), NotifyDescriptor.WARNING_MESSAGE);
                         DialogDisplayer.getDefault().notify(nd);
-                    }
-                    else {
+                    } else {
                         ActionUtils.runTarget(buildFo, targetNames, p);
                     }
-                } 
-                catch (IOException e) {
+                } catch (IOException e) {
                     ErrorManager.getDefault().notify(e);
                 }
-            }            
+            }
         };
         
         action.run();
     }
-
+    
     /**
      * @return array of targets or null to stop execution; can return empty array
      */
@@ -149,7 +149,7 @@ class BluejActionProvider implements ActionProvider {
             if (files != null) {
                 p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]), recursive)); // NOI18N
                 targetNames = new String[] {"compile-single"}; // NOI18N
-            } 
+            }
             //TODO what to do here if we have all source in one root..
 ////            else {
 ////                FileObject[] testRoots = project.getTestSourceRoots().getRoots();
@@ -157,15 +157,13 @@ class BluejActionProvider implements ActionProvider {
 ////                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(testRoots,files[0]), recursive)); // NOI18N
 ////                targetNames = new String[] {"compile-test-single"}; // NOI18N
 ////            }
-        } 
-        else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
+        } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
             targetNames = setupTestSingle(p, files);
-        } 
-        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
+        } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
             targetNames = setupDebugTestSingle(p, files);
-        } 
+        }
 ////        else if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
 ////            FileObject[] files = findSources( context );
 ////            String path = null;
@@ -173,7 +171,7 @@ class BluejActionProvider implements ActionProvider {
 ////                path = FileUtil.getRelativePath(getRoot(project.getProjectDirectory(),files[0]), files[0]);
 ////                targetNames = new String[] {"debug-fix"}; // NOI18N
 ////            //TODO what to do here if we have all source in one root..
-////                
+////
 ////            } else {
 ////                files = findTestSources(context, false);
 ////                path = FileUtil.getRelativePath(getRoot(project.getProjectDirectory(),files[0]), files[0]);
@@ -185,13 +183,13 @@ class BluejActionProvider implements ActionProvider {
 ////            }
 ////            p.setProperty("fix.includes", path); // NOI18N
 ////        }
-        else if (command.equals (COMMAND_RUN) || command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
+        else if (command.equals(COMMAND_RUN) || command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
 ////            EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
 ////
 ////            // check project's main class
 ////            String mainClass = (String)ep.get ("main.class"); // NOI18N
 ////            int result = isSetMainClass (project.getProjectDirectory(), mainClass);
-////            if (result != 0) {                
+////            if (result != 0) {
 ////                do {
 ////                    // show warning, if cancel then return
 ////                    if (showMainClassWarning (mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep,result)) {
@@ -208,50 +206,50 @@ class BluejActionProvider implements ActionProvider {
 ////                    else {
 ////                        return null;
 ////                    }
-////                } catch (IOException ioe) {           
+////                } catch (IOException ioe) {
 ////                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + ioe);
 ////                }
 ////            }
 ////            if (!command.equals(COMMAND_RUN)) {
 ////                p.setProperty("debug.class", mainClass); // NOI18N
 ////            }
-////            
+////
 ////            targetNames = (String[])commands.get(command);
 ////            if (targetNames == null) {
 ////                throw new IllegalArgumentException(command);
 ////            }
-        } else if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE)) {
-////            FileObject[] files = findTestSources(context, false);
-////            if (files != null) {
-////                if (command.equals(COMMAND_RUN_SINGLE)) {
-////                    targetNames = setupTestSingle(p, files);
-////                } else {
-////                    targetNames = setupDebugTestSingle(p, files);
-////                }
-////            } else {
-////                FileObject file = findSources(context)[0];
-////                String clazz = FileUtil.getRelativePath(getRoot(project.getProjectDirectory(),file), file);
-////                p.setProperty("javac.includes", clazz); // NOI18N
-////                // Convert foo/FooTest.java -> foo.FooTest
-////                if (clazz.endsWith(".java")) { // NOI18N
-////                    clazz = clazz.substring(0, clazz.length() - 5);
-////                }
-////                clazz = clazz.replace('/','.');
-////
-////                if (!J2SEProjectUtil.hasMainMethod (file)) {
-////                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(BluejActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-////                        DialogDisplayer.getDefault().notify(nd);
-////                        return null;
-////                } else {
-////                    if (command.equals (COMMAND_RUN_SINGLE)) {
-////                        p.setProperty("run.class", clazz); // NOI18N
-////                        targetNames = (String[])commands.get(COMMAND_RUN_SINGLE);
-////                    } else {
-////                        p.setProperty("debug.class", clazz); // NOI18N
-////                        targetNames = (String[])commands.get(COMMAND_DEBUG_SINGLE);
-////                    }
-////                }
-////            }
+        } else if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE)) {
+            FileObject[] files = findTestSources(context, false);
+            if (files != null) {
+                if (command.equals(COMMAND_RUN_SINGLE)) {
+                    targetNames = setupTestSingle(p, files);
+                } else {
+                    targetNames = setupDebugTestSingle(p, files);
+                }
+            } else {
+                FileObject file = findSources(context)[0];
+                String clazz = FileUtil.getRelativePath(project.getProjectDirectory(), file);
+                p.setProperty("javac.includes", clazz); // NOI18N
+                // Convert foo/FooTest.java -> foo.FooTest
+                if (clazz.endsWith(".java")) { // NOI18N
+                    clazz = clazz.substring(0, clazz.length() - 5);
+                }
+                clazz = clazz.replace('/','.');
+                
+                if (!hasMainMethod(file)) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(BluejActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                    return null;
+                } else {
+                    if (command.equals(COMMAND_RUN_SINGLE)) {
+                        p.setProperty("run.class", clazz); // NOI18N
+                        targetNames = (String[])commands.get(COMMAND_RUN_SINGLE);
+                    } else {
+                        p.setProperty("debug.class", clazz); // NOI18N
+                        targetNames = (String[])commands.get(COMMAND_DEBUG_SINGLE);
+                    }
+                }
+            }
         } else {
             targetNames = (String[])commands.get(command);
             if (targetNames == null) {
@@ -268,7 +266,7 @@ class BluejActionProvider implements ActionProvider {
         p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
         return new String[] {"test-single"}; // NOI18N
     }
-
+    
     private String[] setupDebugTestSingle(Properties p, FileObject[] files) {
         FileObject[] testSrcPath = new FileObject[] {project.getProjectDirectory()};
         FileObject root = getRoot(testSrcPath, files[0]);
@@ -277,7 +275,7 @@ class BluejActionProvider implements ActionProvider {
         p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
         return new String[] {"debug-test"}; // NOI18N
     }
-
+    
     public boolean isActionEnabled( String command, Lookup context ) {
         FileObject buildXml = findBuildXml();
         if (  buildXml == null || !buildXml.isValid()) {
@@ -286,16 +284,14 @@ class BluejActionProvider implements ActionProvider {
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return findSourcesAndPackages( context, project.getProjectDirectory()) != null
                     || findSourcesAndPackages( context, project.getProjectDirectory()) != null;
-        }
-        else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
+        } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             return findTestSourcesForSources(context) != null;
-        }
-        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
+        } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
             return files != null && files.length == 1;
-        } else if (command.equals(COMMAND_RUN_SINGLE) || 
-                        command.equals(COMMAND_DEBUG_SINGLE) ||
-                        command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
+        } else if (command.equals(COMMAND_RUN_SINGLE) ||
+                command.equals(COMMAND_DEBUG_SINGLE) ||
+                command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
             FileObject fos[] = findSources(context);
             if (fos != null && fos.length == 1) {
                 return true;
@@ -309,7 +305,7 @@ class BluejActionProvider implements ActionProvider {
     }
     
     
-   
+    
     // Private methods -----------------------------------------------------
     
     
@@ -329,8 +325,8 @@ class BluejActionProvider implements ActionProvider {
         }
         return null;
     }
-
-    private FileObject[] findSourcesAndPackages (Lookup context, FileObject srcDir) {
+    
+    private FileObject[] findSourcesAndPackages(Lookup context, FileObject srcDir) {
         if (srcDir != null) {
             FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, null, true); // NOI18N
             //Check if files are either packages of java files
@@ -347,7 +343,7 @@ class BluejActionProvider implements ActionProvider {
         }
     }
     
-    private FileObject[] findSourcesAndPackages (Lookup context, FileObject[] srcRoots) {
+    private FileObject[] findSourcesAndPackages(Lookup context, FileObject[] srcRoots) {
         for (int i=0; i<srcRoots.length; i++) {
             FileObject[] result = findSourcesAndPackages(context, srcRoots[i]);
             if (result != null) {
@@ -361,30 +357,24 @@ class BluejActionProvider implements ActionProvider {
      */
     private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
         //XXX: Ugly, should be rewritten
-        FileObject[] testSrcPath = new FileObject[] {project.getProjectDirectory()};
-        for (int i=0; i< testSrcPath.length; i++) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcPath[i], ".java", true); // NOI18N
-            if (files != null) {
-                return files;
-            }
+        FileObject[] files = ActionUtils.findSelectedFiles(context, project.getProjectDirectory(), "Test.java", true); // NOI18N
+        if (files != null) {
+            return files;
         }
-        if (checkInSrcDir && testSrcPath.length>0) {
-            FileObject[] files = findSources (context);
+        if (checkInSrcDir) {
+            files = findSources(context);
             if (files != null) {
                 //Try to find the test under the test roots
-                FileObject srcRoot = getRoot(new FileObject[] {project.getProjectDirectory()},files[0]);
-                for (int i=0; i<testSrcPath.length; i++) {
-                    FileObject[] files2 = ActionUtils.regexpMapFiles(files,srcRoot, SRCDIRJAVA, testSrcPath[i], SUBST, true);
-                    if (files2 != null) {
-                        return files2;
-                    }
+                FileObject[] files2 = ActionUtils.regexpMapFiles(files, project.getProjectDirectory(), SRCDIRJAVA, project.getProjectDirectory(), SUBST, true);
+                if (files2 != null) {
+                    return files2;
                 }
             }
         }
         return null;
     }
-   
-
+    
+    
     /** Find tests corresponding to selected sources.
      */
     private FileObject[] findTestSourcesForSources(Lookup context) {
@@ -392,22 +382,15 @@ class BluejActionProvider implements ActionProvider {
         if (sourceFiles == null) {
             return null;
         }
-        FileObject[] testSrcPath = new FileObject[] {project.getProjectDirectory()};
-        if (testSrcPath.length == 0) {
-            return null;
-        }
-        FileObject[] srcPath = new FileObject[] {project.getProjectDirectory()};
-        FileObject srcDir = getRoot(srcPath, sourceFiles[0]);
-        for (int i=0; i<testSrcPath.length; i++) {
-            FileObject[] files2 = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcPath[i], SUBST, true);
+        FileObject srcDir = project.getProjectDirectory();
+            FileObject[] files2 = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, project.getProjectDirectory(), SUBST, true);
             if (files2 != null) {
                 return files2;
             }
-        }
         return null;
-    }      
+    }
     
-    private FileObject getRoot (FileObject[] roots, FileObject file) {
+    private FileObject getRoot(FileObject[] roots, FileObject file) {
         assert file != null : "File can't be null";   //NOI18N
         FileObject srcDir = null;
         for (int i=0; i< roots.length; i++) {
@@ -420,7 +403,7 @@ class BluejActionProvider implements ActionProvider {
         return srcDir;
     }
     
-
+    
 ////    /**
 ////     * Tests if the main class is set
 ////     * @param sourcesRoots source roots
@@ -439,7 +422,7 @@ class BluejActionProvider implements ActionProvider {
 ////        if (mainClass == null || mainClass.length () == 0) {
 ////            return -1;
 ////        }
-////        
+////
 ////        ClassPath classPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);  //Single compilation unit
 ////        if (J2SEProjectUtil.isMainClass (mainClass, classPath)) {
 ////            return 0;
@@ -449,10 +432,10 @@ class BluejActionProvider implements ActionProvider {
     
 ////    /** Checks if given file object contains the main method.
 ////     *
-////     * @param classFO file object represents java 
+////     * @param classFO file object represents java
 ////     * @return false if parameter is null or doesn't contain SourceCookie
 ////     * or SourceCookie doesn't contain the main method
-////     */    
+////     */
 ////    public static boolean canBeRun (FileObject classFO) {
 ////        if (classFO == null) {
 ////            return false;
@@ -478,29 +461,55 @@ class BluejActionProvider implements ActionProvider {
 ////        }
 ////        return false;
 ////    }
-
-
     
-    private void showPlatformWarning () {
-        final JButton closeOption = new JButton (NbBundle.getMessage(BluejActionProvider.class, "CTL_BrokenPlatform_Close"));
+    
+    
+    private void showPlatformWarning() {
+        final JButton closeOption = new JButton(NbBundle.getMessage(BluejActionProvider.class, "CTL_BrokenPlatform_Close"));
         closeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BluejActionProvider.class, "AD_BrokenPlatform_Close"));
-        final ProjectInformation pi = (ProjectInformation) this.project.getLookup().lookup (ProjectInformation.class);
-        final String projectDisplayName = pi == null ? 
-            NbBundle.getMessage (BluejActionProvider.class,"TEXT_BrokenPlatform_UnknownProjectName")
+        final ProjectInformation pi = (ProjectInformation) this.project.getLookup().lookup(ProjectInformation.class);
+        final String projectDisplayName = pi == null ?
+            NbBundle.getMessage(BluejActionProvider.class,"TEXT_BrokenPlatform_UnknownProjectName")
             : pi.getDisplayName();
         final DialogDescriptor dd = new DialogDescriptor(
-            NbBundle.getMessage(BluejActionProvider.class, "TEXT_BrokenPlatform", projectDisplayName),
-            NbBundle.getMessage(BluejActionProvider.class, "MSG_BrokenPlatform_Title"),
-            true,
-            new Object[] {closeOption},
-            closeOption,
-            DialogDescriptor.DEFAULT_ALIGN,
-            null,
-            null);
+                NbBundle.getMessage(BluejActionProvider.class, "TEXT_BrokenPlatform", projectDisplayName),
+                NbBundle.getMessage(BluejActionProvider.class, "MSG_BrokenPlatform_Title"),
+                true,
+                new Object[] {closeOption},
+                closeOption,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
         dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
         final Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
         dlg.setVisible(true);
     }
-
+    
+    
+    
+    /** Check if the given file object represents a source with the main method.
+     * 
+     * @param fo source
+     * @return true if the source contains the main method
+     */
+    public static boolean hasMainMethod(FileObject fo) {
+        if (fo == null) {
+            // ??? maybe better should be thrown IAE
+            return false;
+        }
+        
+        boolean has = false;
+        JavaModel.getJavaRepository ().beginTrans (false);
+        
+        try {
+            JavaModel.setClassPath(fo);
+            Resource res = JavaModel.getResource (fo);
+            assert res != null : "Resource found for FileObject " + fo;
+            has = !res.getMain().isEmpty();
+        } finally {
+            JavaModel.getJavaRepository ().endTrans ();
+        }
+        return has;
+    }
     
 }

@@ -191,7 +191,7 @@ public final class BluejProject implements Project, AntProjectListener {
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
-////            new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
+            new BluejUnitTestForSourceQuery(this),
 ////            new SourceLevelQueryImpl(evaluator()),
             new BluejSources (this, evaluator()),
 ////            new J2SESharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata

@@ -121,7 +121,7 @@ public class BluejSources implements Sources {
         }
 
         public String getDisplayName() {
-            return "Sources";
+            return "Source Packages";
         }
 
         public Icon getIcon(boolean b) {
@@ -138,7 +138,6 @@ public class BluejSources implements Sources {
             if (fileObject.isFolder() && fileObject.getFileObject("bluej.pkg") == null) {
                 return false;
             }
-            System.out.println("group contains for =" + fileObject);
             return true;
         }
 
