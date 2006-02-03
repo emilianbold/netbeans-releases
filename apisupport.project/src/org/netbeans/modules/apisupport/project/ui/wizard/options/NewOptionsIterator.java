@@ -66,45 +66,45 @@ final class NewOptionsIterator extends BasicWizardIterator {
     }
     
     static final class DataModel extends BasicWizardIterator.BasicDataModel {
-        static final int ERR_Blank_DisplayName = 1;
-        static final int ERR_Blank_Tooltip = 2;
-        static final int ERR_Blank_Title = 4;
-        static final int ERR_Blank_CategoryName = 5;
-        static final int ERR_Blank_IconPath = 6;
-        static final int ERR_Blank_PackageName = 7;
-        static final int ERR_Blank_ClassNamePrefix = 8;
         
-        static final int WARNING_Incorrect_IconSize = -1;
+        private static final int ERR_BLANK_DISPLAYNAME = 1;
+        private static final int ERR_BLANK_TOOLTIP = 2;
+        private static final int ERR_BLANK_TITLE = 4;
+        private static final int ERR_BLANK_CATEGORY_NAME = 5;
+        private static final int ERR_BLANK_ICONPATH = 6;
+        private static final int ERR_BLANK_PACKAGE_NAME = 7;
+        private static final int ERR_BLANK_CLASSNAME_PREFIX = 8;
         
+        private static final int WARNING_INCORRECT_ICON_SIZE = -1;
         
-        private static String[] TOKENS = new String[] {
-            "@@PACKAGE_NAME@@",//NOIN18N
-            "@@AdvancedOption_CLASS_NAME@@",//NOIN18N
-            "@@OptionsCategory_CLASS_NAME@@",//NOIN18N
-            "@@Panel_CLASS_NAME@@",//NOIN18N
-            "@@OptionsPanelController_CLASS_NAME@@",//NOIN18N
-            "@@ICON_PATH@@"//NOIN18N
+        private static final String[] TOKENS = new String[] {
+            "@@PACKAGE_NAME@@", // NOI18N
+            "@@AdvancedOption_CLASS_NAME@@", // NOI18N
+            "@@OptionsCategory_CLASS_NAME@@", // NOI18N
+            "@@Panel_CLASS_NAME@@", // NOI18N
+            "@@OptionsPanelController_CLASS_NAME@@", // NOI18N
+            "@@ICON_PATH@@" // NOI18N
         };
         
         private static final String[] CATEGORY_BUNDLE_KEYS = new String[] {
-            "OptionsCategory_Title",//NOIN18N
-            "OptionsCategory_Name",//NOIN18N
+            "OptionsCategory_Title", // NOI18N
+            "OptionsCategory_Name", // NOI18N
         };
         
         private static final String[] ADVANCED_BUNDLE_KEYS = new String[] {
-            "AdvancedOption_DisplayName",//NOIN18N
-            "AdvancedOption_Tooltip"//NOIN18N
+            "AdvancedOption_DisplayName", // NOI18N
+            "AdvancedOption_Tooltip" // NOI18N
         };
         
-        private static final String FORM_TEMPLATE_SUFFIXES[] = new String[]{"Panel"};//NOIN18N
+        private static final String FORM_TEMPLATE_SUFFIXES[] = new String[]{"Panel"}; // NOI18N
         private static final String[] JAVA_TEMPLATE_SUFFIXES = new String[] {
             "AdvancedOption",//NOI18N
             "OptionsCategory",//NOI18N
             "Panel",//NOI18N
             "OptionsPanelController"//NOI18N
         };
-        private static final String JAVA_TEMPLATE_PREFIX = "template_myplugin";//NOIN18N
-        private static final String FORM_TEMPLATE_PREFIX = "template_myplugin_form";//NOIN18N
+        private static final String JAVA_TEMPLATE_PREFIX = "template_myplugin"; // NOI18N
+        private static final String FORM_TEMPLATE_PREFIX = "template_myplugin_form"; // NOI18N
         
         private CreatedModifiedFiles files;
         private String codeNameBase;
@@ -131,7 +131,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
             this.tooltip = tooltip;
             return checkFirstPanel();
         }
-
+        
         int setDataForOptionCategory(final String title,
                 final String categoryName, final String iconPath) {
             this.advanced = false;
@@ -140,7 +140,6 @@ final class NewOptionsIterator extends BasicWizardIterator {
             this.iconPath = iconPath;
             return checkFirstPanel();
         }
-        
         
         public String getPackageName() {
             String retValue;
@@ -165,7 +164,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         private Map getTokenMap() {
             Map retval = new HashMap();
             for (int i = 0; i < TOKENS.length; i++) {
-                if (isAdvanced() && "@@ICON_PATH@@".equals(TOKENS[i])) {
+                if (isAdvanced() && "@@ICON_PATH@@".equals(TOKENS[i])) { // NOI18N
                     continue;
                 }
                 retval.put(TOKENS[i], getReplacement(TOKENS[i]));
@@ -214,25 +213,25 @@ final class NewOptionsIterator extends BasicWizardIterator {
             assert errCode > 0;
             String field = null;
             switch(errCode) {
-                case ERR_Blank_DisplayName:
+                case ERR_BLANK_DISPLAYNAME:
                     field = "FIELD_DisplayName";//NOI18N
                     break;
-                case ERR_Blank_Tooltip:
+                case ERR_BLANK_TOOLTIP:
                     field = "FIELD_Tooltip";//NOI18N
                     break;
-                case ERR_Blank_Title:
+                case ERR_BLANK_TITLE:
                     field = "FIELD_Title";//NOI18N
                     break;
-                case ERR_Blank_CategoryName:
+                case ERR_BLANK_CATEGORY_NAME:
                     field = "FIELD_CategoryName";//NOI18N
                     break;
-                case ERR_Blank_IconPath:
+                case ERR_BLANK_ICONPATH:
                     field = "FIELD_IconPath";//NOI18N
                     break;
-                case ERR_Blank_PackageName:
+                case ERR_BLANK_PACKAGE_NAME:
                     field = "FIELD_PackageName";//NOI18N
                     break;
-                case ERR_Blank_ClassNamePrefix:
+                case ERR_BLANK_CLASSNAME_PREFIX:
                     field = "FIELD_ClassNamePrefix";//NOI18N
                     break;
             }
@@ -250,7 +249,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         String getWarningMessage(int warningCode) {
             assert warningCode < 0;
             switch(warningCode) {
-                case WARNING_Incorrect_IconSize:
+                case WARNING_INCORRECT_ICON_SIZE:
                     File icon = new File(getIconPath());
                     assert icon.exists();
                     ImageIcon ic = null;
@@ -282,27 +281,27 @@ final class NewOptionsIterator extends BasicWizardIterator {
         static boolean isWarningCode(int code) {
             return code < 0;
         }
-                
+        
         private int checkFirstPanel() {
             if (advanced) {
                 if (getDisplayName().length() == 0) {
-                    return ERR_Blank_DisplayName;
+                    return ERR_BLANK_DISPLAYNAME;
                 } else if (getTooltip().length() == 0) {
-                    return ERR_Blank_Tooltip;
+                    return ERR_BLANK_TOOLTIP;
                 }
             } else {
                 if (getTitle().length() == 0) {
-                    return ERR_Blank_Title;
+                    return ERR_BLANK_TITLE;
                 } else if (getCategoryName().length() == 0) {
-                    return ERR_Blank_CategoryName;
+                    return ERR_BLANK_CATEGORY_NAME;
                 } else if (getIconPath().length() == 0) {
-                    return ERR_Blank_IconPath;
+                    return ERR_BLANK_ICONPATH;
                 } else if (getTitle().length() == 0) {
-                    return ERR_Blank_Title;
+                    return ERR_BLANK_TITLE;
                 } else {
                     File icon = new File(getIconPath());
                     if (!icon.exists()) {
-                        return ERR_Blank_IconPath;
+                        return ERR_BLANK_ICONPATH;
                     }
                 }
                 //warnings should go at latest
@@ -312,20 +311,20 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 try {
                     ic = new ImageIcon(icon.toURL());
                     if (ic.getIconHeight() != 32 || ic.getIconWidth() != 32) {
-                        return WARNING_Incorrect_IconSize;
+                        return WARNING_INCORRECT_ICON_SIZE;
                     }
                 } catch (MalformedURLException ex) {
                     ErrorManager.getDefault().notify(ex);
-                }                
+                }
             }
             return 0;
         }
-
-        private int checkFinalPanel() {            
+        
+        private int checkFinalPanel() {
             if (getPackageName().length() == 0) {
-                return ERR_Blank_PackageName;
+                return ERR_BLANK_PACKAGE_NAME;
             } else if (getClassNamePrefix().length() == 0) {
-                return ERR_Blank_ClassNamePrefix;
+                return ERR_BLANK_CLASSNAME_PREFIX;
             }
             return 0;
         }
@@ -338,7 +337,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         }
         
         private CreatedModifiedFiles generateCreatedModifiedFiles() {
-            assert isSuccessCode(checkFirstPanel()) || isWarningCode(checkFirstPanel());            
+            assert isSuccessCode(checkFirstPanel()) || isWarningCode(checkFirstPanel());
             assert isSuccessCode(checkFinalPanel());
             files = new CreatedModifiedFiles(getProject());
             generateFiles();
@@ -394,7 +393,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         }
         
         private String getFilePath(final String templateSuffix) {
-            String fileName = getClassNamePrefix()+templateSuffix+ ".java";
+            String fileName = getClassNamePrefix()+templateSuffix+ ".java"; // NOI18N
             return getDefaultPackagePath(fileName);//NOI18N
         }
         
@@ -405,7 +404,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
             String filePath = getDefaultPackagePath(fileName);
             return files.createFile(filePath, template);
         }
-                
+        
         private String getCodeNameBase() {
             if (codeNameBase == null) {
                 ManifestManager mm = ManifestManager.getInstance(getProject().getManifest(), false);
@@ -439,7 +438,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
             assert isAdvanced() || iconPath != null;
             return iconPath;
         }
-
+        
         String getClassNamePrefix() {
             if (classNamePrefix == null) {
                 classNamePrefix = getCodeNameBase();
@@ -448,7 +447,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
             }
             return classNamePrefix;
         }
-                
+        
         private boolean isAdvanced() {
             return advanced;
         }
@@ -472,6 +471,6 @@ final class NewOptionsIterator extends BasicWizardIterator {
         private String getClassName(String suffix) {
             return getClassNamePrefix() + suffix;
         }
-
+        
     }
 }

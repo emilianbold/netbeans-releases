@@ -26,7 +26,7 @@ import org.openide.WizardDescriptor;
 final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     static final String OPENIDE_MODULE_INSTALL = "OpenIDE-Module-Install"; // NOI18N
-    private static final String INSTALLER_CLASS_NAME = "Installer"; // NOIN18N
+    private static final String INSTALLER_CLASS_NAME = "Installer"; // NOI18N
     
     private CreatedModifiedFiles cmf;
     
@@ -67,7 +67,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         // add manifest attribute
         Map attribs = new HashMap();
-        attribs.put(OPENIDE_MODULE_INSTALL, getPackageName().replace('.','/') + '/' + className + ".class"); // NOIN18N
+        attribs.put(OPENIDE_MODULE_INSTALL, getPackageName().replace('.','/') + '/' + className + ".class"); // NOI18N
         cmf.add(cmf.manifestModification(null, attribs));
     }
     
