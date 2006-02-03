@@ -62,7 +62,7 @@ public final class CreatedModifiedFilesFactory {
     }
     
     static CreatedModifiedFiles.Operation addModuleDependency(NbModuleProject project,
-            String codeNameBase, int releaseVersion, SpecificationVersion version, boolean useInCompiler) {
+            String codeNameBase, String releaseVersion, SpecificationVersion version, boolean useInCompiler) {
         return new AddModuleDependency(project, codeNameBase, releaseVersion, version, useInCompiler);
     }
     
@@ -378,12 +378,12 @@ public final class CreatedModifiedFilesFactory {
     private static final class AddModuleDependency extends OperationBase {
         
         private String codeNameBase;
-        private int releaseVersion;
+        private String releaseVersion;
         private SpecificationVersion specVersion;
         private boolean useInCompiler;
         
         public AddModuleDependency(NbModuleProject project, String codeNameBase,
-                int releaseVersion, SpecificationVersion specVersion, boolean useInCompiler) {
+                String releaseVersion, SpecificationVersion specVersion, boolean useInCompiler) {
             super(project);
             this.codeNameBase = codeNameBase;
             this.releaseVersion = releaseVersion;

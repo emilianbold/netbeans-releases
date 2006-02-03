@@ -84,7 +84,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf.add (cmf.bundleKeyDefaultBundle (url_key, ucUrl));
         
         // add dependency to autoupdate module
-        cmf.add (cmf.addModuleDependency (AUTOUPDATE_MODULE, -1, null, false));
+        cmf.add (cmf.addModuleDependency (AUTOUPDATE_MODULE, null, null, false));
         
         return cmf;
     }

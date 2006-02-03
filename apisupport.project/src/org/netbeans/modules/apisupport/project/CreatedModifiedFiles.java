@@ -284,14 +284,14 @@ public final class CreatedModifiedFiles {
      * already has a given dependency it will not be added.
      *
      * @param codeNameBase codename base
-     * @param releaseVersion release version, if -1 will be taken from the
+     * @param releaseVersion release version, if <code>null</code> will be taken from the
      *        entry found in platform
      * @param version specification version (see {@link SpecificationVersion}),
      *        if null will be taken from the entry found in platform
      * @param useInCompiler do this module needs a module beeing added at a
      *        compile time?
      */
-    public Operation addModuleDependency(String codeNameBase, int
+    public Operation addModuleDependency(String codeNameBase, String
             releaseVersion, SpecificationVersion version, boolean useInCompiler) {
         return CreatedModifiedFilesFactory.addModuleDependency(project, codeNameBase,
                 releaseVersion, version, useInCompiler);
@@ -300,11 +300,11 @@ public final class CreatedModifiedFiles {
     /**
      * Delegates to {@link #addModuleDependency(String, int,
      * SpecificationVersion, boolean)} passing a given code name base,
-     * <code>-1</code> as release version, <code>null</code> as version and
+     * <code>null</code> as release version, <code>null</code> as version and
      * <code>true</code> as useInCompiler arguments.
      */
     public CreatedModifiedFiles.Operation addModuleDependency(String codeNameBase) {
-        return addModuleDependency(codeNameBase, -1, null, true);
+        return addModuleDependency(codeNameBase, null, null, true);
     }
     
     /**

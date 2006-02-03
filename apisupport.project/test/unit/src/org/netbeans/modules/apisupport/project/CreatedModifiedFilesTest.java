@@ -217,7 +217,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         
-        Operation op = cmf.addModuleDependency("org.apache.tools.ant.module", 3,
+        Operation op = cmf.addModuleDependency("org.apache.tools.ant.module", "3",
                 new SpecificationVersion("3.9"), true);
         
         assertRelativePath("nbproject/project.xml", op.getModifiedPaths());
@@ -230,7 +230,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         assertEquals("one dependency", 1, deps.size());
         ModuleDependency antDep = (ModuleDependency) deps.toArray()[0];
         assertEquals("cnb", "org.apache.tools.ant.module", antDep.getModuleEntry().getCodeNameBase());
-        assertEquals("release version", "3", antDep.getModuleEntry().getReleaseVersion());
+        assertEquals("release version", "3", antDep.getReleaseVersion());
         assertEquals("specification version", "3.9", antDep.getSpecificationVersion());
         assertTrue("compile dependeny", antDep.hasCompileDependency());
         assertFalse("implementation dependeny", antDep.hasImplementationDepedendency());
@@ -241,7 +241,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         
-        Operation op = cmf.addModuleDependency("org.apache.tools.ant.module", -1, null, false);
+        Operation op = cmf.addModuleDependency("org.apache.tools.ant.module",null,null,false);
         
         assertRelativePath("nbproject/project.xml", op.getModifiedPaths());
         

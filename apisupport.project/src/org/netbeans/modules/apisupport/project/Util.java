@@ -549,21 +549,20 @@ public final class Util {
     }
     
     /**
-     * Delegates to {@link #addDependency(NbModuleProject, String, int,
-     * SpecificationVersion, boolean)}.
+     * Delegates to {@link #addDependency(NbModuleProject, String}.
      */
     public static void addDependency(final NbModuleProject target,
             final NbModuleProject dependency) throws IOException {
-        Util.addDependency(target, dependency.getCodeNameBase(), -1, null, true);
+        addDependency(target, dependency.getCodeNameBase());
     }
     
     /**
-     * Delegates to {@link #addDependency(NbModuleProject, String, int,
+     * Delegates to {@link Util#addDependency(NbModuleProject, String, String,
      * SpecificationVersion, boolean)}.
      */
     public static void addDependency(final NbModuleProject target,
             final String codeNameBase) throws IOException {
-        Util.addDependency(target, codeNameBase, -1, null, true);
+        Util.addDependency(target, codeNameBase, null, null, true);
     }
     
     /**
@@ -577,7 +576,7 @@ public final class Util {
      * ProjectManager#saveProject}).
      *
      * @param codeNameBase codename base.
-     * @param releaseVersion release version, if -1 will be taken from the
+     * @param releaseVersion release version, if <code>null</code> will be taken from the
      *        entry found in platform.
      * @param version {@link SpecificationVersion specification version}, if
      *        <code>null</code>, will be taken from the entry found in the
@@ -585,11 +584,14 @@ public final class Util {
      * @param useInCompiler whether this this module needs a
      *        <code>dependency</code> module at a compile time.
      */
-    public static void addDependency(final NbModuleProject target,
+    /*public static void addDependency(final NbModuleProject target,
             final String codeNameBase, final int releaseVersion,
             final SpecificationVersion version, final boolean useInCompiler) throws IOException {
-        
-        ModuleEntry me = target.getModuleList().getEntry(codeNameBase);
+        addDependency(target, codeNameBase, (String)(releaseVersion == -1 ? null : String.valueOf(releaseVersion)), 
+                version, useInCompiler);
+    }*/    
+    public static void addDependency(final NbModuleProject target, final String codeNameBase, final String releaseVersion, final SpecificationVersion version, final boolean useInCompiler) throws IOException {        
+        ModuleEntry me = target.getModuleList().getEntry(codeNameBase);        
         assert me != null : "Cannot find module with the given codeNameBase (" + // NOI18N
                 codeNameBase + ") in the project's universe"; // NOI18N
         
@@ -606,7 +608,7 @@ public final class Util {
         }
         
         ModuleDependency md = new ModuleDependency(me,
-                releaseVersion == -1 ? me.getReleaseVersion() : String.valueOf(releaseVersion),
+                (releaseVersion == null) ?  me.getReleaseVersion() : releaseVersion,
                 version == null ? me.getSpecificationVersion() : version.toString(),
                 useInCompiler, false);
         pxm.addDependency(md);
