@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -49,11 +50,17 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -92,8 +99,8 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         if (target instanceof FileObject) {
             file = (FileObject)target;
-        } else if (target instanceof org.openide.loaders.DataObject) {
-            file = ((org.openide.loaders.DataObject) target).getPrimaryFile();
+        } else if (target instanceof DataObject) {
+            file = ((DataObject) target).getPrimaryFile();
         } else {
             // What is it?
             return null;
@@ -480,11 +487,11 @@ public final class SuiteLogicalView implements LogicalViewProvider {
      */
     private static final class ImportantFilesChildren extends Children.Keys {
         
-        private List visibleFiles = new ArrayList();
+        private List/*<FileObject>*/ visibleFiles = new ArrayList();
         private FileChangeListener fcl;
         
         /** Abstract location to display name. */
-        private static final java.util.Map/*<String,String>*/ FILES = new java.util.LinkedHashMap();
+        private static final java.util.Map/*<String,String>*/ FILES = new LinkedHashMap();
         static {
             FILES.put("master.jnlp", NbBundle.getMessage(SuiteLogicalView.class, "LBL_jnlp_master"));
         }
@@ -515,20 +522,20 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             }
 
             try {
-                Node orig = org.openide.loaders.DataObject.find(file).getNodeDelegate();
+                Node orig = DataObject.find(file).getNodeDelegate();
                 
-                final String loc = (String)FILES.get(file.getNameExt());
+                final String loc = (String) FILES.get(file.getNameExt());
                 if (loc != null) {
-                    orig = new org.openide.nodes.FilterNode(orig) {
+                    orig = new FilterNode(orig) {
                         {
-                            disableDelegation(DELEGATE_SET_DISPLAY_NAME | DELEGATE_GET_DISPLAY_NAME);
+                            disableDelegation(FilterNode.DELEGATE_SET_DISPLAY_NAME | FilterNode.DELEGATE_GET_DISPLAY_NAME);
                             setDisplayName(loc);
                         }
                     };
                 }
                 
                 return new Node[] { orig };
-            } catch (org.openide.loaders.DataObjectNotFoundException e) {
+            } catch (DataObjectNotFoundException e) {
                 throw new AssertionError(e);
             }
         }
@@ -554,17 +561,17 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         private void attachListeners() {
             try {
                 if (fcl == null) {
-                    fcl = new org.openide.filesystems.FileChangeAdapter() {
-                        public void fileDataCreated(org.openide.filesystems.FileEvent fe) {
+                    fcl = new FileChangeAdapter() {
+                        public void fileDataCreated(FileEvent fe) {
                             refreshKeys();
                         }
-                        public void fileDeleted(org.openide.filesystems.FileEvent fe) {
+                        public void fileDeleted(FileEvent fe) {
                             refreshKeys();
                         }
                     };
                     project.getProjectDirectory().getFileSystem().addFileChangeListener(fcl);
                 }
-            } catch (org.openide.filesystems.FileStateInvalidException e) {
+            } catch (FileStateInvalidException e) {
                 assert false : e;
             }
         }
@@ -573,7 +580,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             if (fcl != null) {
                 try {
                     project.getProjectDirectory().getFileSystem().removeFileChangeListener(fcl);
-                } catch (org.openide.filesystems.FileStateInvalidException e) {
+                } catch (FileStateInvalidException e) {
                     assert false : e;
                 }
                 fcl = null;
