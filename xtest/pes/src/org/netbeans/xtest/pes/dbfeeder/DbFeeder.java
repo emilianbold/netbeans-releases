@@ -217,7 +217,7 @@ public class DbFeeder {
            } else {
                // incoming report is refused !!!!
                PESLogger.logger.warning("IncomingReport from file "+ir.getReportRoot()+
-                                        " is not accepted, moving it to 'invalid' directory"+
+                                        " is not accepted, moving it to 'invalid' directory.\n"+
                                         "The reason is: "+getNotAcceptedReason()+".");
                // notify zip sender - we should give more accurate reason why the report was rejected
                notifyUser(metadata.getMailContact(),
