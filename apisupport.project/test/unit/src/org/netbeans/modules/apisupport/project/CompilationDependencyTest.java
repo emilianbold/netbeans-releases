@@ -17,9 +17,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.Reader;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
@@ -28,13 +25,13 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.SpecificationVersion;
 
 /**
  * Tests ProjectXMLManager class.
@@ -43,7 +40,6 @@ import org.openide.filesystems.FileObject;
  */
 public class CompilationDependencyTest extends TestBase {
     
-    private final static String ANT_PROJECT_SUPPORT = "org.netbeans.modules.project.ant";
     private final static String WINDOWS = "org.openide.windows";
     
     static {
@@ -51,10 +47,6 @@ public class CompilationDependencyTest extends TestBase {
         System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
         LayerTestBase.Lkp.setLookup(new Object[0]);
         DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
-        
-        Set assumedCNBs = new HashSet(2);
-        assumedCNBs.add(ANT_PROJECT_SUPPORT);
-        assumedCNBs.add(WINDOWS);
     }
     
     public CompilationDependencyTest(String testName) {
@@ -68,95 +60,64 @@ public class CompilationDependencyTest extends TestBase {
         TestAntLogger.getDefault().setEnabled(true);
         
     }
-
+    
     protected void tearDown() throws Exception {
         TestAntLogger.getDefault().setEnabled(false);
     }
     
-
-    
-    private NbModuleProject testingProject ;
-    
     public void testInvalidSpecVersion() throws Exception {
-        testingProject = TestBase.generateStandaloneModule(getWorkDir(), "testing");
+        NbModuleProject testingProject = TestBase.generateStandaloneModule(getWorkDir(), "testing");
         testingProject.open();
-       
-        FileObject buildScript = findBuildXml();
+        
+        FileObject buildScript = findBuildXml(testingProject);
         assertNotNull(buildScript);
         ExecutorTask et = ActionUtils.runTarget(buildScript, new String[]{"jar"}, null);
         et.waitFinished();
         assertEquals("Error during ant ...",0,et.result());
-        final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
-        NbPlatform platform = testingProject.getPlatform(true);
-        ModuleEntry modules[] = platform.getModules();
-        ModuleEntry module = null;
-        for (int mIt = 0 ; mIt < modules.length ; mIt++) {
-            module = modules[mIt];
-            if (module.getCodeNameBase().equals(WINDOWS)) {
-                break;
-            }
-        }
-        ModuleDependency newDep = new ModuleDependency(
-                module,
-                module.getReleaseVersion(),
-                "1000", // nonsence
-                true,
-                false);
-        testingPXM.addDependency(newDep);
+        SpecificationVersion invalid = new SpecificationVersion("1000");
+        Util.addDependency(testingProject, WINDOWS, null, invalid, true);
         ProjectManager.getDefault().saveProject(testingProject);
         et = ActionUtils.runTarget(buildScript, new String[]{"clean","jar"}, null);
         et.waitFinished();
         
         // it must fail but I don't know why it passed
-        assertFalse("Error during ant ...",0  == et.result());
+        assertFalse("Error during ant ...", 0 == et.result());
         assertFalse("Successfully compiled when is invalid specification version",
-                   testingProject.getModuleJarLocation().exists());
+                testingProject.getModuleJarLocation().exists());
     }
     
     public void testCompileAgaistPublicPackage() throws Exception {
-        testingProject = TestBase.generateStandaloneModule(getWorkDir(), "testing");
+        NbModuleProject testingProject = TestBase.generateStandaloneModule(getWorkDir(), "testing");
         testingProject.open();
-        FileObject buildScript = findBuildXml();
+        FileObject buildScript = findBuildXml(testingProject);
         assertNotNull(buildScript);
-        Properties antProps = new Properties();
         
-         ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
-        NbPlatform platform = testingProject.getPlatform(true);
-        ModuleEntry modules[] = platform.getModules();
-        ModuleEntry module = null;
-        for (int mIt = 0 ; mIt < modules.length ; mIt++) {
-            module = modules[mIt];
-            if (module.getCodeNameBase().equals(WINDOWS)) {
-                break;
-            }
-        }
-        testingPXM.removeDependency(WINDOWS);
-        
-        ModuleDependency newDep = new ModuleDependency(module);
-        testingPXM.addDependency(newDep);
+        Util.addDependency(testingProject, WINDOWS);
         ProjectManager.getDefault().saveProject(testingProject);
+        
         FileObject javaFo = testingProject.getSourceDirectory().getFileObject("org/example/testing").createData("JavaFile.java");
         FileLock lock = javaFo.lock();
         PrintStream ps = new PrintStream(javaFo.getOutputStream(lock));
         ps.println("package org.example.testing;");
         ps.println("import org.netbeans.modules.openide.windows.*;");
         ps.println("public class JavaFile {}");
-        
         ps.close();
         lock.releaseLock();
-        ExecutorTask et = ActionUtils.runTarget(buildScript, new String[]{"clean","netbeans"}, antProps);
+        
+        ExecutorTask et = ActionUtils.runTarget(buildScript, new String[]{"clean","netbeans"}, null);
         et.waitFinished();
         
         assertFalse("project was successfully compiled against non public package",
                 testingProject.getModuleJarLocation().exists());
-
-        testingPXM = new ProjectXMLManager(testingProject);
+        
+        ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
         testingPXM.removeDependency(WINDOWS);
-        newDep = new ModuleDependency(module,module.getReleaseVersion(),module.getSpecificationVersion(),true,true);
-        testingPXM.addDependency(newDep); 
+        ModuleEntry module = testingProject.getModuleList().getEntry(WINDOWS);
+        ModuleDependency newDep = new ModuleDependency(module,module.getReleaseVersion(),module.getSpecificationVersion(),true,true);
+        testingPXM.addDependency(newDep);
         ProjectManager.getDefault().saveProject(testingProject);
         
-        et = ActionUtils.runTarget(buildScript, new String[]{"clean","netbeans"}, antProps);
+        et = ActionUtils.runTarget(buildScript, new String[]{"clean","netbeans"}, null);
         Reader reader = et.getInputOutput().getIn();
         BufferedReader breader = new BufferedReader(reader);
         et.waitFinished();
@@ -167,45 +128,32 @@ public class CompilationDependencyTest extends TestBase {
         }
         assertTrue("compilation failed for implementation dependency",
                 testingProject.getModuleJarLocation().exists());
-        
     }
     
     public void testCompileAgainstRemovedModule68716() throws Exception {
-        SuiteProject suite = TestBase.generateSuite(new File(getWorkDir(), "projects"), "suite"); 
-        NbModuleProject proj = TestBase.generateSuiteComponent(suite, "mod1");  
+        SuiteProject suite = TestBase.generateSuite(new File(getWorkDir(), "projects"), "suite");
+        NbModuleProject proj = TestBase.generateSuiteComponent(suite, "mod1");
         SuiteProjectTest.openSuite(suite);
-        NbPlatform platform = proj.getPlatform(true);
-        ModuleEntry modules[] = platform.getModules(); 
-        ProjectXMLManager testingPXM = new ProjectXMLManager(proj);
-        ModuleEntry module = null;
-        for (int mIt = 0 ; mIt < modules.length ; mIt++) {
-            module = modules[mIt];
-            if (module.getCodeNameBase().equals(WINDOWS)) {
-                break;
-            }
-        }
-        testingPXM.removeDependency(WINDOWS);
-        ModuleDependency newDep = new ModuleDependency(module);
-        testingPXM.addDependency(newDep);
+        Util.addDependency(proj, WINDOWS);
+        
         // remove WINDOWS from platform
-        //
-        EditableProperties ep = suite.getHelper().getProperties("nbproject/platform.properties"); 
-        ep.setProperty(SuiteProperties.DISABLED_MODULES_PROPERTY,module.getCodeNameBase());   
-        suite.getHelper().putProperties("nbproject/platform.properties", ep); 
-        ProjectManager.getDefault().saveProject(proj);       
-        ProjectManager.getDefault().saveProject(suite);       
-        //// build project
+        EditableProperties ep = suite.getHelper().getProperties("nbproject/platform.properties");
+        ep.setProperty(SuiteProperties.DISABLED_MODULES_PROPERTY, WINDOWS);
+        suite.getHelper().putProperties("nbproject/platform.properties", ep);
+        ProjectManager.getDefault().saveProject(proj);
+        ProjectManager.getDefault().saveProject(suite);
+        
+        // build project
         FileObject buildScript = proj.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         assertNotNull(buildScript);
         ExecutorTask et = ActionUtils.runTarget(buildScript, new String[]{"clean","netbeans"}, null);
         et.waitFinished();
         assertFalse("project was successfully compiled against removed module from platform",proj.getModuleJarLocation().exists());
-  
-        
     }
     
-    private FileObject findBuildXml() {
-        return testingProject.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+    private static FileObject findBuildXml(final NbModuleProject project) {
+        return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
     }
+    
 }
 

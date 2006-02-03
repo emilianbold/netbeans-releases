@@ -120,17 +120,7 @@ public class SingleModulePropertiesTest extends TestBase {
         }
         
         // modify project.xml
-        final ProjectXMLManager pxm = new ProjectXMLManager(p);
-        ModuleEntry me = p.getModuleList().getEntry(
-                "org.netbeans.modules.java.project");
-        final ModuleDependency md = new ModuleDependency(me, "1", null, false, true);
-        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws IOException {
-                pxm.addDependency(md);
-                return Boolean.TRUE;
-            }
-        });
-        assertTrue("adding dependencies", result.booleanValue());
+        Util.addDependency(p, "org.netbeans.modules.java.project", "1", null, false);
         ProjectManager.getDefault().saveProject(p);
         
         simulatePropertiesOpening(props, p);

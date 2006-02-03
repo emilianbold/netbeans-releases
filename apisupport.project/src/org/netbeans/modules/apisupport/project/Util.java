@@ -550,18 +550,18 @@ public final class Util {
     /**
      * Delegates to {@link #addDependency(NbModuleProject, String)}.
      */
-    public static void addDependency(final NbModuleProject target,
+    public static boolean addDependency(final NbModuleProject target,
             final NbModuleProject dependency) throws IOException {
-        addDependency(target, dependency.getCodeNameBase());
+        return addDependency(target, dependency.getCodeNameBase());
     }
     
     /**
      * Delegates to {@link Util#addDependency(NbModuleProject, String, String,
      * SpecificationVersion, boolean)}.
      */
-    public static void addDependency(final NbModuleProject target,
+    public static boolean addDependency(final NbModuleProject target,
             final String codeNameBase) throws IOException {
-        Util.addDependency(target, codeNameBase, null, null, true);
+        return Util.addDependency(target, codeNameBase, null, null, true);
     }
     
     /**
@@ -582,9 +582,13 @@ public final class Util {
      *        module's target platform.
      * @param useInCompiler whether this this module needs a
      *        <code>dependency</code> module at a compile time.
+     * @return true if a dependency was successfully added; false otherwise
+     *         (e.g. when such dependency already exists)
      */
-    public static void addDependency(final NbModuleProject target, final String codeNameBase, final String releaseVersion, final SpecificationVersion version, final boolean useInCompiler) throws IOException {        
-        ModuleEntry me = target.getModuleList().getEntry(codeNameBase);        
+    public static boolean addDependency(final NbModuleProject target,
+            final String codeNameBase, final String releaseVersion,
+            final SpecificationVersion version, final boolean useInCompiler) throws IOException {
+        ModuleEntry me = target.getModuleList().getEntry(codeNameBase);
         assert me != null : "Cannot find module with the given codeNameBase (" + // NOI18N
                 codeNameBase + ") in the project's universe"; // NOI18N
         
@@ -596,7 +600,7 @@ public final class Util {
             ModuleDependency md = (ModuleDependency) it.next();
             if (codeNameBase.equals(md.getModuleEntry().getCodeNameBase())) {
                 Util.err.log(ErrorManager.INFORMATIONAL, codeNameBase + " already added"); // NOI18N
-                return;
+                return false;
             }
         }
         
@@ -605,6 +609,7 @@ public final class Util {
                 version == null ? me.getSpecificationVersion() : version.toString(),
                 useInCompiler, false);
         pxm.addDependency(md);
+        return true;
     }
     
     private static URL findJavadocURL(final String cnbdashes, final URL[] roots) {

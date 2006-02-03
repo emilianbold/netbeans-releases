@@ -27,7 +27,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
@@ -101,9 +100,8 @@ public class SuiteCustomizerLibrariesTest extends NbTestCase {
         lbinfo.store();
         // MODULE org.example.module3
         module = TestBase.generateSuiteComponent(suite, "module3");
-        ProjectXMLManager xml = new ProjectXMLManager(module);
-        xml.addDependency(new ModuleDependency(module.getModuleList().getEntry("org.example.module2")));
-        xml.addDependency(new ModuleDependency(module.getModuleList().getEntry("bar")));
+        Util.addDependency(module, "org.example.module2");
+        Util.addDependency(module, "bar");
         lbinfo = ((LocalizedBundleInfo.Provider) module.getLookup().lookup(LocalizedBundleInfo.Provider.class)).getLocalizedBundleInfo();
         lbinfo.setDisplayName("Module Three");
         lbinfo.store();

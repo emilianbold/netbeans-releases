@@ -37,7 +37,6 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
-import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -583,9 +582,7 @@ public class ClassPathProviderImplTest extends TestBase {
     
     public void testTransitiveExecuteClasspath() throws Exception { // #70206
         NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "prj");
-        ProjectXMLManager mgr = new ProjectXMLManager(p);
-        ModuleList ml = p.getModuleList();
-        mgr.addDependency(new ModuleDependency(ml.getEntry("org.openide.windows")));
+        Util.addDependency(p, "org.openide.windows");
         ProjectManager.getDefault().saveProject(p);
         ClassPath cp = ClassPath.getClassPath(p.getSourceDirectory(), ClassPath.EXECUTE);
         Set/*<String>*/ expectedRoots = new TreeSet();
