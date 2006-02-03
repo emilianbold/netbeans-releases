@@ -190,6 +190,12 @@ public final class ModuleLogicalView implements LogicalViewProvider {
     
     /** Package private for unit tests. */
     static final String IMPORTANT_FILES_NAME = "important.files"; // NOI18N
+    /** Accessor for SuiteLogicalView to create its important node which shall 
+     * be as similar as module's project one
+     */
+    static final Node createImportantFilesNode(Children ch) {
+        return new ImportantFilesNode(ch);
+    }
     
     private static final class RootChildren extends Children.Keys {
         
@@ -262,6 +268,10 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         
         public ImportantFilesNode(NbModuleProject project) {
             super(new ImportantFilesChildren(project));
+        }
+        
+        ImportantFilesNode(Children ch) {
+            super(ch);
         }
         
         public String getName() {

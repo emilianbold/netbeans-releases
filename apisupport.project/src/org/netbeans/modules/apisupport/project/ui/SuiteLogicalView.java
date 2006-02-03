@@ -19,9 +19,11 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -49,6 +51,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -80,7 +83,29 @@ public final class SuiteLogicalView implements LogicalViewProvider {
     }
     
     public Node findPath(Node root, Object target) {
-        // XXX
+        if (root.getLookup().lookup(SuiteProject.class) != suite) {
+            // Not intended for this project. Should not normally happen anyway.
+            return null;
+        }
+        
+        FileObject file;
+        
+        if (target instanceof FileObject) {
+            file = (FileObject)target;
+        } else if (target instanceof org.openide.loaders.DataObject) {
+            file = ((org.openide.loaders.DataObject) target).getPrimaryFile();
+        } else {
+            // What is it?
+            return null;
+        }
+        
+        if (file.getNameExt().equals("master.jnlp") && suite.getProjectDirectory().equals(file.getParent())) { // NOI18N
+            Node n = root.getChildren().findChild("important.files"); // NOI18N
+            if (n != null) {
+                return n.getChildren().findChild("master.jnlp"); // NOI18N
+            }
+        }
+        
         return null;
     }
     
@@ -158,7 +183,10 @@ public final class SuiteLogicalView implements LogicalViewProvider {
     }
     
     private static Children createRootChildren(final SuiteProject suite) {
-        Node[] nodes = new Node[] { new ModulesNode(suite) };
+        ImportantFilesChildren ch = new ImportantFilesChildren(suite);
+        Node ifn = ModuleLogicalView.createImportantFilesNode(ch);
+        
+        Node[] nodes = new Node[] { new ModulesNode(suite), ifn,  };
         Children children = new Children.Array();
         children.add(nodes);
         return children;
@@ -443,6 +471,113 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         protected Class[] cookieClasses() {
             return new Class[] { Project.class };
+        }
+        
+    }
+    
+    /**
+     * Actual list of important files.
+     */
+    private static final class ImportantFilesChildren extends Children.Keys {
+        
+        private List visibleFiles = new ArrayList();
+        private FileChangeListener fcl;
+        
+        /** Abstract location to display name. */
+        private static final java.util.Map/*<String,String>*/ FILES = new java.util.LinkedHashMap();
+        static {
+            FILES.put("master.jnlp", NbBundle.getMessage(SuiteLogicalView.class, "LBL_jnlp_master"));
+        }
+        
+        private final SuiteProject project;
+        
+        public ImportantFilesChildren(SuiteProject project) {
+            this.project = project;
+        }
+        
+        protected void addNotify() {
+            super.addNotify();
+            attachListeners();
+            refreshKeys();
+        }
+        
+        protected void removeNotify() {
+            setKeys(Collections.EMPTY_SET);
+            removeListeners();
+            super.removeNotify();
+        }
+        
+        protected Node[] createNodes(Object key) {
+            String f = (String)key;
+            FileObject file = project.getProjectDirectory().getFileObject(f);
+            if (file == null) {
+                return null;
+            }
+
+            try {
+                Node orig = org.openide.loaders.DataObject.find(file).getNodeDelegate();
+                
+                final String loc = (String)FILES.get(file.getNameExt());
+                if (loc != null) {
+                    orig = new org.openide.nodes.FilterNode(orig) {
+                        {
+                            disableDelegation(DELEGATE_SET_DISPLAY_NAME | DELEGATE_GET_DISPLAY_NAME);
+                            setDisplayName(loc);
+                        }
+                    };
+                }
+                
+                return new Node[] { orig };
+            } catch (org.openide.loaders.DataObjectNotFoundException e) {
+                throw new AssertionError(e);
+            }
+        }
+        
+        private void refreshKeys() {
+            List newVisibleFiles = new ArrayList();
+            java.util.Iterator it = FILES.keySet().iterator();
+            Set files = new HashSet();
+            while (it.hasNext()) {
+                String loc = (String) it.next();
+                FileObject file = project.getProjectDirectory().getFileObject(loc);
+                if (file != null) {
+                    newVisibleFiles.add(loc);
+                    files.add(file);
+                }
+            }
+            if (!isInitialized() || !newVisibleFiles.equals(visibleFiles)) {
+                visibleFiles = newVisibleFiles;
+                setKeys(visibleFiles);
+            }
+        }
+        
+        private void attachListeners() {
+            try {
+                if (fcl == null) {
+                    fcl = new org.openide.filesystems.FileChangeAdapter() {
+                        public void fileDataCreated(org.openide.filesystems.FileEvent fe) {
+                            refreshKeys();
+                        }
+                        public void fileDeleted(org.openide.filesystems.FileEvent fe) {
+                            refreshKeys();
+                        }
+                    };
+                    project.getProjectDirectory().getFileSystem().addFileChangeListener(fcl);
+                }
+            } catch (org.openide.filesystems.FileStateInvalidException e) {
+                assert false : e;
+            }
+        }
+        
+        private void removeListeners() {
+            if (fcl != null) {
+                try {
+                    project.getProjectDirectory().getFileSystem().removeFileChangeListener(fcl);
+                } catch (org.openide.filesystems.FileStateInvalidException e) {
+                    assert false : e;
+                }
+                fcl = null;
+            }
         }
         
     }
