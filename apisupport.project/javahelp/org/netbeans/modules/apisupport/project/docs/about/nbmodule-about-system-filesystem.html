@@ -27,9 +27,8 @@
 <p>When you create a module, you are free to create your own folders in the system 
   filesystem to store data that relate to your module. You can also add objects 
   to existing folders. One of the reasons 
-  to use the system filesystem is that it allows objects to be declared, but their 
-  classes not actually loaded by the JVM until something needs to use them, thus 
-  saving memory. 
+  to use the system filesystem is that it enables an application to be constructed piecemeal
+   from pluggable components (plug-in modules) without requiring the use of a monolithic "master controller" that knows about everything. 
 <p>One important aspect of a NetBeans virtual filesystem is that it can fire events to notify the rest of 
 	the system when something in it changes. NetBeans listens for changes in the system filesystem, and if, 
 	for example, something creates a new object in one of the menu folders, that new item will appear in the menu. 
