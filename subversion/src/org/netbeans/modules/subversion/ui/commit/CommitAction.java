@@ -42,9 +42,8 @@ public class CommitAction extends ContextAction {
         return "CTL_MenuItem_Commit";    // NOI18N
     }
 
-    protected void performContextAction(ActionEvent e) {
-        Context ctx = getContext();
-
+    /** Run commit action.  */
+    public static void commit(Context ctx) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
 
@@ -75,7 +74,7 @@ public class CommitAction extends ContextAction {
         JButton commitButton = new JButton("Commit");
         dd.setOptions(new Object[] {commitButton, "Cancel"});
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.show();
+        dialog.setVisible(true);
 
         if (dd.getValue() == commitButton) {
             Map commitFiles = data.getCommitFiles();
@@ -84,9 +83,15 @@ public class CommitAction extends ContextAction {
         }
 
         // if OK setup sequence of add, remove and commit calls
+        
+    }
+    
+    protected void performContextAction(ActionEvent e) {
+        Context ctx = getContext();
+        commit(ctx);
     }
 
-    private void performCommit(String message, Map commitFiles) {
+    private static void performCommit(String message, Map commitFiles) {
         ProgressHandle progress = ProgressHandleFactory.createHandle("Committing...");
         try {
             progress.start();

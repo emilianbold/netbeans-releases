@@ -117,6 +117,7 @@ public class Subversion {
      *    <li>prompts user for password if necessary,
      *    <li>let user specify proxy setting on network errors or
      *    <li>let user cancel operation (XXX then it throws SVN exception subclass)
+     *    <li>logs command execuion into output tab
      * </ul>
      *
      * <p>It hanldes cancellability, XXX e.g. by Thread,interrupt?
@@ -124,6 +125,7 @@ public class Subversion {
     public SvnClient getClient() {
         ISVNClientAdapter adapter = SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
         SvnClient client = new SvnClientImpl(adapter);
+        client.addNotifyListener(new OutputLogger());
         return client;
     }
     

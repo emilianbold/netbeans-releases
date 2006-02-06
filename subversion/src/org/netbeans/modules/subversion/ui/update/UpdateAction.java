@@ -49,7 +49,7 @@ public class UpdateAction extends ContextAction {
     protected void performContextAction(ActionEvent e) {
         Context ctx = getContext();
 
-        ISVNClientAdapter client = Subversion.getInstance().getClient();
+        ISVNClientAdapter client = Subversion.getInstance().getClient();        
 
         // FIXME add non-recursive folders splitting
         // FIXME add shalow logic allowing to ignore nested projects
