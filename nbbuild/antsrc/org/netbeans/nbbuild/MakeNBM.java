@@ -766,7 +766,7 @@ public class MakeNBM extends Task {
   protected void overrideLicenseIfNeeded() {
     if( overrideLicense()) {
       license = new Blurb() ;
-      license.setFile( new File( getLicenseOverride())) ;
+      license.setFile( getProject().resolveFile( getLicenseOverride())) ;
     }
   }
 
