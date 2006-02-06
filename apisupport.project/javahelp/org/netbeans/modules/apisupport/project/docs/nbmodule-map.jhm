@@ -66,7 +66,7 @@
 	<mapID target="apisupport_creating_splash_screen" url="distribute_plugin/creating_splash_screen.html"/>
 	<mapID target="apisupport_distributing_plugins" url="distribute_plugin/distributing_plugins.html"/>	
 	<mapID target="apisupport_deploying_plugins" url="distribute_plugin/deploying_plugins.html"/>
-
+<mapID target="apisupport_distributing_rich" url="distribute_plugin/about_distributing_rich.html"/>
 
 
 	<!-- Start of "CSH" section -->

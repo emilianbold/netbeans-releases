@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+    <title>About Distributing Rich-Client Applications</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
+    </head>
+
+    <body>
+        <h2>About Distributing Rich-Client Applications</h2>
+        <p><small> 
+            <a href="#seealso">See Also</a> 
+        </small></p>
+
+        <body>
+            Rich-client applications are complete,
+            functioning, standalone desktop applications. 
+            For this purpose,
+            NetBeans provides the <a href="../about/about-netbeans-platform.html">NetBeans Platform</a>,
+            which is the application framework on top 
+            of which you build your application. Each distinct
+            part of a rich-client application is provided by a separate 
+            plug-in module. For example, if your rich-client application
+            is an editor, you might have one plug-in module that provides
+            syntax highlighting, while another provides file templates. 
+           
+      
+            <p>Before you distribute a rich-client application, 
+            you need to consider whether you want to leave it resembling NetBeans. 
+            For example, your rich-client application uses the NetBeans splash 
+            screen by default. Branding, the final stage before creating distribution packages, 
+            involves making decisions such as what the splash screen should 
+            look like and whether the application will include a progress bar 
+            during startup. In the module suite project's Project Properties 
+            dialog box, you define such settings, as described in <a href="branding_plugins.html">Branding a Rich-Client Application</a>.
+
+            <p>While branding, also consider whether your rich-client application
+            needs all the plug-in modules that the IDE uses. For example, if your rich-client
+            application is not an editor, you will not need the plug-in modules that relate to
+            editor functionality. Similarly, it is unlikely that all of the IDE's menu items 
+            and toolbar buttons are needed by your application. See <a href="remove_unwated_modules.html">Removing Unwanted Modules</a>
+            and <a href="hide_unwanted_ui.html">Hiding Unwanted Menus and Toolbars</a> for details.
+         
+            
+            <p>Once a rich-client application is branded, you can distribute it over the 
+            web as a web-startable JNLP application. Alternatively, you can distribute the ZIP file.
+            See <a href="../build_plugin/building_jnlp.html">Building a JNLP Application</a>
+            and <a href="../build_plugin/building_zip.html">Building a ZIP Distribution</a> for details.
+            Updates to the plug-in modules that make up a rich-client application can be distributed 
+            via the Update Center.
+            <dl>
+                <dt><a name="seealso">See Also</a></dt>
+                <dd>  <a href="../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
+                <dd><a href="../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
+            </dl> 
+            <hr>
+            <small><a href="../credits.html">Legal Notices</a></small> 
+            <table cellpadding="20" border="0"> 
+                <tr><td>&nbsp;</td></tr> 
+                <tr><td>&nbsp;</td></tr> 
+                <tr><td>&nbsp;</td></tr> 
+            </table> 
+        </body></html>
+
