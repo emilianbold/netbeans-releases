@@ -689,13 +689,13 @@ jnlp.master.dir - (category='private') is the location of the directory where
   to generate pieces of master jnlp file that get's then included in its resources
   section
 
-jnlp.sign.alias -
-jnlp.sign.keystore - 
-jnlp.sign.password - allow you to sign your app with your own private key, if
+jnlp.signjar.alias -
+jnlp.signjar.keystore - 
+jnlp.signjar.password - allow you to sign your app with your own private key, if
   unspecified then a default keystore is generated. Nice for trying things for
   the first time, but not for production, then you very likely want to generate
   your key and set these properties
-jnlp.sign.vendor - you can override this to be the default dname for the keystore
+jnlp.signjar.vendor - you can override this to be the default dname for the keystore
 
 jnlp.platform.codebase - can point to a shared repository which can be generated
   by ant -f nbbuild/build.xml build-jnlp Then your war file will contain only 
