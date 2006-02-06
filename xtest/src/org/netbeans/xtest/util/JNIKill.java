@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,7 +20,8 @@
 
 package org.netbeans.xtest.util;
 
-import java.io.*;
+import java.io.File;
+
 
 /**
  *
@@ -28,14 +29,14 @@ import java.io.*;
  */
 public class JNIKill  {
     
-      
+    
     private static boolean libraryLoaded = false;
-      
+    
     /*
      * this static string contains pairs of supported platforms
      * and names of native libraries implementating kill functions
      */
-    private static final String [][] SUPPORTED_PLATFORMS = { 
+    private static final String [][] SUPPORTED_PLATFORMS = {
         {"Linux,i386","lib.jnikill.linux.i386.so"},
         {"Linux,x86","lib.jnikill.linux.i386.so"},
         {"Mac_OS_X,ppc","lib.jnikill.macosx.ppc.dylib"},
@@ -52,14 +53,14 @@ public class JNIKill  {
     // static initializer of JNIKill - just load appropriate dynamic library
     //static {
     //    loadJNILibrary();
-    //}                
+    //}
     
     private static String getPlatform() {
         String platform=System.getProperty("os.name","")+","+
                         /*
                         System.getProperty("os.version","")+","+
                          */
-                        System.getProperty("os.arch","");        
+                System.getProperty("os.arch","");
         return platform.replace(' ','_');
     }
     
@@ -96,21 +97,21 @@ public class JNIKill  {
             String currentPlatform = getPlatform();
             System.out.println("Current platform="+currentPlatform);
             for (int i=0;i<SUPPORTED_PLATFORMS.length;i++) {
-	            if (currentPlatform.equalsIgnoreCase(SUPPORTED_PLATFORMS[i][0])) {
-                	// we have it - let's load the library
-                	String currentLibrary = SUPPORTED_PLATFORMS[i][1];
-                	System.out.println("Loading library:"+currentLibrary);
-                	String libraryFilename = getLibraryFilename(currentLibrary);
-                	System.out.println("Loading library from:"+libraryFilename);
-                	Runtime.getRuntime().load(libraryFilename);
-                	// everything's ok - return
-                	JNIKill.setLibraryLoaded();
-                	return;
-            	}
-        	}
-        	throw new UnsatisfiedLinkError("Platform '"+currentPlatform+"' is not supported by current implementation");
+                if (currentPlatform.equalsIgnoreCase(SUPPORTED_PLATFORMS[i][0])) {
+                    // we have it - let's load the library
+                    String currentLibrary = SUPPORTED_PLATFORMS[i][1];
+                    System.out.println("Loading library:"+currentLibrary);
+                    String libraryFilename = getLibraryFilename(currentLibrary);
+                    System.out.println("Loading library from:"+libraryFilename);
+                    Runtime.getRuntime().load(libraryFilename);
+                    // everything's ok - return
+                    JNIKill.setLibraryLoaded();
+                    return;
+                }
+            }
+            throw new UnsatisfiedLinkError("Platform '"+currentPlatform+"' is not supported by current implementation");
         } else {
-        	System.out.println("JNI kill library already loaded");
+            System.out.println("JNI kill library already loaded");
         }
     }
     
@@ -124,8 +125,8 @@ public class JNIKill  {
     public boolean suicide() {
         return killProcess(getMyPID());
     }
-   
-    /* 
+    
+    /*
      * Native methods declaration
      */
     
@@ -133,7 +134,7 @@ public class JNIKill  {
     public native boolean killProcess(long pid);
     
     // native function for gettin pid of this process
-    public native long getMyPID();  
+    public native long getMyPID();
     
     // native function creates thread performing thread dump by signals
     public native boolean startDumpThread();
