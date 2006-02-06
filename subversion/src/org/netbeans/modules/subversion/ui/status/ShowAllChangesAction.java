@@ -15,6 +15,7 @@ package org.netbeans.modules.subversion.ui.status;
 
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.subversion.ui.actions.*;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.util.Context;
 import org.openide.util.NbBundle;
@@ -30,36 +31,15 @@ import java.awt.event.ActionEvent;
  *
  * @author Maros Sandor
  */
-public class ShowAllChangesAction extends SystemAction {
+public class ShowAllChangesAction extends AbstractAllAction {
 
     public ShowAllChangesAction() {
-        setIcon(null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N        
     }
 
     public String getName() {
         return NbBundle.getMessage(ShowAllChangesAction.class, "CTL_MenuItem_ShowAllChanges_Label");
     }
 
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(ShowAllChangesAction.class);
-    }
-
-    /**
-     * Enabled for opened project and if no Versining view refresh in progress.
-     */
-    public boolean isEnabled() {
-        if (super.isEnabled()) {
-            Project projects[] = OpenProjects.getDefault().getOpenProjects();
-            for (int i = 0; i < projects.length; i++) {
-                Project project = projects[i];
-                if (SvnUtils.isVersionedProject(project)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
     public void actionPerformed(ActionEvent e) {
         RequestProcessor.getDefault().post(new Runnable() {
