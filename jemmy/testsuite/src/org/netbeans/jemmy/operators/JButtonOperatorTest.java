@@ -98,6 +98,9 @@ public class JButtonOperatorTest extends TestCase {
         
         JButtonOperator operator3 = new JButtonOperator(operator1, new NameComponentChooser("JButtonOperatorTest"));
         assertNotNull(operator3);
+
+        JButtonOperator operator4 = new JButtonOperator(operator1, "JButtonOperatorTest");
+        assertNotNull(operator4);
     }
     
     /**
@@ -144,6 +147,7 @@ public class JButtonOperatorTest extends TestCase {
         frame.getRootPane().setDefaultButton(button);
         hashtable = operator2.getDump();
         assertEquals("true", hashtable.get(JButtonOperator.IS_DEFAULT_DPROP));
+        assertTrue(operator2.isDefaultButton());
     }
     
     /**
