@@ -30,3 +30,5 @@
 	opened the remote document.
 
 1.7:	Better way of sharing form files. Remote can view, owner can edit. #69657
+
+1.8:	Another filesharing brokage, partially fixes #71965

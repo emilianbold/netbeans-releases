@@ -99,7 +99,7 @@ public class CollabRegionSupport extends Object {
         this.guarded = guarded;
 
         try {
-            this.regionBegin = NbDocument.createPosition(getDocument(), regionBegin, Position.Bias.Forward);
+            this.regionBegin = NbDocument.createPosition(getDocument(), regionBegin, Position.Bias.Backward);
             this.regionEnd = NbDocument.createPosition(getDocument(), regionEnd, Position.Bias.Forward);
 
             if ((this.regionBegin == null) || (this.regionEnd == null)) {
@@ -572,7 +572,7 @@ public class CollabRegionSupport extends Object {
 					try {
 						String addText="\n";
 						Debug.out.println("adding text: ["+addText.replaceAll("\n", "~n")+"]");							
-						doc.insertString(beginRm, text, null);
+						doc.insertString(beginRm, addText, null);
 					} catch (BadLocationException ex) {
 						ex.printStackTrace();
 					}					
