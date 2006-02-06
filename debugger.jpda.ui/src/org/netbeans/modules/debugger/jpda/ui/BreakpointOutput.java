@@ -216,12 +216,14 @@ PropertyChangeListener {
             String expression = m.group (1);
             String value = "";
             try {
+                JPDADebugger theDebugger;
                 synchronized (lock) {
                     if (debugger == null) {
                         return value; // The debugger is gone
                     }
-                    value = debugger.evaluate (expression).getValue ();
+                    theDebugger = debugger;
                 }
+                value = theDebugger.evaluate (expression).getValue ();
                 value = backslashEscapePattern.matcher (value).
                     replaceAll ("\\\\\\\\");
                 value = dollarEscapePattern.matcher (value).
