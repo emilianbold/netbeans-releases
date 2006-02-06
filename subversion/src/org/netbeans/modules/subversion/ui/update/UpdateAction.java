@@ -21,6 +21,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.*;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -32,7 +33,7 @@ import org.openide.awt.StatusDisplayer;
  */
 public class UpdateAction extends ContextAction {
 
-    protected String getBaseName() {
+    protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Update";    // NOI18N
     }
 
@@ -46,8 +47,8 @@ public class UpdateAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
-    protected void performContextAction(ActionEvent e) {
-        Context ctx = getContext();
+    protected void performContextAction(Node[] nodes) {
+        Context ctx = getContext(nodes);
 
         ISVNClientAdapter client = Subversion.getInstance().getClient();        
 
@@ -55,7 +56,7 @@ public class UpdateAction extends ContextAction {
         // FIXME add shalow logic allowing to ignore nested projects
 
         File[] roots = ctx.getRootFiles();
-        ProgressHandle progress = ProgressHandleFactory.createHandle(getName());  // XXX running name
+        ProgressHandle progress = ProgressHandleFactory.createHandle(getRunningName(nodes));
         try {
             progress.start();
             client.update(roots, SVNRevision.HEAD, true, true);

@@ -17,8 +17,7 @@ import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
-
-import java.awt.event.ActionEvent;
+import org.openide.nodes.Node;
 
 /**
  * Context sensitive status action. It opens the Subversion
@@ -30,7 +29,7 @@ public class StatusAction  extends ContextAction {
     
     private static final int enabledForStatus = FileInformation.STATUS_MANAGED;  
     
-    protected String getBaseName() {
+    protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_ShowChanges";
     }
 
@@ -38,10 +37,10 @@ public class StatusAction  extends ContextAction {
         return enabledForStatus;
     }
 
-    public void performContextAction(ActionEvent ev) {
-        Context ctx = SvnUtils.getCurrentContext(null); // XXX on editor tab
+    public void performContextAction(Node[] nodes) {
+        Context ctx = SvnUtils.getCurrentContext(nodes);
         SvnVersioningTopComponent stc = SvnVersioningTopComponent.getInstance();
-        stc.setContentTitle(getContextDisplayName());
+        stc.setContentTitle(getContextDisplayName(nodes));
         stc.setContext(ctx);
         stc.open(); 
         stc.requestActive();

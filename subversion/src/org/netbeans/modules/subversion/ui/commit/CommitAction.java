@@ -22,6 +22,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 import javax.swing.*;
@@ -38,7 +39,7 @@ import java.util.List;
  */
 public class CommitAction extends ContextAction {
 
-    protected String getBaseName() {
+    protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Commit";    // NOI18N
     }
 
@@ -86,8 +87,8 @@ public class CommitAction extends ContextAction {
         
     }
     
-    protected void performContextAction(ActionEvent e) {
-        Context ctx = getContext();
+    protected void performContextAction(Node[] nodes) {
+        Context ctx = getContext(nodes);
         commit(ctx);
     }
 

@@ -21,6 +21,7 @@ import org.netbeans.modules.subversion.*;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.tigris.subversion.svnclientadapter.*;
 import org.openide.ErrorManager;
@@ -32,7 +33,7 @@ import org.openide.ErrorManager;
  */
 public class DiffAction extends ContextAction {
 
-    protected String getBaseName() {
+    protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Diff";    // NOI18N
     }
 
@@ -46,8 +47,8 @@ public class DiffAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED; 
     }
     
-    public void diff(Context ctx, int type) {
-        String contextName = getContextDisplayName();
+    public void diff(Context ctx, int type, String contextName) {
+        
         DiffMainPanel panel = new DiffMainPanel(ctx, type, contextName); // spawns bacground DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName));
@@ -55,10 +56,10 @@ public class DiffAction extends ContextAction {
         tc.requestActive();        
     }
     
-    protected void performContextAction(ActionEvent e) {
-        Context ctx = getContext();
-
-        diff(ctx, Setup.DIFFTYPE_LOCAL);        
+    protected void performContextAction(Node[] nodes) {
+        Context ctx = getContext(nodes);
+        String contextName = getContextDisplayName(nodes);
+        diff(ctx, Setup.DIFFTYPE_LOCAL, contextName);        
     }
     
     /**

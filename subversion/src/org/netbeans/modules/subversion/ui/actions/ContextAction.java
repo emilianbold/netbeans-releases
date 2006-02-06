@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.subversion.ui.actions;
 
+import org.netbeans.api.project.ProjectUtils;
+import org.openide.util.actions.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -40,39 +42,73 @@ import java.awt.event.ActionEvent;
  * 
  * @author Maros Sandor
  */
-public abstract class ContextAction extends SystemAction implements DynamicMenuContent {
-
-    /**
-     * @return bundle key base name
-     * @see #getName
-     */
-    protected abstract String getBaseName();
+public abstract class ContextAction extends NodeAction {
 
     protected ContextAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
+    
+    /**
+     * @return bundle key base name
+     * @see #getName
+     */
+    protected abstract String getBaseName(Node[] activatedNodes);
 
+    protected boolean enable(Node[] nodes) {
+        return getContext(nodes).getRootFiles().length > 0;
+    }
+    
     /**
      * Synchronizes memory modificatios with disk and calls
      * {@link  #performContextAction}.
      */
-    public final void actionPerformed(ActionEvent ev) {
+    protected void performAction(Node[] nodes) {
         // TODO try to save files in invocation context only
         LifecycleManager.getDefault().saveAll();
-        performContextAction(ev);
+        performContextAction(nodes);
+    }
+    
+    protected abstract void performContextAction(Node[] nodes);
+
+    /** Be sure nobody overwrites */
+    public final boolean isEnabled() {
+        return super.isEnabled();
     }
 
-    protected abstract void performContextAction(ActionEvent e);
-
-    public JComponent[] getMenuPresenters() {
-        return new JComponent[] { new Actions.MenuItem(this, true) };
+    /** Be sure nobody overwrites */
+    public final void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
     }
 
-    public JComponent[] synchMenuPresenters(JComponent[] items) {
-        return new JComponent[] { new Actions.MenuItem(this, true) };
+    /** Be sure nobody overwrites */
+    public final void actionPerformed(ActionEvent event) {
+        super.actionPerformed(event);
     }
 
+    /** Be sure nobody overwrites */
+    public final void performAction() {
+        super.performAction();
+    }    
+
+    /**
+     * Running action display name, it seeks action class bundle for:
+     * <ul>
+     *   <li><code>getBaseName() + "Running"</code> key
+     *   <li><code>getBaseName() + "Running_Context"</code> key for one selected file
+     *   <li><code>getBaseName() + "Running_Context_Multiple"</code> key for multiple selected files
+     *   <li><code>getBaseName() + "Running_Project"</code> key for one selected project
+     *   <li><code>getBaseName() + "Running_Projects"</code> key for multiple selected projects
+     * </ul>
+     */    
+    public String getRunningName(Node [] activatedNodes) {
+        return getName("Running", activatedNodes); // NOI18N
+    }
+
+    public String getName() {
+        return getName("", TopComponent.getRegistry().getActivatedNodes()); // NOI18N
+    }
+    
     /**
      * Display name, it seeks action class bundle for:
      * <ul>
@@ -83,20 +119,19 @@ public abstract class ContextAction extends SystemAction implements DynamicMenuC
      *   <li><code>getBaseName() + "_Projects"</code> key for multiple selected projects
      * </ul>
      */
-    public String getName() {
-        String baseName = getBaseName();
+    public String getName(String role, Node[] activatedNodes) {
+        String baseName = getBaseName(activatedNodes) + role;
         if (!isEnabled()) {
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         }
 
-        File [] nodes = SvnUtils.getCurrentContext(null, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = SvnUtils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
         // caused by fact that project contains two source groups.
 
         boolean projectsOnly = true;
-        Node [] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
         for (int i = 0; i < activatedNodes.length; i++) {
             Node activatedNode = activatedNodes[i];
             Project project =  (Project) activatedNode.getLookup().lookup(Project.class);
@@ -111,8 +146,9 @@ public abstract class ContextAction extends SystemAction implements DynamicMenuC
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         } else if (objectCount == 1) {
             if (projectsOnly) {
+                String dispName = ProjectUtils.getInformation((Project) activatedNodes[0].getLookup().lookup(Project.class)).getDisplayName();
                 return NbBundle.getMessage(this.getClass(), baseName + "_Context",  // NOI18N
-                                                activatedNodes[0].getDisplayName());
+                                                dispName);
             }
             String name;
             FileObject fo = (FileObject) activatedNodes[0].getLookup().lookup(FileObject.class);
@@ -151,16 +187,15 @@ public abstract class ContextAction extends SystemAction implements DynamicMenuC
      * @return String name of this action's context, e.g. "3 files", "MyProject", "2 projects", "Foo.java". Returns
      * null if the context is empty
      */ 
-    public String getContextDisplayName() {
+    public String getContextDisplayName(Node [] activatedNodes) {
         // TODO: reuse this code in getName() 
-        File [] nodes = SvnUtils.getCurrentContext(null, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        File [] nodes = SvnUtils.getCurrentContext(activatedNodes, getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
         // caused by fact that project contains two source groups.
 
         boolean projectsOnly = true;
-        Node [] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
         for (int i = 0; i < activatedNodes.length; i++) {
             Node activatedNode = activatedNodes[i];
             Project project =  (Project) activatedNode.getLookup().lookup(Project.class);
@@ -175,7 +210,7 @@ public abstract class ContextAction extends SystemAction implements DynamicMenuC
             return null;
         } else if (objectCount == 1) {
             if (projectsOnly) {
-                return activatedNodes[0].getDisplayName();
+                return ProjectUtils.getInformation((Project) activatedNodes[0].getLookup().lookup(Project.class)).getDisplayName();
             }
             FileObject fo = (FileObject) activatedNodes[0].getLookup().lookup(FileObject.class);
             if (fo != null) {
@@ -204,19 +239,15 @@ public abstract class ContextAction extends SystemAction implements DynamicMenuC
                                         new Object [] { new Integer(objectCount) });
         }
     }    
-    
+        
     public HelpCtx getHelpCtx() {
         return new HelpCtx(this.getClass());
     }
 
-    protected Context getContext() {
-        return SvnUtils.getCurrentContext(null, getFileEnabledStatus(), getDirectoryEnabledStatus());
+    protected Context getContext(Node[] nodes) {
+        return SvnUtils.getCurrentContext(nodes, getFileEnabledStatus(), getDirectoryEnabledStatus());
     }
     
-    public boolean isEnabled() {
-        return getContext().getRootFiles().length > 0;
-    }
-
     protected int getFileEnabledStatus() {
         return ~0;
     }
