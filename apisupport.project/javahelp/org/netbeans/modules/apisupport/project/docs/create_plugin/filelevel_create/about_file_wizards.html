@@ -6,179 +6,199 @@
 <html>
 <head>
 
-	<title>About Generating API Skeletons</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <title>About Generating Skeleton API Implementations</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-	<h2>About Generating API Skeletons</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p>
-<p>The IDE contains a set of file templates for module development. 
- The standard distribution of the IDE contains the following module file templates:
+    <h2>About Generating Skeleton API Implementations</h2>
+    <p><small> 
+        <a href="#seealso">See Also</a> 
+    </small></p>
+    <p>To simplify the process of working with the <a href="../../about/about-open-apis.html">NetBeans APIs</a>, 
+    the NetBeans IDE provides several wizards 
+    that guide you through the initial phase of working with a NetBeans API. For example, the
+    New Action wizard provides the basis of an implementation of the NetBeans Actions API, 
+    the New File Type wizard provides the basis of an implementation of the NetBeans Loaders API, and so on. 
 
-<ul>
-<li><b><img src="../../images/libraries.gif" width="16" height="16" alt="J2SE Library Descriptor icon">&nbsp;J2SE Library Descriptor.</b>
-Adds a new class library to the Library Manager of the user's IDE.
-<li><b><img src="../../images/action.gif" width="16" height="16" alt="Action icon">&nbsp;Action.</b>
-Creates an action that can be invoked from a menu item, pop-up menu, toolbar button, or keyboard shortcut.</li>
-<li><b><img src="../../images/filetype.gif" width="16" height="16" alt="File Type icon">&nbsp;File Type.</b>
-Lets the IDE recognize a new file type.</li>
-<li><b><img src="../../images/projtemplate.gif" width="16" height="16" alt="Project Template icon">&nbsp;Project Template.</b>
-Adds a new template to the New Project wizard.</li>
-<li><b><img src="../../images/window.gif" width="16" height="16" alt="Window icon">&nbsp;Window Component.</b>
-Creates a new window with an Open action invoked from a menu item.</li>
-<li><b><img src="../../images/wizard.gif" width="16" height="16" alt="Window icon">&nbsp;Wizard.</b>
-Creates a new wizard for creating, for example, new files in the IDE.</li>
-</ul>
 
-<h3>Related Javadoc</h3>
-<p>The module file templates create the starting point for your development activities.
-Once you have worked through a wizard, you build your module's functionality on top of the files that
-  the wizard creates for you. </p>
+    <p>The NetBeans API wizards are as follows:
+ 
+    <ul>
+        <li><b><img src="../../images/action.gif" width="16" height="16" alt="Action icon">&nbsp;New Action wizard.</b>
+        Creates an action that can be invoked from a menu item, pop-up menu, toolbar button, or keyboard shortcut.</li>
+        <li><b><img src="../../images/filetype.gif" width="16" height="16" alt="File Type icon">&nbsp;New File Type wizard.</b>
+        Lets the IDE recognize a new file type.</li>
+        <li><b><img src="../../images/module.gif" width="16" height="16" alt="Module Installer icon">&nbsp;New Module Installer wizard.</b>
+        Lifecycle manager for certain module projects.
+        <li><b><img src="../../images/options.gif" width="16" height="16" alt="Options icon">&nbsp;New Options Panel wizard.</b>
+        Adds a new panel to the Options window.
+        <li><b><img src="../../images/projtemplate.gif" width="16" height="16" alt="Project Template icon">&nbsp;New Project Template wizard.</b>
+        Adds a new template to the New Project wizard.</li>
+        <li><b><img src="../../images/window.gif" width="16" height="16" alt="Window icon">&nbsp;New Window Component wizard.</b>
+        Creates a new window with an Open action invoked from a menu item.</li>
+        <li><b><img src="../../images/wizard.gif" width="16" height="16" alt="Window icon">&nbsp;New Wizard wizard.</b>
+        Creates a new wizard for creating, for example, new files in the IDE.</li>
+    </ul>
 
-  <p>The following table lists the Javadoc that you will need to refer to when
-  extending the file templates:</p>
-<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
-   task name. The right column lists the steps to perform.">
-  <tr valign="top"> 
-	  <th scope="col" align="left">File Template</th>
-    <th scope="col" align="left">Related Javadoc</th>
-  </tr>
- <tr valign="top"> 
-	 <td>J2SE Library Descriptor</td>
-    <td> 
-	    -
-    </td>
-  </tr>
-  <tr valign="top"> 
-	  <td>Action</td>
-	  <td> 
+    <h3>Related Javadoc</h3>
+    <p>The NetBeans API wizards create the starting point for your development activities.
+    Once you have worked through a wizard, you build your module's functionality on top of the files that
+    the wizard creates for you. </p>
 
-<p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-util/org/openide/util/actions/CallbackSystemAction.html">
-    <param name="text" value="<html><u>Class CallbackSystemAction</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
+    <p>The following table lists the Javadoc that you will need to refer to when
+    building on top of the skeleton API implementations:</p>
+    <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+        task name. The right column lists the steps to perform.">
+        <tr valign="top"> 
+            <th scope="col" align="left">File Template</th>
+            <th scope="col" align="left">Related Javadoc</th>
+        </tr>
+        <tr valign="top"> 
+            <td>Action</td>
+            <td> 
+
+                <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-util/org/openide/util/actions/CallbackSystemAction.html">
+                    <param name="text" value="<html><u>Class CallbackSystemAction</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
 		  
-<p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-nodes/org/openide/util/actions/CookieAction.html">
-    <param name="text" value="<html><u>Class CookieAction</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
+                <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-nodes/org/openide/util/actions/CookieAction.html">
+                    <param name="text" value="<html><u>Class CookieAction</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
 
 
 
-</td>
+            </td>
 
 
-  </tr>
+        </tr>
   
-  <tr valign="top"> 
-    <td>File Type</td>
-    <td> 
-	   <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-loaders/overview-summary.html">
-    <param name="text" value="<html><u>NetBeans Loaders API</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
+        <tr valign="top"> 
+            <td>File Type</td>
+            <td> 
+                <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-loaders/overview-summary.html">
+                    <param name="text" value="<html><u>NetBeans Loaders API</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
 		  
-<p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-filesystems/overview-summary.html">
-    <param name="text" value="<html><u>NetBeans File Systems API</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
+                <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-filesystems/overview-summary.html">
+                    <param name="text" value="<html><u>NetBeans File Systems API</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
 
-<p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-nodes/overview-summary.html">
-    <param name="text" value="<html><u>NetBeans Nodes API</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
-    </td>
+                <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-nodes/overview-summary.html">
+                    <param name="text" value="<html><u>NetBeans Nodes API</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+            </td>
 
-  </tr>
-   <tr valign="top"> 
-    <td>Project Template</td>
-    <td> 
-   <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-netbeans-modules-projectuiapi/overview-summary.html">
-    <param name="text" value="<html><u>NetBeans Project UI API</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
+        </tr>
+       
+    <tr valign="top"> 
+            <td>Module Installer    </td>
+            <td> 
+to come
+            </td>
+
+        </tr>
+
+        
+          <tr valign="top"> 
+            <td>Options Panel</td>
+            <td> 
+to come
+            </td>
+
+        </tr>
+
+        <tr valign="top"> 
+            <td>Project Template</td>
+            <td> 
+                <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-netbeans-modules-projectuiapi/overview-summary.html">
+                    <param name="text" value="<html><u>NetBeans Project UI API</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
 		  
-<p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-netbeans-modules-projectapi/overview-summary.html">
-    <param name="text" value="<html><u>NetBeans Project API</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
-    </td>
+                <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-netbeans-modules-projectapi/overview-summary.html">
+                    <param name="text" value="<html><u>NetBeans Project API</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+            </td>
 
-  </tr>
+        </tr>
 
- <tr valign="top"> 
-	 <td>Window Component</td>
-    <td> 
-   <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-windows/overview-summary.html">
-    <param name="text" value="<html><u>NetBeans Windows API</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
+        <tr valign="top"> 
+            <td>Window Component</td>
+            <td> 
+                <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-windows/overview-summary.html">
+                    <param name="text" value="<html><u>NetBeans Windows API</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
 		  
-<p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-windows/org/openide/windows/TopComponent.html">
-    <param name="text" value="<html><u>Class TopComponent</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
-    </td>
+                <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-windows/org/openide/windows/TopComponent.html">
+                    <param name="text" value="<html><u>Class TopComponent</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+            </td>
 
-  </tr>
- <tr valign="top"> 
-	 <td>Wizard</td>
-    <td> 
-   <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-dialogs/overview-summary.html">
-    <param name="text" value="<html><u>NetBeans Dialogs API</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
+        </tr>
+        <tr valign="top"> 
+            <td>Wizard</td>
+            <td> 
+                <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-dialogs/overview-summary.html">
+                    <param name="text" value="<html><u>NetBeans Dialogs API</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
 		  
-<p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-dialogs/org/openide/WizardDescriptor.InstantiatingIterator.html">
-    <param name="text" value="<html><u>Interface WizardDescriptor.InstantiatingIterator</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
-    </td>
+                <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-dialogs/org/openide/WizardDescriptor.InstantiatingIterator.html">
+                    <param name="text" value="<html><u>Interface WizardDescriptor.InstantiatingIterator</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+            </td>
 
-  </tr>
-</table>
-<table>
-         <tr>
-		 <th colspan=2 align=left><a name="seealso">See also</th>
-         </tr>
-         <tr>
-         <td width="23"></td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <th colspan=2 align=left><a name="seealso">See also</th>
+        </tr>
+        <tr>
+            <td width="23"></td>
          
-	 <td> 
-		 <a href="create_j2se_library_descriptor.html">Creating a J2SE Library Descriptor</a><br>
-		 <a href="create_action.html">Creating an Action</a><br>
-		 <a href="create_file_type.html">Creating a File Type</a> <br> 
-		 <a href="create_project_template.html">Creating a Project Template</a><br>
-		 <a href="create_window_component.html">Creating a Window Component</a> <br> 
-		 <a href="create_wizard.html">Creating a Wizard</a> <br> 
-      </td>
-  </tr>
-</table><hr>
-<small><a href="../../credits.html">Legal Notices</a> </small>
+            <td> 
+                <a href="create_j2se_library_descriptor.html">Creating a J2SE Library Descriptor</a><br>
+                <a href="create_action.html">Creating an Action</a><br>
+                <a href="create_file_type.html">Creating a File Type</a> <br> 
+                <a href="create_project_template.html">Creating a Project Template</a><br>
+                <a href="create_window_component.html">Creating a Window Component</a> <br> 
+                <a href="create_wizard.html">Creating a Wizard</a> <br> 
+            </td>
+        </tr>
+    </table><hr>
+    <small><a href="../../credits.html">Legal Notices</a> </small>
 </body></html>

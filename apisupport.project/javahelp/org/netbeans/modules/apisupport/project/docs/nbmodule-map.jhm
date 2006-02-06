@@ -24,6 +24,8 @@
 	<mapID target="apisupport_using_netbeans_api_javadoc" url="create_plugin/using_netbeans_api_javadoc.html"/>	
 	<mapID target="apisupport_about_project_wizards" url="create_plugin/projectlevel_create/about_project_wizards.html"/>	
 	<mapID target="apisupport_create_module" url="create_plugin/projectlevel_create/create_module.html"/>
+<mapID target="apisupport_create_library_wrapper_module" url="create_plugin/projectlevel_create/create_library_wrapper_module.html"/>
+<mapID target="apisupport_create_module_suite" url="create_plugin/projectlevel_create/create_module_suite.html"/>
 		<!-- Start of "File-level Creating" section -->
 		<mapID target="apisupport_about_file_wizards" url="create_plugin/filelevel_create/about_file_wizards.html"/>
 		<mapID target="apisupport_about_j2se_library_descriptors" url="create_plugin/filelevel_create/about_j2se_library_descriptors.html"/>	

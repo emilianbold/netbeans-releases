@@ -6,30 +6,28 @@
 <html>
 <head>
 
-	<title>About Creating Modules</title>
+	<title>About Creating Plug-in Modules</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 </head>
 <body>
-	<h2>About Creating Modules</h2>
+	<h2>About Creating Plug-in Modules</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
 
-<p>The IDE contains a set of standard project and file templates for module development. 
+<p>The IDE contains a set of standard project templates and file templates for creating plug-in modules. 
  The standard distribution of the IDE contains the following module project templates:
 
  <ul>
-<li><b><img src="../images/module.gif" width="16" height="16" alt="Module icon">&nbsp;Module.</b>
-Creates an empty module with a <tt>layer.xml</tt> file and a <tt>Bundle.properties</tt> file.
-You use a module to provide your functionality. It implements the logic that integrates the 
-library wrappers into the platform and provides a user interface for receiving and processing user input. </li>
-<li><b><img src="../images/module.gif" width="16" height="16" alt="Library Wrapper Module icon">&nbsp;Library Wrapper.</b>
-Creates a library wrapped in a module project and a <tt>Bundle.properties</tt> file.
-You use a library wrapper to put a library JAR file on a module's classpath
- and export some or all of the JAR file's packages from the module as public packages.</li>
-<li><b><img src="../images/suite.gif" width="16" height="16" alt="Module Suite icon">&nbsp;Module Suite.</b>
-Creates an empty module suite. You use a module suite to group and deploy a set of interdependent modules and library wrappers.
+<li><b><img src="../images/module.gif" width="16" height="16" alt="Module icon">&nbsp;Module project.</b>
+Use a module project as the place where you code your plug-in module.  </li>
+<li><b><img src="../images/module.gif" width="16" height="16" alt="Library Wrapper Module icon">&nbsp;Library Wrapper Module project.</b>
+Use library wrapper module projects to put one or more library JAR files on a plug-in module's classpath.
+</li>
+<li><b><img src="../images/suite.gif" width="16" height="16" alt="Module Suite icon">&nbsp;Module Suite project.</b>
+Use a module suite project to group and deploy a set of interdependent module projects and library wrapper
+ module projects. 
 </li>
 </ul>
 <p>For details, see <a href="../create_plugin/projectlevel_create/about_project_wizards.html">About Module Project Templates</a>.
@@ -42,8 +40,22 @@ Adds a new class library to the Library Manager of the user's IDE.
 Creates an action that can be invoked from a menu item, pop-up menu, toolbar button, or keyboard shortcut.</li>
 <li><b><img src="../images/filetype.gif" width="16" height="16" alt="File Type icon">&nbsp;File Type.</b>
 Lets the IDE recognize a new file type.</li>
+
+<li> <b><img src="../images/javahelp.gif" width="16" height="16" alt="Help icon">&nbsp;JavaHelp Help Set.</b> Creates all the files needed for building a JavaHelp help set.
+</li>
+
+
+<li><b><img src="../images/module.gif" width="16" height="16" alt="Module icon">&nbsp;Module Installer.</b> Creates an installer class for a module.
+
+</li>
+<li><b><img src="../images/options.gif" width="16" height="16" alt="Options icon">&nbsp;Options Panel.</b>
+Adds a new panel to the Options window.</li>
+
 <li><b><img src="../images/projtemplate.gif" width="16" height="16" alt="Project Template icon">&nbsp;Project Template.</b>
 Adds a new template to the New Project wizard.</li>
+
+<li> <b><img src="../images/updatecenter.gif" width="16" height="16" alt="UC icon">&nbsp;Update Center.</b> Registers an update center in the Update Center wizard. As a result,
+ the user does not need to manually register the Update Center via the Options window.</li>
 <li><b><img src="../images/window.gif" width="16" height="16" alt="Window icon">&nbsp;Window Component.</b>
 Creates a new window with an Open action invoked from a menu item.</li>
 <li><b><img src="../images/wizard.gif" width="16" height="16" alt="Window icon">&nbsp;Wizard.</b>

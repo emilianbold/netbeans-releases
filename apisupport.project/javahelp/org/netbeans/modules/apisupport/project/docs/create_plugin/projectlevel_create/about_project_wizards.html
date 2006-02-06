@@ -19,21 +19,23 @@
 <p>The IDE contains a set of standard project templates for module development. 
  The standard distribution of the IDE contains the following module project templates:
 
- <ul>
-<li><b><img src="../../images/module.gif" width="16" height="16" alt="Module icon">&nbsp;Module.</b>
-An empty module with a <tt>layer.xml</tt> file and a <tt>Bundle.properties</tt> file.
-You use a module to implement the actual functionality provided by the plug-in module. For example,
-you use it to create the user interface, business logic, and the code that integrates the 
-library wrappers into the platform and provides a user interface for receiving user input. </li>
-<li><b><img src="../../images/module.gif" width="16" height="16" alt="Library Wrapper Module icon">&nbsp;Library Wrapper.</b>
-A library wrapped in a module project and a <tt>Bundle.properties</tt> file.
-You use a library wrapper to put a library JAR file on a module's classpath
- and export some or all of the JAR file's packages from the module as public packages.</li>
-<li><b><img src="../../images/suite.gif" width="16" height="16" alt="Module Suite icon">&nbsp;Module Suite.</b>
-An empty module suite. You use a module suite to group and deploy a set of interdependent modules and library wrappers.
+<ul>
+<li><b><img src="../../images/module.gif" width="16" height="16" alt="Module icon">&nbsp;Module project.</b>
+Use a module project as the place where you code your plug-in module. Module projects implement the
+  plug-in module's features and functionality that extend the NetBeans APIs, which you kickstart by using
+  file templates. In addition, module projects include the business logic that integrate the 
+library wrapper module projects into the plug-in module. Code housed in module projects also provide, for
+  example, the user interface for receiving and processing user input. </li>
+<li><b><img src="../../images/module.gif" width="16" height="16" alt="Library Wrapper Module icon">&nbsp;Library Wrapper Module project.</b>
+Use library wrapper module projects to put one or more library JAR files on a plug-in module's classpath.
+ You can also export some or all of the JAR file's packages as public packages.</li>
+<li><b><img src="../../images/suite.gif" width="16" height="16" alt="Module Suite icon">&nbsp;Module Suite project.</b>
+Use a module suite project to group and deploy a set of interdependent module projects and library wrapper
+ module projects. For rich-client applications, the module suite project is a skeleton application
+  to which you can attach a splash screen, a name for the application's executable, and a title for
+   the application's titlebar.
 </li>
 </ul>
-
 <h3>Important Files</h3>
 <p>Module projects and library wrapper module projects have an Important Files node where the IDE stores the Ant script,
  <tt>layer.xml</tt> file, and other project data.</p>
