@@ -31,6 +31,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.FileStatusCache;
+import org.netbeans.modules.subversion.SVNRoot;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPathNode;
@@ -63,11 +64,11 @@ public final class CheckoutAction extends CallableSystemAction {
         CheckoutWizard wizard = new CheckoutWizard();
         if (!wizard.show()) return;
         
-        final SVNUrl[] svnUrls = wizard.getSelectedUrls();
+        final SVNRoot[] svnRoots = wizard.getSelectedRoots();
         final File file = wizard.getWorkdir();        
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {                
-                checkout(svnUrls, file);
+                checkout(svnRoots, file);
             }
         });
     }
@@ -95,18 +96,17 @@ public final class CheckoutAction extends CallableSystemAction {
      * On succesfull finish shows open project dialog.
      *
      */
-    public void checkout(final SVNUrl svnUrls[], final File workingFolder) {
-                
+    public void checkout(final SVNRoot svnRoots[], final File workingFolder) {
         Executor.Command cmd = new Executor.Command () {
             protected void executeCommand(ISVNClientAdapter client) throws SVNClientException {                                
-                for (int i = 0; i < svnUrls.length; i++) {                                        
-                    File destination = new File(workingFolder.getAbsolutePath() + "/" + svnUrls[i].getLastPathSegment());
-                    destination.mkdir();                    
-                    
-                    client.checkout(svnUrls[i], destination, SVNRevision.HEAD, true);    
+                for (int i = 0; i < svnRoots.length; i++) {                                        
+                    File destination = new File(workingFolder.getAbsolutePath() + 
+                                                "/" +                                       // NOI18N
+                                                svnRoots[i].getSvnUrl().getLastPathSegment());
+                    destination.mkdir();                                        
+                    client.checkout(svnRoots[i].getSvnUrl(), destination, svnRoots[i].getSVNRevision(), true);    
                 }                    
-            }
-            // XXX onError
+            }            
         };
         
         ProgressHandle progressHandle = 
@@ -117,9 +117,9 @@ public final class CheckoutAction extends CallableSystemAction {
         try {
             Executor.getInstance().execute(cmd);
         } catch (SVNClientException ex) {
-            ex.printStackTrace();
-            // XXX notify me!
-            // return; XXX ???            
+            org.openide.ErrorManager.getDefault().notify(ex);
+            progressHandle.finish();
+            return; 
         }
         
         progressHandle.finish();
@@ -132,7 +132,7 @@ public final class CheckoutAction extends CallableSystemAction {
     }
 
     /** On task finish shows next steps UI.*/
-    // XXX is just a workaround version until there will be a kind of executor support in subversion ....
+    // XXX dummy implemention ...
     private class CheckoutCompletedController implements Runnable, ActionListener {
 
         //private final CheckoutExecutor executor;
@@ -161,7 +161,7 @@ public final class CheckoutAction extends CallableSystemAction {
             refreshRecursively(normalizedWorkingFolder);
             FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
             if (fo != null) {
-                // XXX test me! 
+                // XXX works at least for one level
                 checkedOutProjects = ProjectUtilities.scanForProjects(fo);
                 
 //                //String name = NbBundle.getMessage(CheckoutAction.class, "BK3007");

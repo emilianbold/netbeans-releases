@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.subversion.ui.browser;
 
+import org.netbeans.modules.subversion.SVNRoot;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -19,12 +20,8 @@ import java.awt.Dialog;
 import java.net.MalformedURLException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.nodes.Node;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
-import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
 
 /**
  *
@@ -47,7 +44,7 @@ public final class BrowserAction extends CallableSystemAction {
         }
         
         BrowserSelector selector = new BrowserSelector("LBL_RepositoryBrowser", false, false, false);        
-        selector.setup(svnURL);
+        selector.setup(new SVNRoot(svnURL, SVNRevision.HEAD));
         
         DialogDescriptor dd = new DialogDescriptor(selector.getBrowserPanel(), "test dialog");
         dd.setModal(true);
@@ -57,9 +54,9 @@ public final class BrowserAction extends CallableSystemAction {
         dialog.setVisible(true);
         
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            SVNUrl[] urls = selector.getSelectedURLs();
-            for (int i = 0; i < urls.length; i++) {
-                System.out.println(" url " + urls[i]);
+            SVNRoot[] svnRoots = selector.getSelectedRoots();
+            for (int i = 0; i < svnRoots.length; i++) {
+                System.out.println(" url " + svnRoots[i]);
             }
         } else {
             

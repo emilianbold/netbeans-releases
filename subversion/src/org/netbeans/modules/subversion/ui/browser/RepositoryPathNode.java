@@ -14,20 +14,18 @@
 package org.netbeans.modules.subversion.ui.browser;
 
 import java.awt.event.ActionEvent;
-import org.openide.ErrorManager;
+import org.netbeans.modules.subversion.SVNRoot;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
 
 import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
 import java.awt.*;
 import java.beans.BeanInfo;
-import org.openide.util.actions.SystemAction;
+import java.util.Set;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -45,34 +43,33 @@ public class RepositoryPathNode extends AbstractNode {
     
     interface SVNClient {        
         public List listRepositoryPath(RepositoryPathEntry entry) throws SVNClientException;
-        public void createFolder(SVNUrl url, String name, String message);
+        public void createFolder(SVNRoot svnRoot, String name, String message) throws SVNClientException;
         public boolean isReadOnly();
     }
 
     static class RepositoryPathEntry {
         private final SVNNodeKind svnNodeKind;
-        private final SVNUrl svnUrl;
-        RepositoryPathEntry (SVNUrl svnUrl, SVNNodeKind svnNodeKind) {
+        private final SVNRoot svnRoot;
+        RepositoryPathEntry (SVNRoot svnRoot, SVNNodeKind svnNodeKind) {
             this.svnNodeKind = svnNodeKind;
-            this.svnUrl = svnUrl;
+            this.svnRoot = svnRoot;
         }
         public SVNNodeKind getSvnNodeKind() {
             return svnNodeKind;
         }
-
-        public SVNUrl getSvnUrl() {
-            return svnUrl;
+        SVNRoot getSvnRoot() {
+            return svnRoot;
         }
     }    
     
-    public static RepositoryPathNode create(SVNClient client, SVNUrl url) {
-        return create(client, new RepositoryPathEntry(url, SVNNodeKind.DIR));
+    public static RepositoryPathNode create(SVNClient client, SVNRoot svnRoot) {
+        return create(client, new RepositoryPathEntry(svnRoot, SVNNodeKind.DIR));
     }
     
     private static RepositoryPathNode create(SVNClient client, RepositoryPathEntry entry) {
         RepositoryPathChildren kids = new RepositoryPathChildren(client, entry);
         RepositoryPathNode node = new RepositoryPathNode(kids, client, entry);
-        node.setDisplayName(entry.getSvnUrl().getLastPathSegment()); // NOI18N
+        node.setDisplayName(entry.getSvnRoot().getSvnUrl().getLastPathSegment()); // NOI18N
         return node;
     }
 
@@ -166,7 +163,7 @@ public class RepositoryPathNode extends AbstractNode {
             }  
         }
 
-        private Node errorNode(Exception ex) {
+        private static Node errorNode(Exception ex) {
             AbstractNode errorNode = new AbstractNode(Children.LEAF);
             errorNode.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "BK2002")); // NOI18N
             errorNode.setShortDescription(ex.getLocalizedMessage());
@@ -176,6 +173,11 @@ public class RepositoryPathNode extends AbstractNode {
         public void setKeys(List list) {
             super.setKeys(list);
         }
+        
+        public void setKeys(Set set) {
+            super.setKeys(set);
+        }
+        
     }
 
     private class CreateFolderAction extends AbstractAction {
@@ -183,9 +185,16 @@ public class RepositoryPathNode extends AbstractNode {
            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "CTL_Action_MakeDir")); // NOI18N
         }
         public void actionPerformed(ActionEvent e) {
-            client.createFolder(entry.getSvnUrl(), 
-                                entry.getSvnUrl().getLastPathSegment() + "newdir", // NOI18N // XXX new dir name ???
-                                "message");                                        // NOI18N // XXX message ???   
+            try {
+                client.createFolder(entry.getSvnRoot(), 
+                                    entry.getSvnRoot().getSvnUrl().getLastPathSegment() + "newdir", // NOI18N // XXX new dir name ???
+                                    "message");                                        // NOI18N // XXX message ???   
+            } catch (SVNClientException ex) {
+                org.openide.ErrorManager.getDefault().notify(ex);                                
+                ((RepositoryPathChildren)RepositoryPathNode.this.getChildren()).setKeys(     // XXX this is a mess !!!
+                        Collections.singleton(RepositoryPathChildren.errorNode(ex)) );
+                return;
+           }                                        
         }
         public boolean isEnabled() {
             return !client.isReadOnly() && entry.getSvnNodeKind() == SVNNodeKind.DIR;

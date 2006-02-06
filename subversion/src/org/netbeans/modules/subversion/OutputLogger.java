@@ -25,6 +25,9 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 /**
  *
  * @author Tomas Stupka
+ * 
+ * XXX Dummy output logging implementation ...
+ *
  */
 public class OutputLogger implements ISVNNotifyListener {
     
@@ -52,7 +55,7 @@ public class OutputLogger implements ISVNNotifyListener {
     
     public void logMessage(String message) {
         logln(message, ignoreCommand);
-        flushLog(); // XXX ???
+        flushLog(); 
     }
     
     public void logRevision(long revision, String path) {
@@ -111,7 +114,7 @@ public class OutputLogger implements ISVNNotifyListener {
     }
 
     private void flushLog() {
-        log.getOut().close();
+        log.getOut().flush(); // XXX in CVS is only close ???
     }
 
     private void closeLog() {
