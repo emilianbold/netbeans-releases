@@ -176,8 +176,7 @@ public class RepositoryPathNode extends AbstractNode {
         
         public void setKeys(Set set) {
             super.setKeys(set);
-        }
-        
+        }        
     }
 
     private class CreateFolderAction extends AbstractAction {
@@ -185,16 +184,20 @@ public class RepositoryPathNode extends AbstractNode {
            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "CTL_Action_MakeDir")); // NOI18N
         }
         public void actionPerformed(ActionEvent e) {
-            try {
-                client.createFolder(entry.getSvnRoot(), 
-                                    entry.getSvnRoot().getSvnUrl().getLastPathSegment() + "newdir", // NOI18N // XXX new dir name ???
-                                    "message");                                        // NOI18N // XXX message ???   
-            } catch (SVNClientException ex) {
-                org.openide.ErrorManager.getDefault().notify(ex);                                
-                ((RepositoryPathChildren)RepositoryPathNode.this.getChildren()).setKeys(     // XXX this is a mess !!!
-                        Collections.singleton(RepositoryPathChildren.errorNode(ex)) );
-                return;
-           }                                        
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {                
+                    try {
+                        
+                        // XXX dummy 
+                        String message = "message";                                                         // NOI18N 
+                        String newDir = entry.getSvnRoot().getSvnUrl().getLastPathSegment() + "newdir";     // NOI18N                         
+                        
+                        client.createFolder(entry.getSvnRoot(),  newDir, message);   
+                    } catch (SVNClientException ex) {
+                        org.openide.ErrorManager.getDefault().notify(ex);                                
+                   }
+                }
+            });
         }
         public boolean isEnabled() {
             return !client.isReadOnly() && entry.getSvnNodeKind() == SVNNodeKind.DIR;
