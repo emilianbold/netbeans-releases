@@ -47,7 +47,8 @@ public class JNIKill  {
         {"Windows_XP,x86","lib.jnikill.win32.x86.dll"},
         {"Windows_95,x86","lib.jnikill.win32.x86.dll"},
         {"Windows_98,x86","lib.jnikill.win32.x86.dll"},
-        {"Windows_Me,x86","lib.jnikill.win32.x86.dll"}
+        {"Windows_Me,x86","lib.jnikill.win32.x86.dll"},
+        {"Windows_2003,amd64","lib.jnikill.win32.x86.dll"}
     };
     
     // static initializer of JNIKill - just load appropriate dynamic library
@@ -81,38 +82,49 @@ public class JNIKill  {
     }
     
     private static boolean isLibraryLoaded() {
-        String output = System.getProperty(LIBRARY_SYSTEM_PROPERTY);
-        System.out.println("JNIKill native library status:"+output);
-        if ( output != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return System.getProperty(LIBRARY_SYSTEM_PROPERTY) != null;
     }
     
-    
-    // load JNI library based on which platform the code is executed
+    /** Loads JNI library based on which platform the code is executed. */
     private static void loadJNILibrary() throws UnsatisfiedLinkError {
-        if ( ! JNIKill.isLibraryLoaded() ) {
+        if (isLibraryLoaded()) {
+            System.out.println("JNI kill library already loaded");
+        } else {
             String currentPlatform = getPlatform();
             System.out.println("Current platform="+currentPlatform);
             for (int i=0;i<SUPPORTED_PLATFORMS.length;i++) {
                 if (currentPlatform.equalsIgnoreCase(SUPPORTED_PLATFORMS[i][0])) {
                     // we have it - let's load the library
-                    String currentLibrary = SUPPORTED_PLATFORMS[i][1];
-                    System.out.println("Loading library:"+currentLibrary);
-                    String libraryFilename = getLibraryFilename(currentLibrary);
-                    System.out.println("Loading library from:"+libraryFilename);
-                    Runtime.getRuntime().load(libraryFilename);
-                    // everything's ok - return
-                    JNIKill.setLibraryLoaded();
+                    loadJNILibrary(SUPPORTED_PLATFORMS[i][1]);
+                    if(isLibraryLoaded()) {
+                        return;
+                    }
+                }
+            }
+            // fallback - try all available libraries if platform entry is missing
+            for (int i=0;i<SUPPORTED_PLATFORMS.length;i++) {
+                loadJNILibrary(SUPPORTED_PLATFORMS[i][1]);
+                if(isLibraryLoaded()) {
                     return;
                 }
             }
-            throw new UnsatisfiedLinkError("Platform '"+currentPlatform+"' is not supported by current implementation");
-        } else {
-            System.out.println("JNI kill library already loaded");
+            // not possible to load library anyway
+            throw new UnsatisfiedLinkError("JNIKill: Platform '"+currentPlatform+"' is not supported by current implementation");
         }
+    }
+    
+    /** Load library and set flag if it succeeds. */
+    private static void loadJNILibrary(String libraryName) {
+        String libraryFilename = getLibraryFilename(libraryName);
+        try {
+            Runtime.getRuntime().load(libraryFilename);
+        } catch (UnsatisfiedLinkError ule) {
+            return;
+        }
+        // everything's ok
+        System.out.println("Loading library: "+libraryName);
+        System.out.println("Loading library from: "+libraryFilename);
+        JNIKill.setLibraryLoaded();
     }
     
     // initialize native libraries !!!
