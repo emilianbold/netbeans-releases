@@ -64,7 +64,8 @@ abstract class AbstractEntry implements ModuleEntry {
     }
     
     public int compareTo(Object o) {
-        return getLocalizedName().compareTo(((ModuleEntry) o).getLocalizedName());
+        int retval = getLocalizedName().compareTo(((ModuleEntry) o).getLocalizedName()); 
+        return (retval != 0) ? retval : getCodeNameBase().compareTo(((ModuleEntry) o).getCodeNameBase());
     }
     
     public Set/*<String>*/ getPublicClassNames() {
