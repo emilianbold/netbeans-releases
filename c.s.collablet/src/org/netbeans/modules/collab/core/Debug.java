@@ -40,7 +40,7 @@ public class Debug extends Object {
     ////////////////////////////////////////////////////////////////////////////
     public static final String OUTPUT_TAB_NAME = "Collaboration Module Debug";
     public static final String DISCRIMINATOR_TODO = "TODO";
-    public static PrintWriter out = InputOutput.NULL.getOut();
+    public static PrintWriter out;// = InputOutput.NULL.getOut();
     public static ErrorManager errorManager;
     private static InputOutput inputOutput;
     private static Set allowed = new HashSet();
@@ -123,6 +123,8 @@ public class Debug extends Object {
                 //				inputOutput.setFocusTaken(true);
                 out = inputOutput.getOut();
             }
+        } else {
+            out = InputOutput.NULL.getOut();
         }
 
         errorManager = ErrorManager.getDefault().getInstance("com.sun.collablet"); // NOI18N
