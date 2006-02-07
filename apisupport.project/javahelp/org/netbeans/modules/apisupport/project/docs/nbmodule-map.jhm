@@ -69,6 +69,11 @@
 <mapID target="apisupport_distributing_rich" url="distribute_plugin/about_distributing_rich.html"/>
 
 
+<mapID target="apisupport_about_libs_jhelp" url="create_plugin/libs_jhelp/about_libs_jhelp.html"/>
+<mapID target="apisupport_registering_plugins" url="register_plugin/about-registering-plugins.html"/>
+<mapID target="apisupport_browsing_system" url="register_plugin/apisupport_browsing_system.html"/>
+<mapID target="apisupport_editing_xml_layer" url="register_plugin/apisupport_editing_xml_layer.html"/>
+
 	<!-- Start of "CSH" section -->
 
 		<!-- NetBeans Platform Manager: -->

@@ -6,42 +6,82 @@
 <html>
 <head>
 
-	<title>About Generating API Skeletons</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <title>About Bundling Libraries, Templates, Samples, and Helpfiles</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-	<h2>About Generating API Skeletons</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p>
-<p>The IDE contains a set of file templates for module development. 
- The standard distribution of the IDE contains the following module file templates:
+    <h2>About Bundling Libraries, Templates, Samples, and Helpfiles</h2>
+    <p><small> 
+        <a href="#seealso">See Also</a> 
+    </small></p>
+    <ul>
+        <p><li><b>Bundling libraries.</b> To bundle a class library so that it
+        appears in the user's Library Manager, you need a J2SE library descriptor.
+        A J2SE library descriptor is an XML file that, when registered in the <tt>layer.xml</tt> file,
+        adds a new class library to the IDE's
+        Library Manager. Whenever the module containing the library descriptor 
+        is enabled, the library is present in the Library Manager. For example,
+        Struts support provides the Struts libraries in the Library Manager.
+        <p>For details, see <a href="../filelevel_create/create_j2se_library_descriptor.html">Bundling a Library</a>.
+        <p>For an example of a scenario where you might create
+        a J2SE library descriptor, see the
+        <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://platform.netbeans.org/tutorials/nbm-projecttemplates.html">
+            <param name="text" value="<html><u>NetBeans Project Template Module Tutorial</u>.</html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object>
+    
+        <li><b>Bundling templates.</b> Project templates are built on when users create
+        their own project. For example,
+        in the IDE a user chooses the 'Web Application' project template in the New Project wizard, then the IDE
+        creates a project consisting of a JSP file, a <tt>web.xml</tt> file, a server-specific deployment file,
+        and project metadata within a specific structure that is useful for web application projects.
+        <p>For details, see <a href="../filelevel_create/create_project_template.html">Bundling a Template or a Sample</a>.
+        <p>For an example of creating a module that registers a new project template, see the
+        <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://platform.netbeans.org/tutorials/nbm-projecttemplates.html">
+            <param name="text" value="<html><u>NetBeans Project Template Module Tutorial</u>.</html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object>
+        
+        <li><b>Bundling samples.</b> Project samples that illustrate 
+        some aspect of project functionality are often provided by plug-in modules
+        that inject new technology into the IDE. For example,
+        in the Samples directory within the New Project wizard, an Anagram Game is included
+        to demonstrate J2SE functionality. Samples are a kind of project template; they
+        have the same behavior as project templates, but they are used for a different purpose.
+        <p>For details, see <a href="../filelevel_create/create_project_template.html">Bundling a Template or a Sample</a>.
+        <p>For an example of creating a module that registers a new project sample, see the
+        <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://platform.netbeans.org/tutorials/nbm-projectsamples.html">
+            <param name="text" value="<html><u>NetBeans Project Sample Module Tutorial</u>.</html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object>
+    
+    </ul>
 
-<ul>
-<li><b><img src="../../images/options.gif" width="16" height="16" alt="Options icon">&nbsp;Options Panel.</b>
-Adds a new class library to the Library Manager of the user's IDE.
 
-</ul>
-
-
-<table>
-         <tr>
-		 <th colspan=2 align=left><a name="seealso">See also</th>
-         </tr>
-         <tr>
-         <td width="23"></td>
+    <table>
+        <tr>
+            <th colspan=2 align=left><a name="seealso">See also</th>
+        </tr>
+        <tr>
+            <td width="23"></td>
          
-	 <td> 
-		 <a href="create_j2se_library_descriptor.html">Creating a J2SE Library Descriptor</a><br>
-		 <a href="create_action.html">Creating an Action</a><br>
-		 <a href="create_file_type.html">Creating a File Type</a> <br> 
-		 <a href="create_project_template.html">Creating a Project Template</a><br>
-		 <a href="create_window_component.html">Creating a Window Component</a> <br> 
-		 <a href="create_wizard.html">Creating a Wizard</a> <br> 
-      </td>
-  </tr>
-</table><hr>
-<small><a href="../../credits.html">Legal Notices</a> </small>
+            <td> 
+                <a href="create_j2se_library_descriptor.html">Creating a J2SE Library Descriptor</a><br>
+                <a href="create_action.html">Creating an Action</a><br>
+                <a href="create_file_type.html">Creating a File Type</a> <br> 
+                <a href="create_project_template.html">Creating a Project Template</a><br>
+                <a href="create_window_component.html">Creating a Window Component</a> <br> 
+                <a href="create_wizard.html">Creating a Wizard</a> <br> 
+            </td>
+        </tr>
+    </table><hr>
+    <small><a href="../../credits.html">Legal Notices</a> </small>
 </body></html>
