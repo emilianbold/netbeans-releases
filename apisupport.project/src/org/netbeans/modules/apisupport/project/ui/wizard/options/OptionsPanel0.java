@@ -211,7 +211,7 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -222,7 +222,7 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         categoryNameLbl.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 18, 6, 12);
         add(categoryNameLbl, gridBagConstraints);
@@ -230,11 +230,12 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         categoryNameField.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(categoryNameField, gridBagConstraints);
 
         displayNameLbl1.setLabelFor(displayNameField1);
@@ -278,7 +279,7 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         titleLbl.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 18, 6, 12);
         add(titleLbl, gridBagConstraints);
@@ -286,7 +287,7 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         titleField.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -298,8 +299,8 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         iconLbl.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 18, 0, 0);
         add(iconLbl, gridBagConstraints);
 
@@ -308,8 +309,8 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
         iconField.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(iconField, gridBagConstraints);
@@ -324,7 +325,10 @@ final class OptionsPanel0 extends BasicWizardIterator.Panel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         add(iconButton, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
