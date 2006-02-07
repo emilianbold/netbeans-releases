@@ -71,8 +71,8 @@ public final class  PatternGroupNode extends AbstractNode {
             };
 
 
-    public static final String ICON_BASE =
-        "org/netbeans/modules/beans/resources/patternGroup"; // NOI18N
+    private static final String ICON_BASE =
+        "org/netbeans/modules/beans/resources/patternGroup.gif"; // NOI18N
 
     public PatternGroupNode(PatternChildren children) {
         this(children, true);
@@ -88,7 +88,7 @@ public final class  PatternGroupNode extends AbstractNode {
         }
         setName(PatternNode.getString("Patterns"));
         setShortDescription (PatternNode.getString("Patterns_HINT"));
-        setIconBase(ICON_BASE);
+        setIconBaseWithExtension(ICON_BASE);
 
         CookieSet cs = getCookieSet();
         cs.add(children.getPatternAnalyser());

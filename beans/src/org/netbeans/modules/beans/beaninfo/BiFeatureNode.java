@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -99,7 +99,7 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
         this.biAnalyser = biAnalyser;
         setDisplayName (getName ());
         setShortDescription(biFeature.getToolTip());
-        setIconBase( biFeature.getIconBase(false) );
+        setIconBaseWithExtension( biFeature.getIconBase(false) + ".gif" );
         init ();
     }
 
@@ -252,7 +252,7 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
                            biFeature.setIncluded ( ((Boolean)val).booleanValue() );
-                           setIconBase( biFeature.getIconBase(false) );
+                           setIconBaseWithExtension( biFeature.getIconBase(false) + ".gif" );
                        } catch (ClassCastException e) {
                            throw new IllegalArgumentException ();
                        }
@@ -316,7 +316,7 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
                            ((BiFeature.Property)biFeature).setMode ( ((Integer)val).intValue() );
-                           setIconBase( biFeature.getIconBase(false) );
+                           setIconBaseWithExtension( biFeature.getIconBase(false) + ".gif" );
                        } catch (ClassCastException e) {
                            throw new IllegalArgumentException ();
                        }
@@ -458,8 +458,8 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
     /** Toggles the selection of bi feature */
     public void toggleSelection() {
         biFeature.setIncluded ( !biFeature.isIncluded() );
-        firePropertyChange( PROP_INCLUDED, !biFeature.isIncluded() ? Boolean.TRUE : Boolean.FALSE, biFeature.isIncluded() ? Boolean.TRUE : Boolean.FALSE );
-        setIconBase( biFeature.getIconBase(false) );
+        firePropertyChange( PROP_INCLUDED, Boolean.valueOf(!biFeature.isIncluded()), Boolean.valueOf(biFeature.isIncluded()) );
+        setIconBaseWithExtension( biFeature.getIconBase(false) + ".gif" );
     }
 
     /** Includes/excludes the pattern from bean info */
@@ -469,8 +469,8 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
             return;
 
         biFeature.setIncluded ( value );
-        firePropertyChange( PROP_INCLUDED, !biFeature.isIncluded() ? Boolean.TRUE : Boolean.FALSE, biFeature.isIncluded() ? Boolean.TRUE : Boolean.FALSE );
-        setIconBase( biFeature.getIconBase(false) );
+        firePropertyChange( PROP_INCLUDED, Boolean.valueOf(!biFeature.isIncluded()), Boolean.valueOf(biFeature.isIncluded()) );
+        setIconBaseWithExtension( biFeature.getIconBase(false) + ".gif" );
     }
 
 
@@ -517,18 +517,18 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
     
     public void iconChanged(){
         if( biFeature instanceof BiFeature.Descriptor  && biAnalyser.isNullDescriptor() ) {
-            setIconBase( biFeature.getIconBase(true));            
+            setIconBaseWithExtension( biFeature.getIconBase(true) + ".gif");            
         }
         else if( ( biFeature instanceof BiFeature.Property || biFeature instanceof BiFeature.IdxProperty ) && biAnalyser.isNullProperties() ) {
-            setIconBase( biFeature.getIconBase(true));            
+            setIconBaseWithExtension( biFeature.getIconBase(true) + ".gif");            
         }
         else if( biFeature instanceof BiFeature.EventSet && biAnalyser.isNullEventSets() ) {
-            setIconBase( biFeature.getIconBase(true));            
+            setIconBaseWithExtension( biFeature.getIconBase(true) + ".gif");            
         }
         else if( biFeature instanceof BiFeature.Method && biAnalyser.isNullMethods() ) {
-            setIconBase( biFeature.getIconBase(true));            
+            setIconBaseWithExtension( biFeature.getIconBase(true) + ".gif");            
         }
-        else setIconBase( biFeature.getIconBase(false)); 
+        else setIconBaseWithExtension( biFeature.getIconBase(false) + ".gif"); 
         
         fireIconChange();
     }
@@ -554,7 +554,3 @@ final class BiFeatureNode extends AbstractNode implements Node.Cookie {
     }
 }
 
-/*
- * Log
- *
- */

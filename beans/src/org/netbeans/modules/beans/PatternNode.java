@@ -78,7 +78,7 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
         this.pattern = pattern;
         this.writeable = writeable;
         
-        setIconBase(resolveIconBase());
+        setIconBaseWithExtension(resolveIconBase()+".gif");
         setActions(DEFAULT_ACTIONS);
 
         //this.pattern.addPropertyChangeListener(new WeakListeners.PropertyChange (this));
@@ -317,7 +317,7 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     // ================== Pattern listener =================================
 
     public void propertyChange(PropertyChangeEvent evt) {
-        setIconBase( resolveIconBase() );
+        setIconBaseWithExtension( resolveIconBase() + ".gif");
         superSetName( pattern.getName() );
         firePropertyChange( null, null, null );
     }

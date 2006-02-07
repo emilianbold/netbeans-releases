@@ -41,9 +41,9 @@ public final class BiNode extends AbstractNode {
     /** generated Serialized Version UID */
     //static final long                      serialVersionUID = -6346315017458451778L;
 
-    private static String ICON_BASE = "org/netbeans/modules/beans/resources/beanInfo"; // NOI18N
+    private static String ICON_BASE = "org/netbeans/modules/beans/resources/beanInfo.gif"; // NOI18N
     private static String ICON_BASE_PATTERNS = "org/netbeans/modules/beans/resources/patternGroup"; // NOI18N
-    private static String WAIT_ICON_BASE = "org/openide/src/resources/wait"; // NOI18N
+    private static String WAIT_ICON_BASE = "org/openide/src/resources/wait.gif"; // NOI18N
 
     private static String PROP_NULL_DESCRIPTOR = "nullDescriptor"; // NOI18N
     private static String PROP_NULL_PROPERTIES = "nullProperties"; // NOI18N
@@ -177,7 +177,7 @@ public final class BiNode extends AbstractNode {
         this.biAnalyser = biAnalyser;
         setDisplayName (NbBundle.getBundle(BiNode.class).
                         getString ("CTL_NODE_BeanInfo"));
-        setIconBase (ICON_BASE);
+        setIconBaseWithExtension (ICON_BASE);
 
         Node[] subnodes = (biAnalyser.isOlderVersion() ? 
             new Node[] {
@@ -435,7 +435,7 @@ public final class BiNode extends AbstractNode {
             super ( new BiChildren (  biAnalyser, keys ) );
             setDisplayName (NbBundle.getBundle(BiNode.class).
                             getString (titleKey));
-            setIconBase ( iconBase );
+            setIconBaseWithExtension ( iconBase + ".gif" );
                 
             this.biAnalyser = biAnalyser;
             this.key = keys[0];
@@ -553,7 +553,7 @@ public final class BiNode extends AbstractNode {
 
             super( Children.LEAF );
             setDisplayName( JavaMetamodel.getManager().isScanInProgress()? NbBundle.getBundle( BiNode.class ).getString( "CTL_NODE_WaitScan" ) : NbBundle.getBundle( BiNode.class ).getString( "CTL_NODE_Wait" ) );
-            setIconBase( WAIT_ICON_BASE );
+            setIconBaseWithExtension( WAIT_ICON_BASE );
 
         }
     }

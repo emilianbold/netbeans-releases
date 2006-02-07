@@ -215,7 +215,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
                        } finally {
                            pattern.patternAnalyser.setIgnore( false );
                        }
-                       setIconBase( resolveIconBase() );
+                       setIconBaseWithExtension( resolveIconBase() + ".gif" );
 
                    }
 

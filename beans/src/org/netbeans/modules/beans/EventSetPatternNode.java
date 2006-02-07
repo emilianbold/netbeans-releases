@@ -183,7 +183,7 @@ public final class EventSetPatternNode extends PatternNode implements IconBases 
                            try {
                                pattern.patternAnalyser.setIgnore( true );
                                ((EventSetPattern)pattern).setIsUnicast(((Boolean)val).booleanValue());
-                               setIconBase( resolveIconBase() );
+                               setIconBaseWithExtension( resolveIconBase() + ".gif");
                            } finally {
                                pattern.patternAnalyser.setIgnore( false );
                            }
