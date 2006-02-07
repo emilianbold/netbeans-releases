@@ -330,13 +330,6 @@ public abstract class AbstractFileSystem extends FileSystem {
         return refreshRootImpl();
     }
 
-    /** @deprecated Just for backward compatibility, renamed during runtime to refreshRoot
-     * and made available publicly
-     */
-    private AbstractFileObject r3fr3shRoot() {
-        return refreshRootImpl();
-    }
-
     /** Allows subclasses to fire that a change occured in a
     * file or folder. The change can be "expected" when it is
     * a result of an user action and the user knows that such
