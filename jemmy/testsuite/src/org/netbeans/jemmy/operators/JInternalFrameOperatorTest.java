@@ -457,11 +457,11 @@ public class JInternalFrameOperatorTest extends TestCase {
         assertNotNull(operator2);
         
         operator2.waitMaximum(false);
-        assertNotNull(!operator2.isMaximum());
+        assertTrue(!operator2.isMaximum());
         
         operator2.maximize();
         operator2.waitMaximum(true);
-        assertNotNull(operator2.isMaximum());
+        assertTrue(operator2.isMaximum());
     }
 
     /**
