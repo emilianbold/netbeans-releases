@@ -518,8 +518,15 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
             ModuleDependency[] newDeps = addPanel.getSelectedDependencies();
             for (int i = 0; i < newDeps.length; i++) {
-                getDepListModel().addDependency(newDeps[i]);
-                dependencyList.setSelectedValue(newDeps[i], true);
+                ModuleDependency dep = newDeps[i];
+                if ("0".equals(dep.getReleaseVersion())) { // #72216 NOI18N
+                    getDepListModel().addDependency(new ModuleDependency(
+                            dep.getModuleEntry(), "0-1", dep.getSpecificationVersion(), // NOI18N
+                            dep.hasCompileDependency(), dep.hasImplementationDepedendency()));
+                } else {
+                    getDepListModel().addDependency(dep);
+                }
+                dependencyList.setSelectedValue(dep, true);
             }
         }
         dependencyList.requestFocusInWindow();
