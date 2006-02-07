@@ -41,7 +41,8 @@ Microsystems, Inc. All Rights Reserved.
         <condition property="javahelp.class.path.extension" value="docs/${javahelp.jar.basename}">
             <isset property="has.javahelp"/>
         </condition>
-	<property name="javac.source" value="1.4"/>
+        <property name="javac.source" value="1.4"/>
+        <property name="javac.target" value="${javac.source}"/>
         <property name="javac.compilerargs" value=""/>
         <property name="module.auto.deps.xml" location="module-auto-deps.xml"/>
         <condition property="has.module.auto.deps">
@@ -78,11 +79,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile" depends="init">
         <mkdir dir="${build.classes.dir}"/>
-        <condition property="javac.target" value="${javac.source}">
-            <not>
-                <isset property="javac.target"/>
-            </not>
-        </condition>
         <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
@@ -128,7 +124,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- XXX consider deleting the .class file first to force a rebuild -->
         <javac srcdir="${src.dir}" destdir="${build.classes.dir}"
                debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}"
-               source="${javac.source}" includes="${javac.includes}" optimize="${build.compiler.optimize}" includeantruntime="false">
+               source="${javac.source}" target="${javac.target}" includes="${javac.includes}" optimize="${build.compiler.optimize}" includeantruntime="false">
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
         </javac>
@@ -315,7 +311,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${build.test.unit.classes.dir}"/>
         <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}"
-               source="${javac.source}" optimize="${build.compiler.optimize}" includeantruntime="false">
+               source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
                <exclude name="**/jars/**"/><!-- XXX for core only; fix in core, not here -->
                <exclude name="**/data/**"/><!-- XXX for openide/util and co. -->
             <classpath refid="test.unit.cp"/>
@@ -340,7 +336,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- XXX consider deleting the .class file first to force a rebuild -->
         <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}"
-               source="${javac.source}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
+               source="${javac.source}" target="${javac.target}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
             <classpath refid="test.unit.cp"/>
             <compilerarg line="${javac.compilerargs}"/>
         </javac>
