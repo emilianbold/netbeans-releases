@@ -16,12 +16,13 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
     <folder name="Actions">
-        <folder name="Build">            
+        <folder name="Repository">
             <file name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.checkout.CheckoutAction"/>
-            </file>
-        </folder>
-        <folder name="Repository">
+            </file>            
+            <file name="org-netbeans-modules-subversion-ui-checkin-CheckinAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.checkin.CheckinAction"/>
+            </file>                        
             <file name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.status.OpenVersioningAction"/>
             </file>
@@ -138,7 +139,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="Separator2.instance/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow" boolvalue="true"/>
 
             <file name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance"/>
             </file>
             <attr name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow/Separator3.instance" boolvalue="true"/>
 

@@ -15,6 +15,7 @@ package org.netbeans.modules.subversion.ui.checkout;
 
 import javax.swing.Icon;
 import javax.swing.JOptionPane;
+import org.netbeans.modules.subversion.ui.wizards.*;
 
 /**
  *

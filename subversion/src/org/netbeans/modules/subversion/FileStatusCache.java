@@ -380,7 +380,7 @@ public class FileStatusCache {
     // --- Private methods ---------------------------------------------------
 
     private Map getScannedFiles(File dir) {
-        Map files;
+        Map files;       
         if (svn.isAdministrative(dir)) return NOT_MANAGED_MAP;
         files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
         if (files != null) return files;

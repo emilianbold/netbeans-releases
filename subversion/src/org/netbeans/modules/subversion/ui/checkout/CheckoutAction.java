@@ -34,7 +34,7 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.SVNRoot;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.settings.HistorySettings;
-import org.netbeans.modules.subversion.ui.browser.RepositoryPathNode;
+import org.netbeans.modules.subversion.ui.wizards.*;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
@@ -51,11 +51,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.lookup.Lookups;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
