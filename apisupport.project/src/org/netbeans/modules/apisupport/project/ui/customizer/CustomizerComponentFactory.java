@@ -49,11 +49,11 @@ public final class CustomizerComponentFactory {
     
     /** Generally usable in conjuction with {@link #createComboWaitModel}. */
     public static final String WAIT_VALUE =
-            NbBundle.getMessage(CustomizerDisplay.class, "ComponentFactory_please_wait");
+            NbBundle.getMessage(CustomizerComponentFactory.class, "ComponentFactory_please_wait");
     
     /** Generally usable in conjuction with {@link #createComboEmptyModel}. */
     public static final String EMPTY_VALUE =
-            NbBundle.getMessage(CustomizerDisplay.class, "LBL_Empty");
+            NbBundle.getMessage(CustomizerComponentFactory.class, "LBL_Empty");
     
     static DependencyListModel INVALID_DEP_LIST_MODEL;
     
@@ -127,7 +127,7 @@ public final class CustomizerComponentFactory {
         return new CustomizerComponentFactory.DependencyListModel(deps, false);
     }
     
-    static CustomizerComponentFactory.DependencyListModel getInvalidDependencyListModel() {
+    static synchronized CustomizerComponentFactory.DependencyListModel getInvalidDependencyListModel() {
         if (INVALID_DEP_LIST_MODEL == null) {
             INVALID_DEP_LIST_MODEL = createDependencyListModel(
                     Collections.singleton(CustomizerComponentFactory.INVALID_PLATFORM));
@@ -149,9 +149,9 @@ public final class CustomizerComponentFactory {
     static final class DependencyListModel extends AbstractListModel {
         
         private final Set/*<ModuleDependency>*/ currentDeps;
-        private Set/*<ModuleDependency>*/ addedDeps = new HashSet();
-        private Set/*<ModuleDependency>*/ removedDeps = new HashSet();
-        private Map/*<ModuleDependency, ModuleDependency>*/ editedDeps = new HashMap();
+        private final Set/*<ModuleDependency>*/ addedDeps = new HashSet();
+        private final Set/*<ModuleDependency>*/ removedDeps = new HashSet();
+        private final Map/*<ModuleDependency, ModuleDependency>*/ editedDeps = new HashMap();
         
         private boolean changed;
         
@@ -377,7 +377,7 @@ public final class CustomizerComponentFactory {
     
     static final class FriendListModel extends AbstractListModel {
         
-        private Set/*<String>*/ friends = new TreeSet();
+        private final Set/*<String>*/ friends = new TreeSet();
         
         private boolean changed;
         
@@ -423,7 +423,7 @@ public final class CustomizerComponentFactory {
     
     static final class RequiredTokenListModel extends AbstractListModel {
         
-        private SortedSet/*<String>*/ tokens;
+        private final SortedSet/*<String>*/ tokens;
         private boolean changed;
         
         RequiredTokenListModel(final SortedSet tokens) {
@@ -463,7 +463,7 @@ public final class CustomizerComponentFactory {
     
     static final class SuiteSubModulesListModel extends AbstractListModel {
         
-        private Set/*<Project>*/ subModules;
+        private final Set/*<Project>*/ subModules;
         
         private boolean changed;
         
