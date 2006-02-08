@@ -32,6 +32,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
@@ -176,6 +177,10 @@ final class NewProjectIterator extends BasicWizardIterator {
         for (int i = 0; i < MODULES.length; i++) {
             fileChanges.add(fileChanges.addModuleDependency(MODULES[i]));
         }
+
+        fileChanges.add(fileChanges.bundleKeyDefaultBundle(category + "/" + name +  "Project.zip", displayName)); // NOI18N
+        String bundlePath = getRelativePath(project, packageName, "", "Bundle.properties");//NOI18N
+        fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_CreateProjectStep",  "Name and Location")); // NOI18N
         
         // 3. create sample template
         FileObject xml = LayerUtils.layerForProject(project).getLayerFile();
@@ -184,10 +189,8 @@ final class NewProjectIterator extends BasicWizardIterator {
         // really the second one would automatically generate a uniquified name... but close enough!
         Set externalFiles = Collections.singleton(LayerUtils.findGeneratedName(parent, name + "Project.zip")); // NOI18N
         fileChanges.add(fileChanges.layerModifications(
-                new CreateProjectZipOperation(model.getTemplate(), name, packageName, category),
-                externalFiles));
-        fileChanges.add(fileChanges.bundleKeyDefaultBundle(category + "/" + name +  "Project.zip", displayName)); // NOI18N
-        fileChanges.add(fileChanges.bundleKeyDefaultBundle("LBL_CreateProjectStep",  "Name and Location")); // NOI18N
+                new CreateProjectZipOperation(model.getTemplate(), name, packageName,
+                category, ManifestManager.getInstance(project.getManifest(), false)),externalFiles));
         
         // x. generate java classes
         final String iteratorName = getRelativePath(project, packageName,
@@ -300,11 +303,14 @@ final class NewProjectIterator extends BasicWizardIterator {
         private final String packageName;
         private final Project templateProject;
         private final String category;
+        private final ManifestManager manifestManager;
         
-        public CreateProjectZipOperation(Project template, String name, String packageName, String category) {
+        public CreateProjectZipOperation(Project template, String name, String packageName, 
+                String category, ManifestManager manifestManager) {
             this.packageName = packageName;
             this.name = name;
             this.category = category;
+            this.manifestManager = manifestManager;
             templateProject = template;
         }
         
@@ -322,13 +328,19 @@ final class NewProjectIterator extends BasicWizardIterator {
             } finally {
                 lock.releaseLock();
             }
-            file.setAttribute("template", Boolean.TRUE); // NOI18N
-            file.setAttribute("SystemFileSystem.localizingBundle", packageName + ".Bundle"); // NOI18N
+            String bundlePath = manifestManager.getLocalizingBundle();
+            String suffix = ".properties"; // NOI18N
+            if (bundlePath != null && bundlePath.endsWith(suffix)) {
+                bundlePath = bundlePath.substring(0, bundlePath.length() - suffix.length()).replace('/', '.');
+                file.setAttribute("SystemFileSystem.localizingBundle", bundlePath); // NOI18N
+            } else {
+                // XXX what?
+            }            
+            file.setAttribute("template", Boolean.TRUE); // NOI18N            
             URL descURL = new URL("nbresloc:/" + packageName.replace('.', '/') + "/" + name + "Description.html"); // NOI18N
             file.setAttribute("instantiatingWizardURL", descURL); // NOI18N
             file.setAttribute("instantiatingIterator", "methodvalue:" + packageName + "." + name + "WizardIterator.createIterator"); // NOI18N
-        }
-        
+        }        
     }
     
 }
