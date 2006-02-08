@@ -93,7 +93,10 @@ public class Subversion {
         }
         return nodes;
     }
-    
+
+    /**
+     * Tests <tt>.svn</tt> directory itself.  
+     */
     public boolean isAdministrative(File file) {
         String name = file.getName();
         return isAdministrative(name) && file.isDirectory();
@@ -118,6 +121,7 @@ public class Subversion {
      *    <li>let user specify proxy setting on network errors or
      *    <li>let user cancel operation (XXX then it throws SVN exception subclass)
      *    <li>logs command execuion into output tab
+     *    <li>posts notification events in status cache
      * </ul>
      *
      * <p>It hanldes cancellability, XXX e.g. by Thread,interrupt?
@@ -126,6 +130,7 @@ public class Subversion {
         ISVNClientAdapter adapter = SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
         SvnClient client = new SvnClientImpl(adapter);
         client.addNotifyListener(new OutputLogger());
+        client.addNotifyListener(fileStatusCache);
         return client;
     }
     

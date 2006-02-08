@@ -119,7 +119,11 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         table.addAncestorListener(this);
         table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SyncTable.class, "ACSN_VersioningTable"));
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SyncTable.class, "ACSD_VersioningTable"));
-        setColumns(new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH });
+        setColumns(new String[] {
+            SyncFileNode.COLUMN_NAME_NAME,
+            SyncFileNode.COLUMN_NAME_STATUS,
+            SyncFileNode.COLUMN_NAME_PATH}
+        );
     }
 
     void setDefaultColumnSizes() {
@@ -177,7 +181,6 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
      */ 
     final void setColumns(String [] columns) {
         if (Arrays.equals(columns, tableColumns)) return;
-        setDefaultColumnSizes();
         setModelProperties(columns);
         tableColumns = columns;
         for (int i = 0; i < tableColumns.length; i++) {
@@ -188,6 +191,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 break;
             }
         }
+        setDefaultColumnSizes();        
     }
         
     private void setModelProperties(String [] columns) {

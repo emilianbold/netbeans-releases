@@ -34,7 +34,7 @@ import org.tigris.subversion.svnclientadapter.ISVNStatus;
  * 
  * @author Maros Sandor
  */
-public class FileStatusCache {
+public class FileStatusCache implements ISVNNotifyListener {
 
     /**
      * Indicates that status of a file changed and listeners SHOULD check new status 
@@ -560,6 +560,36 @@ public class FileStatusCache {
     
     private void fireFileStatusChanged(File file, FileInformation oldInfo, FileInformation newInfo) {
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, new Object [] { file, oldInfo, newInfo });
+    }
+
+    public void setCommand(int command) {
+        // boring ISVNNotifyListener event
+    }
+
+    public void logCommandLine(String commandLine) {
+        // boring ISVNNotifyListener event
+    }
+
+    public void logMessage(String message) {
+        // boring ISVNNotifyListener event
+    }
+
+    public void logError(String message) {
+        // boring ISVNNotifyListener event
+    }
+
+    public void logRevision(long revision, String path) {
+        // boring ISVNNotifyListener event
+    }
+
+    public void logCompleted(String message) {
+        // boring ISVNNotifyListener event
+    }
+
+    public void onNotify(File path, SVNNodeKind kind) {
+        // ISVNNotifyListener event
+        // invalidate cached status
+        refresh(path, REPOSITORY_STATUS_UNKNOWN);
     }
 
     private static final class NotManagedMap extends AbstractMap {

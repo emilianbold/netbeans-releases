@@ -56,17 +56,20 @@ public class UpdateAction extends ContextAction {
         // FIXME add shalow logic allowing to ignore nested projects
 
         File[] roots = ctx.getRootFiles();
-        ProgressHandle progress = ProgressHandleFactory.createHandle(getRunningName(nodes));
+
         try {
-            progress.start();
+            startProgress();
             client.update(roots, SVNRevision.HEAD, true, true);
+
+            // XXX how to detect conflicts
+
             StatusDisplayer.getDefault().setStatusText("Subversion update completed");
         } catch (SVNClientException e1) {
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(e1, "Can not update");
             err.notify(e1);
         } finally {
-            progress.finish();
+            finished();
         }
     }
 }

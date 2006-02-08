@@ -18,6 +18,7 @@ import org.openide.util.actions.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.loaders.DataObject;
@@ -27,6 +28,8 @@ import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Actions;
 import org.openide.LifecycleManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.FileInformation;
@@ -43,6 +46,9 @@ import java.awt.event.ActionEvent;
  * @author Maros Sandor
  */
 public abstract class ContextAction extends NodeAction {
+
+    private ProgressHandle progress;
+    private Node[] nodes;
 
     protected ContextAction() {
         setIcon(null);
@@ -66,6 +72,7 @@ public abstract class ContextAction extends NodeAction {
     protected void performAction(Node[] nodes) {
         // TODO try to save files in invocation context only
         LifecycleManager.getDefault().saveAll();
+        this.nodes = nodes;
         performContextAction(nodes);
     }
     
@@ -254,5 +261,24 @@ public abstract class ContextAction extends NodeAction {
 
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+    }
+
+    protected final void startProgress(){
+        progress = ProgressHandleFactory.createHandle(getRunningName(nodes));
+        progress.start();
+    }
+
+    /**
+     * Action is complete, switch progress to complete 100%
+     * and remove it after 15 sec. 
+     */
+    protected final void finished() {
+        progress.switchToDeterminate(100);
+        progress.progress("Complete!", 100);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                progress.finish();
+            }
+        }, 15 * 1000);
     }
 }

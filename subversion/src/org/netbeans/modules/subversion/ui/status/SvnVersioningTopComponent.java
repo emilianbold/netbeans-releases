@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion.ui.status;
 
+import javax.swing.SwingUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
@@ -119,16 +120,20 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
     }
     
     private void updateTitle() {
-        String age = computeAge(System.currentTimeMillis() - lastUpdateTimestamp);
-        if (contentTitle == null) {
-            setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); //NOI18N
-        } else {
-            if (branchTitle == null) {
-                setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_MultiTitle", contentTitle, age));
-            } else {
-                setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title_ContentBranch", contentTitle, branchTitle, age));
+        final String age = computeAge(System.currentTimeMillis() - lastUpdateTimestamp);
+        SwingUtilities.invokeLater(new Runnable (){
+            public void run() {
+                if (contentTitle == null) {
+                    setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); //NOI18N
+                } else {
+                    if (branchTitle == null) {
+                        setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_MultiTitle", contentTitle, age));
+                    } else {
+                        setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title_ContentBranch", contentTitle, branchTitle, age));
+                    }
+                }                
             }
-        }
+        });
     }
 
     String getContentTitle() {
