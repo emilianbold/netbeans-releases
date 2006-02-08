@@ -65,24 +65,23 @@ public final class AddModulePanel extends JPanel {
         this.props = props;
         initComponents();
         initAccessibility();
+        filterValue.setText(FILTER_DESCRIPTION);
         fillUpUniverseModules();
         moduleList.setCellRenderer(CustomizerComponentFactory.getDependencyCellRenderer(false));
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                if (!FILTER_DESCRIPTION.equals(filterValue.getText())) {
-                    showDescription();
-                    currectJavadoc = null;
-                    ModuleDependency[] deps = getSelectedDependencies();
-                    if (deps.length == 1) {
-                        NbPlatform platform = props.getActivePlatform();
-                        if (platform == null) { // NetBeans.org module
-                            currectJavadoc = Util.findJavadocForNetBeansOrgModules(deps[0]);
-                        } else {
-                            currectJavadoc = Util.findJavadoc(deps[0], platform);
-                        }
+                showDescription();
+                currectJavadoc = null;
+                ModuleDependency[] deps = getSelectedDependencies();
+                if (deps.length == 1) {
+                    NbPlatform platform = props.getActivePlatform();
+                    if (platform == null) { // NetBeans.org module
+                        currectJavadoc = Util.findJavadocForNetBeansOrgModules(deps[0]);
+                    } else {
+                        currectJavadoc = Util.findJavadoc(deps[0], platform);
                     }
-                    showJavadocButton.setEnabled(currectJavadoc != null);
                 }
+                showJavadocButton.setEnabled(currectJavadoc != null);
             }
         });
         filterValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
@@ -182,37 +181,39 @@ public final class AddModulePanel extends JPanel {
             if (longDesc != null) {
                 doc.insertString(0, longDesc, null);
             }
-            doc.insertString(doc.getLength(), "\n\n", null); // NOI18N
-            Style bold = doc.addStyle(null, null);
-            bold.addAttribute(StyleConstants.Bold, Boolean.TRUE);
-            doc.insertString(doc.getLength(), getMessage("TEXT_matching_filter_contents"), bold);
-            doc.insertString(doc.getLength(), "\n", null); // NOI18N
-            String filterText = filterValue.getText();
-            if (filterText.length() > 0) {
-                String filterTextLC = filterText.toLowerCase(Locale.US);
-                Style match = doc.addStyle(null, null);
-                match.addAttribute(StyleConstants.Background, new Color(246, 248, 139));
-                Set/*<String>*/ matches = filterer.getMatchesFor(filterText, deps[0]);
-                Iterator it = matches.iterator();
-                boolean isEven = false;
-                Style even = doc.addStyle(null, null);
-                even.addAttribute(StyleConstants.Background, new Color(235, 235, 235));
-                while (it.hasNext()) {
-                    String hit = (String) it.next();
-                    int loc = doc.getLength();
-                    doc.insertString(loc, hit, (isEven ? even : null));
-                    int start = hit.toLowerCase(Locale.US).indexOf(filterTextLC);
-                    while (start != -1) {
-                        doc.setCharacterAttributes(loc + start, filterTextLC.length(), match, true);
-                        start = hit.toLowerCase(Locale.US).indexOf(filterTextLC, start + 1);
+            String filterText = filterValue.getText().trim();
+            if (filterText.length() != 0 && !FILTER_DESCRIPTION.equals(filterText)) {
+                doc.insertString(doc.getLength(), "\n\n", null); // NOI18N
+                Style bold = doc.addStyle(null, null);
+                bold.addAttribute(StyleConstants.Bold, Boolean.TRUE);
+                doc.insertString(doc.getLength(), getMessage("TEXT_matching_filter_contents"), bold);
+                doc.insertString(doc.getLength(), "\n", null); // NOI18N
+                if (filterText.length() > 0) {
+                    String filterTextLC = filterText.toLowerCase(Locale.US);
+                    Style match = doc.addStyle(null, null);
+                    match.addAttribute(StyleConstants.Background, new Color(246, 248, 139));
+                    Set/*<String>*/ matches = filterer.getMatchesFor(filterText, deps[0]);
+                    Iterator it = matches.iterator();
+                    boolean isEven = false;
+                    Style even = doc.addStyle(null, null);
+                    even.addAttribute(StyleConstants.Background, new Color(235, 235, 235));
+                    while (it.hasNext()) {
+                        String hit = (String) it.next();
+                        int loc = doc.getLength();
+                        doc.insertString(loc, hit, (isEven ? even : null));
+                        int start = hit.toLowerCase(Locale.US).indexOf(filterTextLC);
+                        while (start != -1) {
+                            doc.setCharacterAttributes(loc + start, filterTextLC.length(), match, true);
+                            start = hit.toLowerCase(Locale.US).indexOf(filterTextLC, start + 1);
+                        }
+                        doc.insertString(doc.getLength(), "\n", (isEven ? even : null)); // NOI18N
+                        isEven ^= true;
                     }
-                    doc.insertString(doc.getLength(), "\n", (isEven ? even : null)); // NOI18N
-                    isEven =! isEven;
+                } else {
+                    Style italics = doc.addStyle(null, null);
+                    italics.addAttribute(StyleConstants.Italic, Boolean.TRUE);
+                    doc.insertString(doc.getLength(), getMessage("TEXT_no_filter_specified"), italics);
                 }
-            } else {
-                Style italics = doc.addStyle(null, null);
-                italics.addAttribute(StyleConstants.Italic, Boolean.TRUE);
-                doc.insertString(doc.getLength(), getMessage("TEXT_no_filter_specified"), italics);
             }
             descValue.setCaretPosition(0);
         } catch (BadLocationException e) {
