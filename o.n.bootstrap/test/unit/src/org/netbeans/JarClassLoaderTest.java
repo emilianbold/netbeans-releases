@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans;
@@ -205,5 +205,107 @@ public class JarClassLoaderTest extends TestCase {
         public String toString() {
             return name;
         }
+    }
+    
+    public void testLoadingCLLearns() {
+        // create 3CLs: A <- B <- C
+        // load something from B using C - it should ask A then B
+        // load from the same package using B - A should not be asked
+        TrackingProxyClassLoader a = new TrackingProxyClassLoader (
+                null,
+                new ClassLoader [] { getClass().getClassLoader().getParent() });
+        TrackingProxyClassLoader b = new TrackingProxyClassLoader (
+                getClass().getClassLoader(),
+                new ClassLoader [] { a });
+        TrackingProxyClassLoader c = new TrackingProxyClassLoader (
+                null,
+                new ClassLoader [] { b });
+        Class loaded = null;
+        try {
+            loaded = c.loadClass("org.fakepkg.LoaderProbe");
+        } catch (ClassNotFoundException ex) {
+            fail("org.fakepkg.LoaderProbe was not loaded");
+        }
+        assertNotNull("org.fakepkg.LoaderProbe was not loaded", loaded);
+        assertEquals("a should be asked once", 1, a.getClassLoadCount());
+        assertEquals("b should be asked once", 1, b.getClassLoadCount());
+        assertEquals("c should not be asked", 0, c.getClassLoadCount());
+        Class loaded2 = null;
+        try {
+            loaded = b.loadClass("org.fakepkg.LoaderProbe2");
+        } catch (ClassNotFoundException ex) {
+            fail("org.fakepkg.LoaderProbe2 was not loaded");
+        }
+        assertNotNull("org.fakepkg.LoaderProbe2 was not loaded", loaded);
+        assertEquals("a should be asked once", 1, a.getClassLoadCount());
+        assertEquals("b should be asked twice", 2, b.getClassLoadCount());
+        assertEquals("c should not be asked", 0, c.getClassLoadCount());
+    }
+
+    public void testLoadingCLLearnsDuringGetResource() {
+        // create 3CLs: A <- B <- C
+        // load something from B using C - it should ask A then B
+        // load from the same package using B - A should not be asked
+        TrackingProxyClassLoader a = new TrackingProxyClassLoader (
+                null,
+                new ClassLoader [] { getClass().getClassLoader().getParent() });
+        TrackingProxyClassLoader b = new TrackingProxyClassLoader (
+                getClass().getClassLoader(),
+                new ClassLoader [] { a });
+        TrackingProxyClassLoader c = new TrackingProxyClassLoader (
+                null,
+                new ClassLoader [] { b });
+        URL url = c.getResource("org/fakepkg/resource1.txt");
+        assertNotNull("org/fakepkg/resource1.txt was not loaded", url);
+        assertEquals("a should be asked once", 1, a.getFindeResourceCount());
+        assertEquals("b should be asked once", 1, b.getFindeResourceCount());
+        assertEquals("c should not be asked", 0, c.getFindeResourceCount());
+        URL url2 = b.getResource("org/fakepkg/resource2.txt");
+        assertNotNull("org/fakepkg/resource2.txt was not loaded", url2);
+        assertEquals("a should be asked once", 1, a.getFindeResourceCount());
+        assertEquals("b should be asked twice", 2, b.getFindeResourceCount());
+        assertEquals("c should not be asked", 0, c.getFindeResourceCount());
+    }
+
+    /** Testing ClassLoader loader.
+     *  Either loads from parent or delegates to some suplied ClassLoader.
+     */
+    public static class TrackingProxyClassLoader extends ProxyClassLoader {
+        
+        private int counterClasses = 0;
+        
+        private int counterResources = 0;
+        
+        private ClassLoader delegate;
+        
+        public TrackingProxyClassLoader(ClassLoader delegate, ClassLoader[] parents ) {
+            super(parents);
+            this.delegate = delegate;
+        }
+
+        public int getClassLoadCount() {
+            return counterClasses;
+        }
+        public int getFindeResourceCount() {
+            return counterResources;
+        }
+        protected Class simpleFindClass(String name, String fileName, String pkg) {
+            counterClasses++;
+            if (delegate != null) {
+                try {
+                    return delegate.loadClass(name);
+                } catch (ClassNotFoundException ex) {
+                    // not a problem
+//                    ex.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        protected URL findResource(String name) {
+            counterResources++;
+            return (delegate != null)? delegate.getResource(name): null;
+        }
+        
     }
 }

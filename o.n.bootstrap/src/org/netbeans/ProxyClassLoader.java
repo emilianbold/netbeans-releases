@@ -242,7 +242,9 @@ public class ProxyClassLoader extends ClassLoader {
                 retVal = owner.getResource(name); // know nothing about this loader and his structure
             }
             if (retVal != null) {
-                domainsByPackage.put(new String(pkg).intern(), owner);
+                String p = new String(pkg).intern();
+                domainsByPackage.put(p, owner);
+                ((ProxyClassLoader)owner).domainsByPackage.put(p, owner);
                 return retVal;
             }
         }
@@ -589,7 +591,13 @@ public class ProxyClassLoader extends ClassLoader {
 
     private synchronized Class fullFindClass(String name, String fileName, String pkg) {
 	Class c = findLoadedClass(name);
-	return (c == null) ? simpleFindClass(name, fileName, pkg) : c;
+        if (c == null) {
+            c = simpleFindClass(name, fileName, pkg);
+            if (c != null) {
+                domainsByPackage.put(new String(pkg).intern(), this);
+            }
+        }
+	return c;
     }    
 
     private void addPackages(Map all, Package[] pkgs) {
