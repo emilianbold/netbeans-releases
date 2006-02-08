@@ -59,7 +59,7 @@ public class JCheckBoxOperatorTest extends TestCase {
         frame = new JFrame();
         checkBox = new JCheckBox("JCheckBoxOperatorTest");
         checkBox.setName("JCheckBoxOperatorTest");
-        frame.add(checkBox);
+        frame.getContentPane().add(checkBox);
         frame.pack();
         frame.setLocationRelativeTo(null);
     }
