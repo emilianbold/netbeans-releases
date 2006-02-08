@@ -64,7 +64,7 @@ public class JProgressBarOperatorTest extends TestCase {
         frame = new JFrame();
         progressBar = new JProgressBar();
         progressBar.setName("JProgressBarOperatorTest");
-        frame.add(progressBar);
+        frame.getContentPane().add(progressBar);
         frame.pack();
         frame.setLocationRelativeTo(null);
     }

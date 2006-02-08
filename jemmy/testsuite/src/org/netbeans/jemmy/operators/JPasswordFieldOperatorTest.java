@@ -58,7 +58,7 @@ public class JPasswordFieldOperatorTest extends TestCase {
         frame = new JFrame();
         passwordField = new JPasswordField("JPasswordFieldOperatorTest");
         passwordField.setName("JPasswordFieldOperatorTest");
-        frame.add(passwordField);
+        frame.getContentPane().add(passwordField);
         frame.pack();
         frame.setLocationRelativeTo(null);
     }

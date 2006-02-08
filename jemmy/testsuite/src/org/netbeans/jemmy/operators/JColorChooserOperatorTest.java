@@ -66,7 +66,7 @@ public class JColorChooserOperatorTest extends TestCase {
         frame = new JFrame();
         colorChooser = new JColorChooser();
         colorChooser.setName("JColorChooserOperatorTest");
-        frame.add(colorChooser);
+        frame.getContentPane().add(colorChooser);
         frame.pack();
         frame.setLocationRelativeTo(null);
     }

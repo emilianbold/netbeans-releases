@@ -58,7 +58,7 @@ public class JRadioButtonOperatorTest extends TestCase {
         frame = new JFrame();
         radioButton = new JRadioButton("JRadioButtonOperatorTest");
         radioButton.setName("JRadioButtonOperatorTest");
-        frame.add(radioButton);
+        frame.getContentPane().add(radioButton);
         frame.pack();
         frame.setLocationRelativeTo(null);
     }

@@ -79,7 +79,7 @@ public class JEditorPaneOperatorTest extends TestCase {
         editorPane = new JEditorPane();
         editorPane.setText("JEditorPaneOperatorTest");
         editorPane.setName("JEditorPaneOperatorTest");
-        frame.add(editorPane);
+        frame.getContentPane().add(editorPane);
         frame.setName("JFrameOperatorTest");
         frame.pack();
         frame.setLocationRelativeTo(null);

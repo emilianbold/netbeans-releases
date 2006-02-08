@@ -58,7 +58,7 @@ public class JToggleButtonOperatorTest extends TestCase {
         frame = new JFrame();
         toggleButton = new JToggleButton("JToggleButtonOperatorTest");
         toggleButton.setName("JToggleButtonOperatorTest");
-        frame.add(toggleButton);
+        frame.getContentPane().add(toggleButton);
         frame.pack();
         frame.setLocationRelativeTo(null);
     }

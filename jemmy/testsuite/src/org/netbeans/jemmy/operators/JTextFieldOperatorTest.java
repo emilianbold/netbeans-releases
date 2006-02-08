@@ -62,7 +62,7 @@ public class JTextFieldOperatorTest extends TestCase {
         frame = new JFrame();
         textField = new JTextField("JTextFieldOperatorTest");
         textField.setName("JTextFieldOperatorTest");
-        frame.add(textField);
+        frame.getContentPane().add(textField);
         frame.pack();
         frame.setLocationRelativeTo(null);
     }

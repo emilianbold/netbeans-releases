@@ -61,7 +61,7 @@ public class JLabelOperatorTest extends TestCase {
         frame = new JFrame();
         label = new JLabel("JLabelOperatorTest");
         label.setName("JLabelOperatorTest");
-        frame.add(label);
+        frame.getContentPane().add(label);
         frame.pack();
         frame.setLocationRelativeTo(null);
     }

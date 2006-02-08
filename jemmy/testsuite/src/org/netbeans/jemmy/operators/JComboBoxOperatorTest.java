@@ -53,7 +53,7 @@ public class JComboBoxOperatorTest extends TestCase {
         dialog = new JDialog(new JFrame(), "JComboBox");
         comboBox = new JComboBox();
         comboBox.setName("JComboBoxOperatorTest");
-        dialog.add(comboBox);
+        dialog.getContentPane().add(comboBox);
         comboBox.addItem("1");
         comboBox.addItem("2");
         dialog.pack();
