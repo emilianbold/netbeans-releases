@@ -63,7 +63,7 @@ public class JButtonOperatorTest extends TestCase {
         frame = new JFrame();
         button = new JButton("JButtonOperatorTest");
         button.setName("JButtonOperatorTest");
-        frame.add(button);
+        frame.getContentPane().add(button);
         frame.pack();
         frame.setLocationRelativeTo(null);
     }
