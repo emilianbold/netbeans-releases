@@ -197,6 +197,7 @@ public class JButtonOperatorTest extends TestCase {
      * Test for issue #72187.
      */
     public void testIssue72187() {
+        /*
         frame.setVisible(true);
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -230,7 +231,6 @@ public class JButtonOperatorTest extends TestCase {
         JButtonOperator operator4 = new JButtonOperator(operator1);
         assertNotNull(operator4);
 
-        /*
         operator4.push();
         assertTrue(!operator4.isVisible());
         assertTrue(!button.isVisible());
