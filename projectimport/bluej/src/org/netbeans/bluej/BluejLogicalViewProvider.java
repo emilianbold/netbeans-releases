@@ -13,6 +13,8 @@
 
 package org.netbeans.bluej;
 
+import java.awt.Image;
+import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
@@ -27,6 +29,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -36,7 +39,7 @@ import org.openide.util.lookup.Lookups;
  * Support for creating logical views.
  * @author Milos Kleint
  */
-public class BluejLogicalViewProvider implements LogicalViewProvider {
+public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbeans.bluej.api.BluejLogicalViewProvider {
     
     private static final RequestProcessor BROKEN_LINKS_RP = new RequestProcessor("BluejPhysicalViewProvider.BROKEN_LINKS_RP"); // NOI18N
     
@@ -132,6 +135,51 @@ public class BluejLogicalViewProvider implements LogicalViewProvider {
         // XXX Remove root folder after FindAction rewrite
         return Lookups.fixed(new Object[] {project, rootFolder});
     }
+
+    public Node getBigIconRootNode() {
+        System.out.println("creating big icon root none");
+//        return createLogicalView();
+        return new BigIconFilterNode(createLogicalView());
+    }
     
+    private static class BigIconFilterNode extends FilterNode {
+        BigIconFilterNode(Node original) {
+            super(original, new BigIconFilterChilden(original));
+            System.out.println("creating big icon node..");
+        }
+
+        public Image getIcon(int type) {
+            Image retValue;
+            System.out.println("requesting icon=" + type + " type=" + type + " for =" + getOriginal().getDisplayName());
+            retValue = super.getIcon(type);
+//            if (type == BeanInfo.ICON_COLOR_32x32 && retValue.getHeight(null) == 16) {
+//                System.out.println("scaling");
+                retValue = retValue.getScaledInstance(-1, 32, Image.SCALE_DEFAULT);
+//            }
+            return retValue;
+        }
+        
+        
+    } 
     
+    private static class BigIconFilterChilden extends FilterNode.Children {
+        BigIconFilterChilden(Node orig) {
+            super(orig);
+        }
+
+        /**
+         * Allows subclasses to override
+         * creation of node representants for nodes in the mirrored children
+         * list. The default implementation simply uses {@link Node#cloneNode}.
+         * <p>Note that this method is only suitable for a 1-to-1 mirroring.
+         * 
+         * @param node node to create copy of
+         * @return copy of the original node
+         */
+        protected Node copyNode(Node node) {
+            System.out.println("copying children node..");
+            return new BigIconFilterNode(node);
+        }
+        
+    }
 }

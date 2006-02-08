@@ -26,6 +26,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.bluej.api.BluejOpenCloseCallback;
+import org.netbeans.bluej.classpath.ClassPathProviderImpl;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -185,7 +187,8 @@ public final class BluejProject implements Project, AntProjectListener {
             new BluejLogicalViewProvider(this, evaluator(), spp, refHelper),
 ////            // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
 ////            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
-////            new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
+            new ClassPathProviderImpl(this), 
+            new SFBQueryImpl(this, helper, evaluator()),
 ////            new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
 ////            new JavadocForBinaryQueryImpl(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata
             new AntArtifactProviderImpl(),
@@ -400,6 +403,10 @@ public final class BluejProject implements Project, AntProjectListener {
 ////            if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
 ////                BrokenReferencesSupport.showAlert();
 ////            }
+            BluejOpenCloseCallback callback = (BluejOpenCloseCallback) Lookup.getDefault().lookup(BluejOpenCloseCallback.class);
+            if (callback != null) {
+                callback.projectOpened(BluejProject.this);
+            }
         }
         
         protected void projectClosed() {
@@ -408,6 +415,10 @@ public final class BluejProject implements Project, AntProjectListener {
                 ProjectManager.getDefault().saveProject(BluejProject.this);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
+            }
+            BluejOpenCloseCallback callback = (BluejOpenCloseCallback) Lookup.getDefault().lookup(BluejOpenCloseCallback.class);
+            if (callback != null) {
+                callback.projectClosed(BluejProject.this);
             }
             
 ////            // unregister project's classpaths to GlobalPathRegistry

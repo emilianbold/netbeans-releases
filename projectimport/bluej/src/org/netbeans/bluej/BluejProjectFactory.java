@@ -82,6 +82,11 @@ public class BluejProjectFactory implements ProjectFactory {
             lock.releaseLock();
             Lookup.Result res = Lookup.getDefault().lookup(new Lookup.Template(ProjectFactory.class));
             Iterator it = res.allInstances().iterator();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
             while (it.hasNext()) {
                 ProjectFactory elem = (ProjectFactory) it.next();
                 if (elem.getClass().getName().indexOf("AntBasedProjectFactorySingleton") != -1) {

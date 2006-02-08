@@ -176,7 +176,9 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.bluej.api</package>
+            </public-packages>
         </data>
     </configuration>
 </project>
