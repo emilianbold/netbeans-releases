@@ -22,7 +22,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.subversion.SVNRoot;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.wizards.repository.RepositoryStep;
-import org.netbeans.modules.subversion.ui.wizards.browser.BrowseStep;
+import org.netbeans.modules.subversion.ui.wizards.browser.BrowserStep;
 import org.netbeans.modules.subversion.ui.wizards.workdir.WorkdirStep;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -36,7 +36,7 @@ public final class CheckoutWizard implements ChangeListener {
     
     private WizardDescriptor.Panel[] panels;
     private RepositoryStep repositoryStep;
-    private BrowseStep browseStep;
+    private BrowserStep browseStep;
     private WorkdirStep workdirStep;
     
     private Executor executor;
@@ -101,7 +101,7 @@ public final class CheckoutWizard implements ChangeListener {
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];
             repositoryStep = new RepositoryStep();
-            browseStep = new BrowseStep(org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "LBL_CheckoutBrowser"));
+            browseStep = new BrowserStep(org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "LBL_CheckoutBrowser"));
             workdirStep = new WorkdirStep();            
 
             panels = new  WizardDescriptor.Panel[] {repositoryStep, browseStep, workdirStep};
