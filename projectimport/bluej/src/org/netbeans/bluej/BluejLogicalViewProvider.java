@@ -29,10 +29,12 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -137,21 +139,32 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
     }
 
     public Node getBigIconRootNode() {
-        System.out.println("creating big icon root none");
-//        return createLogicalView();
         return new BigIconFilterNode(createLogicalView());
     }
     
     private static class BigIconFilterNode extends FilterNode {
+        private String iconPath = null;
         BigIconFilterNode(Node original) {
             super(original, new BigIconFilterChilden(original));
-            System.out.println("creating big icon node..");
+            DataObject dobj = (DataObject)original.getLookup().lookup(DataObject.class);
+            if (dobj != null) {
+                if ("java".equalsIgnoreCase(dobj.getPrimaryFile().getExt())) {
+                    if (dobj.getPrimaryFile().getName().endsWith("Test")) {
+                        iconPath = "org/netbeans/bluej/resources/bluej-testclass.png";
+                    } else {
+                        iconPath = "org/netbeans/bluej/resources/bluej-class.png";
+                    }
+                }
+            }
         }
 
         public Image getIcon(int type) {
             Image retValue;
-            System.out.println("requesting icon=" + type + " type=" + type + " for =" + getOriginal().getDisplayName());
-            retValue = super.getIcon(type);
+            if (iconPath != null) {
+                retValue = Utilities.loadImage(iconPath);
+            } else {
+                retValue = super.getIcon(type);
+            }
 //            if (type == BeanInfo.ICON_COLOR_32x32 && retValue.getHeight(null) == 16) {
 //                System.out.println("scaling");
                 retValue = retValue.getScaledInstance(-1, 32, Image.SCALE_DEFAULT);
@@ -177,7 +190,6 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
          * @return copy of the original node
          */
         protected Node copyNode(Node node) {
-            System.out.println("copying children node..");
             return new BigIconFilterNode(node);
         }
         
