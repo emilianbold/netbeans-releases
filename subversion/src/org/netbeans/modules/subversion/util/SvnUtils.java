@@ -144,7 +144,12 @@ public class SvnUtils {
                 SourceGroup sourceGroup = sourceGroups[j];
                 File f = FileUtil.toFile(sourceGroup.getRootFolder());
                 if (f != null) {                                                                    
-                    if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
+// XXX                    if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
+                    File probe = new File (f, ".svn");
+                    File probe2 = new File (f, "_svn");
+                    if (probe.isDirectory() || probe2.isDirectory()) {
+                        return true;
+                    }
                 }
             }
         }
