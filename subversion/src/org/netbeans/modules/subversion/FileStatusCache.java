@@ -218,6 +218,9 @@ public class FileStatusCache implements ISVNNotifyListener {
         try {
             ISVNClientAdapter client = Subversion.getInstance().getClient();
             status = client.getSingleStatus(file);
+            if (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
+                status = null;
+            }
         } catch (SVNClientException e) {
             // no or damaged entries
         }
@@ -458,6 +461,8 @@ public class FileStatusCache implements ISVNNotifyListener {
      * @return FileInformation file/folder status bean
      */ 
     private FileInformation createFileInformation(File file, ISVNStatus status) {
+        assert status == null || status.getTextStatus().equals(SVNStatusKind.UNVERSIONED) == false
+            : "Unversioned files must have null status, fix caller! File: " + file.getAbsolutePath();
         if (status == null) {
             if (!svn.isManaged(file)) {
                 return file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;

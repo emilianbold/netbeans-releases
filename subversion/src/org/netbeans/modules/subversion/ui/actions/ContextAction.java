@@ -270,7 +270,7 @@ public abstract class ContextAction extends NodeAction {
 
     /**
      * Action is complete, switch progress to complete 100%
-     * and remove it after 15 sec. 
+     * and remove it after 15 sec.
      */
     protected final void finished() {
         progress.switchToDeterminate(100);
@@ -280,5 +280,9 @@ public abstract class ContextAction extends NodeAction {
                 progress.finish();
             }
         }, 15 * 1000);
+    }
+
+    protected boolean asynchronous() {
+        return false;
     }
 }

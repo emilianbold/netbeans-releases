@@ -62,8 +62,25 @@ public class UpdateAction extends ContextAction {
             client.update(roots, SVNRevision.HEAD, true, true);
 
             // XXX how to detect conflicts
+            boolean conflict = false;
 
-            StatusDisplayer.getDefault().setStatusText("Subversion update completed");
+roots_loop:
+            for (int i = 0; i<roots.length; i++) {
+                ISVNStatus status[] = client.getStatus(roots[i], true, false);
+                for (int k = 0; k<status.length; k++) {
+                    ISVNStatus s = status[k];
+                    if (SVNStatusUtils.isTextConflicted(s) || SVNStatusUtils.isPropConflicted(s)) {
+                        conflict = true;
+                        break roots_loop;
+                    }
+                }
+            }
+
+            if (conflict) {
+                StatusDisplayer.getDefault().setStatusText("Subversion update caused conflicts!");
+            } else {
+                StatusDisplayer.getDefault().setStatusText("Subversion update completed");
+            }
         } catch (SVNClientException e1) {
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(e1, "Can not update");
