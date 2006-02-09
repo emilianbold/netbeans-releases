@@ -21,6 +21,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.bluej.nodes.BluejLogicalViewRootNode;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -144,6 +145,7 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
     
     private static class BigIconFilterNode extends FilterNode {
         private String iconPath = null;
+        private FileBuiltQuery.Status status = null;
         BigIconFilterNode(Node original) {
             super(original, new BigIconFilterChilden(original));
             DataObject dobj = (DataObject)original.getLookup().lookup(DataObject.class);
@@ -154,6 +156,7 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
                     } else {
                         iconPath = "org/netbeans/bluej/resources/bluej-class.png";
                     }
+                    status = FileBuiltQuery.getStatus(dobj.getPrimaryFile());
                 }
             }
         }
@@ -162,6 +165,10 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
             Image retValue;
             if (iconPath != null) {
                 retValue = Utilities.loadImage(iconPath);
+                if (status != null && !status.isBuilt()) {
+                    retValue = Utilities.mergeImages(retValue, Utilities.loadImage("org/netbeans/bluej/resources/compiled.png"),
+                                                     4, 13);
+                }
             } else {
                 retValue = super.getIcon(type);
             }
