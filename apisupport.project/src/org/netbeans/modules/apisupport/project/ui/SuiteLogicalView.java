@@ -61,7 +61,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -533,13 +532,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
 
             try {
                 Node orig = DataObject.find(file).getNodeDelegate();
-                // XXX use ModuleLogicalView.SpecialFileNode, better behaved
-                return new Node[] {new FilterNode(orig) {
-                    {
-                        disableDelegation(FilterNode.DELEGATE_SET_DISPLAY_NAME | FilterNode.DELEGATE_GET_DISPLAY_NAME);
-                        setDisplayName((String) FILES.get(loc));
-                    }
-                }};
+                return new Node[] {new ModuleLogicalView.SpecialFileNode(orig, (String) FILES.get(loc))};
             } catch (DataObjectNotFoundException e) {
                 throw new AssertionError(e);
             }
@@ -564,7 +557,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             if (!isInitialized() || !newVisibleFiles.equals(visibleFiles)) {
                 visibleFiles = newVisibleFiles;
                 setKeys(visibleFiles);
-                // For CVS: ((ImportantFilesNode) getNode()).setFiles(files);
+                ((ModuleLogicalView.ImportantFilesNode) getNode()).setFiles(files); // #72439
             }
         }
         
