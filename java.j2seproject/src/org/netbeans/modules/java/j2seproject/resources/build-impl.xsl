@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <xsl:stylesheet version="1.0"
@@ -1093,23 +1093,6 @@ is divided into following sections:
             </target>
 
         </project>
-
-        <!-- TBD items:
-
-        Could pass <propertyset> to run, debug, etc. under Ant 1.6,
-        optionally, by doing e.g.
-
-          <propertyset>
-            <propertyref prefix="sysprop."/>
-            <mapper type="glob" from="sysprop.*" to="*"/>
-          </propertyset>
-
-        Now user can add to e.g. project.properties e.g.:
-          sysprop.org.netbeans.modules.javahelp=0
-        to simulate
-          -Dorg.netbeans.modules.javahelp=0
-
-        -->
 
     </xsl:template>
 
