@@ -234,10 +234,10 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 case ERR_BLANK_CLASSNAME_PREFIX:
                     field = "FIELD_ClassNamePrefix";//NOI18N
                     break;
+                default:
+                    assert false : "Unknown errCode: " + errCode;
             }
-            assert field != null : errCode;
             field = NbBundle.getMessage(NewOptionsIterator.class, field);
-            assert field != null : errCode;
             return (errCode > 0) ?
                 NbBundle.getMessage(NewOptionsIterator.class, "ERR_FieldInvalid",field) : "";//NOI18N
         }
@@ -248,6 +248,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
          */
         String getWarningMessage(int warningCode) {
             assert warningCode < 0;
+            String result;
             switch(warningCode) {
                 case WARNING_INCORRECT_ICON_SIZE:
                     File icon = new File(getIconPath());
@@ -262,12 +263,14 @@ final class NewOptionsIterator extends BasicWizardIterator {
                         assert false;
                         return "";//NOI18N
                     }
-                    
-                    return NbBundle.getMessage(NewOptionsIterator.class, "MSG_IconSize",//NOI18N
+                    result = NbBundle.getMessage(NewOptionsIterator.class, "MSG_IconSize",
                             Integer.toString(ic.getIconWidth()),Integer.toString(ic.getIconHeight()));
+                    break;
+                default:
+                    assert false : "Unknown warningCode: " + warningCode;
+                    result = "";
             }
-            assert false : warningCode;
-            return "";//NOI18N
+            return result;
         }
         
         static boolean isSuccessCode(int code) {
