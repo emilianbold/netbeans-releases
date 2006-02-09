@@ -34,7 +34,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.layers.LayerNode;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.ui.LibrariesNode;
 import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -264,7 +263,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
     /**
      * Show node "Important Files" with various config and docs files beneath it.
      */
-    private static final class ImportantFilesNode extends AnnotatedNode {
+    static final class ImportantFilesNode extends AnnotatedNode {
         
         public ImportantFilesNode(NbModuleProject project) {
             super(new ImportantFilesChildren(project));
@@ -358,25 +357,27 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                     throw new AssertionError(e);
                 }
             } else if (key instanceof LayerUtils.LayerHandle) {
-                return new Node[] {new LayerNode((LayerUtils.LayerHandle) key)};
+                return new Node[] {/* #68240 */ new SpecialFileNode(new LayerNode((LayerUtils.LayerHandle) key), null)};
             } else {
                 throw new AssertionError(key);
             }
         }
         
         private void refreshKeys() {
+            Set/*<FileObject>*/ files = new HashSet();
             List newVisibleFiles = new ArrayList();
             LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
-            if (handle.getLayerFile() != null) {
+            FileObject layerFile = handle.getLayerFile();
+            if (layerFile != null) {
                 newVisibleFiles.add(handle);
+                files.add(layerFile);
             }
             Iterator it = FILES.keySet().iterator();
-            Set files = new HashSet();
             while (it.hasNext()) {
                 String loc = (String) it.next();
                 String locEval = project.evaluator().evaluate(loc);
                 if (locEval == null) {
-                    newVisibleFiles.remove(loc);
+                    newVisibleFiles.remove(loc); // XXX why?
                     continue;
                 }
                 FileObject file = project.getHelper().resolveFileObject(locEval);
@@ -427,7 +428,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
      * Node to represent some special file in a project.
      * Mostly just a wrapper around the normal data node.
      */
-    private static final class SpecialFileNode extends FilterNode {
+    static final class SpecialFileNode extends FilterNode {
         
         private final String displayName;
         
@@ -437,7 +438,11 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         }
         
         public String getDisplayName() {
-            return displayName;
+            if (displayName != null) {
+                return displayName;
+            } else {
+                return super.getDisplayName();
+            }
         }
         
         public boolean canRename() {
@@ -457,7 +462,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             DataObject dob = (DataObject) getLookup().lookup(DataObject.class);
             if (dob != null) {
                 Set files = dob.files();
-                result = computeAnnotatedHtmlDisplayName(displayName, files);
+                result = computeAnnotatedHtmlDisplayName(getDisplayName(), files);
             }
             return result;
         }
