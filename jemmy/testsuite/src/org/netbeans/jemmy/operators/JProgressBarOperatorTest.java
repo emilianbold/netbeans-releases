@@ -346,8 +346,8 @@ public class JProgressBarOperatorTest extends TestCase {
         operator1.setMinimum(0);
         operator1.setMaximum(100);
         operator1.setValue(50);
-        // assertEquals(0.5, operator1.getPercentComplete());
-        // assertEquals(0.5, progressBar.getPercentComplete());
+        assertTrue(0.5 == operator1.getPercentComplete());
+        assertTrue(0.5 == progressBar.getPercentComplete());
     }
 
     /**
