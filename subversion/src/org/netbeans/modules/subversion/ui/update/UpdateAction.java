@@ -59,13 +59,13 @@ public class UpdateAction extends ContextAction {
 
         try {
             startProgress();
-            client.update(roots, SVNRevision.HEAD, true, true);
-
+            
             // XXX how to detect conflicts
             boolean conflict = false;
 
 roots_loop:
             for (int i = 0; i<roots.length; i++) {
+                client.update(roots[i], SVNRevision.HEAD, true);
                 ISVNStatus status[] = client.getStatus(roots[i], true, false);
                 for (int k = 0; k<status.length; k++) {
                     ISVNStatus s = status[k];

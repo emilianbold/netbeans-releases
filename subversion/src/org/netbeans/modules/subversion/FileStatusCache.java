@@ -22,6 +22,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
 import org.openide.ErrorManager;
 
 import java.io.*;
@@ -595,6 +596,12 @@ public class FileStatusCache implements ISVNNotifyListener {
         // ISVNNotifyListener event
         // invalidate cached status
         refresh(path, REPOSITORY_STATUS_UNKNOWN);
+
+        // notify FS about the extrenal change
+        FileObject fo = FileUtil.toFileObject(path);
+        if (fo != null) {
+            fo.refresh();
+        }
     }
 
     private static final class NotManagedMap extends AbstractMap {
