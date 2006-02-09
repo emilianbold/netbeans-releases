@@ -68,7 +68,7 @@ abstract class AbstractEntry implements ModuleEntry {
         return (retval != 0) ? retval : getCodeNameBase().compareTo(((ModuleEntry) o).getCodeNameBase());
     }
     
-    public Set/*<String>*/ getPublicClassNames() {
+    public synchronized Set/*<String>*/ getPublicClassNames() {
         if (publicClassNames == null) {
             try {
                 publicClassNames = computePublicClassNamesInMainModule();
