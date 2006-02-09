@@ -244,7 +244,9 @@ public class ProxyClassLoader extends ClassLoader {
             if (retVal != null) {
                 String p = new String(pkg).intern();
                 domainsByPackage.put(p, owner);
-                ((ProxyClassLoader)owner).domainsByPackage.put(p, owner);
+		if (owner instanceof ProxyClassLoader) {
+                    ((ProxyClassLoader)owner).domainsByPackage.put(p, owner);
+		}
                 return retVal;
             }
         }
