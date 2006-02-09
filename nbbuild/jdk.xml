@@ -48,17 +48,21 @@ Microsystems, Inc. All Rights Reserved.
         </macrodef>
         <common:property name="nbjdk.home" value="platforms.${nbjdk.active}.home"/>
         <common:property name="nbjdk.javac.tmp" value="platforms.${nbjdk.active}.javac"/>
-        <condition property="nbjdk.javac" value="${nbjdk.home}/bin/javac">
+        <condition property=".exe" value=".exe">
+            <os family="windows"/> <!-- #72467 -->
+        </condition>
+        <property name=".exe" value=""/>
+        <condition property="nbjdk.javac" value="${nbjdk.home}/bin/javac${.exe}">
             <equals arg1="${nbjdk.javac.tmp}" arg2="$${platforms.${nbjdk.active}.javac}"/>
         </condition>
         <property name="nbjdk.javac" value="${nbjdk.javac.tmp}"/>
         <common:property name="nbjdk.java.tmp" value="platforms.${nbjdk.active}.java"/>
-        <condition property="nbjdk.java" value="${nbjdk.home}/bin/java">
+        <condition property="nbjdk.java" value="${nbjdk.home}/bin/java${.exe}">
             <equals arg1="${nbjdk.java.tmp}" arg2="$${platforms.${nbjdk.active}.java}"/>
         </condition>
         <property name="nbjdk.java" value="${nbjdk.java.tmp}"/>
         <common:property name="nbjdk.javadoc.tmp" value="platforms.${nbjdk.active}.javadoc"/>
-        <condition property="nbjdk.javadoc" value="${nbjdk.home}/bin/javadoc">
+        <condition property="nbjdk.javadoc" value="${nbjdk.home}/bin/javadoc${.exe}">
             <equals arg1="${nbjdk.javadoc.tmp}" arg2="$${platforms.${nbjdk.active}.javadoc}"/>
         </condition>
         <property name="nbjdk.javadoc" value="${nbjdk.javadoc.tmp}"/>
