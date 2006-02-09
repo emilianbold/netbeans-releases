@@ -58,9 +58,9 @@ public class JarClassLoader extends ProxyClassLoader {
             for (Iterator it = files.iterator(); it.hasNext(); i++ ) {
                 Object act = it.next();
                 if (act instanceof File) {
-                    sources[i] = new DirSource((File)act);
+                    sources[i] = new DirSource((File)act, this);
                 } else {
-                    sources[i] = new JarSource((JarFile)act);
+                    sources[i] = new JarSource((JarFile)act, this);
                 }
             }
         } catch (MalformedURLException exc) {
@@ -79,9 +79,9 @@ public class JarClassLoader extends ProxyClassLoader {
             for (Iterator it = newSources.iterator(); it.hasNext(); i++ ) {
                 Object act = it.next();
                 if (act instanceof File) {
-                    l.add (new DirSource((File)act));
+                    l.add (new DirSource((File)act, this));
                 } else {
-                    l.add (new JarSource((JarFile)act));
+                    l.add (new JarSource((JarFile)act, this));
                 }
             }
         } catch (MalformedURLException exc) {
@@ -234,7 +234,7 @@ public class JarClassLoader extends ProxyClassLoader {
                     JarFile tempJar = new JarFile(temp);
                     origJar.close();
                     deadJars.add(tempJar);
-                    sources[i] = new JarSource(tempJar);
+                    sources[i] = new JarSource(tempJar, this);
                     log("#21114: replacing " + orig + " with " + temp);
                 }
             }
@@ -263,12 +263,14 @@ public class JarClassLoader extends ProxyClassLoader {
         }
     }
 
-    abstract class Source {
+    static abstract class Source {
         private URL url;
         private ProtectionDomain pd;
+        protected JarClassLoader jcl;
         
-        public Source(URL url) {
+        public Source(URL url, JarClassLoader jcl) {
             this.url = url;
+            this.jcl = jcl;
         }
         
         public final URL getURL() {
@@ -278,7 +280,7 @@ public class JarClassLoader extends ProxyClassLoader {
         public final ProtectionDomain getProtectionDomain() {
             if (pd == null) {
                 CodeSource cs = new CodeSource(url, new Certificate[0]);
-                pd = new ProtectionDomain(cs, getPermissions(cs));
+                pd = new ProtectionDomain(cs, jcl.getPermissions(cs));
             }
             return pd;
         }
@@ -311,12 +313,12 @@ public class JarClassLoader extends ProxyClassLoader {
         }
     }
 
-    class JarSource extends Source {
+    static class JarSource extends Source {
         JarFile src;
         private String resPrefix;
         
-        public JarSource(JarFile file) throws MalformedURLException {
-            super(new File(file.getName()).toURI().toURL());
+        public JarSource(JarFile file, JarClassLoader jcl) throws MalformedURLException {
+            super(new File(file.getName()).toURI().toURL(), jcl);
             src = file;
             resPrefix = "jar:" + new File(src.getName()).toURI() + "!/"; // NOI18N;
         }
@@ -374,11 +376,11 @@ public class JarClassLoader extends ProxyClassLoader {
         }
     }
 
-    class DirSource extends Source {
+    static class DirSource extends Source {
         File dir;
         
-        public DirSource(File file) throws MalformedURLException {
-            super(file.toURI().toURL());
+        public DirSource(File file, JarClassLoader jcl) throws MalformedURLException {
+            super(file.toURI().toURL(), jcl);
             dir = file;
         }
 
