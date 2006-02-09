@@ -266,6 +266,14 @@ public class JarClassLoaderTest extends TestCase {
         assertEquals("b should be asked twice", 2, b.getFindeResourceCount());
         assertEquals("c should not be asked", 0, c.getFindeResourceCount());
     }
+    
+    public void testLearningGetResource () {
+        TrackingProxyClassLoader a = new TrackingProxyClassLoader (
+                null,
+                new ClassLoader [] { getClass().getClassLoader().getParent() });
+        URL url = a.getResource("javax/swing/text/html/default.css");
+        assertNotNull("javax/swing/text/html/default.css was not loaded", url);
+    }
 
     /** Testing ClassLoader loader.
      *  Either loads from parent or delegates to some suplied ClassLoader.
