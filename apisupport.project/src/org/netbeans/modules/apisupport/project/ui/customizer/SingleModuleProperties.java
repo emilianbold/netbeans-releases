@@ -140,7 +140,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private SortedSet/*<String>*/ modCategories;
     
     /** Unmodifiable sorted set of all dependencies in the module's universe. */
-    private SortedSet/*<ModuleDependency>*/ universeDependencies;
+    private Set/*<ModuleDependency>*/ universeDependencies;
     
     // models
     private PublicPackagesTableModel publicPackagesModel;
@@ -772,7 +772,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         if (isActivePlatformValid()) {
             try {
                 SortedSet/*<String>*/ allCategories = new TreeSet(Collator.getInstance());
-                SortedSet/*<ModuleDependency>*/ allDependencies = new TreeSet();
+                Set/*<ModuleDependency>*/ allDependencies = new HashSet();
                 for (Iterator it = getModuleList().getAllEntriesSoft().iterator(); it.hasNext(); ) {
                     ModuleEntry me = (ModuleEntry) it.next();
                     if (!me.getCodeNameBase().equals(getCodeNameBase())) {
@@ -784,7 +784,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                     }
                 }
                 modCategories = Collections.unmodifiableSortedSet(allCategories);
-                universeDependencies = Collections.unmodifiableSortedSet(allDependencies);
+                universeDependencies = Collections.unmodifiableSet(allDependencies);
                 return true;
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);

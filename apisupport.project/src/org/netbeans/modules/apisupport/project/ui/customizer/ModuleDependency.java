@@ -22,14 +22,21 @@ import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**
- * Represents one module dependency. i.e. <em>&lt;dependency&gt;</em> element
+ * Represents one module dependency. I.e. <em>&lt;dependency&gt;</em> element
  * in module's <em>project.xml</em> or one token in the
  * OpenIDE-Module-Module-Dependencies attribute of module manifest.
+ * <p>
+ * Natural ordering is based sequentially on the code name base of {@link
+ * ModuleEntry} this instance represents, release version, specification
+ * version, implementation dependency and compilation dependency. Two instances
+ * are equals only if all the mentioned are <code>equals</code>.
+ * </p>
  *
  * @author Martin Krauskopf
  */
 public final class ModuleDependency implements Comparable {
     
+    // XXX refactor and use SpecificationVersion instead
     private String releaseVersion;
     private String specVersion;
     private boolean implDep;
@@ -41,6 +48,7 @@ public final class ModuleDependency implements Comparable {
     private Set/*<String>*/ filterTokensFriend;
     
     public static final Comparator LOCALIZED_NAME_COMPARATOR;
+    public static final Comparator CNB_COMPARATOR;
     
     static {
         LOCALIZED_NAME_COMPARATOR = new Comparator() {
@@ -51,6 +59,13 @@ public final class ModuleDependency implements Comparable {
                         me1.getLocalizedName(), me2.getLocalizedName());
                 return result != 0 ? result :
                     me1.getCodeNameBase().compareTo(me2.getCodeNameBase());
+            }
+        };
+        CNB_COMPARATOR = new Comparator() {
+            public int compare(Object o1, Object o2) {
+                ModuleEntry me1 = ((ModuleDependency) o1).getModuleEntry();
+                ModuleEntry me2 = ((ModuleDependency) o2).getModuleEntry();
+                return me1.getCodeNameBase().compareTo(me2.getCodeNameBase());
             }
         };
     }
@@ -76,7 +91,10 @@ public final class ModuleDependency implements Comparable {
         this.specVersion = specVersion;
     }
     
-    /** may be null for none */
+    /**
+     * Get the <b>major release version</b>.
+     * @return <code>null</code> for none or the version.
+     */
     public String getReleaseVersion() {
         return releaseVersion;
     }
@@ -89,24 +107,58 @@ public final class ModuleDependency implements Comparable {
         return me;
     }
     
-    // XXX module dependencies are not the same also if their versioning varies.
-    // So consider spec, release, and probably all <dependency> subelemenets recursively
     public int compareTo(Object o) {
-        return getModuleEntry().getCodeNameBase().compareTo(
-                ((ModuleDependency) o).getModuleEntry().getCodeNameBase());
+        ModuleDependency other = (ModuleDependency) o;
+        int result = getModuleEntry().getCodeNameBase().compareTo(
+                other.getModuleEntry().getCodeNameBase());
+        if (result != 0) { return result; }
+        
+        // XXX this is not exact since we should use SpecificationVersion
+        // instead of String. In this way are not using Dewey-decimal comparison.
+        String relVersion = other.getReleaseVersion();
+        result = releaseVersion == null // release versions may be null
+                ? (relVersion == null ? 0 : -1)
+                : (relVersion == null ? 1 : releaseVersion.compareTo(relVersion));
+        if (result != 0) { return result; }
+        
+        String otherSpec = other.getSpecificationVersion();
+        result = specVersion == null // spec versions may be null
+                ? (otherSpec == null ? 0 : -1)
+                : (otherSpec == null ? 1 : specVersion.compareTo(otherSpec));
+        if (result != 0) { return result; }
+        
+        result = implDep == other.hasImplementationDepedendency() ? 0 : (implDep ? 1 : -1);
+        if (result != 0) { return result; }
+        
+        result = compileDep == other.hasCompileDependency() ? 0 : (compileDep ? 1 : -1);
+        return result;
     }
     
     public boolean equals(Object o) {
         boolean retval = false;
         if (o instanceof ModuleDependency) {
-            retval = getModuleEntry().getCodeNameBase().equals(
+            ModuleDependency other = (ModuleDependency) o;
+            boolean cnbsEquals =  getModuleEntry().getCodeNameBase().equals(
                     ((ModuleDependency) o).getModuleEntry().getCodeNameBase());
+            retval = cnbsEquals &&
+                    (releaseVersion == null ? (other.getReleaseVersion() == null) :
+                        releaseVersion.equals(other.getReleaseVersion())) &&
+                    (specVersion == null ? (other.getSpecificationVersion() == null) :
+                        specVersion.equals(other.getSpecificationVersion())) &&
+                    (implDep == other.hasImplementationDepedendency()) &&
+                    (compileDep == other.hasCompileDependency());
         }
         return  retval;
     }
     
     public int hashCode() {
-        return getModuleEntry().getCodeNameBase().hashCode();
+        int result = 17;
+        result = (37 * result) + getModuleEntry().getCodeNameBase().hashCode();
+        result = (37 * result) + (releaseVersion == null ? 0 :releaseVersion.hashCode());
+        result = (37 * result) + (specVersion == null ? 0 :specVersion.hashCode());
+        result = (37 * result) + (implDep ? 0 : 1);
+        result = (37 * result) + (compileDep ? 0 : 1);
+        return result;
     }
     
     public boolean hasCompileDependency() {

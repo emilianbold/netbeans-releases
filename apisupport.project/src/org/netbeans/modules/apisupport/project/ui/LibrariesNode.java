@@ -193,7 +193,9 @@ final class LibrariesNode extends AbstractNode {
                                 SortedSet deps = new TreeSet(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
                                 deps.addAll(pxm.getDirectDependencies());
                                 keys.addAll(deps);
-                                setKeys(Collections.EMPTY_SET); // XXX workaround for bad ModuleDependency comparision mechanism implementation
+                                // XXX still not good when dependency was just edited, since Children use
+                                // hashCode/equals (probably HashMap) to find lastly selected node (so neither
+                                // SortedSet would help here). Use probably wrapper instead to keep selection.
                                 setKeys(Collections.unmodifiableList(keys));
                                 return null;
                             }
@@ -270,8 +272,8 @@ final class LibrariesNode extends AbstractNode {
     
     private static final class ProjectDependencyNode extends AbstractNode {
         
-        private ModuleDependency dep;
-        private NbModuleProject project;
+        private final ModuleDependency dep;
+        private final NbModuleProject project;
         private Action[] actions;
         
         ProjectDependencyNode(final ModuleDependency dep, final NbModuleProject project) {
@@ -304,8 +306,8 @@ final class LibrariesNode extends AbstractNode {
     
     private static final class LibraryDependencyNode extends FilterNode {
         
-        private ModuleDependency dep;
-        private NbModuleProject project;
+        private final ModuleDependency dep;
+        private final NbModuleProject project;
         private Action[] actions;
         
         LibraryDependencyNode(final ModuleDependency dep,

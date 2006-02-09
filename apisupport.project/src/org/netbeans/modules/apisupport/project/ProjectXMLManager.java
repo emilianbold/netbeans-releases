@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -148,18 +147,27 @@ public final class ProjectXMLManager {
         project.getHelper().putPrimaryConfigurationData(confData, true);
     }
     
-    /** Returns sorted direct module dependencies. */
+    /**
+     * Returns direct module dependencies using default module's platform. See
+     * {@link #getDirectDependencies(NbPlatform)} for more details to which
+     * this method delegates.
+     */
     public SortedSet/*<ModuleDependency>*/ getDirectDependencies() throws IOException {
         return getDirectDependencies(null);
     }
     
-    /** Returns sorted direct module dependencies allowing to pass a custom platform. */
+    /**
+     * Returns sorted direct module dependencies using {@link
+     * ModuleDependency#CNB_COMPARATOR} allowing to pass a custom platform.
+     * Since no two modules with the same code name base may be set as a
+     * dependency. Also this is ordering used in the <em>project.xml</em>.
+     */
     public SortedSet/*<ModuleDependency>*/ getDirectDependencies(final NbPlatform customPlaf) throws IOException {
         if (this.customPlaf == customPlaf && this.directDeps != null) {
             return this.directDeps;
         }
         this.customPlaf = customPlaf;
-        SortedSet directDeps = new TreeSet();
+        SortedSet/*<ModuleDependency>*/ directDeps = new TreeSet(ModuleDependency.CNB_COMPARATOR);
         Element moduleDependencies = findModuleDependencies(getConfData());
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
         ModuleList ml;
@@ -328,7 +336,7 @@ public final class ProjectXMLManager {
         assert before != null : "There must be " + PUBLIC_PACKAGES + " or " // NOI18N
                 + FRIEND_PACKAGES + " element according to XSD"; // NOI18N
         confData.insertBefore(moduleDependencies, before);
-        SortedSet sortedDeps = new TreeSet(newDeps);
+        SortedSet/*<ModuleDependency>*/ sortedDeps = new TreeSet(newDeps);
         for (Iterator it = sortedDeps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             createModuleDependencyElement(moduleDependencies, md, null);
@@ -348,10 +356,10 @@ public final class ProjectXMLManager {
     }
     
     /**
-     * replace existing classpath extensions with new values.
-     * @param newValues <key=runtime-path(String), value=binary-path(String)>
+     * Replace existing classpath extensions with new values.
+     * @param newValues &lt;key=runtime-path(String), value=binary-path(String)&gt;
      */
-    public void replaceClassPathExtensions(HashMap newValues) {
+    public void replaceClassPathExtensions(final Map newValues) {
         removeClassPathExtensions();
         if (newValues != null && newValues.size() > 0) {
             Element confData = getConfData();
