@@ -437,6 +437,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
                     largeIconPath = (isIconSmall.booleanValue()) ? secondIcon.getAbsolutePath() : iconFile.getAbsolutePath();
                 } else {
                     smallIconPath = iconFile.getAbsolutePath();
+                    largeIconPath = null;
                 }
                 
             }
