@@ -13,6 +13,7 @@
 
 package org.openide.loaders;
 
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.net.MalformedURLException;
@@ -26,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Action;
 import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
@@ -40,6 +42,8 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Property;
+import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
@@ -138,12 +142,14 @@ final class BrokenDataShadow extends MultiDataObject {
             src = ((OperationEvent)ev).getObject();
         }
         
-        FileObject file = null;
+        FileObject file;
         if (src != null) {
             file = src.getPrimaryFile ();
         } else {
             if (ev instanceof FileEvent) {
                 file = ((FileEvent)ev).getFile();
+            } else {
+                return;
             }
         }
         
@@ -209,7 +215,7 @@ final class BrokenDataShadow extends MultiDataObject {
     * @return true if the object can be deleted
     */
     public boolean isDeleteAllowed() {
-        return !getPrimaryFile ().isReadOnly ();
+        return getPrimaryFile().canWrite();
     }
 
     /* Check if link to original file is still broken */    
@@ -219,7 +225,8 @@ final class BrokenDataShadow extends MultiDataObject {
                 /* Link to original file was repaired */
                 this.setValid(false);
             }
-        } catch (Exception e) {
+        } catch (PropertyVetoException e) {
+            e.printStackTrace();
         }
     }
     
@@ -234,14 +241,14 @@ final class BrokenDataShadow extends MultiDataObject {
     * @return true if the object can be moved
     */
     public boolean isMoveAllowed() {
-        return !getPrimaryFile ().isReadOnly ();
+        return getPrimaryFile().canWrite();
     }
 
     /* Getter for rename action.
     * @return true if the object can be renamed
     */
     public boolean isRenameAllowed () {
-        return !getPrimaryFile ().isReadOnly ();
+        return getPrimaryFile().canWrite();
     }
 
     /* Help context for this object.
@@ -270,14 +277,14 @@ final class BrokenDataShadow extends MultiDataObject {
         /** the sheet computed for this node or null */
         private Sheet sheet;
 
-        private static final String ICON_NAME = "org/openide/loaders/brokenShadow"; // NOI18N
+        private static final String ICON_NAME = "org/openide/loaders/brokenShadow.gif"; // NOI18N
 
         /** Create a node.
          * @param broken data shadow
          */        
         public BrokenShadowNode (BrokenDataShadow par) {            
             super (par,Children.LEAF);
-            setIconBase(ICON_NAME);
+            setIconBaseWithExtension(ICON_NAME);
         }
         
         /** Get the display name for the node.
@@ -291,11 +298,8 @@ final class BrokenDataShadow extends MultiDataObject {
             return format.format (createArguments ());
         }
         
-        /** Create actions for this data object.
-        * @return array of actions or <code>null</code>
-        */    
-        protected SystemAction[] createActions () {
-            return new SystemAction[] {
+        public Action[] getActions(boolean context) {
+            return new Action[] {
                         SystemAction.get (CutAction.class),
                         SystemAction.get (CopyAction.class),
                         SystemAction.get (PasteAction.class),

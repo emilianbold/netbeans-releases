@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,7 +26,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -40,8 +39,6 @@ import org.openide.util.NbBundle;
 public class ProjectCustomizerProvider implements CustomizerProvider {
     
     private final FreeformProject project;
-    private final AntProjectHelper antProjectHelper;   
-    private final PropertyEvaluator evaluator;
     
     // Option indexes
     private static final int OPTION_OK = 0;
@@ -52,12 +49,10 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
     
     private DialogDescriptor dialogDescriptor;
-    private Map customizerPerProject = new WeakHashMap (); // Is is weak needed here?
+    private Map customizerPerProject = new WeakHashMap (); // Is weak needed here?
     
-    public ProjectCustomizerProvider(FreeformProject project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator) {
+    public ProjectCustomizerProvider(FreeformProject project) {
         this.project = project;
-        this.antProjectHelper = antProjectHelper;
-        this.evaluator = evaluator;
     }
             
     public void showCustomizer() {
@@ -83,7 +78,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
         options[ OPTION_OK ].setActionCommand( COMMAND_OK );
         options[ OPTION_CANCEL ].setActionCommand( COMMAND_CANCEL );
 
-        ProjectCustomizer pc = new ProjectCustomizer(project, antProjectHelper);
+        ProjectCustomizer pc = new ProjectCustomizer(project);
         // RegisterListener
         ActionListener optionsListener = new OptionListener( project, pc);
         options[ OPTION_OK ].addActionListener( optionsListener );

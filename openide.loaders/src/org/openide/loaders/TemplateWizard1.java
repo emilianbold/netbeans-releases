@@ -7,36 +7,36 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.util.*;
-
-import javax.swing.tree.TreeSelectionModel;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.SwingUtilities;
-import javax.swing.JComponent;
 import java.awt.Component;
-import java.awt.Graphics;
+import java.util.LinkedList;
+import java.util.ResourceBundle;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
-import javax.swing.plaf.basic.BasicBorders;
-
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.tree.TreeSelectionModel;
 import org.openide.awt.HtmlBrowser;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.explorer.view.*;
-import org.openide.util.RequestProcessor;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.NodeTreeModel;
+import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.util.AsyncGUIJob;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /** Dialog that can be used in create from template.
@@ -176,7 +176,7 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
                 root = DataFolder.findFolder (fo);
         }
 
-        if (root.equals(templatesRoot))
+        if (root == null || root.equals(templatesRoot))
             return;
 
         templatesRoot = root;

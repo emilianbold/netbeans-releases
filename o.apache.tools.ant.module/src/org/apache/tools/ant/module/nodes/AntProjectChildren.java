@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,7 +30,6 @@ import org.apache.tools.ant.module.api.support.TargetLister;
 import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
 final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ implements ChangeListener, Comparator/*<TargetLister.Target>*/ {
     
@@ -92,7 +91,7 @@ final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ im
     
     protected Node[] createNodes (Object key) {
         TargetLister.Target t = (TargetLister.Target) key;
-        return new Node[] {new AntTargetNode(cookie, t, allTargets)};
+        return new Node[] {new AntTargetNode(cookie, t)};
     }
     
     public void stateChanged (ChangeEvent ev) {

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,7 +16,6 @@ package org.apache.tools.ant.module.nodes;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.UIManager;
@@ -58,8 +57,6 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
     /** main project, not necessarily the one defining this target */
     private final AntProjectCookie project;
     private final TargetLister.Target target;
-    private final Set/*<TargetLister.Target>*/ allTargets;
-    private boolean attachedCookieListener = false; // #9952
     
     /**
      * Create a new target node.
@@ -67,12 +64,11 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
      * @param target a representation of this target
      * @param allTargets all other targets in the main project
      */
-    public AntTargetNode(AntProjectCookie project, TargetLister.Target target, Set/*<TargetLister.Target>*/ allTargets) {
+    public AntTargetNode(AntProjectCookie project, TargetLister.Target target) {
         super(Children.LEAF);
         this.project = project;
         assert !target.isOverridden() : "Cannot include overridden targets";
         this.target = target;
-        this.allTargets = allTargets;
         target.getScript().addChangeListener(WeakListeners.change(this, target.getScript()));
         setName(target.getQualifiedName());
         setDisplayName(target.getName());
@@ -213,7 +209,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
         }
         String[] attrs = new String[] {"name", "description", "depends"}; // NOI18N
         for (int i = 0; i < attrs.length; i++) {
-            org.openide.nodes.Node.Property prop = new AntProperty(target.getElement(), attrs[i], project);
+            org.openide.nodes.Node.Property prop = new AntProperty(target.getElement(), attrs[i]);
             prop.setDisplayName (NbBundle.getMessage (AntTargetNode.class, "PROP_target_" + attrs[i]));
             prop.setShortDescription (NbBundle.getMessage (AntTargetNode.class, "HINT_target_" + attrs[i]));
             props.put (prop);

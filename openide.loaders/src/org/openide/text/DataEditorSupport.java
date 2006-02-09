@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,8 +15,6 @@ package org.openide.text;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -335,9 +333,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     
     /** Environment that connects the data object and the CloneableEditorSupport.
     */
-    public static abstract class Env extends OpenSupport.Env 
-    implements CloneableEditorSupport.Env, java.io.Serializable,
-    PropertyChangeListener, VetoableChangeListener {
+    public static abstract class Env extends OpenSupport.Env implements CloneableEditorSupport.Env {
         /** generated Serialized Version UID */
         static final long serialVersionUID = -2945098431098324441L;
 

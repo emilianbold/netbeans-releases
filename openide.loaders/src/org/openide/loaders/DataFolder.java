@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -64,7 +63,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.NewType;
-import org.openide.windows.WindowManager;
 
 /** A folder containing data objects.
 * Is actually itself a data object, whose primary (and only) file object
@@ -74,13 +72,12 @@ import org.openide.windows.WindowManager;
 *
 * @author Jaroslav Tulach, Petr Hamernik
 */
-public class DataFolder extends MultiDataObject 
-implements Serializable, DataObject.Container {
+public class DataFolder extends MultiDataObject implements DataObject.Container {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -8244904281845488751L;
 
     /** Name of property that holds children of this node. */
-    public static final String PROP_CHILDREN = Container.PROP_CHILDREN;
+    public static final String PROP_CHILDREN = DataObject.Container.PROP_CHILDREN;
 
     /** Name of property which decides sorting mode. */
     public static final String PROP_SORT_MODE = "sortMode"; // NOI18N
@@ -96,8 +93,8 @@ implements Serializable, DataObject.Container {
     public static final String SET_SORTING = "sorting"; // NOI18N
 
     /** Icon resource string for folder node */
-    static final String FOLDER_ICON_BASE =
-        "org/openide/loaders/defaultFolder"; // NOI18N
+    private static final String FOLDER_ICON_BASE =
+        "org/openide/loaders/defaultFolder.gif"; // NOI18N
 
     /** name of a shadow file for a root */
     private static final String ROOT_SHADOW_NAME = "Root"; // NOI18N
@@ -489,7 +486,7 @@ implements Serializable, DataObject.Container {
     */
     public boolean isRenameAllowed () {
         FileObject fo = getPrimaryFile ();
-        return !fo.isRoot() && !fo.isReadOnly ();
+        return !fo.isRoot() && fo.canWrite();
     }
 
     /* Help context for this object.
@@ -1120,14 +1117,14 @@ implements Serializable, DataObject.Container {
         */
         public FolderNode (Children ch) {
             super (DataFolder.this, ch);
-            setIconBase(FOLDER_ICON_BASE);
+            setIconBaseWithExtension(FOLDER_ICON_BASE);
         }
 
         /** Create a folder node with default folder children.
         */
         protected FolderNode () {
             super (DataFolder.this, new FolderChildren (DataFolder.this));
-            setIconBase(FOLDER_ICON_BASE);
+            setIconBaseWithExtension(FOLDER_ICON_BASE);
         }
         
 
@@ -1268,12 +1265,12 @@ implements Serializable, DataObject.Container {
         }
         private synchronized FolderRenameHandler getRenameHandler() {
             Lookup.Result renameImplementations = Lookup.getDefault().lookup(new Lookup.Template(FolderRenameHandler.class));
-            List handlers = (List) renameImplementations.allInstances();
+            Collection handlers = renameImplementations.allInstances();
             if (handlers.size()==0)
                 return null;
             if (handlers.size()>1)
                 ErrorManager.getDefault().log(ErrorManager.WARNING, "Multiple instances of FolderRenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
-            return (FolderRenameHandler) handlers.get(0);
+            return (FolderRenameHandler) handlers.iterator().next();
         }
 
         public void setName(String name) {
@@ -1295,7 +1292,7 @@ implements Serializable, DataObject.Container {
         */
         protected void createPasteTypes (Transferable t, java.util.List s) {
             super.createPasteTypes (t, s);
-            if (!getPrimaryFile ().isReadOnly ()) {
+            if (getPrimaryFile().canWrite()) {
                 dataTransferSupport.createPasteTypes (t, s);
             }
         }
@@ -1416,11 +1413,11 @@ implements Serializable, DataObject.Container {
         * @param op clopboard operation to specify paste types for
         * @return array of classes extending PasteTypeExt class
         */
-        protected PasteTypeExt[] definePasteTypes (int op) {
+        protected DataTransferSupport.PasteTypeExt[] definePasteTypes (int op) {
             switch (op) {
                 case LoaderTransfer.CLIPBOARD_CUT:
-                return new PasteTypeExt [] {
-                    new PasteTypeExt () {
+                return new DataTransferSupport.PasteTypeExt [] {
+                    new DataTransferSupport.PasteTypeExt() {
                         public String getName () {
                             return DataObject.getString ("PT_move"); // NOI18N
                         }
@@ -1474,8 +1471,8 @@ implements Serializable, DataObject.Container {
                 };
 
                 case LoaderTransfer.CLIPBOARD_COPY:
-                return new PasteTypeExt [] {
-                    new PasteTypeExt () {
+                return new DataTransferSupport.PasteTypeExt[] {
+                    new DataTransferSupport.PasteTypeExt() {
                         public String getName () {
                             return DataObject.getString ("PT_copy"); // NOI18N
                         }
@@ -1499,7 +1496,7 @@ implements Serializable, DataObject.Container {
                             }
                         }                        
                     },
-                    new PasteTypeExt () {
+                    new DataTransferSupport.PasteTypeExt() {
                         public String getName () {
                             return DataObject.getString ("PT_instantiate"); // NOI18N
                         }
@@ -1513,7 +1510,7 @@ implements Serializable, DataObject.Container {
                             obj.createFromTemplate (DataFolder.this);
                         }
                     },
-                    new PasteTypeExt () {
+                    new DataTransferSupport.PasteTypeExt() {
                         public String getName () {
                             return DataObject.getString ("PT_shadow"); // NOI18N
                         }
@@ -1539,7 +1536,7 @@ implements Serializable, DataObject.Container {
                     }
                 };
             }
-            return new PasteTypeExt [] {};
+            return new DataTransferSupport.PasteTypeExt[0];
         }
 
         private boolean isParentFile(File foFile, File parentFile) {

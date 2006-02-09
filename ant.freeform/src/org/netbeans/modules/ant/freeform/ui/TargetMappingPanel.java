@@ -7,13 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.ant.freeform.ui;
 
 import java.awt.Frame;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
@@ -44,21 +46,21 @@ import org.openide.util.NbBundle;
 /**
  * @author  David Konecny
  */
-public class TargetMappingPanel extends javax.swing.JPanel implements java.awt.event.ActionListener, org.openide.util.HelpCtx.Provider {
+public class TargetMappingPanel extends JPanel implements ActionListener, HelpCtx.Provider {
 
-    public static String BUILD_ACTION = "build"; // NOI18N
-    public static String CLEAN_ACTION = "clean"; // NOI18N
-    public static String REBUILD_ACTION = "rebuild"; // NOI18N
-    public static String JAVADOC_ACTION = "javadoc"; // NOI18N
-    public static String RUN_ACTION = "run"; // NOI18N
-    public static String TEST_ACTION = "test"; // NOI18N
+    public static final String BUILD_ACTION = "build"; // NOI18N
+    public static final String CLEAN_ACTION = "clean"; // NOI18N
+    public static final String REBUILD_ACTION = "rebuild"; // NOI18N
+    public static final String JAVADOC_ACTION = "javadoc"; // NOI18N
+    public static final String RUN_ACTION = "run"; // NOI18N
+    public static final String TEST_ACTION = "test"; // NOI18N
 
-    private static List DEFAULT_BUILD_TARGETS = Arrays.asList(new String[]{"build", "compile", "jar", "dist", "all", ".*jar.*"}); // NOI18N
-    private static List DEFAULT_CLEAN_TARGETS = Arrays.asList(new String[]{"clean", ".*clean.*"}); // NOI18N
-    private static List DEFAULT_REBUILD_TARGETS = Arrays.asList(new String[]{"rebuild", ".*rebuild.*"}); // NOI18N
-    private static List DEFAULT_JAVADOC_TARGETS = Arrays.asList(new String[]{"javadoc", "javadocs", "docs", "doc", ".*javadoc.*", ".*doc.*"}); // NOI18N
-    private static List DEFAULT_RUN_TARGETS = Arrays.asList(new String[]{"run", "start", ".*run.*", ".*start.*"}); // NOI18N
-    private static List DEFAULT_TEST_TARGETS = Arrays.asList(new String[]{"test", ".*test.*"}); // NOI18N
+    private static final List DEFAULT_BUILD_TARGETS = Arrays.asList(new String[]{"build", "compile", "jar", "dist", "all", ".*jar.*"}); // NOI18N
+    private static final List DEFAULT_CLEAN_TARGETS = Arrays.asList(new String[]{"clean", ".*clean.*"}); // NOI18N
+    private static final List DEFAULT_REBUILD_TARGETS = Arrays.asList(new String[]{"rebuild", ".*rebuild.*"}); // NOI18N
+    private static final List DEFAULT_JAVADOC_TARGETS = Arrays.asList(new String[]{"javadoc", "javadocs", "docs", "doc", ".*javadoc.*", ".*doc.*"}); // NOI18N
+    private static final List DEFAULT_RUN_TARGETS = Arrays.asList(new String[]{"run", "start", ".*run.*", ".*start.*"}); // NOI18N
+    private static final List DEFAULT_TEST_TARGETS = Arrays.asList(new String[]{"test", ".*test.*"}); // NOI18N
     
     private List/*<String>*/ targetNames;
     private List/*<TargetMapping>*/ targetMappings;

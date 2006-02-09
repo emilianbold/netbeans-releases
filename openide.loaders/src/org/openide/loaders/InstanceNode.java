@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,23 +20,29 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.beancontext.BeanContext;
-import java.beans.beancontext.BeanContextProxy;
 import java.beans.beancontext.BeanContextMembershipEvent;
 import java.beans.beancontext.BeanContextMembershipListener;
+import java.beans.beancontext.BeanContextProxy;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.io.IOException;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
-
-import org.openide.*;
+import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.util.*;
-import org.openide.nodes.*;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.nodes.BeanChildren;
+import org.openide.nodes.BeanNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 
 /** Node to represent a .settings, .ser or .instance file.
  *
@@ -46,7 +52,7 @@ final class InstanceNode extends DataNode implements Runnable {
     
     /** icon base */
     private static final String INSTANCE_ICON_BASE =
-        "org/openide/loaders/instanceObject"; // NOI18N
+        "org/openide/loaders/instanceObject.gif"; // NOI18N
     
     /** File extension for xml settings. */
     private static final String XML_EXT = "settings"; //NOI18N
@@ -107,9 +113,9 @@ final class InstanceNode extends DataNode implements Runnable {
         InstanceCookie.Of ic = ic();
         String iconBase = INSTANCE_ICON_BASE;
         if (ic == null) {//XXX && io.instanceOf(XMLSettingsSupport.BrokenSettings.class)) {
-            iconBase = "org/openide/loaders/instanceBroken"; // NOI18N
+            iconBase = "org/openide/loaders/instanceBroken.gif"; // NOI18N
         }
-        setIconBase(iconBase);
+        setIconBaseWithExtension(iconBase);
     }
     
     private static Children getChildren(DataObject dobj, boolean noBeanInfo) {
@@ -367,6 +373,7 @@ final class InstanceNode extends DataNode implements Runnable {
                 nameSetter.invoke(bean, new Object[] {name});
                 i().scheduleSave();
             } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
         super.setName(name);

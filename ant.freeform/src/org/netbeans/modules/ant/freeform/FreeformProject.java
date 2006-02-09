@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,7 +37,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Template;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
@@ -79,7 +78,7 @@ public final class FreeformProject implements Project {
             new FreeformSources(this), // Sources
             new Actions(this), // ActionProvider
             new View(this), // LogicalViewProvider
-            new ProjectCustomizerProvider(this, helper, eval), // CustomizerProvider
+            new ProjectCustomizerProvider(this), // CustomizerProvider
             aux, // AuxiliaryConfiguration
             helper().createCacheDirectoryProvider(), // CacheDirectoryProvider
             new Subprojects(this), // SubprojectProvider

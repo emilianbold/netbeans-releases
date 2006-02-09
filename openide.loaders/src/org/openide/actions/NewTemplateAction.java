@@ -7,39 +7,56 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.actions;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.util.*;
-import java.lang.ref.*;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-
-import javax.swing.*;
-import javax.swing.event.*;
-
-import org.openide.*;
+import java.util.Set;
+import javax.swing.Action;
+import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
+import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.awt.JMenuPlus;
 import org.openide.explorer.view.MenuView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.Mutex;
+import org.openide.loaders.DataFilter;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
+import org.openide.loaders.TemplateWizard;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeAcceptor;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.*;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
+import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.Presenter;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -73,7 +90,7 @@ public class NewTemplateAction extends NodeAction {
         // bugfix #29661, start finding the target folder with null folder
         targetFolder = null;
         while (targetFolder == null && folder != null) {
-            targetFolder = folder == null ? null : (DataFolder) folder.getCookie (DataFolder.class);
+            targetFolder = (DataFolder) folder.getCookie(DataFolder.class);
             folder = folder.getParentNode ();
         }
         

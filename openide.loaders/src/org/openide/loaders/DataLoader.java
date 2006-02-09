@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -146,14 +146,14 @@ public abstract class DataLoader extends SharedClassObject {
     public final SystemAction[] getActions () {
         Action[] arr = getSwingActions ();
         
-        ArrayList list = new ArrayList ();
+        List list = new ArrayList();
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] instanceof SystemAction || arr[i] == null) {
                 list.add (arr[i]);
             }
         }
         
-        return (SystemAction[])list.toArray (new SystemAction[0]);
+        return (SystemAction[]) list.toArray(new SystemAction[list.size()]);
     }
     
     /** Swing actions getter, used from DataNode */

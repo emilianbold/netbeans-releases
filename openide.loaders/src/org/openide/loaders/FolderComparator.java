@@ -7,23 +7,22 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.util.*;
+import java.util.Date;
+import java.util.Enumeration;
 import org.openide.filesystems.FileObject;
-
-import org.openide.util.Lookup;
 import org.openide.nodes.Node;
 
 /**
  * Compares objects in a folder.
  * @author Jaroslav Tulach, Jesse Glick
  */
-class FolderComparator extends DataFolder.SortMode implements Comparator {
+class FolderComparator extends DataFolder.SortMode {
     /** modes */
     public static final int NONE = 0;
     public static final int NAMES = 1;

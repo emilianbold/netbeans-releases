@@ -7,20 +7,19 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
 import java.awt.event.KeyEvent;
-
-import javax.swing.event.*;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentListener;
 import org.openide.util.Utilities;
-import org.openide.loaders.*;
 
 /** Dialog that can be used in create from template.
 *
@@ -115,7 +114,7 @@ final class NewObjectPanel extends javax.swing.JPanel implements DocumentListene
 
     private void newObjectNameFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_newObjectNameFocusGained
         if (
-            Utilities.getOperatingSystem() == Utilities.OS_SOLARIS |
+            Utilities.getOperatingSystem() == Utilities.OS_SOLARIS ||
             Utilities.getOperatingSystem() == Utilities.OS_SUNOS
         ) {
             // does not work on CDE window manager, so better do nothin

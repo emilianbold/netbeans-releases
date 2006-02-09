@@ -167,13 +167,6 @@ public final class AntBridge {
     }
     
     /**
-     * Get the loader which contains the bridge code.
-     */
-    private static ClassLoader getBridgeClassLoader() {
-        return (ClassLoader)getStuff().get(KEY_BRIDGE_CLASS_LOADER);
-    }
-    
-    /**
      * Get any custom task/type definitions stored in $nbhome/ant/nblib/*.jar.
      * Some of the classes might not be fully resolvable, so beware.
      * The names will include namespace prefixes.

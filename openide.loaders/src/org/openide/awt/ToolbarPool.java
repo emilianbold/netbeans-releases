@@ -7,32 +7,45 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.awt;
 
-import java.awt.Component;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
-import java.awt.event.*;
-import java.util.*;
-
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.WeakHashMap;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
-import javax.swing.*;
-import javax.swing.border.*;
-
-import org.openide.*;
-import org.openide.loaders.*;
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.FolderInstance;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
@@ -65,7 +78,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
     private PopupListener listener;
 
     /** Accessible context */
-    private AccessibleContext accessibleContext;
+    private AccessibleContext toolbarAccessibleContext;
 
     /** Name of default toolbar configuration. */
     public static final String DEFAULT_CONFIGURATION = "Standard"; // NOI18N
@@ -103,8 +116,6 @@ public final class ToolbarPool extends JComponent implements Accessible {
      * @since 1.5
      */
     public ToolbarPool (DataFolder df) {
-        accessibleContext = null;
-
         folder = df;
 
         setLayout (new BorderLayout ());
@@ -369,14 +380,14 @@ public final class ToolbarPool extends JComponent implements Accessible {
      * @return - accessible context
      */
     public AccessibleContext getAccessibleContext () {
-        if(accessibleContext == null) {
-            accessibleContext = new AccessibleJComponent() {
+        if(toolbarAccessibleContext == null) {
+            toolbarAccessibleContext = new AccessibleJComponent() {
                 public AccessibleRole getAccessibleRole() {
                     return AccessibleRole.TOOL_BAR;
                 }
             };
         }
-        return accessibleContext;
+        return toolbarAccessibleContext;
     }
 
     /** Recognizes if XP theme is set.

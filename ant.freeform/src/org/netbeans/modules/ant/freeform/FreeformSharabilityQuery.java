@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.ant.freeform;
 
 import java.io.File;
@@ -25,11 +26,9 @@ public class FreeformSharabilityQuery implements SharabilityQueryImplementation 
     
     private String nbproject;
     private String nbprojectPrivate;
-    private AntProjectHelper helper;
     
     /** Creates a new instance of FreeformSharabilityQuery */
     public FreeformSharabilityQuery(AntProjectHelper helper) {
-	this.helper = helper;
 	nbproject = helper.resolveFile("nbproject").getAbsolutePath();
 	nbprojectPrivate = helper.resolveFile("nbproject/private").getAbsolutePath();
     }

@@ -7,44 +7,39 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.awt.event.ActionEvent;
-import java.io.*;
-import java.lang.ref.*;
-import java.net.*;
-import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-
-import org.openide.*;
-import org.openide.actions.ActionManager;
-import org.openide.loaders.*;
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem; // override java.io.FileSystem
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
-
 
 /** Wizard for creation of new objects from a template.
 *
@@ -475,10 +470,12 @@ public class TemplateWizard extends WizardDescriptor {
         Mutex.EVENT.writeAccess (new Runnable () {
             public void run () {
                 try {
-                    JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
-                    Component c = f.getGlassPane ();
-                    c.setVisible (true);
-                    c.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
+                    Frame f = WindowManager.getDefault().getMainWindow();
+                    if (f instanceof JFrame) {
+                        Component c = ((JFrame) f).getGlassPane();
+                        c.setVisible(true);
+                        c.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    }
                 } catch (NullPointerException npe) {
                     ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
                 }
@@ -494,10 +491,12 @@ public class TemplateWizard extends WizardDescriptor {
         Mutex.EVENT.writeAccess (new Runnable () {
             public void run () {
                 try {
-                    JFrame f = (JFrame)WindowManager.getDefault ().getMainWindow ();
-                    Component c = f.getGlassPane ();
-                    c.setCursor (null);
-                    c.setVisible (false);
+                    Frame f = WindowManager.getDefault().getMainWindow();
+                    if (f instanceof JFrame) {
+                        Component c = ((JFrame) f).getGlassPane();
+                        c.setCursor(null);
+                        c.setVisible(false);
+                    }
                 } catch (NullPointerException npe) {
                     ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
                 }

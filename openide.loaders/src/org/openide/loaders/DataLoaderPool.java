@@ -7,37 +7,39 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.OptionalDataException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
-
-import org.openide.*;
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem; // override java.io.FileSystem
-import org.openide.nodes.Node;
-import org.openide.nodes.FilterNode;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.util.Enumerations;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /** Pool of data loaders.
  * Provides access to set of registered
@@ -502,7 +504,7 @@ implements java.io.Serializable {
     
     /** Lazy getter for system loaders.
      */
-    private static MultiFileLoader[] getSystemLoaders () {
+    private static synchronized MultiFileLoader[] getSystemLoaders () {
         if (systemLoaders == null) {
             systemLoaders = new MultiFileLoader [] {
                 (MultiFileLoader) DataLoader.getLoader(ShadowLoader.class),
@@ -514,7 +516,7 @@ implements java.io.Serializable {
     
     /** Lazy getter for default loaders.
      */
-    private static MultiFileLoader[] getDefaultLoaders () {
+    private static synchronized MultiFileLoader[] getDefaultLoaders () {
         if (defaultLoaders == null) {
             defaultLoaders = new MultiFileLoader [] {
                 (MultiFileLoader) DataLoader.getLoader(FolderLoader.class),

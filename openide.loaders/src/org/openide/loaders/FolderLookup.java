@@ -7,13 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.openide.loaders;
-
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -23,16 +21,13 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.openide.cookies.InstanceCookie;
 import org.openide.ErrorManager;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.Task;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.ProxyLookup;
-import org.openide.util.Task;
-
 
 /** Implements a lookup, that scans a content of a folder for its
  * data objects and asks them for instance cookie, the created objects
@@ -389,7 +384,7 @@ public class FolderLookup extends FolderInstance {
     
     /** Item that delegates to <code>InstanceCookie</code>. Item which 
      * the internal lookup data structure is made from. */
-    private static final class ICItem extends AbstractLookup.Pair implements Serializable {
+    private static final class ICItem extends AbstractLookup.Pair {
         static final long serialVersionUID = 10L;
         
         static final ThreadLocal DANGEROUS = new ThreadLocal ();

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,26 +15,44 @@ package org.openide.awt;
 
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.Point;
-import java.awt.event.*;
 import java.awt.event.KeyEvent;
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
-import javax.swing.MenuElement;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
 import org.openide.ErrorManager;
-import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.nodes.*;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.FolderInstance;
+import org.openide.loaders.InstanceSupport;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.NbBundle;
+import org.openide.util.Task;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
-import org.openide.util.*;
 
 /** An extended version of swing's JMenuBar. This menubar can
  * load its content from the folder where its "disk image" is stored.<P>
@@ -66,8 +84,10 @@ public class MenuBar extends JMenuBar implements Externalizable {
     /** the folder which represents and loads content of the menubar */
     private MenuBarFolder menuBarFolder;
 
+    /*
     private static final Icon BLANK_ICON = new ImageIcon(
         Utilities.loadImage("org/openide/loaders/empty.gif")); // NOI18N            
+     */
 
     static final long serialVersionUID =-4721949937356581268L;
 
@@ -444,7 +464,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
             if (master.isValid()) {
                 // set the text and be aware of mnemonics
                 Node n = master.getNodeDelegate ();
-                Actions.setMenuText(this, n.getDisplayName (), true);
+                Mnemonics.setLocalizedText(this, n.getDisplayName());
                 if (icon) setIcon (new ImageIcon (
                 n.getIcon (java.beans.BeanInfo.ICON_COLOR_16x16)));
             } else {
@@ -633,7 +653,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
     	    }
             
             /** Removes icons from all direct menu items of this menu.
-             * Not recursive, */
+             * Not recursive, * /
             private List alignVertically (List menuItems) {
                 List result = new ArrayList(menuItems.size());
                 JMenuItem curItem = null;
@@ -646,6 +666,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 }
                 return result;
             }
+             */
 
     	    /** Recreate the instance in AWT thread.
     	     */

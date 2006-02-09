@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,16 +15,29 @@ package org.openide.loaders;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
-import java.lang.ref.Reference;
 import java.io.IOException;
-import java.util.*;
-
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.openide.ErrorManager;
-import org.openide.util.datatransfer.*;
-import org.openide.filesystems.*;
-import org.openide.util.*;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TopologicalSortException;
+import org.openide.util.Utilities;
 
 /** Watches a folder and its children.
  *
@@ -76,7 +89,7 @@ implements FileChangeListener, DataObject.Container {
     /* -------------------------------------------------------------------- */
 
     /** data folder to work with */
-    protected FileObject folder;
+    private FileObject folder;
 
     /** The task that computes the content of FolderList. There is also
     * only one computation task in the PROCESSOR for each FolderList.
@@ -864,15 +877,11 @@ implements FileChangeListener, DataObject.Container {
     /** Adds a listener.
      * @param l the listener
      */
-    public void addPropertyChangeListener(PropertyChangeListener l) {
+    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
         if (pcs == null) {
-            synchronized (this) {
-                if (pcs == null) {
-                    pcs = new PropertyChangeSupport (this);
-                }
-            }
+            pcs = new PropertyChangeSupport(this);
         }
-        pcs.addPropertyChangeListener (l);
+        pcs.addPropertyChangeListener(l);
     }
     
     /* -------------------------------------------------------------------- */

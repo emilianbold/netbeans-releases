@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -141,7 +141,7 @@ public final class ShortcutWizard extends WizardDescriptor {
             ByteArrayOutputStream baos = new ByteArrayOutputStream(1000);
             XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
             return baos.toString("UTF-8"); // NOI18N
-        } catch (java.lang.Exception e) {
+        } catch (IOException e) {
             AntModule.err.notify(e);
             return ""; // NOI18N
         }

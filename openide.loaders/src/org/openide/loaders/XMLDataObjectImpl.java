@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -102,12 +102,6 @@ class XMLDataObjectImpl extends Object {
         ErrorManager emgr = ErrorManager.getDefault();
         emgr.annotate(err, "Can not create a factory!\nCheck " + property + "  property and the factory library presence on classpath."); // NOI18N
         emgr.notify(err);
-    }
-
-    /** Annotate & notify the error. */
-    private static void notifyException(Throwable err) {
-        ErrorManager emgr = ErrorManager.getDefault();        
-        emgr.notify(emgr.INFORMATIONAL, err);
     }
 
     // warning back compatability code!!!    

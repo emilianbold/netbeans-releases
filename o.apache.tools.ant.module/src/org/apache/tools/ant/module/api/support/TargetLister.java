@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -241,7 +241,6 @@ public class TargetLister {
         private final String defaultTarget;
         private final List/*<Script>*/ imports;
         private final String name;
-        private final Set/*<File>*/ alreadyImported;
         
         private static final Set/*<String>*/ TRUE_VALS = new HashSet(5);
         static {
@@ -253,7 +252,6 @@ public class TargetLister {
         public Script(Script importingScript, AntProjectCookie apc, Set/*<File>*/ alreadyImported, Map/*<String,String>*/ inheritedPropertyDefs, Map/*<String,Element>*/ inheritedMacroDefs) throws IOException {
             this.importingScript = importingScript;
             this.apc = apc;
-            this.alreadyImported = alreadyImported;
             Element prj = apc.getProjectElement();
             if (prj == null) {
                 throw new IOException("Could not parse " + apc); // NOI18N

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -122,8 +122,8 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
     }
 
     private class ProjectNameProperty extends AntProperty {
-        public ProjectNameProperty (String name, AntProjectCookie proj) {
-            super (name, proj);
+        public ProjectNameProperty(String name) {
+            super(name);
         }
         protected Element getElement () {
             return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
@@ -131,8 +131,8 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
     }
 
     private class ProjectTargetProperty extends AntProperty {
-        public ProjectTargetProperty (String name, AntProjectCookie proj) {
-            super (name, proj);
+        public ProjectTargetProperty(String name) {
+            super(name);
         }
         protected Element getElement () {
             return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
@@ -141,16 +141,15 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
 
     private void add2Sheet (Sheet.Set props) {
         ResourceBundle bundle = NbBundle.getBundle (AntProjectNode.class);
-        AntProjectCookie proj = (AntProjectCookie) getCookie (AntProjectCookie.class);
         
         // Create the required properties (XML attributes) of the Ant project
-        Node.Property prop = new ProjectNameProperty ("name", proj); // NOI18N
+        Node.Property prop = new ProjectNameProperty("name"); // NOI18N
         // Cannot reuse 'name' because it conflicts with the DataObject.PROP_NAME:
         prop.setName ("projectName"); // NOI18N
         prop.setDisplayName (bundle.getString ("PROP_projectName"));
         prop.setShortDescription (bundle.getString ("HINT_projectName"));
         props.put (prop);
-        prop = new ProjectTargetProperty ("default", proj); // NOI18N
+        prop = new ProjectTargetProperty("default"); // NOI18N
         prop.setDisplayName (bundle.getString ("PROP_default"));
         prop.setShortDescription (bundle.getString ("HINT_default"));
         props.put (prop);
