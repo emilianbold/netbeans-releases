@@ -254,7 +254,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
                     assert icon.exists();
                     ImageIcon ic = null;
                     try {
-                        ic = new ImageIcon(icon.toURL());
+                        ic = new ImageIcon(icon.toURI().toURL());
                         assert ic.getIconHeight() != 32;
                         assert ic.getIconWidth() != 32;
                     } catch (MalformedURLException ex) {
@@ -309,7 +309,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 File icon = new File(getIconPath());
                 assert icon.exists();
                 try {
-                    ic = new ImageIcon(icon.toURL());
+                    ic = new ImageIcon(icon.toURI().toURL());
                     if (ic.getIconHeight() != 32 || ic.getIconWidth() != 32) {
                         return WARNING_INCORRECT_ICON_SIZE;
                     }
