@@ -6,18 +6,27 @@
 <html>
 <head>
 
-    <title>About Bundling Libraries, Templates, Samples, and Helpfiles</title>
+    <title>About Bundling Supporting Items</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
     <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-    <h2>About Bundling Libraries, Templates, Samples, and Helpfiles</h2>
+    <h2>About Bundling Supporting Items</h2>
     <p><small> 
         <a href="#seealso">See Also</a> 
     </small></p>
-    <ul>
-        <p><li><b>Bundling libraries.</b> To bundle a class library so that it
+    
+    The IDE provides wizards for bundling various supporting items
+    with your plug-in module. Using these wizards means you can
+    simply point-and-click at the items you want to include, and then the IDE
+    does all the work for you.
+    
+    <p>You can use wizards to quickly and easily bundle the following items
+    with your plug-in module:
+     
+    <ul>    
+        <li><b>Libraries.</b> To bundle a class library so that it
         appears in the user's Library Manager, you need a J2SE library descriptor.
         A J2SE library descriptor is an XML file that, when registered in the <tt>layer.xml</tt> file,
         adds a new class library to the IDE's
@@ -34,7 +43,7 @@
             <param name="textColor" value="blue">
         </object>
     
-        <li><b>Bundling templates.</b> Project templates are built on when users create
+        <li><b>Project Templates.</b> Project templates are used when users begin to create
         their own project. For example,
         in the IDE a user chooses the 'Web Application' project template in the New Project wizard, then the IDE
         creates a project consisting of a JSP file, a <tt>web.xml</tt> file, a server-specific deployment file,
@@ -48,12 +57,12 @@
             <param name="textColor" value="blue">
         </object>
         
-        <li><b>Bundling samples.</b> Project samples that illustrate 
+        <li><b>Project Samples.</b> Project samples that illustrate 
         some aspect of project functionality are often provided by plug-in modules
         that inject new technology into the IDE. For example,
         in the Samples directory within the New Project wizard, an Anagram Game is included
-        to demonstrate J2SE functionality. Samples are a kind of project template; they
-        have the same behavior as project templates, but they are used for a different purpose.
+        to demonstrate J2SE functionality. A samples is a kind of project template; it
+        has the same behavior as a project template, but it is used for a different purpose.
         <p>For details, see <a href="../filelevel_create/create_project_template.html">Bundling a Template or a Sample</a>.
         <p>For an example of creating a module that registers a new project sample, see the
         <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -63,6 +72,25 @@
             <param name="textColor" value="blue">
         </object>
     
+        <li><b>Update Center Declarations.</b> When you bundle an update center declaration,
+        you help your users, because they will not need to register your update center
+        manually. Instead, when they install your plug-in module, your update center
+        will automatically be declared in the Update Center wizard. As a result, when
+        your users go to Tools &gt; Update Center, they will immediately see your
+        update center in the 'Select Update Center(s) to connect' list. An update
+        center declaration consists of the URL to the autoupdate descriptor and
+        a display name.
+        
+        <li><b>JavaHelp Help Sets.</b> The IDE provides a number of JavaHelp help sets. You can
+        add your own, or, if you are creating an application on top of the NetBeans Platform,
+        you can provide a help set specifically for your application. (You can also hide help
+        sets provided by other plug-in modules.) The files required
+        for a JavaHelp help set can be generated for you by the IDE. Registration of the
+        help set in the IDE can also be automated. As a result, you do not need to think
+        about these infrastuctural matters, so that you can focus your time and
+        energy on the <i>content</i> of your help set.
+        <p>For details, see <a href="../filelevel_create/create_javahelp.html">Bundling a JavaHelp Help Set</a>.
+        
     </ul>
 
 

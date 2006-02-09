@@ -74,6 +74,8 @@
 <mapID target="apisupport_browsing_system" url="register_plugin/apisupport_browsing_system.html"/>
 <mapID target="apisupport_editing_xml_layer" url="register_plugin/apisupport_editing_xml_layer.html"/>
 
+<mapID target="apisupport_create_update_center_declaration" url="create_plugin/filelevel_create/create_update_centers.html"/>
+
 	<!-- Start of "CSH" section -->
 
 		<!-- NetBeans Platform Manager: -->
