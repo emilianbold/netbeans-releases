@@ -25,14 +25,13 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     private final String module;
     private final String cpext;
     private final String releaseVersion;
-    private final String specVersion;
     private final String[] providedTokens;
     private final ManifestManager.PackageExport[] publicPackages;
     private final String[] friends;
     private final boolean deprecated;
     
     public NetBeansOrgEntry(File nball, String cnb, String path, File cluster,
-            String module, String cpext, String releaseVersion, String specVersion,
+            String module, String cpext, String releaseVersion,
             String[] providedTokens, ManifestManager.PackageExport[] publicPackages,
             String[] friends, boolean deprecated) {
         this.nball = nball;
@@ -42,7 +41,6 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
         this.module = module;
         this.cpext = cpext;
         this.releaseVersion = releaseVersion;
-        this.specVersion = specVersion;
         this.providedTokens = providedTokens;
         this.publicPackages = publicPackages;
         this.friends = friends;
@@ -83,10 +81,6 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     
     public String[] getProvidedTokens() {
         return providedTokens;
-    }
-    
-    public String getSpecificationVersion() {
-        return specVersion;
     }
     
     public ManifestManager.PackageExport[] getPublicPackages() {

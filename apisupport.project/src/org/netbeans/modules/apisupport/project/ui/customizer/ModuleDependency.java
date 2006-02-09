@@ -26,10 +26,8 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
  * in module's <em>project.xml</em> or one token in the
  * OpenIDE-Module-Module-Dependencies attribute of module manifest.
  * <p>
- * Natural ordering is based sequentially on the code name base of {@link
- * ModuleEntry} this instance represents, release version, specification
- * version, implementation dependency and compilation dependency. Two instances
- * are equals only if all the mentioned are <code>equals</code>.
+ * Natural ordering and comparison is based on code name base only!
+ * Other properties are not considered.
  * </p>
  *
  * @author Martin Krauskopf
@@ -39,6 +37,10 @@ public final class ModuleDependency implements Comparable {
     // XXX refactor and use SpecificationVersion instead
     private String releaseVersion;
     private String specVersion;
+    /**
+     * Defer loading spec version until really needed since it can be expensive.
+     */
+    private static final String SPEC_VERSION_LAZY = "<lazy>"; // NOI18N
     private boolean implDep;
     private boolean compileDep;
     
@@ -77,7 +79,7 @@ public final class ModuleDependency implements Comparable {
      * false.
      */
     public ModuleDependency(ModuleEntry me) {
-        this(me, me.getReleaseVersion(), me.getSpecificationVersion(), true, false);
+        this(me, me.getReleaseVersion(), SPEC_VERSION_LAZY, true, false);
     }
     
     public ModuleDependency(ModuleEntry me, String releaseVersion,
@@ -100,7 +102,12 @@ public final class ModuleDependency implements Comparable {
     }
     
     public String getSpecificationVersion() {
-        return specVersion;
+        if (specVersion == SPEC_VERSION_LAZY) {
+            // do not cache here
+            return me.getSpecificationVersion();
+        } else {
+            return specVersion;
+        }
     }
     
     public ModuleEntry getModuleEntry() {
@@ -109,56 +116,18 @@ public final class ModuleDependency implements Comparable {
     
     public int compareTo(Object o) {
         ModuleDependency other = (ModuleDependency) o;
-        int result = getModuleEntry().getCodeNameBase().compareTo(
+        return getModuleEntry().getCodeNameBase().compareTo(
                 other.getModuleEntry().getCodeNameBase());
-        if (result != 0) { return result; }
-        
-        // XXX this is not exact since we should use SpecificationVersion
-        // instead of String. In this way are not using Dewey-decimal comparison.
-        String relVersion = other.getReleaseVersion();
-        result = releaseVersion == null // release versions may be null
-                ? (relVersion == null ? 0 : -1)
-                : (relVersion == null ? 1 : releaseVersion.compareTo(relVersion));
-        if (result != 0) { return result; }
-        
-        String otherSpec = other.getSpecificationVersion();
-        result = specVersion == null // spec versions may be null
-                ? (otherSpec == null ? 0 : -1)
-                : (otherSpec == null ? 1 : specVersion.compareTo(otherSpec));
-        if (result != 0) { return result; }
-        
-        result = implDep == other.hasImplementationDepedendency() ? 0 : (implDep ? 1 : -1);
-        if (result != 0) { return result; }
-        
-        result = compileDep == other.hasCompileDependency() ? 0 : (compileDep ? 1 : -1);
-        return result;
     }
     
     public boolean equals(Object o) {
-        boolean retval = false;
-        if (o instanceof ModuleDependency) {
-            ModuleDependency other = (ModuleDependency) o;
-            boolean cnbsEquals =  getModuleEntry().getCodeNameBase().equals(
-                    ((ModuleDependency) o).getModuleEntry().getCodeNameBase());
-            retval = cnbsEquals &&
-                    (releaseVersion == null ? (other.getReleaseVersion() == null) :
-                        releaseVersion.equals(other.getReleaseVersion())) &&
-                    (specVersion == null ? (other.getSpecificationVersion() == null) :
-                        specVersion.equals(other.getSpecificationVersion())) &&
-                    (implDep == other.hasImplementationDepedendency()) &&
-                    (compileDep == other.hasCompileDependency());
-        }
-        return  retval;
+        return (o instanceof ModuleDependency) &&
+                getModuleEntry().getCodeNameBase().equals(
+                ((ModuleDependency) o).getModuleEntry().getCodeNameBase());
     }
     
     public int hashCode() {
-        int result = 17;
-        result = (37 * result) + getModuleEntry().getCodeNameBase().hashCode();
-        result = (37 * result) + (releaseVersion == null ? 0 :releaseVersion.hashCode());
-        result = (37 * result) + (specVersion == null ? 0 :specVersion.hashCode());
-        result = (37 * result) + (implDep ? 0 : 1);
-        result = (37 * result) + (compileDep ? 0 : 1);
-        return result;
+        return getModuleEntry().getCodeNameBase().hashCode();
     }
     
     public boolean hasCompileDependency() {

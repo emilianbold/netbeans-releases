@@ -18,10 +18,16 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.EditableManifest;
+import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
@@ -272,6 +278,27 @@ public class ModuleListTest extends TestBase {
                 FileUtil.toFile(p.getProjectDirectory()),
                 NbPlatform.getDefaultPlatform().getDestDir());
         assertEquals("one public packages in the refreshed ModuleEntry", 1, ml.getEntry("org.example.module1a").getPublicPackages().length);
+    }
+    
+    public void testSpecVersionBaseSourceEntries() throws Exception { // #72463
+        SuiteProject suite = generateSuite("suite");
+        NbModuleProject p = TestBase.generateSuiteComponent(suite, "module");
+        ModuleList ml = ModuleList.getModuleList(FileUtil.toFile(p.getProjectDirectory()));
+        ModuleEntry e = ml.getEntry("org.example.module");
+        assertNotNull("have entry", e);
+        assertEquals("right initial spec vers from manifest", "1.0", e.getSpecificationVersion());
+        EditableProperties ep = p.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.setProperty(SingleModuleProperties.SPEC_VERSION_BASE, "1.1.0");
+        p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        EditableManifest em = Util.loadManifest(p.getManifestFile());
+        em.removeAttribute(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION, null);
+        Util.storeManifest(p.getManifestFile(), em);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals("right spec.version.base", "1.1.0", e.getSpecificationVersion());
+        ep.setProperty(SingleModuleProperties.SPEC_VERSION_BASE, "1.2.0");
+        p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals("right modified spec.version.base", "1.2.0", e.getSpecificationVersion());
     }
     
 }

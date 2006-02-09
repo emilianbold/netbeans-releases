@@ -324,11 +324,11 @@ public final class ModuleList {
         String[] friends = ProjectXMLManager.findFriends(data);
         if (!suiteComponent && !standalone) {
             entry = new NetBeansOrgEntry(root, cnb, path, clusterDir, module, cpextra.toString(),
-                    mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(),
+                    mm.getReleaseVersion(), mm.getProvidedTokens(),
                     publicPackages, friends, mm.isDeprecated());
         } else {
             entry = new ExternalEntry(basedir, cnb, clusterDir, PropertyUtils.resolveFile(clusterDir, module),
-                    cpextra.toString(), nbdestdir, mm.getReleaseVersion(), mm.getSpecificationVersion(),
+                    cpextra.toString(), nbdestdir, mm.getReleaseVersion(),
                     mm.getProvidedTokens(), publicPackages, friends, mm.isDeprecated());
         }
         if (entries.containsKey(cnb)) {

@@ -105,5 +105,21 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
         }
         return (String[]) deps.toArray(new String[deps.size()]);
     }
+
+    public String getSpecificationVersion() {
+        FileObject source = FileUtil.toFileObject(getSourceLocation());
+        if (source != null) {
+            NbModuleProject project;
+            try {
+                project = (NbModuleProject) ProjectManager.getDefault().findProject(source);
+                if (project != null) {
+                    return project.getSpecVersion();
+                }
+            } catch (IOException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        return null;
+    }
     
 }
