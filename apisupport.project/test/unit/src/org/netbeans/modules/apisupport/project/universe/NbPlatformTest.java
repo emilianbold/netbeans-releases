@@ -24,6 +24,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Test functionality of {@link NbPlatform}.
@@ -246,7 +247,7 @@ public class NbPlatformTest extends TestBase {
         p = NbPlatform.addPlatform("test", testPlatform, defaultHarnessLocation, "Test");
         assertEquals("5.0u1 harness detected", NbPlatform.HARNESS_VERSION_50u1, p.getHarnessVersion());
         PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {PropertyUtils.globalPropertyProvider()});
-        assertEquals(defaultHarnessLocation.getAbsolutePath(), eval.getProperty("nbplatform.test.harness.dir"));
+        assertEquals(defaultHarnessLocation, FileUtil.normalizeFile(new File(eval.getProperty("nbplatform.test.harness.dir"))));
         NbPlatform.reset();
         p = NbPlatform.getPlatformByID("test");
         assertNotNull(p);

@@ -71,7 +71,7 @@ public abstract class TestBase extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        nbrootF = new File(System.getProperty("test.nbroot"));
+        nbrootF = FileUtil.normalizeFile(new File(System.getProperty("test.nbroot")));
         assertTrue("there is a dir " + nbrootF, nbrootF.isDirectory());
         assertTrue("nbbuild exists", new File(nbrootF, "nbbuild").isDirectory());
         nbroot = FileUtil.toFileObject(nbrootF);
