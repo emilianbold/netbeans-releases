@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,7 +27,11 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
@@ -162,6 +166,29 @@ public final class LayerNode extends FilterNode {
                 });
                 status.setClasspath(cp);
                 // XXX loc/branding suffix?
+                addFileChangeListener(new FileChangeListener() { // #65564
+                    private void fire() {
+                        fireFileStatusChanged(new FileStatusEvent(BadgingMergedFileSystem.this, true, true));
+                    }
+                    public void fileAttributeChanged(FileAttributeEvent fe) {
+                        fire();
+                    }
+                    public void fileChanged(FileEvent fe) {
+                        fire();
+                    }
+                    public void fileDataCreated(FileEvent fe) {
+                        fire();
+                    }
+                    public void fileDeleted(FileEvent fe) {
+                        fire();
+                    }
+                    public void fileFolderCreated(FileEvent fe) {
+                        fire();
+                    }
+                    public void fileRenamed(FileRenameEvent fe) {
+                        fire();
+                    }
+                });
             }
             public FileSystem.Status getStatus() {
                 return new FileSystem.HtmlStatus() {
