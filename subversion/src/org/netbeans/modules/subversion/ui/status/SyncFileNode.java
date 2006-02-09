@@ -168,7 +168,7 @@ public class SyncFileNode extends AbstractNode {
 
         public PathProperty() {
             super(COLUMN_NAME_PATH, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2003"), NbBundle.getMessage(SyncFileNode.class, "BK2004"));
-            shortPath = "";//Utils.getRelativePath(node.getFile());
+            shortPath = SvnUtils.getRelativePath(node.getFile());
             setValue("sortkey", shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
         }
 

@@ -75,6 +75,7 @@ public class CommitAction extends ContextAction {
         JButton commitButton = new JButton("Commit");
         dd.setOptions(new Object[] {commitButton, "Cancel"});
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.pack();
         dialog.setVisible(true);
 
         if (dd.getValue() == commitButton) {

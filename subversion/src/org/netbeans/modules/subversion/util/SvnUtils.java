@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.subversion.util;
 
+import org.netbeans.modules.subversion.client.SvnClient;
+import org.openide.*;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -33,6 +35,7 @@ import java.awt.Window;
 import java.awt.KeyboardFocusManager;
 import java.awt.Dialog;
 import java.awt.Frame;
+import org.tigris.subversion.svnclientadapter.*;
 
 /**
  * Subversion-specific utilities.
@@ -376,9 +379,29 @@ public class SvnUtils {
 
     /**
      * Translate to relative path to repository root
+     *
+     * @return relative repositpry path or null for unknown
      */
     public static String getRelativePath(File file) {
-        return "TODO getRelativePath(File file)";  // TODO
+        String repositoryPath = null;
+        try {
+            SvnClient client = Subversion.getInstance().getClient();
+            ISVNInfo info = client.getInfoFromWorkingCopy(file);  // XXX info does not contain repository URL
+            SVNUrl fileURL = info.getUrl();
+//            SVNUrl repositoryURL = client.getRepositoryRoot(fileURL);
+//            String fileLink = fileURL.toString();
+//            String repositoryLink = repositoryURL.toString();
+//            repositoryPath = fileLink.substring(repositoryLink.length());
+            repositoryPath = "";
+            String[] segments = fileURL.getPathSegments();
+            for (int i = 0; i<segments.length; i++) {
+                repositoryPath += "/" + segments[i];
+            }
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+                
+        return repositoryPath;
     }
 
     /**
