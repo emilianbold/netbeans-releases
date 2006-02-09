@@ -53,15 +53,23 @@ public final class ModuleOperations implements DeleteOperationImplementation,
     }
     
     public void notifyDeleting() throws IOException {
+        notifyDeleting(false);
+    }
+    
+    private void notifyDeleting(boolean temporary) throws IOException {
         FileObject buildXML = projectDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         ActionUtils.runTarget(buildXML, new String[] { ActionProvider.COMMAND_CLEAN }, null).waitFinished();
         
         SuiteProject suite = SuiteUtils.findSuite(project);
         if (suite != null) {
-            // XXX we should ask the user in the same way as when we removing the
-            // module in suite logical view. But it is not possible with the
-            // current Project API. (maybe by some wrapper in the ModuleActions)
-            SuiteUtils.removeModuleFromSuiteWithDependencies(project);
+            if (temporary) {
+                SuiteUtils.removeModuleFromSuite(project);
+            } else {
+                // XXX we should ask the user in the same way as when we removing the
+                // module in suite logical view. But it is not possible with the
+                // current Project API. (maybe by some wrapper in the ModuleActions)
+                SuiteUtils.removeModuleFromSuiteWithDependencies(project);
+            }
         }
         
         project.notifyDeleting();
@@ -76,7 +84,7 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         if (suite != null) {
             TEMPORARY_CACHE.put(project.getCodeNameBase(), suite);
         }
-        notifyDeleting();
+        notifyDeleting(true);
     }
     
     public void notifyMoved(Project original, File originalPath, String nueName) throws IOException {
