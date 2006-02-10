@@ -271,7 +271,7 @@ public class RADVisualComponent extends RADComponent {
                     } else if (LayoutConstants.PROP_HORIZONTAL_MAX_SIZE.equals(propName)) {
                         node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE, null, null);
                     } else if (LayoutConstants.PROP_VERTICAL_MAX_SIZE.equals(propName)) {
-                        node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE, null, null);
+                        node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_VERTICAL_RESIZABLE, null, null);
                     }
                 }
             });
