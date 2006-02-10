@@ -37,7 +37,7 @@ public final class Parameter extends Field {
 	List paramList = new ArrayList();
         for (Iterator it = new ParamIterator(method); it.hasNext();)
             paramList.add(it.next());
-        return (Parameter[])paramList.toArray(new Parameter[0]);
+        return (Parameter[])paramList.toArray(new Parameter[paramList.size()]);
     }
 
     private static Parameter createParameter (String name, String type, ClassFile classFile,
