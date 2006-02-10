@@ -40,6 +40,46 @@ public class ModuleDependencyTest extends TestBase {
         super(testName);
     }
     
+    public void testHashCodeAndEqualsAndCompareTo() throws Exception {
+        NbModuleProject module = generateStandaloneModule("module");
+        ModuleList ml = module.getModuleList();
+        ModuleEntry antME = ml.getEntry("org.apache.tools.ant.module");
+        ModuleDependency d1 = new ModuleDependency(antME);
+        ModuleDependency sameAsD1 = new ModuleDependency(antME);
+        ModuleDependency alsoSameAsD1 = new ModuleDependency(antME, antME.getReleaseVersion(), antME.getSpecificationVersion(), true, false);
+        ModuleDependency d2 = new ModuleDependency(antME, "0-1", null, true, false);
+        ModuleDependency d3 = new ModuleDependency(antME, null, null, true, false);
+        ModuleDependency d4 = new ModuleDependency(antME, antME.getReleaseVersion(), null, true, true);
+        ModuleDependency d5 = new ModuleDependency(antME, antME.getReleaseVersion(), null, true, false);
+        
+        // test hash code and equals
+        Set/*<ModuleDependency>*/ set = new HashSet();
+        Set/*<ModuleDependency>*/ sorted = new TreeSet();
+        set.add(d1);
+        sorted.add(d1);
+        assertFalse("already there", set.add(sameAsD1));
+        assertFalse("already there", sorted.add(sameAsD1));
+        assertFalse("already there", set.add(alsoSameAsD1));
+        assertFalse("already there", sorted.add(alsoSameAsD1));
+        assertTrue("is not there yet", set.add(d2));
+        assertTrue("is not there yet", sorted.add(d2));
+        assertTrue("is not there yet", set.add(d3));
+        assertTrue("is not there yet", sorted.add(d3));
+        assertTrue("is not there yet", set.add(d4));
+        assertTrue("is not there yet", sorted.add(d4));
+        assertTrue("is not there yet", set.add(d5));
+        assertTrue("is not there yet", sorted.add(d5));
+        
+        ModuleDependency[] expectedOrder = new ModuleDependency[] {
+            d3, d2, d5, d4, d1
+        };
+        Iterator it = sorted.iterator();
+        for (int i = 0; i < expectedOrder.length; i++) {
+            assertSame("expected order", expectedOrder[i], it.next());
+        }
+        assertFalse("sanity check", it.hasNext());
+    }
+    
     public void testLocalizedNameComparator() throws Exception {
         NbModuleProject module = generateStandaloneModule("module");
         ModuleList ml = module.getModuleList();
@@ -83,10 +123,12 @@ public class ModuleDependencyTest extends TestBase {
         em.removeAttribute(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION, null);
         Util.storeManifest(p.getManifestFile(), em);
         ProjectManager.getDefault().saveProject(p);
+        dep = new ModuleDependency(e);
         assertEquals("right spec.version.base", "1.1.0", dep.getSpecificationVersion());
         ep.setProperty(SingleModuleProperties.SPEC_VERSION_BASE, "1.2.0");
         p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ProjectManager.getDefault().saveProject(p);
+        dep = new ModuleDependency(e);
         assertEquals("right modified spec.version.base", "1.2.0", dep.getSpecificationVersion());
         dep = new ModuleDependency(e, null, "1.0", true, false);
         assertEquals("right explicit spec vers", "1.0", dep.getSpecificationVersion());

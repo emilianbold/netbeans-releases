@@ -20,14 +20,17 @@ import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.Utilities;
 
 /**
  * Represents one module dependency. I.e. <em>&lt;dependency&gt;</em> element
  * in module's <em>project.xml</em> or one token in the
  * OpenIDE-Module-Module-Dependencies attribute of module manifest.
  * <p>
- * Natural ordering and comparison is based on code name base only!
- * Other properties are not considered.
+ * Natural ordering is based sequentially on the code name base of {@link
+ * ModuleEntry} this instance represents, release version, specification
+ * version, implementation dependency and compilation dependency. Two instances
+ * are equals only if all the mentioned are <code>equals</code>.
  * </p>
  *
  * @author Martin Krauskopf
@@ -65,9 +68,7 @@ public final class ModuleDependency implements Comparable {
         };
         CNB_COMPARATOR = new Comparator() {
             public int compare(Object o1, Object o2) {
-                ModuleEntry me1 = ((ModuleDependency) o1).getModuleEntry();
-                ModuleEntry me2 = ((ModuleDependency) o2).getModuleEntry();
-                return me1.getCodeNameBase().compareTo(me2.getCodeNameBase());
+                return ((ModuleDependency) o1).getCodeNameBase().compareTo(((ModuleDependency) o2).getCodeNameBase());
             }
         };
     }
@@ -103,31 +104,66 @@ public final class ModuleDependency implements Comparable {
     
     public String getSpecificationVersion() {
         if (specVersion == SPEC_VERSION_LAZY) {
-            // do not cache here
-            return me.getSpecificationVersion();
-        } else {
-            return specVersion;
+            specVersion = me.getSpecificationVersion();
         }
+        return specVersion;
     }
     
     public ModuleEntry getModuleEntry() {
         return me;
     }
     
+    private String getCodeNameBase() {
+        return getModuleEntry().getCodeNameBase();
+    }
+    
     public int compareTo(Object o) {
         ModuleDependency other = (ModuleDependency) o;
-        return getModuleEntry().getCodeNameBase().compareTo(
-                other.getModuleEntry().getCodeNameBase());
+        int result = getCodeNameBase().compareTo(other.getCodeNameBase());
+        if (result != 0) { return result; }
+        
+        // XXX this is not exact since we should use SpecificationVersion
+        // instead of String. In this way are not using Dewey-decimal comparison.
+        String relVersion = other.getReleaseVersion();
+        result = getReleaseVersion() == null // release versions may be null
+                ? (relVersion == null ? 0 : -1)
+                : (relVersion == null ? 1 : getReleaseVersion().compareTo(relVersion));
+        if (result != 0) { return result; }
+        
+        // do not force resolution of SPEC_VERSION_LAZY for comparisons, unnecessary
+        if (specVersion != SPEC_VERSION_LAZY || other.specVersion != SPEC_VERSION_LAZY) {
+            String otherSpec = other.getSpecificationVersion();
+            String spec = getSpecificationVersion();
+            result = spec == null // spec versions may be null
+                    ? (otherSpec == null ? 0 : -1)
+                    : (otherSpec == null ? 1 : spec.compareTo(otherSpec));
+            if (result != 0) { return result; }
+        }
+        
+        result = hasImplementationDepedendency() == other.hasImplementationDepedendency() ? 0 : (implDep ? 1 : -1);
+        if (result != 0) { return result; }
+        
+        result = hasCompileDependency() == other.hasCompileDependency() ? 0 : (compileDep ? 1 : -1);
+        return result;
     }
     
     public boolean equals(Object o) {
-        return (o instanceof ModuleDependency) &&
-                getModuleEntry().getCodeNameBase().equals(
-                ((ModuleDependency) o).getModuleEntry().getCodeNameBase());
+        if (o instanceof ModuleDependency) {
+            ModuleDependency other = (ModuleDependency) o;
+            return getCodeNameBase().equals(other.getCodeNameBase()) &&
+                    Utilities.compareObjects(getReleaseVersion(), other.getReleaseVersion()) &&
+                    ((specVersion == SPEC_VERSION_LAZY && other.specVersion == SPEC_VERSION_LAZY) ||
+                    Utilities.compareObjects(getSpecificationVersion(), other.getSpecificationVersion())) &&
+                    (hasImplementationDepedendency() == other.hasImplementationDepedendency()) &&
+                    (hasCompileDependency() == other.hasCompileDependency());
+        } else {
+            return false;
+        }
     }
     
     public int hashCode() {
-        return getModuleEntry().getCodeNameBase().hashCode();
+        // specifically do not hash spec version
+        return getCodeNameBase().hashCode();
     }
     
     public boolean hasCompileDependency() {
