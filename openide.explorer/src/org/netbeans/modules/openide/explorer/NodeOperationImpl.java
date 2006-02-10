@@ -42,7 +42,7 @@ public final class NodeOperationImpl extends org.openide.nodes.NodeOperation {
         d.getContentPane().add(customizer, BorderLayout.CENTER);
         d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         d.pack();
-        d.show();
+        d.setVisible(true);
         return true;
     }
 
@@ -58,7 +58,7 @@ public final class NodeOperationImpl extends org.openide.nodes.NodeOperation {
         d.getContentPane().add(p, BorderLayout.CENTER);
         d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         d.pack();
-        d.show();
+        d.setVisible(true);
     }
 
     public Node[] select(String title, String rootTitle, Node root, NodeAcceptor acceptor, Component top) throws UserCancelException {
@@ -76,7 +76,7 @@ public final class NodeOperationImpl extends org.openide.nodes.NodeOperation {
             d.getContentPane().add(top, BorderLayout.NORTH);
         }
         d.pack();
-        d.show();
+        d.setVisible(true);
         Node[] nodes = p.getExplorerManager().getSelectedNodes();
         d.dispose();
         return nodes;
@@ -95,7 +95,7 @@ public final class NodeOperationImpl extends org.openide.nodes.NodeOperation {
         d.getContentPane().setLayout(new BorderLayout());
         d.getContentPane().add(ps, BorderLayout.CENTER);
         d.pack();
-        d.show();
+        d.setVisible(true);
         d.dispose();
     }
     
