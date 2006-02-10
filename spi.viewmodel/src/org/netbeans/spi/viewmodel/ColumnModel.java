@@ -41,6 +41,17 @@ public abstract class ColumnModel implements Model {
      */
     public abstract String getDisplayName ();
     
+    /** 
+     * Returns the character, that indicates a mnemonic key
+     * for this column name. Can be <code>null</code>.
+     *
+     * @return the mnemonic key or <code>null</code>.
+     * @since 1.11
+     */
+    public Character getDisplayedMnemonic() {
+        return null;
+    }
+    
     /**
      * Returns type of column items.
      *

@@ -329,6 +329,11 @@ NodeActionsProvider {
                 getString ("CTL_SourcesModel_Column_Name_Name");
         }
 
+        public Character getDisplayedMnemonic() {
+            return new Character(NbBundle.getBundle(SourcesModel.class).getString 
+                ("CTL_SourcesModel_Column_Name_Name_Mnc").charAt(0));
+        }
+
         /**
          * Returns tooltip for given column.
          *
@@ -372,6 +377,11 @@ NodeActionsProvider {
         public String getDisplayName () {
             return NbBundle.getBundle (SourcesModel.class).getString 
                 ("CTL_SourcesModel_Column_Debugging_Name");
+        }
+
+        public Character getDisplayedMnemonic() {
+            return new Character(NbBundle.getBundle(SourcesModel.class).getString 
+                ("CTL_SourcesModel_Column_Debugging_Name_Mnc").charAt(0));
         }
 
         /**

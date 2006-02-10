@@ -97,6 +97,11 @@ public class ColumnModels {
         public String getDisplayName() {
             return NbBundle.getBundle (ColumnModels.class).getString(displayName);
         }
+
+        public Character getDisplayedMnemonic() {
+            return new Character(NbBundle.getBundle(ColumnModels.class).
+                    getString(displayName+"_Mnc").charAt(0));   // NOI18N
+        }
         
         public String getShortDescription() {
             return NbBundle.getBundle (ColumnModels.class).getString(shortDescription);

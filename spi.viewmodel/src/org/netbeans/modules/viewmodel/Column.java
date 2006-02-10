@@ -52,6 +52,10 @@ public class Column extends PropertySupport.ReadWrite {
                 "TreeColumnTTV", 
                 Boolean.TRUE
             );
+        Character mnemonic = columnModel.getDisplayedMnemonic();
+        if (mnemonic != null) {
+            setValue("ColumnMnemonicCharTTV", mnemonic); // NOI18N
+        }
         this.propertyEditor = columnModel.getPropertyEditor ();
     }
 

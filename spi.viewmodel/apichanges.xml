@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -200,6 +200,21 @@ Microsystems, Inc. All Rights Reserved.
         </description>
         <class package="org.netbeans.spi.viewmodel" name="Models" />
         <issue number="62617"/>
+    </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>getDisplayedMnemonic() method added to ColumnModel.</summary>
+        <version major="1" minor="11"/>
+        <date day="30" month="1" year="2006"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <description>
+            In order to be able to provide mnemonics for columns in tree table views,
+            <code>Character ColumnModel.getDisplayedMnemonic()</code> method was
+            added to ColumnModel class.
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="ColumnModel" />
+        <issue number="71858"/>
     </change>
     
 

@@ -176,6 +176,11 @@ public class ClassesNodeModel implements NodeModel {
                 getString ("CTL_ClassesModel_Column_Name_Name");
         }
 
+        public Character getDisplayedMnemonic() {
+            return new Character(NbBundle.getBundle (DefaultClassesColumn.class).
+                getString ("CTL_ClassesModel_Column_Name_Mnc").charAt(0));
+        }
+
         /**
          * Returns tooltip for given column.
          *

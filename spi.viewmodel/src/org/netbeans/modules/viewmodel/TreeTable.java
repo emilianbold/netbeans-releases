@@ -68,7 +68,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
     
     private ExplorerManager     explorerManager;
     private MyTreeTable         treeTable;
-    private Node.Property[]     columns;
+    Node.Property[]             columns; // Accessed from tests
     private List                expandedPaths = new ArrayList ();
     private TreeModelRoot       currentTreeModelRoot;
     private Models.CompoundModel model;
@@ -213,33 +213,15 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
                 addDefaultColumn = false;
         }
         if (!addDefaultColumn) {
-            setMnemonics(columns);
             return columns;
         }
         PropertySupport.ReadWrite[] columns2 = 
             new PropertySupport.ReadWrite [columns.length + 1];
         System.arraycopy (columns, 0, columns2, 1, columns.length);
         columns2 [0] = new DefaultColumn ();
-        setMnemonics(columns2);
         return columns2;
     }
     
-    private void setMnemonics(Node.Property properties[]) {
-        HashSet mnemonicsUsed = new HashSet();
-        for (int i = 0; i < properties.length; i++) {
-            String name = properties[i].getDisplayName();
-            for (int j = 0; j < name.length(); j++) {
-                String c = name.substring(j, j + 1);
-                String lc = c.toLowerCase();
-                if (!mnemonicsUsed.contains(lc)) {
-                    mnemonicsUsed.add(lc);
-                    properties[i].setValue("ColumnMnemonicCharTTV", c); // NOI18N
-                    break;
-                }
-            }
-        }
-    }
-
     void updateColumnWidths () {
         int i, k = columns.length;
         for (i = 0; i < k; i++) {
