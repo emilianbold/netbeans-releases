@@ -315,8 +315,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     private class DnDSupport implements DragSourceListener, DragGestureListener, DropTargetListener, DragSourceMotionListener {
         private DragSource dragSource = new DragSource();
         
-        private Cursor dragMoveCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/resources/cursorsmovesingle.gif"), "ACTION_MOVE" );
-        private Cursor dragNoDropCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/resources/cursorsnone.gif"), "NO_ACTION_MOVE" );
+        private Cursor dragMoveCursor = DragSource.DefaultMoveDrop;
+        private Cursor dragNoDropCursor = DragSource.DefaultMoveNoDrop;
         private Cursor dragRemoveCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/loaders/delete.gif"), "NO_ACTION_MOVE" );
         
         public DnDSupport() {

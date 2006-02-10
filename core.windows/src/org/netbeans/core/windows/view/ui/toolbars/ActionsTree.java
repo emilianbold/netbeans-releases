@@ -46,8 +46,8 @@ public class ActionsTree extends JTree implements DragGestureListener, DragSourc
     
     private boolean firstTimeExpand = true;
     
-    private Cursor dragMoveCursor = Utilities.createCustomCursor( this, Utilities.loadImage( "org/openide/resources/cursorsmovesingle.gif"), "ACTION_MOVE" );
-    private Cursor dragNoDropCursor = Utilities.createCustomCursor( this, Utilities.loadImage( "org/openide/resources/cursorsnone.gif"), "NO_ACTION_MOVE" );
+    private Cursor dragMoveCursor = DragSource.DefaultMoveDrop;
+    private Cursor dragNoDropCursor = DragSource.DefaultMoveNoDrop;
     
     /** Creates a new instance of ActionsTree */
     public ActionsTree( Node root ) {

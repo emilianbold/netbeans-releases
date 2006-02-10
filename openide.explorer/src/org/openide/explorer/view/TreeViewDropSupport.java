@@ -134,11 +134,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
     private void doDragOver(DropTargetDragEvent dtde) {
         int dropAction = dtde.getDropAction();
         int allowedDropActions = view.getAllowedDropActions();
-        ExplorerDnDManager.getDefault().prepareCursor(
-            DragDropUtilities.chooseCursor(
-                dtde.getDropTargetContext().getComponent(), dropAction, (dropAction & view.getAllowedDropActions()) != 0
-            )
-        );
+        
         dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
                 dropAction, allowedDropActions);
 

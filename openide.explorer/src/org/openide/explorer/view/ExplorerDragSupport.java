@@ -116,11 +116,7 @@ abstract class ExplorerDragSupport implements DragSourceListener, DragGestureLis
                 return;
             } else {
                 exDnD.setDnDActive(true);
-                dge.startDrag(
-                    DragDropUtilities.chooseCursor(dge.getComponent(), dragAction, dragStatus),
-                    Utilities.loadImage("org/openide/resources/cursorscopysingle.gif"), // NOI18N
-                    new Point(16, 16), transferable, this
-                );
+                dge.startDrag(null, transferable, this);
             }
         } catch (InvalidDnDOperationException exc) {
             // cannot start the drag, notify as informational
@@ -154,13 +150,9 @@ abstract class ExplorerDragSupport implements DragSourceListener, DragGestureLis
     }
 
     public void dragExit(DragSourceEvent dse) {
-        dse.getDragSourceContext().setCursor(
-            DragDropUtilities.chooseCursor(comp, dse.getDragSourceContext().getSourceActions(), false)
-        );
     }
 
     private void doDragOver(DragSourceDragEvent dsde) {
-        dsde.getDragSourceContext().setCursor(exDnD.getCursor());
     }
 
     public void dragDropEnd(DragSourceDropEvent dsde) {

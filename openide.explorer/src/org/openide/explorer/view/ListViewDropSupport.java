@@ -73,11 +73,6 @@ final class ListViewDropSupport implements DropTargetListener, Runnable {
         int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
                 dtde.getDropAction(), view.getAllowedDropActions()
             );
-        ExplorerDnDManager.getDefault().prepareCursor(
-            DragDropUtilities.chooseCursor(
-                dtde.getDropTargetContext().getComponent(), dropAction, (dropAction & view.getAllowedDropActions()) != 0
-            )
-        );
 
         lastIndex = indexWithCheck(dtde);
 
@@ -95,11 +90,6 @@ final class ListViewDropSupport implements DropTargetListener, Runnable {
         int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
                 dtde.getDropAction(), view.getAllowedDropActions()
             );
-        ExplorerDnDManager.getDefault().prepareCursor(
-            DragDropUtilities.chooseCursor(
-                dtde.getDropTargetContext().getComponent(), dropAction, (dropAction & view.getAllowedDropActions()) != 0
-            )
-        );
 
         int index = indexWithCheck(dtde);
 
