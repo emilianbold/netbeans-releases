@@ -679,7 +679,7 @@ public class NodeTableModel extends AbstractTableModel {
             );
 
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dlg);
-        dialog.show();
+        dialog.setVisible(true);
 
         if (dlg.getValue().equals(DialogDescriptor.OK_OPTION)) {
             int num = boxes.size();

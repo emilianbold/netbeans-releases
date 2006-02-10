@@ -298,7 +298,7 @@ class CustomEditorAction extends AbstractAction {
 
         try {
             PropUtils.addExternallyEdited(p);
-            w.show();
+            w.setVisible(true);
             PropUtils.removeExternallyEdited(p);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
