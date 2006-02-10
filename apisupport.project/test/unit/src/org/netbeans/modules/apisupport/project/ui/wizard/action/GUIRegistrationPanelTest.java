@@ -58,9 +58,13 @@ public class GUIRegistrationPanelTest extends LayerTestBase {
         frame.getContentPane().add(new JLabel("<html><font color='blue'>I will close my self" +
                 " as soos as I load all data from the SystemFileSystem</font></html>"), BorderLayout.NORTH);
         frame.getContentPane().add(outerPane, BorderLayout.CENTER);
-        frame.pack();
-        // NOTE: we have to show the frame to take combobox renderers into the game
-        frame.setVisible(true);
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                frame.pack();
+                // NOTE: we have to show the frame to take combobox renderers into the game
+                frame.setVisible(true);
+            }
+        });
         while (!regPane.checkValidity()) {
             Thread.sleep(200);
         }
