@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -21,8 +21,6 @@ import java.text.MessageFormat;
  * @version 0.2
  */
 public abstract class AbstractUtil {
-    /** Cached package name. */
-    private String packageName;
     /** Cached isLoggable value. */
     private boolean loggable;
     /** Has loggable already been initialized. */
@@ -87,10 +85,7 @@ public abstract class AbstractUtil {
      * @return package name of this instance
      */
     private final synchronized String getPackageName () {
-        if ( packageName == null ) {
-            packageName = this.getClass().getPackage().getName().intern();
-        }
-        return packageName;
+        return "org.netbeans.tax"; // NOI18N
     }
 
 

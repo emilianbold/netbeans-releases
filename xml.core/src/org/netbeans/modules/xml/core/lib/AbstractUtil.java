@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.core.lib;
@@ -34,25 +34,10 @@ import java.util.MissingResourceException;
  * @author     Libor Kramolis
  */
 public abstract class AbstractUtil {
-    
-    /** Cached package name. */
-    private String packageName;
     /** Instance package ErrorManager. */
     private ErrorManager packageErrorManager;
     /** Default debug severity used with ErrorManager. */
     private static final int DEBUG_SEVERITY = ErrorManager.INFORMATIONAL;
-    
-    /**
-     * @return package name of this instance
-     */
-    private final synchronized String getPackageName () {
-        if ( packageName == null ) {
-            //??? what for classed from default package? -> A: we do not have classes in default package!
-            packageName = this.getClass().getPackage().getName().intern();
-        }
-        return packageName;
-    }
-    
     
     //
     // String localizing purposes
@@ -192,7 +177,7 @@ public abstract class AbstractUtil {
      */
     public final synchronized ErrorManager getErrorManager () {
         if ( packageErrorManager == null ) {
-            String pack = getPackageName();
+            String pack = "org.netbeans.modules.xml.core.lib"; // NOI18N
             packageErrorManager = ErrorManager.getDefault().getInstance(pack);
         }
         return packageErrorManager;
