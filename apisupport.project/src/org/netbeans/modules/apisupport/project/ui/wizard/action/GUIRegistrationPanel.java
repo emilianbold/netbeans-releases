@@ -16,10 +16,13 @@ package org.netbeans.modules.apisupport.project.ui.wizard.action;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -984,16 +987,22 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         return result.elements();
     }
     
-    private Enumeration/*<DataFolder>*/ getFolders(final DataFolder folder) {
-        Enumeration folders = folder.children(true);
-        Vector result = new Vector(); // let's be in sync with o.o.loaders
-        while (folders.hasMoreElements()) {
-            DataObject dObj = (DataObject) folders.nextElement();
-            if (dObj instanceof DataFolder) {
-                result.add(dObj);
+    private static Enumeration/*<DataFolder>*/ getFolders(DataFolder folder) {
+        List/*<DataFolder>*/ folders = new ArrayList();
+        getFolders(folder, folders); // #66144: depth-first, not breadth-first, search appropriate here
+        return Collections.enumeration(folders);
+    }
+    
+    private static void getFolders(DataFolder folder, List/*<DataFolder>*/ folders) {
+        Enumeration e = folder.children();
+        while (e.hasMoreElements()) {
+            Object o = e.nextElement();
+            if (o instanceof DataFolder) {
+                DataFolder f = (DataFolder) o;
+                folders.add(f);
+                getFolders(f, folders);
             }
         }
-        return result.elements();
     }
     
     private static class PositionRenderer extends DefaultListCellRenderer {
