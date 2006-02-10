@@ -240,7 +240,6 @@ public final class ConstantPool {
                           "invalid constant pool type: " + type);
         }
 
-	assert newEntry != null;
         return newEntry;
     }
 }

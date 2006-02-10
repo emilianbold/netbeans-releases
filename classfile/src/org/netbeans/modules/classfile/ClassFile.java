@@ -148,9 +148,6 @@ public class ClassFile {
     private void load(InputStream classData) throws IOException {
         try {
             DataInputStream in = new DataInputStream(classData);
-            if (in == null)
-		// shouldn't happen, unless java.io constructors fail
-                throw new IOException();
             constantPool = loadClassHeader(in);
             interfaces = getCPClassList(in, constantPool);
             variables = Variable.loadFields(in, constantPool, this);
