@@ -59,7 +59,7 @@ public class WizardOperator extends NbDialogOperator {
      */
     public JButtonOperator btNext() {
         if (_btNext == null) {
-            String nextCaption = Bundle.getString("org.openide.Bundle", "CTL_NEXT");
+            String nextCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
             _btNext = new JButtonOperator(this, nextCaption);
         }
         return _btNext;
@@ -70,7 +70,7 @@ public class WizardOperator extends NbDialogOperator {
      */
     public JButtonOperator btBack() {
         if (_btBack == null) {
-            String backCaption = Bundle.getString("org.openide.Bundle", "CTL_PREVIOUS");
+            String backCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_PREVIOUS");
             _btBack = new JButtonOperator(this, backCaption);
         }
         return _btBack;
@@ -81,7 +81,7 @@ public class WizardOperator extends NbDialogOperator {
      */
     public JButtonOperator btFinish() {
         if (_btFinish == null) {
-            String finishCaption = Bundle.getString("org.openide.Bundle", "CTL_FINISH");
+            String finishCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
             _btFinish = new JButtonOperator(this, finishCaption);
         }
         return _btFinish;
