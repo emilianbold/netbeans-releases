@@ -33,6 +33,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 
 /**
  * Test functionality of {@link SuiteLogicalView}.
@@ -116,7 +117,10 @@ public class SuiteLogicalViewTest extends TestBase {
         
         FileObject projProps = suite.getProjectDirectory().getFileObject("nbproject/project.properties");
         assertNotNull(projProps);
+        viewProv.findPath(n, projProps); // ping
+        flushRequestProcessor();
         Node nodeForFO = viewProv.findPath(n, projProps);
+        
         assertNotNull("found project.properties node", nodeForFO);
         assertEquals("Name of node is localized", "Project Properties", nodeForFO.getDisplayName());
         
@@ -140,6 +144,14 @@ public class SuiteLogicalViewTest extends TestBase {
     
     private void waitForGUIUpdate() throws Exception {
         EventQueue.invokeAndWait(new Runnable() { public void run() {} });
+    }
+    
+    private void flushRequestProcessor() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                // flush
+            }
+        }).waitFinished();
     }
     
 }

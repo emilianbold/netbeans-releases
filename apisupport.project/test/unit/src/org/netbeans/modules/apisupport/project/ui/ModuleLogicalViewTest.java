@@ -22,6 +22,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  * Test functionality of {@link ModuleLogicalView}.
@@ -53,6 +54,8 @@ public class ModuleLogicalViewTest extends TestBase {
         Node root = lvp.createLogicalView();
         Node iFiles = root.getChildren().findChild(ModuleLogicalView.IMPORTANT_FILES_NAME);
         assertNotNull("have the Important Files node", iFiles);
+        iFiles.getChildren().getNodes(); // ping
+        flushRequestProcessor();
         assertEquals("four important files", 4, iFiles.getChildren().getNodesCount());
         FileUtil.createData(p.getProjectDirectory(), "nbproject/project.properties");
         assertEquals("nbproject/project.properties noticed", 5, iFiles.getChildren().getNodesCount());
@@ -62,6 +65,10 @@ public class ModuleLogicalViewTest extends TestBase {
         FileObject f = FileUtil.toFileObject(file(path));
         assertNotNull("found " + path, f);
         Node root = new FilterNode(lvp.createLogicalView());
+        
+        lvp.findPath(root, f); // ping
+        flushRequestProcessor();
+        
         Node n = lvp.findPath(root, f);
         DataObject d = DataObject.find(f);
         assertEquals("same result for DataObject as for FileObject", n, lvp.findPath(root, d));
@@ -69,6 +76,14 @@ public class ModuleLogicalViewTest extends TestBase {
             assertEquals("right DataObject", d, n.getLookup().lookup(DataObject.class));
         }
         return n;
+    }
+    
+    private void flushRequestProcessor() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                // flush
+            }
+        }).waitFinished();
     }
     
 }
