@@ -49,7 +49,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             cmf = new CreatedModifiedFiles (getProject ());
         }
         URL url = DataModel.class.getResource ("update_center.xml"); //NOI18N
-        assert url != null : "File 'update_center.xml must exist in package " + getClass ().getPackage () + "!";
+        assert url != null : "File 'update_center.xml must exist in package of " + getClass().getName() + "!";
         
         FileSystem layer = LayerUtils.layerForProject (getProject ()).layer (false);
         String pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + AUTOUPDATE_SERVICE_TYPE + '.' + AUTOUPDATE_SERVICE_TYPE_EXT;
