@@ -530,5 +530,9 @@ public class SvnUtils {
             }
         }
     }    
-    
+
+    public static String getConfigDir() {
+        String nbHome = System.getProperty("netbeans.user");       
+        return nbHome + "/config/svn/config/";
+    }    
 }
