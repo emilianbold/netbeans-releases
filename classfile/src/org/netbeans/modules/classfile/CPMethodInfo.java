@@ -46,7 +46,7 @@ public class CPMethodInfo extends CPFieldMethodInfo {
         int index = signature.indexOf(')');
         String params = signature.substring(1, index);
         
-        if (!name.equals("<init>") && !name.equals("<clinit>")) {
+        if (!"<init>".equals(name) && !"<clinit>".equals(name)) {
             String ret = signature.substring(index + 1);
             ret = CPFieldMethodInfo.getSignature(ret, false);
             if (ret.length() > 0) {

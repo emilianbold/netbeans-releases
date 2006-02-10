@@ -96,10 +96,6 @@ public abstract class StackMapFrame {
         frameType = tag;
     }
 
-    private void loadLocalVariableEntry(DataInputStream in, ConstantPool pool) 
-      throws IOException {
-    }
-
     /**
      * Returns the frame_type for this frame.  As documented in the JVM specification,
      * different tag ranges define different frame_type values.

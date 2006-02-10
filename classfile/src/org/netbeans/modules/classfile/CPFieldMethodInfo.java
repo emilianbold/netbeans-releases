@@ -96,6 +96,8 @@ abstract class CPFieldMethodInfo extends CPNameAndTypeInfo {
                 case '[':
                     arrays++;
                     continue;
+                default:
+                    break; // invalid character
             }
         }
         while (arrays-- > 0)

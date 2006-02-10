@@ -35,11 +35,10 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     static final long serialVersionUID = -8444469778945723553L;
 
     private final String type;
-    private transient String internalName;
+    private final transient String internalName;
     private transient String externalName;
     private transient String packageName;
     private transient String simpleName;
-    private transient int hash = -1;
 
     private final static WeakHashMap cache = new WeakHashMap();
 
@@ -193,20 +192,31 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     /**
      * Return the package portion of this classname.
      */
-    public synchronized String getPackage() {
+    public String getPackage() {
+        if (packageName == null)
+            initPackage();
+	return packageName;
+    }
+
+    private synchronized void initPackage() {
         if (packageName == null) {
             int i = internalName.lastIndexOf('/');
             packageName = (i != -1) ? 
                 internalName.substring(0, i).replace('/', '.') : "";
         }
-	return packageName;
     }
 
     /**
      * Returns the classname without any package specification.
      */
     public String getSimpleName() {
-	if (simpleName == null) {
+        if (simpleName == null)
+            initSimpleName();
+	return simpleName;
+    }
+    
+    private synchronized void initSimpleName() {
+        if (simpleName == null) {
 	    String pkg = getPackage();
 	    int i = pkg.length();
 	    String extName = getExternalName();
@@ -215,7 +225,6 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 	    else
 		simpleName = extName.substring(i + 1);
 	}
-	return simpleName;
     }
 
     public boolean equals(Object obj) {
@@ -265,9 +274,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     }
 
     public int hashCode() {
-        if (hash == -1)
-	    hash = type.hashCode();
-	return hash;
+        return type.hashCode();
     }
 
     public String toString() {

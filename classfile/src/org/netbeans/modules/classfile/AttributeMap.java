@@ -57,7 +57,7 @@ public final class AttributeMap {
 	    CPUTF8Info entry = (CPUTF8Info)o;
 	    String name = entry.getName();
 	    int len = in.readInt();
-	    if (!includeCode && name.equals("Code")) {
+	    if (!includeCode && "Code".equals(name)) {
 		int n;
 		while ((n = (int)in.skip(len)) > 0 && n < len)
 		    len -= n;
