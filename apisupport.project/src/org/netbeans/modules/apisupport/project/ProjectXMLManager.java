@@ -169,6 +169,7 @@ public final class ProjectXMLManager {
         this.customPlaf = customPlaf;
         SortedSet/*<ModuleDependency>*/ directDeps = new TreeSet(ModuleDependency.CNB_COMPARATOR);
         Element moduleDependencies = findModuleDependencies(getConfData());
+        assert moduleDependencies != null : "Cannot find <module-dependencies> for: " + project;
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
         ModuleList ml;
         if (customPlaf != null) {

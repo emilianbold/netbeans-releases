@@ -51,6 +51,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -189,10 +190,11 @@ public final class ModuleLogicalView implements LogicalViewProvider {
     
     /** Package private for unit tests. */
     static final String IMPORTANT_FILES_NAME = "important.files"; // NOI18N
-    /** Accessor for SuiteLogicalView to create its important node which shall 
+    
+    /** Accessor for SuiteLogicalView to create its important node which shall
      * be as similar as module's project one
      */
-    static final Node createImportantFilesNode(Children ch) {
+    static Node createImportantFilesNode(Children ch) {
         return new ImportantFilesNode(ch);
     }
     
@@ -388,7 +390,11 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             }
             if (!isInitialized() || !newVisibleFiles.equals(visibleFiles)) {
                 visibleFiles = newVisibleFiles;
-                setKeys(visibleFiles);
+                RequestProcessor.getDefault().post(new Runnable() { // #72471
+                    public void run() {
+                        setKeys(visibleFiles);
+                    }
+                });
                 ((ImportantFilesNode) getNode()).setFiles(files);
             }
         }

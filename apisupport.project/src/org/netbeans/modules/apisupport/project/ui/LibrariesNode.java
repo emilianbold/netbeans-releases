@@ -51,6 +51,7 @@ import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -234,13 +235,17 @@ final class LibrariesNode extends AbstractNode {
         }
         
         public void configurationXmlChanged(AntProjectEvent ev) {
-            refreshKeys();
+            // XXX this is a little strange but happens during project move. Bad ordering.
+            // Probably bug in moving implementation (our or in general Project API).
+            if (project.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH) != null) {
+                refreshKeys();
+            }
         }
         
         public void propertiesChanged(AntProjectEvent ev) {
             // do not need
         }
-
+        
         /*
         private Node getNodeDelegate(final File jarF) {
             Node n = null;

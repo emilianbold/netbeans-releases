@@ -556,7 +556,11 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             }
             if (!isInitialized() || !newVisibleFiles.equals(visibleFiles)) {
                 visibleFiles = newVisibleFiles;
-                setKeys(visibleFiles);
+                RequestProcessor.getDefault().post(new Runnable() { // #72471
+                    public void run() {
+                        setKeys(visibleFiles);
+                    }
+                });
                 ((ModuleLogicalView.ImportantFilesNode) getNode()).setFiles(files); // #72439
             }
         }
