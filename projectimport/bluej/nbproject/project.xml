@@ -176,9 +176,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.bluej.ui</friend>
                 <package>org.netbeans.bluej.api</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
