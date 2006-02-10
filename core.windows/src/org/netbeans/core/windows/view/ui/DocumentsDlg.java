@@ -39,6 +39,7 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 import org.openide.cookies.SaveCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
@@ -68,23 +69,14 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         initComponents();
         
         // Internationalize.
-        jButtonActivate.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Activate"));
-        jButtonClose.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_CloseDocuments"));
-        jButtonSave.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_SaveDocuments"));
-        explorerLabel.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Documents"));
-        descriptionLabel.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Description"));
+	Mnemonics.setLocalizedText(jButtonActivate, NbBundle.getMessage(DocumentsDlg.class, "LBL_Activate"));
+        Mnemonics.setLocalizedText(jButtonClose, NbBundle.getMessage(DocumentsDlg.class, "LBL_CloseDocuments"));
+        Mnemonics.setLocalizedText(jButtonSave, NbBundle.getMessage(DocumentsDlg.class, "LBL_SaveDocuments"));
+        Mnemonics.setLocalizedText(explorerLabel, NbBundle.getMessage(DocumentsDlg.class, "LBL_Documents"));
+        Mnemonics.setLocalizedText(descriptionLabel, NbBundle.getMessage(DocumentsDlg.class, "LBL_Description"));
         
-        closeButton.setText(NbBundle.getMessage(DocumentsDlg.class, "LBL_Close"));
+        Mnemonics.setLocalizedText(closeButton, NbBundle.getMessage(DocumentsDlg.class, "LBL_Close"));
             
-        // Mnemonics
-        jButtonActivate.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Activate_Mnemonic").charAt(0));
-        jButtonClose.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_CloseDocuments_Mnemonic").charAt(0));
-        jButtonSave.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_SaveDocuments_Mnemonic").charAt(0));
-        explorerLabel.setDisplayedMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Documents_Mnemonic").charAt(0));
-        descriptionLabel.setDisplayedMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Description_Mnemonic").charAt(0));
-        
-        closeButton.setMnemonic(NbBundle.getMessage(DocumentsDlg.class, "LBL_Close_Mnemonic").charAt(0));
-        
         // Set labels for.
         explorerLabel.setLabelFor(listView);
         descriptionLabel.setLabelFor(descriptionArea);
@@ -130,6 +122,8 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         jButtonSave = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
 
+        FormListener formListener = new FormListener();
+
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 0, 11));
@@ -168,11 +162,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jScrollPane1, gridBagConstraints);
 
-        jButtonActivate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                activate(evt);
-            }
-        });
+        jButtonActivate.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -182,11 +172,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jButtonActivate, gridBagConstraints);
 
-        jButtonClose.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                closeDocuments(evt);
-            }
-        });
+        jButtonClose.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -196,11 +182,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jButtonClose, gridBagConstraints);
 
-        jButtonSave.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveDocuments(evt);
-            }
-        });
+        jButtonSave.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -211,11 +193,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonSave, gridBagConstraints);
 
-        closeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                closeButtonActionPerformed(evt);
-            }
-        });
+        closeButton.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -226,6 +204,25 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(closeButton, gridBagConstraints);
 
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == jButtonActivate) {
+                DocumentsDlg.this.activate(evt);
+            }
+            else if (evt.getSource() == jButtonClose) {
+                DocumentsDlg.this.closeDocuments(evt);
+            }
+            else if (evt.getSource() == jButtonSave) {
+                DocumentsDlg.this.saveDocuments(evt);
+            }
+            else if (evt.getSource() == closeButton) {
+                DocumentsDlg.this.closeButtonActionPerformed(evt);
+            }
+        }
     }// </editor-fold>//GEN-END:initComponents
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
@@ -328,7 +325,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
 
     private void closeDialog() {
         Window w = SwingUtilities.getWindowAncestor(this);
-        w.hide();
+        w.setVisible(false);
         w.dispose();
     }
     

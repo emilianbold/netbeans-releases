@@ -194,9 +194,11 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         checkSmallIcons = new javax.swing.JCheckBox();
         btnNewToolbar = new javax.swing.JButton();
 
+        FormListener formListener = new FormListener();
+
         setLayout(new java.awt.GridBagLayout());
 
-        lblHint.setText(getBundleString("CTL_TreeLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(lblHint, getBundleString("CTL_TreeLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -216,16 +218,11 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         gridBagConstraints.insets = new java.awt.Insets(1, 10, 5, 10);
         add(palettePanel, gridBagConstraints);
 
-        checkSmallIcons.setMnemonic(getBundleString("CTL_SmallIconsMnemonic").charAt(0));
-        checkSmallIcons.setText(getBundleString("CTL_SmallIcons"));
+        org.openide.awt.Mnemonics.setLocalizedText(checkSmallIcons, getBundleString("CTL_SmallIcons"));
         checkSmallIcons.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         checkSmallIcons.setMargin(new java.awt.Insets(0, 0, 0, 0));
         checkSmallIcons.setSelected( ToolbarPool.getDefault().getPreferredIconSize() == 16 );
-        checkSmallIcons.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                switchIconSize(evt);
-            }
-        });
+        checkSmallIcons.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -235,13 +232,8 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         add(checkSmallIcons, gridBagConstraints);
         checkSmallIcons.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_SmallIcons"));
 
-        btnNewToolbar.setMnemonic(getBundleString("CTL_NewToolbarMnemonic").charAt(0));
-        btnNewToolbar.setText(getBundleString("CTL_NewToolbar"));
-        btnNewToolbar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newToolbar(evt);
-            }
-        });
+        org.openide.awt.Mnemonics.setLocalizedText(btnNewToolbar, getBundleString("CTL_NewToolbar"));
+        btnNewToolbar.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -252,7 +244,19 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         btnNewToolbar.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_NewToolbar"));
 
     }
-    // </editor-fold>//GEN-END:initComponents
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == checkSmallIcons) {
+                ConfigureToolbarPanel.this.switchIconSize(evt);
+            }
+            else if (evt.getSource() == btnNewToolbar) {
+                ConfigureToolbarPanel.this.newToolbar(evt);
+            }
+        }
+    }// </editor-fold>//GEN-END:initComponents
 
     private void newToolbar(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newToolbar
         ToolbarFolderNode tf = new ToolbarFolderNode();
@@ -352,7 +356,6 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
      */
     private static class ActionIconDataFilter implements DataFilter {
         private InstanceCookie instanceCookie;
-        private boolean hasIcon;
         
         public boolean acceptDataObject( DataObject obj ) {
             instanceCookie = (InstanceCookie)obj.getCookie( InstanceCookie.class );
