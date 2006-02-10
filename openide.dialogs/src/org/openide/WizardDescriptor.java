@@ -60,6 +60,7 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -277,14 +278,11 @@ public class WizardDescriptor extends DialogDescriptor {
         // button init
         ResourceBundle b = NbBundle.getBundle("org.openide.Bundle"); // NOI18N
         nextButton.setText(b.getString("CTL_NEXT"));
-        previousButton.setText(b.getString("CTL_PREVIOUS"));
-        finishButton.setText(b.getString("CTL_FINISH"));
+        Mnemonics.setLocalizedText(previousButton, b.getString("CTL_PREVIOUS"));
+        Mnemonics.setLocalizedText(finishButton, b.getString("CTL_FINISH"));
         finishButton.getAccessibleContext().setAccessibleDescription(b.getString("ACSD_FINISH"));
         cancelButton.setText(b.getString("CTL_CANCEL"));
         cancelButton.getAccessibleContext().setAccessibleDescription(b.getString("ACSD_CANCEL"));
-
-        previousButton.setMnemonic(b.getString("CTL_PREVIOUS_Mnemonic").charAt(0));
-        finishButton.setMnemonic(b.getString("CTL_FINISH_Mnemonic").charAt(0));
 
         finishButton.setDefaultCapable(true);
         nextButton.setDefaultCapable(true);
