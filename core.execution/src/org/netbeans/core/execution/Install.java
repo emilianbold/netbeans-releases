@@ -47,6 +47,7 @@ import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.module.InternalHandle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 import org.openide.execution.ExecutorTask;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -207,8 +208,8 @@ public class Install extends ModuleInstall {
         Node root = new AbstractNode(new PendingChildren());
 
 
-        JButton exitOption = new JButton(NbBundle.getMessage(Install.class, "LAB_EndTasks"));
-        exitOption.setMnemonic(NbBundle.getMessage(Install.class, "LAB_EndTasksMnem").charAt(0));
+        JButton exitOption = new JButton();
+        Mnemonics.setLocalizedText(exitOption, NbBundle.getMessage(Install.class, "LAB_EndTasksMnem"));
         // No default button.
         // exitOption.setDefaultCapable(false);
         exitOption.getAccessibleContext().setAccessibleDescription(
@@ -243,7 +244,7 @@ public class Install extends ModuleInstall {
             
             dialog[0].addWindowListener(closer);
             
-            dialog[0].show();
+            dialog[0].setVisible(true);
             dialog[0].dispose();
 
             if(dd.getValue() == DialogDescriptor.CANCEL_OPTION
@@ -283,8 +284,8 @@ public class Install extends ModuleInstall {
             cons.fill = GridBagConstraints.HORIZONTAL;
             cons.insets = new Insets(11, 11, 0, 12);
 
-            JLabel label = new JLabel(NbBundle.getMessage(Install.class, "LAB_PendingTasks"));
-            label.setDisplayedMnemonic(NbBundle.getMessage(Install.class, "LAB_PendingTasksMnem").charAt(0));
+            JLabel label = new JLabel();
+	    Mnemonics.setLocalizedText(label, NbBundle.getMessage(Install.class, "LAB_PendingTasks"));
 
             add(label, cons);
 
