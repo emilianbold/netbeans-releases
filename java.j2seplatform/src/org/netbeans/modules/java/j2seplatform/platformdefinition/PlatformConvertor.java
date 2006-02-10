@@ -487,7 +487,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 DefaultPlatformImpl dp = (DefaultPlatformImpl) this.instance;
                 List sfEntries = dp.getSourceFolders().entries();
                 List defaultSf = DefaultPlatformImpl.getSources (FileUtil.normalizeFile(new File((String)dp.getSystemProperties().get("jdk.home"))));   //NOI18N
-                if (sfEntries.size() != defaultSf.size()) {
+                if (defaultSf == null || sfEntries.size() != defaultSf.size()) {
                     return true;
                 }
                 Iterator/*<ClassPath.Entry>*/ sfit = sfEntries.iterator();
@@ -510,7 +510,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 DefaultPlatformImpl dp = (DefaultPlatformImpl) this.instance;
                 List jdf = dp.getJavadocFolders();
                 List defaultJdf = DefaultPlatformImpl.getJavadoc (FileUtil.normalizeFile(new File((String)dp.getSystemProperties().get("jdk.home"))));  //NOI18N
-                return !jdf.equals (defaultJdf);
+                return defaultJdf == null || !jdf.equals (defaultJdf);
             }
             return true;
         }
