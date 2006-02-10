@@ -246,13 +246,17 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     jListSubprojects.setListData (new String[0]);
                 }
                 
-                modelUpdater.projects = projects;
-                updateSubprojectsTask.schedule( 100 );                
+                if (modelUpdater != null) { // #72495
+                    modelUpdater.projects = projects;
+                    updateSubprojectsTask.schedule( 100 );
+                }
             }
             else {            
                 // Clear the accessory data if the dir is not project dir
                 jTextFieldProjectName.setText( "" ); // NOI18N
-                modelUpdater.projects = null;
+                if (modelUpdater != null) { // #72495
+                    modelUpdater.projects = null;
+                }
                 
                 if (spListModel instanceof DefaultListModel) {
                     ((DefaultListModel)spListModel).clear();                
