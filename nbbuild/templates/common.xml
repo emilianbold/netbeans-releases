@@ -490,9 +490,16 @@ Microsystems, Inc. All Rights Reserved.
             project="nbproject/project.xml" 
         />
     </target>
-    
-    <target name="arch-nb" depends="init,arch" if="netbeans.home" description="Process an arch.xml, creating it if it does not yet exist, and display the result.">
-        <!-- XXX #67438: might not yet exist, if arch file newly generated as skeleton -->
+
+    <target name="-arch-nb-check"> <!-- #67438: might not yet exist, if arch file newly generated as skeleton -->
+        <condition property="-arch-nb-run">
+            <and>
+                <isset property="netbeans.home"/>
+                <available file="${arch.output.html}"/>
+            </and>
+        </condition>
+    </target>
+    <target name="arch-nb" depends="init,arch,-arch-nb-check" if="-arch-nb-run" description="Process an arch.xml, creating it if it does not yet exist, and display the result.">
         <nbbrowse file="${arch.output.html}"/>
     </target>
     
