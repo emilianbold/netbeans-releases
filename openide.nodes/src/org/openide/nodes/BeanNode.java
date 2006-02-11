@@ -10,6 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.nodes;
 
 import java.awt.Image;
@@ -38,7 +39,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
-
 
 /** Represents one JavaBean in the nodes hierarchy.
 * It provides all methods that are needed for communication between
@@ -660,10 +660,10 @@ public class BeanNode extends AbstractNode {
         } catch (Exception e) {
             ErrorManager em = ErrorManager.getDefault();
             em.annotate(
-                e, ErrorManager.WARNING, "Bad method: " + clazz.getName() + "." + nameGetter.getName(), //NOI18N
+                e, ErrorManager.UNKNOWN, "Bad method: " + clazz.getName() + "." + nameGetter.getName(), //NOI18N
                 null, null, null
             );
-            em.notify(ErrorManager.WARNING, e);
+            em.notify(ErrorManager.INFORMATIONAL, e);
 
             nameGetter = null;
 
