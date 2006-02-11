@@ -7,33 +7,35 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import java.awt.Toolkit;
 import java.awt.AWTEvent;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.AWTEventListener;
 import java.awt.event.WindowEvent;
-import java.awt.datatransfer.*;
 import java.util.Collection;
 import org.openide.ErrorManager;
-
-import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
 import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.ExClipboard;
 
 public final class NbClipboard extends ExClipboard
     implements LookupListener, AWTEventListener, Runnable
 {
     private org.openide.ErrorManager log;
     private Clipboard systemClipboard;
-    private Convertor[] convertors;
+    private ExClipboard.Convertor[] convertors;
     private Lookup.Result result;
     private boolean slowSystemClipboard;
     private Transferable last;
@@ -61,14 +63,14 @@ public final class NbClipboard extends ExClipboard
         }
     }
     
-    protected synchronized Convertor[] getConvertors () {
+    protected synchronized ExClipboard.Convertor[] getConvertors () {
         return convertors;
     }
 
     public synchronized void resultChanged(LookupEvent ev) {
         Collection c = result.allInstances();
-        Convertor[] temp = new Convertor[c.size()];
-        convertors = (Convertor[]) c.toArray(temp);
+        ExClipboard.Convertor[] temp = new ExClipboard.Convertor[c.size()];
+        convertors = (ExClipboard.Convertor[]) c.toArray(temp);
     }
 
     // XXX(-ttran) on Unix (and also on Windows as we discovered recently)
@@ -166,6 +168,9 @@ public final class NbClipboard extends ExClipboard
             }
         } catch (ThreadDeath ex) {
             throw ex;
+        } catch (InterruptedException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return null;
         } catch (Throwable ex) {
             org.openide.ErrorManager.getDefault ().notify (ex);
             return null;
