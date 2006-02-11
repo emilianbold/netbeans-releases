@@ -16,7 +16,10 @@
 	<mapID target="apisupport_about-netbeans-platform" url="about/about-netbeans-platform.html"/>
 	<mapID target="apisupport_modules_process" url="about/modules_process.html"/>
 	<mapID target="apisupport_modules_quickref" url="about/modules_quickref.html"/>
-	<!-- End of "About" section -->
+<mapID target="apisupport_about_nbm" url="about/about-nbm.html"/>
+
+	
+<!-- End of "About" section -->
 
 	<!-- Start of "Creating" section -->
 	<mapID target="apisupport_about_create" url="create_plugin/about_create.html"/>
@@ -73,6 +76,8 @@
 <mapID target="apisupport_registering_plugins" url="register_plugin/about-registering-plugins.html"/>
 <mapID target="apisupport_browsing_system" url="register_plugin/apisupport_browsing_system.html"/>
 <mapID target="apisupport_editing_xml_layer" url="register_plugin/apisupport_editing_xml_layer.html"/>
+
+
 
 <mapID target="apisupport_create_update_center_declaration" url="create_plugin/filelevel_create/create_update_centers.html"/>
 

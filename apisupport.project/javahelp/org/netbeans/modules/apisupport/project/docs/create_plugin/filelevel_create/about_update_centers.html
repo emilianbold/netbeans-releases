@@ -6,29 +6,68 @@
 <html>
 <head>
 
-	<title>About Update Centers</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <title>About Update Centers</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-	<h2>About Update Centers</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p>
+    <h2>About Update Centers</h2>
+    <p><small> 
+        <a href="#seealso">See Also</a> 
+    </small></p>
 
-<p>tbd
+    <p>When you create an update center, you are thinking about the needs of
+    your end users and how you can best make your plug-in modules available to them.
+    An update center is nothing more than an XML file that is known
+    as the "autoupdate descriptor". The autoupdate descriptor lists
+    all the plug-in modules that you would like to make available.
+    For each plug-in module, the autoupdate descriptor provides
+    information such as a name, a description, and a list of
+    modules that it depends on. 
 
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
-    <dd><a href="../../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
-</dl> 
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-</table> 
+    <p>Most importantly, the autoupdate
+    descriptor specifies a URL for each plug-in module that it
+    describes. Each plug-in module, in <a href="../../about/about-nbm.html">binary NBM file format</a>, must live on a host.
+    The autoupdate descriptor itself must also
+    live on a host. The host where the autoupdate descriptor
+    lives need not be the same host as where the plug-in modules
+    live.
+    
+    <p>After the autoupdate descriptor and its associated plug-in modules
+    are on a host, you must let your end users know that they are there.
+    Then, the end users need to register the URL to your 
+    autopdate descriptor. They can do so manually in the Options window.
+    Alternatively, you can provide a plug-in module that registers the
+    URL to the update center for them. Once the URL to the update center
+    is registered, your end users can access
+    your plug-in modules via the Update Center wizard, which they
+    can find under the Tools menu. Not only new plug-in modules,
+    but new versions of existing plug-in modules can be distributed
+    in this way.
+    
+    <p>In the IDE, you can perform the following activities when
+    thinking about update centers:
+     
+    <ul>
+        <li><a href="../../build_plugin/building_nbm.html">Building an NBM File</a>
+        <li>Creating an Autoupdate Descriptor        
+        <li>Registering an NBM File in an Update Center
+        <li><a href="create_update_centers.html">Bundling an Update Center URL</a>
+        <li>Manually Registering an Update Center URL
+    </ul>
+    
+
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
+        <dd><a href="../../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
+    </dl> 
+    <hr>
+    <small><a href="../../credits.html">Legal Notices</a></small> 
+    <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
 </body></html>

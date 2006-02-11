@@ -6,48 +6,47 @@
 <html>
 <head>
 
-	<title>Building an NBM File</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
+    <title>Building an NBM File</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-	<h2>Building an NBM File</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p>
-<p>An NBM file is a NetBeans module packaged for delivery via the web. 
-The principal differences between NBM files and module JAR files are:
-<ul><li>An NBM file can contain more than one JAR file&#8212;modules can package any libraries they use into their NBM file.
-<li>An NBM file contains metadata that NetBeans will use to display information about it in the Update Center,
-such as the manifest contents, the license, etc.
-<li>An NBM file may be <i>signed</i> for security purposes.</ul>
+    <h2>Building an NBM File</h2>
+    <p><small> 
+        <a href="#seealso">See Also</a> 
+    </small></p>
+    <p>An <a href="../about/about-nbm.html">NBM file</a>
+    is a NetBeans module in binary format,
+    packaged for delivery via the web. 
 
-<p>NBM files are just ZIP files with a special extension. They use the JDK's mechanism 
-for signing JAR files. Unless you are doing something unusual, you will not need to worry about the 
-contents of an NBM file&#8212;just let the standard Ant build script for NBM creation take care of it for you. 
+    <p><b>To build an NBM file:</b>
 
-
-<p><b>To build an NBM file:</b>
-
-<ol><li>In the Projects window, right-click the node of the module project you want to build.
-	<li>Choose Create NBM.</ol>
-
-
-
-
-
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd>  <a href="../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
-  <dd>  <a href="building_plugins.html">Building a Module</a></dd>
+    <ol><li>In the Projects window, right-click the node of the
+    module project you want to build.
+    <li>Choose Create NBM.</ol>
     
-</dl> 
-<hr>
-<small><a href="../credits.html">Legal Notices</a></small> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-</table> 
+    <p><b>To build all NBM files in a module suite:</b>
+
+    <ol><li>In the Projects window, right-click the node of the
+    module suite project you want to build.
+    <li>Choose Create NBMs.</ol>
+
+
+
+
+
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd>  <a href="../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
+        <dd>  <a href="building_plugins.html">Building a Module</a></dd>
+    
+    </dl> 
+    <hr>
+    <small><a href="../credits.html">Legal Notices</a></small> 
+    <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
 </body></html>
