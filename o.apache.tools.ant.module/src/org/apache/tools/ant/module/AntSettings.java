@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,11 +29,9 @@ import org.openide.ErrorManager;
 import org.openide.execution.NbClassPath;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.options.SystemOption;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 public class AntSettings extends SystemOption implements ChangeListener {
@@ -71,11 +69,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     }
 
     public String displayName () {
-        return NbBundle.getMessage (AntSettings.class, "LBL_settings");
-    }
-
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx ("org.apache.tools.ant.module.settings");
+        return AntSettings.class.getName(); // not dislayed
     }
 
     public static AntSettings getDefault () {
