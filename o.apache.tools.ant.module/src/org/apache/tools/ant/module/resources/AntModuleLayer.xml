@@ -73,11 +73,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
 
-        <folder name="Hidden">
-            <!-- To make the module nicer to debug, list the cookies it provides. -->
-            <file name="org-apache-tools-ant-module-cookies.xml" url="cookies.xml"/>
-        </folder>
-
     </folder>
 
     <!-- Lines marked as erroneous: -->
