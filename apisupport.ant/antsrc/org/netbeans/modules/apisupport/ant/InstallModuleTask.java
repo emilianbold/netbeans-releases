@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,13 +15,9 @@ package org.netbeans.modules.apisupport.ant;
 
 import java.io.File;
 import java.io.IOException;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.EnumeratedAttribute;
-
-import org.openide.util.Lookup;
-
 import org.netbeans.core.startup.TestModuleDeployer;
 
 // Note that Ant tasks in general are not internationalized.
