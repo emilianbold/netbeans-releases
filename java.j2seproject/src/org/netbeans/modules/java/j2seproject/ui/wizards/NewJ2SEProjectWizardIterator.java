@@ -196,15 +196,17 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
     }
 
     public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty("projdir",null);           //NOI18N
-        this.wiz.putProperty("name",null);          //NOI18N
-        this.wiz.putProperty("mainClass",null);         //NOI18N
-        if (this.type == TYPE_EXT) {
-            this.wiz.putProperty("sourceRoot",null);    //NOI18N
-            this.wiz.putProperty("testRoot",null);      //NOI18N
+        if (this.wiz != null) {
+            this.wiz.putProperty("projdir",null);           //NOI18N
+            this.wiz.putProperty("name",null);          //NOI18N
+            this.wiz.putProperty("mainClass",null);         //NOI18N
+            if (this.type == TYPE_EXT) {
+                this.wiz.putProperty("sourceRoot",null);    //NOI18N
+                this.wiz.putProperty("testRoot",null);      //NOI18N
+            }
+            this.wiz = null;
+            panels = null;
         }
-        this.wiz = null;
-        panels = null;
     }
     
     public String name() {
