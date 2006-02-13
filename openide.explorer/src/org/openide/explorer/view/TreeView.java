@@ -1714,8 +1714,7 @@ public abstract class TreeView extends JScrollPane {
                 searchTextField.setFont(ExplorerTree.this.getFont());
                 prepareSearchPanel();
                 add(searchpanel);
-                doLayout();
-                searchpanel.repaint();
+                revalidate();
 
                 // bugfix #28501, avoid the chars duplicated on jdk1.3
                 SwingUtilities.invokeLater(
