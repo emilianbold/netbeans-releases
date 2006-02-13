@@ -30,6 +30,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -224,7 +225,7 @@ public class UtilTest extends TestBase {
         assertTrue(Util.isValidCodeNameBase("a"));
         assertTrue(Util.isValidCodeNameBase("a.b.c1"));
     }
-
+    
     public void testIsValidSFSFolderName() throws Exception {
         assertTrue(Util.isValidSFSPath("a"));
         assertTrue(Util.isValidSFSPath("a/b/c"));
@@ -237,4 +238,17 @@ public class UtilTest extends TestBase {
         assertFalse(Util.isValidSFSPath(""));
         assertFalse(Util.isValidSFSPath(" "));
     }
+    
+    public void testDisplayName_70363() throws Exception {
+        FileObject prjFO = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "module");
+        FileUtil.moveFile(prjFO.getFileObject("src"), prjFO, "libsrc");
+        FileObject propsFO = FileUtil.createData(prjFO, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties ep = Util.loadProperties(propsFO);
+        ep.setProperty("src.dir", "libsrc");
+        Util.storeProperties(propsFO, ep);
+        LocalizedBundleInfo info = Util.findLocalizedBundleInfo(FileUtil.toFile(prjFO));
+        assertNotNull("localized info found", info);
+        assertEquals("has correct display name", "Testing Module", info.getDisplayName());
+    }
+    
 }

@@ -342,7 +342,17 @@ public final class Util {
      * Actually deletages to {@link #findLocalizedBundleInfo(FileObject, Manifest)}.
      */
     public static LocalizedBundleInfo findLocalizedBundleInfo(File projectDir) {
-        FileObject sourceDir = FileUtil.toFileObject(new File(projectDir, "src")); // NOI18N
+        NbModuleProject p = null;
+        try {
+            p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(projectDir));
+        } catch (IOException e) {
+            assert false : e;
+        }
+        assert p != null : "Not valid project under " + projectDir;
+        String src = p.evaluator().getProperty("src.dir"); // NOI18N
+        assert src != null : "Cannot evaluate src.dir property for " + p;
+        File srcF = FileUtil.normalizeFile(new File(projectDir, src));
+        FileObject sourceDir = FileUtil.toFileObject(srcF);
         FileObject manifestFO = FileUtil.toFileObject(new File(projectDir, "manifest.mf")); // NOI18N
         
         LocalizedBundleInfo locInfo = null;
