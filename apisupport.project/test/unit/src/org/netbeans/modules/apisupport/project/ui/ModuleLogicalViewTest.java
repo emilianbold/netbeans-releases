@@ -58,6 +58,7 @@ public class ModuleLogicalViewTest extends TestBase {
         flushRequestProcessor();
         assertEquals("four important files", 4, iFiles.getChildren().getNodesCount());
         FileUtil.createData(p.getProjectDirectory(), "nbproject/project.properties");
+        flushRequestProcessor();
         assertEquals("nbproject/project.properties noticed", 5, iFiles.getChildren().getNodesCount());
     }
     
