@@ -64,6 +64,7 @@ public class RegionQueue extends Object implements FilesharingConstants {
          */
     public void addItem(RegionQueueItem item) {
         qItems.add(item);
+        Debug.log("RegionQueue", "CollabQueue, item: " + item.getBeginLine());  // NOI18N
 
         //long previousItemSize=item.getSize();
         if ((worker == null) && (qItems.size() > 0)) {
@@ -72,7 +73,7 @@ public class RegionQueue extends Object implements FilesharingConstants {
             long delay = CREATELOCK_TIMER_START_DELAY;
             long rate = CREATELOCK_TIMER_RATE;
             Debug.log(
-                this,
+                "RegionQueue",
                 "CollabQueue, item: " + item.getBeginLine() + //NoI18n
                 " scheduling for: " + delay + " with rate: " + rate
             ); //NoI18n			
