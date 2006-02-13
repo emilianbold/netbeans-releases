@@ -42,6 +42,8 @@ import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ProjectOperations;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.LifecycleManager;
@@ -155,23 +157,27 @@ public final class SuiteOperations implements DeleteOperationImplementation,
         }
     }
     
-    private void setDisplayName(String nueName) throws IOException {
+    private void setDisplayName(final String nueName) throws IOException {
         final SuiteProperties sp = new SuiteProperties(suite, suite.getHelper(),
                 suite.getEvaluator(), SuiteUtils.getSubProjects(suite));
-        BasicBrandingModel branding = sp.getBrandingModel();
-        if (branding.isBrandingEnabled()) {
-            branding.setTitle(nueName);
-            try {
-                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                    public Object run() throws Exception {
+        final BasicBrandingModel branding = sp.getBrandingModel();
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                public Object run() throws IOException {
+                    if (branding.isBrandingEnabled()) { // application
+                        branding.setTitle(nueName);
                         sp.storeProperties();
-                        ProjectManager.getDefault().saveProject(suite);
-                        return null;
+                    } else { // ordinary suite of modules
+                        EditableProperties props = suite.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        props.setProperty(BasicBrandingModel.TITLE_PROPERTY, nueName);
+                        suite.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                     }
-                });
-            } catch (MutexException e) {
-                throw (IOException) e.getException();
-            }
+                    ProjectManager.getDefault().saveProject(suite);
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
         }
     }
     
@@ -202,8 +208,8 @@ public final class SuiteOperations implements DeleteOperationImplementation,
         return opened;
     }
     
-    // XXX following is copy-pasted from the Project APIs
-    //<editor-fold defaultstate="collapsed" desc="copy-pasted from Project API">
+// XXX following is copy-pasted from the Project APIs
+//<editor-fold defaultstate="collapsed" desc="copy-pasted from Project API">
     private static FileObject doCopy(final Project original,
             final FileObject from, final FileObject toParent) throws IOException {
         if (!VisibilityQuery.getDefault().isVisible(from)) {
@@ -274,6 +280,6 @@ public final class SuiteOperations implements DeleteOperationImplementation,
             }
         });
     }
-    //</editor-fold>
+//</editor-fold>
     
 }
