@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
  
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="jellytools" default="jar-library" basedir=".">
@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="all" depends="jar-library,zipsrc,javadoc,javadocWithJemmy" description="Create jars, source zip and javadoc zip"/>
 
     <target name="buildDependentModules">
-        <ant dir="../xtest/nbjunit" target="jar-nbjunit" inheritAll="false"/>
+        <ant dir="../xtest/nbjunit" inheritAll="false"/>
         <!-- Write jemmy/idemodule.dir property to moduleCluster.properties. -->
         <ant dir="../jemmy/idemodule" target="init" inheritAll="false"/>
         <!-- Re-read moduleCluster.properties to initialize jemmy/idemodule.dir. -->
