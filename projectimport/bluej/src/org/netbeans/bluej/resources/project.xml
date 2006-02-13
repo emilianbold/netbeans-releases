@@ -3,7 +3,7 @@
     <type>org.netbeans.bluej.bluejproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/bluej-project/1">
-            <name>BlueJ </name>
+            <name></name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
                 <root id="src.dir"/>

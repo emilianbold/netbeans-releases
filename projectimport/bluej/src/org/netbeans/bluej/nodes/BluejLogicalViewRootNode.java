@@ -62,7 +62,7 @@ public class BluejLogicalViewRootNode extends AbstractNode {
     /** Creates a new instance of BluejLogicalViewRootNode */
     public BluejLogicalViewRootNode(Lookup look) {
         super(new FilterChildrenImpl(look), look);
-        setIconBaseWithExtension("/org/netbeans/bluej/resources/bluejproject.png");
+        setIconBaseWithExtension("org/netbeans/bluej/resources/bluejproject.png");
     }
     
     public String getName() {

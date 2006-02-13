@@ -305,7 +305,7 @@ public final class BluejProject implements Project, AntProjectListener {
                             return ((Text) nl.item(0)).getNodeValue() + " " + getProjectDirectory().getName();
                         }
                     }
-                    return "???"; // NOI18N
+                    return getProjectDirectory().getName(); // NOI18N
                 }
             });
         }
