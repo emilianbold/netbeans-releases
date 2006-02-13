@@ -146,13 +146,21 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
     private static class BigIconFilterNode extends FilterNode {
         private String iconPath = null;
         private FileBuiltQuery.Status status = null;
+        private boolean attached = false;
         BigIconFilterNode(Node original) {
             super(original, new BigIconFilterChilden(original));
             DataObject dobj = (DataObject)original.getLookup().lookup(DataObject.class);
             if (dobj != null) {
                 if ("java".equalsIgnoreCase(dobj.getPrimaryFile().getExt())) {
-                    if (dobj.getPrimaryFile().getName().endsWith("Test")) {
-                        iconPath = "org/netbeans/bluej/resources/bluej-testclass.png";
+                    String name = dobj.getPrimaryFile().getName();
+                    if (name.endsWith("Test")) {
+                        name = name.substring(0, name.length() - "Test".length());
+                        if (dobj.getPrimaryFile().getParent().getFileObject(name, "java") != null) {
+                            iconPath = "org/netbeans/bluej/resources/bluej-testclass.png";
+                            attached = true;
+                        } else {
+                            iconPath = "org/netbeans/bluej/resources/bluej-testclass-unattached.png";
+                        }
                     } else {
                         iconPath = "org/netbeans/bluej/resources/bluej-class.png";
                     }
@@ -167,7 +175,7 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
                 retValue = Utilities.loadImage(iconPath);
                 if (status != null && !status.isBuilt()) {
                     retValue = Utilities.mergeImages(retValue, Utilities.loadImage("org/netbeans/bluej/resources/compiled.png"),
-                                                     4, 13);
+                                                     attached ? 6 : 3, attached ? 11 : 13);
                 }
             } else {
                 retValue = super.getIcon(type);
