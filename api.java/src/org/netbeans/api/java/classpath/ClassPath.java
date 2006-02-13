@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -186,7 +186,7 @@ public final class ClassPath {
      * null.
      */
     public synchronized FileObject[]  getRoots() {
-        if (this.rootsCache == null) {
+        if (rootsCache == null || rootsListener == null) {
             List entries = this.entries();
             List l = new ArrayList ();
             for (Iterator it = entries.iterator(); it.hasNext();) {

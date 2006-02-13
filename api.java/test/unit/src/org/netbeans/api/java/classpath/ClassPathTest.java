@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,7 +32,6 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -160,7 +159,7 @@ public class ClassPathTest extends NbTestCase {
      * Test ClassPath.getRoots(), ClassPath.addPropertyChangeListener (),
      * ClassPath.entries () and classpath SPI.
      */
-    public void testListenning () throws Exception {
+    public void testListening() throws Exception {
 
         File root_1 = new File (getBaseDir(),"root_1");
         root_1.mkdir();
@@ -200,8 +199,7 @@ public class ClassPathTest extends NbTestCase {
         impl.expectEvents (events);
         FileObject fo = cp.getRoots()[0];
         FileObject parentFolder = fo.getParent();        
-        FileLock lock = fo.lock();
-        fo.delete (lock);
+        fo.delete();
         impl.assertEvents();
         assertTrue (cp.getRoots().length==0);
         events = new HashSet ();
@@ -232,6 +230,22 @@ public class ClassPathTest extends NbTestCase {
         root_2.delete();
         root_3.delete();
         cp = null;
+    }
+    
+    public void testChangesAcknowledgedWithoutListener() throws Exception {
+        // Discovered in #72573.
+        clearWorkDir();
+        File root = new File(getWorkDir(), "root");
+        URL rootU = root.toURI().toURL();
+        if (!rootU.toExternalForm().endsWith("/")) {
+            rootU = new URL(rootU.toExternalForm() + "/");
+        }
+        ClassPath cp = ClassPathSupport.createClassPath(new URL[] {rootU});
+        assertEquals("nothing there yet", null, cp.findResource("f"));
+        FileObject f = FileUtil.createData(FileUtil.toFileObject(getWorkDir()), "root/f");
+        assertEquals("found new file", f, cp.findResource("f"));
+        f.delete();
+        assertEquals("again empty", null, cp.findResource("f"));
     }
     
     static final class TestClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
