@@ -538,11 +538,17 @@ public class CollabRegionSupport extends Object {
          * @return
          */
         public int setText(final String text) throws CollabException {
-            int p1 = getBegin();
-            int p2 = getPositionAfter()-1;
+            final int[] ret = {0};
+            final CollabException[] ce = {null};
+            
+            NbDocument.runAtomic(CollabRegionSupport.this.fileDocument, new Runnable() {
+                public void run() {
+                    try {
+                        int p1 = getBegin();
+                        int p2 = getPositionAfter()-1;
 
 			//now do setText			
-            int len = setText(text, p1, p2);
+                        int len = setText(text, p1, p2);
 			
 			//Now fix the corruption (if any) after update
 			String currText=getText();			
@@ -578,7 +584,18 @@ public class CollabRegionSupport extends Object {
 					}					
 				}
 			}
-			return len;
+			ret[0] = len;
+                    } catch (CollabException ce) {
+                        
+                    }
+                }
+            
+            });
+            
+            // rethrow internal exception, if any
+            if (ce[0] != null) throw ce[0];
+
+            return ret[0];
         }
 		
         /**
