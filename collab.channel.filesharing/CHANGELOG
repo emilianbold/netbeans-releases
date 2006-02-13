@@ -32,3 +32,6 @@
 1.7:	Better way of sharing form files. Remote can view, owner can edit. #69657
 
 1.8:	Another filesharing brokage, partially fixes #71965
+
+1.9:	Another attempt to fix #71965 - don't forcibly unlock, better line
+	number tracking, perform update as an atomic edit.
