@@ -95,13 +95,13 @@ public class DocumentChangeHandler extends FilesharingEventHandler implements Fi
 
         if (devContext.getEventID().equals(DocumentChangeInsert.getEventID())) {
             try {
-                insertUpdate(devContext.getOffset(), devContext.getText());
+                insertUpdate(document, devContext.getOffset(), devContext.getText());
             } catch (CollabException ce) {
                 Debug.errorManager.notify(ce);
             }
         } else if (evContext.getEventID().equals(DocumentChangeRemove.getEventID())) {
             try {
-                removeUpdate(devContext.getOffset(), devContext.getLength());
+                removeUpdate(document, devContext.getOffset(), devContext.getLength());
             } catch (CollabException ce) {
                 Debug.errorManager.notify(ce);
             }
@@ -153,7 +153,7 @@ public class DocumentChangeHandler extends FilesharingEventHandler implements Fi
      * @param        text                                        insert text
      * @throws CollabException
      */
-    public void insertUpdate(final int offset, final String text)
+    private void insertUpdate(Document doc, final int offset, final String text)
     throws CollabException {
         final int textLength = text.length();
         Debug.log(
@@ -177,8 +177,11 @@ public class DocumentChangeHandler extends FilesharingEventHandler implements Fi
 
         if (!regionExist) {
             ((CollabFileHandlerSupport) collabFileHandler).lockFileForCreateRegion();
-            ((CollabFileHandlerSupport) collabFileHandler).unlockAllUserRegions();
-            createNewRegion(true, offset, textLength, text);
+            // commented out: don't unlock forcibly, the region may be in first
+            // phase of 2phase locking, sending unlock event now would cause
+            // stale lock on the owner's side later (see #71965)
+            //((CollabFileHandlerSupport) collabFileHandler).unlockAllUserRegions();
+            createNewRegion(doc, true, offset, textLength, text);
         }
     }
 
@@ -189,7 +192,7 @@ public class DocumentChangeHandler extends FilesharingEventHandler implements Fi
      * @param        length                                        remove text length
      * @throws CollabException
      */
-    public void removeUpdate(final int offset, final int length)
+    private void removeUpdate(Document doc, final int offset, final int length)
     throws CollabException {
         Debug.log(
             "SendFileHandler", "DocumentChangeHandler, " + "removeUpdate offset: " + offset + " length: " + length
@@ -232,7 +235,7 @@ public class DocumentChangeHandler extends FilesharingEventHandler implements Fi
 				newOffset=userRegion.getEndOffset();
 		
 			((CollabFileHandlerSupport)collabFileHandler).lockFileForCreateRegion();
-			createNewRegion(false, newOffset, length, null);
+			createNewRegion(doc, false, newOffset, length, null);
 		}
     }
 
@@ -244,7 +247,7 @@ public class DocumentChangeHandler extends FilesharingEventHandler implements Fi
      * @param length
      * @throws CollabException
      */
-    public void createNewRegion(boolean insertUpdate, int offset, int length, String insertText)
+    private void createNewRegion(Document doc, boolean insertUpdate, int offset, int length, String insertText)
     throws CollabException {
         Debug.log(
             "SendFileHandler", "DocumentChangeHandler, " + "createNewRegion offset: " + offset + " length: " + length
@@ -306,7 +309,7 @@ public class DocumentChangeHandler extends FilesharingEventHandler implements Fi
             ); //NoI18n				
         }
 
-        RegionQueueItem item = new RegionQueueItem(beginLine, endLine, endOffsetCorrection);
+        RegionQueueItem item = new RegionQueueItem(doc, beginLine, endLine, endOffsetCorrection);
         addQueue(item);
     }
 

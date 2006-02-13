@@ -12,9 +12,15 @@
  */
 package org.netbeans.modules.collab.channel.filesharing.filehandler;
 
+import com.sun.collablet.CollabException;
 import java.io.*;
 
 import java.util.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Position;
+import javax.swing.text.StyledDocument;
+import org.openide.text.NbDocument;
 
 
 /**
@@ -27,18 +33,24 @@ public class RegionQueueItem extends Object {
     ////////////////////////////////////////////////////////////////////////////
     // Instance variables
     ////////////////////////////////////////////////////////////////////////////
-    private int beginLine;
-    private int endLine;
+    private Position beginLine;
+    private Position endLine;
     private int endOffsetCorrection;
+    private StyledDocument doc;
 
     /**
          *
          *
          */
-    public RegionQueueItem(int beginLine, int endLine, int endOffsetCorrection) {
+    public RegionQueueItem(Document doc2, int beginLine, int endLine, int endOffsetCorrection) throws CollabException {
         super();
-        this.beginLine = beginLine;
-        this.endLine = endLine;
+        this.doc = (StyledDocument)doc2;
+        try {
+            this.beginLine = NbDocument.createPosition(doc, NbDocument.findLineOffset(doc, beginLine), Position.Bias.Backward);
+            this.endLine = NbDocument.createPosition(doc, NbDocument.findLineOffset(doc, endLine), Position.Bias.Forward);
+        } catch (BadLocationException be) {
+            throw (CollabException)new CollabException(be.getMessage()).initCause(be);
+        }
         this.endOffsetCorrection = endOffsetCorrection;
     }
 
@@ -52,7 +64,7 @@ public class RegionQueueItem extends Object {
          * @return beginLine
          */
     public int getBeginLine() {
-        return this.beginLine;
+        return NbDocument.findLineNumber(doc, beginLine.getOffset());
     }
 
     /**
@@ -61,7 +73,7 @@ public class RegionQueueItem extends Object {
          * @return endLine
          */
     public int getEndLine() {
-        return this.endLine;
+        return NbDocument.findLineNumber(doc, endLine.getOffset());
     }
 
     /**
