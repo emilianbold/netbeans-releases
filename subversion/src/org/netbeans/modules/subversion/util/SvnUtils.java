@@ -388,15 +388,14 @@ public class SvnUtils {
             SvnClient client = Subversion.getInstance().getClient();
             ISVNInfo info = client.getInfoFromWorkingCopy(file);  // XXX info does not contain repository URL
             SVNUrl fileURL = info.getUrl();
-//            SVNUrl repositoryURL = client.getRepositoryRoot(fileURL);
-//            String fileLink = fileURL.toString();
-//            String repositoryLink = repositoryURL.toString();
-//            repositoryPath = fileLink.substring(repositoryLink.length());
-            repositoryPath = "";
-            String[] segments = fileURL.getPathSegments();
-            for (int i = 0; i<segments.length; i++) {
-                repositoryPath += "/" + segments[i];
+            SVNUrl repositoryURL = info.getRepository();
+            if (repositoryURL == null) {
+                // checked out with 1.2 client
+                repositoryURL = client.getInfo(fileURL).getRepository();
             }
+            String fileLink = fileURL.toString();
+            String repositoryLink = repositoryURL.toString();
+            repositoryPath = fileLink.substring(repositoryLink.length());
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
