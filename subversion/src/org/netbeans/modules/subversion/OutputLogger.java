@@ -44,7 +44,7 @@ public class OutputLogger implements ISVNNotifyListener {
     }
     
     public void logCompleted(String message) {
-        logln(message, false);
+        logln(message, ignoreCommand);
         closeLog();
     }
     
@@ -68,6 +68,7 @@ public class OutputLogger implements ISVNNotifyListener {
     
     public void setCommand(int command) {
         ignoreCommand = command == ISVNNotifyListener.Command.INFO ||
+                        command == ISVNNotifyListener.Command.STATUS ||
                         command == ISVNNotifyListener.Command.LS;
     }
             
