@@ -47,7 +47,7 @@ public abstract class AbstractUtil {
      */
     public final void debug (String message, Throwable ex) {
         if ( isLoggable() ) {
-            System.err.println ("[" + getPackageName() + "] " + message);
+            System.err.println("[org.netbeans.tax] " + message);
             if ( ex != null ) {
                 ex.printStackTrace (System.err);
             }
@@ -75,31 +75,17 @@ public abstract class AbstractUtil {
      */
     public final synchronized boolean isLoggable () {
         if ( loggableInit == false ) {
-            loggable = Boolean.getBoolean (this.getPackageName());
+            loggable = Boolean.getBoolean("org.netbeans.tax"); // NOI18N
             loggableInit = true;
         }
         return loggable;
     }
 
     /**
-     * @return package name of this instance
-     */
-    private final synchronized String getPackageName () {
-        return "org.netbeans.tax"; // NOI18N
-    }
-
-
-    /**
      * @return bundle for this instance package
      */
     protected final synchronized ResourceBundle getBundle () {
-        if ( bundle != null ) {
-            return bundle;
-        }
-        String bundleName = getPackageName() + ".Bundle"; // NOI18N
-        bundle = ResourceBundle.getBundle (bundleName);
-
-        return bundle;
+        return ResourceBundle.getBundle(getClass().getName().replaceFirst("\\.[^.]+$", ".Bundle")); // NOI18N
     }
     
     /** Get localized string.
