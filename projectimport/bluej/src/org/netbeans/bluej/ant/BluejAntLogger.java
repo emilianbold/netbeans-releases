@@ -47,7 +47,6 @@ public class BluejAntLogger extends AntLogger {
      * @return a nonempty (and non-null) list of target names; by default, {@link #NO_TARGETS}
      */
     public String[] interestedInTargets(AntSession session) {
-        System.out.println("interested in targets");
         return AntLogger.ALL_TARGETS;
     }
 
@@ -58,7 +57,6 @@ public class BluejAntLogger extends AntLogger {
      * @return true to receive events about it; by default, false
      */
     public boolean interestedInSession(AntSession session) {
-        System.out.println("interested in session");
         return true;
     }
 
@@ -73,7 +71,6 @@ public class BluejAntLogger extends AntLogger {
      */
     public int[] interestedInLogLevels(AntSession session) {
         int[] retValue;
-        System.out.println("interested in levels");
         
         retValue = super.interestedInLogLevels(session);
         return retValue;
@@ -90,7 +87,6 @@ public class BluejAntLogger extends AntLogger {
      * @return true to receive events for all scripts; by default, false
      */
     public boolean interestedInAllScripts(AntSession session) {
-        System.out.println("interested in all scripts");
         return true;
     }
 
@@ -230,7 +226,6 @@ public class BluejAntLogger extends AntLogger {
      * @return true to receive events sent from this script; by default, false
      */
     public boolean interestedInScript(File script, AntSession session) {
-        System.out.println("interested in script");
         File folder = script.getParentFile();
         Project prj = null;
         try {
@@ -241,7 +236,6 @@ public class BluejAntLogger extends AntLogger {
             ex.printStackTrace();
         }
         if (prj != null && prj.getLookup().lookup(BluejProject.class) != null) {
-            System.out.println("interested..");
             return true;
         }
         return false;
