@@ -7,14 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.jellytools;
 
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jellytools.actions.DocumentsAction;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -69,8 +67,8 @@ public class DocumentsDialogOperator extends NbDialogOperator {
      */
     public JButtonOperator btSwitchToDocument() {
         if (_btActivate == null) {
-            String switchCaption = Bundle.getString("org.netbeans.core.windows.view.ui.Bundle", 
-                                                      "LBL_Activate");
+            String switchCaption = Bundle.getStringTrimmed("org.netbeans.core.windows.view.ui.Bundle", 
+                                                           "LBL_Activate");
             _btActivate = new JButtonOperator(this, switchCaption);
         }
         return _btActivate;
@@ -81,8 +79,8 @@ public class DocumentsDialogOperator extends NbDialogOperator {
      */
     public JButtonOperator btCloseDocuments() {
         if (_btCloseDocuments == null) {
-            String closeDocumentsCaption = Bundle.getString("org.netbeans.core.windows.view.ui.Bundle", 
-                                                            "LBL_CloseDocuments");
+            String closeDocumentsCaption = Bundle.getStringTrimmed("org.netbeans.core.windows.view.ui.Bundle", 
+                                                                   "LBL_CloseDocuments");
             _btCloseDocuments = new JButtonOperator(this, closeDocumentsCaption);
         }
         return _btCloseDocuments;
@@ -93,8 +91,8 @@ public class DocumentsDialogOperator extends NbDialogOperator {
      */
     public JButtonOperator btSaveDocuments() {
         if (_btSaveDocuments == null) {
-            String saveDocumentsCaption = Bundle.getString("org.netbeans.core.windows.view.ui.Bundle", 
-                                                           "LBL_SaveDocuments");
+            String saveDocumentsCaption = Bundle.getStringTrimmed("org.netbeans.core.windows.view.ui.Bundle", 
+                                                                  "LBL_SaveDocuments");
             _btSaveDocuments = new JButtonOperator(this, saveDocumentsCaption);
         }
         return _btSaveDocuments;
@@ -105,8 +103,8 @@ public class DocumentsDialogOperator extends NbDialogOperator {
      */
     public JButtonOperator btClose() {
         if (_btClose == null) {
-            String closeCaption = Bundle.getString("org.netbeans.core.windows.services.Bundle", 
-                                                   "CLOSED_OPTION_CAPTION");
+            String closeCaption = Bundle.getStringTrimmed("org.netbeans.core.windows.services.Bundle", 
+                                                          "CLOSED_OPTION_CAPTION");
             // need to set exact matching comparator becouse Close button can 
             // be mistaken for Close Document(s) button
             StringComparator oldComparator = this.getComparator();
