@@ -41,7 +41,13 @@ public final class ImportWizard implements ChangeListener {
     private String errorMessage;
     private WizardDescriptor wizardDescriptor;
     private PanelsIterator wizardIterator;
-        
+    
+    private final String defaultFolderName;
+    
+    public ImportWizard(String defaultFolderName){
+        this.defaultFolderName = defaultFolderName;
+    }
+    
     public boolean show() {
         wizardIterator = new PanelsIterator();
         wizardDescriptor = new WizardDescriptor(wizardIterator);
@@ -95,7 +101,7 @@ public final class ImportWizard implements ChangeListener {
             repositoryStep = new RepositoryStep();
             
             browseStep = new BrowserStep(org.openide.util.NbBundle.getMessage(ImportWizard.class, "LBL_CheckinBrowser"),
-                                        false, true, true);                      
+                                        false, true, defaultFolderName, true);                      
             
             messageStep = new MessageStep();
 
@@ -134,8 +140,6 @@ public final class ImportWizard implements ChangeListener {
 
         public void previousPanel() {            
             if(current() == browseStep) {                
-                // svnClient.cancelOperation() not implemented, but we still should look
-                // that browse is reseted in some way
                 browseStep.reset();
             }            
             super.previousPanel();

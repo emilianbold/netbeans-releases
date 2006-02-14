@@ -107,7 +107,7 @@ public final class ImportAction extends NodeAction {
         if (nodes.length == 1) {
             final File importDirectory = lookupImportDirectory(nodes[0]);
             if (importDirectory != null) {
-                ImportWizard wizard = new ImportWizard();
+                ImportWizard wizard = new ImportWizard(nodes[0].getName());
                 if (!wizard.show()) return;
                 
                 final SVNUrl repositoryUrl = wizard.getSelectedRepositoryRoot();
