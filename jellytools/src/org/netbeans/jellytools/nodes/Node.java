@@ -378,10 +378,20 @@ public class Node {
         for (int i=0; i<indexStr.length; i++) {
             indexInt[i]=Integer.parseInt(indexStr[i]);
         }
-        return tree().findPath(new Node.StringArraySubPathChooser(getTreePath(), 
-                                                                  tree().parseString(subPath, delimiter), 
-                                                                  indexInt, 
-                                                                  getComparator()));
+        TreePath foundTreePath;
+        try {
+            foundTreePath = tree().findPath(new Node.StringArraySubPathChooser(getTreePath(), 
+                                                                      tree().parseString(subPath, delimiter), 
+                                                                      indexInt, 
+                                                                      getComparator()));
+        } catch (JTreeOperator.NoSuchPathException e) {
+            // try it once more. Probably IDE somehow changed nodes.
+            foundTreePath = tree().findPath(new Node.StringArraySubPathChooser(getTreePath(), 
+                                                                      tree().parseString(subPath, delimiter), 
+                                                                      indexInt, 
+                                                                      getComparator()));
+        }
+        return foundTreePath;
     }
     
     /** Expands current node to see children */
