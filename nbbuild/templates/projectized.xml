@@ -82,7 +82,11 @@ Microsystems, Inc. All Rights Reserved.
         </path>
     </target>
 
-    <target name="javadoc" depends="build-init,-javadoc-init">
+    <target name="-conditional-javadoc-warn" depends="-conditional-15-init" if="skip.15">
+        <echo level="error" message="Cannot build javadoc for module ${basedir} as it requires JDK 1.5"/>
+    </target>
+    
+    <target name="javadoc" depends="build-init,-javadoc-init,-conditional-javadoc-warn" unless="skip.15">
         <property name="javadoc.check.failonerror" value="false" />
         <!-- This should become an import at some point, perhaps: -->
         <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
@@ -100,8 +104,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="netbeans-javadoc" depends="netbeans,javadoc" />
     
-    <target name="-conditional-nbm-init" depends="build-init">
-        <condition property="skip.nbm">
+    <target name="-conditional-15-init" depends="build-init">
+        <condition property="skip.15">
             <and>
                 <equals arg1="1.5" arg2="${javac.source}"/>
                 <not>
@@ -111,11 +115,11 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
     </target>
     
-    <target name="-conditional-nbm-warn" depends="-conditional-nbm-init" if="skip.nbm">
+    <target name="-conditional-nbm-warn" depends="-conditional-15-init" if="skip.15">
         <echo level="error" message="Cannot build NBM for module ${basedir} as it requires JDK 1.5"/>
     </target>
     
-    <target name="conditional-nbm" unless="skip.nbm" depends="-conditional-nbm-warn">
+    <target name="conditional-nbm" unless="skip.15" depends="-conditional-nbm-warn">
         <antcall target="nbm"/>
     </target>
     
