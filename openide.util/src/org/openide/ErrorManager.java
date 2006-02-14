@@ -46,6 +46,17 @@ import org.openide.util.WeakSet;
  * There may be zero or more instances of <code>ErrorManager</code> in {@link Lookup#getDefault}.
  * All will be delegated to, or a simple backup implementation is available if there are none.
  * </p>
+ * <p>
+ * The levels in descending order are:
+ * <ul>
+ * <li>ERROR (highest value)
+ * <li>EXCEPTION
+ * <li>USER
+ * <li>WARNING
+ * <li>INFORMATIONAL
+ * <li>UNKNOWN (lowest value)
+ * </ul>
+ * </p>
  *
  * <div class="nonnormative">
  * <p>How to...</p>
