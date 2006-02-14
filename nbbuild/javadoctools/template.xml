@@ -347,6 +347,10 @@ cause it to fail.
             <include name="**/*.html"/>
             <replacefilter token="http://root/" value="@TOP@.." />
         </replace>
+        <replace dir="${javadoc.out.dir}">
+            <include name="**/*.html"/>
+            <replacefilter token="http://top/" value="@TOP@" />
+        </replace>
         <replace dir="${javadoc.out.dir}" token="@TOP@/" value="@TOP@">
             <include name="**/*.html"/>
         </replace>

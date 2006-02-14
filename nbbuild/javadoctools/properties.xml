@@ -101,3 +101,4 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-modules-options-api" value="${javadoc.web.root}/org-netbeans-modules-options-api"/>
 <property name="javadoc.docs.org-netbeans-api-web-webmodule" value="${javadoc.web.root}/org-netbeans-api-web-webmodule"/>
 <property name="javadoc.docs.org-netbeans-modules-editor-codetemplates" value="${javadoc.web.root}/org-netbeans-modules-editor-codetemplates"/>
+<property name="javadoc.docs.org-netbeans-modules-sendopts" value="${javadoc.web.root}/org-netbeans-modules-sendopts"/>

@@ -101,3 +101,4 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-modules-options-api@" value="${javadoc.docs.org-netbeans-modules-options-api}"/>
 <replacefilter token="@org-netbeans-api-web-webmodule@" value="${javadoc.docs.org-netbeans-api-web-webmodule}"/>
 <replacefilter token="@org-netbeans-modules-editor-codetemplates@" value="${javadoc.docs.org-netbeans-modules-editor-codetemplates}"/>
+<replacefilter token="@org-netbeans-modules-sendopts@" value="${javadoc.docs.org-netbeans-modules-sendopts}"/>
