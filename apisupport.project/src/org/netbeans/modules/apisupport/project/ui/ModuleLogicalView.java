@@ -25,6 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -198,7 +200,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         return new ImportantFilesNode(ch);
     }
     
-    private static final class RootChildren extends Children.Keys {
+    private static final class RootChildren extends Children.Keys implements ChangeListener {
         
         private static final String[] SOURCE_GROUP_TYPES = {
             JavaProjectConstants.SOURCES_TYPE_JAVA,
@@ -213,6 +215,11 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         
         protected void addNotify() {
             super.addNotify();
+            refreshKeys();
+            ProjectUtils.getSources(project).addChangeListener(this);
+        }
+        
+        private void refreshKeys() {
             List l = new ArrayList();
             Sources s = ProjectUtils.getSources(project);
             for (int i = 0; i < SOURCE_GROUP_TYPES.length; i++) {
@@ -229,6 +236,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         }
         
         protected void removeNotify() {
+            ProjectUtils.getSources(project).removeChangeListener(this);
             setKeys(Collections.EMPTY_SET);
             super.removeNotify();
         }
@@ -258,6 +266,10 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                 return null;
             }
             return GenericSources.group(project, root, propname, NbBundle.getMessage(ModuleLogicalView.class, "LBL_extra_javadoc_files"), null, null);
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            refreshKeys();
         }
         
     }

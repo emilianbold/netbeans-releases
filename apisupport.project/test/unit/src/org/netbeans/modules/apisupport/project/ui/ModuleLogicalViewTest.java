@@ -13,6 +13,9 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
@@ -20,6 +23,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -86,6 +90,35 @@ public class ModuleLogicalViewTest extends TestBase {
                 // flush
             }
         }).waitFinished();
+    }
+    
+    public void testNewlyCreatedSourceRootsDisplayed() throws Exception { // #72476
+        Project p = generateStandaloneModule("module");
+        LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
+        Node root = lvp.createLogicalView();
+        p.getProjectDirectory().getFileObject("test").delete();
+        Children ch = root.getChildren();
+        assertEquals(Arrays.asList(new String[] {"${src.dir}", "important.files", "libraries"}), findKids(ch));
+        /* XXX does not work reliably; ChildrenArray.finalize removes listener!
+        final boolean[] added = new boolean[1];
+        root.addNodeListener(new NodeAdapter() {
+            public void childrenAdded(NodeMemberEvent ev) {
+                added[0] = true;
+            }
+        });
+         */
+        p.getProjectDirectory().createFolder("javahelp");
+        //assertTrue("got node added event", added[0]);
+        assertEquals(Arrays.asList(new String[] {"${src.dir}", "javahelp", "important.files", "libraries"}), findKids(ch));
+    }
+    
+    private static List/*<String>*/ findKids(Children ch) {
+        List l = new ArrayList();
+        Node[] kids = ch.getNodes(true);
+        for (int i = 0; i < kids.length; i++) {
+            l.add(kids[i].getName());
+        }
+        return l;
     }
     
 }
