@@ -463,9 +463,7 @@ public class FileStatusCache implements ISVNNotifyListener {
      * @return FileInformation file/folder status bean
      */ 
     private FileInformation createFileInformation(File file, ISVNStatus status) {
-        assert status == null || status.getTextStatus().equals(SVNStatusKind.UNVERSIONED) == false
-            : "Unversioned files must have null status, fix caller! File: " + file.getAbsolutePath();
-        if (status == null) {
+        if (status == null || status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
             if (!svn.isManaged(file)) {
                 return file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
             }
