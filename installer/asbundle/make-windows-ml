@@ -2,5 +2,5 @@
 # $AS_INSTALLER_PATH is location of SJS AS installer
 ant \
 -Dismp.home=$IS_HOME \
--Das.installer=$AS_INSTALLER_PATH/sjsas_pe-8_2-fcs-bin-b03-windows-23_nov_2005.exe \
+-Das.installer=$AS_INSTALLER_PATH/sjsas_pe-8_2-fcs-bin-b06a-windows-20_jan_2006.exe \
 build-windows-ml
