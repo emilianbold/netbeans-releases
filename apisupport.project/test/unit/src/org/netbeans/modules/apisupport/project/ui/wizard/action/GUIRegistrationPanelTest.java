@@ -55,8 +55,8 @@ public class GUIRegistrationPanelTest extends LayerTestBase {
         
         final JFrame frame = new JFrame("testMemoryLeak_70032");
         frame.getContentPane().setLayout(new BorderLayout());
-        frame.getContentPane().add(new JLabel("<html><font color='blue'>I will close my self" +
-                " as soos as I load all data from the SystemFileSystem</font></html>"), BorderLayout.NORTH);
+        frame.getContentPane().add(new JLabel("<html><font color='blue'>I will close myself" +
+                " as soon as I load all data from the SystemFileSystem</font></html>"), BorderLayout.NORTH);
         frame.getContentPane().add(outerPane, BorderLayout.CENTER);
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
