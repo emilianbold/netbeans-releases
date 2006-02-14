@@ -19,15 +19,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.jar.Manifest;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
@@ -202,7 +207,7 @@ public class SingleModulePropertiesTest extends TestBase {
         String before = TestBase.slurp(p.getManifestFile());
         
         SingleModuleProperties props = loadProperties(p);
-        // two lines bellow are ensured by CustomizerVersioning - let's simulate it
+        // two lines below are ensured by CustomizerVersioning - let's simulate it
         props.setImplementationVersion("");
         props.setProvidedTokens("");
         props.storeProperties();
@@ -222,7 +227,7 @@ public class SingleModulePropertiesTest extends TestBase {
         
         SingleModuleProperties props = loadProperties(p);
         props.getRequiredTokenListModel().addToken("org.netbeans.api.javahelp.Help");
-        // two lines bellow are ensured by CustomizerVersioning - let's simulate it
+        // two lines below are ensured by CustomizerVersioning - let's simulate it
         props.setImplementationVersion("");
         props.setProvidedTokens("");
         props.storeProperties();
@@ -255,21 +260,29 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("expected content", expected, real);
     }
     
-    public void testAddNonEmptyPackages() throws Exception {
-        FileObject srcDir = FileUtil.toFileObject(getWorkDir()).createFolder("src");
+    public void testAvailablePublicPackages() throws Exception {
+        Map/*<String,String>*/ contents = new HashMap();
+        contents.put("lib/pkg/Clazz3.class", "");
+        contents.put("lib/pkg2/Clazz4.class", "");
+        contents.put("1.0/oldlib/Clazz5.class", ""); // #72669
+        File jar = new File(getWorkDir(), "some.jar");
+        createJar(jar, contents, new Manifest());
+        SuiteProject sweet = generateSuite("sweet");
+        File moduleDir = new File(getWorkDir(), "module");
+        NbModuleProjectGenerator.createSuiteLibraryModule(
+                moduleDir, "module", "Module", "module/Bundle.properties",
+                FileUtil.toFile(sweet.getProjectDirectory()), null, new File[] {jar});
+        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(moduleDir));
+        FileObject srcDir = p.getProjectDirectory().getFileObject("src");
         FileUtil.createData(srcDir, "pkg1/Clazz1.java");
         FileUtil.createData(srcDir, "pkg1/Clazz2.java");
         FileUtil.createData(srcDir, "pkg2/CVS/#1.20#Clazz1.java");
         FileUtil.createData(srcDir, "pkg2/Clazz1.java");
         FileUtil.createData(srcDir, "pkg2/deeper/Clazz1.java");
         FileUtil.createData(srcDir, "pkg2/deeper/and/deeper/Clazz1.java");
-        Set packages = new HashSet();
-        SingleModuleProperties.addNonEmptyPackages(packages, srcDir, "java");
-        assertEquals("four packages", 4, packages.size());
-        assertTrue("pkg1", packages.remove(srcDir.getFileObject("pkg1")));
-        assertTrue("pkg2", packages.remove(srcDir.getFileObject("pkg2")));
-        assertTrue("pkg2.deeper", packages.remove(srcDir.getFileObject("pkg2/deeper")));
-        assertTrue("pkg2.deeper.and.deeper", packages.remove(srcDir.getFileObject("pkg2/deeper/and/deeper")));
+        FileUtil.createData(srcDir, ".broken/Clazz.java"); // #72669
+        assertEquals(Arrays.asList(new String[] {"lib.pkg", "lib.pkg2", "pkg1", "pkg2", "pkg2.deeper", "pkg2.deeper.and.deeper"}),
+                new ArrayList(SingleModuleProperties.getInstance(p).getAvailablePublicPackages()));
     }
     
     public void testPublicPackagesAreUpToDate_63561() throws Exception {

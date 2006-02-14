@@ -155,6 +155,9 @@ public class NbModuleProjectGenerator {
                                     JarEntry entry = (JarEntry)en.nextElement();
                                     if (!entry.isDirectory() && entry.getName().endsWith(".class")) { // NOI18N
                                         String nm = entry.getName();
+                                        if (!Util.isValidJavaFQN(nm.substring(0, nm.length() - 6).replace('/', '.'))) {
+                                            continue; // #72669
+                                        }
                                         int index = nm.lastIndexOf('/');
                                         if (index > -1) {
                                             String path = nm.substring(0, index);

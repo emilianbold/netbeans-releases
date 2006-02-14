@@ -218,12 +218,12 @@ public class UtilTest extends TestBase {
         assertNotNull("url was found", url);
     }
     
-    public void testIsValidCodeNameBase() throws Exception {
-        assertFalse(Util.isValidCodeNameBase("a.b,c"));
-        assertFalse(Util.isValidCodeNameBase(""));
-        assertFalse(Util.isValidCodeNameBase("a.b.1"));
-        assertTrue(Util.isValidCodeNameBase("a"));
-        assertTrue(Util.isValidCodeNameBase("a.b.c1"));
+    public void testIsValidJavaFQN() throws Exception {
+        assertFalse(Util.isValidJavaFQN("a.b,c"));
+        assertFalse(Util.isValidJavaFQN(""));
+        assertFalse(Util.isValidJavaFQN("a.b.1"));
+        assertTrue(Util.isValidJavaFQN("a"));
+        assertTrue(Util.isValidJavaFQN("a.b.c1"));
     }
     
     public void testIsValidSFSFolderName() throws Exception {

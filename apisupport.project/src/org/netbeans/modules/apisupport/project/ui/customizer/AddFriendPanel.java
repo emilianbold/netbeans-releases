@@ -82,7 +82,7 @@ public class AddFriendPanel extends JPanel {
             setErrorMessage(NbBundle.getMessage(AddFriendPanel.class, "MSG_FriendMayNotBeBlank"));
         } else if (CustomizerComponentFactory.WAIT_VALUE == friends.getSelectedItem()) {
             setErrorMessage(""); // do not show errormessage during "Please wait..." state
-        } else if (!Util.isValidCodeNameBase(cnb)) {
+        } else if (!Util.isValidJavaFQN(cnb)) {
             setErrorMessage(NbBundle.getMessage(AddFriendPanel.class, "MSG_FriendIsNotValidCNB"));
         } else {
             setErrorMessage(null);

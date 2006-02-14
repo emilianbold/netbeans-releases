@@ -59,6 +59,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -263,9 +264,15 @@ public final class Util {
         // also be sure there is no '.' left at the end of the cnb
         return normalizedCNB.toString().replaceAll("\\.$", ""); // NOI18N
     }
-    
-    // Stolen/Inspired from java/project PackageViewChildren.isValidPackageName()
-    public static boolean isValidCodeNameBase(String name) {
+
+    /**
+     * Check whether a given name can serve as a legal <ol>
+     * <li>Java class name
+     * <li>Java package name
+     * <li>NB module code name base
+     * </ol>
+     */
+    public static boolean isValidJavaFQN(String name) {
         if (name.length() == 0) {
             return false;
         }
@@ -273,26 +280,11 @@ public final class Util {
         boolean delimExpected = false;
         while (tk.hasMoreTokens()) {
             String namePart = tk.nextToken();
-            if (!delimExpected) {
-                if (namePart.equals(".")) { //NOI18N
-                    return false;
-                }
-                for (int i=0; i< namePart.length(); i++) {
-                    char c = namePart.charAt(i);
-                    if (i == 0) {
-                        if (!Character.isJavaIdentifierStart(c)) {
-                            return false;
-                        }
-                    } else {
-                        if (!Character.isJavaIdentifierPart(c)) {
-                            return false;
-                        }
-                    }
-                }
-            } else {
-                if (!namePart.equals(".")) { //NOI18N
-                    return false;
-                }
+            if (delimExpected ^ namePart.equals(".")) { // NOI18N
+                return false;
+            }
+            if (!delimExpected && !Utilities.isJavaIdentifier(namePart)) {
+                return false;
             }
             delimExpected = !delimExpected;
         }

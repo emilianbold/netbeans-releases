@@ -7,34 +7,36 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.jar.Manifest;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.apisupport.project.TestBase;
 
 /**
  * Test wizard logic.
- * @author mkleint
+ * @author Milos Kleint, Jesse Glick
  */
 public class LibraryStartVisualPanelTest extends NbTestCase {
     
-    private File libraryPath;
-
     public LibraryStartVisualPanelTest(String testName) {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        libraryPath = new File(getDataDir(), "test-library-0.1_01.jar");
-        assertTrue("test JAR " + libraryPath + " exists", libraryPath.isFile());
-    }
-    
-    public void testPopulateProjectData() {
+    public void testPopulateProjectData() throws Exception {
+        Map/*<String,String>*/ contents = new HashMap();
+        contents.put("org/apache/commons/logging/Log.class", "");
+        contents.put("1.0-beta/X.class", ""); // #72669
+        contents.put("org/apache/commons/logging/impl/NoOpLog.class", "");
+        File libraryPath = new File(getWorkDir(), "test-library-0.1_01.jar");
+        TestBase.createJar(libraryPath, contents, new Manifest());
         NewModuleProjectData data = new NewModuleProjectData();
         LibraryStartVisualPanel.populateProjectData(data, libraryPath.getAbsolutePath(), true);
         assertEquals("test-library", data.getProjectName());

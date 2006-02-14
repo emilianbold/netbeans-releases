@@ -600,7 +600,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     /**
      * Returns set of all available public packages for the project.
      */
-    private Set/*<FileObject>*/ getAvailablePublicPackages() {
+    Set/*<String>*/ getAvailablePublicPackages() {
         if (availablePublicPackages == null) {
             availablePublicPackages = new TreeSet();
             
@@ -623,6 +623,15 @@ public final class SingleModuleProperties extends ModuleProperties {
             String[] libsPaths = getProjectXMLManager().getBinaryOrigins();
             for (int i = 0; i < libsPaths.length; i++) {
                 addNonEmptyPackagesFromJar(availablePublicPackages, getHelper().resolveFile(libsPaths[i]));
+            }
+            
+            // #72669: remove invalid packages.
+            Iterator it = availablePublicPackages.iterator();
+            while (it.hasNext()) {
+                String pkg = (String) it.next();
+                if (!Util.isValidJavaFQN(pkg)) {
+                    it.remove();
+                }
             }
         }
         return availablePublicPackages;
@@ -797,7 +806,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         return false;
     }
     
-    private void addNonEmptyPackagesFromJar(Set/*<String>*/ packages, File jarFile) {
+    private static void addNonEmptyPackagesFromJar(Set/*<String>*/ packages, File jarFile) {
         FileObject jarFileFO = FileUtil.toFileObject(jarFile);
         if (jarFileFO == null) {
             // Broken classpath entry, perhaps.
@@ -828,7 +837,7 @@ public final class SingleModuleProperties extends ModuleProperties {
      * package (x.y.z) <code>isJarRoot</code> specifies if a given root is root
      * of a jar file.
      */
-    static void addNonEmptyPackages(final Set/*<FileObject>*/ validPkgs, final FileObject dir, final String ext) {
+    private static void addNonEmptyPackages(final Set/*<FileObject>*/ validPkgs, final FileObject dir, final String ext) {
         if (dir == null) {
             return;
         }

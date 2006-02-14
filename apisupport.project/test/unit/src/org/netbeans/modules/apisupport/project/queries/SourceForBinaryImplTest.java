@@ -17,6 +17,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.jar.Manifest;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.ProjectManager;
@@ -73,7 +74,8 @@ public class SourceForBinaryImplTest extends TestBase {
     public void testCompletionWorks_69735() throws Exception {
         SuiteProject suite = generateSuite("suite");
         NbModuleProject project = TestBase.generateSuiteComponent(suite, "module");
-        File library = new File(getDataDir(), "test-library-0.1_01.jar");
+        File library = new File(getWorkDir(), "test-library-0.1_01.jar");
+        createJar(library, Collections.EMPTY_MAP, new Manifest());
         FileObject libraryFO = FileUtil.toFileObject(library);
         FileObject yyJar = FileUtil.copyFile(libraryFO, FileUtil.toFileObject(getWorkDir()), "yy");
         

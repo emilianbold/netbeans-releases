@@ -7,18 +7,25 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.jar.Manifest;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -140,6 +147,28 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                     fo.getFileObject(BASIC_CREATED_FILES[i]));
         }
         assertEquals("now have two suite components", new HashSet(Arrays.asList(new Project[] {moduleProjectRel, moduleProjectAbs})), spp.getSubprojects());
+    }
+    
+    public void testCreateSuiteLibraryModule() throws Exception {
+        Map/*<String,String>*/ contents = new HashMap();
+        contents.put("lib/pkg/Clazz3.class", "");
+        contents.put("lib/pkg2/Clazz4.class", "");
+        contents.put("1.0/oldlib/Clazz5.class", ""); // #72669
+        File jar = new File(getWorkDir(), "some.jar");
+        createJar(jar, contents, new Manifest());
+        SuiteProject sweet = generateSuite("sweet");
+        File moduleDir = new File(getWorkDir(), "module");
+        NbModuleProjectGenerator.createSuiteLibraryModule(
+                moduleDir, "module", "Module", "module/Bundle.properties",
+                FileUtil.toFile(sweet.getProjectDirectory()), null, new File[] {jar});
+        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(moduleDir));
+        ManifestManager.PackageExport[] exports = new ProjectXMLManager(p).getPublicPackages();
+        Set/*<String>*/ packages = new TreeSet();
+        for (int i = 0; i < exports.length; i++) {
+            assertFalse(exports[i].isRecursive());
+            packages.add(exports[i].getPackage());
+        }
+        assertEquals(Arrays.asList(new String[] {"lib.pkg", "lib.pkg2"}), new ArrayList(packages));
     }
     
     // XXX hmmm, don't know yet how to fully test this case since I don't want

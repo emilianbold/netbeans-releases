@@ -96,7 +96,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     }
     
     private void checkCodeNameBase() {
-        if (!Util.isValidCodeNameBase(getCodeNameBaseValue())) {
+        if (!Util.isValidJavaFQN(getCodeNameBaseValue())) {
             setError(getMessage("MSG_InvalidCNB"));
         } else if (data.isSuiteComponent() && cnbIsAlreadyInSuite(data.getSuiteRoot(), getCodeNameBaseValue())) {
             setError(NbBundle.getMessage(BasicConfVisualPanel.class, "MSG_ComponentWithSuchCNBAlreadyInSuite", 
