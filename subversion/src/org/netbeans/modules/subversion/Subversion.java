@@ -142,7 +142,16 @@ public class Subversion {
     
     public SvnClient getClient(Context ctx) throws SVNClientException {
         File[] roots = ctx.getRootFiles();
-        SVNUrl repositoryUrl = SvnUtils.getRepositoryUrl(roots[0]);
+        SVNUrl repositoryUrl = null;
+        for (int i = 0; i<roots.length; i++) {
+             repositoryUrl = SvnUtils.getRepositoryUrl(roots[0]);
+            if (repositoryUrl != null) {
+                break;
+            }
+        }
+
+        assert repositoryUrl != null : "Unable to get repository, context contains only unmanaged files!";
+
         return getClient(repositoryUrl);
     }
     
@@ -195,12 +204,12 @@ public class Subversion {
 
     /**
      * Tests whether a file or directory is managed by Subversion. All files and folders that have a parent with .svn/Repository
-     * file are considered managed by CVS. This method accesses disk and should NOT be routinely called.
+     * file are considered managed by WC. This method accesses disk and should NOT be routinely called.
      * 
      * @param file a file or directory
-     * @return true if the file is under CVS management, false otherwise
-     */ 
-    boolean isManaged(File file) {
+     * @return true if the file is under WC management, false otherwise
+     */
+    public boolean isManaged(File file) {
         if (isAdministrative(file)) return false;
         if (file.isFile()) file = file.getParentFile();
         for (; file != null; file = file.getParentFile()) {
@@ -242,7 +251,7 @@ public class Subversion {
                 } catch (PatternSyntaxException e) {
                     // XXX rethrow, assert?
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }                
+                }
             }
         } catch (SVNClientException ex)  {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

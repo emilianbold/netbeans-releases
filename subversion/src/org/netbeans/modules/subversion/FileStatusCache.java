@@ -542,6 +542,24 @@ public class FileStatusCache implements ISVNNotifyListener {
      * @return FileInformation file/folder status bean
      */ 
     private FileInformation createMissingEntryFileInformation(File file) {
+        
+        // ignored status applies to whole subtrees
+        boolean isDirectory = file.isDirectory();
+        int parentStatus = getStatus(file.getParentFile()).getStatus();
+        if (parentStatus == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+            return isDirectory ? 
+                FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
+        }
+        if (parentStatus == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) {
+            if (isDirectory) {
+                // Working directory roots (aka managed roots). We already know that isManaged(file) is true
+                return isInsideSubversionMetadata(file) ? 
+                    FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_UPTODATE_DIRECTORY;
+            } else {
+                return FILE_INFORMATION_NOTMANAGED;
+            }
+        }
+        
         if (file.exists()) {
             if (Subversion.getInstance().isIgnored(file)) {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, file.isDirectory());
@@ -613,6 +631,10 @@ public class FileStatusCache implements ISVNNotifyListener {
         if (fo != null) {
             fo.refresh();
         }
+    }
+
+    private boolean isInsideSubversionMetadata(File file) {
+        return file.getPath().indexOf(File.separatorChar + ".svn" + File.separatorChar) != -1;
     }
 
     private static final class NotManagedMap extends AbstractMap {

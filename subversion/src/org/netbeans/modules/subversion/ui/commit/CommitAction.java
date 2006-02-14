@@ -82,7 +82,7 @@ public class CommitAction extends ContextAction {
         if (dd.getValue() == commitButton) {
             Map commitFiles = data.getCommitFiles();
             String message = panel.messageTextArea.getText();
-            performCommit(message, commitFiles);
+            performCommit(message, commitFiles, ctx);
         }
 
         // if OK setup sequence of add, remove and commit calls
@@ -94,16 +94,14 @@ public class CommitAction extends ContextAction {
         commit(ctx);
     }
 
-    private static void performCommit(String message, Map commitFiles) {
+    private static void performCommit(String message, Map commitFiles, Context ctx) {
         ProgressHandle progress = ProgressHandleFactory.createHandle("Committing...");
         try {
             progress.start();
                                                
-            File anyFile = ((SvnFileNode) commitFiles.keySet().iterator().next()).getFile();         // all files are from the same repository                
-            SVNUrl repositoryUrl = SvnUtils.getRepositoryUrl(anyFile);       
             ISVNClientAdapter client;
             try {
-                client = Subversion.getInstance().getClient(repositoryUrl);
+                client = Subversion.getInstance().getClient(ctx);
             } catch (SVNClientException ex) {
                 ex.printStackTrace(); // should not hapen
                 return;
@@ -111,7 +109,7 @@ public class CommitAction extends ContextAction {
         
             List addCandidates = new ArrayList();
             List removeCandidates = new ArrayList();
-            List commitCandidates = new ArrayList();
+            Set commitCandidates = new LinkedHashSet();
 
             Iterator it = commitFiles.keySet().iterator();
             while (it.hasNext()) {
@@ -119,10 +117,24 @@ public class CommitAction extends ContextAction {
                 CommitOptions option = (CommitOptions) commitFiles.get(node);
                 if (CommitOptions.ADD_BINARY == option) {
                     // set MIME property application/octet-stream
+                    List l = listUnmanagedParents(node);  // FIXME coved scheduled but nor commited files!
+                    Iterator dit = l.iterator();
+                    while (dit.hasNext()) {
+                        File file = (File) dit.next();
+                        addCandidates.add(new SvnFileNode(file));
+                        commitCandidates.add(file);
+                    }
                     addCandidates.add(node);
                     commitCandidates.add(node.getFile());
                 } else if (CommitOptions.ADD_TEXT == option) {
                     // assute no MIME property or startin gwith text
+                    List l = listUnmanagedParents(node);
+                    Iterator dit = l.iterator();
+                    while (dit.hasNext()) {
+                        File file = (File) dit.next();
+                        addCandidates.add(new SvnFileNode(file));
+                        commitCandidates.add(file);
+                    }
                     addCandidates.add(node);
                     commitCandidates.add(node.getFile());
                 } else if (CommitOptions.COMMIT_REMOVE == option) {
@@ -149,11 +161,15 @@ public class CommitAction extends ContextAction {
                 }
             }
 
-            // XXX hiearchy sort
             it = addDirs.iterator();
+            Set addedDirs = new HashSet();
             while (it.hasNext()) {
                 File dir = (File) it.next();
+                if (addedDirs.contains(dir)) {
+                    continue;
+                }
                 client.addDirectory(dir, false);
+                addedDirs.add(dir);
             }
 
             it = addFiles.iterator();
@@ -180,5 +196,30 @@ public class CommitAction extends ContextAction {
         } finally {
             progress.finish();
         }
+    }
+
+    private static List listUnmanagedParents(SvnFileNode node) {
+        List unmanaged = new ArrayList();
+        File file = node.getFile();
+        File parent = file.getParentFile();
+        while (true) {
+            if (new File(parent, ".svn/entries").canRead() || new File(parent, "_svn/entries").canRead()) {
+                break;
+            }
+            unmanaged.add(0, parent);
+            parent = parent.getParentFile();
+            if (parent == null) {
+                break;
+            }
+        }
+
+        List ret = new ArrayList();
+        Iterator it = unmanaged.iterator();
+        while (it.hasNext()) {
+            File un = (File) it.next();
+            ret.add(un);
+        }
+
+        return ret;
     }
 }
