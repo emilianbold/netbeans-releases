@@ -224,6 +224,7 @@ public class FileStatusCache implements ISVNNotifyListener {
             }
         } catch (SVNClientException e) {
             // no or damaged entries
+            // or ignored file
         }
         FileInformation fi = createFileInformation(file, status);
         if (equivalent(fi, current)) return fi;
@@ -544,7 +545,11 @@ public class FileStatusCache implements ISVNNotifyListener {
      */ 
     private FileInformation createMissingEntryFileInformation(File file) {
         if (file.exists()) {
-            return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, file.isDirectory());
+            if (Subversion.getInstance().isIgnored(file)) {
+                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, file.isDirectory());
+            } else {
+                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, file.isDirectory());
+            }
         } else {
             return FILE_INFORMATION_UNKNOWN;
         }

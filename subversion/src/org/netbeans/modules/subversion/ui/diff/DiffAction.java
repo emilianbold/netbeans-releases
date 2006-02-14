@@ -47,7 +47,7 @@ public class DiffAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED; 
     }
     
-    public void diff(Context ctx, int type, String contextName) {
+    public static void diff(Context ctx, int type, String contextName) {
         
         DiffMainPanel panel = new DiffMainPanel(ctx, type, contextName); // spawns bacground DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);

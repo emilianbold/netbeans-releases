@@ -17,6 +17,7 @@ import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
@@ -24,7 +25,13 @@ import org.openide.util.RequestProcessor;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Iterator;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 import org.netbeans.modules.subversion.ui.wizards.repository.ProxyDescriptor;
+import org.netbeans.api.queries.SharabilityQuery;
 
 /**
  * A singleton Subversion manager class, center of Subversion module. Use {@link #getInstance()} to get access
@@ -133,6 +140,12 @@ public class Subversion {
         return client;
     }
     
+    public SvnClient getClient(Context ctx) throws SVNClientException {
+        File[] roots = ctx.getRootFiles();
+        SVNUrl repositoryUrl = SvnUtils.getRepositoryUrl(roots[0]);
+        return getClient(repositoryUrl);
+    }
+    
     public SvnClient getClient(SVNUrl repositoryUrl) 
     throws SVNClientException 
     {        
@@ -201,5 +214,54 @@ public class Subversion {
     private void attachListeners(SvnClient client) {
         client.addNotifyListener(new OutputLogger()); // XXX new ???
         client.addNotifyListener(fileStatusCache); 
+    }
+
+    public boolean isIgnored(File file) {
+        if (file.isDirectory()) {
+            File entries = new File(file, ".svn/entries");
+            if (entries.canRead()) return false;
+        }
+        String name = file.getName();
+
+        // backward compatability #68124
+        if (".nbintdb".equals(name)) {  // NOI18N
+            return true;
+        }
+
+        File parent = file.getParentFile();
+        try {
+            // XXX RE patterns?
+            List patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
+
+            for (Iterator i = patterns.iterator(); i.hasNext();) {
+                try {
+                    Pattern pattern =  Pattern.compile((String) i.next());
+                    if (pattern.matcher(name).matches()) {
+                        return true;
+                    }
+                } catch (PatternSyntaxException e) {
+                    // XXX rethrow, assert?
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }                
+            }
+        } catch (SVNClientException ex)  {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+
+        int sharability = SharabilityQuery.getSharability(file);
+        if (sharability == SharabilityQuery.NOT_SHARABLE) {
+            try {
+                // propagate IDE opinion to Subversion svn:ignore
+                List patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
+                patterns.remove(file.getName());
+                Subversion.getInstance().getClient().setIgnoredPatterns(parent, patterns);
+            } catch (SVNClientException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+            return true;
+        } else {
+            return false;
+        }
+
     }
 }

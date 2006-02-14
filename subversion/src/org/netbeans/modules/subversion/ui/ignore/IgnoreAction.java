@@ -18,6 +18,7 @@ import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.ui.actions.*;
 import org.netbeans.modules.subversion.util.*;
 import org.openide.*;
+import org.openide.util.Lookup;
 import org.openide.nodes.Node;
 
 import java.io.File;
@@ -62,9 +63,12 @@ public class IgnoreAction extends ContextAction {
             }
             FileInformation info = cache.getStatus(files[i]);
             if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-                actionStatus = (actionStatus == -1 || actionStatus == IGNORING) ? IGNORING : UNDEFINED;
+                actionStatus = (actionStatus == -1 || actionStatus == IGNORING) ?
+                        IGNORING : UNDEFINED;
             } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-                actionStatus = ((actionStatus == -1 || actionStatus == UNIGNORING) && canBeUnignored(files[i])) ? UNIGNORING : UNDEFINED;
+                actionStatus = ((actionStatus == -1 || actionStatus == UNIGNORING)
+                        && canBeUnignored(files[i])) ?
+                        UNIGNORING : UNDEFINED;
             } else {
                 actionStatus = UNDEFINED;
                 break;
@@ -96,7 +100,9 @@ public class IgnoreAction extends ContextAction {
             File parent = file.getParentFile();
             if (actionStatus == IGNORING) {
                 try {
-                    Subversion.getInstance().getClient().addToIgnoredPatterns(parent, file.getName());                    
+                    Subversion.getInstance().getClient().addToIgnoredPatterns(parent, file.getName());
+                    // XXX for sure ignored
+                    Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 } catch (SVNClientException ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
@@ -105,6 +111,7 @@ public class IgnoreAction extends ContextAction {
                     List patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
                     patterns.remove(file.getName());
                     Subversion.getInstance().getClient().setIgnoredPatterns(parent, patterns);
+                    Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 } catch (SVNClientException ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }

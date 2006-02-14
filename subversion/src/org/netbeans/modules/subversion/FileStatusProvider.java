@@ -55,7 +55,13 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     }
 
     public String annotateNameHtml(String name, Set files) {
-        return Subversion.getInstance().getAnnotator().annotateNameHtml(name, files, FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
+        return Subversion.getInstance().getAnnotator().annotateNameHtml(
+                name,
+                files,
+                FileInformation.STATUS_VERSIONED_UPTODATE
+                | FileInformation.STATUS_LOCAL_CHANGE
+                | FileInformation.STATUS_NOTVERSIONED_EXCLUDED
+        );
     }
     
     public String annotateName(String name, Set files) {

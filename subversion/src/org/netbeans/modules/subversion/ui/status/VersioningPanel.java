@@ -13,6 +13,9 @@
 
 package org.netbeans.modules.subversion.ui.status;
 
+import org.netbeans.modules.subversion.client.*;
+import org.netbeans.modules.subversion.ui.commit.*;
+import org.netbeans.modules.subversion.ui.diff.*;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.subversion.Subversion;
@@ -24,6 +27,7 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.NoContentPanel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.*;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
 import org.openide.windows.TopComponent;
@@ -40,6 +44,7 @@ import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import org.tigris.subversion.svnclientadapter.*;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots. 
@@ -50,7 +55,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
     
     private ExplorerManager             explorerManager;
     private final SvnVersioningTopComponent parentTopComponent;
-    private final Subversion            cvs;
+    private final Subversion            subversion;
     private Context                     context;
     private int                         displayStatuses;
     private boolean                     pendingRefresh;
@@ -58,9 +63,8 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
     private SyncTable                   syncTable;
     private RequestProcessor.Task       refreshViewTask;
     private Thread                      refreshViewThread;
-//    private ExecutorGroup               refreshCommandGroup;
 
-    private static final RequestProcessor   rp = new RequestProcessor("CVS-VersioningView", 1);  // NOI18N
+    private static final RequestProcessor   rp = new RequestProcessor("SubversionView", 1);  // NOI18N
 
     private final NoContentPanel noContentComponent = new NoContentPanel();
 
@@ -71,7 +75,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
      */ 
     public VersioningPanel(SvnVersioningTopComponent parent) {
         this.parentTopComponent = parent;
-        this.cvs = Subversion.getInstance();
+        this.subversion = Subversion.getInstance();
         refreshViewTask = rp.create(new RefreshViewTask());
         explorerManager = new ExplorerManager ();
         displayStatuses = FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE;
@@ -154,15 +158,15 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
     public void addNotify() {
         super.addNotify();
         SvnModuleConfig.getDefault().addPropertyChangeListener(this);
-        cvs.getStatusCache().addVersioningListener(this);
-//        cvs.addVersioningListener(this);
+        subversion.getStatusCache().addVersioningListener(this);
+//        subversion.addVersioningListener(this);
         explorerManager.addPropertyChangeListener(this);
     }
 
     public void removeNotify() {
         SvnModuleConfig.getDefault().removePropertyChangeListener(this);
-        cvs.getStatusCache().removeVersioningListener(this);
-//        cvs.removeVersioningListener(this);
+        subversion.getStatusCache().removeVersioningListener(this);
+//        subversion.removeVersioningListener(this);
         explorerManager.removePropertyChangeListener(this);
         super.removeNotify();
     }
@@ -281,7 +285,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
     }
     
     private SyncFileNode [] getNodes(Context context, int includeStatus) {
-        SvnFileNode [] fnodes = cvs.getNodes(context, includeStatus);
+        SvnFileNode [] fnodes = subversion.getNodes(context, includeStatus);
         SyncFileNode [] nodes = new SyncFileNode[fnodes.length];
         for (int i = 0; i < fnodes.length; i++) {
             if (Thread.interrupted()) return null;
@@ -296,14 +300,14 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
      */ 
     private void onCommitAction() {
         LifecycleManager.getDefault().saveAll();
-//        CommitAction.invokeCommit(parentTopComponent.getContentTitle(), context, null);
+        CommitAction.commit(context);
     }
     
     /**
      * Performs the "cvs update" command on all diplayed roots.
      */ 
     private void onUpdateAction() {
-        executeUpdateCommand(false);
+        executeUpdate();
     }
     
     /**
@@ -323,7 +327,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
     }
 
     private void refreshStatuses() {
-        executeUpdateCommand(true);
+        executeStatus();
         reScheduleRefresh(1000);
     }
 
@@ -331,52 +335,64 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
      * Shows Diff panel for all files in the view. The initial type of diff depends on the sync mode: Local, Remote, All.
      * In Local mode, the diff shows CURRENT <-> BASE differences. In Remote mode, it shows BASE<->HEAD differences. 
      */ 
-    private void onDiffAction() {
-/*
-        ExecutorGroup group = new ExecutorGroup(NbBundle.getMessage(SynchronizePanel.class, "BK0003"));
-        group.progress(NbBundle.getMessage(VersioningPanel.class, "BK0004"));
-        DiffExecutor exec = new DiffExecutor(context, parentTopComponent.getContentTitle());
-        if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {
+    private void onDiffAction() {        
+        String title = parentTopComponent.getContentTitle();
+        if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {            
             LifecycleManager.getDefault().saveAll();
-            exec.showLocalDiff(group);
+            DiffAction.diff(context, Setup.DIFFTYPE_LOCAL, title);
         } else if (displayStatuses == FileInformation.STATUS_REMOTE_CHANGE) {
-            exec.showRemoteDiff(group);
+            DiffAction.diff(context, Setup.DIFFTYPE_REMOTE, title);
         } else {
             LifecycleManager.getDefault().saveAll();
-            exec.showAllDiff(group);
+            DiffAction.diff(context, Setup.DIFFTYPE_ALL, title);
         }
-*/
     }
     
-    private void executeUpdateCommand(boolean doNoChanges) {
-/*
-        if (context == null || context.getRoots().size() == 0) return;
-        UpdateCommand cmd = new UpdateCommand();
-        String msg;
-        if (doNoChanges) {
-            msg = NbBundle.getMessage(VersioningPanel.class, "BK0001");
-        } else {
-            msg = NbBundle.getMessage(VersioningPanel.class, "BK0002");
+    private void executeStatus() {
+
+        if (context == null || context.getRoots().size() == 0) {
+            return;
         }
-        cmd.setDisplayName(msg);
-        GlobalOptions options = Subversion.createGlobalOptions();
-        if (context.getExclusions().size() > 0) {
-            options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
+        
+        ProgressHandle progress  = ProgressHandleFactory.createHandle("Refreshing status...");
+        try {
+            progress.start();
+            SvnClient client = Subversion.getInstance().getClient(context);
+            File[] roots = context.getRootFiles();
+            for (int i=0; i<roots.length; i++) {
+                File root = roots[i];
+                client.getStatus(root, true, false);  // cache refires events
+            }
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ex);
+        } finally {
+            progress.finish();
         }
-        cmd.setFiles(context.getRootFiles());
-        cmd.setBuildDirectories(true);
-        cmd.setPruneDirectories(true);
-        options.setDoNoChanges(doNoChanges);
-        // TODO: javacvs library fails to obey the -P flag when -q is specified
-//        options.setModeratelyQuiet(true);
-        refreshCommandGroup = new ExecutorGroup(msg);
-        refreshCommandGroup.addExecutors(UpdateExecutor.splitCommand(cmd, cvs, options));
-        refreshCommandGroup.execute();
-*/
-        // XXX should not be there barrier?
-        parentTopComponent.contentRefreshed();
     }
 
+    private void executeUpdate() {
+
+        if (context == null || context.getRoots().size() == 0) {
+            return;
+        }
+        
+        ProgressHandle progress  = ProgressHandleFactory.createHandle("Updating...");
+        try {
+            progress.start();
+            SvnClient client = Subversion.getInstance().getClient(context);
+            File[] roots = context.getRootFiles();
+            for (int i=0; i<roots.length; i++) {
+                File root = roots[i];
+                // TODO async & cancellable
+                client.update(root, SVNRevision.HEAD, true);
+            }
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ex);
+        } finally {
+            progress.finish();
+        }
+    }
+    
     private void onDisplayedStatusChanged() {
         if (tgbLocal.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_LOCAL_CHANGE);
