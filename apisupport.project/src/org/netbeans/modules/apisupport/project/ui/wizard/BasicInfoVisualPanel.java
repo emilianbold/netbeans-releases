@@ -60,9 +60,8 @@ import org.openide.util.NbBundle;
  */
 public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
-    private NewModuleProjectData data;
-    
-    private int wizardType;
+    private final NewModuleProjectData data;
+    private final int wizardType;
     
     private ButtonModel lastSelectedType;
     private static String lastSelectedSuite;
@@ -102,7 +101,6 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         } else {
             assert false : "Unknown wizard type = " + wizardType; // NOI18N
         }
-        
         attachDocumentListeners();
         updateEnabled();
     }
@@ -209,6 +207,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             setError(getMessage("MSG_NameCannotBeEmpty"));
         } else if ("".equals(getLocationValue())) {
             setError(getMessage("MSG_LocationCannotBeEmpty"));
+        } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE && isNetBeansOrgFolder()) {
+            setError(getMessage("MSG_LibraryWrapperForNBOrgUnsupported"));
         } else if (suiteModule.isSelected() && moduleSuiteValue.getSelectedItem() == null) {
             setError(getMessage("MSG_ChooseRegularSuite"));
         } else if (standAloneModule.isSelected() &&
