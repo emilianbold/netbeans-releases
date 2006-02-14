@@ -17,7 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import org.netbeans.modules.subversion.settings.SvnRootSettings;
-import org.netbeans.modules.subversion.ui.wizards.repository.PasswordFile;
+import org.netbeans.modules.subversion.settings.PasswordFile;
 import org.netbeans.modules.subversion.ui.wizards.repository.ProxyDescriptor;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.FileUtil;
