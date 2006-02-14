@@ -16,7 +16,6 @@ package org.netbeans.modules.subversion.ui.commit;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.DialogDescriptor;
@@ -26,11 +25,13 @@ import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.awt.*;
 import java.io.File;
 import java.util.*;
 import java.util.List;
+import org.netbeans.modules.subversion.util.SvnUtils;
+import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Commit action
@@ -97,8 +98,17 @@ public class CommitAction extends ContextAction {
         ProgressHandle progress = ProgressHandleFactory.createHandle("Committing...");
         try {
             progress.start();
-            SvnClient client = Subversion.getInstance().getClient();
-
+                                               
+            File anyFile = ((SvnFileNode) commitFiles.keySet().iterator().next()).getFile();         // all files are from the same repository                
+            SVNUrl repositoryUrl = SvnUtils.getRepositoryUrl(anyFile);       
+            ISVNClientAdapter client;
+            try {
+                client = Subversion.getInstance().getClient(repositoryUrl);
+            } catch (SVNClientException ex) {
+                ex.printStackTrace(); // should not hapen
+                return;
+            }       
+        
             List addCandidates = new ArrayList();
             List removeCandidates = new ArrayList();
             List commitCandidates = new ArrayList();

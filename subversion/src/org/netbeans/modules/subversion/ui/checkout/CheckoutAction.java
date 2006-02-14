@@ -33,6 +33,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.SVNRoot;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.wizards.*;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -52,6 +53,7 @@ import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.lookup.Lookups;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -62,7 +64,8 @@ public final class CheckoutAction extends CallableSystemAction {
     private RequestProcessor.Task checkOutTask = null;
     private Thread checkOutThread = null;
     private ProgressHandle progressHandle = null;
-    private boolean cancel = false;
+    
+    // XXX dummy
     private Cancellable cancellable = new Cancellable() {
         public boolean cancel() {
             if(checkOutTask!=null) {                    
@@ -84,6 +87,7 @@ public final class CheckoutAction extends CallableSystemAction {
         CheckoutWizard wizard = new CheckoutWizard();
         if (!wizard.show()) return;
         
+        final SVNUrl repository = wizard.getRepositoryRoot();
         final SVNRoot[] svnRoots = wizard.getSelectedRoots();
         final File file = wizard.getWorkdir();        
         
@@ -91,8 +95,15 @@ public final class CheckoutAction extends CallableSystemAction {
         checkOutTask = processor.post(new Runnable() {
             public void run() {          
                 checkOutThread = Thread.currentThread();
-                cancel = false;
-                checkout(svnRoots, file);
+                
+                progressHandle = 
+                    ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(CheckoutAction.class, "BK0001"), cancellable);       // NOI18N
+                progressHandle.start();                
+                try{            
+                    checkout(repository, svnRoots, file, true, false);
+                } finally {
+                    progressHandle.finish();
+                }         
             }
         });
     }
@@ -119,43 +130,44 @@ public final class CheckoutAction extends CallableSystemAction {
      * On succesfull finish shows open project dialog.
      *
      */
-    public void checkout(final SVNRoot svnRoots[], final File workingFolder) {
-        Executor.Command cmd = new Executor.Command () {
-            protected void executeCommand(final ISVNClientAdapter client) throws SVNClientException {                                
-                for (int i = 0; i < svnRoots.length; i++) {                                        
-                    File destination = new File(workingFolder.getAbsolutePath() + 
-                                                "/" +                                       // NOI18N
-                                                svnRoots[i].getSvnUrl().getLastPathSegment());
-                    destination.mkdir();                                        
-                    client.checkout(svnRoots[i].getSvnUrl(), destination, svnRoots[i].getSVNRevision(), true);                        
-                }                    
-            }            
-        };                        
+    public static void checkout(SVNUrl repository, SVNRoot svnRoots[], File workingDir, boolean scanProject, boolean atWorkingDirLevel) {
+        SvnClient client;
+        try {
+            client = Subversion.getInstance().getClient(repository);
+        } catch (SVNClientException ex) {
+            ex.printStackTrace(); // XXX
+            return;
+        }
         
-        progressHandle = 
-            ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(CheckoutAction.class, "BK0001"), cancellable);       // NOI18N
-        progressHandle.start();                
-        try{
+        for (int i = 0; i < svnRoots.length; i++) {                                                    
+            File destination;
+            if(!atWorkingDirLevel) {
+                destination = new File(workingDir.getAbsolutePath() + 
+                                       "/" +                                       // NOI18N
+                                       svnRoots[i].getSvnUrl().getLastPathSegment()); // XXX SVN will change the name - svnRoots should also change
+                destination = FileUtil.normalizeFile(destination);                    
+                destination.mkdir();                                                                        
+            } else {
+                destination = workingDir;
+            }
+            
             try {
-                Executor.getInstance().execute(cmd);
+                client.checkout(svnRoots[i].getSvnUrl(), destination, svnRoots[i].getSVNRevision(), true);                            
             } catch (SVNClientException ex) {
-                org.openide.ErrorManager.getDefault().notify(ex);
-                progressHandle.finish();
+                org.openide.ErrorManager.getDefault().notify(ex);                    
                 return; 
-            }    
-        } finally {
-            progressHandle.finish();            
-        }        
+            }                         
+        }                           
         
-        if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0) {
+        if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0 && scanProject) {
             //group.addBarrier(new CheckoutCompletedController(/*executor, */workingFolder, scanProject));
-            CheckoutCompletedController ccc = new CheckoutCompletedController(/*executor, */ workingFolder, true);
+            CheckoutCompletedController ccc = new CheckoutCompletedController(/*executor, */ workingDir, true);
             ccc.run(); // :)
         }                
     }
 
     /** On task finish shows next steps UI.*/    
-    private class CheckoutCompletedController implements Runnable, ActionListener {
+    private static class CheckoutCompletedController implements Runnable, ActionListener {
         // XXX dummy implemention ...
         //private final CheckoutExecutor executor;
         private final File workingFolder;

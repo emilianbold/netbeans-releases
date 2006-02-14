@@ -29,10 +29,11 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.SVNRoot;
-import org.netbeans.modules.subversion.ui.wizards.Executor;
+import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.netbeans.modules.subversion.ui.wizards.ImportWizard;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -41,7 +42,28 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public final class ImportAction extends NodeAction {
 
-        
+    // XXX dummy
+    private Cancellable cancellable = new Cancellable() {
+        public boolean cancel() {
+            if(importTask!=null) {                    
+                importTask.cancel();                                        
+            }
+            if(importThread!=null) {
+                importThread.interrupt();                                        
+            }            
+            if(progressHandle != null) {
+                progressHandle.finish();
+            }
+            // XXX checkout still running ...
+            // XXX client.cancleOperation is not implemented yet 
+            return true;
+        }
+    };
+
+    private RequestProcessor.Task importTask;
+    private Thread importThread;
+    private ProgressHandle progressHandle;
+    
     public ImportAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
@@ -77,21 +99,33 @@ public final class ImportAction extends NodeAction {
         return false;
     }
 
+    protected boolean asynchronous() {
+        return false;
+    }
+
     protected void performAction(Node[] nodes) {
         if (nodes.length == 1) {
             final File importDirectory = lookupImportDirectory(nodes[0]);
             if (importDirectory != null) {
                 ImportWizard wizard = new ImportWizard();
                 if (!wizard.show()) return;
-
-                final SVNUrl svnUrl = wizard.getSelectedRoot().getSvnUrl();
+                
+                final SVNUrl repositoryUrl = wizard.getSelectedRepositoryRoot();
+                final SVNUrl svnUrl = wizard.getSelectedRepositoryUrl();
                 final String message = wizard.getMessage();        
-                final File file = lookupImportDirectory(nodes[0]);
+                final File file = lookupImportDirectory(nodes[0]); 
                 
                 RequestProcessor processor = new RequestProcessor("CheckinActionRP", 1, true);
-                processor.post(new Runnable() {
-                    public void run() {                                  
-                        checkin(svnUrl, file, message);
+                importTask = processor.post(new Runnable() {
+                    public void run() {                      
+                        importThread = Thread.currentThread();                         
+                        progressHandle = ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(ImportAction.class, "BK0001"), cancellable);       // NOI18N
+                        progressHandle.start();                
+                        try{                                    
+                            doImport(repositoryUrl, svnUrl, file, message);
+                        } finally {
+                            progressHandle.finish();            
+                        }  
                     }
                 });
             }
@@ -101,30 +135,52 @@ public final class ImportAction extends NodeAction {
     /**
      * Perform asynchronous checkin action with preconfigured values.
      */
-    public void checkin(final SVNUrl svnUrl, final File file, final String message) {
-        Executor.Command cmd = new Executor.Command () {
-            protected void executeCommand(final ISVNClientAdapter client) throws SVNClientException {                                 
-                client.doImport(file, svnUrl, message, true);                                                    
-            }            
-        };                        
+    private void doImport(SVNUrl repositoryUrl, SVNUrl svnUrl, File file, String message) {
         
-        ProgressHandle progressHandle = 
-            ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(ImportAction.class, "BK0001"));       // NOI18N
-        progressHandle.start();                
-        try{
-            try {
-                Executor.getInstance().execute(cmd);
-            } catch (SVNClientException ex) {
-                org.openide.ErrorManager.getDefault().notify(ex);
-                progressHandle.finish();
-                return; 
-            }    
-        } finally {
-            progressHandle.finish();            
-        }        
-              
+        SvnClient client;
+        try {
+            client = Subversion.getInstance().getClient(svnUrl);
+        } catch (SVNClientException ex) {
+            ex.printStackTrace(); // XXX
+            return;
+        } 
+                  
+        try{       
+            
+            // import into repository ...
+            client.doImport(file, svnUrl, message, true);  
+            
+            // ... and now check it out
+            SVNRoot[] root = new SVNRoot[] { new SVNRoot(svnUrl, SVNRevision.HEAD) };                        
+            // XXX doing it this way we probably will get in troubles with the IDE
+            File checkoutFile = new File(file.getAbsolutePath() + ".co");             
+            CheckoutAction.checkout(repositoryUrl, root, checkoutFile, false, true);                         
+            File tmpFile = new File(file.getAbsolutePath() + ".tmp");             
+            file.renameTo(tmpFile);
+            checkoutFile.renameTo(file);                          
+            deleteDirectory(tmpFile);             
+             
+        } catch (SVNClientException ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
+            return; 
+        }                      
+        
     }    
 
+    private void deleteDirectory(File file) {
+         File[] files = file.listFiles();
+         if(files !=null || files.length > 0) {
+             for (int i = 0; i < files.length; i++) {
+                 if(files[i].isDirectory()) {
+                     deleteDirectory(files[i]);
+                 } else {
+                    files[i].delete();
+                 }             
+             }            
+         }
+         file.delete();
+    }
+    
     public boolean cancel() {
         return true;
     }
@@ -166,8 +222,89 @@ public final class ImportAction extends NodeAction {
         return importDirectory;
     }
 
-    protected boolean asynchronous() {
-        return false;
-    }
-
+//    private void copyMetadata() {
+//        File dest = new File(folder);
+//        File src = new File(checkoutDir, module);  // checkout creates new subdir
+//
+//        assert src.isDirectory() : src.getAbsolutePath();
+//
+//        copyFolderMeta(src, dest);
+//
+//        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+//        cache.refresh(dest, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+//    }
+//    
+//    private void copyFolderMeta(File src, File dest) {
+//        File[] files = src.listFiles();
+//        for (int i = 0; i < files.length; i++) {
+//            File file = files[i];
+//            if (file.isDirectory()) {
+//                if ("CVS".equals(file.getName())) { // NOI18N
+//                    copyCvsMeta(file, dest);
+//                } else {
+//                    File destDir = new File(dest, file.getName());
+//                    if (destDir.isDirectory()) {
+//                        copyFolderMeta(file, destDir);  // RESURSION
+//                    }
+//                }
+//            }
+//        }
+//    }
+//
+//    private void copyCvsMeta(File src, File dest) {
+//        File destCvsDir = new File(dest, "CVS"); // NOI18N
+//        if (destCvsDir.exists() == false || (destCvsDir.isDirectory() && destCvsDir.listFiles().length == 0) ) {
+//            destCvsDir.mkdirs();
+//            if (destCvsDir.isDirectory()) {
+//                // be on safe side copy only Root, Entries, Repository
+//                try {
+//                    File root = new File(src, "Root"); // NOI18N
+//                    copyFile(root, new File(destCvsDir, "Root")); // NOI18N
+//                    File repository = new File(src, "Repository"); // NOI18N
+//                    copyFile(repository, new File(destCvsDir, "Repository")); // NOI18N
+//                    File entries = new File(src, "Entries"); // NOI18N
+//                    copyFile(entries, new File(destCvsDir, "Entries")); // NOI18N
+//
+//                    // set file timestamps according to entries
+//                    StandardAdminHandler parser = new StandardAdminHandler();
+//                    Iterator it = parser.getEntries(dest);
+//                    while (it.hasNext()) {
+//                        Entry entry = (Entry) it.next();
+//                        String name = entry.getName();
+//                        // TODO GMT conversions to local
+//                        Date date = entry.getLastModified();
+//
+//                        File sourceFile = new File(dest, name);
+//                        if (sourceFile.isFile()) {
+//                            sourceFile.setLastModified(date.getTime());
+//                        }
+//                    }
+//                } catch (IOException e) {
+//                    ErrorManager err = ErrorManager.getDefault();
+//                    err.annotate(e, NbBundle.getMessage(ImportExecutor.class, "BK3001"));
+//                    err.notify(e);
+//                }
+//            }
+//        }
+//    }
+//
+//    private static void copyFile(File src, File dst) throws IOException {
+//        FileOutputStream fos = new FileOutputStream(dst);
+//        FileInputStream fis = new FileInputStream(src);
+//        long len = src.length();
+//        assert ((int) len) == len : "Unsupported file size:" + len; // NOI18N
+//        copyStream(fos, fis, (int) len);
+//    }
+//
+//    private static void copyStream(OutputStream out, InputStream in, int len) throws IOException {
+//        byte [] buffer = new byte[4096];
+//        for (;;) {
+//            int n = (len <= 4096) ? len : 4096;
+//            n = in.read(buffer, 0, n);
+//            if (n < 0) throw new EOFException();
+//            out.write(buffer, 0, n);
+//            if ((len -= n) == 0) break;
+//        }
+//    }
+    
 }

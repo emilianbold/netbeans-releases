@@ -14,16 +14,17 @@
 package org.netbeans.modules.subversion;
 
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientImpl;
 import org.openide.ErrorManager;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFactory;
 import org.openide.util.RequestProcessor;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import org.netbeans.modules.subversion.ui.wizards.repository.ProxyDescriptor;
 
 /**
  * A singleton Subversion manager class, center of Subversion module. Use {@link #getInstance()} to get access
@@ -40,7 +41,8 @@ public class Subversion {
     private FileStatusCache     fileStatusCache;
     private FilesystemHandler   filesystemHandler;
     private Annotator           annotator;
-        
+    private HashMap             clients;
+    
     public static synchronized Subversion getInstance() {
         if (instance == null) {
             instance = new Subversion();
@@ -114,6 +116,35 @@ public class Subversion {
         return annotator;
     }
 
+    public SvnClient getClient(SVNUrl repositoryUrl,
+                               ProxyDescriptor pd, 
+                               String username, 
+                               String password) 
+    throws SVNClientException    
+    {
+        SvnClient client = (SvnClient) getClients().get(repositoryUrl.toString());
+        if(client == null) {
+            client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, pd, username, password);            
+            attachListeners(client);
+            getClients().put(repositoryUrl.toString(), client);            
+        } else {
+            // XXX - some kind of check if it's still the same configuration (proxy, psswd, user)            
+        }               
+        return client;
+    }
+    
+    public SvnClient getClient(SVNUrl repositoryUrl) 
+    throws SVNClientException 
+    {        
+        SvnClient client = (SvnClient) getClients().get(repositoryUrl.toString());
+        if(client == null) {        
+            client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl);        
+            attachListeners(client);
+            getClients().put(repositoryUrl.toString(), client);
+        }
+        return client;
+    }
+    
     /**
      * <b>Creates</b> ClientAtapter implementation that already handles:
      * <ul>
@@ -127,12 +158,18 @@ public class Subversion {
      * <p>It hanldes cancellability, XXX e.g. by Thread,interrupt?
      */
     public SvnClient getClient() {
-        ISVNClientAdapter adapter = SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
-        SvnClient client = new SvnClientImpl(adapter);
-        client.addNotifyListener(new OutputLogger());
-        client.addNotifyListener(fileStatusCache);
+        // XXX also cache ???
+        SvnClient client = SvnClientFactory.getInstance().createSvnClient();
+        attachListeners(client);
         return client;
-    }
+    }    
+    
+    private HashMap getClients() {
+        if(clients == null) {
+            clients = new HashMap();
+        }
+        return clients;
+    }    
     
     public ISVNStatus getLocalStatus(File file) throws SVNClientException {
         ISVNClientAdapter client = getClient();
@@ -159,5 +196,10 @@ public class Subversion {
             }
         }
         return false;
+    }
+
+    private void attachListeners(SvnClient client) {
+        client.addNotifyListener(new OutputLogger()); // XXX new ???
+        client.addNotifyListener(fileStatusCache); 
     }
 }

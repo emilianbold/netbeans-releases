@@ -14,18 +14,16 @@ package org.netbeans.modules.subversion.ui.wizards;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.io.File;
 import java.text.MessageFormat;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.subversion.SVNRoot;
-import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.wizards.repository.RepositoryStep;
 import org.netbeans.modules.subversion.ui.wizards.browser.BrowserStep;
-import org.netbeans.modules.subversion.ui.wizards.workdir.WorkdirStep;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /*
  *
@@ -39,8 +37,6 @@ public final class ImportWizard implements ChangeListener {
     private RepositoryStep repositoryStep;
     private BrowserStep browseStep;    
     private MessageStep messageStep;
-    
-    private Executor executor;
     
     private String errorMessage;
     private WizardDescriptor wizardDescriptor;
@@ -146,8 +142,12 @@ public final class ImportWizard implements ChangeListener {
         }
     }
 
-    public SVNRoot getSelectedRoot() {
-        return browseStep.getSelectedRoots()[0]; // single selection only
+    public SVNUrl getSelectedRepositoryRoot() {
+        return repositoryStep.getSvnRoot().getSvnUrl(); 
+    }
+
+    public SVNUrl getSelectedRepositoryUrl() {
+        return browseStep.getSelectedRoots()[0].getSvnUrl(); // single selection only
     }
 
     public String getMessage() {

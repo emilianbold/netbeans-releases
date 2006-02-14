@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion.client;
 
+import java.io.File;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 
 /**
@@ -22,5 +23,6 @@ import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
  *
  * @author Petr Kuzel
  */
-public interface SvnClient extends ISVNClientAdapter {
+public interface SvnClient extends ISVNClientAdapter {    
+    
 }

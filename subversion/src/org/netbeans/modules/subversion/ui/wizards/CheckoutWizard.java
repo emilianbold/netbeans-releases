@@ -26,6 +26,7 @@ import org.netbeans.modules.subversion.ui.wizards.browser.BrowserStep;
 import org.netbeans.modules.subversion.ui.wizards.workdir.WorkdirStep;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /*
  *
@@ -37,9 +38,7 @@ public final class CheckoutWizard implements ChangeListener {
     private WizardDescriptor.Panel[] panels;
     private RepositoryStep repositoryStep;
     private BrowserStep browseStep;
-    private WorkdirStep workdirStep;
-    
-    private Executor executor;
+    private WorkdirStep workdirStep;        
     
     private String errorMessage;
     private WizardDescriptor wizardDescriptor;
@@ -153,6 +152,10 @@ public final class CheckoutWizard implements ChangeListener {
 
     public File getWorkdir() {
         return workdirStep.getWorkdir();
+    }
+
+    public SVNUrl getRepositoryRoot() {
+        return repositoryStep.getSvnRoot().getSvnUrl();
     }
 }
 

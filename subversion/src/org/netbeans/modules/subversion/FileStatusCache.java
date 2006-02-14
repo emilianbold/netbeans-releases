@@ -422,7 +422,7 @@ public class FileStatusCache implements ISVNNotifyListener {
 
         ISVNStatus [] entries = null;
         try {
-            ISVNClientAdapter client = Subversion.getInstance().getClient();
+            ISVNClientAdapter client = Subversion.getInstance().getClient(); // XXX use methodcall with repository url if server contact is needed...
             if (Subversion.getInstance().isManaged(dir)) {
                 entries = client.getStatus(dir, false, false);  // XXX should contact server: , true);
             }

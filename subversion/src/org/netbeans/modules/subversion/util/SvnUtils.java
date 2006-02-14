@@ -386,11 +386,17 @@ public class SvnUtils {
         String repositoryPath = null;
         try {
             SvnClient client = Subversion.getInstance().getClient();
-            ISVNInfo info = client.getInfoFromWorkingCopy(file);  // XXX info does not contain repository URL
+            // XXX won't get an valid info or an info at all if the file is new
+            //     - search parents for the first repository url you find, 
+            //       and localy check if this is a known repository url (settings, or config/srvers file, ...)            
+            ISVNInfo info = client.getInfoFromWorkingCopy(file);  
             SVNUrl fileURL = info.getUrl();
             SVNUrl repositoryURL = info.getRepository();
-            if (repositoryURL == null) {
+            if (repositoryURL == null) {                
                 // checked out with 1.2 client
+                // XXX - IMPORTANT! this hack won't work as long you get the client by 
+                //       calling the getClient() method and connecting through a PROXY
+                //     - use getClient(SVNUrl, *) to obtain a client properly configured for the given url
                 repositoryURL = client.getInfo(fileURL).getRepository();
             }
             String fileLink = fileURL.toString();
@@ -401,6 +407,37 @@ public class SvnUtils {
         }
                 
         return repositoryPath;
+    }
+
+    /**
+     * Returns the repository root for the given file
+     *
+     * @return the repository url or null for unknown
+     * // XXX merge with getRelativePath ???
+     */    
+    public static SVNUrl getRepositoryUrl(File file) {        
+        String repositoryPath = null;
+        try {
+            SvnClient client = Subversion.getInstance().getClient();
+            ISVNInfo info = client.getInfoFromWorkingCopy(file);  // XXX info does not contain repository URL
+            // XXX won't get an valid info or an info at all if the file is new
+            //     - search parents for the first repository url you find, 
+            //       and localy check if this is a known repository url (settings, or config/srvers file, ...)
+            SVNUrl fileURL = info.getUrl();
+            SVNUrl repositoryURL = info.getRepository();
+            if (repositoryURL == null) {
+                // checked out with 1.2 client 
+                // XXX - IMPORTANT! this hack won't work as long you get the client by 
+                //       calling the getClient() method and connecting through a PROXY
+                //     - use getClient(SVNUrl, *) to obtain a client properly configured for the given url                
+                //       - 
+                repositoryURL = client.getInfo(fileURL).getRepository();
+            }  
+            return repositoryURL;
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }                
+        return null;
     }
 
     /**

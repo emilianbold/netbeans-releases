@@ -21,6 +21,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.*;
 import org.openide.ErrorManager;
@@ -48,14 +49,20 @@ public class UpdateAction extends ContextAction {
     }
     
     protected void performContextAction(Node[] nodes) {
-        Context ctx = getContext(nodes);
-
-        ISVNClientAdapter client = Subversion.getInstance().getClient();        
+        Context ctx = getContext(nodes);        
 
         // FIXME add non-recursive folders splitting
         // FIXME add shalow logic allowing to ignore nested projects
 
         File[] roots = ctx.getRootFiles();
+        SVNUrl repositoryUrl = SvnUtils.getRepositoryUrl(roots[0]);
+        ISVNClientAdapter client;
+        try {
+            client = Subversion.getInstance().getClient(repositoryUrl);
+        } catch (SVNClientException ex) {
+            ex.printStackTrace(); // should not hapen
+            return;
+        }        
 
         try {
             startProgress();
@@ -65,6 +72,7 @@ public class UpdateAction extends ContextAction {
 
 roots_loop:
             for (int i = 0; i<roots.length; i++) {
+                
                 client.update(roots[i], SVNRevision.HEAD, true);
                 ISVNStatus status[] = client.getStatus(roots[i], true, false);
                 for (int k = 0; k<status.length; k++) {
