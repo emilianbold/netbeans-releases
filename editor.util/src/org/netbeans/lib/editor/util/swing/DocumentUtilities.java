@@ -142,8 +142,17 @@ public final class DocumentUtilities {
     }
     
     /**
-     * This method should be used by document listeners to check whether
-     * the just performed document modification was caused by user's typing.
+     * @deprecated
+     * @see #isTypingModification(Document)
+     */
+    public static boolean isTypingModification(DocumentEvent evt) {
+        Boolean b = (Boolean)evt.getDocument().getProperty(TYPING_MODIFICATION_DOCUMENT_PROPERTY);
+        return (b != null) ? b.booleanValue() : false;
+    }
+
+    /**
+     * This method should be used to check whether
+     * the lastly performed document modification was caused by user's typing.
      * <br/>
      * Certain functionality such as code completion or code templates
      * may benefit from that information. For example the java code completion
@@ -152,9 +161,9 @@ public final class DocumentUtilities {
      *
      * @see #setTypingModification(Document, boolean)
      */
-    public static boolean isTypingModification(DocumentEvent evt) {
-        Boolean b = (Boolean)evt.getDocument().getProperty(TYPING_MODIFICATION_DOCUMENT_PROPERTY);
+    public static boolean isTypingModification(Document doc) {
+        Boolean b = (Boolean)doc.getProperty(TYPING_MODIFICATION_DOCUMENT_PROPERTY);
         return (b != null) ? b.booleanValue() : false;
     }
-
+    
 }
