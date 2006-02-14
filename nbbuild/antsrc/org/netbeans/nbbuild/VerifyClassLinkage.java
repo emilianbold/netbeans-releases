@@ -171,7 +171,7 @@ public class VerifyClassLinkage extends Task {
     private static void skip(DataInput input, int bytes) throws IOException {
         int skipped = input.skipBytes(bytes);
         if (skipped != bytes) {
-            throw new IOException();
+            throw new IOException("Truncated class file");
         }
     }
     private void verify(String clazz, byte[] data, Map/*<String,Boolean>*/ loadable, ClassLoader loader) throws IOException, BuildException {
