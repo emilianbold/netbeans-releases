@@ -607,10 +607,14 @@ public final class SingleModuleProperties extends ModuleProperties {
             // find all available public packages in a source root
             File srcDir = getHelper().resolveFile(getEvaluator().getProperty("src.dir")); // NOI18N
             Set/*<FileObject>*/ pkgs = new HashSet();
+            FileObject srcDirFO = FileUtil.toFileObject(srcDir);
             SingleModuleProperties.addNonEmptyPackages(
-                    pkgs, FileUtil.toFileObject(srcDir), "java"); // NOI18N
+                    pkgs, srcDirFO, "java"); // NOI18N
             for (Iterator it = pkgs.iterator(); it.hasNext();) {
                 FileObject pkg = (FileObject) it.next();
+                if (srcDirFO.equals(pkg)) { // default package #71532
+                    continue;
+                }
                 String pkgS = PropertyUtils.relativizeFile(srcDir, FileUtil.toFile(pkg));
                 availablePublicPackages.add(pkgS.replace('/', '.'));
             }
@@ -808,6 +812,9 @@ public final class SingleModuleProperties extends ModuleProperties {
         SingleModuleProperties.addNonEmptyPackages(pkgs, root, "class"); // NOI18N
         for (Iterator it = pkgs.iterator(); it.hasNext();) {
             FileObject pkg = (FileObject) it.next();
+            if (root.equals(pkg)) { // default package #71532
+                continue;
+            }
             String pkgS = pkg.getPath();
             packages.add(pkgS.replace('/', '.'));
         }

@@ -490,6 +490,13 @@ public class SingleModulePropertiesTest extends TestBase {
         assertTrue(allDepsFilterExcluded.contains(nonApiPrjDep));
     }
     
+    public void testDefaultPackageIsNotOffered_71532() throws Exception {
+        NbModuleProject p = generateStandaloneModule("module1");
+        FileUtil.createData(p.getProjectDirectory(), "src/BadInDefault.java");
+        FileUtil.createData(p.getProjectDirectory(), "src/org/example/module1/GoodOne.java");
+        assertEquals("one non-default valid package", 1, loadProperties(p).getPublicPackagesModel().getRowCount());
+    }
+    
 //    public void testReloadNetBeansModulueListSpeedHid() throws Exception {
 //        long startTotal = System.currentTimeMillis();
 //        SingleModuleProperties props = loadProperties(nbroot.getFileObject("apisupport/project"),
