@@ -579,7 +579,9 @@ public final class Util {
      * Makes <code>target</code> project to be dependend on the given
      * <code>dependency</code> project. I.e. adds new &lt;module-dependency&gt;
      * element into target's <em>project.xml</em>. If such a dependency already
-     * exists the method does nothing.
+     * exists the method does nothing. If the given code name base cannot be
+     * found in the module's universe the method logs informational message and
+     * does nothing otherwise.
      * <p>
      * Note that the method does <strong>not</strong> save the
      * <code>target</code> project. You need to do so explicitly (see {@link
@@ -600,8 +602,11 @@ public final class Util {
             final String codeNameBase, final String releaseVersion,
             final SpecificationVersion version, final boolean useInCompiler) throws IOException {
         ModuleEntry me = target.getModuleList().getEntry(codeNameBase);
-        assert me != null : "Cannot find module with the given codeNameBase (" + // NOI18N
-                codeNameBase + ") in the project's universe"; // NOI18N
+        if (me == null) { // ignore semi-silently (#72611)
+            Util.err.log(ErrorManager.INFORMATIONAL, "Trying to add " + codeNameBase + // NOI18N
+                    " which cannot be found in the module's universe."); // NOI18N
+            return false;
+        }
         
         ProjectXMLManager pxm = new ProjectXMLManager(target);
         

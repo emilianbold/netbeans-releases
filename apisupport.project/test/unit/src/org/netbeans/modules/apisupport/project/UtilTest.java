@@ -251,4 +251,15 @@ public class UtilTest extends TestBase {
         assertEquals("has correct display name", "Testing Module", info.getDisplayName());
     }
     
+    public void testAddDependency() throws Exception {
+        NbModuleProject p = generateStandaloneModule("module");
+        assertEquals("no dependencies", 0, new ProjectXMLManager(p).getDirectDependencies().size());
+        assertTrue("successfully added", Util.addDependency(p, "org.openide.util"));
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals("one dependency", 1, new ProjectXMLManager(p).getDirectDependencies().size());
+        assertFalse("does not exist", Util.addDependency(p, "org.openide.i_do_not_exist"));
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals("still one dependency", 1, new ProjectXMLManager(p).getDirectDependencies().size());
+    }
+    
 }
