@@ -80,23 +80,23 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         setComponentsVisibility();
         if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
             detachModuleTypeGroup();
-            locationValue.setText(getSuiteLocation());
+            setLocationValue(getSuiteLocation(), true);
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE ||
                 wizardType == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT) {
             if (moduleSuiteValue.getItemCount() > 0) {
                 restoreSelectedSuite();
-                suiteModule.setSelected(true);
-                locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+                suiteComponent.setSelected(true);
+                setLocationValue((String) moduleSuiteValue.getSelectedItem(), true);
                 mainProject.setSelected(false);
             } else {
-                locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
+                setLocationValue(ModuleUISettings.getDefault().getLastUsedModuleLocation(), true);
             }
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
             moduleSuite.setText(getMessage("LBL_Add_to_Suite")); // NOI18N
-            suiteModule.setSelected(true);
+            suiteComponent.setSelected(true);
             if (moduleSuiteValue.getItemCount() > 0) {
                 restoreSelectedSuite();
-                locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+                setLocationValue((String) moduleSuiteValue.getSelectedItem(), true);
             }
         } else {
             assert false : "Unknown wizard type = " + wizardType; // NOI18N
@@ -118,7 +118,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         nameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_NameValue"));
         platformValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_PlatformValue"));
         standAloneModule.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_StandAloneModule"));
-        suiteModule.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_SuiteModule"));
+        suiteComponent.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_SuiteModule"));
         suitePlatformValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_SuitePlatformValue"));
     }
     
@@ -133,7 +133,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         manageSuitePlatform.setVisible(isSuiteWizard);
         mainProject.setVisible(!isLibraryWizard);
         
-        suiteModule.setVisible(!isLibraryWizard);
+        suiteComponent.setVisible(!isLibraryWizard);
         platform.setVisible(!isLibraryWizard);
         platformValue.setVisible(!isLibraryWizard);
         managePlatform.setVisible(!isLibraryWizard);
@@ -144,7 +144,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         platform.setVisible(!isSuiteComponentWizard && !isLibraryWizard);
         platformValue.setVisible(!isSuiteComponentWizard && !isLibraryWizard);
         managePlatform.setVisible(!isSuiteComponentWizard && !isLibraryWizard);
-        suiteModule.setVisible(!isSuiteComponentWizard && !isLibraryWizard);
+        suiteComponent.setVisible(!isSuiteComponentWizard && !isLibraryWizard);
     }
     
     private void restoreSelectedSuite() {
@@ -188,10 +188,10 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     private void updateEnabled() {
         boolean isNetBeansOrg = isNetBeansOrgFolder();
         standAloneModule.setEnabled(!isNetBeansOrg);
-        suiteModule.setEnabled(!isNetBeansOrg);
+        suiteComponent.setEnabled(!isNetBeansOrg);
         
-        boolean standalone = standAloneModule.isSelected();
-        boolean suiteModuleSelected = suiteModule.isSelected();
+        boolean standalone = isStandAlone();
+        boolean suiteModuleSelected = isSuiteComponent();
         platform.setEnabled(standalone);
         platformValue.setEnabled(standalone);
         managePlatform.setEnabled(standalone);
@@ -209,9 +209,9 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             setError(getMessage("MSG_LocationCannotBeEmpty"));
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE && isNetBeansOrgFolder()) {
             setError(getMessage("MSG_LibraryWrapperForNBOrgUnsupported"));
-        } else if (suiteModule.isSelected() && moduleSuiteValue.getSelectedItem() == null) {
+        } else if (isSuiteComponent() && moduleSuiteValue.getSelectedItem() == null) {
             setError(getMessage("MSG_ChooseRegularSuite"));
-        } else if (standAloneModule.isSelected() &&
+        } else if (isStandAlone() &&
                 (platformValue.getSelectedItem() == null || !((NbPlatform) platformValue.getSelectedItem()).isValid())) {
             setError(getMessage("MSG_ChosenPlatformIsInvalid"));
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE &&
@@ -247,9 +247,9 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         if (moduleTypeGroupAttached) {
             lastSelectedType = moduleTypeGroup.getSelection();
             moduleTypeGroup.remove(standAloneModule);
-            moduleTypeGroup.remove(suiteModule);
+            moduleTypeGroup.remove(suiteComponent);
             standAloneModule.setSelected(false);
-            suiteModule.setSelected(false);
+            suiteComponent.setSelected(false);
             moduleTypeGroupAttached = false;
         }
     }
@@ -257,7 +257,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     private void attachModuleTypeGroup() {
         if (!moduleTypeGroupAttached) {
             moduleTypeGroup.add(standAloneModule);
-            moduleTypeGroup.add(suiteModule);
+            moduleTypeGroup.add(suiteComponent);
             moduleTypeGroup.setSelected(lastSelectedType, true);
             moduleTypeGroupAttached = true;
         }
@@ -286,7 +286,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         data.setProjectFolder(folderValue.getText());
         data.setMainProject(mainProject.isSelected());
         data.setNetBeansOrg(isNetBeansOrgFolder());
-        data.setStandalone(standAloneModule.isSelected());
+        data.setStandalone(isStandAlone());
         data.setSuiteRoot((String) moduleSuiteValue.getSelectedItem());
         if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE && suitePlatformValue.getSelectedItem() != null) {
             data.setPlatformID(((NbPlatform) suitePlatformValue.getSelectedItem()).getID());
@@ -300,6 +300,10 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             nameValue.setText(data.getProjectName());
             return;
         }
+        refreshProjectName();
+    }
+    
+    private void refreshProjectName() {
         String bundlekey = null;
         int counter = 0;
         if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
@@ -401,6 +405,32 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         }
     }
     
+    private void setLocationValue(String value) {
+        setLocationValue(value, false);
+    }
+    
+    private void setLocationValue(String value, boolean silently) {
+        boolean revert = silently && !wasLocationUpdate;
+        if (value == null) {
+            value = System.getProperty("user.home"); // NOI18N
+        }
+        File file = new File(value);
+        if (!file.exists() && file.getParent() != null) {
+            setLocationValue(file.getParent(), silently);
+        } else {
+            locationValue.setText(file.exists() ? value : System.getProperty("user.home")); // NOI18N
+            wasLocationUpdate = !revert;
+        }
+    }
+    
+    private boolean isStandAlone() {
+        return standAloneModule.isSelected();
+    }
+    
+    private boolean isSuiteComponent() {
+        return suiteComponent.isSelected();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -430,7 +460,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         platform = new javax.swing.JLabel();
         platformValue = PlatformComponentFactory.getNbPlatformsComboxBox();
         managePlatform = new javax.swing.JButton();
-        suiteModule = new javax.swing.JRadioButton();
+        suiteComponent = new javax.swing.JRadioButton();
         moduleSuite = new javax.swing.JLabel();
         moduleSuiteValue = PlatformComponentFactory.getSuitesComboBox();
         browseSuiteButton = new javax.swing.JButton();
@@ -634,9 +664,9 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         typeChooserPanel.add(managePlatform, gridBagConstraints);
 
-        moduleTypeGroup.add(suiteModule);
-        org.openide.awt.Mnemonics.setLocalizedText(suiteModule, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_AddToModuleSuite"));
-        suiteModule.addActionListener(new java.awt.event.ActionListener() {
+        moduleTypeGroup.add(suiteComponent);
+        org.openide.awt.Mnemonics.setLocalizedText(suiteComponent, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_AddToModuleSuite"));
+        suiteComponent.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeChanged(evt);
             }
@@ -648,7 +678,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
-        typeChooserPanel.add(suiteModule, gridBagConstraints);
+        typeChooserPanel.add(suiteComponent, gridBagConstraints);
 
         moduleSuite.setLabelFor(moduleSuiteValue);
         org.openide.awt.Mnemonics.setLocalizedText(moduleSuite, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "LBL_ModuleSuite"));
@@ -738,9 +768,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     private void moduleSuiteChosen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moduleSuiteChosen
         if (!wasLocationUpdate) {
             String suite = (String) moduleSuiteValue.getSelectedItem();
-            locationValue.setText(suite);
+            setLocationValue(suite, true);
             lastSelectedSuite = suite;
-            wasLocationUpdate = false;
         }
         updateAndCheck();
     }//GEN-LAST:event_moduleSuiteChosen
@@ -776,7 +805,15 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
     private void typeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeChanged
         if (!mainProjectTouched) {
-            mainProject.setSelected(standAloneModule.isSelected());
+            mainProject.setSelected(isStandAlone());
+        }
+        if (!wasLocationUpdate) {
+            if (isSuiteComponent()) {
+                setLocationValue((String) moduleSuiteValue.getSelectedItem(), true);
+            } else {
+                setLocationValue(ModuleUISettings.getDefault().getLastUsedModuleLocation(), true);
+            }
+            refreshProjectName();
         }
         updateAndCheck();
     }//GEN-LAST:event_typeChanged
@@ -786,7 +823,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            locationValue.setText(chooser.getSelectedFile().getAbsolutePath());
+            setLocationValue(chooser.getSelectedFile().getAbsolutePath());
         }
     }//GEN-LAST:event_browseLocation
     
@@ -813,7 +850,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     private javax.swing.JPanel pnlThouShaltBeholdLayout;
     private javax.swing.JSeparator separator3;
     private javax.swing.JRadioButton standAloneModule;
-    private javax.swing.JRadioButton suiteModule;
+    private javax.swing.JRadioButton suiteComponent;
     private javax.swing.JLabel suitePlatform;
     private javax.swing.JComboBox suitePlatformValue;
     private javax.swing.JPanel typeChooserPanel;
