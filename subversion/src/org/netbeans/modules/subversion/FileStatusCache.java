@@ -593,6 +593,14 @@ public class FileStatusCache implements ISVNNotifyListener {
     }
 
     public void onNotify(File path, SVNNodeKind kind) {
+
+        if (path == null) {  // on kill
+            return;
+        }
+
+        // I saw "./"
+        path = FileUtil.normalizeFile(path);
+
         // ISVNNotifyListener event
         // invalidate cached status
         refresh(path, REPOSITORY_STATUS_UNKNOWN);
