@@ -16,6 +16,7 @@ package org.netbeans.modules.subversion.ui.status;
 import org.netbeans.modules.diff.DiffAction;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.ui.actions.*;
+import org.netbeans.modules.subversion.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.ui.commit.*;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
@@ -260,14 +261,15 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         -------------------
         Diff                 (default action)
         Update
-        Commit...
-        Conflict Resolved    (on coflicting file)
+        Commit...        
         --------------------
-        Show Annotations...
+        Conflict Resolved    (on conflicting file)
+        --------------------
+        Blame
         Show History...
-        --------------------
-        Exclude from Commit   (Include in Commit)
+        --------------------        
         Revert Modifications  (Revert Delete)(Delete)
+        Exclude from Commit   (Include in Commit)
         Ignore                (Unignore)
         </pre>
      */
@@ -285,22 +287,32 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionString("CTL_PopupMenuItem_Commit"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
+        
+        menu.add(new JSeparator());        
         item = menu.add(new SystemActionBridge(SystemAction.get(ConflictResolvedAction.class), "Conflict Resolved")); 
         Mnemonics.setLocalizedText(item, item.getText());
-        
-//        menu.add(new JSeparator());
-//        item = menu.add(new SystemActionBridge(SystemAction.get(AnnotationsAction.class), 
+                
+        menu.add(new JSeparator());        
+        item = menu.add(new SystemActionBridge(SystemAction.get(BlameAction.class), "Blame"));
 //                                               ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(null) ?
 //                                               actionString("CTL_PopupMenuItem_HideAnnotations") : // NOI18N
 //                                               actionString("CTL_PopupMenuItem_ShowAnnotations"))); // NOI18N
-//        Mnemonics.setLocalizedText(item, item.getText());
+        Mnemonics.setLocalizedText(item, item.getText());
+        
         item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionString("CTL_PopupMenuItem_SearchHistory"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        menu.add(new JSeparator());
-        item = menu.add(new ExcludeFromCommitAction());
+
+        menu.add(new JSeparator());                
+        String label;
+        ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
+        if (exclude.getActionStatus(null) == exclude.INCLUDING) {
+            label = "Include in Commit";            
+        } else {
+            label = "Exclude from Commit";
+        }
+        item = menu.add(new SystemActionBridge(exclude, label));
         Mnemonics.setLocalizedText(item, item.getText());
-
-
+        
         Action revertAction;
         boolean allLocallyNew = true;
         boolean allLocallyDeleted = true;

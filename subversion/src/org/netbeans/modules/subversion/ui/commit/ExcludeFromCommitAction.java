@@ -46,7 +46,7 @@ public final class ExcludeFromCommitAction extends ContextAction {
         }
     }
     
-    private int getActionStatus(Node[] nodes) {
+    public int getActionStatus(Node[] nodes) {
         SvnModuleConfig config = SvnModuleConfig.getDefault();
         File [] files = getContext(nodes).getFiles();
         int status = UNDEFINED;

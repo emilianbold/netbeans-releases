@@ -131,7 +131,12 @@ class CommitTableModel extends AbstractTableModel {
         } else if (col.equals(COLUMN_NAME_ACTION)) {
             return commitOptions[rowIndex];
         } else if (col.equals(COLUMN_NAME_PATH)) {
-            return SvnUtils.getRelativePath(nodes[rowIndex].getFile());
+            String shortPath;
+            shortPath = SvnUtils.getRelativePath(nodes[rowIndex].getFile());
+            if (shortPath == null) {
+                shortPath = "[not in repository]";
+            }
+            return shortPath;
         }
         throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
     }
