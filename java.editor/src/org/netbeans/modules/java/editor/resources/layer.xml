@@ -37,7 +37,8 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-java-tools-OverrideAction.shadow/org-netbeans-modules-editor-java-JavaFixAllImports$MainMenuWrapper.instance" boolvalue="true"/>   
             
             <file name="org-netbeans-modules-editor-java-JavaKit$TryCatchAction$MainMenuWrapper.instance"/>            
-            <attr name="org-netbeans-modules-editor-java-JavaFixAllImports$MainMenuWrapper.instance/org-netbeans-modules-editor-java-JavaKit$TryCatchAction$MainMenuWrapper.instance" boolvalue="true"/>   
+            <attr name="org-netbeans-modules-editor-java-JavaFixAllImports$MainMenuWrapper.instance/org-netbeans-modules-editor-MainMenuAction$RemoveTrailingSpacesAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$RemoveTrailingSpacesAction.instance/org-netbeans-modules-editor-java-JavaKit$TryCatchAction$MainMenuWrapper.instance" boolvalue="true"/>   
             <attr name="org-netbeans-modules-editor-java-JavaKit$TryCatchAction$MainMenuWrapper.instance/SeparatorBeforeReformat.instance" boolvalue="true"/>   
         </folder>
         

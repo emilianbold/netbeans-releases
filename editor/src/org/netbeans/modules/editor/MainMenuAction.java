@@ -792,5 +792,32 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         
     } // end of StopMacroRecordingAction
             
+    /** Remove Trailing Spaces action in View main menu, wrapper for BaseKit.removeTrailingSpaces
+     */ 
+    public static final class RemoveTrailingSpacesAction extends MainMenuAction {
+
+        private JMenuItem menuItem;
+
+        public RemoveTrailingSpacesAction() {
+            super(true, null);
+            menuItem = new JMenuItem(getMenuItemText());
+            setMenu();
+        }
+
+        protected String getMenuItemText () {
+            return NbBundle.getBundle(RemoveTrailingSpacesAction.class).getString(
+                "remove_trailing_spaces_main_menu_item"); //NOI18N
+        }
+
+        public JMenuItem getMenuPresenter () {
+            return menuItem;
+        }
+
+        protected String getActionName () {
+            return BaseKit.removeTrailingSpacesAction;
+        }
+
+    } // end of RemoveTrailingSpacesAction
+
 }
     
