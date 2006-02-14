@@ -50,6 +50,8 @@ public abstract class ContextAction extends NodeAction {
     private ProgressHandle progress;
     private Node[] nodes;
 
+    private long progressStamp;
+
     protected ContextAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
@@ -265,6 +267,8 @@ public abstract class ContextAction extends NodeAction {
 
     protected final void startProgress(){
         progress = ProgressHandleFactory.createHandle(getRunningName(nodes));
+        progress.setInitialDelay(500);
+        progressStamp = System.currentTimeMillis() + 500;
         progress.start();
     }
 
@@ -273,13 +277,16 @@ public abstract class ContextAction extends NodeAction {
      * and remove it after 15 sec.
      */
     protected final void finished() {
+        
         progress.switchToDeterminate(100);
         progress.progress("Complete!", 100);
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                progress.finish();
-            }
-        }, 15 * 1000);
+        if (System.currentTimeMillis() > progressStamp) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    progress.finish();
+                }
+            }, 15 * 1000);
+        }
     }
 
     protected boolean asynchronous() {

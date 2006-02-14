@@ -13,6 +13,16 @@
 
 package org.netbeans.modules.subversion.ui.status;
 
+import org.netbeans.modules.diff.DiffAction;
+import org.netbeans.modules.subversion.*;
+import org.netbeans.modules.subversion.ui.actions.*;
+import org.netbeans.modules.subversion.ui.commit.*;
+import org.netbeans.modules.subversion.ui.commit.CommitAction;
+import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
+import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
+import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
+import org.netbeans.modules.subversion.ui.update.UpdateAction;
+import org.netbeans.modules.subversion.util.*;
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.nodes.*;
 import org.openide.nodes.PropertySupport.ReadOnly;
@@ -251,9 +261,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Diff                 (default action)
         Update
         Commit...
-        --------------------
-        Tag...
-        Branch...
+        Conflict Resolved    (on coflicting file)
         --------------------
         Show Annotations...
         Show History...
@@ -268,7 +276,6 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         JPopupMenu menu = new JPopupMenu();
         JMenuItem item;
         
-/*
         item = menu.add(new OpenInEditorAction());
         Mnemonics.setLocalizedText(item, item.getText());
         menu.add(new JSeparator());
@@ -278,28 +285,28 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionString("CTL_PopupMenuItem_Commit"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        menu.add(new JSeparator());
-        item = menu.add(new SystemActionBridge(SystemAction.get(TagAction.class), actionString("CTL_PopupMenuItem_Tag"))); // NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(ConflictResolvedAction.class), "Conflict Resolved")); 
         Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new SystemActionBridge(SystemAction.get(BranchAction.class), actionString("CTL_PopupMenuItem_Branch"))); // NOI18N
-        Mnemonics.setLocalizedText(item, item.getText());
-        menu.add(new JSeparator());
-        item = menu.add(new SystemActionBridge(SystemAction.get(AnnotationsAction.class), 
-                                               ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(null) ?
-                                               actionString("CTL_PopupMenuItem_HideAnnotations") : // NOI18N
-                                               actionString("CTL_PopupMenuItem_ShowAnnotations"))); // NOI18N
-        Mnemonics.setLocalizedText(item, item.getText());
+        
+//        menu.add(new JSeparator());
+//        item = menu.add(new SystemActionBridge(SystemAction.get(AnnotationsAction.class), 
+//                                               ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(null) ?
+//                                               actionString("CTL_PopupMenuItem_HideAnnotations") : // NOI18N
+//                                               actionString("CTL_PopupMenuItem_ShowAnnotations"))); // NOI18N
+//        Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionString("CTL_PopupMenuItem_SearchHistory"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         menu.add(new JSeparator());
         item = menu.add(new ExcludeFromCommitAction());
         Mnemonics.setLocalizedText(item, item.getText());
 
+
         Action revertAction;
         boolean allLocallyNew = true;
         boolean allLocallyDeleted = true;
-        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        File [] files = Utils.getCurrentContext(null).getFiles();
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        File [] files = SvnUtils.getCurrentContext(null).getFiles();
+/*        
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             FileInformation info = cache.getStatus(file);
@@ -323,14 +330,13 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
 
         item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), actionString("CTL_PopupMenuItem_ResolveConflicts"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        
+*/        
         Action ignoreAction = new SystemActionBridge(SystemAction.get(IgnoreAction.class),
            ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(files) == IgnoreAction.UNIGNORING ?
            actionString("CTL_PopupMenuItem_Unignore") : // NOI18N
            actionString("CTL_PopupMenuItem_Ignore")); // NOI18N
         item = menu.add(ignoreAction);
         Mnemonics.setLocalizedText(item, item.getText());
-*/
 
         return menu;
     }
