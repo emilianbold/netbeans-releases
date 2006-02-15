@@ -17,7 +17,7 @@ import org.openide.util.SharedClassObject;
 
 /**
 * Provides hooks for a custom module that may be inserted into the IDE.
-* This interface should be implemented by the main class of a module.
+* If needed this class should be extended by the main class of a module.
 *
 * <p>Simple modules will likely not need a main class--just a few entries in the manifest file.
 * Even modules with a main class need not do anything in it that is already covered by manifest entries;
