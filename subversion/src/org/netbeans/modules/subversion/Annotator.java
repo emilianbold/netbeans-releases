@@ -19,7 +19,11 @@ import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.subversion.ui.status.StatusAction;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.ui.update.UpdateAction;
+import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
+import org.netbeans.modules.subversion.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.subversion.ui.diff.DiffAction;
+import org.netbeans.modules.subversion.ui.blame.BlameAction;
+import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
@@ -420,10 +424,10 @@ public class Annotator {
                 SystemActionBridge.createAction(SystemAction.get(SwitchAction.class), loc.getString("CTL_PopupMenuItem_Switch"), context),
                 SystemActionBridge.createAction(SystemAction.get(MergeCopyAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context),
                 null,
-                SystemActionBridge.createAction(SystemAction.get(PlaceholderAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context),
+                SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context),
                 null,
-                SystemActionBridge.createAction(SystemAction.get(PlaceholderAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context),
-                SystemActionBridge.createAction(SystemAction.get(PlaceholderAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context),
+                SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context),
+                SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context),
                 SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
                                        ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ? 
                                        loc.getString("CTL_PopupMenuItem_Unignore") : 
@@ -441,14 +445,14 @@ public class Annotator {
                 SystemActionBridge.createAction(SystemAction.get(SwitchAction.class), loc.getString("CTL_PopupMenuItem_Switch"), context),
                 SystemActionBridge.createAction(SystemAction.get(MergeCopyAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context),
                 null,
-                SystemActionBridge.createAction(SystemAction.get(PlaceholderAction.class), 
+                SystemActionBridge.createAction(SystemAction.get(BlameAction.class),
 //                                        ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(nodes) ? 
 //                                        loc.getString("CTL_PopupMenuItem_HideAnnotations") : 
                                         loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context),
-                SystemActionBridge.createAction(SystemAction.get(PlaceholderAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context),
+                SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context),
                 null,
-                SystemActionBridge.createAction(SystemAction.get(PlaceholderAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context),
-                SystemActionBridge.createAction(SystemAction.get(PlaceholderAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context),
+                SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context),
+                SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context),
                 SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), 
                                        ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ? 
                                        loc.getString("CTL_PopupMenuItem_Unignore") : 

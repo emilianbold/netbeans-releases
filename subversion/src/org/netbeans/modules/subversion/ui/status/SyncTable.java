@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.subversion.ui.status;
 
-import org.netbeans.modules.diff.DiffAction;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.ui.actions.*;
 import org.netbeans.modules.subversion.ui.blame.BlameAction;
@@ -23,6 +22,7 @@ import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.subversion.ui.update.UpdateAction;
+import org.netbeans.modules.subversion.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.util.*;
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.nodes.*;
