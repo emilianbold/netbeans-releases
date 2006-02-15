@@ -136,7 +136,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             LayerUtils.LayerHandle handle, 
             FileObject layerFileObject, 
             String layerAttribute) {
-        return new LayerSafeDeleteRefactoringElement(clazz.getSimpleName(), handle, layerFileObject);
+        return new LayerSafeDeleteRefactoringElement(clazz.getSimpleName(), handle, layerFileObject, layerAttribute);
     
     }
 
@@ -319,9 +319,16 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         private File parent;
         private FileObject layerFO;
         private LayerUtils.LayerHandle handle;
+
+        private String attribute;
         /**
          * Creates a new instance of LayerRenameRefactoringElement
          */
+        public LayerSafeDeleteRefactoringElement(String name, LayerUtils.LayerHandle handle, FileObject layerFo, String attr) {
+            this(name, handle, layerFo);
+            attribute = attr;
+        }
+        
         public LayerSafeDeleteRefactoringElement(String name, LayerUtils.LayerHandle handle, FileObject layerFo) {
             this.name = name;
             this.handle = handle;
@@ -348,7 +355,14 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                 handle.setAutosave(true);
             }
             try {
-                layerFO.delete();
+                if (attribute != null) {
+                    layerFO.setAttribute(attribute, null);
+                    if ("originalFile".equals(attribute)) {
+                        layerFO.delete();
+                    }
+                } else {
+                    layerFO.delete();
+                }
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
             } 

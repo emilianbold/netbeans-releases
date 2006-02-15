@@ -206,18 +206,6 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
                 }
             }
         } else if (fo.isData()) {
-            if ("instance".equals(fo.getExt())) { // NOI18N
-                String name = fo.getName().replace('-', '.');
-                if (name.equals(clzz.getName())) {
-                    RefactoringElementImplementation elem = createLayerRefactoring(clzz, handle, fo, null);
-                    if (elem != null) {
-                        refactoringElements.add(refactoring, elem);
-                    }
-                }
-            }
-            if ("settings".equals(fo.getExt())) { // NOI18N
-                //TODO check also content of settings files for matches?
-            }
             
             Enumeration en = fo.getAttributes();
             // check just a few specific attributes or iterate all?
@@ -249,6 +237,20 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
                     }
                 }
             }
+            // the actual fileobject is checked after the attributes, so that both can be performed.
+            if ("instance".equals(fo.getExt())) { // NOI18N
+                String name = fo.getName().replace('-', '.');
+                if (name.equals(clzz.getName())) {
+                    RefactoringElementImplementation elem = createLayerRefactoring(clzz, handle, fo, null);
+                    if (elem != null) {
+                        refactoringElements.add(refactoring, elem);
+                    }
+                }
+            }
+            if ("settings".equals(fo.getExt())) { // NOI18N
+                //TODO check also content of settings files for matches?
+            }
+            
         }
         
     }
