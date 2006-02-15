@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,15 +24,18 @@ import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.system.SystemUtilService;
 
 import java.io.File;
+import java.util.StringTokenizer;
 
 public class PostInstallFixupAction extends ProductAction {
     public void build(ProductBuilderSupport support) {
     }
     
     public void install(ProductActionSupport support) throws ProductException {
+        patchNbConfig(false);
     }
     
     public void uninstall(ProductActionSupport support) throws ProductException {
+        patchNbConfig(true);
         String installDir = "";
         try {
             ProductService pservice = (ProductService)getService(ProductService.NAME);
@@ -63,12 +66,118 @@ public class PostInstallFixupAction extends ProductAction {
                 if (fileService.fileExists(filename)) {
                     logEvent(this, Log.DBG, "deleting " + filename);
                     fileService.deleteFile(filename);
-                }
-                else {
+                } else {
                     logEvent(this, Log.DBG, "cannot find " + filename);
                 }
             }
         } catch (ServiceException ex) {
+            logEvent(this, Log.ERROR, ex);
+        }
+    }
+    
+    private void patchNbConfig (boolean reverse) {
+        try {
+            FileService fileService = (FileService) getServices().getService(FileService.NAME);
+            ProductService pservice = (ProductService)getService(ProductService.NAME);
+            
+            String fsep = fileService.getSeparator();
+            String psep = fileService.getPathSeparator();
+            
+            String installDir = resolveString((String)pservice.getProductBeanProperty(
+                ProductService.DEFAULT_PRODUCT_SOURCE,
+                null,
+                "absoluteInstallLocation"));
+            
+            String nbdir = resolveString(installDir + fsep + "..");
+            
+            String configFilename = nbdir + fsep + "etc" + fsep + "netbeans.conf";
+            logEvent(this,Log.DBG,"Patching " + configFilename);
+            String[] content = fileService.readAsciiFile(configFilename);
+            if (content == null) {
+                logEvent(this,Log.ERROR,"Error: Cannot parse " + configFilename);
+                return;
+            }
+            if (!reverse) {
+                //Add cnd cluster to netbeans_extraclusters
+                int index = -1;
+                for (int i = 0; i < content.length; i++) {
+                    String line = content[i].trim();
+                    if (line.startsWith("netbeans_extraclusters=")) {
+                        index = i;
+                        break;
+                    }
+                }
+                String line = "";
+                if (index >= 0) {
+                    StringTokenizer stok = new StringTokenizer(content[index].trim(), psep);
+                    while (stok.hasMoreElements()) {
+                        if (!"".equals(line)) {
+                            line += psep;
+                        }
+                        String s = stok.nextToken();
+                        if (s.endsWith("\"")) {
+                            line += s.substring(0,s.length() - 1);
+                        } else {
+                            line += s;
+                        }
+                    }
+                }
+                if (!"".equals(line)) {
+                    line += psep;
+                }
+                line += installDir;
+                if (index >= 0) {
+                    line = line + "\"";
+                    fileService.updateAsciiFile(configFilename, new String[] {line}, index);
+                } else {
+                    line = "netbeans_extraclusters=\"" + line + "\"";
+                    fileService.appendToAsciiFile(configFilename, new String[] {line});
+                }
+                logEvent(this, Log.DBG, "Replace line " + line);
+          } else {
+                //Remove cnd cluster from netbeans_extraclusters
+                int index = -1;
+                for (int i = 0; i < content.length; i++) {
+                    String line = content[i].trim();
+                    if (line.startsWith("netbeans_extraclusters=")) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index < 0) {
+                    return;
+                }
+                File instdir = new File(installDir);
+                String line = "";
+                StringTokenizer stok = new StringTokenizer(content[index].trim().substring("netbeans_extraclusters=".length()), psep);
+                boolean update = false;
+                while (stok.hasMoreElements()) {
+                    String tok = stok.nextToken();
+                    if (tok.startsWith("\"")) {
+                        tok = tok.substring(1,tok.length());
+                    }
+                    if (tok.endsWith("\"")) {
+                        tok = tok.substring(0,tok.length() - 1);
+                    }
+                    if (instdir.equals(new File(tok))) {
+                        update = true;
+                        continue;
+                    }
+                    if (!"".equals(line)) {
+                        line += psep;
+                    }
+                    line += tok;
+                }
+                if (!"".equals(line)) {
+                    line = "netbeans_extraclusters=\"" + line + "\"";
+                }
+                if (update) {
+                    //Update only when cnd cluster path is found and removed from netbeans_extraclusters
+                    fileService.updateAsciiFile(configFilename, new String[] {line}, index);
+                    logEvent(this, Log.DBG, "Replace line " + line);
+                }
+            }
+        } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
         }
     }
