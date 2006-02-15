@@ -27,10 +27,10 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 
 /**
- * Represents panel for editing dependency details. Shown after <em>Edit</em>
+ * Represents panel for editing dependency details. Shown e.g. after <em>Edit</em>
  * button on the <code>CustomizerLibraries</code> panel has been pushed.
  *
- * @author  mkrauskopf
+ * @author Martin Krauskopf
  */
 public final class EditDependencyPanel extends JPanel {
     
@@ -54,7 +54,9 @@ public final class EditDependencyPanel extends JPanel {
         UIUtil.setText(codeNameBaseValue, origDep.getModuleEntry().getCodeNameBase());
         UIUtil.setText(jarLocationValue, origDep.getModuleEntry().getJarLocation().getAbsolutePath());
         UIUtil.setText(releaseVersionValue, origDep.getReleaseVersion());
-        UIUtil.setText(specVerValue, origDep.getSpecificationVersion());
+        UIUtil.setText(specVerValue, origDep.hasImplementationDepedendency() ?
+            origDep.getModuleEntry().getSpecificationVersion() :
+            origDep.getSpecificationVersion());
         implVer.setSelected(origDep.hasImplementationDepedendency());
         ManifestManager.PackageExport[] pp = origDep.getModuleEntry().getPublicPackages();
         boolean anyAvailablePkg = pp != null && pp.length != 0;
