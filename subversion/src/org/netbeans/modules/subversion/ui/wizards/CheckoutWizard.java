@@ -131,7 +131,7 @@ public final class CheckoutWizard implements ChangeListener {
 
         public void nextPanel() {            
             if(current() == repositoryStep) {
-                browseStep.setup(repositoryStep.getSvnRoot());
+                browseStep.setup(repositoryStep.getRepositoryRoot(), repositoryStep.getSvnRoot());
             }            
             super.nextPanel();
         }
@@ -149,7 +149,7 @@ public final class CheckoutWizard implements ChangeListener {
     public SVNRoot[] getSelectedRoots() {
         return browseStep.getSelectedRoots();
     }
-
+    
     public File getWorkdir() {
         return workdirStep.getWorkdir();
     }

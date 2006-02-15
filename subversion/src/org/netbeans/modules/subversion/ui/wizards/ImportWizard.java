@@ -133,7 +133,7 @@ public final class ImportWizard implements ChangeListener {
 
         public void nextPanel() {            
             if(current() == repositoryStep) {
-                browseStep.setup(repositoryStep.getSvnRoot());
+                browseStep.setup(repositoryStep.getRepositoryRoot(), repositoryStep.getSvnRoot());
             }            
             super.nextPanel();
         }
