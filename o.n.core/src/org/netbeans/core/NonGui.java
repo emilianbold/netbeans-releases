@@ -7,43 +7,31 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.io.*;
-import java.security.*;
-import java.text.MessageFormat;
-import javax.swing.*;
-import javax.swing.border.*;
+import java.awt.EventQueue;
+import java.awt.Frame;
+import java.awt.Toolkit;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import org.netbeans.TopSecurityManager;
+import org.netbeans.core.startup.InstalledFileLocatorImpl;
 import org.netbeans.core.startup.Main;
-
-import org.openide.*;
+import org.netbeans.core.startup.ModuleSystem;
+import org.netbeans.core.startup.StartLog;
+import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
-import org.openide.loaders.*;
-import org.openide.actions.*;
-import org.openide.filesystems.*;
-import org.openide.windows.*;
-import org.openide.explorer.*;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
-import org.openide.util.io.*;
-import org.openide.nodes.*;
-
-import org.netbeans.TopSecurityManager;
-
-import org.netbeans.core.actions.*;
-import org.netbeans.core.startup.InstalledFileLocatorImpl;
-import org.netbeans.core.startup.StartLog;
-import org.netbeans.core.startup.ModuleSystem;
-import org.openide.modules.InstalledFileLocator;
+import org.openide.windows.WindowManager;
 
 /**
  * Most of the NetBeans startup logic that is not closely tied to the GUI.

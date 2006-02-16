@@ -42,7 +42,6 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
     private static final String CATEGORY_BUILD = "Build"; // NOI18N
     private static final String CATEGORY_COMPILING = "Compiling"; // NOI18N
     private static final String CATEGORY_PACKAGING = "Packaging"; // NOI18N
-    private static final String CATEGORY_DOCUMENTING = "Documenting"; // NOI18N
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;

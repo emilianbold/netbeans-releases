@@ -7,34 +7,26 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.UnknownHostException;
-import java.net.URL;
 import java.net.InetAddress;
-import java.util.Hashtable;
-import java.util.Properties;
-import java.util.regex.PatternSyntaxException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.regex.Pattern;
-
+import java.util.regex.PatternSyntaxException;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
-import org.openide.nodes.Node;
+import org.openide.loaders.DataObject;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -112,8 +104,6 @@ public class IDESettings extends SystemOption {
     // properties
 
     private static boolean showToolTips = true;    
-    private static boolean showTips = true;
-    private static int lastTip = -1;
     private static boolean confirmDelete = true;
     private static int modulesSortMode = MODULES_SORT_CATEGORY;
 
@@ -274,7 +264,6 @@ public class IDESettings extends SystemOption {
      */
     public void setProxyType (int value) {
         if (proxyType != value) {
-            int oldProxyType = proxyType;
             boolean oldUseProxy = getUseProxy ();
             String oldHost = getProxyHost ();
             String oldPort = getProxyPort ();
@@ -356,10 +345,9 @@ public class IDESettings extends SystemOption {
                 return getUserProxyHost ();
             case DIRECT_CONNECTION :
                 return ""; // NOI18N
+            default:
+                throw new AssertionError("Unknown proxy type " + getProxyType());
         }
-        
-        assert false : "Unknown proxy type " + getProxyType ();
-        return null;
     }
     
     public void readOldProxyHost (String value) {
@@ -378,7 +366,6 @@ public class IDESettings extends SystemOption {
         value = value == null ? "" : value;
         if (MANUAL_SET_PROXY == getProxyType ()) {
             if (!getUserProxyHost().equals (value)) {
-                String oldHost = getUserProxyHost ();
                 setUserProxyHost (value);
                 System.setProperty (KEY_PROXY_HOST, value);
                 System.setProperty (KEY_HTTPS_PROXY_HOST, value);
@@ -400,10 +387,9 @@ public class IDESettings extends SystemOption {
                 return getUserProxyPort ();
             case DIRECT_CONNECTION :
                 return ""; // NOI18N
+            default:
+                throw new AssertionError("Unknown proxy type " + getProxyType());
         }
-        
-        assert false : "Unknown proxy type " + getProxyType ();
-        return null;
     }
 
     /** Setter for proxy port, sets the HTTP proxy port if and only if proxy type is <code>MANUAL_SET_PROXY</code>.
@@ -414,7 +400,6 @@ public class IDESettings extends SystemOption {
         value = value == null ? "" : value;
         if (MANUAL_SET_PROXY == getProxyType ()) {
             if (!getUserProxyPort ().equals (value)) {
-                String oldPort = getUserProxyPort ();
                 setUserProxyPort (value);
                 System.setProperty (KEY_PROXY_PORT, getProxyPort ());
                 System.setProperty (KEY_HTTPS_PROXY_PORT, getProxyPort ());

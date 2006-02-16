@@ -7,33 +7,36 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-
 import java.awt.Dimension;
 import java.beans.BeanInfo;
 import java.util.Iterator;
 import java.util.ResourceBundle;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
-import javax.swing.border.CompoundBorder;
-
-import org.openide.awt.Actions;
-import org.openide.cookies.SaveCookie;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
-import org.openide.loaders.DataFolder;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
+import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /** Dialog which lets the user select which open files to close.
@@ -216,9 +219,9 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
 
                 // special handling to handle a button title with mnemonic 
                 // and to allow enable/disable control of the option
-                Actions.setMenuText(buttonSave, bundle.getString("CTL_Save"), true);
-                Actions.setMenuText(buttonSaveAll, bundle.getString("CTL_SaveAll"), true);
-                Actions.setMenuText(buttonDiscardAll, bundle.getString("CTL_DiscardAll"), true);
+                Mnemonics.setLocalizedText(buttonSave, bundle.getString("CTL_Save"));
+                Mnemonics.setLocalizedText(buttonSaveAll, bundle.getString("CTL_SaveAll"));
+                Mnemonics.setLocalizedText(buttonDiscardAll, bundle.getString("CTL_DiscardAll"));
 
                 exitOptions = new Object[] {
                                   buttonSave,

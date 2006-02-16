@@ -91,7 +91,6 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
         List/*<Element>*/ depEls = Util.findSubElements(moduleDependencies);
         Iterator it = depEls.iterator();
-        StringBuffer cp = new StringBuffer();
         while (it.hasNext()) {
             Element dep = (Element) it.next();
             if (Util.findElement(dep, "run-dependency", // NOI18N

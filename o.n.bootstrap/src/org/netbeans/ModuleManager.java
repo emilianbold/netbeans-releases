@@ -7,27 +7,41 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans;
 
-import java.util.*;
-import java.beans.*;
-import java.io.IOException;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import org.openide.util.*;
-import org.openide.modules.ModuleInfo;
-import java.security.*;
+import java.io.IOException;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import org.openide.modules.SpecificationVersion;
-import org.openide.modules.Dependency;
 import org.openide.ErrorManager;
-import org.netbeans.JarClassLoader;
+import org.openide.modules.Dependency;
+import org.openide.modules.ModuleInfo;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.TopologicalSortException;
+import org.openide.util.Utilities;
 
 /** Manages a collection of modules.
  * Must use {@link #mutex} to access its important methods.

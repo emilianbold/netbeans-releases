@@ -7,22 +7,19 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import java.io.File;
 import java.io.IOException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem;
-
 import org.netbeans.core.startup.ModuleSystem;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 
 /** Default implementation of TopManager that is used when 
 * the system is used without initialization.

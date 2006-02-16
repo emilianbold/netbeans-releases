@@ -7,25 +7,33 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.*;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.jar.JarFile;
-import java.security.*;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Template;
 import org.openide.util.lookup.Lookups;
 
 /** Bootstrap main class.
@@ -62,7 +70,7 @@ public class Main extends Object {
         
         String[] newArgs = { "--help" };
         
-        int res = execute (newArgs, System.in, os, err, null);
+        execute(newArgs, System.in, os, err, null);
         return new String (os.toByteArray ());
     }
         

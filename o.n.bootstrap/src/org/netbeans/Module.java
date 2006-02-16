@@ -15,15 +15,11 @@ package org.netbeans;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.AllPermission;
-import java.security.PermissionCollection;
-import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
@@ -83,8 +79,6 @@ public abstract class Module extends ModuleInfo {
     private SpecificationVersion specVers;
     /** currently active module classloader */
     protected ClassLoader classloader = null;
-    /** localized properties, only non-null if requested from disabled module */
-    private Properties localizedProps;
     /** public packages, may be null */
     private PackageExport[] publicPackages;
     /** Set<String> of CNBs of friend modules or null */
@@ -432,14 +426,6 @@ public abstract class Module extends ModuleInfo {
      * @param r whether the module should be considered reloadable
      */
     public abstract void setReloadable(boolean r);
-    
-    /** Used as a flag to tell if this module was really successfully released.
-     * Currently does not work, so if it cannot be made to work, delete it.
-     * (Someone seems to be holding a strong reference to the classloader--who?!)
-     */
-    private transient boolean released;
-    /** Count which release() call is really being checked. */
-    private transient int releaseCount = 0;
 
     /** Reload this module. Access from ModuleManager.
      * If an exception is thrown, the module is considered
@@ -545,18 +531,6 @@ public abstract class Module extends ModuleInfo {
         String s = "Module:" + getCodeNameBase(); // NOI18N
         if (!isValid()) s += "[invalid]"; // NOI18N
         return s;
-    }
-    
-    /** PermissionCollection with an instance of AllPermission. */
-    private static PermissionCollection modulePermissions;
-    /** @return initialized @see #modulePermission */
-    private static synchronized PermissionCollection getAllPermission() {
-        if (modulePermissions == null) {
-            modulePermissions = new Permissions();
-            modulePermissions.add(new AllPermission());
-            modulePermissions.setReadOnly();
-        }
-        return modulePermissions;
     }
 
     /** Struct representing a package exported from a module.

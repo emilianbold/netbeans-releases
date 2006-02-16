@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,15 +26,12 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.net.URL;
-import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -48,8 +45,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
@@ -157,27 +152,15 @@ public final class Splash  implements SwingConstants {
 
     /** Loads a splash image from its source */
     private static Image loadSplash() {
-        URL u = NbBundle.getLocalizedFile
-            ("org.netbeans.core.startup.splash", // NOI18N
-             "gif", // NOI18N
-             Locale.getDefault(),
-             Splash.class.getClassLoader()
-             );
-        return Toolkit.getDefaultToolkit().getImage(u);
+        return Utilities.loadImage("org/netbeans/core/startup/splash.gif", true);
     }
 
     /** Loads an about image from its source */
     private static Image loadAbout() {
-        try {
-            URL u = NbBundle.getLocalizedFile(
-                        "org.netbeans.core.startup.about", // NOI18N
-                        "gif", // NOI18N
-                        Locale.getDefault(),
-                        Splash.class.getClassLoader()
-                    );
-
-            return Toolkit.getDefaultToolkit().getImage(u);
-        } catch (MissingResourceException exception) {
+        Image img = Utilities.loadImage("org/netbeans/core/startup/about.gif", true);
+        if (img != null) {
+            return img;
+        } else {
             return loadSplash();
         }
     }

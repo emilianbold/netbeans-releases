@@ -12,8 +12,8 @@
  */
 
 package org.netbeans.core.startup;
+
 import java.beans.Introspector;
-import java.beans.PropertyEditorManager;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,7 +35,6 @@ import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 
 /**
@@ -430,8 +429,9 @@ public final class Main extends Object {
             splash = Splash.showSplash ();
         }
     }
-    /** Lazily loads classes */ // #9951
-    static final Class getKlass(String cls) {
+    
+    /** Loads a class from available class loaders. */
+    private static final Class getKlass(String cls) {
         try {
             ClassLoader loader;
             ModuleSystem ms = moduleSystem;
@@ -446,35 +446,7 @@ public final class Main extends Object {
             throw new NoClassDefFoundError(e.getLocalizedMessage());
         }
     }
-    
-    
-    /** Puts a property into the system ones, but only if the value is not null.
-     * @param propName name of property
-     * @param value value to assign or null
-     * @param failbackValue value to assign if the previous value is null
-     */
-    private static void putSystemProperty (
-        String propName, String value, String failbackValue
-    ) {
-        if (System.getProperty (propName) == null) {
-            // only set it if not null
-            if (value != null) {
-                System.setProperty (propName, value);
-            } else {
-                if (!Boolean.getBoolean("netbeans.suppress.sysprop.warning")) {
-                    System.err.println(
-                        "Warning: Versioning property \"" + propName + // NOI18N
-                        "\" is not set. Defaulting to \"" + failbackValue + '"' // NOI18N
-                    ); 
-                    System.err.println("(to suppress this message run with -Dnetbeans.suppress.sysprop.warning=true)"); // NOI18N
-                }
-                System.setProperty (propName, failbackValue);
-            }
-        }
-    }
 
-
-    
     /** Does import of userdir. Made non-private just for testing purposes.
      *
      * @return true if the execution should continue or false if it should

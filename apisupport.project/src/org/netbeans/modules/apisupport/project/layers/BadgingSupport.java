@@ -274,18 +274,18 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         // In case a file was created that makes an annotation be available.
         // We are listening to the parent folder, so if e.g. a new branded variant
         // of a bundle is added, the display ought to be refreshed accordingly.
-        someFileChange(fe);
+        someFileChange();
     }
     public void fileAttributeChanged(FileAttributeEvent fe) {
-        someFileChange(fe);
+        someFileChange();
     }
     public void fileRenamed(FileRenameEvent fe) {
-        someFileChange(fe);
+        someFileChange();
     }
     public void fileChanged(FileEvent fe) {
-        someFileChange(fe);
+        someFileChange();
     }
-    private void someFileChange(FileEvent fe) {
+    private void someFileChange() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 // If used as nbres: annotation, fire status change.

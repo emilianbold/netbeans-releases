@@ -7,26 +7,30 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.filesystems;
 
-import java.io.*;
-import java.util.*;
-
-import org.xml.sax.*;
-
+import java.io.IOException;
+import java.io.InputStream;
+import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
-import org.openide.loaders.*;
-import org.openide.filesystems.*;
-import org.openide.util.*;
-import org.openide.util.lookup.*;
-import org.openide.xml.*;
-import org.openide.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.Environment;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
 /**
  * MIMEResolver implementation driven by an XML document instance
@@ -223,7 +227,6 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
 
             String s;
-            int i;
 
             switch (state) {
 

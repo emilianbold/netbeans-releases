@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -482,7 +482,6 @@ public class ModuleInitTest extends Benchmark {
             "-Dnetbeans.security.nocheck=true",
             "-Dnetbeans.home=" + homedir.getAbsolutePath(),
             "-Dnetbeans.user=" + userdir.getAbsolutePath(),
-            "-Dnetbeans.suppress.sysprop.warning=true",
             "-Dnetbeans.modules.quiet=true",
             "-Dlog=" + log,
             "-classpath",

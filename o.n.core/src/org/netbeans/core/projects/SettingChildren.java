@@ -179,7 +179,6 @@ public final class SettingChildren extends FilterNode.Children {
                 switch (action) {
                     case ACTION_DEFINE:
                     case ACTION_REVERT:
-                        boolean above = false;
                         boolean go = true;
 
                         for (int i = 0; i < layer; i++) {

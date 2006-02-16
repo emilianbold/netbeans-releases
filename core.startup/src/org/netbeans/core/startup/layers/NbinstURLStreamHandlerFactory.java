@@ -7,16 +7,15 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.core.startup.layers;
 
-
-import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
@@ -24,9 +23,6 @@ import java.net.URLStreamHandlerFactory;
 import java.net.UnknownServiceException;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileLock;
-
-
 
 /**
  * StreamHandlerFactory for nbinst protocol
@@ -68,7 +64,6 @@ public class NbinstURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
         private FileObject fo;
         private InputStream iStream;
-        private OutputStream oStream;
 
         /**
          * Creates new URLConnection

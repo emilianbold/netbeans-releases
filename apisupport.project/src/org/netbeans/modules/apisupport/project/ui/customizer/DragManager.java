@@ -368,7 +368,7 @@ final class DragManager implements DragGestureListener, DragSourceListener,
             static final int NE_RESIZE_MODE = 1;
             static final int SW_RESIZE_MODE = 2;
             static final int SE_RESIZE_MODE = 3;
-            private static final int MOVE_MODE = 4;
+            //private static final int MOVE_MODE = 4;
             
             private int resizeMode = -1;
             private Rectangle rec;

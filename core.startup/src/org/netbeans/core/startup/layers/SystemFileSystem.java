@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,7 +23,6 @@ import java.io.NotSerializableException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
@@ -40,8 +39,6 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 
 /** The system FileSystem - represents system files under $NETBEANS_HOME/system.
 *
@@ -68,11 +65,6 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
     private ModuleLayeredFileSystem user;
     /** home fs */
     private ModuleLayeredFileSystem home;
-
-    /** message to format file in netbeans.home */
-    private static MessageFormat homeFormat;
-    /** message to format file in netbeans.user */
-    private static MessageFormat userFormat;
 
     /** @param fss list of file systems to delegate to
     */
@@ -148,23 +140,6 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
     protected java.util.Set createLocksOn (String name) throws IOException {
         LocalFileSystemEx.potentialLock (name);
         return super.createLocksOn (name);
-    }
-    
-    private static boolean isWritableOn(String name, FileSystem fs) {
-        if (fs.isReadOnly()) return false;
-        if (fs instanceof ModuleLayeredFileSystem) {
-            // Check if the file is really on a writable delegate.
-            FileSystem[] fss = ((ModuleLayeredFileSystem)fs).getLayers();
-            for (int i = 0; i < fss.length; i++) {
-                if (fss[i].findResource(name) != null) {
-                    return ! fss[i].isReadOnly();
-                }
-            }
-            throw new IllegalArgumentException("did not find " + name + " on " + fs); // NOI18N
-        } else {
-            // No harm done, just write it somewhere here.
-            return true;
-        }
     }
     
     /** This filesystem cannot be removed from pool, it is persistent.

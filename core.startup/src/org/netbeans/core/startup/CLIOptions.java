@@ -7,23 +7,18 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.io.*;
-import java.security.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Locale;
-import javax.swing.*;
-import javax.swing.border.*;
-
 import org.netbeans.CLIHandler;
-
+import org.netbeans.CLIHandler.Args;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,10 +50,6 @@ public class CLIOptions extends CLIHandler {
     private static String userDir;
     /** The netbeans system dir - ${netbeans.user}/system */
     private static String systemDir;
-
-    
-    
-    private static boolean specifiedBranding = false;
 
     /**
      * Create a default handler.
@@ -176,7 +167,6 @@ public class CLIOptions extends CLIHandler {
                     iae.printStackTrace();
                     return 1;
                 }
-                specifiedBranding = true;
             } else {
                 used = false;
             }

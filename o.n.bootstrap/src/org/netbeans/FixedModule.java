@@ -12,16 +12,14 @@
  */
 
 package org.netbeans;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -30,7 +28,6 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-
 
 /** Object representing one module, possibly installed.
  * Responsible for opening of module JAR file; reading
@@ -44,36 +41,6 @@ final class FixedModule extends Module {
     
     /** localized properties, only non-null if requested from disabled module */
     private Properties localizedProps;
-    
-    /** Map from extension JARs to sets of JAR that load them via Class-Path.
-     * Used only for debugging purposes, so that a warning is printed if two
-     * different modules try to load the same extension (which would cause them
-     * to both load their own private copy, which may not be intended).
-     */
-    private static final Map extensionOwners = new HashMap(); // Map<File,Set<File>>
-    /** Simple registry of JAR files used as modules.
-     * Used only for debugging purposes, so that we can be sure
-     * that no one is using Class-Path to refer to other modules.
-     */
-    private static final Set moduleJARs = new HashSet(); // Set<File>
-
-    /** Set of locale-variants JARs for this module (or null).
-     * Added explicitly to classloader, and can be used by execution engine.
-     */
-    private Set localeVariants = null; // Set<File>
-    /** Set of extension JARs that this module loads via Class-Path (or null).
-     * Can be used e.g. by execution engine. (#9617)
-     */
-    private Set plainExtensions = null; // Set<File>
-    /** Set of localized extension JARs derived from plainExtensions (or null).
-     * Used to add these to the classloader. (#9348)
-     * Can be used e.g. by execution engine.
-     */
-    private Set localeExtensions = null; // Set<File>
-    /** Patches added at the front of the classloader (or null).
-     * Files are assumed to be JARs; directories are themselves.
-     */
-    private Set patches = null; // Set<File>
 
     /** Create a special-purpose "fixed" JAR. */
     public FixedModule(ModuleManager mgr, Events ev, Manifest manifest, Object history, ClassLoader classloader) throws InvalidException {

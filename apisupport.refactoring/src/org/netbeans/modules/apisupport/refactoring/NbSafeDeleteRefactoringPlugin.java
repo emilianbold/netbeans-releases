@@ -7,22 +7,17 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.refactoring;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -48,7 +43,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-
 
 /**
  *
@@ -114,7 +108,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             String attributeKey,
             String attributeValue,
             String section) {
-        return new ManifestSafeDeleteRefactoringElement(clazz, manifestFile, attributeValue,
+        return new ManifestSafeDeleteRefactoringElement(manifestFile, attributeValue,
                 attributeKey, section);
     }
     
@@ -151,24 +145,20 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
     
     public final class ManifestSafeDeleteRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
         
-        private JavaClass clazz;
         private String attrName;
         private String sectionName = null;
-        private String oldName;
         private String oldContent;
         
-        public ManifestSafeDeleteRefactoringElement(JavaClass clazz, FileObject parentFile, String attributeValue, String attributeName) {
+        public ManifestSafeDeleteRefactoringElement(FileObject parentFile, String attributeValue, String attributeName) {
             this.name = attributeValue;
-            this.clazz = clazz;
             this.parentFile = parentFile;
             attrName = attributeName;
-            oldName = clazz.getName();
             // read old content here. in the unprobable case when 2 classes are to be removed
             // and both are placed in same services file, we need the true original content
             oldContent = Utility.readFileIntoString(parentFile);
         }
-        public ManifestSafeDeleteRefactoringElement(JavaClass clazz, FileObject parentFile, String attributeValue, String attributeName, String secName) {
-            this(clazz, parentFile, attributeValue, attributeName);
+        public ManifestSafeDeleteRefactoringElement(FileObject parentFile, String attributeValue, String attributeName, String secName) {
+            this(parentFile, attributeValue, attributeName);
             sectionName = secName;
         }
         
@@ -316,7 +306,6 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
     
     public final class LayerSafeDeleteRefactoringElement extends AbstractRefactoringElement  implements ExternalChange {
         
-        private File parent;
         private FileObject layerFO;
         private LayerUtils.LayerHandle handle;
 
@@ -324,17 +313,16 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         /**
          * Creates a new instance of LayerRenameRefactoringElement
          */
-        public LayerSafeDeleteRefactoringElement(String name, LayerUtils.LayerHandle handle, FileObject layerFo, String attr) {
-            this(name, handle, layerFo);
+        public LayerSafeDeleteRefactoringElement(String name, LayerUtils.LayerHandle handle, FileObject layerFO, String attr) {
+            this(name, handle, layerFO);
             attribute = attr;
         }
         
-        public LayerSafeDeleteRefactoringElement(String name, LayerUtils.LayerHandle handle, FileObject layerFo) {
+        public LayerSafeDeleteRefactoringElement(String name, LayerUtils.LayerHandle handle, FileObject layerFO) {
             this.name = name;
             this.handle = handle;
             parentFile = handle.getLayerFile();
-            parent = FileUtil.toFile(parentFile);
-            layerFO = layerFo;
+            this.layerFO = layerFO;
         }
         
         /** Returns text describing the refactoring formatted for display (using HTML tags).

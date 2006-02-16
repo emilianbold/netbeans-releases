@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -236,7 +236,7 @@ public abstract class ManifestSection {
             // no section tag
             return null;
         } else if (sectionName.equalsIgnoreCase("Action")) { // NOI18N
-            return new ActionSection(name, attr, module);
+            return new ActionSection(name, module);
         } else if (sectionName.equalsIgnoreCase("Option")) { // NOI18N
             warnObsolete(sectionName, module);
             return null;
@@ -255,11 +255,11 @@ public abstract class ManifestSection {
         } else if (sectionName.equalsIgnoreCase("Debugger")) { // NOI18N
             // XXX should support for this be dropped entirely?
             warnObsolete(sectionName, module);
-            return new DebuggerSection(name, attr, module);
+            return new DebuggerSection(name, module);
         } else if (sectionName.equalsIgnoreCase("ClipboardConvertor")) { // NOI18N
             // XXX should support for this be dropped entirely?
             warnObsolete(sectionName, module);
-            return new ClipboardConvertorSection(name, attr, module);
+            return new ClipboardConvertorSection(name, module);
         } else {
             throw new InvalidException(module, "Illegal manifest section type: " + sectionName); // NOI18N
         }
@@ -274,7 +274,7 @@ public abstract class ManifestSection {
      * @see SystemAction
      */
     public static final class ActionSection extends ManifestSection {
-        ActionSection(String name, Attributes attrs, Module module) throws InvalidException {
+        ActionSection(String name, Module module) throws InvalidException {
             super(name, module, SystemAction.class);
         }
     }
@@ -342,7 +342,7 @@ public abstract class ManifestSection {
     /** @deprecated use new debugger API
      */
     public static final class DebuggerSection extends ManifestSection {
-        DebuggerSection(String name, Attributes attrs, Module module) throws InvalidException {
+        DebuggerSection(String name, Module module) throws InvalidException {
             super(name, module, getClazz("org.openide.debugger.Debugger", module)); // NOI18N
         }
     }
@@ -350,7 +350,7 @@ public abstract class ManifestSection {
     /** @deprecated use META-INF/services to register convertors.
      */
     public static final class ClipboardConvertorSection extends ManifestSection {
-        ClipboardConvertorSection(String name, Attributes attrs, Module module) throws InvalidException {
+        ClipboardConvertorSection(String name, Module module) throws InvalidException {
             super(name, module, ExClipboard.Convertor.class);
         }
     }

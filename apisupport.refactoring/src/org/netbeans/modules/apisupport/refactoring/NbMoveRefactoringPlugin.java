@@ -7,11 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.refactoring;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -47,7 +48,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
-
 
 /**
  *
@@ -211,7 +211,7 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
                         Map.Entry ent = (Map.Entry)itf.next();
                         String val = (String)ent.getValue();
                         if (packageName.equals(val)) {
-                            RefactoringElementImplementation elem = new ManifestMoveRefactoringElement(packageName, cachedProject.getManifestFile(), val,
+                            RefactoringElementImplementation elem = new ManifestMoveRefactoringElement(cachedProject.getManifestFile(), val,
                                     ((Attributes.Name)ent.getKey()).toString(), cachedProject, dobj.getPrimaryFile());
                             refactoringElements.add(refactoring, elem);
                             manifestRefactorings.add(elem);
@@ -278,7 +278,6 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
         private JavaClass clazz;
         private String attrName;
         private String sectionName = null;
-        private String oldName;
         private NbModuleProject project;
         private FileObject movedFile = null;
         public ManifestMoveRefactoringElement(JavaClass clazz, FileObject parentFile,
@@ -289,7 +288,6 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
             this.parentFile = parentFile;
             this.project = project;
             attrName = attributeName;
-            oldName = clazz.getName();
         }
         public ManifestMoveRefactoringElement(JavaClass clazz, FileObject parentFile,
                 String attributeValue, String attributeName, String secName,
@@ -299,12 +297,11 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
         }
         
         //for data objects that are not classes
-        public ManifestMoveRefactoringElement(String pathName, FileObject parentFile,
+        public ManifestMoveRefactoringElement(FileObject parentFile,
                 String attributeValue, String attributeName, NbModuleProject project, FileObject movedFile) {
             this.name = attributeValue;
             this.parentFile = parentFile;
             attrName = attributeName;
-            oldName = pathName;
             this.project = project;
             this.movedFile = movedFile;
         }

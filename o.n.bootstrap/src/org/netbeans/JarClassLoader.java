@@ -7,23 +7,38 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.security.Policy;
+import java.security.ProtectionDomain;
+import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
-import java.io.*;
-import java.net.MalformedURLException;
-import java.security.*;
-import java.security.cert.Certificate;
-import java.util.*;
 
 /**
  * A ProxyClassLoader capable of loading classes from a set of jar files
@@ -75,8 +90,7 @@ public class JarClassLoader extends ProxyClassLoader {
         ArrayList l = new ArrayList (sources.length + newSources.size ());
         l.addAll (Arrays.asList (sources));
         try {
-            int i=0;
-            for (Iterator it = newSources.iterator(); it.hasNext(); i++ ) {
+            for (Iterator it = newSources.iterator(); it.hasNext();) {
                 Object act = it.next();
                 if (act instanceof File) {
                     l.add (new DirSource((File)act, this));

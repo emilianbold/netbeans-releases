@@ -1391,7 +1391,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
     // is affected. Practically this would be a lot of work and gain
     // very little.
     public void fileDeleted(FileEvent fe) {
-        someFileChange(fe);
+        someFileChange();
     }
     public void fileFolderCreated(FileEvent fe) {
         // does not apply to us
@@ -1403,12 +1403,12 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         // don't care about attributes on included files...
     }
     public void fileRenamed(FileRenameEvent fe) {
-        someFileChange(fe);
+        someFileChange();
     }
     public void fileChanged(FileEvent fe) {
-        someFileChange(fe);
+        someFileChange();
     }
-    private void someFileChange(FileEvent fe) {
+    private void someFileChange() {
         // If used as url=, refresh contents, timestamp, ...
         refreshResource("", true);
     }

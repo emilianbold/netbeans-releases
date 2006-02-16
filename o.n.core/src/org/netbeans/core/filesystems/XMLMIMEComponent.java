@@ -7,25 +7,22 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.filesystems;
 
-import java.io.*;
-import java.util.*;
-import java.lang.ref.*;
-
-import org.xml.sax.*;
-import org.xml.sax.ext.*;
-
-import org.openide.loaders.*;
-import org.openide.filesystems.*;
-import org.openide.util.*;
-import org.openide.util.lookup.*;
-import org.openide.xml.*;
-import org.openide.*;
+import java.lang.ref.WeakReference;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.ext.LexicalHandler;
 
 /**
  * This source represents a <b>XML rules</b> core plugin to <tt>MIMEReolverImpl</tt>.
@@ -90,7 +87,6 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
     public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
 
         String s;
-        int i;
 
         switch (state) {
 

@@ -14,7 +14,6 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.updatecenter;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;

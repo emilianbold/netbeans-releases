@@ -27,7 +27,6 @@ import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -518,7 +517,7 @@ final class ModuleList {
         Class c;
         for (c = clazz; c != ModuleInstall.class && c != Object.class; c = c.getSuperclass()) {
             try {
-                Method m = c.getDeclaredMethod("writeExternal", new Class[] {ObjectOutput.class}); // NOI18N
+                c.getDeclaredMethod("writeExternal", new Class[] {ObjectOutput.class}); // NOI18N
                 // [PENDING] check that m is public, nonstatic, returns Void.TYPE and includes at most
                 // IOException and unchecked exceptions in its clauses, else die
                 // OK, it does something nontrivial.
@@ -527,7 +526,7 @@ final class ModuleList {
                 // Didn't find it at this level, continue.
             }
             try {
-                Method m = c.getDeclaredMethod("writeReplace", new Class[] {}); // NOI18N
+                c.getDeclaredMethod("writeReplace", new Class[] {}); // NOI18N
                 // [PENDING] check that m is nonstatic, returns Object, throws ObjectStreamException
                 // Designates a serializable replacer, this is special.
                 return true;
@@ -1319,7 +1318,7 @@ final class ModuleList {
                 return;
             }
             FileObject fo = ev.getFile();
-            fileCreated0(fo, fo.getName(), fo.getExt()/*, ev.getTime()*/);
+            fileCreated0(fo.getName(), fo.getExt()/*, ev.getTime()*/);
         }
         
         public void fileRenamed(FileRenameEvent ev) {
@@ -1328,10 +1327,10 @@ final class ModuleList {
             }
             FileObject fo = ev.getFile();
             fileDeleted0(ev.getName(), ev.getExt()/*, ev.getTime()*/);
-            fileCreated0(fo, fo.getName(), fo.getExt()/*, ev.getTime()*/);
+            fileCreated0(fo.getName(), fo.getExt()/*, ev.getTime()*/);
         }
         
-        private void fileCreated0(FileObject fo, String name, String ext/*, long time*/) {
+        private void fileCreated0(String name, String ext/*, long time*/) {
             if ("xml".equals(ext)) { // NOI18N
                 String codenamebase = name.replace('-', '.');
                 DiskStatus status = (DiskStatus)statuses.get(codenamebase);
@@ -1450,17 +1449,17 @@ final class ModuleList {
                         // the changes are fired.
                         listening = false;
                         try {
-                            stepCheckReloadable(xmlfiles, dirtyprops);
+                            stepCheckReloadable(dirtyprops);
                             stepCreate(xmlfiles, dirtyprops);
-                            stepEnable(xmlfiles, dirtyprops);
-                            stepDisable(xmlfiles, dirtyprops);
-                            stepDelete(xmlfiles, dirtyprops);
-                            stepCheckMisc(xmlfiles, dirtyprops);
+                            stepEnable(dirtyprops);
+                            stepDisable(dirtyprops);
+                            stepDelete(xmlfiles);
+                            stepCheckMisc(dirtyprops);
                             stepCheckSer(xmlfiles, dirtyprops);
                         } finally {
                             listening = true;
-                            stepUpdateProps(xmlfiles, dirtyprops);
-                            stepMarkClean(xmlfiles, dirtyprops);
+                            stepUpdateProps(dirtyprops);
+                            stepMarkClean();
                         }
                     }
                 });
@@ -1512,7 +1511,7 @@ final class ModuleList {
             }
             return dirtyprops;
         }
-        private void stepCheckReloadable(Map/*<String,FileObject>*/ xmlfiles, Map/*<String,Map<String,Object>>*/ dirtyprops) {
+        private void stepCheckReloadable(Map/*<String,Map<String,Object>>*/ dirtyprops) {
             Util.err.log("ModuleList: stepCheckReloadable");
             Iterator it = dirtyprops.entrySet().iterator();
             while (it.hasNext()) {
@@ -1575,7 +1574,7 @@ final class ModuleList {
                 }
             }
         }
-        private void stepEnable(Map/*<String,FileObject>*/ xmlfiles, Map/*<String,Map<String,Object>>*/ dirtyprops) throws IOException {
+        private void stepEnable(Map/*<String,Map<String,Object>>*/ dirtyprops) throws IOException {
             Util.err.log("ModuleList: stepEnable");
             Set/*<Module>*/ toenable = new HashSet();
             Iterator it = dirtyprops.entrySet().iterator();
@@ -1593,7 +1592,7 @@ final class ModuleList {
             }
             installNew(toenable);
         }
-        private void stepDisable(Map/*<String,FileObject>*/ xmlfiles, Map/*<String,Map<String,Object>>*/ dirtyprops) throws IOException {
+        private void stepDisable(Map/*<String,Map<String,Object>>*/ dirtyprops) throws IOException {
             Util.err.log("ModuleList: stepDisable");
             Set/*<Module>*/ todisable = new HashSet();
             Iterator it = dirtyprops.entrySet().iterator();
@@ -1622,7 +1621,7 @@ final class ModuleList {
             }
             mgr.disable(todisable);
         }
-        private void stepDelete(Map/*<String,FileObject>*/ xmlfiles, Map/*<String,Map<String,Object>>*/ dirtyprops) throws IOException {
+        private void stepDelete(Map/*<String,FileObject>*/ xmlfiles) throws IOException {
             Util.err.log("ModuleList: stepDelete");
             Set/*<Module>*/ todelete = new HashSet();
             Iterator it = statuses.entrySet().iterator();
@@ -1670,7 +1669,7 @@ final class ModuleList {
                 }
             }
         }
-        private void stepCheckMisc(Map/*<String,FileObject>*/ xmlfiles, Map/*<String,Map<String,Object>>*/ dirtyprops) {
+        private void stepCheckMisc(Map/*<String,Map<String,Object>>*/ dirtyprops) {
             Util.err.log("ModuleList: stepCheckMisc");
             String[] toCheck = {"jar", "autoload", "eager", "release", "specversion"}; // NOI18N
             Iterator it = dirtyprops.entrySet().iterator();
@@ -1693,7 +1692,7 @@ final class ModuleList {
         private void stepCheckSer(Map/*<String,FileObject>*/ xmlfiles, Map/*<String,Map<String,Object>>*/ dirtyprops) {
             // There is NO step 7!
         }
-        private void stepUpdateProps(Map/*<String,FileObject>*/ xmlfiles, Map/*<String,Map<String,Object>>*/ dirtyprops) {
+        private void stepUpdateProps(Map/*<String,Map<String,Object>>*/ dirtyprops) {
             Util.err.log("ModuleList: stepUpdateProps");
             Iterator it = dirtyprops.entrySet().iterator();
             while (it.hasNext()) {
@@ -1706,7 +1705,7 @@ final class ModuleList {
                 }
             }
         }
-        private void stepMarkClean(Map/*<String,FileObject>*/ xmlfiles, Map/*<String,Map<String,Object>>*/ dirtyprops) {
+        private void stepMarkClean() {
             Util.err.log("ModuleList: stepMarkClean");
             Iterator it = statuses.values().iterator();
             while (it.hasNext()) {

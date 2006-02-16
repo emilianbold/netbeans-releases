@@ -41,8 +41,6 @@ public class ArchiveURLMapper extends URLMapper {
 
     private static final String JAR_PROTOCOL = "jar";   //NOI18N
 
-    private static ArchiveURLMapper instance;
-
     private static Map/*<File,SoftReference<JarFileSystem>>*/ mountRoots = new HashMap();
 
     public URL getURL(FileObject fo, int type) {

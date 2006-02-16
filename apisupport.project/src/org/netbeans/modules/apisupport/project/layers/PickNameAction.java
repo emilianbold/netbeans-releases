@@ -7,35 +7,29 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project.layers;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
-import javax.swing.JFileChooser;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-import org.openide.windows.WindowManager;
 
 /**
  * Lets user pick a localized display name for a given layer file.
@@ -57,7 +51,7 @@ public class PickNameAction extends CookieAction {
         return p;
     }
     
-    private static String findBundlePath(NbModuleProject p, FileObject f) {
+    private static String findBundlePath(NbModuleProject p) {
         FileObject src = p.getSourceDirectory();
         ManifestManager mm = ManifestManager.getInstance(p.getManifest(), false);
         String bundlePath = mm.getLocalizingBundle();
@@ -78,7 +72,7 @@ public class PickNameAction extends CookieAction {
         String name = d.getInputText();
         FileObject f = findFile(activatedNodes);
         NbModuleProject p = findProject(f);
-        String bundlePath = findBundlePath(p, f);
+        String bundlePath = findBundlePath(p);
         try {
             FileObject properties = p.getSourceDirectory().getFileObject(bundlePath);
             EditableProperties ep = Util.loadProperties(properties);
@@ -102,7 +96,7 @@ public class PickNameAction extends CookieAction {
         if (p == null) {
             return false;
         }
-        return findBundlePath(p, f) != null;
+        return findBundlePath(p) != null;
     }
 
     public String getName() {

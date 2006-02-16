@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,15 +18,22 @@ package org.netbeans.core.startup;
 import java.awt.Component;
 import java.io.File;
 import java.text.Collator;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.swing.JOptionPane;
-import org.netbeans.core.startup.Splash.SplashOutput;
+import org.netbeans.Events;
+import org.netbeans.Module;
+import org.netbeans.TopSecurityManager;
+import org.netbeans.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.netbeans.*;
 
 /** Report events to the performance logger, status text/splash screen,
  * console, and so on.
@@ -275,7 +282,6 @@ final class NbEvents extends Events {
         private boolean warn;
         private String text;
         private static RequestProcessor RP = new RequestProcessor("Notify About Module System"); // NOI18N
-        private volatile boolean shown;
         private Object[] options;
         private Object value;
         
@@ -301,8 +307,6 @@ final class NbEvents extends Events {
             return value;
         }
         public void run() {
-            shown = true;
-            
             int type = warn ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE;
             String msg = NbBundle.getMessage(Notifier.class, warn ? "MSG_warning" : "MSG_info"); // NOI18N
 

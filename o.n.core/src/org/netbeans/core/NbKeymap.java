@@ -7,15 +7,24 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
 import java.awt.event.KeyEvent;
-import java.util.*;
-import javax.swing.event.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
@@ -161,10 +170,10 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
             case KeyEvent.VK_ALT:
             case KeyEvent.VK_META:
                 return null;
+            default:
+                resetContext();
+                return NO_ACTION;
         }
-            
-        resetContext();
-        return NO_ACTION;        
     }
 
     public KeyStroke[] getBoundKeyStrokes() {

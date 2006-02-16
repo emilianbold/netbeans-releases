@@ -7,21 +7,29 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans;
 
 import java.io.FileDescriptor;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.security.*;
-import java.util.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.AllPermission;
+import java.security.Permission;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /** NetBeans security manager implementation.
 * @author Ales Novak, Jesse Glick
@@ -352,7 +360,6 @@ public class TopSecurityManager extends SecurityManager {
     private Class getInsecureClass() {
 
         Class[] ctx = getClassContext();
-        ClassLoader cloader;
         boolean firstACClass = false;
 
 LOOP:   for (int i = 0; i < ctx.length; i++) {
@@ -366,8 +373,7 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
                     firstACClass = true;
                     continue LOOP;
                 }
-            } else if ((cloader = ctx[i].getClassLoader()) != null) {
-                final Class hisClass = cloader.getClass();
+            } else if (ctx[i].getClassLoader() != null) {
 
                 if (isSecureClass(ctx[i])) {
                     if (classLoaderClass.isAssignableFrom(ctx[i])) {
@@ -488,7 +494,6 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
             Class appContextClass = Class.forName ("sun.awt.AppContext"); // NOI18N
             Method getAppContext = appContextClass.getMethod ("getAppContext", new Class[0]); // NOI18N
             Object appContext = getAppContext.invoke (null, new Object[0]);
-            Class c = appContext.getClass();
             
             Class actionClass = javax.swing.TransferHandler.getCopyAction ().getClass ();
             java.lang.reflect.Field sandboxKeyField = actionClass.getDeclaredField ("SandboxClipboardKey"); // NOI18N

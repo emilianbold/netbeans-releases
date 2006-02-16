@@ -7,19 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup.layers;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
-
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /** Session manager.
  *
@@ -39,7 +37,6 @@ public final class SessionManager {
     /** default system filesystem */
     private SystemFileSystem systemFS;
     private HashMap layers = new HashMap(); //<layer_key, fs>
-    private boolean isOpen = false;
     
     /** Utility field holding list of PropertyChangeListeners. */
     private transient java.util.ArrayList propertyChangeListeners;

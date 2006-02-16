@@ -7,19 +7,21 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import org.netbeans.ModuleInstaller;
-import org.netbeans.junit.*;
 import junit.textui.TestRunner;
+import org.netbeans.ModuleInstaller;
+import org.netbeans.core.startup.SetupHid.FakeEvents;
+import org.netbeans.junit.NbTestSuite;
 
 /** Test the NetBeans module installer implementation.
  * Broken into pieces to ensure each runs in its own VM.
@@ -39,7 +41,6 @@ public class NbInstallerTest9 extends SetupHid {
             // Hope java.io.tmpdir is set...
             System.setProperty("nbjunit.workdir", System.getProperty("java.io.tmpdir"));
         }
-        System.setProperty("netbeans.suppress.sysprop.warning", "true");
         TestRunner.run(new NbTestSuite(NbInstallerTest9.class));
     }
     

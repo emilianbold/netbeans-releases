@@ -7,11 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.refactoring;
+
 import java.io.IOException;
 import javax.jmi.reflect.RefObject;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -35,7 +36,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-
 
 /**
  *
@@ -270,7 +270,6 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
     
     public final class LayerMethodRefactoringElement extends LayerAbstractRefactoringElement {
         
-        private Method method;
         private String newAttrValue;
         
         public LayerMethodRefactoringElement(Method method,
@@ -278,7 +277,6 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                 FileObject layerFile,
                 String attributeName) {
             super(handle, layerFile, attributeName);
-            this.method = method;
             // for methods the change can only be in the attribute value;
             newAttrValue = oldAttrValue.replaceAll("\\." + method.getName() + "$", "." + rename.getNewName());
         }

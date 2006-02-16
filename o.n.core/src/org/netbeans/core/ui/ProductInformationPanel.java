@@ -7,14 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.ui;
 
 import java.awt.Color;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -30,7 +29,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
-import org.netbeans.core.startup.TopLogging;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
@@ -42,10 +40,7 @@ public class ProductInformationPanel extends JPanel {
 
     private static final Color COLOR = Color.black;
 
-    private static Dialog dialog;
-
     public ProductInformationPanel() {
-        dialog = null;
         initComponents();
         
         initAccessibility();
@@ -363,10 +358,6 @@ public class ProductInformationPanel extends JPanel {
     private javax.swing.JLabel vmLabel;
     private javax.swing.JLabel vmValueLabel;
     // End of variables declaration//GEN-END:variables
-    
-    private String fromBundle (String bundleString) {
-        return NbBundle.getMessage(ProductInformationPanel.class, bundleString);
-    }
     
     private void updateLabelFont (javax.swing.JComponent label, Color color) {
         updateLabelFont(label, 0, 0, color);

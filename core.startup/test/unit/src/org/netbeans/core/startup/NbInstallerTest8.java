@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -50,7 +50,6 @@ public class NbInstallerTest8 extends SetupHid {
     private File moduleJar;
     protected void setUp() throws Exception {
         super.setUp();
-        System.setProperty("netbeans.suppress.sysprop.warning", "true");
         System.setProperty("org.netbeans.core.modules.NbInstaller.noAutoDeps", "true");
         // leave NO_COMPAT_AUTO_TRANSITIVE_DEPS=false
         moduleJar = new File(jars, "look-for-myself.jar");

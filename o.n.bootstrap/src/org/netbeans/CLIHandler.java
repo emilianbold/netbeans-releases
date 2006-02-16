@@ -7,13 +7,23 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -959,8 +969,8 @@ public abstract class CLIHandler extends Object {
                 final Args arguments = new Args(
                     args, 
                     new IS(is, os), 
-                    new OS(is, os, REPLY_WRITE), 
-                    new OS(is, os, REPLY_ERROR), 
+                    new OS(os, REPLY_WRITE), 
+                    new OS(os, REPLY_ERROR), 
                     currentDir
                 );
 
@@ -1122,7 +1132,7 @@ public abstract class CLIHandler extends Object {
             private DataOutputStream os;
             private int type;
             
-            public OS(DataInputStream is, DataOutputStream os, int type) {
+            public OS(DataOutputStream os, int type) {
                 this.os = os;
                 this.type = type;
             }

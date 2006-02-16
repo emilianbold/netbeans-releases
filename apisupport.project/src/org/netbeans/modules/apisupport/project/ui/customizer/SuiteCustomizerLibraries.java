@@ -81,7 +81,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         refresh();
         
         
-        view.setProperties(new Node.Property[] { EnabledProp.TEMPLATE });
+        view.setProperties(new Node.Property[] { ENABLED_PROP_TEMPLATE });
         view.setRootVisible(false);
         view.setDefaultActionAllowed(false);
         
@@ -505,9 +505,8 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
     }
     
+    private static final EnabledProp ENABLED_PROP_TEMPLATE = new EnabledProp(null);
     private static final class EnabledProp extends PropertySupport.ReadWrite {
-        
-        private static final EnabledProp TEMPLATE = new EnabledProp(null);
         
         private Enabled node;
         private PropertyEditor editor;

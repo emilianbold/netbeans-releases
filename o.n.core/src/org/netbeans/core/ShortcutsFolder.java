@@ -7,13 +7,12 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.Enumeration;
 import javax.swing.Action;
@@ -31,7 +30,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
 /**
@@ -155,14 +153,6 @@ class ShortcutsFolder {
             currentKeymap = ((KeymapAction) a).getSubMap ();
         }
         currentKeymap.addActionForKeyStroke (keyStrokes [k], action);
-    }
-    
-    private static DataFolder getDataFolder (String name) {
-        FileObject root = Repository.getDefault ().
-            getDefaultFileSystem ().getRoot ();
-        root = root.getFileObject (name);
-        if (root == null) return null;
-        return DataFolder.findFolder (root);
     }
     
     private class Listener extends FileChangeAdapter implements Runnable {
