@@ -280,7 +280,6 @@ public abstract class ManifestSection {
     }
     
     /** Module section for a Data Loader.
-     * @see DataLoader
      */
     public static final class LoaderSection extends ManifestSection {
         /** class name(s) of data object to
@@ -340,8 +339,7 @@ public abstract class ManifestSection {
         }
     }
     
-    /** Module section for a Debugger.
-     * @see Debugger
+    /** @deprecated use new debugger API
      */
     public static final class DebuggerSection extends ManifestSection {
         DebuggerSection(String name, Attributes attrs, Module module) throws InvalidException {
@@ -349,8 +347,7 @@ public abstract class ManifestSection {
         }
     }
     
-    /** Module section for a Clipboard convertor.
-     * @see ExClipboard.Convertor
+    /** @deprecated use META-INF/services to register convertors.
      */
     public static final class ClipboardConvertorSection extends ManifestSection {
         ClipboardConvertorSection(String name, Attributes attrs, Module module) throws InvalidException {

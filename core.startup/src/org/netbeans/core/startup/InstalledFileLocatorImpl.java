@@ -71,7 +71,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     private static Map/*<String,Map<File,Set<String>>>*/ fileCache = null;
     
     /**
-     * Called from {@link NonGui#run} early in the startup sequence to indicate
+     * Called from <code>NonGui.run</code> early in the startup sequence to indicate
      * that available files should be cached from now on. Should be matched by a call to
      * {@link #discardCache} since the cache will be invalid if the user
      * e.g. installs a new NBM without restarting.
@@ -82,7 +82,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     }
     
     /**
-     * Called from {@link NonGui#run} after startup is essentially complete.
+     * Called after startup is essentially complete.
      * After this point, the list of files in the installation are not
      * cached, since they might change due to dynamic NBM installation.
      * Anyway the heaviest uses of {@link InstalledFileLocator} are

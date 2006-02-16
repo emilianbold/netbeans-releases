@@ -25,7 +25,7 @@ import org.netbeans.*;
 /**
  * Utility class to provide localized messages explaining problems
  * that modules had during attempted installation.
- * Used by both {@link NbEvents} and {@link org.netbeans.core.ui.ModuleBean}.
+ * Used by both {@link org.netbeans.core.startup.NbEvents} and autoupdate's ModuleBean.
  * @author Jesse Glick
  * @see "#16636"
  */

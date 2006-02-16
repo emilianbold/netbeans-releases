@@ -61,7 +61,7 @@ public class StartLog {
 
     /** Note that something happened, but not an interval.
      * The log will note only the time elapsed since the last interesting event.
-     * @param action some identifying string
+     * @param note some identifying string
      */
     public static void logProgress( String note ) {
         if( willLog() ) impl.progress( note, System.currentTimeMillis() );

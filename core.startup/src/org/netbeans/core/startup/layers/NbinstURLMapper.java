@@ -53,9 +53,6 @@ public class NbinstURLMapper extends URLMapper {
 
     /**
      * Returns null, the translation into URL is doen by default URLMapper
-     * @param fo
-     * @param type
-     * @return
      */
     public URL getURL(FileObject fo, int type) {
         return null;

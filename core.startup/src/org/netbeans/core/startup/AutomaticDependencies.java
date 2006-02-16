@@ -45,7 +45,7 @@ import org.xml.sax.XMLReader;
 /**
  * Parser and interpreter for automatic module dependencies.
  * Public for possible access from AU (see #29577).
- * Usage: see implementation of {@link NbInstaller#refineDependencies}.
+ * Usage: see implementation of {@link ModuleInstaller#refineDependencies}.
  * <p>You may run this class standalone, with just openide.jar and core.jarin the classpath.
  * @author Jesse Glick, with help from NB XML module
  * @see "#30161"

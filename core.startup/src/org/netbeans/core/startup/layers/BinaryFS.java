@@ -152,9 +152,9 @@ public class BinaryFS extends FileSystem {
      * This call should <STRONG>never</STRONG> be used to attempt to identify the file root
      * of the filesystem. On some systems it may happen to look the same but this is a
      * coincidence and may well change in the future. Either check whether
-     * you are working with a {@link LocalFileSystem} or similar implementation and use
-     * {@link LocalFileSystem#getRootDirectory}; or better, try
-     * {@link FileUtil#toFile} which is designed to do this correctly.
+     * you are working with a {@link org.openide.filesystems.LocalFileSystem} or similar implementation and use
+     * {@link org.openide.filesystems.LocalFileSystem#getRootDirectory}; or better, try
+     * {@link org.openide.filesystems.FileUtil#toFile} which is designed to do this correctly.
      *
      * @return user presentable name of the filesystem
      *

@@ -89,14 +89,14 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
     }
     
     /** Implements storage by parsing the layers and calling
-     * {@link #store(FileSystem,ParsingLayerCacheManager.MemFolder}.
+     * store(FileSystem,ParsingLayerCacheManager.MemFolder).
      */
     public final void store(FileSystem fs, List urls) throws IOException {
         store(fs, createRoot(urls));
     }
     
     /** Implements storage by parsing the layers and calling
-     * {@link #store(ParsingLayerCacheManager.MemFolder}.
+     * store(ParsingLayerCacheManager.MemFolder).
      */
     public final FileSystem store(List urls) throws IOException {
         return store(createRoot(urls));
