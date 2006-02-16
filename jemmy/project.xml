@@ -49,9 +49,6 @@
             <includes>
                 <include>**/*Test.java</include>
             </includes>
-            <excludes>
-                <exclude>org/netbeans/jemmy/testing/**</exclude>
-            </excludes>
         </unitTest>
     </build>
     <reports>
