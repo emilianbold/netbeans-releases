@@ -7,11 +7,28 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.nodes;
 
+
+import java.awt.Image;
+import java.awt.datatransfer.Transferable;
+import java.beans.FeatureDescriptor;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyEditor;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.WeakHashMap;
+import javax.swing.Action;
+import javax.swing.JPopupMenu;
+import javax.swing.event.EventListenerList;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -20,28 +37,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
-
-import java.awt.Image;
-import java.awt.datatransfer.Transferable;
-
-import java.beans.FeatureDescriptor;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyEditor;
-
-import java.io.IOException;
-
-import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.WeakHashMap;
-
-import javax.swing.Action;
-import javax.swing.JPopupMenu;
-import javax.swing.event.EventListenerList;
-
 
 /** A <em>node</em> represents one element in a hierarchy of objects (beans).
 * It provides all methods that are needed for communication between
@@ -613,7 +608,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * <p>For example, right-clicking on a parent node in a hierarchical view (such as
     * the normal Explorer) should use <code>getActions</code>. However, if this node
     * is serving as the parent of a (say) a window tab full of icons (e.g., in
-    * {@link org.openide.explorer.view.IconView}), and the users right-clicks on
+    * <code>IconView</code>), and the users right-clicks on
     * the empty space in this pane, then this method should be used to get
     * the appropriate actions for a popup menu.
     * <p>Note that in the Windows UI system, e.g., these action sets are quite different.

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -169,8 +169,8 @@ public abstract class NodeTransfer extends Object {
     * contains a node, then an array of these will be returned.
     * If neither of these things is true, <code>null</code> will be returned.
     * <p>This is a convenience method intended for those who wish to specially support pastes
-    * of multiple nodes at once. (By default, {@link org.openide.explorer.ExplorerActions} will
-    * fallback to presenting each component of a multiple-item transferable separately when checking for paste
+    * of multiple nodes at once. (By default, an explorer will
+    * fall back to presenting each component of a multiple-item transferable separately when checking for paste
     * types on a target node, so if you have only one paste type and it makes no difference whether all of the nodes
     * are pasted together or separately, you can just use {@link #node}.)
     * <p>If you wish to test for cookies, you should do so manually
