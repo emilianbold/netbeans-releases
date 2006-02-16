@@ -259,6 +259,13 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         newDelegate.addComponentsToContainer(cont, contDel, primaryComps, 0);
 
         layoutDelegate = newDelegate;
+
+        // Ensure correct propagation of copied properties (issue 50011, 72351)
+        try {
+            layoutDelegate.acceptContainerLayoutChange(null);
+        } catch (PropertyVetoException pvex) {
+            // should not happen
+        }
     }
 
     public void clearPrimaryContainer() {
