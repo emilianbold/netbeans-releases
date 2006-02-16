@@ -28,7 +28,7 @@ import java.util.*;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.SVNRoot;
+import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
 import org.netbeans.modules.subversion.ui.wizards.ImportWizard;
@@ -151,7 +151,7 @@ public final class ImportAction extends NodeAction {
             client.doImport(file, svnUrl, message, true);  
             
             // ... and now check it out
-            SVNRoot[] root = new SVNRoot[] { new SVNRoot(svnUrl, SVNRevision.HEAD) };                        
+            RepositoryFile[] root = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryUrl, SVNRevision.HEAD) };                        
             // XXX doing it this way we probably will get in troubles with the IDE
             File checkoutFile = new File(file.getAbsolutePath() + ".co");             
             CheckoutAction.checkout(repositoryUrl, root, checkoutFile, false, true);                         
@@ -256,12 +256,12 @@ public final class ImportAction extends NodeAction {
 //        if (destCvsDir.exists() == false || (destCvsDir.isDirectory() && destCvsDir.listFiles().length == 0) ) {
 //            destCvsDir.mkdirs();
 //            if (destCvsDir.isDirectory()) {
-//                // be on safe side copy only Root, Entries, Repository
+//                // be on safe side copy only Root, Entries, RepositoryFile
 //                try {
 //                    File root = new File(src, "Root"); // NOI18N
 //                    copyFile(root, new File(destCvsDir, "Root")); // NOI18N
-//                    File repository = new File(src, "Repository"); // NOI18N
-//                    copyFile(repository, new File(destCvsDir, "Repository")); // NOI18N
+//                    File repository = new File(src, "RepositoryFile"); // NOI18N
+//                    copyFile(repository, new File(destCvsDir, "RepositoryFile")); // NOI18N
 //                    File entries = new File(src, "Entries"); // NOI18N
 //                    copyFile(entries, new File(destCvsDir, "Entries")); // NOI18N
 //

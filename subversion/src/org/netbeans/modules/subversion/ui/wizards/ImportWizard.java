@@ -15,10 +15,12 @@ package org.netbeans.modules.subversion.ui.wizards;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.text.MessageFormat;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.subversion.SVNRoot;
+import org.netbeans.modules.subversion.ui.wizards.browser.CreateFolderAction;
+import org.netbeans.modules.subversion.ui.wizards.message.MessageStep;
 import org.netbeans.modules.subversion.ui.wizards.repository.RepositoryStep;
 import org.netbeans.modules.subversion.ui.wizards.browser.BrowserStep;
 import org.openide.DialogDisplayer;
@@ -35,7 +37,7 @@ public final class ImportWizard implements ChangeListener {
     
     private WizardDescriptor.Panel[] panels;
     private RepositoryStep repositoryStep;
-    private BrowserStep browseStep;    
+//    private BrowserStep browseStep;    
     private MessageStep messageStep;
     
     private String errorMessage;
@@ -69,7 +71,8 @@ public final class ImportWizard implements ChangeListener {
             {
                 // wizard was closed or canceled -> reset all steps & kill all running tasks                
                 repositoryStep.stop();
-                browseStep.reset();                                     
+                // XXX
+            //    browseStep.reset();                                     
             }            
         }
         return finnished;
@@ -100,12 +103,12 @@ public final class ImportWizard implements ChangeListener {
             
             repositoryStep = new RepositoryStep();
             
-            browseStep = new BrowserStep(org.openide.util.NbBundle.getMessage(ImportWizard.class, "LBL_CheckinBrowser"),
-                                        false, true, defaultFolderName, true);                      
+//            browseStep = new BrowserStep(org.openide.util.NbBundle.getMessage(ImportWizard.class, "LBL_CheckinBrowser"),
+//                                        false, true);                      
             
             messageStep = new MessageStep();
 
-            panels = new  WizardDescriptor.Panel[] {repositoryStep, browseStep, messageStep};
+            panels = new  WizardDescriptor.Panel[] {repositoryStep, messageStep};
 
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
@@ -132,26 +135,30 @@ public final class ImportWizard implements ChangeListener {
         }
 
         public void nextPanel() {            
-            if(current() == repositoryStep) {
-                browseStep.setup(repositoryStep.getRepositoryRoot(), repositoryStep.getSvnRoot());
-            }            
+            //
+//            if(current() == repositoryStep) {
+//                workdirStep.setup(repositoryStep.getRepositoryRoot(), repositoryStep.getRepositoryFolder());
+//            }
+                //browseStep.setup(repositoryStep.getRepositoryRoot(), repositoryStep.getSvnRoot(), true, defaultFolderName);
+//            }            
             super.nextPanel();
         }
 
         public void previousPanel() {            
-            if(current() == browseStep) {                
-                browseStep.reset();
-            }            
+//            if(current() == browseStep) {                
+//                browseStep.reset();
+//            }            
             super.previousPanel();
         }
     }
 
     public SVNUrl getSelectedRepositoryRoot() {
-        return repositoryStep.getSvnRoot().getSvnUrl(); 
+        return repositoryStep.getRepositoryRoot().getRepositoryUrl(); 
     }
 
     public SVNUrl getSelectedRepositoryUrl() {
-        return browseStep.getSelectedRoots()[0].getSvnUrl(); // single selection only
+        //return browseStep.getSelectedRoots()[0].getRepositoryUrl(); // single selection only
+        return null;
     }
 
     public String getMessage() {

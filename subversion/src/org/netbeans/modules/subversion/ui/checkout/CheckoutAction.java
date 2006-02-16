@@ -31,7 +31,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.SVNRoot;
+import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.settings.HistorySettings;
@@ -88,7 +88,7 @@ public final class CheckoutAction extends CallableSystemAction {
         if (!wizard.show()) return;
         
         final SVNUrl repository = wizard.getRepositoryRoot();
-        final SVNRoot[] svnRoots = wizard.getSelectedRoots();
+        final RepositoryFile[] repositoryFiles = wizard.getRepositoryFiles();
         final File file = wizard.getWorkdir();        
         
         RequestProcessor processor = new RequestProcessor("CheckoutActionRP", 1, true);
@@ -100,10 +100,10 @@ public final class CheckoutAction extends CallableSystemAction {
                     ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(CheckoutAction.class, "BK0001"), cancellable);       // NOI18N
                 progressHandle.start();                
                 try{            
-                    checkout(repository, svnRoots, file, true, false);
+                    checkout(repository, repositoryFiles, file, true, false);
                 } finally {
                     progressHandle.finish();
-                }         
+                }
             }
         });
     }
@@ -130,7 +130,7 @@ public final class CheckoutAction extends CallableSystemAction {
      * On succesfull finish shows open project dialog.
      *
      */
-    public static void checkout(SVNUrl repository, SVNRoot svnRoots[], File workingDir, boolean scanProject, boolean atWorkingDirLevel) {
+    public static void checkout(SVNUrl repository, RepositoryFile repositoryFiles[], File workingDir, boolean scanProject, boolean atWorkingDirLevel) {
         SvnClient client;
         try {
             client = Subversion.getInstance().getClient(repository);
@@ -139,12 +139,12 @@ public final class CheckoutAction extends CallableSystemAction {
             return;
         }
         
-        for (int i = 0; i < svnRoots.length; i++) {                                                    
+        for (int i = 0; i < repositoryFiles.length; i++) {                                                    
             File destination;
             if(!atWorkingDirLevel) {
                 destination = new File(workingDir.getAbsolutePath() + 
                                        "/" +                                       // NOI18N
-                                       svnRoots[i].getSvnUrl().getLastPathSegment()); // XXX SVN will change the name - svnRoots should also change
+                                       repositoryFiles[i].getName()); // XXX what if the whole repository is seletcted
                 destination = FileUtil.normalizeFile(destination);                    
                 destination.mkdir();                                                                        
             } else {
@@ -152,7 +152,7 @@ public final class CheckoutAction extends CallableSystemAction {
             }
             
             try {
-                client.checkout(svnRoots[i].getSvnUrl(), destination, svnRoots[i].getSVNRevision(), true);                            
+                client.checkout(repositoryFiles[i].getRepositoryUrl(), destination, repositoryFiles[i].getRevision(), true);                            
             } catch (SVNClientException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);                    
                 return; 
@@ -168,7 +168,7 @@ public final class CheckoutAction extends CallableSystemAction {
 
     /** On task finish shows next steps UI.*/    
     private static class CheckoutCompletedController implements Runnable, ActionListener {
-        // XXX dummy implemention ...
+        // XXX dummy implementation ...
         //private final CheckoutExecutor executor;
         private final File workingFolder;
         private final boolean openProject;

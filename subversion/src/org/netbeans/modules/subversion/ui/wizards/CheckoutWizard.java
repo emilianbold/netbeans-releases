@@ -19,7 +19,7 @@ import java.text.MessageFormat;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.subversion.SVNRoot;
+import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.wizards.repository.RepositoryStep;
 import org.netbeans.modules.subversion.ui.wizards.browser.BrowserStep;
@@ -37,7 +37,7 @@ public final class CheckoutWizard implements ChangeListener {
     
     private WizardDescriptor.Panel[] panels;
     private RepositoryStep repositoryStep;
-    private BrowserStep browseStep;
+    //private BrowserStep browseStep;
     private WorkdirStep workdirStep;        
     
     private String errorMessage;
@@ -65,7 +65,9 @@ public final class CheckoutWizard implements ChangeListener {
             {
                 // wizard was closed or canceled -> reset all steps & kill all running tasks
                 repositoryStep.stop();
-                browseStep.reset();                                     
+                
+                // XXX
+                //browseStep.reset();                                     
             }            
         }
         return finnished;
@@ -99,11 +101,10 @@ public final class CheckoutWizard implements ChangeListener {
 
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];
-            repositoryStep = new RepositoryStep();
-            browseStep = new BrowserStep(org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "LBL_CheckoutBrowser"));
+            repositoryStep = new RepositoryStep();            
             workdirStep = new WorkdirStep();            
 
-            panels = new  WizardDescriptor.Panel[] {repositoryStep, browseStep, workdirStep};
+            panels = new  WizardDescriptor.Panel[] {repositoryStep, workdirStep};
 
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
@@ -129,25 +130,28 @@ public final class CheckoutWizard implements ChangeListener {
             return panels;
         }
 
-        public void nextPanel() {            
+        public void nextPanel() {          
+            // XXX
             if(current() == repositoryStep) {
-                browseStep.setup(repositoryStep.getRepositoryRoot(), repositoryStep.getSvnRoot());
+//                browseStep = new BrowserStep(org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "LBL_CheckoutBrowser"));
+                workdirStep.setup(repositoryStep.getRepositoryRoot());
             }            
             super.nextPanel();
         }
 
         public void previousPanel() {            
-            if(current() == browseStep) {                
-                // svnClient.cancelOperation() not implemented, but we still should look
-                // that browse is reseted in some way
-                browseStep.reset();
-            }            
+            // XXX
+//            if(current() == browseStep) {                
+//                // svnClient.cancelOperation() not implemented, but we still should look
+//                // that browse is reseted in some way
+//                browseStep.reset();
+//            }            
             super.previousPanel();
         }
     }
-
-    public SVNRoot[] getSelectedRoots() {
-        return browseStep.getSelectedRoots();
+    
+    public RepositoryFile[] getRepositoryFiles() {
+        return workdirStep.getRepositoryFiles();
     }
     
     public File getWorkdir() {
@@ -155,7 +159,7 @@ public final class CheckoutWizard implements ChangeListener {
     }
 
     public SVNUrl getRepositoryRoot() {
-        return repositoryStep.getSvnRoot().getSvnUrl();
+        return repositoryStep.getRepositoryRoot().getRepositoryUrl();
     }
 }
 
