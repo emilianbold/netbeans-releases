@@ -12,9 +12,13 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="apisupport/apidocs" default="netbeans" basedir=".">
+    <property name="netbeans.javadoc.dir" location="build/javadoc"/>
+    <property name="export.interfaces" location="build/ModulesExportedInterfaces" />
+    <property name="export.apichanges" location="build/APIChanges" />
+
 
     <import file="../../nbbuild/templates/projectized.xml"/>
-
+    
     <target name="netbeans-extra" depends="docs"/>
     
     <target name="docs-check" depends="init">
@@ -24,19 +28,18 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="docs" depends="docs-check" unless="have.docs">
-        <fail message="Must have defined netbeans.javadoc.dir!">
-            <condition>
-                <not>
-                    <isset property="netbeans.javadoc.dir"/>
-                </not>
-            </condition>
-        </fail>
         <!-- Build Javadoc in the usual way: -->
         <property file="../../nbbuild/build.properties"/>
         <ant dir="../../nbbuild" target="build-javadoc" inheritall="false">
             <!-- Stable only: -->
             <property name="config.javadoc.all" value="${config.javadoc.stable}"/>
+            <!-- build into my personal javadoc build area -->
             <property name="building.apisupport/apidocs" value="true"/><!-- avoid recursion -->
+
+            <!-- pass there our local directories to build javadocs in -->
+            <property name="netbeans.javadoc.dir" value="${netbeans.javadoc.dir}"/>
+            <property name="export.interfaces" value="${export.interfaces}"/>
+            <property name="export.apichanges" value="${export.apichanges}"/>
             
             <!-- these modules do not have stable API, so we need to link
               to them on website -->
@@ -46,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- moreover we need to allow references to http://www.netbeans.org/download/dev/javadoc/
               so skip forbidden links check
             -->
-		        <property name="javadoc.check.forbidden.links" value="false" />
+            <property name="javadoc.check.forbidden.links" value="false" />
         </ant>
         <mkdir dir="${docs.dir}"/>
         <zip zipfile="${docs.zip}" compress="true">
@@ -60,17 +63,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="netbeans" unless="building.apisupport/apidocs"><!-- see above -->
         <antcall target="projectized-common.netbeans"/>
-    </target>
-    
-    <target name="clean" depends="projectized-common.clean">
-        <fail message="Must have defined netbeans.javadoc.dir!">
-            <condition>
-                <not>
-                    <isset property="netbeans.javadoc.dir"/>
-                </not>
-            </condition>
-        </fail>
-        <delete dir="${netbeans.javadoc.dir}"/>
     </target>
 
 </project>

@@ -234,33 +234,33 @@ Microsystems, Inc. All Rights Reserved.
   </target>  
       
   <target name="javadoc-generate-xml" depends="init" >
-      <echo file="build/APIChanges/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <echo file="${export.apichanges}/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;changes&gt;
 </echo>
       
-      <echo file="build/APIChanges/footer.gen" >
+      <echo file="${export.apichanges}/footer.gen" >
         &lt;/changes&gt;
       </echo>
       
       <concat destfile="${netbeans.javadoc.dir}/apichanges.xml" >
-          <fileset dir="build/APIChanges" includes="header.gen" />
-          <fileset dir="build/APIChanges" includes="*" excludes="*.gen" />
-          <fileset dir="build/APIChanges" includes="footer.gen" />
+          <fileset dir="${export.apichanges}" includes="header.gen" />
+          <fileset dir="${export.apichanges}" includes="*" excludes="*.gen" />
+          <fileset dir="${export.apichanges}" includes="footer.gen" />
       </concat>
 
       
-      <echo file="build/ModulesExportedInterfaces/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <echo file="${export.interfaces}/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;apis&gt;
 </echo>
       
-      <echo file="build/ModulesExportedInterfaces/footer.gen" >
+      <echo file="${export.interfaces}/footer.gen" >
         &lt;/apis&gt;
       </echo>
       
       <concat destfile="${netbeans.javadoc.dir}/modules.xml" >
-          <fileset dir="build/ModulesExportedInterfaces" includes="header.gen" />
-          <fileset dir="build/ModulesExportedInterfaces" includes="*" excludes="*.gen" />
-          <fileset dir="build/ModulesExportedInterfaces" includes="footer.gen" />
+          <fileset dir="${export.interfaces}" includes="header.gen" />
+          <fileset dir="${export.interfaces}" includes="*" excludes="*.gen" />
+          <fileset dir="${export.interfaces}" includes="footer.gen" />
       </concat>
       
     <taskdef 
