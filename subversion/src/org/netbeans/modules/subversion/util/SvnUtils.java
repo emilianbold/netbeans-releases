@@ -391,6 +391,9 @@ public class SvnUtils {
             //       and localy check if this is a known repository url (settings, or config/srvers file, ...)            
             ISVNInfo info = client.getInfoFromWorkingCopy(file);  
             SVNUrl fileURL = info.getUrl();
+            if (fileURL == null) {  // on Windows for locally new files
+                return null;
+            }
             SVNUrl repositoryURL = info.getRepository();
             if (repositoryURL == null) {                
                 // checked out with 1.2 client
