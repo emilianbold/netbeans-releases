@@ -398,6 +398,9 @@ public final class Main extends Object {
             level.run ();
         }
     }
+    
+    org.netbeans.Main.finishInitialization();
+    StartLog.logProgress("Ran any delayed command-line options"); // NOI18N
 
     // finish starting
     if (splash != null) {

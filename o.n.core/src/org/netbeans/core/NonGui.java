@@ -133,8 +133,6 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         StartLog.logProgress ("Security managers installed"); // NOI18N
         Main.incrementSplashProgressBar();
         
-        org.netbeans.Main.finishInitialization();
-        StartLog.logProgress("Ran any delayed command-line options"); // NOI18N
         
         InstalledFileLocatorImpl.discardCache();
     }
