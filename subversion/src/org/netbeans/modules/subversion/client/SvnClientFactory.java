@@ -47,7 +47,7 @@ public class SvnClientFactory {
         return instance;
     }
     
-    public SvnClient createSvnClient() {        
+    public SvnClient createSvnClient() {
         return createSvnClientImplementation();           
     }
     
@@ -82,7 +82,11 @@ public class SvnClientFactory {
     
     private SvnClientImpl createSvnClientImplementation() {
         ISVNClientAdapter adapter = SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
-        return new SvnClientImpl(adapter);           
+        if (adapter == null) {
+            adapter = new UnsupportedSvnClientAdapter();
+        }
+        // TODO add version check, but there is no API
+        return new SvnClientImpl(adapter);
     }
     
     private static File createTempConfig(ProxyDescriptor pd) {

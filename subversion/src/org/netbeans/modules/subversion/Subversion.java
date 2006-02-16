@@ -17,6 +17,7 @@ import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.subversion.client.UnsupportedSvnClientAdapter;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.tigris.subversion.svnclientadapter.*;
@@ -65,7 +66,9 @@ public class Subversion {
         try {
             CmdLineClientAdapterFactory.setup();
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ex);
+            ErrorManager.getDefault().annotate(ex, UnsupportedSvnClientAdapter.getMessage());
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
         }
 
         fileStatusCache = new FileStatusCache();

@@ -302,9 +302,9 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
      */ 
     private void fileDeletedImpl(File file) {
         if (file == null) return;
-        
-        ISVNClientAdapter client = Subversion.getInstance().getClient();
+
         try {
+            ISVNClientAdapter client = Subversion.getInstance().getClient();
             client.remove(new File [] { file }, true);
         } catch (SVNClientException e) {
             // ignore; we do not know what to do here; does no harm

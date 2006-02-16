@@ -23,7 +23,7 @@ public class CreateCopyAction extends PlaceholderAction {
     
     /** Creates a new instance of CreateCopyAction */
     public CreateCopyAction() {
-        name = "Create Co&py...";
+        name = "Co&py to...";
     }
     
 }
