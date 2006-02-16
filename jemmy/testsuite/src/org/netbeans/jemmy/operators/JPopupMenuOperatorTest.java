@@ -99,24 +99,24 @@ public class JPopupMenuOperatorTest extends TestCase {
      * Test constructor.
      */
     public void testConstructor() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        JPopupMenuOperator operator2 = new JPopupMenuOperator(popupMenu);
-        assertNotNull(operator2);
+        // JPopupMenuOperator operator2 = new JPopupMenuOperator(popupMenu);
+        // assertNotNull(operator2);
         
-        JFrameOperator operator3 = new JFrameOperator();
-        assertNotNull(operator3);
+        // JFrameOperator operator3 = new JFrameOperator();
+        // assertNotNull(operator3);
     }
     
     /**
      * Test findJPopupMenu method.
      */
     public void testFindJPopupMenu() {
-        frame.setVisible(true);
+        // frame.setVisible(true);
     }
     
     
@@ -124,116 +124,116 @@ public class JPopupMenuOperatorTest extends TestCase {
      * Test waitJPopupMenu method.
      */
     public void testWaitJPopupMenu() {
-        frame.setVisible(true);
+        // frame.setVisible(true);
     }
     
     /**
      * Test findJPopupWindow method.
      */
     public void testFindJPopupWindow() {
-        frame.setVisible(true);
+        // frame.setVisible(true);
     }
     
     /**
      * Test waitJPopupWindow method.
      */
     public void testWaitJPopupWindow() {
-        frame.setVisible(true);
+        // frame.setVisible(true);
     }
     
     /**
      * Test callPopup method.
      */
     public void testCallPopup() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
     }
     
     /**
      * Test pushMenu method.
      */
     public void testPushMenu() {
-        frame.setVisible(true);
+        // frame.setVisible(true);
     }
     
     /**
      * Test pushMenuNoBlock method.
      */
     public void testPushMenuNoBlock() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.pushMenuNoBlock("1");
+        // operator.pushMenuNoBlock("1");
     }
     
     /**
      * Test showMenuItems method.
      */
     public void testShowMenuItems() {
-        frame.setVisible(true);
+        // frame.setVisible(true);
     }
     
     /**
      * Test showMenuItem method.
      */
     public void testShowMenuItem() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.showMenuItem("1");
+        // operator.showMenuItem("1");
     }
     
     /**
      * Test getDump method.
      */
     public void testGetDump() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        assertNotNull(operator.getDump());
+        // assertNotNull(operator.getDump());
     }
     
     /**
      * Test add method.
      */
     public void testAdd() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.add(new JMenuItem("4"));
+        // operator.add(new JMenuItem("4"));
     }
     
     /**
      * Test addPopupMenuListener method.
      */
     public void testAddPopupMenuListener() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        PopupMenuListenerTest listener = new PopupMenuListenerTest();
-        operator.addPopupMenuListener(listener);
-        assertEquals(2, popupMenu.getPopupMenuListeners().length);
+        // PopupMenuListenerTest listener = new PopupMenuListenerTest();
+        // operator.addPopupMenuListener(listener);
+        // assertEquals(2, popupMenu.getPopupMenuListeners().length);
         
-        operator.removePopupMenuListener(listener);
-        assertEquals(1, popupMenu.getPopupMenuListeners().length);
+        // operator.removePopupMenuListener(listener);
+        // assertEquals(1, popupMenu.getPopupMenuListeners().length);
     }
     
     /**
@@ -254,40 +254,40 @@ public class JPopupMenuOperatorTest extends TestCase {
      * Test addSeparator method.
      */
     public void testAddSeparator() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.addSeparator();
+        // operator.addSeparator();
     }
     
     /**
      * Test getComponentIndex method.
      */
     public void testGetComponentIndex() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.getComponentIndex(frame);
+        // operator.getComponentIndex(frame);
     }
     
     /**
      * Test getInvoker method.
      */
     public void testGetInvoker() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
 
-        operator.setInvoker(frame);
-        assertNotNull(operator.getInvoker());
+        // operator.setInvoker(frame);
+        // assertNotNull(operator.getInvoker());
 
         /*
         operator.setInvoker(null);
@@ -299,70 +299,70 @@ public class JPopupMenuOperatorTest extends TestCase {
      * Test getLabel method.
      */
     public void testGetLabel() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
 
-        operator.setLabel("12345");
-        assertEquals("12345",  operator.getLabel());
+        // operator.setLabel("12345");
+        // assertEquals("12345",  operator.getLabel());
     }
     
     /**
      * Test getMargin method.
      */
     public void testGetMargin() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        assertNotNull(operator.getMargin());
+        // assertNotNull(operator.getMargin());
     }
     
     /**
      * Test getSelectionModel method.
      */
     public void testGetSelectionModel() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
 
-        SingleSelectionModel model = new DefaultSingleSelectionModel();
-        operator.setSelectionModel(model);
-        assertEquals(model, operator.getSelectionModel());
+        // SingleSelectionModel model = new DefaultSingleSelectionModel();
+        // operator.setSelectionModel(model);
+        // assertEquals(model, operator.getSelectionModel());
     }
     
     /**
      * Test getSubElements method.
      */
     public void testGetSubElements() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.getSubElements();
+        // operator.getSubElements();
     }
     
     /**
      * Test getUI method.
      */
     public void testGetUI() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
 
-        PopupMenuUITest ui = new PopupMenuUITest();
-        operator.setUI(ui);
-        assertEquals(ui, operator.getUI());
+        // PopupMenuUITest ui = new PopupMenuUITest();
+        // operator.setUI(ui);
+        // assertEquals(ui, operator.getUI());
     }
     
     /**
@@ -375,126 +375,126 @@ public class JPopupMenuOperatorTest extends TestCase {
      * Test insert method.
      */
     public void testInsert() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.insert(new JButton("Hello"), 0);
+        // operator.insert(new JButton("Hello"), 0);
     }
     
     /**
      * Test isBorderPainted method.
      */
     public void testIsBorderPainted() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.setBorderPainted(true);
-        assertTrue(operator.isBorderPainted());
+        // operator.setBorderPainted(true);
+        // assertTrue(operator.isBorderPainted());
 
-        operator.setBorderPainted(false);
-        assertTrue(!operator.isBorderPainted());
+        // operator.setBorderPainted(false);
+        // assertTrue(!operator.isBorderPainted());
     }
     
     /**
      * Test isLightWeightPopupEnabled method.
      */
     public void testIsLightWeightPopupEnabled() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
 
-        operator.setLightWeightPopupEnabled(true);
-        assertTrue(operator.isLightWeightPopupEnabled());
+        // operator.setLightWeightPopupEnabled(true);
+        // assertTrue(operator.isLightWeightPopupEnabled());
 
-        operator.setLightWeightPopupEnabled(false);
-        assertTrue(!operator.isLightWeightPopupEnabled());
+        // operator.setLightWeightPopupEnabled(false);
+        // assertTrue(!operator.isLightWeightPopupEnabled());
     }
     
     /**
      * Test menuSelectionChanged method.
      */
     public void testMenuSelectionChanged() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.menuSelectionChanged(true);
+        // operator.menuSelectionChanged(true);
     }
     
     /**
      * Test pack method.
      */
     public void testPack() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.pack();
+        // operator.pack();
     }
     
     /**
      * Test processKeyEvent method.
      */
     public void testProcessKeyEvent() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.processKeyEvent(new KeyEvent(frame, 0, 0, 0, 0), null, null);
+        // operator.processKeyEvent(new KeyEvent(frame, 0, 0, 0, 0), null, null);
     }
     
     /**
      * Test processMouseEvent method.
      */
     public void testProcessMouseEvent() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.processMouseEvent(new MouseEvent(frame, 0, 0, 0, 0, 0, 0, true), null, null);
+        // operator.processMouseEvent(new MouseEvent(frame, 0, 0, 0, 0, 0, 0, true), null, null);
     }
     
     /**
      * Test setPopupSize method.
      */
     public void testSetPopupSize() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.setPopupSize(100, 100);
+        // operator.setPopupSize(100, 100);
         
-        operator.setPopupSize(new Dimension(200, 200));
+        // operator.setPopupSize(new Dimension(200, 200));
     }
     
     /**
      * Test setSelected method.
      */
     public void testSetSelected() {
-        frame.setVisible(true);
-        popupMenu.show(frame, 0, 0);
+        // frame.setVisible(true);
+        // popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
-        assertNotNull(operator);
+        // JPopupMenuOperator operator = new JPopupMenuOperator();
+        // assertNotNull(operator);
         
-        operator.setSelected(frame);
+        // operator.setSelected(frame);
     }
 }
