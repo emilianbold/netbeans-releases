@@ -42,7 +42,8 @@ public class CLICoreBridge extends CLIHandler {
         return CoreBridge.getDefault().cli(
             arguments.getArguments(), 
             arguments.getInputStream(), 
-            arguments.getOutputStream(), 
+            arguments.getOutputStream(),
+            arguments.getErrorStream(),
             arguments.getCurrentDirectory()
         );
     }

@@ -111,6 +111,14 @@ public abstract class CoreBridge {
     protected abstract void incrementSplashProgressBar ();/* {
         Main.incrementSplashProgressBar ();
     }*/
+    
+    /** Abstracts away from definition of property editors. 
+     * @since 1.7 */
+    public abstract void registerPropertyEditors();
+    /** Abstracts away from loading of IDESettings.
+     * @since 1.7 
+     */
+    protected abstract void loadSettings();
 
     public abstract Lookup lookupCacheLoad ();
     public abstract void lookupCacheStore (Lookup l) throws java.io.IOException;
@@ -123,5 +131,11 @@ public abstract class CoreBridge {
 
     public abstract void cliUsage(PrintWriter printWriter);
 
-    public abstract int cli(String[] string, InputStream inputStream, OutputStream outputStream, File file);
+    public abstract int cli(
+        String[] string, 
+        InputStream inputStream, 
+        OutputStream outputStream, 
+        OutputStream errorStream, 
+        File file
+    );
 }

@@ -12,6 +12,7 @@
  */
 package org.netbeans.core;
 
+import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -103,7 +104,13 @@ implements Runnable {
         // nothing for now
     }
 
-    public int cli(String[] string, InputStream inputStream, OutputStream outputStream, File file) {
+    public int cli(
+        String[] string, 
+        InputStream inputStream, 
+        OutputStream outputStream, 
+        OutputStream errorStream, 
+        File file
+    ) {
         /*
         try {
             org.netbeans.api.sendopts.CommandLine.getDefault().parse(
@@ -145,5 +152,46 @@ implements Runnable {
         f.toFront ();
         
     }
-    
+
+    public void registerPropertyEditors() {
+        doRegisterPropertyEditors();
+    }
+
+    /**Flag to avoid multiple adds of the same path to the
+     * of PropertyEditorManager if multiple tests call 
+     * registerPropertyEditors() */
+    private static boolean editorsRegistered=false;
+    /** Register NB specific property editors.
+     *  Allows property editor unit tests to work correctly without 
+     *  initializing full NetBeans environment.
+     *  @since 1.98 */
+    private static final void doRegisterPropertyEditors() {
+        //issue 31879
+        if (editorsRegistered) return;
+        String[] syspesp = PropertyEditorManager.getEditorSearchPath();
+        String[] nbpesp = new String[] {
+            "org.netbeans.beaninfo.editors", // NOI18N
+            "org.openide.explorer.propertysheet.editors", // NOI18N
+        };
+        String[] allpesp = new String[syspesp.length + nbpesp.length];
+        System.arraycopy(nbpesp, 0, allpesp, 0, nbpesp.length);
+        System.arraycopy(syspesp, 0, allpesp, nbpesp.length, syspesp.length);
+        PropertyEditorManager.setEditorSearchPath(allpesp);
+        PropertyEditorManager.registerEditor (java.lang.Character.TYPE, org.netbeans.beaninfo.editors.CharEditor.class);
+        PropertyEditorManager.registerEditor(String[].class, org.netbeans.beaninfo.editors.StringArrayEditor.class); 
+        // bugfix #28676, register editor for a property which type is array of data objects
+        PropertyEditorManager.registerEditor(org.openide.loaders.DataObject[].class, org.netbeans.beaninfo.editors.DataObjectArrayEditor.class);
+        // use replacement hintable/internationalizable primitive editors - issues 20376, 5278
+        PropertyEditorManager.registerEditor (Integer.TYPE, org.netbeans.beaninfo.editors.IntEditor.class);
+        PropertyEditorManager.registerEditor (Boolean.TYPE, org.netbeans.beaninfo.editors.BoolEditor.class);
+        editorsRegistered = true;
+    }
+
+    protected void loadSettings() {
+        // -----------------------------------------------------------------------------------------------------
+        // this indirectly sets system properties for proxy servers with values
+        // taken from IDESettings
+        IDESettings.findObject(IDESettings.class, true);
+    }
+
 }
