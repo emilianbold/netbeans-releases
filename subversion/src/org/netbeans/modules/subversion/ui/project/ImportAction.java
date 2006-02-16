@@ -151,10 +151,10 @@ public final class ImportAction extends NodeAction {
             client.doImport(file, svnUrl, message, true);  
             
             // ... and now check it out
-            RepositoryFile[] root = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryUrl, SVNRevision.HEAD) };                        
+            RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryUrl, SVNRevision.HEAD) };                        
             // XXX doing it this way we probably will get in troubles with the IDE
             File checkoutFile = new File(file.getAbsolutePath() + ".co");             
-            CheckoutAction.checkout(repositoryUrl, root, checkoutFile, false, true);                         
+            CheckoutAction.checkout(repositoryUrl, repositoryFile, checkoutFile, false, true);                         
             File tmpFile = new File(file.getAbsolutePath() + ".tmp");             
             file.renameTo(tmpFile);
             checkoutFile.renameTo(file);                          
