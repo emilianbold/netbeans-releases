@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,11 +19,12 @@ import org.openide.WizardDescriptor;
  * Model for storing data gained from <em>NetBeans Plug-in Module</em> wizard
  * panels.
  *
- * @author mkrauskopf
+ * @author Martin Krauskopf
  */
 final class NewModuleProjectData {
     
-    private static final String DATA_PROPERTY_NAME = "moduleProjectData"; // NOI18N
+    private WizardDescriptor settings;
+    private final int wizardType;
     
     private boolean netBeansOrg;
     private boolean standalone = true; // standalone is default
@@ -40,22 +41,19 @@ final class NewModuleProjectData {
     private int moduleCounter;
     private int suiteCounter;
     
-    /**
-     * Tries to find an instance of {@link NewModuleProjectData} in the given
-     * setting and returns it. If none is found, the new one is created, stored
-     * in the setting and then returned.
-     */
-    static NewModuleProjectData getData(final WizardDescriptor setting) {
-        NewModuleProjectData data = (NewModuleProjectData) setting.getProperty(DATA_PROPERTY_NAME);
-        if (data == null) {
-            data = new NewModuleProjectData();
-            setting.putProperty(NewModuleProjectData.DATA_PROPERTY_NAME, data);
-        }
-        return data;
+    /** Creates a new instance of NewModuleProjectData */
+    NewModuleProjectData(int wizardType) {
+        this.wizardType = wizardType;
     }
     
-    /** Creates a new instance of NewModuleProjectData */
-    NewModuleProjectData() {/* empty constructor */}
+    void setSettings(WizardDescriptor settings) {
+        this.settings = settings;
+    }
+    
+    WizardDescriptor getSettings() {
+        assert settings != null;
+        return settings;
+    }
     
     void setStandalone(boolean standalone) {
         this.standalone = standalone;
@@ -171,6 +169,10 @@ final class NewModuleProjectData {
     
     void setSuiteCounter(int counter) {
         this.suiteCounter = counter;
+    }
+    
+    int getWizardType() {
+        return wizardType;
     }
     
 }

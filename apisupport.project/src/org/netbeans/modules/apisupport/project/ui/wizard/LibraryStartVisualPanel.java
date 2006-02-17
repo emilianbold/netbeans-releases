@@ -27,30 +27,27 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.openide.ErrorManager;
-import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 /**
  * First panel of the librarywrapper module wizard.
+ *
  * @author Milos Kleint
  */
-final class LibraryStartVisualPanel extends BasicVisualPanel {
+final class LibraryStartVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
     static final String PROP_LIBRARY_PATH = "LIBRARY_PATH_VALUE"; //NOI18N
     static final String PROP_LICENSE_PATH = "LICENSE_PATH_VALUE"; //NOI18N
     
-    private NewModuleProjectData data;
-    
     private boolean listenersAttached;
-    private DocumentListener libraryDL;
-    private DocumentListener licenseDL;
+    private final DocumentListener libraryDL;
+    private final DocumentListener licenseDL;
     
     /** Creates new form BasicConfVisualPanel */
-    public LibraryStartVisualPanel(WizardDescriptor setting) {
-        super(setting);
+    public LibraryStartVisualPanel(final NewModuleProjectData data) {
+        super(data);
         initComponents();
         initAccessibility();
-        data = NewModuleProjectData.getData(setting);
         libraryDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 checkLibraryAndLicense();
@@ -61,7 +58,6 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                 checkLibraryAndLicense();
             }
         };
-        
     }
     
     private void initAccessibility() {
@@ -89,7 +85,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                     setError(getMessage("MSG_Invalid_Library_Path"));
                     return;
                 }
-                String badOnes = populateProjectData(data, text, false);
+                String badOnes = populateProjectData(getData(), text, false);
                 if (badOnes != null) {
                     setWarning(NbBundle.getMessage(LibraryStartVisualPanel.class, "MSG_ClassInDefaultPackage", badOnes));
                     return;
@@ -130,7 +126,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         String jars = txtLibrary.getText().trim();
         getSettings().putProperty(PROP_LIBRARY_PATH, jars);
         getSettings().putProperty(PROP_LICENSE_PATH, txtLicense.getText().trim());
-        populateProjectData(data, jars, true);
+        populateProjectData(getData(), jars, true);
 //        // change will be fired -> update data
 //        data.setCodeNameBase(getCodeNameBaseValue());
 //        data.setProjectDisplayName(displayNameValue.getText());

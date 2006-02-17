@@ -44,10 +44,10 @@ public abstract class BasicVisualPanel extends JPanel {
         setMessage(message);
         setValid(false);
     }
-
+    
     /**
      * Set an warning message but mark the panel as valid.
-     */    
+     */
     protected final void setWarning(String message) {
         if (message == null) {
             throw new NullPointerException();
@@ -85,23 +85,48 @@ public abstract class BasicVisualPanel extends JPanel {
         firePropertyChange("valid", null, Boolean.valueOf(valid)); // NOI18N
     }
     
-    abstract static class NewTemplatePanel extends BasicVisualPanel {
+    protected abstract static class NewTemplatePanel extends BasicVisualPanel {
         
-        NewTemplatePanel(final WizardDescriptor settings, final int wizardType) {
-            super(settings);
-            String resource = null;
-            if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
-                resource = "emptySuite"; // NOI18N
-            } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE ||
-                    wizardType == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT) {
-                resource = "emptyModule"; // NOI18N
-            } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
-                resource = "libraryModule"; // NOI18N
-            } else {
-                assert false : "Unknown wizard type = " + wizardType; // NOI18N
+        private final NewModuleProjectData data;
+        
+        NewTemplatePanel(final NewModuleProjectData data) {
+            super(data.getSettings());
+            this.data = data;
+            String resource;
+            int wizardType = data.getWizardType();
+            switch (data.getWizardType()) {
+                case NewNbModuleWizardIterator.TYPE_SUITE:
+                    resource = "emptySuite"; // NOI18N
+                    break;
+                case NewNbModuleWizardIterator.TYPE_MODULE:
+                case NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT:
+                    resource = "emptyModule"; // NOI18N
+                    break;
+                case NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE:
+                    resource = "libraryModule"; // NOI18N
+                    break;
+                default:
+                    assert false : "Unknown wizard type = " + wizardType;
+                    resource = "";
             }
-            settings.putProperty("NewProjectWizard_Title", // NOI18N
+            data.getSettings().putProperty("NewProjectWizard_Title", // NOI18N
                     NbBundle.getMessage(BasicVisualPanel.class, "Templates/Project/APISupport/" + resource));
+        }
+        
+        protected NewModuleProjectData getData() {
+            return data;
+        }
+        
+        protected boolean isSuiteWizard() {
+            return getData().getWizardType() == NewNbModuleWizardIterator.TYPE_SUITE;
+        }
+        
+        protected boolean isSuiteComponentWizard() {
+            return getData().getWizardType() == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT;
+        }
+
+        protected boolean isLibraryWizard() {
+            return getData().getWizardType() == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE;
         }
         
     }

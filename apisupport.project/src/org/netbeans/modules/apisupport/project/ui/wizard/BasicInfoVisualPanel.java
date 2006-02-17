@@ -37,7 +37,6 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -58,9 +57,6 @@ import org.openide.util.NbBundle;
  */
 public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
-    private final NewModuleProjectData data;
-    private final int wizardType;
-    
     private ButtonModel lastSelectedType;
     private static String lastSelectedSuite;
     private boolean locationUpdated;
@@ -69,34 +65,37 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     private boolean mainProjectTouched;
     
     /** Creates new form BasicInfoVisualPanel */
-    public BasicInfoVisualPanel(final WizardDescriptor setting, final int wizType) {
-        super(setting, wizType);
-        wizardType = wizType;
+    public BasicInfoVisualPanel(final NewModuleProjectData data) {
+        super(data);
         initComponents();
         initAccessibility();
         initPlatformCombos();
-        data = NewModuleProjectData.getData(setting);
         setComponentsVisibility();
-        if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
-            detachModuleTypeGroup();
-        } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE ||
-                wizardType == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT) {
-            if (moduleSuiteValue.getItemCount() > 0) {
-                restoreSelectedSuite();
+        switch (data.getWizardType()) {
+            case NewNbModuleWizardIterator.TYPE_SUITE:
+                detachModuleTypeGroup();
+                break;
+            case NewNbModuleWizardIterator.TYPE_MODULE:
+            case NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT:
+                if (moduleSuiteValue.getItemCount() > 0) {
+                    restoreSelectedSuite();
+                    suiteComponent.setSelected(true);
+                    mainProject.setSelected(false);
+                }
+                break;
+            case NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE:
+                moduleSuite.setText(getMessage("LBL_Add_to_Suite")); // NOI18N
                 suiteComponent.setSelected(true);
-                mainProject.setSelected(false);
-            }
-        } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
-            moduleSuite.setText(getMessage("LBL_Add_to_Suite")); // NOI18N
-            suiteComponent.setSelected(true);
-            if (moduleSuiteValue.getItemCount() > 0) {
-                restoreSelectedSuite();
-            }
-        } else {
-            assert false : "Unknown wizard type = " + wizardType; // NOI18N
+                if (moduleSuiteValue.getItemCount() > 0) {
+                    restoreSelectedSuite();
+                }
+                break;
+            default:
+                assert false : "Unknown wizard type = " + data.getWizardType();
         }
         attachDocumentListeners();
         setInitialLocation();
+        setInitialProjectName();
         updateEnabled();
     }
     
@@ -133,9 +132,9 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     }
     
     private void setComponentsVisibility() {
-        boolean isSuiteWizard = wizardType == NewNbModuleWizardIterator.TYPE_SUITE;
-        boolean isSuiteComponentWizard = wizardType == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT;
-        boolean isLibraryWizard = wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE;
+        boolean isSuiteWizard = isSuiteWizard();
+        boolean isSuiteComponentWizard = isSuiteComponentWizard();
+        boolean isLibraryWizard = isLibraryWizard();
         
         typeChooserPanel.setVisible(!isSuiteWizard);
         suitePlatform.setVisible(isSuiteWizard);
@@ -217,14 +216,14 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             setError(getMessage("MSG_NameCannotBeEmpty"));
         } else if ("".equals(getLocationValue())) {
             setError(getMessage("MSG_LocationCannotBeEmpty"));
-        } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE && isNetBeansOrgFolder()) {
+        } else if (isLibraryWizard() && isNetBeansOrgFolder()) {
             setError(getMessage("MSG_LibraryWrapperForNBOrgUnsupported"));
         } else if (isSuiteComponent() && moduleSuiteValue.getSelectedItem() == null) {
             setError(getMessage("MSG_ChooseRegularSuite"));
         } else if (isStandAlone() &&
                 (platformValue.getSelectedItem() == null || !((NbPlatform) platformValue.getSelectedItem()).isValid())) {
             setError(getMessage("MSG_ChosenPlatformIsInvalid"));
-        } else if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE &&
+        } else if (isSuiteWizard() &&
                 (suitePlatformValue.getSelectedItem() == null || !((NbPlatform) suitePlatformValue.getSelectedItem()).isValid())) {
             setError(getMessage("MSG_ChosenPlatformIsInvalid"));
         } else if (getFolder().exists()) {
@@ -245,7 +244,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             folderValue.setText(destFolder.getPath());
         }
         
-        if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE || isNetBeansOrgFolder()) {
+        if (isSuiteWizard() || isNetBeansOrgFolder()) {
             detachModuleTypeGroup();
         } else {
             attachModuleTypeGroup();
@@ -291,24 +290,23 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
     /** Stores collected data into model. */
     void storeData() {
-        data.setProjectName(getNameValue());
-        data.setProjectLocation(getLocationValue());
-        data.setProjectFolder(folderValue.getText());
-        data.setMainProject(mainProject.isSelected());
-        data.setNetBeansOrg(isNetBeansOrgFolder());
-        data.setStandalone(isStandAlone());
-        data.setSuiteRoot((String) moduleSuiteValue.getSelectedItem());
-        if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE && suitePlatformValue.getSelectedItem() != null) {
-            data.setPlatformID(((NbPlatform) suitePlatformValue.getSelectedItem()).getID());
+        getData().setProjectName(getNameValue());
+        getData().setProjectLocation(getLocationValue());
+        getData().setProjectFolder(folderValue.getText());
+        getData().setMainProject(mainProject.isSelected());
+        getData().setNetBeansOrg(isNetBeansOrgFolder());
+        getData().setStandalone(isStandAlone());
+        getData().setSuiteRoot((String) moduleSuiteValue.getSelectedItem());
+        if (isSuiteWizard() && suitePlatformValue.getSelectedItem() != null) {
+            getData().setPlatformID(((NbPlatform) suitePlatformValue.getSelectedItem()).getID());
         } else if (platformValue.getSelectedItem() != null) {
-            data.setPlatformID(((NbPlatform) platformValue.getSelectedItem()).getID());
+            getData().setPlatformID(((NbPlatform) platformValue.getSelectedItem()).getID());
         }
     }
     
-    /** Called when {@link BasicInfoWizardPanel#readSettings} is called. */
     void refreshData() {
-        if (data.getProjectName() != null) {
-            nameValue.setText(data.getProjectName());
+        if (getData().getProjectName() != null) {
+            nameValue.setText(getData().getProjectName());
         } else {
             setInitialProjectName();
         }
@@ -317,21 +315,25 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     private void setInitialProjectName() {
         String bundlekey = null;
         int counter = 0;
-        if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
-            counter = ModuleUISettings.getDefault().getNewSuiteCounter() + 1;
-            bundlekey = "TXT_Suite"; //NOI18N
-            data.setSuiteCounter(counter);
-        } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE ||
-                wizardType == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT) {
-            counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
-            bundlekey = "TXT_Module"; //NOI18N
-            data.setModuleCounter(counter);
-        } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
-            counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
-            bundlekey = "TXT_Library"; //NOI18N
-            data.setModuleCounter(counter);
-        } else {
-            assert false : "Unknown wizard type =" + wizardType; // NOI18N
+        switch (getData().getWizardType()) {
+            case NewNbModuleWizardIterator.TYPE_SUITE:
+                counter = ModuleUISettings.getDefault().getNewSuiteCounter() + 1;
+                bundlekey = "TXT_Suite"; //NOI18N
+                getData().setSuiteCounter(counter);
+                break;
+            case NewNbModuleWizardIterator.TYPE_MODULE:
+            case NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT:
+                counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
+                bundlekey = "TXT_Module"; //NOI18N
+                getData().setModuleCounter(counter);
+                break;
+            case NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE:
+                counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
+                bundlekey = "TXT_Library"; //NOI18N
+                getData().setModuleCounter(counter);
+                break;
+            default:
+                assert false : "Unknown wizard type = " + getData().getWizardType();
         }
         setProjectName(getMessage(bundlekey), counter);
         nameUpdated = false;

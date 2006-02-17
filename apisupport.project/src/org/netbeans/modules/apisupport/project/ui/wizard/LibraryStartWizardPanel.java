@@ -7,13 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
 import java.awt.Component;
-import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 /**
@@ -21,29 +20,29 @@ import org.openide.util.HelpCtx;
  *
  * @author Milos Kleint
  */
-final class LibraryStartWizardPanel extends BasicWizardPanel {
+final class LibraryStartWizardPanel extends BasicWizardPanel.NewTemplatePanel {
     
     /** Representing visual component for this step. */
     private LibraryStartVisualPanel visualPanel;
     
     /** Creates a new instance of BasicInfoWizardPanel */
-    public LibraryStartWizardPanel(WizardDescriptor settings) {
-        super(settings);
+    public LibraryStartWizardPanel(final NewModuleProjectData data) {
+        super(data);
     }
     
-    public void readSettings(Object settings) {
+    public void reloadData() {
         visualPanel.refreshData();
     }
-    public void storeSettings(Object settings) {
+    
+    public void storeData() {
         visualPanel.storeData();
     }
     
     public Component getComponent() {
         if (visualPanel == null) {
-            visualPanel = new LibraryStartVisualPanel(getSettings());
+            visualPanel = new LibraryStartVisualPanel(getData());
             visualPanel.addPropertyChangeListener(this);
             visualPanel.setName(getMessage("LBL_LibraryStartPanel_Title")); // NOI18N
-//            visualPanel.checkForm();
         }
         return visualPanel;
     }
@@ -51,4 +50,5 @@ final class LibraryStartWizardPanel extends BasicWizardPanel {
     public HelpCtx getHelp() {
         return new HelpCtx(LibraryStartWizardPanel.class);
     }
+    
 }

@@ -37,7 +37,7 @@ import org.openide.util.NbBundle;
 /**
  * Wizard to create a new NetBeans Module project.
  *
- * @author mkrauskopf
+ * @author Martin Krauskopf
  */
 public class NewNbModuleWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
@@ -62,10 +62,10 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     /** Tells whether the wizard should be run in a suite dedicate mode. */
     static final String ONE_SUITE_DEDICATED_MODE = "oneSuiteDedicatedMode"; // NOI18N
     
+    private final NewModuleProjectData data;
     private int position;
     private WizardDescriptor.Panel[] panels;
     private WizardDescriptor settings;
-    private int type;
     private FileObject createdProjectFolder;
     
     /** See {@link #PREFERRED_SUITE_DIR}. */
@@ -76,7 +76,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     
     /** Create a new wizard iterator. */
     private NewNbModuleWizardIterator(int type) {
-        this.type = type;
+        data = new NewModuleProjectData(type);
     }
     
     /**
@@ -123,47 +123,50 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     }
     
     public Set instantiate() throws IOException {
-        final NewModuleProjectData data = NewModuleProjectData.getData(settings);
         final File projectFolder = new File(data.getProjectFolder());
         ModuleUISettings.getDefault().setLastUsedModuleLocation(data.getProjectLocation());
         ModuleUISettings.getDefault().setLastUsedPlatformID(data.getPlatformID());
-        if (type == TYPE_MODULE || type == TYPE_SUITE_COMPONENT) {
-            ModuleUISettings.getDefault().setNewModuleCounter(data.getModuleCounter());
-            if (data.isNetBeansOrg()) {
-                // create module within the netbeans.org CVS tree
-                NbModuleProjectGenerator.createNetBeansOrgModule(projectFolder,
-                        data.getCodeNameBase(), data.getProjectDisplayName(),
-                        data.getBundle(), data.getLayer());
-            } else if (data.isStandalone()) {
-                // create standalone module
-                NbModuleProjectGenerator.createStandAloneModule(projectFolder,
-                        data.getCodeNameBase(), data.getProjectDisplayName(),
-                        data.getBundle(), data.getLayer(), data.getPlatformID());
-            } else {
+        switch (data.getWizardType()) {
+            case NewNbModuleWizardIterator.TYPE_SUITE:
+                ModuleUISettings.getDefault().setNewSuiteCounter(data.getSuiteCounter());
+                SuiteProjectGenerator.createSuiteProject(projectFolder, data.getPlatformID());
+                break;
+            case NewNbModuleWizardIterator.TYPE_MODULE:
+            case NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT:
+                ModuleUISettings.getDefault().setNewModuleCounter(data.getModuleCounter());
+                if (data.isNetBeansOrg()) {
+                    // create module within the netbeans.org CVS tree
+                    NbModuleProjectGenerator.createNetBeansOrgModule(projectFolder,
+                            data.getCodeNameBase(), data.getProjectDisplayName(),
+                            data.getBundle(), data.getLayer());
+                } else if (data.isStandalone()) {
+                    // create standalone module
+                    NbModuleProjectGenerator.createStandAloneModule(projectFolder,
+                            data.getCodeNameBase(), data.getProjectDisplayName(),
+                            data.getBundle(), data.getLayer(), data.getPlatformID());
+                } else {
+                    // create suite-component module
+                    NbModuleProjectGenerator.createSuiteComponentModule(projectFolder,
+                            data.getCodeNameBase(), data.getProjectDisplayName(),
+                            data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()));
+                }
+                break;
+            case NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE:
                 // create suite-component module
-                NbModuleProjectGenerator.createSuiteComponentModule(projectFolder,
+                File[] jars = LibraryStartVisualPanel.convertStringToFiles((String) settings.getProperty(LibraryStartVisualPanel.PROP_LIBRARY_PATH));
+                
+                File license = null;
+                String licPath = (String) settings.getProperty(LibraryStartVisualPanel.PROP_LICENSE_PATH);
+                if (licPath != null && licPath.length() > 0) {
+                    license = new File(licPath);
+                }
+                NbModuleProjectGenerator.createSuiteLibraryModule(projectFolder,
                         data.getCodeNameBase(), data.getProjectDisplayName(),
-                        data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()));
-            }
-        } else if (type == TYPE_LIBRARY_MODULE) {
-            // create suite-component module
-            File[] jars = LibraryStartVisualPanel.convertStringToFiles((String) settings.getProperty(LibraryStartVisualPanel.PROP_LIBRARY_PATH));
-            
-            File license = null;
-            String licPath = (String) settings.getProperty(LibraryStartVisualPanel.PROP_LICENSE_PATH);
-            if (licPath != null && licPath.length() > 0) {
-                license = new File(licPath);
-            }
-            NbModuleProjectGenerator.createSuiteLibraryModule(projectFolder,
-                    data.getCodeNameBase(), data.getProjectDisplayName(),
-                    data.getBundle(), new File(data.getSuiteRoot()),
-                    license, jars);
-            
-        } else if (this.type == TYPE_SUITE) {
-            ModuleUISettings.getDefault().setNewSuiteCounter(data.getSuiteCounter());
-            SuiteProjectGenerator.createSuiteProject(projectFolder, data.getPlatformID());
-        } else {
-            throw new IllegalStateException("Uknown wizard type: " + this.type); // NOI18N
+                        data.getBundle(), new File(data.getSuiteRoot()),
+                        license, jars);
+                break;
+            default:
+                throw new IllegalStateException("Uknown wizard type: " + data.getWizardType()); // NOI18N
         }
         
         this.createdProjectFolder = FileUtil.toFileObject(FileUtil.normalizeFile(projectFolder));
@@ -180,6 +183,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     }
     
     public void initialize(WizardDescriptor wiz) {
+        data.setSettings(wiz);
         this.settings = wiz;
         if (preferredSuiteDir == null) {
             Project mainPrj = OpenProjects.getDefault().getMainProject();
@@ -194,12 +198,12 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         
         position = 0;
         String[] steps = null;
-        switch (type) {
+        switch (data.getWizardType()) {
             case TYPE_MODULE:
-                steps = initModuleWizard(TYPE_MODULE);
+                steps = initModuleWizard();
                 break;
             case TYPE_SUITE_COMPONENT:
-                steps = initModuleWizard(TYPE_SUITE_COMPONENT);
+                steps = initModuleWizard();
                 break;
             case TYPE_SUITE:
                 steps = initSuiteModuleWizard();
@@ -208,7 +212,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
                 steps = initLibraryModuleWizard();
                 break;
             default:
-                assert false : "Should never get here. type: "  + type; // NOI18N
+                assert false : "Should never get here. type: "  + data.getWizardType();
         }
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
@@ -235,10 +239,10 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         panels = null;
     }
     
-    private String[] initModuleWizard(final int wizardType) {
+    private String[] initModuleWizard() {
         panels = new WizardDescriptor.Panel[] {
-            new BasicInfoWizardPanel(settings, wizardType),
-            new BasicConfWizardPanel(settings)
+            new BasicInfoWizardPanel(data),
+            new BasicConfWizardPanel(data)
         };
         String[] steps = new String[] {
             getMessage("LBL_BasicInfoPanel_Title"), // NOI18N
@@ -249,7 +253,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     
     private String[] initSuiteModuleWizard() {
         panels = new WizardDescriptor.Panel[] {
-            new BasicInfoWizardPanel(settings, TYPE_SUITE),
+            new BasicInfoWizardPanel(data),
         };
         String[] steps = new String[] {
             getMessage("LBL_BasicInfoPanel_Title"), // NOI18N
@@ -259,9 +263,9 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     
     private String[] initLibraryModuleWizard() {
         panels = new WizardDescriptor.Panel[] {
-            new LibraryStartWizardPanel(settings),
-            new BasicInfoWizardPanel(settings, TYPE_LIBRARY_MODULE),
-            new LibraryConfWizardPanel(settings)
+            new LibraryStartWizardPanel(data),
+            new BasicInfoWizardPanel(data),
+            new LibraryConfWizardPanel(data)
         };
         String[] steps = new String[] {
             getMessage("LBL_LibraryStartPanel_Title"), //NOi18N

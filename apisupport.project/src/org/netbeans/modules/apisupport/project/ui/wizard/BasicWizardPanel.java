@@ -25,7 +25,7 @@ import org.openide.util.NbBundle;
 /**
  * Basic wizard panel for APISupport projects.
  *
- * @author mkrauskopf
+ * @author Martin Krauskopf
  */
 public abstract class BasicWizardPanel implements WizardDescriptor.Panel, PropertyChangeListener {
     
@@ -97,19 +97,49 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
         }
     }
     
-    protected static final String getWizardTypeString(int wizardType) {
-        String helpId = null;
-        if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
-            helpId = "suite"; // NOI18N
-        } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE ||
-                wizardType == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT) {
-            helpId = "module"; // NOI18N
-        } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
-            helpId = "library"; // NOI18N
-        } else {
-            assert false : "Unknown wizard type =" + wizardType; // NOI18N
+    abstract static class NewTemplatePanel extends BasicWizardPanel {
+        
+        private final NewModuleProjectData data;
+        
+        NewTemplatePanel(final NewModuleProjectData data) {
+            super(data.getSettings());
+            this.data = data;
         }
-        return helpId;
+        
+        abstract void reloadData();
+        abstract void storeData();
+        
+        public NewModuleProjectData getData() {
+            return data;
+        }
+        
+        public void readSettings(Object settings) {
+            reloadData();
+        }
+        
+        public void storeSettings(Object settings) {
+            storeData();
+        }
+        
+        protected String getWizardTypeString() {
+            String helpId = null;
+            switch (data.getWizardType()) {
+                case NewNbModuleWizardIterator.TYPE_SUITE:
+                    helpId = "suite"; // NOI18N
+                    break;
+                case NewNbModuleWizardIterator.TYPE_MODULE:
+                case NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT:
+                    helpId = "module"; // NOI18N
+                    break;
+                case NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE:
+                    helpId = "library"; // NOI18N
+                    break;
+                default:
+                    assert false : "Unknown wizard type = " + data.getWizardType();
+            }
+            return helpId;
+        }
+        
     }
     
 }

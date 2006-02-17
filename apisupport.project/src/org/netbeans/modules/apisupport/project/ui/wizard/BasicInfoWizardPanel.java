@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -34,30 +34,27 @@ import org.openide.util.HelpCtx;
  *
  * @author Martin Krauskopf
  */
-final class BasicInfoWizardPanel extends BasicWizardPanel implements WizardDescriptor.ValidatingPanel {
+final class BasicInfoWizardPanel extends BasicWizardPanel.NewTemplatePanel implements WizardDescriptor.ValidatingPanel {
     
     /** Representing visual component for this step. */
     private BasicInfoVisualPanel visualPanel;
     
-    private int wizardType;
-    
     /** Creates a new instance of BasicInfoWizardPanel */
-    public BasicInfoWizardPanel(final WizardDescriptor settings, final int wizType) {
-        super(settings);
-        wizardType = wizType;
+    public BasicInfoWizardPanel(final NewModuleProjectData data) {
+        super(data);
     }
     
-    public void readSettings(Object settings) {
+    public void reloadData() {
         visualPanel.refreshData();
     }
     
-    public void storeSettings(Object settings) {
+    public void storeData() {
         visualPanel.storeData();
     }
     
     public Component getComponent() {
         if (visualPanel == null) {
-            visualPanel = new BasicInfoVisualPanel(getSettings(), wizardType);
+            visualPanel = new BasicInfoVisualPanel(getData());
             visualPanel.addPropertyChangeListener(this);
             visualPanel.setName(getMessage("LBL_BasicInfoPanel_Title"));
             visualPanel.updateAndCheck();
@@ -66,13 +63,13 @@ final class BasicInfoWizardPanel extends BasicWizardPanel implements WizardDescr
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(BasicInfoWizardPanel.class.getName() + "_" + getWizardTypeString(wizardType)); // NOI18N
+        return new HelpCtx(BasicInfoWizardPanel.class.getName() + "_" + getWizardTypeString());
     }
     
     public void validate() throws WizardValidationException {
         // XXX this is little strange. Since this method is called first time the panel appears.
         // So we have to do this null check (data are uninitialized)
-        String prjFolder = NewModuleProjectData.getData(getSettings()).getProjectFolder();
+        String prjFolder = getData().getProjectFolder();
         if (prjFolder != null) {
             File prjFolderF = new File(prjFolder);
             if (prjFolderF.mkdir()) {

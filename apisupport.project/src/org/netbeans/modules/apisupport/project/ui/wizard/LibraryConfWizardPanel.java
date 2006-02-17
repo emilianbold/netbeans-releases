@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,12 +15,10 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.awt.Component;
 import org.netbeans.modules.apisupport.project.Util;
-import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 /**
- * Second panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
- * basic configuration:
+ * Third panel of Library Wrapper wizard.
  *
  * <ul>
  *  <li>Code Name Base</li>
@@ -31,36 +29,34 @@ import org.openide.util.HelpCtx;
  *
  * @author Martin Krauskopf
  */
-final class LibraryConfWizardPanel extends BasicWizardPanel {
+final class LibraryConfWizardPanel extends BasicWizardPanel.NewTemplatePanel {
     
     /** Representing visual component for this step. */
     private BasicConfVisualPanel visualPanel;
     
-    /** Creates a new instance of BasicConfWizardPanel */
-    public LibraryConfWizardPanel(WizardDescriptor settings) {
-        super(settings);
+    LibraryConfWizardPanel(final NewModuleProjectData data) {
+        super(data);
     }
     
-    public void readSettings(Object settings) {
-        WizardDescriptor wizSettings = (WizardDescriptor)settings;
-        NewModuleProjectData data = NewModuleProjectData.getData(wizSettings);
-        if (data.getCodeNameBase() == null) {
-            String dotName = BasicConfVisualPanel.EXAMPLE_BASE_NAME + data.getProjectName();
-            data.setCodeNameBase(Util.normalizeCNB(dotName));
+    void reloadData() {
+        if (getData().getCodeNameBase() == null) {
+            String dotName = BasicConfVisualPanel.EXAMPLE_BASE_NAME + getData().getProjectName();
+            getData().setCodeNameBase(Util.normalizeCNB(dotName));
         }
-        if (data.getProjectDisplayName() == null) {
-            data.setProjectDisplayName(data.getProjectName());
+        if (getData().getProjectDisplayName() == null) {
+            getData().setProjectDisplayName(getData().getProjectName());
         }
         visualPanel.refreshData();
     }
     
-    public void storeSettings(Object settings) {
+    void storeData() {
         visualPanel.storeData();
     }
     
+    
     public Component getComponent() {
         if (visualPanel == null) {
-            visualPanel = new BasicConfVisualPanel(getSettings(), true);
+            visualPanel = new BasicConfVisualPanel(getData());
             visualPanel.addPropertyChangeListener(this);
             visualPanel.setName(getMessage("LBL_BasicConfigPanel_Title")); // NOI18N
         }
@@ -70,5 +66,7 @@ final class LibraryConfWizardPanel extends BasicWizardPanel {
     public HelpCtx getHelp() {
         return new HelpCtx(LibraryConfWizardPanel.class);
     }
+    
+    
     
 }

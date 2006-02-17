@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.awt.Component;
 import org.netbeans.modules.apisupport.project.Util;
-import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 /**
@@ -31,19 +30,18 @@ import org.openide.util.HelpCtx;
  *
  * @author Martin Krauskopf
  */
-final class BasicConfWizardPanel extends BasicWizardPanel {
+final class BasicConfWizardPanel extends BasicWizardPanel.NewTemplatePanel {
     
     /** Representing visual component for this step. */
     private BasicConfVisualPanel visualPanel;
     
     /** Creates a new instance of BasicConfWizardPanel */
-    public BasicConfWizardPanel(WizardDescriptor settings) {
-        super(settings);
+    public BasicConfWizardPanel(final NewModuleProjectData data) {
+        super(data);
     }
     
-    public void readSettings(Object settings) {
-        WizardDescriptor wizSettings = (WizardDescriptor)settings;
-        NewModuleProjectData data = NewModuleProjectData.getData(wizSettings);
+    public void reloadData() {
+        NewModuleProjectData data = getData();
         if (data.getCodeNameBase() == null) {
             String dotName = BasicConfVisualPanel.EXAMPLE_BASE_NAME + data.getProjectName();
             data.setCodeNameBase(Util.normalizeCNB(dotName));
@@ -54,15 +52,15 @@ final class BasicConfWizardPanel extends BasicWizardPanel {
         visualPanel.refreshData();
     }
     
-    public void storeSettings(Object settings) {
+    public void storeData() {
         visualPanel.storeData();
     }
     
     public Component getComponent() {
         if (visualPanel == null) {
-            visualPanel = new BasicConfVisualPanel(getSettings());
+            visualPanel = new BasicConfVisualPanel(getData());
             visualPanel.addPropertyChangeListener(this);
-            visualPanel.setName(getMessage("LBL_BasicConfigPanel_Title")); // NOI18N
+            visualPanel.setName(getMessage("LBL_BasicConfigPanel_Title"));
         }
         return visualPanel;
     }

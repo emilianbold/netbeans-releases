@@ -25,7 +25,6 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.openide.ErrorManager;
-import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -44,47 +43,38 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-final class BasicConfVisualPanel extends BasicVisualPanel {
+final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
     static final String EXAMPLE_BASE_NAME = "org.yourorghere."; // NOI18N
     
-    private NewModuleProjectData data;
     private boolean wasLayerUpdated;
     private boolean wasBundleUpdated;
     
     private boolean listenersAttached;
-    private DocumentListener cnbDL;
-    private DocumentListener layerDL;
-    private DocumentListener bundleDL;
-    private boolean libraryModule;
+    private final DocumentListener cnbDL;
+    private final DocumentListener layerDL;
+    private final DocumentListener bundleDL;
     
-    /** Creates new form BasicConfVisualPanel */
-    public BasicConfVisualPanel(WizardDescriptor setting) {
-        this(setting, false);
-    }
-    
-    public BasicConfVisualPanel(WizardDescriptor setting, boolean isLibraryModule) {
-        super(setting);
-        libraryModule = isLibraryModule;
+    public BasicConfVisualPanel(final NewModuleProjectData data) {
+        super(data);
         initComponents();
         initAccessibility();
-        data = NewModuleProjectData.getData(setting);
         cnbDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { checkCodeNameBase(); }
         };
-        if (!libraryModule) {
-            layerDL = new UIUtil.DocumentAdapter() {
-                public void insertUpdate(DocumentEvent e) { wasLayerUpdated = true; checkLayer(); }
-            };
-        } else {
+        if (isLibraryWizard()) {
             // for library modules, don't generate any layer.
             layer.setVisible(false);
             layerValue.setVisible(false);
+            layerDL = null;
+        } else {
+            layerDL = new UIUtil.DocumentAdapter() {
+                public void insertUpdate(DocumentEvent e) { wasLayerUpdated = true; checkLayer(); }
+            };
         }
         bundleDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { wasBundleUpdated = true; checkBundle(); }
         };
-        
     }
     
     private void initAccessibility() {
@@ -98,8 +88,8 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     private void checkCodeNameBase() {
         if (!Util.isValidJavaFQN(getCodeNameBaseValue())) {
             setError(getMessage("MSG_InvalidCNB"));
-        } else if (data.isSuiteComponent() && cnbIsAlreadyInSuite(data.getSuiteRoot(), getCodeNameBaseValue())) {
-            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "MSG_ComponentWithSuchCNBAlreadyInSuite", 
+        } else if (getData().isSuiteComponent() && cnbIsAlreadyInSuite(getData().getSuiteRoot(), getCodeNameBaseValue())) {
+            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "MSG_ComponentWithSuchCNBAlreadyInSuite",
                     getCodeNameBaseValue()));
         } else {
             markValid();
@@ -110,7 +100,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
                 bundleValue.setText(slashName + "/Bundle.properties"); // NOI18N
                 wasBundleUpdated = false;
             }
-            if (!wasLayerUpdated && !libraryModule) {
+            if (!wasLayerUpdated && !isLibraryWizard()) {
                 layerValue.setText(slashName + "/layer.xml"); // NOI18N
                 wasLayerUpdated = false;
             }
@@ -143,12 +133,12 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     }
     
     void refreshData() {
-        String cnb = data.getCodeNameBase();
+        String cnb = getData().getCodeNameBase();
         codeNameBaseValue.setText(cnb);
         if (cnb.startsWith(EXAMPLE_BASE_NAME)) {
             codeNameBaseValue.select(0, EXAMPLE_BASE_NAME.length() - 1);
         }
-        String dn = data.getProjectDisplayName();
+        String dn = getData().getProjectDisplayName();
         displayNameValue.setText(dn);
         checkCodeNameBase();
     }
@@ -156,11 +146,11 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     /** Stores collected data into model. */
     void storeData() {
         // change will be fired -> update data
-        data.setCodeNameBase(getCodeNameBaseValue());
-        data.setProjectDisplayName(displayNameValue.getText());
-        data.setBundle(getBundleValue());
-        if (!libraryModule) {
-            data.setLayer(getLayerValue());
+        getData().setCodeNameBase(getCodeNameBaseValue());
+        getData().setProjectDisplayName(displayNameValue.getText());
+        getData().setBundle(getBundleValue());
+        if (!isLibraryWizard()) {
+            getData().setLayer(getLayerValue());
         }
     }
     
@@ -209,7 +199,9 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         if (!listenersAttached) {
             codeNameBaseValue.getDocument().addDocumentListener(cnbDL);
             bundleValue.getDocument().addDocumentListener(bundleDL);
-            layerValue.getDocument().addDocumentListener(layerDL);
+            if (!isLibraryWizard()) {
+                layerValue.getDocument().addDocumentListener(layerDL);
+            }
             listenersAttached = true;
         }
     }
@@ -218,7 +210,9 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         if (listenersAttached) {
             codeNameBaseValue.getDocument().removeDocumentListener(cnbDL);
             bundleValue.getDocument().removeDocumentListener(bundleDL);
-            layerValue.getDocument().removeDocumentListener(layerDL);
+            if (!isLibraryWizard()) {
+                layerValue.getDocument().removeDocumentListener(layerDL);
+            }
             listenersAttached = false;
         }
     }
