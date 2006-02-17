@@ -22,7 +22,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.wizards.repository.RepositoryStep;
-import org.netbeans.modules.subversion.ui.wizards.browser.BrowserStep;
 import org.netbeans.modules.subversion.ui.wizards.workdir.WorkdirStep;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -134,7 +133,7 @@ public final class CheckoutWizard implements ChangeListener {
             // XXX
             if(current() == repositoryStep) {
 //                browseStep = new BrowserStep(org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "LBL_CheckoutBrowser"));
-                workdirStep.setup(repositoryStep.getRepositoryRoot());
+                workdirStep.setup(repositoryStep.getRepositoryFile());
             }            
             super.nextPanel();
         }
@@ -159,7 +158,7 @@ public final class CheckoutWizard implements ChangeListener {
     }
 
     public SVNUrl getRepositoryRoot() {
-        return repositoryStep.getRepositoryRoot().getRepositoryUrl();
+        return repositoryStep.getRepositoryFile().getRepositoryUrl();
     }
 }
 

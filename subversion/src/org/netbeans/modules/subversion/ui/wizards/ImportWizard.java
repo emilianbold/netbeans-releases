@@ -15,14 +15,13 @@ package org.netbeans.modules.subversion.ui.wizards;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.text.MessageFormat;
-import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.subversion.ui.wizards.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.wizards.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.wizards.message.MessageStep;
 import org.netbeans.modules.subversion.ui.wizards.repository.RepositoryStep;
-import org.netbeans.modules.subversion.ui.wizards.browser.BrowserStep;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -43,10 +42,10 @@ public final class ImportWizard implements ChangeListener {
     private WizardDescriptor wizardDescriptor;
     private PanelsIterator wizardIterator;
     
-    private final String defaultFolderName;
+    private final String defaultFolderNameToImport;
     
-    public ImportWizard(String defaultFolderName){
-        this.defaultFolderName = defaultFolderName;
+    public ImportWizard(String defaultFolderName) {
+        this.defaultFolderNameToImport = defaultFolderName;
     }
     
     public boolean show() {
@@ -133,7 +132,7 @@ public final class ImportWizard implements ChangeListener {
         public void nextPanel() {            
             //
             if(current() == repositoryStep) {                                            
-                messageStep.setup(repositoryStep.getRepositoryRoot());
+                messageStep.setup(repositoryStep.getRepositoryFile(), new BrowserAction[] { new CreateFolderAction(defaultFolderNameToImport)});
             }            
             super.nextPanel();
         }
@@ -146,17 +145,20 @@ public final class ImportWizard implements ChangeListener {
         }
     }
 
-    public SVNUrl getSelectedRepositoryRoot() {
-        return repositoryStep.getRepositoryRoot().getRepositoryUrl(); 
-    }
-
-    public SVNUrl getSelectedRepositoryUrl() {
-        //return browseStep.getSelectedRoots()[0].getRepositoryUrl(); // single selection only
-        return null;
+    public SVNUrl getRepositoryUrl() {
+        return repositoryStep.getRepositoryFile().getRepositoryUrl(); 
     }
 
     public String getMessage() {
         return messageStep.getMessage();
+    }
+
+    public SVNUrl getRepositoryFolderUrl() {
+        return messageStep.getRepositoryFolderUrl();
+    }
+
+    public boolean checkoutAfterImport() {
+        return messageStep.checkoutAfterImport();
     }
 }
 

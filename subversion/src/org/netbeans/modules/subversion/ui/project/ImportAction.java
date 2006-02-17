@@ -110,10 +110,11 @@ public final class ImportAction extends NodeAction {
                 ImportWizard wizard = new ImportWizard(nodes[0].getName());
                 if (!wizard.show()) return;
                 
-                final SVNUrl repositoryUrl = wizard.getSelectedRepositoryRoot();
-                final SVNUrl svnUrl = wizard.getSelectedRepositoryUrl();
+                final SVNUrl repositoryUrl = wizard.getRepositoryUrl();
+                final SVNUrl repositoryFolderUrl = wizard.getRepositoryFolderUrl();
                 final String message = wizard.getMessage();        
-                final File file = lookupImportDirectory(nodes[0]); 
+                final boolean checkout = wizard.checkoutAfterImport();
+                final File file = lookupImportDirectory(nodes[0]);                 
                 
                 RequestProcessor processor = new RequestProcessor("CheckinActionRP", 1, true);
                 importTask = processor.post(new Runnable() {
@@ -122,7 +123,10 @@ public final class ImportAction extends NodeAction {
                         progressHandle = ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(ImportAction.class, "BK0001"), cancellable);       // NOI18N
                         progressHandle.start();                
                         try{                                    
-                            doImport(repositoryUrl, svnUrl, file, message);
+                            doImport(repositoryUrl, repositoryFolderUrl, file, message);
+                            if(checkout) {
+                                doCheckout(repositoryUrl, file);   
+                            }                            
                         } finally {
                             progressHandle.finish();            
                         }  
@@ -135,36 +139,17 @@ public final class ImportAction extends NodeAction {
     /**
      * Perform asynchronous checkin action with preconfigured values.
      */
-    private void doImport(SVNUrl repositoryUrl, SVNUrl svnUrl, File file, String message) {
-        
-        SvnClient client;
+    private void doImport(SVNUrl repositoryUrl, SVNUrl folderUrl, File file, String message) {        
         try {
-            client = Subversion.getInstance().getClient(svnUrl);
-        } catch (SVNClientException ex) {
-            ex.printStackTrace(); // XXX
-            return;
-        } 
-                  
-        try{       
+            SvnClient client = Subversion.getInstance().getClient(folderUrl);
             
             // import into repository ...
-            client.doImport(file, svnUrl, message, true);  
+            client.doImport(file, folderUrl, message, true);                    
             
-            // ... and now check it out
-            RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryUrl, SVNRevision.HEAD) };                        
-            // XXX doing it this way we probably will get in troubles with the IDE
-            File checkoutFile = new File(file.getAbsolutePath() + ".co");             
-            CheckoutAction.checkout(repositoryUrl, repositoryFile, checkoutFile, false, true);                         
-            File tmpFile = new File(file.getAbsolutePath() + ".tmp");             
-            file.renameTo(tmpFile);
-            checkoutFile.renameTo(file);                          
-            deleteDirectory(tmpFile);             
-             
         } catch (SVNClientException ex) {
-            org.openide.ErrorManager.getDefault().notify(ex);
-            return; 
-        }                      
-        
+            org.openide.ErrorManager.getDefault().notify(ex); // XXX
+            return;
+        }                           
     }    
 
     private void deleteDirectory(File file) {
@@ -185,6 +170,17 @@ public final class ImportAction extends NodeAction {
         return true;
     }
 
+    private void doCheckout(SVNUrl repositoryUrl, File file) {
+        RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryUrl, SVNRevision.HEAD) };                        
+        // XXX doing it this way we probably will get in troubles with the IDE
+        File checkoutFile = new File(file.getAbsolutePath() + ".co");             
+        CheckoutAction.checkout(repositoryUrl, repositoryFile, checkoutFile, false, true);                         
+        File tmpFile = new File(file.getAbsolutePath() + ".tmp");             
+        file.renameTo(tmpFile);
+        checkoutFile.renameTo(file);                          
+        deleteDirectory(tmpFile);               
+    }
+    
     private File lookupImportDirectory(Node node) {
         File importDirectory = null;
         Project project = (Project) node.getLookup().lookup(Project.class);
