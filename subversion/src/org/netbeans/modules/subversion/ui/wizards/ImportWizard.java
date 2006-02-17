@@ -37,7 +37,6 @@ public final class ImportWizard implements ChangeListener {
     
     private WizardDescriptor.Panel[] panels;
     private RepositoryStep repositoryStep;
-//    private BrowserStep browseStep;    
     private MessageStep messageStep;
     
     private String errorMessage;
@@ -101,10 +100,7 @@ public final class ImportWizard implements ChangeListener {
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];
             
-            repositoryStep = new RepositoryStep();
-            
-//            browseStep = new BrowserStep(org.openide.util.NbBundle.getMessage(ImportWizard.class, "LBL_CheckinBrowser"),
-//                                        false, true);                      
+            repositoryStep = new RepositoryStep();               
             
             messageStep = new MessageStep();
 
@@ -136,11 +132,9 @@ public final class ImportWizard implements ChangeListener {
 
         public void nextPanel() {            
             //
-//            if(current() == repositoryStep) {
-//                workdirStep.setup(repositoryStep.getRepositoryRoot(), repositoryStep.getRepositoryFolder());
-//            }
-                //browseStep.setup(repositoryStep.getRepositoryRoot(), repositoryStep.getSvnRoot(), true, defaultFolderName);
-//            }            
+            if(current() == repositoryStep) {                                            
+                messageStep.setup(repositoryStep.getRepositoryRoot());
+            }            
             super.nextPanel();
         }
 
