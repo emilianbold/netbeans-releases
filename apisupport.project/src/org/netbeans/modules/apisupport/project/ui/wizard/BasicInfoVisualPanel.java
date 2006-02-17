@@ -26,7 +26,6 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -39,7 +38,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -65,7 +63,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
     private ButtonModel lastSelectedType;
     private static String lastSelectedSuite;
-    private boolean wasLocationUpdate;
+    private boolean locationUpdated;
+    private boolean nameUpdated;
     private boolean moduleTypeGroupAttached = true;
     private boolean mainProjectTouched;
     
@@ -80,29 +79,40 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         setComponentsVisibility();
         if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
             detachModuleTypeGroup();
-            setLocationValue(getSuiteLocation(), true);
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE ||
                 wizardType == NewNbModuleWizardIterator.TYPE_SUITE_COMPONENT) {
             if (moduleSuiteValue.getItemCount() > 0) {
                 restoreSelectedSuite();
                 suiteComponent.setSelected(true);
-                setLocationValue((String) moduleSuiteValue.getSelectedItem(), true);
                 mainProject.setSelected(false);
-            } else {
-                setLocationValue(ModuleUISettings.getDefault().getLastUsedModuleLocation(), true);
             }
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
             moduleSuite.setText(getMessage("LBL_Add_to_Suite")); // NOI18N
             suiteComponent.setSelected(true);
             if (moduleSuiteValue.getItemCount() > 0) {
                 restoreSelectedSuite();
-                setLocationValue((String) moduleSuiteValue.getSelectedItem(), true);
             }
         } else {
             assert false : "Unknown wizard type = " + wizardType; // NOI18N
         }
         attachDocumentListeners();
+        setInitialLocation();
         updateEnabled();
+    }
+    
+    private void setInitialLocation() {
+        if (isSuiteComponent()) {
+            computeAndSetLocation((String) moduleSuiteValue.getSelectedItem(), true);
+        } else { // suite or standalone module
+            String location = computeLocationValue(
+                    ModuleUISettings.getDefault().getLastUsedModuleLocation());
+            File locationF = new File(location);
+            if (SuiteUtils.isSuite(locationF)) {
+                computeAndSetLocation(locationF.getParent(), true);
+            } else {
+                setLocation(location, true);
+            }
+        }
     }
     
     private void initAccessibility() {
@@ -295,15 +305,16 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         }
     }
     
+    /** Called when {@link BasicInfoWizardPanel#readSettings} is called. */
     void refreshData() {
         if (data.getProjectName() != null) {
             nameValue.setText(data.getProjectName());
-            return;
+        } else {
+            setInitialProjectName();
         }
-        refreshProjectName();
     }
     
-    private void refreshProjectName() {
+    private void setInitialProjectName() {
         String bundlekey = null;
         int counter = 0;
         if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
@@ -323,6 +334,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             assert false : "Unknown wizard type =" + wizardType; // NOI18N
         }
         setProjectName(getMessage(bundlekey), counter);
+        nameUpdated = false;
     }
     
     private void attachDocumentListeners() {
@@ -330,9 +342,12 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             public void insertUpdate(DocumentEvent e) { updateAndCheck(); }
         };
         nameValue.getDocument().addDocumentListener(fieldsDL);
+        locationValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) { nameUpdated = true; }
+        });
         locationValue.getDocument().addDocumentListener(fieldsDL);
         locationValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) { wasLocationUpdate = true; }
+            public void insertUpdate(DocumentEvent e) { locationUpdated = true; }
         });
         ActionListener plafAL = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -350,34 +365,6 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
     private boolean isNetBeansOrgFolder() {
         return ModuleList.findNetBeansOrg(getFolder()) != null;
-    }
-    
-    /**
-     * Returns a directory which is not a suite or suite-componet project directory.
-     */
-    private static String getSuiteLocation() {
-        String location = ModuleUISettings.getDefault().getLastUsedModuleLocation();
-        FileObject locationFO = FileUtil.toFileObject(new File(location));
-        while (locationFO != null) {
-            Project maybeSuite;
-            try {
-                maybeSuite = ProjectManager.getDefault().findProject(locationFO);
-            } catch (IOException e) {
-                Util.err.notify(e);
-                break;
-            }
-            if (maybeSuite == null) {
-                location = FileUtil.toFile(locationFO).getAbsolutePath();
-                break;
-            }
-            File suiteDir = SuiteUtils.getSuiteDirectory(maybeSuite);
-            if (suiteDir != null) {
-                location = FileUtil.toFile(locationFO).getAbsolutePath();
-                break;
-            }
-            locationFO = locationFO.getParent();
-        }
-        return location;
     }
     
     private static String getMessage(String key) {
@@ -405,21 +392,25 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         }
     }
     
-    private void setLocationValue(String value) {
-        setLocationValue(value, false);
+    private void setLocation(String location, boolean silently) {
+        boolean revert = silently && !locationUpdated;
+        locationValue.setText(location);
+        locationUpdated = revert ^ true;
     }
     
-    private void setLocationValue(String value, boolean silently) {
-        boolean revert = silently && !wasLocationUpdate;
+    private void computeAndSetLocation(String value, boolean silently) {
+        setLocation(computeLocationValue(value), silently);
+    }
+    
+    private String computeLocationValue(String value) {
         if (value == null) {
             value = System.getProperty("user.home"); // NOI18N
         }
         File file = new File(value);
         if (!file.exists() && file.getParent() != null) {
-            setLocationValue(file.getParent(), silently);
+            return computeLocationValue(file.getParent());
         } else {
-            locationValue.setText(file.exists() ? value : System.getProperty("user.home")); // NOI18N
-            wasLocationUpdate = !revert;
+            return file.exists() ? value : System.getProperty("user.home"); // NOI18N
         }
     }
     
@@ -766,9 +757,9 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     }//GEN-LAST:event_platformChosen
     
     private void moduleSuiteChosen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moduleSuiteChosen
-        if (!wasLocationUpdate) {
+        if (!locationUpdated) {
             String suite = (String) moduleSuiteValue.getSelectedItem();
-            setLocationValue(suite, true);
+            computeAndSetLocation(suite, true);
             lastSelectedSuite = suite;
         }
         updateAndCheck();
@@ -807,13 +798,11 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         if (!mainProjectTouched) {
             mainProject.setSelected(isStandAlone());
         }
-        if (!wasLocationUpdate) {
-            if (isSuiteComponent()) {
-                setLocationValue((String) moduleSuiteValue.getSelectedItem(), true);
-            } else {
-                setLocationValue(ModuleUISettings.getDefault().getLastUsedModuleLocation(), true);
-            }
-            refreshProjectName();
+        if (!locationUpdated) {
+            setInitialLocation();
+        }
+        if (!nameUpdated) {
+            setInitialProjectName();
         }
         updateAndCheck();
     }//GEN-LAST:event_typeChanged
@@ -823,7 +812,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            setLocationValue(chooser.getSelectedFile().getAbsolutePath());
+            computeAndSetLocation(chooser.getSelectedFile().getAbsolutePath(), false);
         }
     }//GEN-LAST:event_browseLocation
     
