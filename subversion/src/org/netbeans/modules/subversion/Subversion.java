@@ -31,7 +31,7 @@ import java.util.Iterator;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.netbeans.modules.subversion.ui.wizards.repository.ProxyDescriptor;
+import org.netbeans.modules.subversion.client.ProxyDescriptor;
 import org.netbeans.api.queries.SharabilityQuery;
 
 /**
