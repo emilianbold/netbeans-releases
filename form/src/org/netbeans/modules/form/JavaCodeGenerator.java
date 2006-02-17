@@ -1995,8 +1995,9 @@ class JavaCodeGenerator extends CodeGenerator {
         listenersInMainClass = mainclass ? listenersToImplement : null;
 
         if (innerclass) {
+            String listenerClassName = getListenerClassName();
             codeWriter.write("private class "); // NOI18N
-            codeWriter.write(getListenerClassName());
+            codeWriter.write(listenerClassName);
             codeWriter.write(" implements "); // NOI18N
             for (int i=0; i < listenersToImplement.length; i++) {
                 codeWriter.write(getSourceClassName(listenersToImplement[i]));
@@ -2004,6 +2005,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     codeWriter.write(", "); // NOI18N
             }
             codeWriter.write(" {\n"); // NOI18N
+            codeWriter.write(listenerClassName + "() {}\n"); // NOI18N Issue 72346 resp. 15242
         }
 
         for (int i=0; i < listenersToImplement.length; i++) {
