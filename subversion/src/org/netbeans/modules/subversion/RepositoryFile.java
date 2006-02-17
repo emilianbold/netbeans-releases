@@ -46,8 +46,9 @@ public class RepositoryFile {
     public RepositoryFile(SVNUrl repositoryUrl, SVNUrl fileUrl, SVNRevision revision) {       
         this(repositoryUrl, revision);
         this.fileUrl = fileUrl;        
+        repositoryRoot = fileUrl == null;   
         
-        if(fileUrl!=null) {            
+        if(!repositoryRoot) {            
             String[] fileUrlSegments = fileUrl.getPathSegments();
             int fileSegmentsLength = fileUrlSegments.length;
             int repositorySegmentsLength = repositoryUrl.getPathSegments().length;
@@ -57,47 +58,38 @@ public class RepositoryFile {
                 pathSegments[i-repositorySegmentsLength] = fileUrlSegments[i];
                 sb.append(fileUrlSegments[i]);
                 if(i-repositorySegmentsLength < pathSegments.length-1) {
-                    sb.append("/");
+                    sb.append("/"); // NOI18N
                 }
             }    
             path = sb.toString();
-            
-            repositoryRoot = false;
-        } else {
-            repositoryRoot = true;
         }                
     }
 
     public RepositoryFile(SVNUrl repositoryUrl, String[] pathSegments, SVNRevision revision) throws MalformedURLException {
         this(repositoryUrl, revision);
         this.pathSegments = pathSegments;    
+        repositoryRoot = pathSegments == null;        
         
-        if(pathSegments!=null) {
+        if(!repositoryRoot) {
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < pathSegments.length; i++) {
                 sb.append(pathSegments[i]);
                 if(i<pathSegments.length-1) {
-                sb.append("/");   
+                sb.append("/"); // NOI18N
                 }            
             }
             path = sb.toString();        
             fileUrl = repositoryUrl.appendPath(path);        
-            repositoryRoot = false;
-        } else {
-            repositoryRoot = true;
         }
     }
     
     public RepositoryFile(SVNUrl repositoryUrl, String path, SVNRevision revision) throws MalformedURLException {
         this(repositoryUrl, revision);
         this.path = path;
+        repositoryRoot = path == null;        
         
-        if(path!=null) {
-            pathSegments = path.split("/");            
+        if(!repositoryRoot) {            
             fileUrl = repositoryUrl.appendPath(path);        
-            repositoryRoot = false;
-        } else {
-            repositoryRoot = true;
         }
     }
     
@@ -124,8 +116,8 @@ public class RepositoryFile {
     }
 
     public String getPath() {
-        if(isRepositoryRoot()) {
-            return "";
+        if(isRepositoryRoot()) { 
+            return ""; // NOI18N
         }        
         return path;
     }
@@ -138,7 +130,7 @@ public class RepositoryFile {
         if(name == null) {
             if(isRepositoryRoot()) {
                 String url = getRepositoryUrl().toString();
-                int idx = url.indexOf("://");
+                int idx = url.indexOf("://"); // NOI18N
                 if(idx >= 0) {
                     url = url.substring(idx+3);
                 }
@@ -154,7 +146,7 @@ public class RepositoryFile {
         if(toString == null) {
             StringBuffer sb = new StringBuffer();
             sb.append(fileUrl);
-            sb.append("@");
+            sb.append("@"); // NOI18N
             sb.append(revision);    
             toString = sb.toString();
         }

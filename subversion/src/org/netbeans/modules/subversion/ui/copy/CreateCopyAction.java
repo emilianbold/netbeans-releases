@@ -13,15 +13,22 @@
 
 package org.netbeans.modules.subversion.ui.copy;
 
+import java.awt.Dialog;
 import java.io.File;
+import javax.swing.JTextField;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.ui.wizards.CreateCopyWizard;
+import org.netbeans.modules.subversion.ui.browser.BrowserAction;
+import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
+import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -59,20 +66,21 @@ public class CreateCopyAction extends ContextAction {
         RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
         String sourcePath = SvnUtils.getRelativePath(roots[0]);        
      
-        CreateCopyWizard wizard = new CreateCopyWizard(repositoryRoot);
-        if (!wizard.show()) return;
+        CreateCopy createCopy = new CreateCopy(repositoryRoot, nodes[0].getDisplayName());
+        createCopy.show();
                 
-        SVNUrl target = wizard.getRepositoryUrl();
-        String message = wizard.getMessage();
-        
-        ISVNClientAdapter client;
-        try {
-            client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
-        } catch (SVNClientException ex) {
-            ex.printStackTrace(); // should not hapen
-            return;
-        }
+        if(createCopy.getValue()==DialogDescriptor.OK_OPTION) {
+            SVNUrl repositoryFolderUrl = createCopy.getRepositoryFileUrl();
+            String message = createCopy.getMessage();
 
+            ISVNClientAdapter client;
+            try {
+                client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
+            } catch (SVNClientException ex) {
+                ex.printStackTrace(); // should not hapen
+                return;
+            }                        
+        }
     }
     
 }

@@ -206,7 +206,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         return getExplorerManager().getSelectedNodes();
     }
 
-    public RepositoryFile[] getSelectedRoots() {
+    public RepositoryFile[] getSelectedFiles() {
         Node[] nodes = (Node[]) getExplorerManager().getSelectedNodes();
         
         if(nodes.length == 0) {

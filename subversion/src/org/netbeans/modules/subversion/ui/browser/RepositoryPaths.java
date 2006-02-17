@@ -153,7 +153,7 @@ public class RepositoryPaths implements ActionListener {
 
         // handle results
         if (DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue())) {       
-            RepositoryFile[] selectedFiles = browser.getSelectedRoots();
+            RepositoryFile[] selectedFiles = browser.getSelectedFiles();
                         
             if(selectedFiles.length > 0) {                
                 StringBuffer paths = new StringBuffer();
@@ -192,5 +192,8 @@ public class RepositoryPaths implements ActionListener {
         }        
     }
 
+    public RepositoryFile getRepositoryFile() {
+        return repositoryFile;
+    }
     
 }
