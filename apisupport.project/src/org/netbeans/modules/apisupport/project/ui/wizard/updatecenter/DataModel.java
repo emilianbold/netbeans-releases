@@ -29,7 +29,7 @@ import org.openide.filesystems.FileSystem;
 final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     static private String AUTOUPDATE_TYPES = "Services/AutoupdateType"; //NOI18N
-    static private String AUTOUPDATE_SERVICE_TYPE = "update_center"; //NOI18N
+    private String AUTOUPDATE_SERVICE_TYPE = "_update_center"; //NOI18N
     static private String AUTOUPDATE_SERVICE_TYPE_EXT = "settings"; //NOI18N
     static private String UC_LOCALIZING_BUNDLE = "SystemFileSystem.localizingBundle"; //NOI18N
     static private String AUTOUPDATE_MODULE = "org.netbeans.modules.autoupdate"; // NOI18N
@@ -50,22 +50,23 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }
         URL url = DataModel.class.getResource ("update_center.xml"); //NOI18N
         assert url != null : "File 'update_center.xml must exist in package of " + getClass().getName() + "!";
-        
+        String serviceTypeName = getProject ().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; // NOI18N
         FileSystem layer = LayerUtils.layerForProject (getProject ()).layer (false);
-        String pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + AUTOUPDATE_SERVICE_TYPE + '.' + AUTOUPDATE_SERVICE_TYPE_EXT;
+        
+        String pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + serviceTypeName + '.' + AUTOUPDATE_SERVICE_TYPE_EXT;
         int sequence = 0;
         if (layer != null) {
             FileObject f;
             do {
                 f = layer.findResource (pathToAutoUpdateType);
                 if (f != null) {
-                    pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + AUTOUPDATE_SERVICE_TYPE + '_' + ++sequence + '.' + AUTOUPDATE_SERVICE_TYPE_EXT;
+                    pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + serviceTypeName + '_' + ++sequence + '.' + AUTOUPDATE_SERVICE_TYPE_EXT;
                 }
             } while (f != null);
         }
         cmf.add (cmf.createLayerEntry (pathToAutoUpdateType, url, null, null, null));
         
-        String url_key_base = getProject ().getCodeNameBase ().replace ('.', '_') + '_' + AUTOUPDATE_SERVICE_TYPE; //NOI18N
+        String url_key_base = getProject ().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; //NOI18N
         String url_key = sequence == 0 ? url_key_base : url_key_base + '_' + sequence; // NOI18N
         cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "url_key", url_key)); //NOI18N
         cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "enabled", Boolean.TRUE)); //NOI18N

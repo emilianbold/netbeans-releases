@@ -70,7 +70,7 @@ public class DataModelTest extends LayerTestBase {
             "<filesystem>",
                 "<folder name=\"Services\">",
                     "<folder name=\"AutoupdateType\">",
-                        "<file name=\"update_center.settings\" url=\"update_centerSettings.xml\">",
+                        "<file name=\"org_example_module1_update_center.settings\" url=\"org_example_module1_update_centerSettings.xml\">",
                             "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
                             "<attr name=\"enabled\" boolvalue=\"true\"/>",
                             "<attr name=\"url_key\" stringvalue=\"org_example_module1_update_center\"/>",
@@ -80,7 +80,7 @@ public class DataModelTest extends LayerTestBase {
             "</filesystem>"
         };
 
-        testAddUpdateCenter ("src/org/example/module1/resources/update_centerSettings.xml", supposedContent);
+        testAddUpdateCenter ("src/org/example/module1/resources/org_example_module1_update_centerSettings.xml", supposedContent);
     }
     
     public void testAddUpdateCenterDouble () throws Exception {
@@ -88,12 +88,12 @@ public class DataModelTest extends LayerTestBase {
             "<filesystem>",
                 "<folder name=\"Services\">",
                     "<folder name=\"AutoupdateType\">",
-                        "<file name=\"update_center.settings\" url=\"update_centerSettings.xml\">",
+                        "<file name=\"org_example_module1_update_center.settings\" url=\"org_example_module1_update_centerSettings.xml\">",
                             "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
                             "<attr name=\"enabled\" boolvalue=\"true\"/>",
                             "<attr name=\"url_key\" stringvalue=\"org_example_module1_update_center\"/>",
                         "</file>",
-                        "<file name=\"update_center_1.settings\" url=\"update_center_1Settings.xml\">",
+                        "<file name=\"org_example_module1_update_center_1.settings\" url=\"org_example_module1_update_center_1Settings.xml\">",
                             "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
                             "<attr name=\"enabled\" boolvalue=\"true\"/>",
                             "<attr name=\"url_key\" stringvalue=\"org_example_module1_update_center_1\"/>",
@@ -104,7 +104,7 @@ public class DataModelTest extends LayerTestBase {
         };
 
         testAddUpdateCenterWithDefaultValues ();
-        testAddUpdateCenter ("src/org/example/module1/resources/update_center_1Settings.xml", supposedContent);
+        testAddUpdateCenter ("src/org/example/module1/resources/org_example_module1_update_center_1Settings.xml", supposedContent);
     }
     
 }
