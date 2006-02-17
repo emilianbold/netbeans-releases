@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 
@@ -36,11 +37,7 @@ final class NewUpdateCenterIterator extends BasicWizardIterator {
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.refreshCreatedModifiedFiles();
         cmf.run();
-        Set result = Collections.EMPTY_SET;
-        if (cmf.getCreatedPaths ().length > 0) {
-            result = getCreatedFiles(cmf, data.getProject());
-        }
-        return result;
+        return Collections.singleton (LayerUtils.layerForProject (data.getProject ()).getLayerFile ());
     }
 
     protected BasicWizardIterator.Panel[] createPanels (WizardDescriptor wiz) {
