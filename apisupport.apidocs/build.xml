@@ -12,10 +12,9 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="apisupport/apidocs" default="netbeans" basedir=".">
-    <property name="netbeans.javadoc.dir" location="build/javadoc"/>
-    <property name="export.interfaces" location="build/ModulesExportedInterfaces" />
-    <property name="export.apichanges" location="build/APIChanges" />
-
+    <property name="local.javadoc.dir" location="build/javadoc"/>
+    <property name="local.export.interfaces" location="build/ModulesExportedInterfaces" />
+    <property name="local.export.apichanges" location="build/APIChanges" />
 
     <import file="../../nbbuild/templates/projectized.xml"/>
     
@@ -37,9 +36,9 @@ Microsystems, Inc. All Rights Reserved.
             <property name="building.apisupport/apidocs" value="true"/><!-- avoid recursion -->
 
             <!-- pass there our local directories to build javadocs in -->
-            <property name="netbeans.javadoc.dir" value="${netbeans.javadoc.dir}"/>
-            <property name="export.interfaces" value="${export.interfaces}"/>
-            <property name="export.apichanges" value="${export.apichanges}"/>
+            <property name="netbeans.javadoc.dir" value="${local.javadoc.dir}"/>
+            <property name="export.interfaces" value="${local.export.interfaces}"/>
+            <property name="export.apichanges" value="${local.export.apichanges}"/>
             
             <!-- these modules do not have stable API, so we need to link
               to them on website -->
@@ -53,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
         </ant>
         <mkdir dir="${docs.dir}"/>
         <zip zipfile="${docs.zip}" compress="true">
-            <fileset dir="${netbeans.javadoc.dir}">
+            <fileset dir="${local.javadoc.dir}">
                 <exclude name="*.zip"/>
             </fileset>
         </zip>
