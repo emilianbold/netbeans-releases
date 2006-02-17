@@ -152,5 +152,15 @@ public class SuiteUtilsTest extends TestBase {
         assertNotNull("module2 became suite component - has valid SuiteProvider", suiteProvider.getSuiteDirectory());
     }
     
+    public void testIsSuite() throws Exception {
+        SuiteProject suite = generateSuite("suite");
+        generateSuiteComponent(suite, "suiteComponent");
+        generateStandaloneModuleDirectory(getWorkDir(), "module");
+        File suiteF = new File(getWorkDir(), "suite");
+        assertTrue(suite + " is a suite", SuiteUtils.isSuite(suiteF));
+        assertFalse(suite + " is not a suite", SuiteUtils.isSuite(new File(suiteF, "suiteComponent")));
+        assertFalse(suite + " is not a suite", SuiteUtils.isSuite(new File(getWorkDir(), "module")));
+    }
+    
 }
 

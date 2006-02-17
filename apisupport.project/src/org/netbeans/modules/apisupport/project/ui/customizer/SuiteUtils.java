@@ -349,15 +349,13 @@ public final class SuiteUtils {
         } else {
             suiteProps.setPrivateProperty(projectPropKey, projectDirF.getAbsolutePath());
         }
-        String modulesProp = suiteProps.getProperty(MODULES_PROPERTY);
-        if (modulesProp == null) {
-            modulesProp = "";
+        String origModules = suiteProps.getProperty(MODULES_PROPERTY);
+        StringBuffer modules = new StringBuffer(origModules == null ? "" : origModules);
+        if (modules.length() > 0) {
+            modules.append(':');
         }
-        if (modulesProp.length() > 0) {
-            modulesProp += ":"; // NOI18N
-        }
-        modulesProp += "${" + projectPropKey + "}"; // NOI18N
-        suiteProps.setProperty(MODULES_PROPERTY, modulesProp.split("(?<=:)", -1)); // NOI18N
+        modules.append("${").append(projectPropKey).append('}'); // NOI18N
+        suiteProps.setProperty(MODULES_PROPERTY, modules.toString().split("(?<=:)", -1)); // NOI18N
         
         // adjust subModule's properties
         NbModuleProjectGenerator.createSuiteProperties(subModule.getProjectDirectory(), suiteDirF);
@@ -392,8 +390,31 @@ public final class SuiteUtils {
     }
     
     /**
+     * Returns whether a given directory contains regular <em>suite</em>. Note
+     * it returns <code>false</code> for suite components.
+     *
+     * @return <code>true</code> if a given directory contains regular
+     *         <em>suite</em>; <code>false</code> otherwise.
+     */
+    public static boolean isSuite(final File maybeSuiteDir) {
+        boolean isSuite = false;
+        try {
+            FileObject dirFO = FileUtil.toFileObject(maybeSuiteDir);
+            if (dirFO != null) {
+                Project maybeSuite = ProjectManager.getDefault().findProject(dirFO);
+                if (maybeSuite != null) {
+                    isSuite = maybeSuiteDir.equals(getSuiteDirectory(maybeSuite));
+                }
+            }
+        } catch (IOException e) {
+            // leave it false
+        }
+        return isSuite;
+    }
+    
+    /**
      * Returns suite for the given suite component. May return
-     * <code>null</code>.<p>
+     * <code>null</code>.
      * <p>Acquires read access.</p>
      */
     public static SuiteProject findSuite(final Project suiteComponent) throws IOException {
