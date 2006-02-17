@@ -57,7 +57,6 @@
     <reports>
         <report>maven-changelog-plugin</report>
         <report>maven-changes-plugin</report>
-        <report>maven-developer-activity-plugin</report>
         <report>maven-emma-plugin</report>
         <report>maven-faq-plugin</report>
         <report>maven-file-activity-plugin</report>
