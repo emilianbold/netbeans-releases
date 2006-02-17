@@ -152,7 +152,7 @@ public final class CheckoutAction extends CallableSystemAction {
             }
             
             try {
-                client.checkout(repositoryFiles[i].getRepositoryUrl(), destination, repositoryFiles[i].getRevision(), true);                            
+                client.checkout(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);                            
             } catch (SVNClientException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);                    
                 return; 
