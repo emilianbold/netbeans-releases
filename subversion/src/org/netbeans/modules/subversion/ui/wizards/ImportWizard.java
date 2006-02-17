@@ -20,7 +20,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
-import org.netbeans.modules.subversion.ui.wizards.importstep.MessageStep;
+import org.netbeans.modules.subversion.ui.wizards.importstep.ImportStep;
 import org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -36,7 +36,7 @@ public final class ImportWizard implements ChangeListener {
     
     private WizardDescriptor.Panel[] panels;
     private RepositoryStep repositoryStep;
-    private MessageStep messageStep;
+    private ImportStep messageStep;
     
     private String errorMessage;
     private WizardDescriptor wizardDescriptor;
@@ -101,7 +101,7 @@ public final class ImportWizard implements ChangeListener {
             
             repositoryStep = new RepositoryStep();               
             
-            messageStep = new MessageStep();
+            messageStep = new ImportStep();
 
             panels = new  WizardDescriptor.Panel[] {repositoryStep, messageStep};
 
