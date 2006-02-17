@@ -15,10 +15,10 @@
 package org.netbeans.modules.jmx.actions.dialog;
 
 import java.awt.event.ActionListener;
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import org.netbeans.modules.jmx.MBeanOperation;
-import org.netbeans.modules.jmx.actions.AddAttrAction;
 import org.netbeans.modules.jmx.actions.AddOpAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -59,15 +59,12 @@ public class AddOperationsInfoPanel extends javax.swing.JPanel {
                         operations[i].getSimpleSignature() + ")\n"); // NOI18N
         }
         
-        infoTextArea.setText(
-                bundle.getString("LBL_OpMethodsAlreadyExist_begin") +  // NOI18N
-                mbeanClassName + " " + bundle.getString("LBL_OpMethodsAlreadyExist_begin2") + // NOI18N
-                mbeanClassName + 
-                bundle.getString("LBL_OpMethodsAlreadyExist_middle") + // NOI18N
-                mbeanClassName + " " +  // NOI18N
-                bundle.getString("LBL_OpMethodsAlreadyExist_end") + // NOI18N
-                methodsList.toString());
-        
+        MessageFormat formAttribute = 
+                new MessageFormat(bundle.getString("LBL_OpMethodsAlreadyExist")); // NOI18N
+        Object[] args = {mbeanClassName, mbeanClassName, mbeanClassName, methodsList.toString()};
+        String msg = formAttribute.format(args);
+        infoTextArea.setText(msg);
+       
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     

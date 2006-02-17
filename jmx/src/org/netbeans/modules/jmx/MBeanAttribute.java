@@ -66,7 +66,7 @@ public class MBeanAttribute implements Comparable {
             else
                 this.access = WizardConstants.ATTR_ACCESS_READ_ONLY;
         } else {
-            List methodParameterTypes = getter.getTypeParameters();
+            List methodParameterTypes = setter.getTypeParameters();
             Type t = ((Parameter) setter.getParameters().get(0)).getType();
             if(methodParameterTypes.contains(t) ||
                classParameterTypes.contains(t))

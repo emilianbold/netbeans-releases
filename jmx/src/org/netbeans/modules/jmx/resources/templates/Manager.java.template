@@ -26,6 +26,7 @@ public class Manager {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
+
         //manager instantiation and connection to the remote agent
         __NAME__ manager = __NAME__.getDefault();
           {0}

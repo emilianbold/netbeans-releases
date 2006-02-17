@@ -493,7 +493,7 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
                     WizardHelpers.capitalizeFirstLetter(attribute.getName()) + 
                     "(value);\n"; // NOI18N
         } else if (attribute.getGetMethodExits() || attribute.getIsMethodExits())
-            methodBody = "//TODO add your own implementation.\n"; // NOI18N
+            methodBody = "\n\n//TODO add your own implementation.\n"; // NOI18N
         
         ArrayList params = new ArrayList();
         Parameter attrType = pkg.getParameter().createParameter(
@@ -605,7 +605,7 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
             }
             body.append(");\n"); // NOI18N
         } else {
-            body.append("\n//TODO add your own implementation\n\n"); // NOI18N
+            body.append("\n\n//TODO add your own implementation\n\n"); // NOI18N
             if  (!operation.getReturnTypeName().equals(WizardConstants.VOID_NAME)) {
                 body.append("return " +  // NOI18N
                         WizardHelpers.getDefaultValue(operation.getReturnTypeName()) +

@@ -55,8 +55,7 @@ public class Test1Manager {
         /* *** SAMPLE CREDENTIALS *** */
         /* Replace userName and userPassword with your parameters. 
          * Provide env parameter when calling JMXConnectorFactory.connect(url, env)
-         */
-        
+         */       
         /*
         Map env = new HashMap(); 
         env.put(JMXConnector.CREDENTIALS, new String[]{"userName", "userPassword"});

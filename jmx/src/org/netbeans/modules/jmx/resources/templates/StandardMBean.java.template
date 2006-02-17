@@ -61,7 +61,6 @@ public class __NAME__ implements __NAME__MBean {
     public MBeanNotificationInfo[] getNotificationInfo() {
          return new MBeanNotificationInfo[] {};
     }
-
 }
 
 

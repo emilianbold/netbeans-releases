@@ -14,11 +14,11 @@
 package org.netbeans.modules.jmx.actions.dialog;
 
 import java.awt.event.ActionListener;
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import org.netbeans.modules.jmx.MBeanAttribute;
 import org.netbeans.modules.jmx.actions.AddAttrAction;
-import org.netbeans.modules.jmx.actions.AddRegisterIntfAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -58,15 +58,12 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
                     methodsList.append(" - set" + attributes[i].getName() + "\n"); // NOI18N
         }
         
-        infoTextArea.setText(
-                bundle.getString("LBL_AttrMethodsAlreadyExist_begin") +  // NOI18N
-                mbeanClassName + " " + bundle.getString("LBL_AttrMethodsAlreadyExist_begin2") +  // NOI18N
-                mbeanClassName + 
-                bundle.getString("LBL_AttrMethodsAlreadyExist_middle") + // NOI18N
-                mbeanClassName + " " +  // NOI18N
-                bundle.getString("LBL_AttrMethodsAlreadyExist_end") + // NOI18N
-                methodsList.toString());
+        MessageFormat formAttribute = 
+                new MessageFormat(bundle.getString("LBL_AttrMethodsAlreadyExist")); // NOI18N
+        Object[] args = {mbeanClassName, mbeanClassName, mbeanClassName, methodsList.toString()};
+        String msg = formAttribute.format(args);
         
+        infoTextArea.setText(msg);
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     

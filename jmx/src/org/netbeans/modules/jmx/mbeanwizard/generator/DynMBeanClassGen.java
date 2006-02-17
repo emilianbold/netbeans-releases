@@ -207,7 +207,8 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
         MBeanAttribute[] attributes = (MBeanAttribute[])
             attrList.toArray(new MBeanAttribute[attrList.size()]);
         StringBuffer content = new StringBuffer();
-        content.append("\n");// NOI18N
+        
+        content.append("\n\n");// NOI18N
         MessageFormat formCheckAttr = new MessageFormat(CHECK_ATTR_NAME_PATTERN);
         MessageFormat formAttrComment = new MessageFormat(COMMENT_ATTR_VALUE_PATTERN);
         Object[] args;
@@ -217,9 +218,9 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
                  "return " + WizardHelpers.getDefaultValue( // NOI18N
                          attributes[i].getTypeName()) + ";\n" // NOI18N 
             };
-            content.append(formCheckAttr.format(args) + "\n\n"); // NOI18N 
+            content.append(formCheckAttr.format(args)+"\n\n"); // NOI18N 
         }
-        getAttr.setBodyText(content.toString() + getAttr.getBodyText().substring(1));
+        getAttr.setBodyText(content.toString() + getAttr.getBodyText().substring(2));
     }
     
     private void updateSetAttr(MBeanDO mbean, JavaClass mbeanClass) {
@@ -233,7 +234,7 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
         MBeanAttribute[] attributes = (MBeanAttribute[])
             attrList.toArray(new MBeanAttribute[attrList.size()]);
         StringBuffer content = new StringBuffer();
-        content.append("\n");// NOI18N
+        content.append("\n\n");// NOI18N
         MessageFormat formCheckAttr = new MessageFormat(CHECK_ATTR_NAME_PATTERN);
         MessageFormat formAttrComment = new MessageFormat(COMMENT_ATTR_VALUE_PATTERN);
         MessageFormat formAttrThrow = new MessageFormat(THROW_ATTR_VALUE_PATTERN);
@@ -254,7 +255,7 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
             if (i == attributes.length - 1)
                 content.append("\n   ");// NOI18N
         }
-        setAttr.setBodyText(content.toString() + setAttr.getBodyText().substring(1));
+        setAttr.setBodyText(content.toString() + setAttr.getBodyText().substring(2));
     }
     
     private void updateInvoke(MBeanDO mbean, JavaClass mbeanClass) {
@@ -270,7 +271,7 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
         MBeanOperation[] operations = (MBeanOperation[])
             opList.toArray(new MBeanOperation[opList.size()]);
         StringBuffer content = new StringBuffer();
-        content.append("\n");// NOI18N
+        content.append("\n\n");// NOI18N
         if (operations.length > 0) {
             content.append(METHOD_SIGNATURE_DEF);
         }
@@ -296,7 +297,7 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
             content.append(formOperation.format(arg));
             content.append("\n"); // NOI18N
         }
-        invoke.setBodyText(content.toString() + invoke.getBodyText().substring(1));
+        invoke.setBodyText(content.toString() + invoke.getBodyText().substring(2));
     }
     
     private void updateMBeanInfo(MBeanDO mbean, JavaClass mbeanClass) {

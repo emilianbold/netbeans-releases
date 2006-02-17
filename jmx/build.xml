@@ -27,8 +27,19 @@
             <exclude name="nbproject/private/"/>
         </zip>
     </target>
-    <!-- <target name="reloadInCurrentIDE" depends="init,jar">
-        <fail unless="netbeans.home">Reloading modules works only inside the NetBeans IDE</fail>
-        <nbinstaller module="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" action="reinstall"/>
-    </target> -->
+    <!-- This target is used to generate a SAMPLE, FOR TEST PURPOSE ONLY localized jar to place under <wherethe module mymodule.jar is>/locale/mymodule_<locale>.jar -->
+    <!-- You must set the User locale. SEE: http://devtools.sfbay/teams/DeveloperTools_I18N/windows.usingasianlocales -->
+     <target name="generate-chinese" depends="init">
+         <mkdir dir="${build.classes.dir}/../locale"/>
+         <java fork="true" classname="org.netbeans.modules.jmx.i18n.GenerateLocalizedPropertiesFiles" dir="${build.classes.dir}/../..">
+                    <classpath>
+                        <path path="${build.classes.dir}"/>
+                    </classpath>
+                    <sysproperty key="jmx.i18n.properties.dirs" value="org/netbeans/modules/jmx/,org/netbeans/modules/jmx/actions/,org/netbeans/modules/jmx/actions/dialog/,org/netbeans/modules/jmx/runtime/,org/netbeans/modules/jmx/agentwizard/,org/netbeans/modules/jmx/configwizard/generator/,org/netbeans/modules/jmx/configwizard/,org/netbeans/modules/jmx/examples/,org/netbeans/modules/jmx/jconsole/,org/netbeans/modules/jmx/managerwizard/,org/netbeans/modules/jmx/mbeanwizard/,org/netbeans/modules/jmx/mbeanwizard/popup/,org/netbeans/modules/jmx/mbeanwizard/tablemodel/"/>
+                    <sysproperty key="jmx.i18n.locale" value="zh_CN"/>
+                    <sysproperty key="jmx.i18n.prefix" value="\u6771\u6771\u6771\u6771\u6771"/>
+         </java>
+         <jar basedir="${build.classes.dir}/../locale" destfile="${build.classes.dir}/../org-netbeans-modules-jmx_zh_CN.jar"/>
+     </target>  
+    
 </project>

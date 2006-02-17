@@ -148,7 +148,7 @@ public class ManagerGenerator
                         "/* *** SAMPLE CREDENTIALS *** */\n" +// NOI18N
                         "/* Replace userName and userPassword with your parameters. \n" +// NOI18N
                         " * Provide env parameter when calling JMXConnectorFactory.connect(url, env)\n" +// NOI18N
-                        " */\n\n" +// NOI18N
+                        " */\n" +// NOI18N
                         "/*\n" +// NOI18N
                         "Map env = new HashMap(); \n" +// NOI18N
                         "env.put(JMXConnector.CREDENTIALS, new String[]{\"" +// NOI18N
@@ -221,7 +221,7 @@ public class ManagerGenerator
             //formating the array with the information of the code to
             //generate
             String newMethodBody = form.format(connectionTemplate);
-            connectMethod.setBodyText(newMethodBody);
+            connectMethod.setBodyText("\n" + newMethodBody);
             
         } finally {
             JavaModel.getJavaRepository().endTrans();
