@@ -48,7 +48,7 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /** Test of web application debugging. Manual test specification is here:
- * http://qa.netbeans.org/webapps/promo-f/jspdebug/jspdebug-testspec.html
+ * http://qa.netbeans.org/modules/webapps/promo-f/jspdebug/jspdebug-testspec.html
  * <br>
  * !!! Be careful when using internal swing html browser. It posts http requests
  * three times. That's why is probably better to finish debugging each time you
