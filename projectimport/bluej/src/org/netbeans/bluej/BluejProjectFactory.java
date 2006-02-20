@@ -1,21 +1,21 @@
 package org.netbeans.bluej;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
-
 
 /**
  * factory of bluej projects, only applied when netbeans related files are not created..
@@ -59,27 +59,29 @@ public class BluejProjectFactory implements ProjectFactory {
             return null;
         }
         
+        String projectName = removeSpaces(fileObject.getName());
+        
         if (fileObject.getFileObject("nbproject") == null) {
             FileObject nbfolder = fileObject.createFolder("nbproject");
             InputStream str = getClass().getResourceAsStream("resources/build.xml");
             FileObject buildxml = fileObject.createData("build.xml");
             FileLock lock = buildxml.lock();
             OutputStream out = buildxml.getOutputStream(lock);
-            FileUtil.copy(str, out);
+            copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);
             out.close();
             lock.releaseLock();
             str = getClass().getResourceAsStream("resources/build-impl.xml");
             FileObject buildimplxml = nbfolder.createData("build-impl.xml");
             lock = buildimplxml.lock();
             out = buildimplxml.getOutputStream(lock);
-            FileUtil.copy(str, out);
+            copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);
             out.close();
             lock.releaseLock();
             str = getClass().getResourceAsStream("resources/project.properties");
             FileObject props = nbfolder.createData("project.properties");
             lock = props.lock();
             out = props.getOutputStream(lock);
-            FileUtil.copy(str, out);
+            copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);
             out.close();
             lock.releaseLock();
             str = getClass().getResourceAsStream("resources/project.xml");
@@ -108,6 +110,31 @@ public class BluejProjectFactory implements ProjectFactory {
     
     public void saveProject(Project project) throws IOException {
         // what to do here??
+    }
+    
+    private void copyAndReplaceInStream(InputStream is, OutputStream os, 
+            String ptrn, String rpl) throws IOException {
+        String sep = System.getProperty("line.separator");
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        Writer writer = new OutputStreamWriter(os);
+        String line = br.readLine();
+        while (line != null) {
+            if (line.indexOf('@') != -1) {
+                line = line.replaceAll(ptrn, rpl);
+            }
+            writer.write(line + sep);
+            line = br.readLine();
+        }
+        writer.flush();
+    }
+    
+    public static String removeSpaces(String s) {
+        int si = s.indexOf(" ");
+        if (si != -1) {
+            return s.substring(0, si) + removeSpaces(s.substring(si + 1));
+        } else {
+            return s;
+        }
     }
     
 }
