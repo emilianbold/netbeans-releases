@@ -41,7 +41,9 @@ final class NewModuleProjectData {
     private int moduleCounter;
     private int suiteCounter;
     
-    /** Creates a new instance of NewModuleProjectData */
+    /**
+     * @param wizardType one of NewNbModuleWizardIterator.TYPE_*
+     */
     NewModuleProjectData(int wizardType) {
         this.wizardType = wizardType;
     }
