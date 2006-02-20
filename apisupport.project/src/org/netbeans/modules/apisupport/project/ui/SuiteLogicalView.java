@@ -410,10 +410,11 @@ public final class SuiteLogicalView implements LogicalViewProvider {
                             sb.append("<li>" + ProjectUtils.getInformation(modules[j]).getDisplayName() + "</li>"); // NOI18N
                         }
                         sb.append("</ul>"); // NOI18N
-                        String confirmMessage = NbBundle.getMessage(SuiteLogicalView.class, "MSG_RemovingModuleMessage",
-                                ProjectUtils.getInformation(suiteComponent).getDisplayName(), sb.toString());
+                        String displayName = ProjectUtils.getInformation(suiteComponent).getDisplayName();
+                        String confirmMessage = NbBundle.getMessage(SuiteLogicalView.class,
+                                "MSG_RemovingModuleMessage", displayName, sb.toString()); // NOI18N
                         NotifyDescriptor.Confirmation confirm = new NotifyDescriptor.Confirmation(confirmMessage,
-                                NbBundle.getMessage(SuiteLogicalView.class, "CTL_RemovingModuleTitle"),
+                                NbBundle.getMessage(SuiteLogicalView.class, "CTL_RemovingModuleTitle", displayName),
                                 NotifyDescriptor.OK_CANCEL_OPTION);
                         DialogDisplayer.getDefault().notify(confirm);
                         if (confirm.getValue() == NotifyDescriptor.CANCEL_OPTION) {
@@ -529,7 +530,7 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             final String loc = (String) key;
             String locEval = project.getEvaluator().evaluate(loc);
             FileObject file = project.getHelper().resolveFileObject(locEval);
-
+            
             try {
                 Node orig = DataObject.find(file).getNodeDelegate();
                 return new Node[] {new ModuleLogicalView.SpecialFileNode(orig, (String) FILES.get(loc))};
