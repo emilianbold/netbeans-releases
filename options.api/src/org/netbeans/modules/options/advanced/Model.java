@@ -55,6 +55,11 @@ public final class Model extends TabbedPanelModel {
         return l;
     }
     
+    public String getToolTip (String category) {
+        AdvancedOption option = (AdvancedOption) categoryToOption.get (category);
+        return option.getTooltip ();
+    }
+    
     public JComponent getPanel (String category) {
         init ();
         JComponent panel = (JComponent) categoryToPanel.get (category);
