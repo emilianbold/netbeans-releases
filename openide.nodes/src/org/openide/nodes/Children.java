@@ -409,10 +409,8 @@ public abstract class Children extends Object {
      * @return array of nodes
      */
     public Node[] getNodes(boolean optimalResult) {
-        ChildrenArray arr;
-
         if (optimalResult) {
-            arr = getArray(null);
+            getArray(null);
             findChild(null);
         }
 
@@ -1917,12 +1915,6 @@ public abstract class Children extends Object {
             super();
         }
 
-        /** Package private constructor to be used by tests.
-         */
-        Keys(int min, int max) {
-            this();
-        }
-
         /** Special handling for clonning.
         */
         public Object clone() {
@@ -1931,22 +1923,16 @@ public abstract class Children extends Object {
             return k;
         }
 
-        /* Adds additional nodes to the children list.
-        * Works same like Children.Array.
-        *
-        * @param arr nodes to add
-        * @return true
-        */
+        /**
+         * @deprecated Do not use! Just call {@link #setKeys(Collection)} with a larger set.
+         */
         public boolean add(Node[] arr) {
             return super.add(arr);
         }
 
-        /* Removes nodes added by add from the list.
-        * @param arr nodes to remove
-        * @return if nodes has been removed (they need not necessary be,
-        *   because only nodes added by add can be removed, not those
-        *   created for key objects)
-        */
+        /**
+         * @deprecated Do not use! Just call {@link #setKeys(Collection)} with a smaller set.
+         */
         public boolean remove(final Node[] arr) {
             try {
                 PR.enterWriteAccess();
@@ -1961,19 +1947,13 @@ public abstract class Children extends Object {
                         }
                     }
 
-                    superRemove(arr);
+                    super.remove(arr);
                 }
             } finally {
                 PR.exitWriteAccess();
             }
 
             return true;
-        }
-
-        /** Access method to super impl of remove.
-        */
-        final void superRemove(Node[] arr) {
-            super.remove(arr);
         }
 
         /** Refresh the child nodes for a given key.
@@ -2056,7 +2036,7 @@ public abstract class Children extends Object {
         }
 
         /** Set whether new nodes should be added to the beginning or end of sublists for a given key.
-        *
+        * Generally should not be used.
         * @param b <code>true</code> if the children should be added before
         */
         protected final void setBefore(final boolean b) {

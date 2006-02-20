@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,10 +15,18 @@ package org.openide.nodes;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.ref.*;
-import java.util.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import junit.framework.AssertionFailedError;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 
 public class ChildrenKeysTest extends NbTestCase {
@@ -725,7 +733,7 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         
         public Keys (int minKeys, int maxKeys) {
-            super (minKeys, maxKeys);
+            super(/*XXX what was this for? minKeys, maxKeys*/);
         }
         
         /** Constructor.
