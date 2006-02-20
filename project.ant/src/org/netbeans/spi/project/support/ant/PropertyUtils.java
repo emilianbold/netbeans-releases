@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -744,11 +744,11 @@ public class PropertyUtils {
         }
         
         public String evaluate(final String text) {
+            if (text == null) {
+                throw new NullPointerException("Attempted to pass null to PropertyEvaluator.evaluate"); // NOI18N
+            }
             return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
                 public Object run() {
-                    if (text == null) {
-                        throw new NullPointerException("Attempted to pass null to PropertyEvaluator.evaluate"); // NOI18N
-                    }
                     if (defs == null) {
                         return null;
                     }

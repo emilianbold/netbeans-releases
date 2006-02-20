@@ -7,13 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.freeform;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -91,6 +90,9 @@ final class JavaFreeformFileBuiltQuery implements FileBuiltQueryImplementation, 
                 
                 for (int cntr = 0; cntr < builtToName.size(); cntr++) {
                     String builtTo = projectEvaluator.evaluate((String) builtToName.get(cntr));
+                    if (builtTo == null) {
+                        continue;
+                    }
                     boolean isFolder = JavaProjectGenerator.isFolder(projectEvaluator, FileUtil.toFile(project.getProjectDirectory()), builtTo);
                     
                     if (isFolder && builtToPattern == null) {

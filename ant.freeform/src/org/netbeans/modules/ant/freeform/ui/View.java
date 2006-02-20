@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -166,6 +166,9 @@ public final class View implements LogicalViewProvider {
             Element locationEl = Util.findElement(itemEl, "location", FreeformProjectType.NS_GENERAL); // NOI18N
             String location = Util.findText(locationEl);
             String locationEval = p.evaluator().evaluate(location);
+            if (locationEval == null) {
+                return null;
+            }
             FileObject file = p.helper().resolveFileObject(locationEval);
             if (file == null) {
                 // Not there... skip this node.
