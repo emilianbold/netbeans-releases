@@ -144,7 +144,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-spi-navigator.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-jdesktop-layout.jar"));
         expectedRoots.add(urlForJar("libs/external/swing-layout-1.0.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-options-api.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-modules-options-api.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-api-progress.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-projectapi.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-projectuiapi.jar"));
@@ -239,7 +239,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-spi-navigator.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-jdesktop-layout.jar"));
         expectedRoots.add(urlForJar("libs/external/swing-layout-1.0.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-options-api.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-modules-options-api.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-api-progress.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-projectapi.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-projectuiapi.jar"));
