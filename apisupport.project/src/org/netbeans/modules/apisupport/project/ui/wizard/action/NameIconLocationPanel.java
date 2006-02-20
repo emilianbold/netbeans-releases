@@ -15,11 +15,9 @@ package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
 import java.awt.Component;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -29,7 +27,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -137,40 +134,20 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
             setError(getMessage("MSG_IconRequiredForToolbar"));
         } else {
             markValid();
-            if (data.isToolbarEnabled()) {
-                checkIconValidity();
-            }
+            checkIconValidity();
             return true;
         }
         return false;
     }
 
     private void checkIconValidity() {
-        if (smallIconPath != null) {            
-            if (largeIconPath == null) {
-                setWarning(getMessage("MSG_NoLargeIcontSelected"));
-            } 
-        } else {
-            setWarning(getMessage("MSG_NoSmallIcontSelected"));
+        if (smallIconPath == null) {
+            setWarning(UIUtil.getNoIconSelectedWarning(16,16));
+        } else if (!UIUtil.isValidIcon(new File(smallIconPath),16,16)) {
+            setWarning(UIUtil.getIconDimensionWarning(new File(smallIconPath), 16, 16));
+        } else if (data.isToolbarEnabled() && largeIconPath == null) {
+            setWarning(getMessage("MSG_NoLargeIcontSelected"));
         }
-    }
-
-    private Boolean isIconSmall(final File icon) {
-        Boolean iconIsSmall = null;
-        if (icon != null) {
-            try {
-                ImageIcon imc = new ImageIcon(icon.toURI().toURL());
-                int width = imc.getIconWidth();
-                if (width == 16) {//NOI18N
-                    iconIsSmall = Boolean.TRUE;
-                }  else if (width == 24) {
-                    iconIsSmall = Boolean.FALSE;
-                }
-            } catch (MalformedURLException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }                
-        }
-        return iconIsSmall;
     }
 
     private static Set getPossibleIcons(final String iconPath) {
@@ -417,24 +394,23 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
                 Set allFiles = getPossibleIcons(getIconPath());
                 assert allFiles.contains(iconFile);
                 allFiles.remove(iconFile);
-                Boolean isIconSmall = isIconSmall(iconFile);
-                isIconSmall = (isIconSmall == null) ? Boolean.FALSE : isIconSmall;
-                assert isIconSmall != null;
+                boolean isIconSmall = UIUtil.isValidIcon(iconFile, 16, 16);
  
                 File secondIcon = null;
-                Boolean isSecondIconSmall = null;
-                for (Iterator it = allFiles.iterator(); it.hasNext();) {
+                boolean isSecondIconSmall = false;
+                for (Iterator it = allFiles.iterator(); it.hasNext() && !isSecondIconSmall;) {
                     File f = (File) it.next();
-                    isSecondIconSmall = isIconSmall(f);
-                    if (isSecondIconSmall != null && !isIconSmall.equals(isSecondIconSmall)) {
+                    isSecondIconSmall = (isIconSmall) ? 
+                        UIUtil.isValidIcon(f, 24, 24) : UIUtil.isValidIcon(f, 16, 16);
+                    if (isSecondIconSmall) {
                         secondIcon = f;
                         break;
                     }
                 }
                 
                 if (secondIcon != null) {
-                    smallIconPath = (isIconSmall.booleanValue()) ? iconFile.getAbsolutePath() : secondIcon.getAbsolutePath();
-                    largeIconPath = (isIconSmall.booleanValue()) ? secondIcon.getAbsolutePath() : iconFile.getAbsolutePath();
+                    smallIconPath = (isIconSmall) ? iconFile.getAbsolutePath() : secondIcon.getAbsolutePath();
+                    largeIconPath = (isIconSmall) ? secondIcon.getAbsolutePath() : iconFile.getAbsolutePath();
                 } else {
                     smallIconPath = iconFile.getAbsolutePath();
                     largeIconPath = null;

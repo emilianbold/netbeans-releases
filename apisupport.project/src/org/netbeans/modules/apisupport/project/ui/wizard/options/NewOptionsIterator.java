@@ -15,7 +15,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard.options;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,11 +22,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -253,18 +251,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 case WARNING_INCORRECT_ICON_SIZE:
                     File icon = new File(getIconPath());
                     assert icon.exists();
-                    ImageIcon ic = null;
-                    try {
-                        ic = new ImageIcon(icon.toURI().toURL());
-                        assert ic.getIconHeight() != 32;
-                        assert ic.getIconWidth() != 32;
-                    } catch (MalformedURLException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                        assert false;
-                        return "";//NOI18N
-                    }
-                    result = NbBundle.getMessage(NewOptionsIterator.class, "MSG_IconSize",
-                            Integer.toString(ic.getIconWidth()),Integer.toString(ic.getIconHeight()));
+                    result = UIUtil.getIconDimensionWarning(icon, 32, 32);
                     break;
                 default:
                     assert false : "Unknown warningCode: " + warningCode;
@@ -308,16 +295,10 @@ final class NewOptionsIterator extends BasicWizardIterator {
                     }
                 }
                 //warnings should go at latest
-                ImageIcon ic = null;
                 File icon = new File(getIconPath());
                 assert icon.exists();
-                try {
-                    ic = new ImageIcon(icon.toURI().toURL());
-                    if (ic.getIconHeight() != 32 || ic.getIconWidth() != 32) {
-                        return WARNING_INCORRECT_ICON_SIZE;
-                    }
-                } catch (MalformedURLException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                if (!UIUtil.isValidIcon(icon, 32, 32)) {
+                    return WARNING_INCORRECT_ICON_SIZE;
                 }
             }
             return 0;

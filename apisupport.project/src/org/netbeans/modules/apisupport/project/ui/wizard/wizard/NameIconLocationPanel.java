@@ -71,6 +71,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         };
         classNamePrefix.getDocument().addDocumentListener(updateListener);
         displayName.getDocument().addDocumentListener(updateListener);
+        icon.getDocument().addDocumentListener(updateListener);        
         Component editorComp = packageName.getEditor().getEditorComponent();
         if (editorComp instanceof JTextComponent) {
             ((JTextComponent) editorComp).getDocument().addDocumentListener(updateListener);
@@ -95,7 +96,9 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         data.setPackageName(packageName.getEditor().getItem().toString());
         if (data.isFileTemplateType()) {
             data.setDisplayName(displayName.getText());
-            data.setIcon(icon.getText().equals(NONE_LABEL) ? null : icon.getText());
+            if (icon.getText().trim().length() > 0) {
+                data.setIcon(icon.getText().equals(NONE_LABEL) ? null : icon.getText());
+            }
             data.setCategory(getCategoryPath());
         }
     }
@@ -152,7 +155,15 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         } else if (!Util.isValidSFSPath(getCategoryPath())) {
             setError(getMessage("ERR_Category_Invalid"));
         } else  {
-            markValid();
+            String path = icon.getText().trim();
+            File icon = (path.length() == 0) ? null : new File(path);
+            if (icon == null || !icon.exists()) {
+                setWarning(UIUtil.getNoIconSelectedWarning(16,16));
+            } else if (!UIUtil.isValidIcon(icon,16,16)) {
+                setWarning(UIUtil.getIconDimensionWarning(icon,16,16));
+            } else {
+                markValid();
+            }
             valid = true;
         }
         return valid;

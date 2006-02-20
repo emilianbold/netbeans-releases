@@ -97,7 +97,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         if (txtPrefix.getText().trim().length() == 0) {
             setError(getMessage("ERR_Name_Prefix_Empty"));
             return false;
-        }
+        }        
         if (!Utilities.isJavaIdentifier(txtPrefix.getText().trim())) {
             setError(getMessage("ERR_Name_Prefix_Invalid"));
             return false;
@@ -116,7 +116,15 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             setError(NbBundle.getMessage(getClass(), "ERR_Package_Invalid"));
             return false;
         }
-        markValid();
+        
+        File icon = (path.length() == 0) ? null : new File(path);
+        if (icon == null || !icon.exists()) {
+            setWarning(UIUtil.getNoIconSelectedWarning(16,16));
+        } else if (!UIUtil.isValidIcon(icon,16,16)) {
+            setWarning(UIUtil.getIconDimensionWarning(icon,16,16));
+        } else {        
+            markValid();
+        }
         return true;
     }
     

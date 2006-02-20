@@ -15,6 +15,7 @@ package org.netbeans.modules.apisupport.project.ui;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.InputEvent;
@@ -23,6 +24,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.text.Collator;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -48,6 +50,8 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
@@ -68,6 +72,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
+import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -248,42 +253,81 @@ public final class UIUtil {
     }
     
     private static WeakReference iconChooser;
+    
+    /**
+     * @param icon file representing icon
+     * @param expectedWidth expected width
+     * @param expectedHeight expected height
+     * @return warning or empty <code>String</code>
+     */
+    public static String getIconDimensionWarning(File icon, int expectedWidth, int expectedHeight) {
+        Dimension real = new Dimension(UIUtil.getIconDimension(icon));
+        if (real.height == expectedHeight && real.width == expectedWidth) {
+            return "";
+        }
+        return NbBundle.getMessage(UIUtil.class, "MSG_WrongIconSize",new Object[]  {
+            Integer.toString(real.width), 
+            Integer.toString(real.height), 
+            Integer.toString(expectedWidth), 
+            Integer.toString(expectedHeight)
+        });
+    }
+
+    /**
+     * @param expectedWidth expected width
+     * @param expectedHeight expected height
+     * @return warning 
+     */
+    public static String getNoIconSelectedWarning(int expectedWidth, int expectedHeight) {
+        return NbBundle.getMessage(UIUtil.class, "MSG_NoIconSelected",new Object[]  {
+            Integer.toString(expectedWidth), 
+            Integer.toString(expectedHeight)
+        });        
+    }
+    
+    /**
+     * @param icon file representing icon
+     * @param expectedWidth expected width
+     * @param expectedHeight expected height
+     * @return true if icon corresponds to expected dimension
+     */
+    public static boolean isValidIcon(final File icon, int expectedWidth, int expectedHeight) {
+        Dimension iconDimension = UIUtil.getIconDimension(icon);
+        return (expectedWidth == iconDimension.getWidth() &&
+                expectedHeight == iconDimension.getHeight());
+    }
+    
+    /**
+     * @param icon file representing icon
+     * @return width and height of icon encapsulated into {@link java.awt.Dimension}
+     */
+    public static Dimension getIconDimension(final File icon) {
+        try {
+            ImageIcon imc = new ImageIcon(icon.toURI().toURL());
+            return new Dimension(imc.getIconWidth(), imc.getIconHeight());
+        } catch (MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+        return new Dimension(-1, -1);
+    }
+    
     /**
      * Returns an instance of {@link javax.swing.JFileChooser} permitting
      * selection only a regular <em>icon</em>.
      */
-    public static JFileChooser getIconFileChooser() {
+    public static JFileChooser getIconFileChooser() {        
         if (iconChooser != null) {
             JFileChooser choose = (JFileChooser)iconChooser.get();
             if (choose != null) {
                 return choose;
             }
         }
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setMultiSelectionEnabled(false);
-        FileFilter[] filters = chooser.getChoosableFileFilters();
-        for (int i = 0; i < filters.length; i++) {
-            chooser.removeChoosableFileFilter(filters[i]);
-        }
-        chooser.addChoosableFileFilter(new IconFilter());
-        chooser.setFileView(new FileView() {
-            public Icon getIcon(File f) {
-                // Show icons right in the chooser, to make it easier to find
-                // the right one.
-                if (f.getName().endsWith(".gif") || f.getName().endsWith(".png")) { // NOI18N
-                    Icon icon = new ImageIcon(f.getAbsolutePath());
-                    if (icon.getIconWidth() == 16 && icon.getIconHeight() == 16) {
-                        return icon;
-                    }
-                }
-                return null;
-            }
-        });
+        final JFileChooser chooser = new IconFileChooser();        
         iconChooser = new WeakReference(chooser);
         return chooser;
     }
-    
+
+        
     /**
      * tries to set the selected file according to currently existing data.
      * Will se it only if the String represents a file path that exists.
@@ -723,4 +767,66 @@ public final class UIUtil {
         return DialogDisplayer.getDefault().notify(d).equals(accept);
     }
     
+    private static class IconFileChooser extends JFileChooser {
+        private final JTextField iconInfo = new javax.swing.JTextField();        
+        private  IconFileChooser() {
+            JPanel accessoryPanel = getAccesoryPanel(iconInfo);
+            setDialogTitle(NbBundle.getMessage(UIUtil.class, "TITLE_IconDialog"));//NOI18N
+            setAccessory(accessoryPanel);
+            setAcceptAllFileFilterUsed(false);
+            setFileSelectionMode(JFileChooser.FILES_ONLY);
+            setMultiSelectionEnabled(false);
+            addChoosableFileFilter(new IconFilter());
+            setFileView(new FileView() {
+                public Icon getIcon(File f) {
+                    // Show icons right in the chooser, to make it easier to find
+                    // the right one.
+                    if (f.getName().endsWith(".gif") || f.getName().endsWith(".png")) { // NOI18N
+                        Icon icon = new ImageIcon(f.getAbsolutePath());
+                        if (icon.getIconWidth() == 16 && icon.getIconHeight() == 16) {
+                            return icon;
+                        }
+                    }
+                    return null;
+                }
+                public String getName(File f) {
+                    File f2 = getSelectedFile();
+                    if (f2 != null && (f2.getName().endsWith(".gif") || f2.getName().endsWith(".png"))) { // NOI18N
+                        Icon icon = new ImageIcon(f2.getAbsolutePath());
+                        StringBuffer sb = new StringBuffer();
+                        sb.append(f2.getName()).append(" [");//NOI18N
+                        sb.append(icon.getIconWidth()).append("x").append(icon.getIconHeight());
+                        sb.append("]");
+                        setApproveButtonToolTipText(sb.toString());
+                        iconInfo.setText(sb.toString());
+                    } else {
+                        iconInfo.setText("");
+                    }
+                    return super.getName(f);
+                }
+                
+            });            
+        }
+        
+        private static JPanel getAccesoryPanel(final JTextField iconInfo) {
+            iconInfo.setColumns(15);
+            iconInfo.setEditable(false);
+            
+            JPanel accessoryPanel = new javax.swing.JPanel();
+            JPanel inner = new javax.swing.JPanel();
+            JLabel iconInfoLabel = new javax.swing.JLabel();
+            accessoryPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 6, 0));
+            
+            inner.setLayout(new java.awt.GridLayout(2, 1, 0, 6));
+            
+            iconInfoLabel.setLabelFor(iconInfo);
+            org.openide.awt.Mnemonics.setLocalizedText(iconInfoLabel, NbBundle.getMessage(UIUtil.class, "LBL_IconInfo"));//NOI18N
+            inner.add(iconInfoLabel);
+            
+            inner.add(iconInfo);
+            
+            accessoryPanel.add(inner);
+            return accessoryPanel;
+        }
+    }
 }

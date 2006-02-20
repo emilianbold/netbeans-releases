@@ -132,7 +132,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 }
                 
                 // Copy wizard icon
-                if (origIconPath != null) {
+                if (origIconPath != null && origIconPath.length() > 0) {
                     String relToSrcDir = addCreateIconOperation(cmf, origIconPath);
                     try {
                         URL url = new URL("nbresloc:/" + relToSrcDir); // NOI18N
