@@ -1281,9 +1281,28 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             return;
         }
 
-        RADProperty property = metacomp.getBeanProperty("text"); // NOI18N
-        if (property == null)
-            return; // should not happen
+        FormProperty property = null;
+        if (JTabbedPane.class.isAssignableFrom(metacomp.getBeanClass())) {
+            JTabbedPane tabbedPane = (JTabbedPane)comp;
+            int index = tabbedPane.getSelectedIndex();
+            RADVisualContainer metacont = (RADVisualContainer)metacomp;
+            RADVisualComponent tabComp = metacont.getSubComponent(index);
+            Node.Property[] props = tabComp.getConstraintsProperties();
+            for (int i=0; i<props.length; i++) {
+                if (props[i].getName().equals("TabConstraints tabTitle")) { // NOI18N
+                    if (props[i] instanceof FormProperty) {
+                        property = (FormProperty)props[i];
+                    } else {
+                        return;
+                    }
+                }
+            }
+            if (property == null) return;
+        } else {
+            property = metacomp.getBeanProperty("text"); // NOI18N
+            if (property == null)
+                return; // should not happen
+        }
 
         String editText = null;
         try {
@@ -1367,8 +1386,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             parent = parent.getParentComponent();
         }
 
-        return InPlaceEditLayer.supportsEditingFor(metacomp.getBeanClass(),
-                                                   false);
+        Class beanClass = metacomp.getBeanClass();
+        return InPlaceEditLayer.supportsEditingFor(beanClass, false)
+            && (!JTabbedPane.class.isAssignableFrom(beanClass) || ((JTabbedPane)comp).getTabCount() != 0);
     }
 
     private void notifyCannotEditInPlace() {

@@ -1482,6 +1482,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     if (!formDesigner.isComponentSelected(hitMetaComp)) {   
                         formDesigner.setSelectedComponent(hitMetaComp);
                     }
+                    processMouseClickInLayoutSupport(hitMetaComp, e);
                 }
                 draggingEnded = false; // reset flag preventing dragging from start
             }

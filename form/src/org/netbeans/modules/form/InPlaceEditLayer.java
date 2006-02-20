@@ -71,7 +71,7 @@ class InPlaceEditLayer extends JPanel
             inPlaceField = null;
         }
 
-        if (comp instanceof JLabel || comp instanceof AbstractButton) {
+        if (comp instanceof JLabel || comp instanceof AbstractButton || comp instanceof JTabbedPane) {
             layerEditing = true;
             superContainer = null;
             createInPlaceField();
@@ -107,6 +107,7 @@ class InPlaceEditLayer extends JPanel
     static boolean supportsEditingFor(Class compClass, boolean layerRequired) {
         return JLabel.class.isAssignableFrom(compClass)
                || AbstractButton.class.isAssignableFrom(compClass)
+               || JTabbedPane.class.isAssignableFrom(compClass)
                || (!layerRequired
                    && (JTextField.class.isAssignableFrom(compClass)
                        || JTextArea.class.isAssignableFrom(compClass)));
@@ -170,6 +171,13 @@ class InPlaceEditLayer extends JPanel
             inPlaceField.setFont(button.getFont());
             inPlaceField.setHorizontalAlignment(button.getHorizontalAlignment());
 //            inPlaceField.setNextFocusableComponent(this);
+        }
+        else if (editedComp instanceof JTabbedPane) {
+            inPlaceField = new InPlaceTextField(editedText);
+            inPlaceField.setFont(((JTabbedPane)editedComp).getFont());
+            inPlaceField.setHorizontalAlignment(SwingConstants.CENTER);
+            Insets insets = inPlaceField.getInsets();
+            inPlaceField.setMargin(new Insets(0, insets.left, 0, insets.right));
         }
         else return; // should not happen
 /*        else if (editedComp instanceof JTextField) {
@@ -381,6 +389,20 @@ class InPlaceEditLayer extends JPanel
                     editedIns.bottom = 0;
                 }
             }
+        } else if (editedComp instanceof JTabbedPane) {
+            JTabbedPane tabbedPane = (JTabbedPane)editedComp;
+            int index = tabbedPane.getSelectedIndex();
+            text = tabbedPane.getTitleAt(index);
+            Rectangle relBounds = tabbedPane.getBoundsAt(index);
+            relBounds.x += bounds.x+4;
+            relBounds.y += bounds.y;
+            bounds = relBounds;
+            bounds.width -= 8;
+            icon = tabbedPane.getIconAt(index);
+            itGap = UIManager.getInt("TabbedPane.textIconGap"); // NOI18N
+            vA = hA = vTP = SwingConstants.CENTER;
+            hTP = SwingConstants.TRAILING;
+            editedIns = new Insets(0, 0, 0, 0);
         }
         else return; // should not happen
 
