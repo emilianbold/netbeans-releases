@@ -271,7 +271,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../javadoc</project>
                 <project>../junit</project>
                 <project>../libs/commons_logging</project>
-                <project>../libs/form-layout</project>
                 <project>../libs/jsch</project>
                 <project>../libs/swing-layout</project>
                 <project>../libs/xerces</project>
