@@ -1,29 +1,15 @@
 /*
- *                 Sun Public License Notice
- * 
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
- * 
- * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * SyntaxColoringPanel1.java
+ *
+ * Created on January 18, 2006, 11:53 AM
  */
 
 package org.netbeans.modules.options.colors;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,10 +17,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,46 +29,25 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.AbstractButton;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JEditorPane;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
-import javax.swing.colorchooser.AbstractColorChooserPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-
 import org.netbeans.api.editor.settings.EditorStyleConstants;
-import org.netbeans.editor.Coloring;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.options.colors.ColorComboBox.Value;
 import org.netbeans.modules.options.colors.ColorModel.Preview;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
-import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
-
 
 /**
  *
@@ -95,20 +56,9 @@ import org.openide.util.RequestProcessor.Task;
 public class SyntaxColoringPanel extends JPanel implements ActionListener, 
 PropertyChangeListener {
     
-    private JComboBox		cbLanguages = new JComboBox ();
-    private JList		lCategories = new JList ();
-    private JTextField          tfFont = new JTextField ("");
-    private JButton             bFont = new JButton ("...");
-    private ColorComboBox	foregroundColorChooser = new ColorComboBox ();
-    private JButton             bForeground = new JButton ("...");
-    private ColorComboBox	backgroundColorChooser = new ColorComboBox ();
-    private JButton             bBackground = new JButton ("...");
-    private JComboBox		cbEffects = new JComboBox ();
-    private ColorComboBox	effectsColorChooser = new ColorComboBox ();
-    private JPanel              previewPanel = new JPanel ();
+    
     private Preview             preview;
     private Task                selectTask;
- 
     private FontAndColorsPanel  fontAndColorsPanel;
     private ColorModel          colorModel = null;
     private String		currentLanguage;
@@ -118,32 +68,35 @@ PropertyChangeListener {
     /** Map (String (profile name) > Set (String (language name))) of names of changed languages. */
     private Map                 toBeSaved = new HashMap ();
     private boolean		listen = false;
-
     
-    /** Creates new form FontAndColorsPanel */
+    /** Creates new form SyntaxColoringPanel1 */
     public SyntaxColoringPanel (FontAndColorsPanel fontAndColorsPanel) {
+        initComponents ();
         this.fontAndColorsPanel = fontAndColorsPanel;
         
         // 1) init components
-        cbLanguages.getAccessibleContext ().setAccessibleName (loc ("AN_Languages"));
-        cbLanguages.getAccessibleContext ().setAccessibleDescription (loc ("AD_Languages"));
+        cbLanguage.getAccessibleContext ().setAccessibleName (loc ("AN_Languages"));
+        cbLanguage.getAccessibleContext ().setAccessibleDescription (loc ("AD_Languages"));
         lCategories.getAccessibleContext ().setAccessibleName (loc ("AN_Categories"));
         lCategories.getAccessibleContext ().setAccessibleDescription (loc ("AD_Categories"));
         bFont.getAccessibleContext ().setAccessibleName (loc ("AN_Font"));
         bFont.getAccessibleContext ().setAccessibleDescription (loc ("AD_Font"));
-        foregroundColorChooser.getAccessibleContext ().setAccessibleName (loc ("AN_Foreground_Chooser"));
-        foregroundColorChooser.getAccessibleContext ().setAccessibleDescription (loc ("AD_Foreground_Chooser"));
-        bForeground.getAccessibleContext ().setAccessibleName (loc ("AN_Foreground"));
-        bForeground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Foreground"));
-        backgroundColorChooser.getAccessibleContext ().setAccessibleName (loc ("AN_Background_Chooser"));
-        backgroundColorChooser.getAccessibleContext ().setAccessibleDescription (loc ("AD_Background_Chooser"));
-        bBackground.getAccessibleContext ().setAccessibleName (loc ("AN_Background"));
-        bBackground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Background"));
+        cbForeground.getAccessibleContext ().setAccessibleName (loc ("AN_Foreground_Chooser"));
+        cbForeground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Foreground_Chooser"));
+//        bForeground.getAccessibleContext ().setAccessibleName (loc ("AN_Foreground"));
+//        bForeground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Foreground"));
+        cbBackground.getAccessibleContext ().setAccessibleName (loc ("AN_Background_Chooser"));
+        cbBackground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Background_Chooser"));
+//        bBackground.getAccessibleContext ().setAccessibleName (loc ("AN_Background"));
+//        bBackground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Background"));
         cbEffects.getAccessibleContext ().setAccessibleName (loc ("AN_Efects_Color_Chooser"));
         cbEffects.getAccessibleContext ().setAccessibleDescription (loc ("AD_Efects_Color_Chooser"));
-        effectsColorChooser.getAccessibleContext ().setAccessibleName (loc ("AN_Efects_Color"));
-        effectsColorChooser.getAccessibleContext ().setAccessibleDescription (loc ("AD_Efects_Color"));
-        cbLanguages.addActionListener (this);
+        cbEffectColor.getAccessibleContext ().setAccessibleName (loc ("AN_Efects_Color"));
+        cbEffectColor.getAccessibleContext ().setAccessibleDescription (loc ("AD_Efects_Color"));
+        ColorComboBox.init (cbBackground);
+        ColorComboBox.init (cbForeground);
+        ColorComboBox.init (cbEffectColor);
+        cbLanguage.addActionListener (this);
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (3);
 	lCategories.setCellRenderer (new CategoryRenderer ());
@@ -156,13 +109,13 @@ PropertyChangeListener {
 	tfFont.setEditable (false);
         bFont.addActionListener (this);
         bFont.setMargin (new Insets (0, 0, 0, 0));
-        bForeground.addActionListener (this);
-        bForeground.setMargin (new Insets (0, 0, 0, 0));
-        bBackground.addActionListener (this);
-        bBackground.setMargin (new Insets (0, 0, 0, 0));
-        foregroundColorChooser.addPropertyChangeListener (this);
+//        bForeground.addActionListener (this);
+//        bForeground.setMargin (new Insets (0, 0, 0, 0));
+//        bBackground.addActionListener (this);
+//        bBackground.setMargin (new Insets (0, 0, 0, 0));
+        cbForeground.addActionListener (this);
 
-        backgroundColorChooser.addPropertyChangeListener (this);
+        cbBackground.addActionListener (this);
         
         cbEffects.addItem (loc ("CTL_Effects_None"));
         cbEffects.addItem (loc ("CTL_Effects_Underlined"));
@@ -171,57 +124,10 @@ PropertyChangeListener {
         cbEffects.getAccessibleContext ().setAccessibleName (loc ("AN_Effects"));
         cbEffects.getAccessibleContext ().setAccessibleDescription (loc ("AD_Effects"));
         cbEffects.addActionListener (this);
-        effectsColorChooser = new ColorComboBox ();
-        effectsColorChooser.addPropertyChangeListener (this);
-        JLabel lCategory = new JLabel ();
+        cbEffectColor.addActionListener (this);
         loc (lCategory, "CTL_Category");
-        lCategory.setLabelFor (lCategories);
-        JLabel lbFont = new JLabel ();
-        loc (lbFont, "CTL_Font");
-        lbFont.setLabelFor (bFont);
+        loc (lFont, "CTL_Font");
 
-        previewPanel = new JPanel (new BorderLayout ());
-        previewPanel.setBorder (new EtchedBorder ());
-
-        // 2) define layout
-        FormLayout layout = new FormLayout (
-            "p, 3dlu, 120dlu",   // cols
-            "p");           // rows
-        PanelBuilder builder = new PanelBuilder (layout);
-        CellConstraints cc = new CellConstraints ();
-        CellConstraints lc = new CellConstraints ();
-        builder.addLabel (loc ("CTL_Languages"),	lc.xy  (1, 1),
-                          cbLanguages,			cc.xy  (3, 1));
-	JPanel pLanguages = builder.getPanel ();
-	
-	layout = new FormLayout (
-            "p:g, 10dlu, p, 3dlu, p:g, 1dlu, p", // cols
-            "p, 10dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 5dlu, p, 3dlu, f:130dlu:g");      // rows
-        //layout.setColumnGroups (new int [][] {{1, 5}});
-        builder = new PanelBuilder (layout, this);
-        builder.setDefaultDialogBorder ();
-	
-	builder.add (pLanguages,                        cc.xyw (1, 1, 5));
-        
-        builder.add (lCategory,                         lc.xy  (1, 3));
-	builder.add (new JScrollPane (lCategories),     cc.xywh(1, 5, 1, 9));
-        
-        builder.add (lbFont,                            lc.xy  (3, 5));
-        builder.add (tfFont,	                        cc.xy  (5, 5));
-        builder.add (bFont,                             cc.xy  (7, 5));
-        builder.addLabel (loc ("CTL_Foreground_label"), lc.xy  (3, 7),
-                          foregroundColorChooser,	cc.xyw (5, 7, 3));
-//        builder.add (bForeground,                       cc.xy  (7, 7));
-        builder.addLabel (loc ("CTL_Background_label"), lc.xy  (3, 9),
-                          backgroundColorChooser,	cc.xyw (5, 9, 3));
-//        builder.add (bBackground,                       cc.xy  (7, 9));
-        builder.addLabel (loc ("CTL_Effects_label"),	lc.xy  (3, 11),
-                          cbEffects,			cc.xyw (5, 11, 3));
-        builder.addLabel (loc ("CTL_Effects_color"),	lc.xy  (3, 13),
-                          effectsColorChooser,		cc.xyw (5, 13, 3));
-        builder.addLabel (loc ("CTL_Preview"),	        lc.xyw (1, 15, 7),
-                          previewPanel,                 cc.xyw (1, 17, 7));
-        
         selectTask = new RequestProcessor ("SyntaxColoringPanel1").create (
             new Runnable () {
                 public void run () {
@@ -232,17 +138,180 @@ PropertyChangeListener {
             }
         );
     }
- 
+    
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        jButton1 = new javax.swing.JButton();
+        lLanguage = new javax.swing.JLabel();
+        cbLanguage = new javax.swing.JComboBox();
+        lCategory = new javax.swing.JLabel();
+        spCategories = new javax.swing.JScrollPane();
+        lCategories = new javax.swing.JList();
+        lPreview = new javax.swing.JLabel();
+        pPreview = new javax.swing.JPanel();
+        lFont = new javax.swing.JLabel();
+        lForeground = new javax.swing.JLabel();
+        lBackground = new javax.swing.JLabel();
+        lEffects = new javax.swing.JLabel();
+        lEffectColor = new javax.swing.JLabel();
+        cbForeground = new javax.swing.JComboBox();
+        cbBackground = new javax.swing.JComboBox();
+        cbEffects = new javax.swing.JComboBox();
+        cbEffectColor = new javax.swing.JComboBox();
+        tfFont = new javax.swing.JTextField();
+        bFont = new javax.swing.JButton();
+
+        jButton1.setText("jButton1");
+
+        lLanguage.setLabelFor(cbLanguage);
+        lLanguage.setText("Language:");
+
+        lCategory.setLabelFor(lCategories);
+        lCategory.setText("Category:");
+
+        spCategories.setViewportView(lCategories);
+
+        lPreview.setText("Preview:");
+
+        pPreview.setLayout(new java.awt.BorderLayout());
+
+        pPreview.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        lFont.setLabelFor(bFont);
+        lFont.setText("Font:");
+
+        lForeground.setLabelFor(cbForeground);
+        lForeground.setText("Foreground:");
+
+        lBackground.setLabelFor(cbBackground);
+        lBackground.setText("Background:");
+
+        lEffects.setLabelFor(cbEffects);
+        lEffects.setText("Effects:");
+
+        lEffectColor.setLabelFor(cbEffectColor);
+        lEffectColor.setText("Effect Color:");
+
+        bFont.setText("...");
+        bFont.setMargin(new java.awt.Insets(2, 2, 2, 2));
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(pPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(lLanguage)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(cbLanguage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(lCategory)
+                    .add(layout.createSequentialGroup()
+                        .add(spCategories, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lEffectColor)
+                            .add(lForeground)
+                            .add(lFont)
+                            .add(lEffects)
+                            .add(lBackground))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(tfFont)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(bFont))
+                            .add(cbForeground, 0, 38, Short.MAX_VALUE)
+                            .add(cbBackground, 0, 38, Short.MAX_VALUE)
+                            .add(cbEffects, 0, 38, Short.MAX_VALUE)
+                            .add(cbEffectColor, 0, 38, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                    .add(lPreview))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lLanguage)
+                    .add(cbLanguage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(lCategory)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(spCategories, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(lPreview))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(lFont)
+                            .add(tfFont, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(bFont))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(lForeground)
+                            .add(cbForeground, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(lBackground)
+                            .add(cbBackground, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(lEffects)
+                            .add(cbEffects, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(lEffectColor)
+                            .add(cbEffectColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(pPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+    }// </editor-fold>//GEN-END:initComponents
+    
+    
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton bFont;
+    private javax.swing.JComboBox cbBackground;
+    private javax.swing.JComboBox cbEffectColor;
+    private javax.swing.JComboBox cbEffects;
+    private javax.swing.JComboBox cbForeground;
+    private javax.swing.JComboBox cbLanguage;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel lBackground;
+    private javax.swing.JList lCategories;
+    private javax.swing.JLabel lCategory;
+    private javax.swing.JLabel lEffectColor;
+    private javax.swing.JLabel lEffects;
+    private javax.swing.JLabel lFont;
+    private javax.swing.JLabel lForeground;
+    private javax.swing.JLabel lLanguage;
+    private javax.swing.JLabel lPreview;
+    private javax.swing.JPanel pPreview;
+    private javax.swing.JScrollPane spCategories;
+    private javax.swing.JTextField tfFont;
+    // End of variables declaration//GEN-END:variables
+    
+
     public void actionPerformed (ActionEvent evt) {
         if (!listen) return;
 	if (evt.getSource () == cbEffects) {
-	    effectsColorChooser.setEnabled (cbEffects.getSelectedIndex () > 0);
+	    cbEffectColor.setEnabled (cbEffects.getSelectedIndex () > 0);
             if (cbEffects.getSelectedIndex () == 0)
-                effectsColorChooser.setColor (null);
+                ColorComboBox.setColor (cbEffectColor, null);
             updateData ();
 	} else
-	if (evt.getSource () == cbLanguages) {
-	    setCurrentLanguage ((String) cbLanguages.getSelectedItem ());
+	if (evt.getSource () == cbLanguage) {
+	    setCurrentLanguage ((String) cbLanguage.getSelectedItem ());
 	} else
         if (evt.getSource () == bFont) {
             PropertyEditor pe = PropertyEditorManager.findEditor (Font.class);
@@ -261,6 +330,9 @@ PropertyChangeListener {
                 setToBeSaved (currentProfile, currentLanguage);
                 refreshUI (); // refresh font viewer
             }
+        } else
+        if (evt.getSource () instanceof JComboBox) {
+            updateData ();
         }
     }
     
@@ -284,8 +356,6 @@ PropertyChangeListener {
                 return;
             }
         }
-        if (evt.getPropertyName () != ColorComboBox.PROP_COLOR) return;
-        updateData ();
     }
     
     void update (ColorModel colorModel) {
@@ -299,8 +369,8 @@ PropertyChangeListener {
         Component component = colorModel.getSyntaxColoringPreviewComponent 
             (currentLanguage);
         preview = (Preview) component;
-        previewPanel.removeAll ();
-        previewPanel.add ("Center", component);
+        pPreview.removeAll ();
+        pPreview.add ("Center", component);
         preview.addPropertyChangeListener 
             (Preview.PROP_CURRENT_ELEMENT, this);
         listen = false;
@@ -308,11 +378,11 @@ PropertyChangeListener {
             (colorModel.getLanguages ());
         Collections.sort (languages, new LanguagesComparator ());
         Iterator it = languages.iterator ();
-        cbLanguages.removeAllItems ();
+        cbLanguage.removeAllItems ();
         while (it.hasNext ())
-            cbLanguages.addItem (it.next ());
+            cbLanguage.addItem (it.next ());
         listen = true;
-        cbLanguages.setSelectedIndex (0);
+        cbLanguage.setSelectedIndex (0);
     }
     
     void cancel () {
@@ -439,24 +509,23 @@ PropertyChangeListener {
               wave = null, 
               strikethrough = null;
         if (cbEffects.getSelectedIndex () == 1)
-            underline = effectsColorChooser.getColor ();
+            underline = ((ColorValue) cbEffectColor.getSelectedItem ()).color;
         if (cbEffects.getSelectedIndex () == 2)
-            wave = effectsColorChooser.getColor ();
+            wave = ((ColorValue) cbEffectColor.getSelectedItem ()).color;
         if (cbEffects.getSelectedIndex () == 3)
-            strikethrough = effectsColorChooser.getColor ();
+            strikethrough = ((ColorValue) cbEffectColor.getSelectedItem ()).color;
         
         SimpleAttributeSet c = new SimpleAttributeSet (category);
-        if (backgroundColorChooser.getColor () != null)
-            c.addAttribute (
-                StyleConstants.Background,
-                backgroundColorChooser.getColor ()
-            );
+        Color color = ((ColorValue) cbBackground.getSelectedItem ()).color;
+        if (color != null)
+            c.addAttribute (StyleConstants.Background, color);
         else
             c.removeAttribute (StyleConstants.Background);
-        if (foregroundColorChooser.getColor () != null)
+        color = ((ColorValue) cbForeground.getSelectedItem ()).color;
+        if (color != null)
             c.addAttribute (
                 StyleConstants.Foreground,
-                foregroundColorChooser.getColor ()
+                color
             );
         else
             c.removeAttribute (StyleConstants.Foreground);
@@ -553,62 +622,68 @@ PropertyChangeListener {
 	    tfFont.setText ("");
             bFont.setEnabled (false);
             cbEffects.setEnabled (false);
-            foregroundColorChooser.setEnabled (false);
-	    foregroundColorChooser.setSelectedItem (new Value (null, null));
-            backgroundColorChooser.setEnabled (false);
-	    backgroundColorChooser.setSelectedItem (new Value (null, null));
-            effectsColorChooser.setEnabled (false);
-	    effectsColorChooser.setSelectedItem (new Value (null, null));
+            cbForeground.setEnabled (false);
+	    cbForeground.setSelectedItem (new ColorValue (null, null));
+            cbBackground.setEnabled (false);
+	    cbBackground.setSelectedItem (new ColorValue (null, null));
+            cbEffectColor.setEnabled (false);
+	    cbEffectColor.setSelectedItem (new ColorValue (null, null));
             updatePreview ();
             return;
         }
         bFont.setEnabled (true);
         cbEffects.setEnabled (true);
-        foregroundColorChooser.setEnabled (true);
-        backgroundColorChooser.setEnabled (true);
+        cbForeground.setEnabled (true);
+        cbBackground.setEnabled (true);
         
         // set defaults
         Color inheritedForeground = (Color) getDefault 
             (currentLanguage, category, StyleConstants.Foreground);
         if (inheritedForeground == null) inheritedForeground = Color.black;
-        foregroundColorChooser.setInheritedColor (inheritedForeground);
+        ColorComboBox.setInheritedColor (cbForeground, inheritedForeground);
         Color inheritedBackground = (Color) getDefault 
             (currentLanguage, category, StyleConstants.Background);
         if (inheritedBackground == null) inheritedBackground = Color.white;
-        backgroundColorChooser.setInheritedColor (inheritedBackground);
+        ColorComboBox.setInheritedColor (cbBackground, inheritedBackground);
         
         String font = fontToString (category);
         tfFont.setText (font);
-        foregroundColorChooser.setColor (
+        ColorComboBox.setColor (
+            cbForeground,
             (Color) category.getAttribute (StyleConstants.Foreground)
         );
-        backgroundColorChooser.setColor (
+        ColorComboBox.setColor (
+            cbBackground,
             (Color) category.getAttribute (StyleConstants.Background)
         );
         
         if (category.getAttribute (StyleConstants.Underline) != null) {
             cbEffects.setSelectedIndex (1);
-            effectsColorChooser.setEnabled (true);
-            effectsColorChooser.setColor (
+            cbEffectColor.setEnabled (true);
+            ColorComboBox.setColor (
+                cbEffectColor,
                 (Color) category.getAttribute (StyleConstants.Underline)
             );
         } else
         if (category.getAttribute (EditorStyleConstants.WaveUnderlineColor) != null) {
             cbEffects.setSelectedIndex (2);
-            effectsColorChooser.setEnabled (true);
-            effectsColorChooser.setColor (
+            cbEffectColor.setEnabled (true);
+            ColorComboBox.setColor (
+                cbEffectColor,
                 (Color) category.getAttribute (EditorStyleConstants.WaveUnderlineColor)
             );
         } else
         if (category.getAttribute (StyleConstants.StrikeThrough) != null) {
             cbEffects.setSelectedIndex (3);
-            effectsColorChooser.setEnabled (true);
-            effectsColorChooser.setColor 
-                ((Color) category.getAttribute (StyleConstants.StrikeThrough));
+            cbEffectColor.setEnabled (true);
+            ColorComboBox.setColor (
+                cbEffectColor,
+                (Color) category.getAttribute (StyleConstants.StrikeThrough)
+            );
         } else {
             cbEffects.setSelectedIndex (0);
-            effectsColorChooser.setEnabled (false);
-	    effectsColorChooser.setSelectedItem (new Value (null, null));
+            cbEffectColor.setEnabled (false);
+	    cbEffectColor.setSelectedItem (new ColorValue (null, null));
         }
         updatePreview ();
         listen = true;
