@@ -557,10 +557,9 @@ OUTER:
         }
 
         public void resultChanged(LookupEvent ev) {
-            boolean newEnabled = delegate.enable(nodes());
-
-            enabled = newEnabled;
-            support.firePropertyChange(PROP_ENABLED, enabled, newEnabled);
+            boolean old = enabled;
+            enabled = delegate.enable(nodes());
+            support.firePropertyChange(PROP_ENABLED, old, enabled);
         }
 
         public JMenuItem getMenuPresenter() {
