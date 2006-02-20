@@ -87,7 +87,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     // global keyboard shortcut
     private boolean kbShortcutEnabled;
-    private Set keyStrokes = new HashSet();
+    private final Set keyStrokes = new HashSet();
     
     // file type context menu item
     private boolean ftContextEnabled;
@@ -114,7 +114,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     }
     
     private void regenerate() {
-        String fqClassName = getPackageName() + '.' + className;
         String dashedPkgName = getPackageName().replace('.', '-');
         String dashedFqClassName = dashedPkgName + '-' + className;
         String shadow = dashedFqClassName + ".shadow"; // NOI18N
@@ -187,7 +186,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         String instanceFullPath = category + "/" // NOI18N
                 + dashedFqClassName + ".instance"; // NOI18N
         cmf.add(cmf.createLayerEntry(instanceFullPath, null, null, null, null));
-        cmf.add(cmf.createLayerAttribute(instanceFullPath, "instanceClass", fqClassName)); // NOI18N
         
         // add dependency on util to project.xml
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N

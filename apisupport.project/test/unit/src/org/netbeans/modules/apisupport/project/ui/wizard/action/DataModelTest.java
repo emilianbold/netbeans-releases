@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -85,9 +85,7 @@ public class DataModelTest extends LayerTestBase {
             "<filesystem>",
                     "<folder name=\"Actions\">",
                     "<folder name=\"Tools\">",
-                    "<file name=\"org-example-module1-BeepAction.instance\">",
-                    "<attr name=\"instanceClass\" stringvalue=\"org.example.module1.BeepAction\"/>",
-                    "</file>",
+                    "<file name=\"org-example-module1-BeepAction.instance\"/>",
                     "</folder>",
                     "</folder>",
                     "<folder name=\"Menu\">",
@@ -171,10 +169,10 @@ public class DataModelTest extends LayerTestBase {
         data.setPackageName("org.example.module1");
         
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
-        assertEquals(
+        assertEquals("new files",
                 Arrays.asList(new String[] {"src/org/example/module1/BeepAction.java", "src/org/example/module1/Bundle.properties"}),
                 Arrays.asList(cmf.getCreatedPaths()));
-        assertEquals(
+        assertEquals("modified files",
                 Arrays.asList(new String[] {"nbproject/project.xml", "src/org/example/module1/resources/layer.xml"}),
                 Arrays.asList(cmf.getModifiedPaths()));
 
@@ -184,9 +182,7 @@ public class DataModelTest extends LayerTestBase {
             "<filesystem>",
                     "<folder name=\"Actions\">",
                     "<folder name=\"Tools\">",
-                    "<file name=\"org-example-module1-BeepAction.instance\">",
-                    "<attr name=\"instanceClass\" stringvalue=\"org.example.module1.BeepAction\"/>",
-                    "</file>",
+                    "<file name=\"org-example-module1-BeepAction.instance\"/>",
                     "</folder>",
                     "</folder>",
                     "<folder name=\"Editors\">",
