@@ -314,7 +314,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     }
     
     private String getSelectionMode() {
-        return multiSelection ? "MODE_ANY" : "MODE_EXACTLY_ONE"; // NOI18N
+        return multiSelection ? "MODE_ALL" : "MODE_EXACTLY_ONE"; // NOI18N
     }
     
     void setCategory(String category) {
