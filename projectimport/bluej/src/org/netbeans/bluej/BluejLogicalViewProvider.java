@@ -14,7 +14,6 @@
 package org.netbeans.bluej;
 
 import java.awt.Image;
-import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
@@ -23,6 +22,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.bluej.nodes.BluejLogicalViewRootNode;
+import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -147,6 +148,7 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
         private String iconPath = null;
         private FileBuiltQuery.Status status = null;
         private boolean attached = false;
+        private String readmeIconPath = null;
         BigIconFilterNode(Node original) {
             super(original, new BigIconFilterChilden(original));
             DataObject dobj = (DataObject)original.getLookup().lookup(DataObject.class);
@@ -166,7 +168,11 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
                     }
                     status = FileBuiltQuery.getStatus(dobj.getPrimaryFile());
                 }
+                if ("readme.txt".equalsIgnoreCase(dobj.getPrimaryFile().getNameExt())) {
+                    iconPath = "org/netbeans/bluej/resources/readme.png";
+                }
             }
+            
         }
 
         public Image getIcon(int type) {
@@ -177,6 +183,12 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
                     retValue = Utilities.mergeImages(retValue, Utilities.loadImage("org/netbeans/bluej/resources/compiled.png"),
                                                      attached ? 6 : 3, attached ? 11 : 13);
                 }
+                if (hasMain()) {
+                    retValue = Utilities.mergeImages(retValue, Utilities.loadImage("org/netbeans/bluej/resources/executable-badge.gif"),
+                                                     attached ? 40 : 37, attached ? 18 : 20);
+                }
+            } else if (readmeIconPath != null) {
+                retValue = Utilities.loadImage(readmeIconPath);
             } else {
                 retValue = super.getIcon(type);
             }
@@ -185,6 +197,25 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
                 retValue = retValue.getScaledInstance(-1, 32, Image.SCALE_DEFAULT);
 //            }
             return retValue;
+        }
+        
+        private boolean hasMain() {
+            DataObject dobj = (DataObject)getLookup().lookup(DataObject.class);
+            if (dobj != null) {
+                FileObject fo = dobj.getPrimaryFile();
+                if(!fo.isValid())
+                    return false;
+                JavaModel.getJavaRepository().beginTrans(false);
+                try {
+                    JavaModel.setClassPath(fo);
+                    Resource r = JavaModel.getResource(fo);
+                    
+                    return r!=null && !r.getMain().isEmpty();
+                } finally {
+                    JavaModel.getJavaRepository().endTrans();
+                }
+            }
+            return false;
         }
         
         
