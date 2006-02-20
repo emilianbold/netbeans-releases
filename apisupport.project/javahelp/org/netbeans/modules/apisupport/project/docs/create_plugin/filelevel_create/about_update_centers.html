@@ -6,21 +6,20 @@
 <html>
 <head>
 
-    <title>About Update Centers</title>
+    <title>About Private Update Centers</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
     <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-    <h2>About Update Centers</h2>
+    <h2>About Private Update Centers</h2>
     <p><small> 
         <a href="#seealso">See Also</a> 
     </small></p>
 
-    <p>When you create an update center, you are thinking about the needs of
-    your end users and how you can best make your plug-in modules available to them.
-    An update center is nothing more than an XML file that is known
-    as the "autoupdate descriptor". The autoupdate descriptor lists
+    <p>An update center is nothing more than an XML file that is known
+    as the "autoupdate descriptor", together with the plug-in modules that
+    it describes. The autoupdate descriptor lists
     all the plug-in modules that you would like to make available.
     For each plug-in module, the autoupdate descriptor provides
     information such as a name, a description, and a list of
@@ -32,14 +31,26 @@
     The autoupdate descriptor itself must also
     live on a host. The host where the autoupdate descriptor
     lives need not be the same host as where the plug-in modules
-    live.
+    live. The plug-in modules can live together on the same host
+    or be spread across different hosts.
     
     <p>After the autoupdate descriptor and its associated plug-in modules
     are on a host, you must let your end users know that they are there.
-    Then, the end users need to register the URL to your 
-    autopdate descriptor. They can do so manually in the Options window.
-    Alternatively, you can provide a plug-in module that registers the
-    URL to the update center for them. Once the URL to the update center
+    The URL to the autoupdate descriptor must be registered in the
+    end users' IDEs.
+    This can be done in one of two ways:
+    <ul>
+    
+        <li><b>Automatically.</b> You can provide a plug-in module that registers the
+        URL to the update center for them. This plug-in module can be
+        generated in the IDE, without any coding on your part.    
+        <li><b>Manually.</b> You must tell your end user what the URL to your
+        autoupdate descriptor is.
+        Then, the end users need to register the URL to your 
+        autopdate descriptor. They must then do so manually in the Options window.
+    
+    </ul>
+    <p>Once the URL to the update center
     is registered, your end users can access
     your plug-in modules via the Update Center wizard, which they
     can find under the Tools menu. Not only new plug-in modules,

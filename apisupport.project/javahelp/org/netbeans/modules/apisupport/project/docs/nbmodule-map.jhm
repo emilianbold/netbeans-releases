@@ -15,6 +15,7 @@
 	<mapID target="apisupport_about_open_apis" url="about/about-open-apis.html"/>
 	<mapID target="apisupport_about-netbeans-platform" url="about/about-netbeans-platform.html"/>
 	<mapID target="apisupport_modules_process" url="about/modules_process.html"/>
+<mapID target="apisupport_richclientapp_process" url="about/richclientapp_process.html"/>
 	<mapID target="apisupport_modules_quickref" url="about/modules_quickref.html"/>
 <mapID target="apisupport_about_nbm" url="about/about-nbm.html"/>
 

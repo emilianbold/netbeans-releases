@@ -21,22 +21,24 @@
     A plug-in module identifies 
     itself as a module by an entry in its <tt>MANIFEST.MF</tt> file.
     NetBeans plug-in modules are packaged as NBM files (<tt>.nbm</tt> extension) for non-installer
-    distribution, usually via the NetBeans Update Center.
+    distribution, usually via the Update Center wizard under the Tools menu.
     <p>NetBeans plug-in modules are written with one of two aims in mind:
     <ul>
-        <li><b>Extending the IDE.</b> You can very easily extend the IDE's functionality with 
-        new features. For example, you can write plug-in modules that make your favorite cutting-edge 
+        <li><b>Extending the IDE.</b> You can very easily generate skeleton
+        code for extending the IDE's functionality with 
+        new features. For example, you can use the skeleton code to write plug-in modules that make your favorite cutting-edge 
         technologies available to the NetBeans IDE. Or, if you miss some functionality in the IDE, you
-        can add it yourself, by writing a module that provides the desired functionality.
-        <li><b>Building a rich-client application.</b> You can use the core of NetBeans as a platform on 
-        top of which you develop standalone desktop applications. The core of NetBeans is a separate NetBeans product
+        can add it yourself, by using the skeleton code to
+        write a plug-in module that provides the desired functionality.
+        <li><b>Building a rich-client application.</b> You can use the core of the IDE as a platform on 
+        top of which you develop standalone desktop applications. The core of the IDE is a separate product
         called the <a href="about-netbeans-platform.html">NetBeans Platform</a>. By loading plug-in modules
         into the NetBeans Platform, you can save a lot of development time 
         by reusing the platform's existing features such as menus, toolbars, windowing systems. 
         
-   <p>Even though it is a separate product, there is little need to download the NetBeans Platform separately&#8212;you can develop
- the rich-client application in the IDE and then exclude the plug-in modules that are specific
-  to the IDE but that are supefluous to you application.
+        <p>Even though it is a separate product, there is little need to download the NetBeans Platform separately&#8212;you can develop
+        the rich-client application in the IDE and then exclude the plug-in modules that are specific
+        to the IDE but that are superfluous to you application.
  
         
     </ul>
