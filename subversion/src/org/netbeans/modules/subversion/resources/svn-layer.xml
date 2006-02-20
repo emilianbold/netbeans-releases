@@ -17,12 +17,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Actions">
         <folder name="Subversion">
-            <file name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.checkout.CheckoutAction"/>
-            </file>            
-            <file name="org-netbeans-modules-subversion-ui-checkin-CheckinAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.checkin.CheckinAction"/>
-            </file>                        
             <file name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.status.OpenVersioningAction"/>
             </file>
@@ -41,17 +35,17 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-subversion-ui-commit-CommitAllAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.commit.CommitAllAction"/>
             </file>
-            <!--
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-checkout-CheckoutAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutAction"/>
+
+            <file name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.checkout.CheckoutAction"/>
             </file>
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction"/>
+            <file name="org-netbeans-modules-subversion-ui-project-ImportAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.project.ImportAction"/>
             </file>
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.project.UpdateWithDependenciesAction"/>
+            <file name="org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.update.UpdateWithDependenciesAction"/>
             </file>
-            -->
+
             <file name="org-netbeans-modules-subversion-ui-status-StatusAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.status.StatusAction"/>
             </file>
@@ -135,20 +129,20 @@ Microsystems, Inc. All Rights Reserved.
             
             <file name="Separator2.instance">
        		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
+     	    </file>
+            
             <attr name="Separator2.instance/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow" boolvalue="true"/>
 
             <file name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow/Separator3.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-subversion-ui-checkout-CheckoutAction.shadow/org-netbeans-modules-subversion-ui-project-ImportAction.shadow" boolvalue="true"/>
 
-            <!--
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.instance"/>
+            <file name="org-netbeans-modules-subversion-ui-project-ImportAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance"/>
             </file>
-            -->
-            
+            <attr name="org-netbeans-modules-subversion-ui-project-ImportAction.shadow/Separator3.instance" boolvalue="true"/>
+
             <file name="Separator3.instance">
        		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
