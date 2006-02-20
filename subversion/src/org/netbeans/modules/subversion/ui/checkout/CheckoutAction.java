@@ -100,7 +100,11 @@ public final class CheckoutAction extends CallableSystemAction {
                     ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(CheckoutAction.class, "BK0001"), cancellable);       // NOI18N
                 progressHandle.start();                
                 try{            
-                    checkout(repository, repositoryFiles, file, true, false);
+                    try {
+                        checkout(repository, repositoryFiles, file, true, false);
+                    } catch (SVNClientException ex) {                        
+                        org.openide.ErrorManager.getDefault().notify(ex);                                    
+                    }
                 } finally {
                     progressHandle.finish();
                 }
@@ -130,7 +134,7 @@ public final class CheckoutAction extends CallableSystemAction {
      * On succesfull finish shows open project dialog.
      *
      */
-    public static void checkout(SVNUrl repository, RepositoryFile repositoryFiles[], File workingDir, boolean scanProject, boolean atWorkingDirLevel) {
+    public static void checkout(SVNUrl repository, RepositoryFile repositoryFiles[], File workingDir, boolean scanProject, boolean atWorkingDirLevel) throws SVNClientException {
         SvnClient client;
         try {
             client = Subversion.getInstance().getClient(repository);
@@ -151,12 +155,8 @@ public final class CheckoutAction extends CallableSystemAction {
                 destination = workingDir;
             }
             
-            try {
-                client.checkout(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);                            
-            } catch (SVNClientException ex) {
-                org.openide.ErrorManager.getDefault().notify(ex);                    
-                return; 
-            }                         
+            client.checkout(repositoryFiles[i].getFileUrl(), destination, repositoryFiles[i].getRevision(), true);                            
+              
         }                           
         
         if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0 && scanProject) {

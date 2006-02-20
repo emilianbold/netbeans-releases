@@ -111,7 +111,7 @@ public final class ImportAction extends NodeAction {
                 if (!wizard.show()) return;
                 
                 final SVNUrl repositoryUrl = wizard.getRepositoryUrl();
-                final SVNUrl repositoryFolderUrl = wizard.getRepositoryFolderUrl();
+                final SVNUrl repositoryFolderUrl = wizard.getRepositoryFolderUrl(); // XXX get the file, U will need it for the eventuell checkout
                 final String message = wizard.getMessage();        
                 final boolean checkout = wizard.checkoutAfterImport();
                 final File file = lookupImportDirectory(nodes[0]);                 
@@ -125,8 +125,10 @@ public final class ImportAction extends NodeAction {
                         try{                                    
                             doImport(repositoryUrl, repositoryFolderUrl, file, message);
                             if(checkout) {
-                                doCheckout(repositoryUrl, file);   
+                                doCheckout(repositoryUrl, repositoryFolderUrl, file);   
                             }                            
+                        } catch (SVNClientException ex) {
+                            org.openide.ErrorManager.getDefault().notify(ex);                                    
                         } finally {
                             progressHandle.finish();            
                         }  
@@ -139,7 +141,7 @@ public final class ImportAction extends NodeAction {
     /**
      * Perform asynchronous checkin action with preconfigured values.
      */
-    private void doImport(SVNUrl repositoryUrl, SVNUrl folderUrl, File file, String message) {        
+    private void doImport(SVNUrl repositoryUrl, SVNUrl folderUrl, File file, String message) throws SVNClientException {        
         try {
             SvnClient client = Subversion.getInstance().getClient(folderUrl);
             
@@ -170,8 +172,8 @@ public final class ImportAction extends NodeAction {
         return true;
     }
 
-    private void doCheckout(SVNUrl repositoryUrl, File file) {
-        RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryUrl, SVNRevision.HEAD) };                        
+    private void doCheckout(SVNUrl repositoryUrl, SVNUrl repositoryFolderUrl, File file)  throws SVNClientException {
+        RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryFolderUrl, SVNRevision.HEAD) };                        
         // XXX doing it this way we probably will get in troubles with the IDE
         File checkoutFile = new File(file.getAbsolutePath() + ".co");             
         CheckoutAction.checkout(repositoryUrl, repositoryFile, checkoutFile, false, true);                         

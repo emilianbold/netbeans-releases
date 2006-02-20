@@ -88,8 +88,9 @@ public class RepositoryFile {
         this.path = path;
         repositoryRoot = path == null;        
         
-        if(!repositoryRoot) {            
+        if(!repositoryRoot) {                        
             fileUrl = repositoryUrl.appendPath(path);        
+            pathSegments = path.split("/");
         }
     }
     

@@ -174,7 +174,7 @@ public class RepositoryStep
         Component editor = repositoryPanel.urlComboBox.getEditor().getEditorComponent();
         JTextComponent textEditor = (JTextComponent) editor;
         if (recentRoots.size() == 0) {
-            textEditor.setText(":file");    // NOI18N
+            textEditor.setText("file:");    // NOI18N
         } else {
             SelectedRepository repository = getSelectedRepository();
             SVNUrl url = null;
@@ -270,7 +270,7 @@ public class RepositoryStep
                 valid(invalidMsg[0]);
             }
         } catch (InterruptedException e) {
-            invalid(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2023"));  // NOI18N
+            //invalid(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2023"));  // NOI18N
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(e, "Passing interrupt to possibly uninterruptible nested thread: " + workerThread);  // NOI18N
             workerThread.interrupt();

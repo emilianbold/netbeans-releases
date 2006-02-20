@@ -139,20 +139,30 @@ public class SvnClientFactory {
         }       
             
         // copy svn config file
-        String userHome = System.getProperty("user.home");       
-        File sourceConfigFile = null;
+        String userHome = System.getProperty("user.home");               
         if(Utilities.isUnix()) {
             copyToIDEConfigDir(new File(userHome + "/.subversion/config"));  
         } else if (Utilities.isWindows()){
-            copyToIDEConfigDir(new File(userHome + "/Application Data/Subversion"));  // XXX test me
+            copyToIDEConfigDir(new File(userHome + "/Application Data/Subversion/config"));  // XXX test me
         } else {
             // skip            
             // XXX what about another platforms?    
         }
         
+        // copy svn auth files       
+        if(Utilities.isUnix()) {
+            copyToIDEAuthDir(new File(userHome + "/.subversion/"));  
+        } else if (Utilities.isWindows()){
+            copyToIDEAuthDir(new File(userHome + "/Application Data/Subversion/"));  // XXX test me
+        } else {
+            // skip            
+            // XXX what about another platforms?    
+        }        
+        
         return configDir;
     }
     
+    // XXX reafctor
     private static void copyToIDEConfigDir (File file) {
         file = FileUtil.normalizeFile(file);
         File targetConfigFile = new File(SvnUtils.getConfigDir() + "/config");  
@@ -163,7 +173,48 @@ public class SvnClientFactory {
             ex.printStackTrace(); // should not happen
         }            
     }
+
+    // XXX reafctor    
+    private static void copyToIDEAuthDir (File sourceDir) {
+        sourceDir = FileUtil.normalizeFile(sourceDir);
+        
+        File targetAuthDir = new File(SvnUtils.getConfigDir() + "/auth/svn.simple");          
+        targetAuthDir = FileUtil.normalizeFile(targetAuthDir);
+        targetAuthDir.mkdirs();
+        File sourceAuthDir = FileUtil.normalizeFile(new File(sourceDir.getAbsolutePath() + "/auth/svn.simple"));  
+        sourceAuthDir.mkdirs();
+        copyDirFiles(sourceAuthDir, targetAuthDir);
+                
+        targetAuthDir = new File(SvnUtils.getConfigDir() + "/auth/svn.username");  
+        targetAuthDir = FileUtil.normalizeFile(targetAuthDir);
+        targetAuthDir.mkdirs();
+        sourceAuthDir = FileUtil.normalizeFile(new File(sourceDir.getAbsolutePath() + "/auth/svn.username"));  
+        sourceAuthDir.mkdirs();
+        copyDirFiles(sourceAuthDir, targetAuthDir);
+                
+        targetAuthDir = new File(SvnUtils.getConfigDir() + "/auth/svn.ssl.server");  
+        targetAuthDir = FileUtil.normalizeFile(targetAuthDir);
+        targetAuthDir.mkdirs();
+        sourceAuthDir = FileUtil.normalizeFile(new File(sourceDir.getAbsolutePath() + "/auth/svn.ssl.server"));  
+        sourceAuthDir.mkdirs();
+        copyDirFiles(sourceAuthDir, targetAuthDir);
+
+    }    
     
+    private static void copyDirFiles(File sourceDir, File targetDir) {
+        File[] files = sourceDir.listFiles();
+        if(files==null || files.length == 0) {
+            return;
+        }
+        for (int i = 0; i < files.length; i++) {
+            try {                    
+                File target = FileUtil.normalizeFile(new File(targetDir.getAbsolutePath() + "/" + files[i].getName()));
+                SvnUtils.copyFile (files[i], target);
+            } catch (IOException ex) {
+                ex.printStackTrace(); // should not happen
+            }                
+        }                       
+    }
 //    private static ProxyDescriptor getProxyDescriptor() {
 ////        // XXX one way or another - should be located somewhere else ... (settings?)
 ////        List list = HistorySettings.getRecent(HistorySettings.PROP_SVN_URLS);

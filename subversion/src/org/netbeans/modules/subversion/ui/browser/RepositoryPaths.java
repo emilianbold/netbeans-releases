@@ -96,6 +96,7 @@ public class RepositoryPaths implements ActionListener {
         if(repositoryPathTextField.getText().equals("")) {
             return EMPTY_REPOSITORY_FILES;
         }
+        
         String[] paths = repositoryPathTextField.getText().trim().split(",");
         RepositoryFile[] ret = new RepositoryFile[paths.length];
         SVNUrl repositoryUrl = repositoryFile.getRepositoryUrl();
@@ -103,14 +104,35 @@ public class RepositoryPaths implements ActionListener {
         if(revision == null) {
             // XXX should not be even allowed to get here!
         }
+        
         for (int i = 0; i < paths.length; i++) {
             try {
-                ret[i] = new RepositoryFile(repositoryUrl, paths[i].trim(), revision);
+        
+                String path = paths[i].trim();
+                String repositoryUrlString = repositoryFile.getRepositoryUrl().toString();
+                if(path.startsWith("file://") ||
+                   path.startsWith("http://") ||
+                   path.startsWith("https://") ||
+                   path.startsWith("svn://") ||
+                   path.startsWith("svn+ssh://")) { // XXX already listed at some another place
+                    // must be a complete URL 
+                    // so check if it matches with the given repository URL
+                    if(path.startsWith(repositoryUrlString)) {
+                        // lets take only the part without the repository base URL
+                        ret[i] = new RepositoryFile(repositoryUrl, path.substring(repositoryUrlString.length()), revision);
+                    } else {
+                        // XXX some kind of error msg
+                        return EMPTY_REPOSITORY_FILES;
+                    }
+                } else {
+                    ret[i] = new RepositoryFile(repositoryUrl, path, revision);    
+                }                
             } catch (MalformedURLException ex) {
                 ErrorManager.getDefault().notify(ex);
                 // XXX somethig more userfirendly
             }
-        }
+        }                            
+        
         return ret;
     }
 
