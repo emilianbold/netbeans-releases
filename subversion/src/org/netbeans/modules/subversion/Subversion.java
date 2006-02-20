@@ -50,7 +50,8 @@ public class Subversion {
     private FilesystemHandler   filesystemHandler;
     private Annotator           annotator;
     private HashMap             clients;
-    
+    private RequestProcessor rp = new RequestProcessor("Subversion", 1, true); // NOI18N
+
     public static synchronized Subversion getInstance() {
         if (instance == null) {
             instance = new Subversion();
@@ -275,5 +276,12 @@ public class Subversion {
             return false;
         }
 
+    }
+
+    /**
+     * Serializes all SVN requests (moves them out of AWT).
+     */
+    public RequestProcessor.Task postRequest(Runnable run) {
+        return rp.post(run);
     }
 }

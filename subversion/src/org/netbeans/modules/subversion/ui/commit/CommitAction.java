@@ -32,6 +32,7 @@ import java.util.List;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.tigris.subversion.svnclientadapter.ISVNProperty;
 
 /**
  * Commit action
@@ -45,7 +46,7 @@ public class CommitAction extends ContextAction {
     }
 
     /** Run commit action.  */
-    public static void commit(Context ctx) {
+    public static void commit(final Context ctx) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
 
@@ -80,9 +81,14 @@ public class CommitAction extends ContextAction {
         dialog.setVisible(true);
 
         if (dd.getValue() == commitButton) {
-            Map commitFiles = data.getCommitFiles();
-            String message = panel.messageTextArea.getText();
-            performCommit(message, commitFiles, ctx);
+            final Map commitFiles = data.getCommitFiles();
+            final String message = panel.messageTextArea.getText();
+            Runnable run = new Runnable() {
+                public void run() {
+                    performCommit(message, commitFiles, ctx);
+                }
+            };
+            Subversion.getInstance().postRequest(run);
         }
 
         // if OK setup sequence of add, remove and commit calls
@@ -111,12 +117,13 @@ public class CommitAction extends ContextAction {
             List removeCandidates = new ArrayList();
             Set commitCandidates = new LinkedHashSet();
 
+            // FIXME commit dirs with modified svn:ignore pooperty 
+
             Iterator it = commitFiles.keySet().iterator();
             while (it.hasNext()) {
                 SvnFileNode node = (SvnFileNode) it.next();
                 CommitOptions option = (CommitOptions) commitFiles.get(node);
                 if (CommitOptions.ADD_BINARY == option) {
-                    // set MIME property application/octet-stream
                     List l = listUnmanagedParents(node);  // FIXME coved scheduled but nor commited files!
                     Iterator dit = l.iterator();
                     while (dit.hasNext()) {
@@ -124,6 +131,14 @@ public class CommitAction extends ContextAction {
                         addCandidates.add(new SvnFileNode(file));
                         commitCandidates.add(file);
                     }
+
+                    // set MIME property application/octet-stream
+                    ISVNProperty prop = client.propertyGet(node.getFile(), ISVNProperty.MIME_TYPE);
+                    String s = prop.getValue();
+                    if (s == null || s.startsWith("text/")) {
+                        client.propertySet(node.getFile(), ISVNProperty.MIME_TYPE, "application/octet-stream", false);
+                    }
+
                     addCandidates.add(node);
                     commitCandidates.add(node.getFile());
                 } else if (CommitOptions.ADD_TEXT == option) {

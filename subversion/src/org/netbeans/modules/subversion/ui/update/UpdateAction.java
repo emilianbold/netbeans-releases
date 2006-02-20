@@ -49,8 +49,17 @@ public class UpdateAction extends ContextAction {
     }
     
     protected void performContextAction(Node[] nodes) {
-        Context ctx = getContext(nodes);        
+        final Context ctx = getContext(nodes);
 
+        Runnable run = new Runnable() {
+            public void run() {
+                performUpdate(ctx);
+            }
+        };
+        Subversion.getInstance().postRequest(run);
+    }
+
+    public void performUpdate(Context ctx) {
         // FIXME add non-recursive folders splitting
         // FIXME add shalow logic allowing to ignore nested projects
 
@@ -62,17 +71,17 @@ public class UpdateAction extends ContextAction {
         } catch (SVNClientException ex) {
             ex.printStackTrace(); // should not hapen
             return;
-        }        
+        }
 
         try {
             startProgress();
-            
+
             // XXX how to detect conflicts
             boolean conflict = false;
 
 roots_loop:
             for (int i = 0; i<roots.length; i++) {
-                
+
                 client.update(roots[i], SVNRevision.HEAD, true);
                 ISVNStatus status[] = client.getStatus(roots[i], true, false);
                 for (int k = 0; k<status.length; k++) {

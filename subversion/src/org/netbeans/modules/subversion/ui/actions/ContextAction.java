@@ -33,11 +33,14 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.FileInformation;
+import org.netbeans.modules.subversion.OutputLogger;
 
 import javax.swing.*;
 import java.text.MessageFormat;
+import java.text.DateFormat;
 import java.io.File;
 import java.util.MissingResourceException;
+import java.util.Date;
 import java.awt.event.ActionEvent;
 
 /**
@@ -266,6 +269,8 @@ public abstract class ContextAction extends NodeAction {
     }
 
     protected final void startProgress(){
+        OutputLogger logger = new OutputLogger();
+        logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + getRunningName(nodes));
         progress = ProgressHandleFactory.createHandle(getRunningName(nodes));
         progress.setInitialDelay(500);
         progressStamp = System.currentTimeMillis() + 500;
@@ -277,7 +282,12 @@ public abstract class ContextAction extends NodeAction {
      * and remove it after 15 sec.
      */
     protected final void finished() {
-        
+
+        // TODO add failed and restart texts
+
+        OutputLogger logger = new OutputLogger();
+        logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + getName("", nodes) + " finished.");
+
         progress.switchToDeterminate(100);
         progress.progress("Complete!", 100);
         if (System.currentTimeMillis() > progressStamp) {
