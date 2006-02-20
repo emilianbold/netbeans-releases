@@ -294,11 +294,11 @@ public class ModuleListTest extends TestBase {
         em.removeAttribute(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION, null);
         Util.storeManifest(p.getManifestFile(), em);
         ProjectManager.getDefault().saveProject(p);
-        assertEquals("right spec.version.base", "1.1.0", e.getSpecificationVersion());
+        assertEquals("right spec.version.base", "1.1", e.getSpecificationVersion());
         ep.setProperty(SingleModuleProperties.SPEC_VERSION_BASE, "1.2.0");
         p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ProjectManager.getDefault().saveProject(p);
-        assertEquals("right modified spec.version.base", "1.2.0", e.getSpecificationVersion());
+        assertEquals("right modified spec.version.base", "1.2", e.getSpecificationVersion());
     }
     
 }

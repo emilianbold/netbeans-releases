@@ -124,12 +124,12 @@ public class ModuleDependencyTest extends TestBase {
         Util.storeManifest(p.getManifestFile(), em);
         ProjectManager.getDefault().saveProject(p);
         dep = new ModuleDependency(e);
-        assertEquals("right spec.version.base", "1.1.0", dep.getSpecificationVersion());
+        assertEquals("right spec.version.base", "1.1", dep.getSpecificationVersion());
         ep.setProperty(SingleModuleProperties.SPEC_VERSION_BASE, "1.2.0");
         p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ProjectManager.getDefault().saveProject(p);
         dep = new ModuleDependency(e);
-        assertEquals("right modified spec.version.base", "1.2.0", dep.getSpecificationVersion());
+        assertEquals("right modified spec.version.base", "1.2", dep.getSpecificationVersion());
         dep = new ModuleDependency(e, null, "1.0", true, false);
         assertEquals("right explicit spec vers", "1.0", dep.getSpecificationVersion());
     }

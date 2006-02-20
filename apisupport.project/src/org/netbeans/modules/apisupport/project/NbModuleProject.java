@@ -357,10 +357,13 @@ public final class NbModuleProject implements Project {
         if (m != null) {
             String manVersion = m.getMainAttributes().getValue("OpenIDE-Module-Specification-Version"); //NOI18N
             if (manVersion != null) {
-                return manVersion;
+                return stripExcessZeros(manVersion);
             }
         }
-        return evaluator().getProperty(SingleModuleProperties.SPEC_VERSION_BASE);
+        return stripExcessZeros(evaluator().getProperty(SingleModuleProperties.SPEC_VERSION_BASE));
+    }
+    private static String stripExcessZeros(String spec) { // #72826
+        return spec != null ? spec.replaceAll("(\\.[0-9]+)\\.0$", "$1") : null; // NOI18N
     }
     
     /**
