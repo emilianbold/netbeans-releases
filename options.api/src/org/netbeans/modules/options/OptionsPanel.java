@@ -567,7 +567,8 @@ public class OptionsPanel extends JPanel {
             Window w = (Window) SwingUtilities.getAncestorOfClass 
                 (Window.class, this);
             invalidate ();
-            w.pack ();
+            if (w != null)
+                w.pack ();
             return true;
         }
         return false;
