@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -54,7 +54,7 @@ public class DataModelTest extends LayerTestBase {
         data.setPackageName("org.example.module1");
         
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
-        assertEquals(
+        assertEquals("created files",
                 Arrays.asList(new String[] {
                     "src/org/example/module1/DocBookVisualPanel1.form",
                     "src/org/example/module1/DocBookVisualPanel1.java",
@@ -91,7 +91,7 @@ public class DataModelTest extends LayerTestBase {
         
         
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
-        assertEquals(
+        assertEquals("created files",
                 Arrays.asList(new String[] {
                     "src/org/example/module1/DocBookVisualPanel1.form",
                     "src/org/example/module1/DocBookVisualPanel1.java",
@@ -103,7 +103,7 @@ public class DataModelTest extends LayerTestBase {
                     "src/org/example/module1/docBook.html"
                 }),
                 Arrays.asList(cmf.getCreatedPaths()));
-        assertEquals(
+        assertEquals("modified files",
                 Arrays.asList(new String[] {
                     "nbproject/project.xml",
                     "src/org/example/module1/resources/Bundle.properties",
@@ -130,12 +130,12 @@ public class DataModelTest extends LayerTestBase {
         data.setPackageName("org.example.module1");
         
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
-        assertEquals(
+        assertEquals("created files",
                 Arrays.asList(new String[] {
                     "src/org/example/module1/DocBookVisualPanel1.form",
                     "src/org/example/module1/DocBookVisualPanel1.java",
+                    "src/org/example/module1/DocBookWizardAction.java",
                     "src/org/example/module1/DocBookWizardPanel1.java",
-                    "src/org/example/module1/SampleAction.java"
                 }),
                 Arrays.asList(cmf.getCreatedPaths()));
         assertEquals("project.xml was modified",
@@ -157,27 +157,27 @@ public class DataModelTest extends LayerTestBase {
         data.setPackageName("x");
         assertEquals("initial files correct",
                 Arrays.asList(new String[] {
-                    "src/x/SampleAction.java",
                     "src/x/XVisualPanel1.form",
                     "src/x/XVisualPanel1.java",
+                    "src/x/XWizardAction.java",
                     "src/x/XWizardPanel1.java",
                 }),
                 Arrays.asList(data.getCreatedModifiedFiles().getCreatedPaths()));
         data.setClassNamePrefix("Y");
         assertEquals("class name change takes effect",
                 Arrays.asList(new String[] {
-                    "src/x/SampleAction.java",
                     "src/x/YVisualPanel1.form",
                     "src/x/YVisualPanel1.java",
+                    "src/x/YWizardAction.java",
                     "src/x/YWizardPanel1.java",
                 }),
                 Arrays.asList(data.getCreatedModifiedFiles().getCreatedPaths()));
         data.setPackageName("y");
         assertEquals("package change takes effect",
                 Arrays.asList(new String[] {
-                    "src/y/SampleAction.java",
                     "src/y/YVisualPanel1.form",
                     "src/y/YVisualPanel1.java",
+                    "src/y/YWizardAction.java",
                     "src/y/YWizardPanel1.java",
                 }),
                 Arrays.asList(data.getCreatedModifiedFiles().getCreatedPaths()));

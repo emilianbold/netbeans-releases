@@ -57,6 +57,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         Map basicTokens = new HashMap();
         basicTokens.put("@@PACKAGE_NAME@@", getPackageName()); // NOI18N
+        basicTokens.put("@@WIZARD_PREFIX@@", prefix); // NOI18N
         
         StringBuffer panelsDefinitionBlock = new StringBuffer();
         String newLine = System.getProperty("line.separator") + "                "; // NOI18N
@@ -93,7 +94,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 panelsDefinitionBlock.append(',').append(newLine);
             }
         }
-
+        
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.dialogs")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.awt")); // NOI18N
@@ -144,7 +145,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         } else {
             Map replaceTokens = new HashMap(basicTokens);
             replaceTokens.put("@@PANELS_DEFINITION_BLOCK@@", panelsDefinitionBlock.toString()); // NOI18N
-            String path = getDefaultPackagePath("SampleAction.java"); // NOI18N
+            String path = getDefaultPackagePath(prefix + "WizardAction.java"); // NOI18N
             URL template = DataModel.class.getResource("sampleAction.javx"); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
         }
@@ -191,7 +192,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         reset();
         this.origIconPath = origIconPath;
     }
-
+    
     public void setPackageName(String packageName) {
         super.setPackageName(packageName);
         reset();
