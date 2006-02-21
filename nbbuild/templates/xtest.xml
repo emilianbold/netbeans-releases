@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -111,6 +111,22 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="show-results-nb" if="netbeans.home">
         <nbbrowse file="results/index.html"/>
+    </target>
+
+    <!-- Runs tests and it some test fails, excludes it from config.
+         Repeat exluding until tests pass n-times. -->
+    <target name="excludeFailedTests">
+        <taskdef name="excludeFailed" classpath="${xtest.home}/lib/xtest.jar"
+                 classname="org.netbeans.xtest.pe.ExcludeFailedTask"/>
+        <property name="xtest.pass.count" value="3"/>
+        <antcall target="cleanresults"/>
+        <antcall target="runtests"/>
+        <excludeFailed resultsDir="results" allPassed="xtest.allPassed" passCount="${xtest.pass.count}"/>
+        <antcall target="checkAllPassed"/>
+    </target>
+
+    <target name="checkAllPassed" unless="xtest.allPassed">
+        <antcall target="excludeFailedTests"/>
     </target>
 
 </project>
