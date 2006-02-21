@@ -146,10 +146,32 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         } else if (!UIUtil.isValidIcon(new File(smallIconPath),16,16)) {
             setWarning(UIUtil.getIconDimensionWarning(new File(smallIconPath), 16, 16));
         } else if (data.isToolbarEnabled() && largeIconPath == null) {
-            setWarning(getMessage("MSG_NoLargeIcontSelected"));
+            File smallIconFile = new File(smallIconPath);
+            assert smallIconFile.getParentFile() != null;
+            String name = getName(smallIconFile);
+            String ext = getExt(smallIconFile);            
+            StringBuffer sb = new StringBuffer();
+            sb.append(name).append("24");
+            if (ext != null) {
+                sb.append(".").append(ext);//NOI18N
+            }
+            setWarning(NbBundle.getMessage(NameIconLocationPanel.class,
+                    "MSG_NoLargeIcontSelected", sb.toString(),smallIconFile.getParent()));
         }
     }
 
+    private static String  getName(final File smallIconFile) {
+        String name = smallIconFile.getName();
+        int i = name.lastIndexOf('.');            
+        return (i <= 0) ? name : name.substring(0, i);
+    }
+
+    private static String  getExt(final File smallIconFile) {
+        String name = smallIconFile.getName();
+        int i = name.lastIndexOf('.') + 1;
+        return ((i <= 1) || (i == name.length())) ? "" : name.substring(i); // NOI18N
+    }
+    
     private static Set getPossibleIcons(final String iconPath) {
         File icon = new File(iconPath);
         String[] resultSuffixes = new String[]{"16","24",""};//NOI18N
