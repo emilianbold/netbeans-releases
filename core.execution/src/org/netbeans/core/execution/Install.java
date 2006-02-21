@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -209,7 +209,7 @@ public class Install extends ModuleInstall {
 
 
         JButton exitOption = new JButton();
-        Mnemonics.setLocalizedText(exitOption, NbBundle.getMessage(Install.class, "LAB_EndTasksMnem"));
+        Mnemonics.setLocalizedText(exitOption, NbBundle.getMessage(Install.class, "LAB_EndTasks"));
         // No default button.
         // exitOption.setDefaultCapable(false);
         exitOption.getAccessibleContext().setAccessibleDescription(
@@ -427,15 +427,12 @@ public class Install extends ModuleInstall {
                 an.setDisplayName(NbBundle.getMessage(Install.class, "CTL_PendingExternalProcess2", 
                     // getExecutionEngine() had better be non-null, since getPendingTasks gave an ExecutorTask:
                     ExecutionEngine.getExecutionEngine().getRunningTaskName((ExecutorTask) key)));
-                an.setIconBase( "org/netbeans/core/resources/execution" ); //NOI18N
                 n = an;
             }
 	    else if (key instanceof InternalHandle) {
                 AbstractNode an = new AbstractNode( Children.LEAF );
                 an.setName(((InternalHandle)key).getDisplayName());
-                an.setIconBase( "org/netbeans/core/resources/execution" ); //NOI18N
                 n = an;
-		
 	    }
             return n == null ? null : new Node[] { n };
         }
@@ -527,8 +524,8 @@ public class Install extends ModuleInstall {
 
         /** Overrides superclass method.
          * @return empty array of actions */
-        protected SystemAction[] createActions() {
-            return new SystemAction[0];
+        public Action[] getActions(boolean context) {
+            return new Action[0];
         }
         
     } // End of class PendingActionNode.
