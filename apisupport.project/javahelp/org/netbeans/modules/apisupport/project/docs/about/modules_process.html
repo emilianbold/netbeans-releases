@@ -1,137 +1,147 @@
 <html>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!--
- * Copyright © 2005 Sun Microsystems, Inc.
- * All rights reserved. 
- * Use is subject to license terms.
--->
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<title>Working with Plug-in Modules</title>
-<link rel="stylesheet" href="../../../../usersguide/ide.css" type="text/css">
-</head>
-<body>
-<h2>Working with Plug-in Modules</h2>
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+    <!--
+    * Copyright © 2005 Sun Microsystems, Inc.
+    * All rights reserved. 
+    * Use is subject to license terms.
+    -->
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <title>Working with Plug-in Modules</title>
+        <link rel="stylesheet" href="../../../../usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Working with Plug-in Modules</h2>
 
-The following table shows how to work with plug-in modules. 
-<table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
-   process step. The right column contains detail information to accomplish that process.">
-   <tr valign="top"> 
-    <td align="center"><img src="../images/circle1.gif" alt="Number one"><br>
-	    <b>Create<br>the module project</b></td>
-   <td> 
-	   <ul>
-		   <li>Create the project using the best <a href="../create_plugin/projectlevel_create/about_project_wizards.html">module
-			    project template</a> for 
-	your programming needs. </li>
-     
-      </ul>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="2"> 
-      <hr align="center" width="80%">
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td align="center"><img src="../images/circle2.gif" alt="Number two"><br>
-	    <b>Use<br>the file templates</b></td>
-    <td> 
-    <ol>
-	    <li>Right-click a module project in the Projects or Files window. Choose New &gt; File/Folder.
-	    <li>In the New File wizard, choose the best <a href="../create_plugin/filelevel_create/about_file_wizards.html">module
-			    file template</a> for 
-	your programming needs.
-      </ol>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="2"> 
-      <hr align="center" width="80%">
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td align="center"><img src="../images/circle3.gif" alt="Number three"><br>
-   <b>Develop<br>the module</b></td>
-    <td> 
-      <ol>
-	      <li>In the Projects window or Files window, double-click the file
-       that you would like to edit.</li>
-       <li>Use the <a href="nbdocs:/org/netbeans/modules/usersguide/editing/editing_about.html">Source Editor</a> to edit the
-       file.</li>
-       <li>Refer to the <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/">
-    <param name="text" value="<html><u>NetBeans API Javadoc</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
-      </ol>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="2"> 
-      <hr align="center" width="80%">
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td align="center"> 
-      <img src="../images/circle4.gif" alt="Number four"><br>
-        <b>Build<br>the module</b> 
-    </td>
-    <td> 
+        The following table shows how to work with plug-in modules. 
+        <table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
+            process step. The right column contains detail information to accomplish that process.">
+            <tr valign="top"> 
+                <td align="center"><img src="../images/circle1.gif" alt="Number one"><br>
+                <b>Set up<br>the plug-in module</b></td>
+                <td> 
+                    <ol>
+                        <li>Begin creating your plug-in module by
+                        using the <a href="../create_plugin/projectlevel_create/create_module.html">module
+                        project template</a>. </li>
+                        <li>Optionally, if the plug-in module will consist of
+                        a collection of module projects, use the <a href="../create_plugin/projectlevel_create/create_module_suite.html">module
+                        suite project template</a>. For example, the collection
+                        may make use of external JAR files. If this is the case, put the
+                        external JAR files on the plug-in module's classpath by using
+                        one or more <a href="../create_plugin/projectlevel_create/create_library_wrapper_module.html">library wrapper
+                        module project templates</a>.</li>
+                    </ol>
+                </td>
+            </tr>
+           
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td align="center"><img src="../images/circle2.gif" alt="Number three"><br>
+                <b>Develop<br>the plug-in module</b></td>
+                <td> 
+                    <ol>
+                        <li>Right-click a module project in the Projects or Files window. Choose New &gt; File/Folder.
+                        <li>In the New File wizard, choose the best <a href="../create_plugin/filelevel_create/about_file_wizards.html">NetBeans API 
+                        template</a> for 
+                        your programming needs.
+                        <li>After using a wizard, double-click the file
+                        that you would like to edit. Use the <a href="nbdocs:/org/netbeans/modules/usersguide/editing/editing_about.html">Source Editor</a> to edit the
+                        file.</li>
+                        <li>Refer to the <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://www.netbeans.org/download/dev/javadoc/">
+                            <param name="text" value="<html><u>NetBeans API Javadoc</u></html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object>
+                    </ol>
+                </td>
+            </tr>
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td align="center"><img src="../images/circle3.gif" alt="Number two"><br>
+                <b>Bundle<br>supporting items</b></td>
+                <td> 
+                    <ol>
+                        <li>Right-click a module project in the Projects or Files window. Choose New &gt; File/Folder.
+                        <li>In the New File wizard, choose the best <a href="../create_plugin/filelevel_create/about_file_wizards.html">module
+                        file template</a> for 
+                        your programming needs.
+                    </ol>
+                </td>
+            </tr>
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td align="center"> 
+                    <img src="../images/circle4.gif" alt="Number four"><br>
+                    <b>Build<br>the module</b> 
+                </td>
+                <td> 
       
-	       <ul>
-	      <li>Choose Build &gt;  <a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_project.html">Build 
-		      Main Project</a> or right-click any project and choose Build Project. 
-      </ul>
+                    <ul>
+                        <li>Choose Build &gt;  <a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_project.html">Build 
+                        Main Project</a> or right-click any project and choose Build Project. 
+                    </ul>
       
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="2"> 
-      <hr align="center" width="80%">
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td align="center"> 
-      <img src="../images/circle5.gif" alt="Number five"><br>
-      <b>Test and debug<br>the module</b>
-    </td>
-     <td> 
-       <ul>
-	       <li>Right-click a module project node and choose Install/Reload in Target Platform
-	       or Install/Reload in Development IDE to <a href="../distribute_plugin/install_targetplatform.html">test</a> the module.</li>
-      </ul>
-    </td>
-  </tr>
-<tr> 
-    <td colspan="2"> 
-      <hr align="center" width="80%">
-    </td>
-  </tr>
-<tr valign="top"> 
-    <td align="center"> <img src="../images/circle6.gif" alt="Number six"><br>
-	    <b>Distribute<br>the module</b> </td>
-    <td> 
-      <ol>
-	      <li>Right-click the module project and choose Create <a href="../build_plugin/building_nbm.html">NBM</a>.
-	      An NBM file is created. 
-	      <li>Distribute the NBM file for installation via the Update Center.
+                </td>
+            </tr>
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td align="center"> 
+                    <img src="../images/circle5.gif" alt="Number five"><br>
+                    <b>Try out<br>the module</b>
+                </td>
+                <td> 
+                    <ul>
+                        <li>Right-click a module project node and choose Install/Reload in Target Platform
+                        or Install/Reload in Development IDE to <a href="../distribute_plugin/install_targetplatform.html">try out</a> the module.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td align="center"> <img src="../images/circle6.gif" alt="Number six"><br>
+                <b>Distribute<br>the module</b> </td>
+                <td> 
+                    <ol>
+                        <li>Right-click the module project and choose Create <a href="../build_plugin/building_nbm.html">NBM</a>.
+                        An NBM file is created. 
+                        <li>Distribute the NBM file for installation via the Update Center.
 		
-	      </ul>
-      </ol>
-    </td>
-  </tr>
+                        </ul>
+                    </ol>
+                </td>
+            </tr>
 
   
-</table>
+        </table>
 
-<hr>
-<small><a href="../credits.html">Legal Notices</a></small> 
-<table cellpadding="50" border="0">
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-</table>
-</body>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
 </html>
