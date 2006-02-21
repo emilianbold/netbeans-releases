@@ -312,6 +312,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         add(barBoundsLabel, gridBagConstraints);
         barBoundsLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("ACS_BarBounds"));
 
+        textColorLabel.setLabelFor(textColor);
         org.openide.awt.Mnemonics.setLocalizedText(textColorLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_TextColor"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -465,8 +466,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(jPanel1, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
         JFileChooser chooser = UIUtil.getIconFileChooser();
