@@ -329,7 +329,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
          * @return Formatted text.
          */
         public String getDisplayText() {
-            return NbBundle.getMessage(NbSafeDeleteRefactoringPlugin.class, "TXT_LayerDelete", this.name);
+            return NbBundle.getMessage(NbSafeDeleteRefactoringPlugin.class, "TXT_LayerDelete", layerFO.getNameExt());
         }
         
         public void performChange() {
@@ -351,6 +351,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                 } else {
                     layerFO.delete();
                 }
+                deleteEmptyParent(layerFO.getParent());
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
             } 
@@ -359,6 +360,18 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             }
             
         }
+
+        private void deleteEmptyParent(FileObject parent) throws IOException {
+            if (parent != null) {
+                if (!parent.getChildren(true).hasMoreElements() && 
+                        !parent.getAttributes().hasMoreElements()) {
+                    FileObject parentToDel = parent.getParent();
+                    parent.delete();
+                    deleteEmptyParent(parentToDel);
+                } 
+            }
+        }
+        
         public void undoExternalChange() {
         }
         
