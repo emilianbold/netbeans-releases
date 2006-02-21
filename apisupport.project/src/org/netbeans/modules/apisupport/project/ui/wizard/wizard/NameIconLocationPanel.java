@@ -156,11 +156,11 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
             setError(getMessage("ERR_Category_Invalid"));
         } else  {
             String path = icon.getText().trim();
-            File icon = (path.length() == 0) ? null : new File(path);
-            if (icon == null || !icon.exists()) {
+            File iconFile = (path.length() == 0) ? null : new File(path);
+            if (icon.isVisible() && (iconFile == null || !iconFile.exists())) {
                 setWarning(UIUtil.getNoIconSelectedWarning(16,16));
-            } else if (!UIUtil.isValidIcon(icon,16,16)) {
-                setWarning(UIUtil.getIconDimensionWarning(icon,16,16));
+            } else if (icon.isVisible() && !UIUtil.isValidIcon(iconFile,16,16)) {
+                setWarning(UIUtil.getIconDimensionWarning(iconFile,16,16));
             } else {
                 markValid();
             }
