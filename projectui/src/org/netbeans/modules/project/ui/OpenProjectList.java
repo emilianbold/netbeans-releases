@@ -973,12 +973,20 @@ public final class OpenProjectList {
             
             String n1 = ProjectUtils.getInformation(p1).getDisplayName();
             String n2 = ProjectUtils.getInformation(p2).getDisplayName();
-            assert n1 != null : p1;
-            assert n2 != null : p2;
-            return COLLATOR.compare(n1, n2);
+            if (n1 != null && n2 != null) {
+                return COLLATOR.compare(n1, n2);
+            } else {
+                if (n1 == null) {
+                    ERR.log(ErrorManager.WARNING, p1 + ": ProjectInformation.getDisplayName() should not return null!");
+                }
+                if (n2 == null) {
+                    ERR.log(ErrorManager.WARNING, p2 + ": ProjectInformation.getDisplayName() should not return null!");
+                }
+                return 0; // cannot compare
+            }
+            
         }
         
     }
     
-       
 }
