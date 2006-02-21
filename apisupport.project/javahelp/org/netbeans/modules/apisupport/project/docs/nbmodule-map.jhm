@@ -98,12 +98,14 @@
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryStartWizardPanel" url="csh/LibraryStartWizardPanel.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_library" url="csh/BasicInfoWizardPanel_library.html"/>-->
     <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryConfWizardPanel" url="csh/LibraryConfWizardPanel.html"/>
+    <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="csh/AddModulePanel.html"/>
 
+     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddFriendPanel" url="csh/AddNewFriendModule.html"/>
+    
     <!-- Project Properties dialog box: -->
     <!-- Module: -->
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerSources" url="csh/proj_props/CustomizerSources.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerLibraries" url="csh/proj_props/CustomizerLibraries.html"/>
-    <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="csh/proj_props/CustomizerLibraries.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerDisplay" url="csh/proj_props/CustomizerDisplay.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerVersioning" url="csh/proj_props/CustomizerVersioning.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerCompiling" url="csh/proj_props/CustomizerCompiling.html"/>
