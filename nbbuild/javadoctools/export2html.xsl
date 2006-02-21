@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -80,6 +80,13 @@ Microsystems, Inc. All Rights Reserved.
             <li><a href="allclasses-frame.html">Index of all NetBeans API classes</a></li>
             <li><a href="layers.html">Extracted List of Layer APIs</a></li>
         </ul>
+
+        <h4>FAQ and Mailing List</h4>
+
+        <p>Can't find what you're looking for? Try the <a
+        href="http://wiki.java.net/bin/view/Netbeans/NetBeansDeveloperFAQ">FAQ</a>
+        and then <a
+        href="http://www.netbeans.org/community/lists/top.html">dev@openide.netbeans.org</a>.</p>
 
         <hr/>
         <xsl:call-template name="list-modules" />
