@@ -31,6 +31,15 @@ public class ClassPathProviderImpl implements ClassPathProvider {
 
     private BluejProject project;
     
+    private ClassPath boot;
+    private ClassPath source;
+    private ClassPath compile;
+    private ClassPath[] boots;
+    private ClassPath[] sources;
+    private ClassPath[] compiles;
+
+    
+    
     /** Creates a new instance of ClassPathProviderImpl */
     public ClassPathProviderImpl(BluejProject prj) {
         project = prj;
@@ -51,11 +60,17 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     }
 
     private ClassPath getBootClassPath() {
-        return JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        if (boot == null) {
+            boot = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        }
+        return boot;
     }
 
     private ClassPath getSourcepath(FileObject file) {
-        return ClassPathSupport.createClassPath(new FileObject[] { project.getProjectDirectory() });
+        if (source == null) {
+            source = ClassPathSupport.createClassPath(new FileObject[] { project.getProjectDirectory() });
+        }
+        return source;
     }
 
     private ClassPath getRunTimeClasspath(FileObject file) {
@@ -63,10 +78,34 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     }
 
     private ClassPath getCompileTimeClasspath(FileObject file) {
-        return  ClassPathFactory.createClassPath(
+        if (compile == null) {
+            compile = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
                     FileUtil.toFile(project.getProjectDirectory()), project.getAntProjectHelper().getStandardPropertyEvaluator(), 
                 new String[] {"javac.classpath"})); // NOI18N
+        } 
+        return compile;
+    }
+    
+    public ClassPath[] getCompileTimeClasspath() {
+        if (compiles == null) {
+            compiles = new ClassPath[] { getCompileTimeClasspath(project.getProjectDirectory()) };
+        }
+        return compiles;
+    }
+    
+    public ClassPath[] getSourcePath() {
+        if (sources == null) {
+            sources = new ClassPath[] { getSourcepath(project.getProjectDirectory()) };
+        }
+        return sources;
+    }
+    
+    public ClassPath[] getBootPath() {
+        if (boots == null) {
+            boots = new ClassPath[] { getBootClassPath() };
+        }
+        return boots;
     }
     
 }

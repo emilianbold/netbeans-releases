@@ -372,11 +372,11 @@ public final class BluejProject implements Project, AntProjectListener {
 ////                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
 ////            }
             
-////            // register project's classpaths to GlobalPathRegistry
-////            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
-////            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-////            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-////            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+            // register project's classpaths to GlobalPathRegistry
+            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getBootPath());
+            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getSourcePath());
+            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getCompileTimeClasspath());
 
 ////            //register updater of main.class
 ////            //the updater is active only on the opened projects
@@ -421,11 +421,11 @@ public final class BluejProject implements Project, AntProjectListener {
                 callback.projectClosed(BluejProject.this);
             }
             
-////            // unregister project's classpaths to GlobalPathRegistry
-////            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
-////            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-////            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-////            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+            // unregister project's classpaths to GlobalPathRegistry
+            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getBootPath());
+            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getSourcePath());
+            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getCompileTimeClasspath());
 ////            if (mainClassUpdater != null) {
 ////                mainClassUpdater.unregister ();
 ////                mainClassUpdater = null;
