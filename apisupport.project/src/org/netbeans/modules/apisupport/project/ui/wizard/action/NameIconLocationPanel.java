@@ -42,8 +42,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private static final String ENTER_LABEL = getMessage("CTL_EnterLabel");
     private static final String NONE_LABEL = getMessage("CTL_None");
     
-    private DataModel data;
-    private DocumentListener updateListener;
+    private final DataModel data;
+    private final DocumentListener updateListener;
     
     private String smallIconPath; 
     private String largeIconPath; 
@@ -151,12 +151,12 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
             String name = getName(smallIconFile);
             String ext = getExt(smallIconFile);            
             StringBuffer sb = new StringBuffer();
-            sb.append(name).append("24");
+            sb.append(name).append("24"); // NOI18N
             if (ext != null) {
-                sb.append(".").append(ext);//NOI18N
+                sb.append('.').append(ext);
             }
             setWarning(NbBundle.getMessage(NameIconLocationPanel.class,
-                    "MSG_NoLargeIcontSelected", sb.toString(),smallIconFile.getParent()));
+                    "MSG_NoLargeIconSelected", sb.toString(), smallIconFile.getParent())); // NOI18N
         }
     }
 
@@ -169,16 +169,15 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private static String  getExt(final File smallIconFile) {
         String name = smallIconFile.getName();
         int i = name.lastIndexOf('.') + 1;
-        return ((i <= 1) || (i == name.length())) ? "" : name.substring(i); // NOI18N
+        return ((i <= 1) || (i == name.length())) ? "" : name.substring(i);
     }
     
     private static Set getPossibleIcons(final String iconPath) {
         File icon = new File(iconPath);
-        String[] resultSuffixes = new String[]{"16","24",""};//NOI18N
-        
+        String[] resultSuffixes = { "16", "24", "" }; // NOI18N
         Set results = new HashSet();
         String iconName = icon.getName();
-        int idx = iconName.lastIndexOf(".");
+        int idx = iconName.lastIndexOf('.');
         String name = (idx != -1) ? iconName.substring(0,idx) : iconName;
         String extension = (idx != -1) ? iconName.substring(idx+1) : null;
         boolean hasSuffix = (name.endsWith("24")) || (name.endsWith("16"));//NOI18N
@@ -187,7 +186,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
             String resultSuffix = resultSuffixes[i];
             String resultName = name + resultSuffix;
             if (extension != null) {
-                resultName = resultName + "." + extension;
+                resultName = resultName + '.' + extension;
             }
             File f = new File(icon.getParentFile(),resultName);
             if (f.exists()) {
@@ -408,7 +407,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private void iconButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iconButtonActionPerformed
         JFileChooser chooser = UIUtil.getIconFileChooser(icon.getText());
-        int ret = chooser.showDialog(this, getMessage("LBL_Select")); // NOI18N
+        int ret = chooser.showDialog(this, getMessage("LBL_Select"));
         if (ret == JFileChooser.APPROVE_OPTION) {
             File iconFile =  chooser.getSelectedFile();
             icon.setText(iconFile.getAbsolutePath());
