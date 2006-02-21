@@ -26,6 +26,7 @@ import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.openide.util.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -72,6 +73,8 @@ final class NewOptionsIterator extends BasicWizardIterator {
         private static final int ERR_BLANK_ICONPATH = 6;
         private static final int ERR_BLANK_PACKAGE_NAME = 7;
         private static final int ERR_BLANK_CLASSNAME_PREFIX = 8;
+        private static final int ERR_INVALID_CLASSNAME_PREFIX = 9;
+        
         
         private static final int WARNING_INCORRECT_ICON_SIZE = -1;
         
@@ -232,6 +235,8 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 case ERR_BLANK_CLASSNAME_PREFIX:
                     field = "FIELD_ClassNamePrefix";//NOI18N
                     break;
+                case ERR_INVALID_CLASSNAME_PREFIX:
+                    return NbBundle.getMessage(NewOptionsIterator.class, "ERR_Name_Prefix_Invalid");//NOI18N
                 default:
                     assert false : "Unknown errCode: " + errCode;
             }
@@ -309,7 +314,10 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 return ERR_BLANK_PACKAGE_NAME;
             } else if (getClassNamePrefix().length() == 0) {
                 return ERR_BLANK_CLASSNAME_PREFIX;
-            }
+            } else if (!Utilities.isJavaIdentifier(getClassNamePrefix())) {
+                return ERR_INVALID_CLASSNAME_PREFIX;
+        }
+            
             return 0;
         }
         
