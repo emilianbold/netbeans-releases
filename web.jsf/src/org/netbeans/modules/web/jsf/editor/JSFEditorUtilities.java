@@ -124,7 +124,7 @@ public class JSFEditorUtilities {
                         }
                     }
                 }
-                offset = text.indexOf(ruleName);
+                offset = text.indexOf(ruleName, offset+ruleName.length());
             }
         }
         catch (BadLocationException e) {
