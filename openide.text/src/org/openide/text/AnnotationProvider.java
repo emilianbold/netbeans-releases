@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.text;
@@ -31,7 +31,8 @@ public interface AnnotationProvider {
      *
      * @param set the Line.Set to attach annotations to.
      * @param context a Lookup describing the context for the Line.Set.
-     *  it shall contain the FileObject the LineSet is associated with.
+     *        If the Line.Set is associated with a document originating from
+     *        a file, the context shall contain the respective FileObject.
      */
     public void annotate(Line.Set set, Lookup context);
 }
