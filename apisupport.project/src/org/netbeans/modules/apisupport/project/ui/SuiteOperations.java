@@ -132,7 +132,7 @@ public final class SuiteOperations implements DeleteOperationImplementation,
                 setDisplayName(nueName);
             }
             FileObject origSuiteFO = FileUtil.toFileObject(originalPath);
-            if (origSuiteFO.getChildren().length == 0) {
+            if (origSuiteFO != null && origSuiteFO.getChildren().length == 0) {
                 origSuiteFO.delete();
             }
         }
