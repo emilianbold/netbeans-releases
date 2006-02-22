@@ -75,6 +75,10 @@
     <mapID target="apisupport_registering_plugins" url="register_plugin/about-registering-plugins.html"/>
     <mapID target="apisupport_browsing_system" url="register_plugin/apisupport_browsing_system.html"/>
     <mapID target="apisupport_editing_xml_layer" url="register_plugin/apisupport_editing_xml_layer.html"/>
+ <mapID target="apisupport_general_update_center" url="distribute_plugin/apisupport_general_update_center.html"/>
+<mapID target="apisupport_generate_autoupdate_descriptor" url="distribute_plugin/generate_autoupdate_descriptor.html"/>
+
+
 
 
 
@@ -101,8 +105,11 @@
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="csh/AddModulePanel.html"/>
 
      <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddFriendPanel" url="csh/AddNewFriendModule.html"/>
-    
-    <!-- Project Properties dialog box: -->
+
+
+
+
+<!-- Project Properties dialog box: -->
     <!-- Module: -->
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerSources" url="csh/proj_props/CustomizerSources.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerLibraries" url="csh/proj_props/CustomizerLibraries.html"/>

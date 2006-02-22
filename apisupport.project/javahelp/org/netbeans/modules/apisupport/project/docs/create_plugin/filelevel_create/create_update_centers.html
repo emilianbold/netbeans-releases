@@ -6,33 +6,51 @@
 <html>
 <head>
 
-	<title>Bundling a Private Update Center's URL</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <title>Bundling a Private Update Center's URL</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-	<h2>Bundling a Private Update Center's URL</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p>
+    <h2>Bundling a Private Update Center's URL</h2>
+    <p><small> 
+        <a href="#seealso">See Also</a> 
+    </small></p>
 
 
-<p>tbd
+    <p>The New Update Center wizard lets you create
+    a plug-in module that registers a <a href="about_update_centers.html">private update center</a>
+    in the user's Update Center wizard. In effect, the plug-in module
+    bundles the URL to the private update center so that the user does not
+    need to register the URL manually.
+
+    <p><b>To bundle a private update center's URL:</b>
+    <ol>
+        <li>Right-click a module project and choose New &gt; File/Folder. In the New File
+        wizard, choose Update Center from the NetBeans Module Development category. Click Next.
+        <li>In the Update Center Declaration page, you have to set the following:
+ <ul><li><b>URL to Update Descriptor.</b> Specifies the URL to the autoupdate descriptor. <p>You
+        can let the IDE generate the autoupdate descriptor for you; for details, see
+        <a href="generate_autoupdate_descriptor.html">Generating an Autoupdate Descriptor</a>.
+        <li><b>Display Name.</b> Specifies the name that you would like the user to
+        see in their Update Center wizard.
+ </ul>
+        <p>Click Finish.
+    </ol>
 
 
 
 
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
-    <dd><a href="../../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
-</dl> 
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-</table> 
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
+        <dd><a href="../../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
+    </dl> 
+    <hr>
+    <small><a href="../../credits.html">Legal Notices</a></small> 
+    <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
 </body></html>
