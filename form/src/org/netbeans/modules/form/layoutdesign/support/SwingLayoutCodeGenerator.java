@@ -315,7 +315,7 @@ public class SwingLayoutCodeGenerator {
             case LayoutConstants.NOT_EXPLICITLY_DEFINED: convertedSize = LAYOUT_NAME + ".DEFAULT_SIZE"; break; // NOI18N
             case LayoutConstants.USE_PREFERRED_SIZE: convertedSize = LAYOUT_NAME + ".PREFERRED_SIZE"; break; // NOI18N
             case Short.MAX_VALUE: convertedSize = "Short.MAX_VALUE"; break; // NOI18N
-            default: assert (size >= 0); convertedSize = new Integer(size).toString(); break;
+            default: assert (size >= 0); convertedSize = Integer.toString(size); break;
         }
         return convertedSize;
     }
