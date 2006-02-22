@@ -6,45 +6,82 @@
 <html>
 <head>
 
-	<title>Building a JNLP Application</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
+    <title>Building a JNLP Application</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-	<h2>Building a JNLP Application</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p>
+    <h2>Building a JNLP Application</h2>
+    <p><small> 
+        <a href="#seealso">See Also</a> 
+    </small></p>
 
-<p>Java Web Start is a helper application that gets associated with a Web browser.
-When a user clicks on a link that points to a special launch file (JNLP file),
-it causes the browser to launch Java Web Start, which then automatically downloads,
-caches, and runs the given Java Technology-based application. The entire 
-process is typically completed without requiring any user interaction, except for the initial single click.
-<p><b>To build a JNLP application:</b>
+    <p>Java Web Start is a helper application that gets associated with a Web browser.
+    When a user clicks on a link that points to a special launch file (JNLP file),
+    it causes the browser to launch Java Web Start, which then automatically downloads,
+    caches, and runs the given Java Technology-based application. The entire 
+    process is typically completed without requiring any user interaction, except for the initial single click.
+    <p><b>To build a JNLP application:</b>
 
-<ol><li>In the Projects window, right-click the node of the module project you want to build.
-	<li>Choose Build JNLP Application.</ol>
+    <ol><li>In the Projects window, right-click the node of the module
+        suite project you want to build.
+        <li>Choose Build JNLP Application.
 
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd>  <a href="../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
-    <dd><a href="../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
-     <dd>  <a href="building_zip.html">Building a ZIP Distribution</a></dd>
-    <dd><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="Java Web Start Technology main page">
-    <param name="text" value="<html><u>http://java.sun.com/products/javawebstart/index.jsp</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue"></dd>
-</object>
+        <p>Depending on whether or not you have set up the module suite project
+        as a standalone application, do the following:
 
-</dl> 
-<hr>
-<small><a href="../credits.html">Legal Notices</a></small> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-</table> 
+        <ul><li>If you have already set up the module suite project as
+        a standalone project, the IDE builds a <tt>jnlp</tt> folder
+        in your <tt>build</tt> folder and adds a <tt>master.jnlp</tt>
+        file in your main project folder. Open the Files window to
+        see the JNLP file and the folder within the <tt>build</tt> folder.
+
+        <li>If you have not set up the module suite project as a standalone
+        application, the IDE will not be able to build the JNLP
+        application. The IDE will tell you this by means of
+        a dialog box.
+        <ul>
+            <li>Click Configure Application in the dialog box. The
+            Project Properties dialog box opens and the Application page
+            is displayed.
+            <li>Select the Create Standalone Application radiobutton.
+            <p>The IDE prompts you to exclude the IDE's modules
+            from your standalone application. If you do not
+            need the IDE's modules, click Exclude. For example, if
+            you are not creating an editor, you will not need most of the
+            IDE's modules. If you want to include the IDE's modules,
+            click Skip. In the Application page and in the Splash Screen
+            page, continue <a href="../distribute_plugin/branding_plugins.html">branding</a> the application.
+            <li>Click OK.
+            <li>In the Projects window, right-click the node of the module
+            suite project you want to build.
+            <li>Choose Build JNLP Application.
+            <p>The IDE builds a <tt>jnlp</tt> folder
+            in your <tt>build</tt> folder and adds a <tt>master.jnlp</tt>
+            file in your main project folder. Open the Files window to
+            see the JNLP file and the folder within the <tt>build</tt> folder.
+        </ul>
+    </ol>
+
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd>  <a href="../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
+        <dd><a href="../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
+        <dd>  <a href="building_zip.html">Building a ZIP Distribution</a></dd>
+        <dd><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="Java Web Start Technology main page">
+            <param name="text" value="<html><u>http://java.sun.com/products/javawebstart/index.jsp</u></html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue"></dd>
+        </object>
+
+    </dl> 
+    <hr>
+    <small><a href="../credits.html">Legal Notices</a></small> 
+    <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
 </body></html>
