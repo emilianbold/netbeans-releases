@@ -137,7 +137,6 @@ public class FormJavaSource {
             return null;
         }
 
-        final String variablesText = variablesSection.getText();
         final int genVariablesStartOffset = variablesSection.getPositionBefore().getOffset();
         final int genVariablesEndOffset = variablesSection.getPositionAfter().getOffset();
         

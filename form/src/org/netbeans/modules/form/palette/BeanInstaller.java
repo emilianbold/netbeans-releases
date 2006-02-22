@@ -240,7 +240,6 @@ public final class BeanInstaller {
     /** Recursive method scanning folders for classes (class files) that could
      * be JavaBeans. */
     private static void scanFolderForBeans(FileObject folder, final Map beans, final String root) {
-        DataObject dobj;
         SourceCookie source;
 
         JavaClassHandler handler = new JavaClassHandler() {
@@ -260,7 +259,7 @@ public final class BeanInstaller {
             }
             else try {
                 if ("class".equals(fo.getExt()) // NOI18N
-                     && (dobj = DataObject.find(fo)) != null)
+                     && (DataObject.find(fo) != null))
                 {                   
                     scanFileObject(folder, fo, handler);
                 }

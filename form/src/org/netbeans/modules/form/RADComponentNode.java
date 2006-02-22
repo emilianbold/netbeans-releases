@@ -170,7 +170,6 @@ public class RADComponentNode extends FormNode
                 actions.add(SystemAction.get(EventsAction.class));
                 actions.add(null);
 
-                RADComponent parent = component.getParentComponent();
                 actions.add(SystemAction.get(AlignAction.class));
                 actions.add(SystemAction.get(SetAnchoringAction.class));
                 actions.add(SystemAction.get(SetResizabilityAction.class));

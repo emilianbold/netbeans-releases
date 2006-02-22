@@ -175,7 +175,6 @@ public class PropertyPicker extends javax.swing.JPanel {
     private PropertyPickerItem createItem(final String name) {
 	return new PropertyPickerItem() {
 	    public String getPropertyName() {
-		RADComponent sel = getSelectedComponent();
 		return FormJavaSource.extractPropertyName(name);
 	    }
 	    public String getReadMethodName() {

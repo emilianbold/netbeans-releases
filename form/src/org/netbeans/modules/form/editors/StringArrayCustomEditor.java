@@ -235,7 +235,6 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
 
     private void changeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeButtonActionPerformed
         int sel = itemList.getSelectedIndex ();
-        String s = (String) itemsVector.elementAt (sel);
         itemsVector.removeElementAt (sel);
         itemsVector.insertElementAt (itemField.getText (), sel);
         itemList.setListData (itemsVector);

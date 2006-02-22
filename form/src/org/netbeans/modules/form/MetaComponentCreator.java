@@ -1302,7 +1302,6 @@ public class MetaComponentCreator {
         }
         else if (comp instanceof JTable) {
             javax.swing.table.TableModel tm = ((JTable)comp).getModel();
-            JTable table = (JTable)comp;
             if (tm == null
                 || (tm instanceof javax.swing.table.DefaultTableModel
                     && tm.getRowCount() == 0 && tm.getColumnCount() == 0))

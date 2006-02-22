@@ -1815,7 +1815,7 @@ class LayoutFeeder implements LayoutConstants {
                             layoutModel.setIntervalAlignment(li, aligned.getAlignment());
                             int min = sub.getMinimumSize();
                             layoutModel.setIntervalSize(sub,
-                                    sub.getMinimumSize() != USE_PREFERRED_SIZE ? sub.getMinimumSize() : NOT_EXPLICITLY_DEFINED,
+                                    min != USE_PREFERRED_SIZE ? min : NOT_EXPLICITLY_DEFINED,
                                     sub.getPreferredSize(),
                                     Short.MAX_VALUE);
                             layoutModel.changeIntervalAttribute(sub, LayoutInterval.ATTRIBUTE_FILL, true);
@@ -2535,9 +2535,9 @@ class LayoutFeeder implements LayoutConstants {
         if (group1.isParentOf(group2)) {
             LayoutInterval temp = group1;
             group1 = group2;
-            group2 = temp;
+            //group2 = temp;
             IncludeDesc itemp = iDesc1;
-            iDesc1 = iDesc2;
+            //iDesc1 = iDesc2;
             iDesc2 = itemp;
         }
         else if (!group2.isParentOf(group1)) {

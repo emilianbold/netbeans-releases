@@ -2220,7 +2220,7 @@ public class LayoutDesigner implements LayoutConstants {
                 assert (nonEmptyCount == 1);
                 assert (group.getSubIntervalCount() == 1);
                 LayoutInterval interval = group.getSubInterval(0);
-                int alignment = interval.getAlignment();
+                //int alignment = interval.getAlignment();
                 layoutModel.removeInterval(interval);
                 layoutModel.setIntervalAlignment(interval, group.getAlignment());
                 LayoutInterval parent = group.getParent();

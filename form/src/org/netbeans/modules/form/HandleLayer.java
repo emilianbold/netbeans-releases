@@ -1134,7 +1134,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     // Check how possible component resizing (obtained from layout support)
     // matches with mouse position on component selection border. 
     private int getComponentResizable(Point p, RADVisualComponent metacomp) {
-        RADVisualContainer metacont = metacomp.getParentContainer();
+//        RADVisualContainer metacont = metacomp.getParentContainer();
 //        if (substituteForContainer(metacont)) {
 //            metacomp = metacont;
 //            metacont = metacomp.getParentContainer();

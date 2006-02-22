@@ -50,7 +50,6 @@ class FakeScrollbarPeer extends FakeComponentPeer
             int scrollRange = target.getMaximum() - target.getMinimum();
             int scrollValue = target.getValue() - target.getMinimum();
             int thumbAmount = target.getVisibleAmount();
-            boolean enabled = target.isEnabled();
 
             g.setColor(target.getBackground());
 

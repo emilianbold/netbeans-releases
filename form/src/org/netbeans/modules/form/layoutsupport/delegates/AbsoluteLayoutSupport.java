@@ -611,7 +611,7 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
             CodeExpression wEl = codeStructure.createExpression(
                            FormCodeSupport.createOrigin(properties[shift++]));
             CodeExpression hEl = codeStructure.createExpression(
-                           FormCodeSupport.createOrigin(properties[shift++]));
+                           FormCodeSupport.createOrigin(properties[shift]));
             return new CodeExpression[] { xEl, yEl, wEl, hEl };
         }
 

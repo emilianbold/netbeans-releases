@@ -1093,7 +1093,6 @@ public final class BorderEditor extends PropertyEditorSupport
             throw new IOException("Invalid format: missing \""+XML_COMPOUND_BORDER+"\" element."); // NOI18N
 
         try {
-            org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
             borderSupport = new BorderDesignSupport(CompoundBorder.class);
             borderSupport.setPropertyContext(propertyContext);
 

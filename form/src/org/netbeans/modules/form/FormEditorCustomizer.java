@@ -53,7 +53,6 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         ButtonGroup group = new ButtonGroup ();
         loc(cbFold, "Fold"); // NOI18N
         cbFold.setBackground (Color.white);
-        group = new ButtonGroup ();
         loc(rbGenerateLocals, "Generate_Locals"); // NOI18N
         rbGenerateLocals.setBackground (Color.white);
         group.add (rbGenerateLocals);

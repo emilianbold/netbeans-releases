@@ -1500,7 +1500,6 @@ class JavaCodeGenerator extends CodeGenerator {
 		     && "text".equals(prop.getName()) // NOI18N
                      && canUseMnemonics(comp) && isUsingMnemonics(comp))
             {
-                javaStr = prop.getJavaInitializationString();
                 if ((javaStr = prop.getJavaInitializationString()) != null) {
                     initCodeWriter.write("org.openide.awt.Mnemonics.setLocalizedText("); // NOI18N
                     initCodeWriter.write(comp.getName());

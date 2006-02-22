@@ -1165,7 +1165,6 @@ public class LayoutModel implements LayoutConstants {
         while (i.hasNext()) {
             String cid = (String)i.next();
             LayoutComponent lc = getLayoutComponent(cid);
-            int oldLinkSizeId = lc.getLinkSizeId(dimension);
             addComponentToLinkSizedGroup(groupId, lc.getId(), dimension); 
         }
     }

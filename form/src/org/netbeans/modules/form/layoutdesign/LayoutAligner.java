@@ -52,12 +52,8 @@ class LayoutAligner implements LayoutConstants {
     void alignIntervals(LayoutInterval[] intervals, boolean closed, int dimension, int alignment) {        
         // Find nearest common (parallel) parent
         LayoutInterval parParent = LayoutInterval.getCommonParent(intervals);
-        LayoutInterval seqParent = null;
         if (parParent.isSequential()) {
-            seqParent = parParent;
-            while (parParent.isSequential()) {
-                parParent = parParent.getParent();
-            }
+            parParent = parParent.getParent();
         }
 
         // Divide layout intervals into pre/aligned/post parallel groups.

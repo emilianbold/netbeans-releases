@@ -100,7 +100,6 @@ public class SetResizabilityAction extends NodeAction {
                     1);
             items = new JCheckBoxMenuItem[] {hItem, vItem};
             
-            RADComponent rc = (RADComponent)components.get(0);
             for (int i=0; i<2; i++) {
                 items[i].addActionListener(getMenuItemListener());
                 HelpCtx.setHelpIDString(items[i], SetResizabilityAction.class.getName());

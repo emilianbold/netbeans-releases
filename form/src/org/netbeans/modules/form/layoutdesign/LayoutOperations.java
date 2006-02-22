@@ -144,7 +144,6 @@ class LayoutOperations implements LayoutConstants {
             List subList = (List)list.get(i);
             assert subList.size() >= 2;
             if (subList.size() == 2) { // there is just one interval
-                int alignment = ((Integer)subList.get(0)).intValue();
                 LayoutInterval li = (LayoutInterval) subList.get(1);
                 if (li.isEmptySpace()) {
                     if (commonGap == null || li.getPreferredSize() > commonGap.getPreferredSize())
@@ -223,7 +222,7 @@ class LayoutOperations implements LayoutConstants {
             layoutModel.addInterval(interval, group, -1);
         }
 
-        layoutModel.addInterval(group, seq, index++);
+        layoutModel.addInterval(group, seq, index);
 
         return group;
     }
@@ -979,7 +978,6 @@ class LayoutOperations implements LayoutConstants {
                     LayoutInterval sub = layoutModel.removeInterval(li, 0); // removes last interval from li
                     layoutModel.setIntervalAlignment(sub, li.getRawAlignment());
                     layoutModel.addInterval(sub, group, i);
-                    li = sub;
                 }
             }
         }

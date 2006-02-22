@@ -869,7 +869,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
                     dragLabel.resolveOrigin();
 
-                    converted = SwingUtilities.convertPoint(designLayeredPane, converted, dragLabel);
+                    SwingUtilities.convertPoint(designLayeredPane, converted, dragLabel);
                     //dragLabel.setBounds(converted.x, converted.y);
                     Rectangle r = dragLabel.getBounds();
                     Point loc = r.getLocation();
