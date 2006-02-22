@@ -364,7 +364,7 @@ public class LayoutUtils implements LayoutConstants {
             }
             LayoutInterval temp = interval1;
             interval1 = interval2;
-            interval2 = interval1;
+            interval2 = temp;
         }
 
         // [more efficient algorithm based on region merging and ordering could be found...]
