@@ -152,6 +152,7 @@ public final class MainLookup extends ProxyLookup {
         setLookups (arr);
         StartLog.logProgress ("Lookups set"); // NOI18N
 
+        CoreBridge.lookupInitialized();
     //StartLog.logEnd ("NbTopManager$MainLookup: initialization of FolderLookup"); // NOI18N
     }
 

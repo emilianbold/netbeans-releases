@@ -23,11 +23,23 @@ import org.openide.util.Lookup;
  * @author Jaroslav Tulach
  */
 public abstract class CoreBridge {
-
+    private static CoreBridge fake;
+    private static boolean lookupInitialized;
+    
     public static CoreBridge getDefault () {
         CoreBridge b = (CoreBridge)Lookup.getDefault().lookup (CoreBridge.class);
+        if (b == null && lookupInitialized) {
+            if (fake == null) {
+                fake = new FakeBridge();
+            }
+            b = fake;
+        }
         assert b != null : "Bridge has to be registered"; // NOI18N
         return b;
+    }
+    
+    static void lookupInitialized() {
+        lookupInitialized = true;
     }
     
     static void conditionallyLoaderPoolTransaction(boolean begin) {
@@ -138,4 +150,73 @@ public abstract class CoreBridge {
         OutputStream errorStream, 
         File file
     );
+    
+    
+    /** Default implementation of the bridge, so certain
+     * applications can run without any bridge being present.
+     */
+    private static final class FakeBridge extends CoreBridge {
+        /** Attaches or detaches to current category of actions.
+         * @param category name or null
+         */
+        protected void attachToCategory (Object category) {
+
+        }
+
+        protected void loadDefaultSection (
+            ManifestSection ms, 
+            org.openide.util.lookup.InstanceContent.Convertor convertor, 
+            boolean add
+        ) {
+            throw new UnsupportedOperationException();
+        }
+
+        protected void loadActionSection(ManifestSection.ActionSection s, boolean load) throws Exception {
+            s.getInstance();
+        }
+
+        protected void loadLoaderSection(ManifestSection.LoaderSection s, boolean load) throws Exception {
+            throw new UnsupportedOperationException();
+        }
+
+        protected void loaderPoolTransaction (boolean begin) {
+            // just ignore
+        }
+
+        protected void addToSplashMaxSteps (int cnt) {
+            throw new UnsupportedOperationException();
+        }
+        protected void incrementSplashProgressBar () {
+            throw new UnsupportedOperationException();
+        }
+
+        public Lookup lookupCacheLoad () {
+            return Lookup.EMPTY;
+        }
+        public void lookupCacheStore (Lookup l) throws java.io.IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        public void setStatusText (String status) {
+            System.err.println("STATUS: " + status);
+        }
+
+        public void initializePlaf (Class uiClass, int uiFontSize, java.net.URL themeURL) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void cliUsage(PrintWriter printWriter) {
+        }
+
+        public void registerPropertyEditors() {
+        }
+
+        protected void loadSettings() {
+        }
+
+        public int cli(String[] string, InputStream inputStream, OutputStream outputStream, OutputStream errorStream, File file) {
+            return 0;
+        }
+    }
+    
 }
