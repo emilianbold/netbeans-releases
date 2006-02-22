@@ -181,11 +181,11 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
                 retValue = Utilities.loadImage(iconPath);
                 if (status != null && !status.isBuilt()) {
                     retValue = Utilities.mergeImages(retValue, Utilities.loadImage("org/netbeans/bluej/resources/compiled.png"),
-                                                     attached ? 6 : 3, attached ? 11 : 13);
+                                                     attached ? 8 : 3, attached ? 11 : 13);
                 }
                 if (hasMain()) {
                     retValue = Utilities.mergeImages(retValue, Utilities.loadImage("org/netbeans/bluej/resources/executable-badge.gif"),
-                                                     attached ? 40 : 37, attached ? 18 : 20);
+                                                     attached ? 44 : 41, attached ? 5 : 7);
                 }
             } else if (readmeIconPath != null) {
                 retValue = Utilities.loadImage(readmeIconPath);
