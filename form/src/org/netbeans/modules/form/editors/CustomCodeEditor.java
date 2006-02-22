@@ -14,6 +14,7 @@
 package org.netbeans.modules.form.editors;
 
 
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
@@ -39,9 +40,7 @@ public class CustomCodeEditor extends javax.swing.JPanel
         java.util.ResourceBundle bundle =
             org.openide.util.NbBundle.getBundle(CustomCodeEditor.class);
 
-        jLabel1.setText(bundle.getString("CustomCodeEditor.label1")); // NOI18N
-        jLabel1.setDisplayedMnemonic(
-            bundle.getString("CustomCodeEditor.label1.mnemonic").charAt(0)); // NOI18N
+        Mnemonics.setLocalizedText(jLabel1, bundle.getString("CTL_InsertCode")); // NOI18N
         jLabel1.setLabelFor(codeEditorPane);        
         codeEditorPane.setPreferredSize(new java.awt.Dimension(440, 200));
         codeEditorPane.requestFocus();

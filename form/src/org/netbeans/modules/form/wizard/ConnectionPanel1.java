@@ -18,6 +18,7 @@ import java.beans.EventSetDescriptor;
 import javax.swing.tree.*;
 import javax.swing.event.*;
 
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.form.*;
 
@@ -126,15 +127,10 @@ class ConnectionPanel1 extends javax.swing.JPanel {
         eventSelectTree.setSelectionModel(treeSelectionModel);
 
         // localization code
-        sourceNameLabel.setText(
-            bundle.getString("CTL_CW_SourceComponent")); // NOI18N
-        sourceNameLabel.setDisplayedMnemonic(
-            bundle.getString("CTL_CW_SourceComponent_Mnemonic").charAt(0)); // NOI18N
+        Mnemonics.setLocalizedText(sourceNameLabel, bundle.getString("CTL_CW_SourceComponent")); // NOI18N
         sourceComponentName.setToolTipText(
             bundle.getString("CTL_CW_SourceComponent_Hint")); // NOI18N
-        eventSelectLabel.setText(bundle.getString("CTL_CW_Event")); // NOI18N
-        eventSelectLabel.setDisplayedMnemonic(
-            bundle.getString("CTL_CW_Event_Mnemonic").charAt(0)); // NOI18N
+        Mnemonics.setLocalizedText(eventSelectLabel, bundle.getString("CTL_CW_Event")); // NOI18N
         eventSelectTree.setToolTipText(bundle.getString("CTL_CW_Event_Hint"));
         sourcePanel.setToolTipText(bundle.getString("CTL_CW_Event_Hint"));
         eventHandlerPanel.setBorder(new javax.swing.border.CompoundBorder(
@@ -142,9 +138,7 @@ class ConnectionPanel1 extends javax.swing.JPanel {
                     new javax.swing.border.EtchedBorder(),
                     bundle.getString("CTL_CW_EventHandlerMethod")), // NOI18N
                 new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5))));
-        eventNameLabel.setText(bundle.getString("CTL_CW_MethodName")); // NOI18N
-        eventNameLabel.setDisplayedMnemonic(
-            bundle.getString("CTL_CW_MethodName_Mnemonic").charAt(0)); // NOI18N
+        Mnemonics.setLocalizedText(eventNameLabel, bundle.getString("CTL_CW_MethodName")); // NOI18N
         
         eventSelectTree.getAccessibleContext().setAccessibleDescription(
             bundle.getString("ACSD_CW_EventTree")); // NOI18N

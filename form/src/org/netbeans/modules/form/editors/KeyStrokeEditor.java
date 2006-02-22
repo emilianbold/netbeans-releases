@@ -22,6 +22,7 @@ import javax.swing.*;
 
 import org.netbeans.modules.form.NamedPropertyEditor;
 
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.NbBundle;
 
@@ -34,9 +35,9 @@ public class KeyStrokeEditor extends PropertyEditorSupport
     public KeyStrokeEditor() {
         ResourceBundle bundle =
             org.openide.util.NbBundle.getBundle(KeyStrokeEditor.class);
-        TXT_CTRL = bundle.getString("CTL_Ctrl"); // NOI18N
-        TXT_SHIFT = bundle.getString("CTL_Shift"); // NOI18N
-        TXT_ALT = bundle.getString("CTL_Alt"); // NOI18N
+        TXT_CTRL = bundle.getString("CTL_CtrlAsText"); // NOI18N
+        TXT_SHIFT = bundle.getString("CTL_ShiftAsText"); // NOI18N
+        TXT_ALT = bundle.getString("CTL_AltAsText"); // NOI18N
     }
 
     public String getJavaInitializationString() {
@@ -230,9 +231,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
                 org.openide.util.NbBundle.getBundle(KeyStrokeEditor.class);
 
             JLabel virtualKeyLabel = new JLabel();
-            virtualKeyLabel.setText(bundle.getString("CTL_VirtualKey")); // NOI18N
-            virtualKeyLabel.setDisplayedMnemonic(
-                bundle.getString("CTL_VirtualKey_Mnemonic").charAt(0)); // NOI18N
+            Mnemonics.setLocalizedText(virtualKeyLabel, bundle.getString("CTL_VirtualKey")); // NOI18N
 
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.gridx = 0;
@@ -258,18 +257,18 @@ public class KeyStrokeEditor extends PropertyEditorSupport
                 bundle.getString("ACSD_VirtualKey")); // NOI18N
 
             JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-            _ctrl = new JCheckBox(TXT_CTRL);
-            _ctrl.setMnemonic(bundle.getString("CTL_Ctrl_Mnemonic").charAt(0)); // NOI18N
+            _ctrl = new JCheckBox();
+            Mnemonics.setLocalizedText(_ctrl, bundle.getString("CTL_Ctrl")); // NOI18N
             _ctrl.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACSD_CtrlKey")); // NOI18N
             panel.add(_ctrl);
-            _alt = new JCheckBox(TXT_ALT);
-            _alt.setMnemonic(bundle.getString("CTL_Alt_Mnemonic").charAt(0)); // NOI18N
+            _alt = new JCheckBox();
+            Mnemonics.setLocalizedText(_alt, bundle.getString("CTL_Alt")); // NOI18N
             _alt.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACSD_AltKey")); // NOI18N
             panel.add(_alt);
-            _shift = new JCheckBox(TXT_SHIFT);
-            _shift.setMnemonic(bundle.getString("CTL_Shift_Mnemonic").charAt(0)); // NOI18N
+            _shift = new JCheckBox();
+            Mnemonics.setLocalizedText(_shift, bundle.getString("CTL_Shift")); // NOI18N
             _shift.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACSD_ShiftKey")); // NOI18N
             panel.add(_shift);
@@ -286,9 +285,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             add(panel, gbc);
             
             JLabel keyStrokeLabel = new JLabel();
-            keyStrokeLabel.setText(bundle.getString("CTL_KeyStroke")); // NOI18N
-            keyStrokeLabel.setDisplayedMnemonic(
-                bundle.getString("CTL_KeyStroke_Mnemonic").charAt(0)); // NOI18N
+            Mnemonics.setLocalizedText(keyStrokeLabel, bundle.getString("CTL_KeyStroke")); // NOI18N
 
             gbc = new GridBagConstraints();
             gbc.gridx = 0;

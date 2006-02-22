@@ -23,6 +23,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.NbBundle;
 
@@ -86,9 +87,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         
         tabbedPane = new JTabbedPane();
 
-        JLabel titleLabel = new JLabel(bundle.getString("CTL_TableModelTitle"));
-        titleLabel.setDisplayedMnemonic(bundle.getString("CTL_TableModelTitle_Mnemonic").charAt(0));
-        titleLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_TableModelTitle"));
+        JLabel titleLabel = new JLabel();
+        Mnemonics.setLocalizedText(titleLabel, bundle.getString("CTL_TableModelTitle")); // NOI18N
+        titleLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_TableModelTitle")); // NOI18N
         titleLabel.setLabelFor(tabbedPane);
         add(titleLabel, BorderLayout.NORTH);
 
@@ -99,18 +100,18 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         
         settingsTable = new CustomJTable();
 
-        JLabel titleLabel1 = new JLabel(bundle.getString("CTL_Title1"));
-        titleLabel1.setDisplayedMnemonic(bundle.getString("CTL_Title1_Mnemonic").charAt(0));
-        titleLabel1.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Title1"));
+        JLabel titleLabel1 = new JLabel();
+        Mnemonics.setLocalizedText(titleLabel1, bundle.getString("CTL_Title1")); // NOI18N
+        titleLabel1.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Title1")); // NOI18N
         titleLabel1.setLabelFor(settingsTable);
-        tab.add(titleLabel1,BorderLayout.NORTH); // NOI18N
+        tab.add(titleLabel1,BorderLayout.NORTH);
 
         titleModel = new TableModelEditor.NbTableModel(
                          new String[] {
-                             bundle.getString("CTL_Column"),
-                             bundle.getString("CTL_Title"),
-                             bundle.getString("CTL_Type"),
-                             bundle.getString("CTL_Editable")
+                             bundle.getString("CTL_Column"), // NOI18N
+                             bundle.getString("CTL_Title"), // NOI18N
+                             bundle.getString("CTL_Type"), // NOI18N
+                             bundle.getString("CTL_Editable") // NOI18N
                          },
                          new Class[] {
                              String.class, String.class, String.class, Boolean.class
@@ -132,7 +133,6 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         comboBox.addItem("Long"); // NOI18N
         comboBox.addItem("Float"); // NOI18N
         comboBox.addItem("Double"); // NOI18N
-//        comboBox.addItem("Character"); // NOI18N
         comboBox.setMaximumRowCount(9);
         comboBox.setSelectedIndex(0);
 
@@ -151,10 +151,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new GridLayout(4, 0, 0, 3));
 
-        insertSColBtn = new JButton(bundle.getString("CTL_InsertColumn"));
-        insertSColBtn.setMnemonic(bundle.getString("CTL_InsertColumn_Mnemonic").charAt(0));
-        insertSColBtn.setToolTipText(bundle.getString("CTL_HINT_InsertColumn"));
-        //insertSColBtn.setMargin(new Insets(0,2,0,2));
+        insertSColBtn = new JButton();
+        Mnemonics.setLocalizedText(insertSColBtn, bundle.getString("CTL_InsertColumn")); // NOI18N
+        insertSColBtn.setToolTipText(bundle.getString("CTL_HINT_InsertColumn")); // NOI18N
         buttonsPanel.add(insertSColBtn);
         insertSColBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -162,10 +161,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
             }
         });
 
-        deleteSColBtn = new JButton(bundle.getString("CTL_DeleteColumn"));
-        deleteSColBtn.setMnemonic(bundle.getString("CTL_DeleteColumn_Mnemonic").charAt(0));
-        deleteSColBtn.setToolTipText(bundle.getString("CTL_HINT_DeleteColumn"));
-        //deleteSColBtn.setMargin(new Insets(0,2,0,2));
+        deleteSColBtn = new JButton();
+        Mnemonics.setLocalizedText(deleteSColBtn, bundle.getString("CTL_DeleteColumn")); // NOI18N
+        deleteSColBtn.setToolTipText(bundle.getString("CTL_HINT_DeleteColumn")); // NOI18N
         buttonsPanel.add(deleteSColBtn);
         deleteSColBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -173,10 +171,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
             }
         });
 
-        moveSColUpBtn = new JButton(bundle.getString("CTL_MoveRowUp"));
-        moveSColUpBtn.setMnemonic(bundle.getString("CTL_MoveRowUp_Mnemonic").charAt(0));
-        moveSColUpBtn.setToolTipText(bundle.getString("CTL_HINT_MoveColumnUp"));
-        //moveSColUpBtn.setMargin(new Insets(0,2,0,2));
+        moveSColUpBtn = new JButton();
+        Mnemonics.setLocalizedText(moveSColUpBtn, bundle.getString("CTL_MoveRowUp")); // NOI18N
+        moveSColUpBtn.setToolTipText(bundle.getString("CTL_HINT_MoveColumnUp")); // NOI18N
         buttonsPanel.add(moveSColUpBtn);
         moveSColUpBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -184,10 +181,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
             }
         });
 
-        moveSColDownBtn = new JButton(bundle.getString("CTL_MoveRowDown"));
-        moveSColDownBtn.setMnemonic(bundle.getString("CTL_MoveRowDown_Mnemonic").charAt(0));
-        moveSColDownBtn.setToolTipText(bundle.getString("CTL_HINT_MoveColumnDown"));
-        //moveSColDownBtn.setMargin(new Insets(0,2,0,2));
+        moveSColDownBtn = new JButton();
+        Mnemonics.setLocalizedText(moveSColDownBtn, bundle.getString("CTL_MoveRowDown")); // NOI18N
+        moveSColDownBtn.setToolTipText(bundle.getString("CTL_HINT_MoveColumnDown")); // NOI18N
         buttonsPanel.add(moveSColDownBtn);
         moveSColDownBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -200,7 +196,7 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
 
         tab.add(padding, BorderLayout.EAST);
 
-        tabbedPane.addTab(bundle.getString("CTL_Title2"), tab);
+        tabbedPane.addTab(bundle.getString("CTL_Title2"), tab); // NOI18N
 
         // second tab (default-values table)
         tab = new JPanel();
@@ -209,9 +205,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
 
         defaultValuesTable = new CustomJTable();
 
-        JLabel titleLabel2 = new JLabel(bundle.getString("CTL_DefaultTableValues"));
-        titleLabel2.setDisplayedMnemonic(bundle.getString("CTL_DefaultTableValues_Mnemonic").charAt(0));
-        titleLabel2.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_DefaultTableValues"));
+        JLabel titleLabel2 = new JLabel();
+        Mnemonics.setLocalizedText(titleLabel2, bundle.getString("CTL_DefaultTableValues")); // NOI18N
+        titleLabel2.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_DefaultTableValues")); // NOI18N
         titleLabel2.setLabelFor(defaultValuesTable);
         tab.add(titleLabel2,BorderLayout.NORTH);
 
@@ -227,14 +223,14 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
 
         tab.add(jscrollpane,BorderLayout.CENTER); // NOI18N
 
-        tabbedPane.addTab(bundle.getString("CTL_DefaultValues"), tab);
+        tabbedPane.addTab(bundle.getString("CTL_DefaultValues"), tab); // NOI18N
 
         // panel with buttons on the right (for default-values table)
         buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new GridBagLayout());
 
         JPanel colButtonsPanel = new JPanel(new GridLayout(4, 0, 0, 3));
-        JLabel colLabel = new JLabel(bundle.getString("CTL_Columns"));
+        JLabel colLabel = new JLabel(bundle.getString("CTL_Columns")); // NOI18N
         colLabel.setLabelFor(colButtonsPanel);
         java.awt.GridBagConstraints gridBagConstraints1;
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -249,10 +245,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         gridBagConstraints1.gridx = 0;
         buttonsPanel.add(colButtonsPanel, gridBagConstraints1);
         
-        insertColBtn = new JButton(bundle.getString("CTL_InsertColumn"));
-        insertColBtn.setMnemonic(bundle.getString("CTL_InsertColumn_Mnemonic").charAt(0));
-        insertColBtn.setToolTipText(bundle.getString("CTL_HINT_InsertColumn"));
-        //insertColBtn.setMargin(new Insets(0,2,0,2));
+        insertColBtn = new JButton();
+        Mnemonics.setLocalizedText(insertColBtn, bundle.getString("CTL_InsertColumn")); // NOI18N
+        insertColBtn.setToolTipText(bundle.getString("CTL_HINT_InsertColumn")); // NOI18N
         colButtonsPanel.add(insertColBtn);
         insertColBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -260,10 +255,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
             }
         });
 
-        deleteColBtn = new JButton(bundle.getString("CTL_DeleteColumn"));
-        deleteColBtn.setMnemonic(bundle.getString("CTL_DeleteColumn_Mnemonic").charAt(0));
-        deleteColBtn.setToolTipText(bundle.getString("CTL_HINT_DeleteColumn"));
-        //deleteColBtn.setMargin(new Insets(0,2,0,2));
+        deleteColBtn = new JButton();
+        Mnemonics.setLocalizedText(deleteColBtn, bundle.getString("CTL_DeleteColumn")); // NOI18N
+        deleteColBtn.setToolTipText(bundle.getString("CTL_HINT_DeleteColumn")); // NOI18N
         colButtonsPanel.add(deleteColBtn);
         deleteColBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -271,10 +265,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
             }
         });
 
-        moveColLeftBtn = new JButton(bundle.getString("CTL_MoveColumnLeft"));
-        moveColLeftBtn.setMnemonic(bundle.getString("CTL_MoveColumnLeft_Mnemonic").charAt(0));
-        moveColLeftBtn.setToolTipText(bundle.getString("CTL_HINT_MoveColumnLeft"));
-        //moveColLeftBtn.setMargin(new Insets(0,2,0,2));
+        moveColLeftBtn = new JButton();
+        Mnemonics.setLocalizedText(moveColLeftBtn, bundle.getString("CTL_MoveColumnLeft")); // NOI18N
+        moveColLeftBtn.setToolTipText(bundle.getString("CTL_HINT_MoveColumnLeft")); // NOI18N
         colButtonsPanel.add(moveColLeftBtn);
         moveColLeftBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -282,10 +275,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
             }
         });
 
-        moveColRightBtn = new JButton(bundle.getString("CTL_MoveColumnRight"));
-        moveColRightBtn.setMnemonic(bundle.getString("CTL_MoveColumnRight_Mnemonic").charAt(0));
-        moveColRightBtn.setToolTipText(bundle.getString("CTL_HINT_MoveColumnRight"));
-        //moveColRightBtn.setMargin(new Insets(0,2,0,2));
+        moveColRightBtn = new JButton();
+        Mnemonics.setLocalizedText(moveColRightBtn, bundle.getString("CTL_MoveColumnRight")); // NOI18N
+        moveColRightBtn.setToolTipText(bundle.getString("CTL_HINT_MoveColumnRight")); // NOI18N
         colButtonsPanel.add(moveColRightBtn);
         moveColRightBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -294,7 +286,7 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         });
 
         JPanel rowButtonsPanel = new JPanel(new GridLayout(4, 0, 0, 3));
-        JLabel rowLabel = new JLabel(bundle.getString("CTL_Rows"));
+        JLabel rowLabel = new JLabel(bundle.getString("CTL_Rows")); // NOI18N
         rowLabel.setLabelFor(rowButtonsPanel);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.insets = new java.awt.Insets(0, 0, 2, 0);
@@ -308,10 +300,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         gridBagConstraints1.gridx = 0;
         buttonsPanel.add(rowButtonsPanel, gridBagConstraints1);
 
-        insertRowBtn = new JButton(bundle.getString("CTL_InsertRow"));
-        insertRowBtn.setMnemonic(bundle.getString("CTL_InsertRow_Mnemonic").charAt(0));
-        insertRowBtn.setToolTipText(bundle.getString("CTL_HINT_InsertRow"));
-        //insertRowBtn.setMargin(new Insets(0,2,0,2));
+        insertRowBtn = new JButton();
+        Mnemonics.setLocalizedText(insertRowBtn, bundle.getString("CTL_InsertRow")); // NOI18N
+        insertRowBtn.setToolTipText(bundle.getString("CTL_HINT_InsertRow")); // NOI18N
         rowButtonsPanel.add(insertRowBtn);
         insertRowBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -319,10 +310,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
             }
         });
 
-        deleteRowBtn = new JButton(bundle.getString("CTL_DeleteRow"));
-        deleteRowBtn.setMnemonic(bundle.getString("CTL_DeleteRow_Mnemonic").charAt(0));
-        deleteRowBtn.setToolTipText(bundle.getString("CTL_HINT_DeleteRow"));
-        //deleteRowBtn.setMargin(new Insets(0,2,0,2));
+        deleteRowBtn = new JButton();
+        Mnemonics.setLocalizedText(deleteRowBtn, bundle.getString("CTL_DeleteRow")); // NOI18N
+        deleteRowBtn.setToolTipText(bundle.getString("CTL_HINT_DeleteRow")); // NOI18N
         rowButtonsPanel.add(deleteRowBtn);
         deleteRowBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -330,10 +320,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
             }
         });
 
-        moveRowUpBtn = new JButton(bundle.getString("CTL_MoveRowUp"));
-        moveRowUpBtn.setMnemonic(bundle.getString("CTL_MoveRowUp_Mnemonic").charAt(0));
-        moveRowUpBtn.setToolTipText(bundle.getString("CTL_HINT_MoveRowUp"));
-        //moveRowUpBtn.setMargin(new Insets(0,2,0,2));
+        moveRowUpBtn = new JButton();
+        Mnemonics.setLocalizedText(moveRowUpBtn, bundle.getString("CTL_MoveRowUp")); // NOI18N
+        moveRowUpBtn.setToolTipText(bundle.getString("CTL_HINT_MoveRowUp")); // NOI18N
         rowButtonsPanel.add(moveRowUpBtn);
         moveRowUpBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -341,10 +330,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
             }
         });
 
-        moveRowDownBtn = new JButton(bundle.getString("CTL_MoveRowDown"));
-        moveRowDownBtn.setMnemonic(bundle.getString("CTL_MoveRowDown_Mnemonic").charAt(0));
-        moveRowDownBtn.setToolTipText(bundle.getString("CTL_HINT_MoveRowDown"));
-        //moveRowDownBtn.setMargin(new Insets(0,2,0,2));
+        moveRowDownBtn = new JButton();
+        Mnemonics.setLocalizedText(moveRowDownBtn, bundle.getString("CTL_MoveRowDown")); // NOI18N
+        moveRowDownBtn.setToolTipText(bundle.getString("CTL_HINT_MoveRowDown")); // NOI18N
         rowButtonsPanel.add(moveRowDownBtn);
         moveRowDownBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -371,21 +359,20 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         rowsField = new JTextField(3);
 
         JLabel rowsLabel = new JLabel();
-        rowsLabel.setText(bundle.getString("CTL_Rows"));
-        rowsLabel.setDisplayedMnemonic(bundle.getString("CTL_Rows_Mnemonic").charAt(0));
+        Mnemonics.setLocalizedText(rowsLabel, bundle.getString("CTL_Rows")); // NOI18N
         rowsLabel.setLabelFor(rowsField);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         sizePanel.add(rowsLabel, gridBagConstraints1);
 
-        rowsField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Rows"));
+        rowsField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Rows")); // NOI18N
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.insets = new java.awt.Insets(0, 4, 0, 0);
         sizePanel.add(rowsField, gridBagConstraints1);
 
-        addRowBtn = new JButton(" "+bundle.getString("CTL_CountPlus")+" ");
-        addRowBtn.setMnemonic(bundle.getString("CTL_CountPlusRow_Mnemonic").charAt(0));
-        addRowBtn.setToolTipText(bundle.getString("CTL_HINT_AddRow"));
+        addRowBtn = new JButton(" "+bundle.getString("CTL_CountPlus")+" "); // NOI18N
+        addRowBtn.setMnemonic(bundle.getString("CTL_CountPlusRow_Mnemonic").charAt(0)); // NOI18N
+        addRowBtn.setToolTipText(bundle.getString("CTL_HINT_AddRow")); // NOI18N
         addRowBtn.setMargin(new Insets(-1,1,-2,0));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.insets = new java.awt.Insets(0, 4, 0, 0);
@@ -396,9 +383,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
             }
         });
         
-        removeRowBtn = new JButton(" "+bundle.getString("CTL_CountMinus")+" ");
-        removeRowBtn.setMnemonic(bundle.getString("CTL_CountMinusRow_Mnemonic").charAt(0));
-        removeRowBtn.setToolTipText(bundle.getString("CTL_HINT_RemoveRow"));
+        removeRowBtn = new JButton(" "+bundle.getString("CTL_CountMinus")+" "); // NOI18N
+        removeRowBtn.setMnemonic(bundle.getString("CTL_CountMinusRow_Mnemonic").charAt(0)); // NOI18N
+        removeRowBtn.setToolTipText(bundle.getString("CTL_HINT_RemoveRow")); // NOI18N
         removeRowBtn.setMargin(new Insets(-2,1,-1,1));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         sizePanel.add(removeRowBtn, gridBagConstraints1);
@@ -411,22 +398,21 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
         columnsField = new JTextField(3);
 
         JLabel columnsLabel = new JLabel();
-        columnsLabel.setText(bundle.getString("CTL_Columns"));
-        columnsLabel.setDisplayedMnemonic(bundle.getString("CTL_Columns_Mnemonic").charAt(0));
+        Mnemonics.setLocalizedText(columnsLabel, bundle.getString("CTL_Columns")); // NOI18N
         columnsLabel.setLabelFor(columnsField);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints1.insets = new java.awt.Insets(0, 20, 0, 0);
         sizePanel.add(columnsLabel, gridBagConstraints1);
 
-        columnsField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Columns"));
+        columnsField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Columns")); // NOI18N
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.insets = new java.awt.Insets(0, 4, 0, 0);
         sizePanel.add(columnsField, gridBagConstraints1);
 
-        addColBtn = new JButton(" "+bundle.getString("CTL_CountPlus")+" ");
-        addColBtn.setMnemonic(bundle.getString("CTL_CountPlusColumn_Mnemonic").charAt(0));
-        addColBtn.setToolTipText(bundle.getString("CTL_HINT_AddColumn"));
+        addColBtn = new JButton(" "+bundle.getString("CTL_CountPlus")+" "); // NOI18N
+        addColBtn.setMnemonic(bundle.getString("CTL_CountPlusColumn_Mnemonic").charAt(0)); // NOI18N
+        addColBtn.setToolTipText(bundle.getString("CTL_HINT_AddColumn")); // NOI18N
         addColBtn.setMargin(new Insets(-1,1,-2,0));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.insets = new java.awt.Insets(0, 4, 0, 0);
@@ -437,9 +423,9 @@ public class CustomTableModelEditor extends JPanel implements EnhancedCustomProp
             }
         });
         
-        removeColBtn = new JButton(" "+bundle.getString("CTL_CountMinus")+" ");
-        removeColBtn.setMnemonic(bundle.getString("CTL_CountMinusColumn_Mnemonic").charAt(0));
-        removeColBtn.setToolTipText(bundle.getString("CTL_HINT_RemoveColumn"));
+        removeColBtn = new JButton(" "+bundle.getString("CTL_CountMinus")+" "); // NOI18N
+        removeColBtn.setMnemonic(bundle.getString("CTL_CountMinusColumn_Mnemonic").charAt(0)); // NOI18N
+        removeColBtn.setToolTipText(bundle.getString("CTL_HINT_RemoveColumn")); // NOI18N
         removeColBtn.setMargin(new Insets(-2,1,-1,1));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         sizePanel.add(removeColBtn, gridBagConstraints1);

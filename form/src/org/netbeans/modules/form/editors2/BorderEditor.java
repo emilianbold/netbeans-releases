@@ -24,6 +24,7 @@ import java.io.IOException;
 import javax.swing.border.*;
 
 import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.*;
 import org.openide.explorer.view.ListView;
 import org.openide.explorer.propertysheet.PropertySheetView;
@@ -225,10 +226,8 @@ public final class BorderEditor extends PropertyEditorSupport
             listView.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACSD_AvailableBorders")); // NOI18N
             
-            JLabel label = new JLabel(
-                bundle.getString("LAB_AvailableBorders")); // NOI18N
-            label.setDisplayedMnemonic(
-                bundle.getString("LAB_AvailableBorders_Mnemonic").charAt(0)); // NOI18N
+            JLabel label = new JLabel();
+            Mnemonics.setLocalizedText(label, bundle.getString("LAB_AvailableBorders")); // NOI18N
             label.setLabelFor(listView);
 
             JPanel panel = new JPanel();

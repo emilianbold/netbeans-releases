@@ -25,6 +25,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.border.*;
 
 import org.openide.*;
+import org.openide.awt.Mnemonics;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.explorer.ExplorerManager;
@@ -431,21 +432,11 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
             spImage.setViewportView(iconLabel);
             
             jLabel1.setText(getString("CTL_ImageSourceType")); // NOI18N
-            rbUrl.setText(getString("CTL_URL")); // NOI18N
-            rbFile.setText(getString("CTL_File")); // NOI18N
-            rbClasspath.setText(getString("CTL_Classpath")); // NOI18N
-            rbNoPicture.setText(getString("CTL_NoPicture")); // NOI18N
             jLabel2.setText(getString("CTL_URLExample")); // NOI18N
             jLabel3.setText(getString("CTL_FileExample")); // NOI18N
             jLabel4.setText(getString("CTL_ClasspathExample")); // NOI18N
             jLabel5.setText(getString("CTL_Null")); // NOI18N
-            lName.setText(getString("CTL_ImageSourceName")); // NOI18N
-            lName.setDisplayedMnemonic(getString("CTL_ImageSourceName_mnemonic").charAt(0)); // NOI18N
             lName.setLabelFor(tfName);
-            jLabel7.setText(getString("CTL_Preview")); // NOI18N
-            jLabel7.setDisplayedMnemonic(getString("CTL_Preview_mnemonic").charAt(0)); // NOI18N
-            bSelect.setText(getString("CTL_ButtonSelect")); // NOI18N
-            bSelect.setMnemonic(getString("CTL_ButtonSelect_mnemonic").charAt(0)); // NOI18N
             
             jLabel1.setLabelFor(jPanel1);
             jLabel2.setLabelFor(rbUrl);
@@ -453,11 +444,14 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
             jLabel4.setLabelFor(rbClasspath);
             jLabel5.setLabelFor(rbNoPicture);
             jLabel7.setLabelFor(iconLabel);
-            
-            rbUrl.setMnemonic(getString("CTL_URL_mnemonic").charAt(0)); // NOI18N
-            rbFile.setMnemonic(getString("CTL_File_mnemonic").charAt(0)); // NOI18N
-            rbClasspath.setMnemonic(getString("CTL_Classpath_mnemonic").charAt(0)); // NOI18N
-            rbNoPicture.setMnemonic(getString("CTL_NoPicture_mnemonic").charAt(0)); // NOI18N
+
+            Mnemonics.setLocalizedText(rbUrl, getString("CTL_URL")); // NOI18N
+            Mnemonics.setLocalizedText(rbFile, getString("CTL_File")); // NOI18N
+            Mnemonics.setLocalizedText(rbClasspath, getString("CTL_Classpath")); // NOI18N
+            Mnemonics.setLocalizedText(rbNoPicture, getString("CTL_NoPicture")); // NOI18N
+            Mnemonics.setLocalizedText(lName, getString("CTL_ImageSourceName")); // NOI18N
+            Mnemonics.setLocalizedText(jLabel7, getString("CTL_Preview")); // NOI18N
+            Mnemonics.setLocalizedText(bSelect, getString("CTL_ButtonSelect")); // NOI18N
             
             tfName.getAccessibleContext().setAccessibleDescription(getString("ACSD_CTL_ImageSourceName")); // NOI18N
             bSelect.getAccessibleContext().setAccessibleDescription(getString("ACSD_CTL_ButtonSelect")); // NOI18N

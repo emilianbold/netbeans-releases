@@ -17,6 +17,7 @@ import java.beans.*;
 import java.util.*;
 import javax.swing.event.*;
 
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.form.*;
 
@@ -63,24 +64,15 @@ class ConnectionPanel2 extends javax.swing.JPanel {
         });
 
         // localization code
-        targetNameLabel.setText(
-            bundle.getString("CTL_CW_TargetComponent")); // NOI18N
-        targetNameLabel.setDisplayedMnemonic(
-            bundle.getString("CTL_CW_TargetComponent_Mnemonic").charAt(0)); // NOI18N
+        Mnemonics.setLocalizedText(targetNameLabel, bundle.getString("CTL_CW_TargetComponent")); // NOI18N
         targetComponentName.setToolTipText(
             bundle.getString("CTL_CW_TargetComponent_Hint")); // NOI18N
-        propertyButton.setText(bundle.getString("CTL_CW_SetProperty")); // NOI18N
-        propertyButton.setMnemonic(
-            bundle.getString("CTL_CW_SetProperty_Mnemonic").charAt(0)); // NOI18N
+        Mnemonics.setLocalizedText(propertyButton, bundle.getString("CTL_CW_SetProperty")); // NOI18N
         propertyButton.setToolTipText(
             bundle.getString("CTL_CW_SetProperty_Hint")); // NOI18N
-        methodButton.setText(bundle.getString("CTL_CW_MethodCall")); // NOI18N
-        methodButton.setMnemonic(
-            bundle.getString("CTL_CW_MethodCall_Mnemonic").charAt(0)); // NOI18N
-        methodButton.setToolTipText(bundle.getString("CTL_CW_MethodCall_Hint"));
-        codeButton.setText(bundle.getString("CTL_CW_XUserCode")); // NOI18N
-        codeButton.setMnemonic(
-            bundle.getString("CTL_CW_XUserCode_Mnemonic").charAt(0)); // NOI18N
+        Mnemonics.setLocalizedText(methodButton, bundle.getString("CTL_CW_MethodCall")); // NOI18N
+        methodButton.setToolTipText(bundle.getString("CTL_CW_MethodCall_Hint")); // NOI18N
+        Mnemonics.setLocalizedText(codeButton, bundle.getString("CTL_CW_XUserCode")); // NOI18N
         codeButton.setToolTipText(
             bundle.getString("CTL_CW_XUserCode_Hint")); // NOI18N
 

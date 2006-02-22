@@ -21,6 +21,7 @@ import java.util.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -57,26 +58,15 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         }
 
         // localize components
-        paramLabel.setText(FormUtils.getBundleString("CTL_CW_GetParametersFrom")); // NOI18N
         paramLabel.setLabelFor(this);
-        valueButton.setText(FormUtils.getBundleString("CTL_CW_Value")); // NOI18N
-        beanButton.setText(FormUtils.getBundleString("CTL_CW_Bean")); // NOI18N
-        propertyButton.setText(FormUtils.getBundleString("CTL_CW_Property")); // NOI18N
         propertyLabel.setText(FormUtils.getBundleString("CTL_CW_NoProperty")); // NOI18N
-        methodButton.setText(FormUtils.getBundleString("CTL_CW_Method")); // NOI18N
         methodLabel.setText(FormUtils.getBundleString("CTL_CW_NoMethod")); // NOI18N
-        codeButton.setText(FormUtils.getBundleString("CTL_CW_UserCode")); // NOI18N
 
-        valueButton.setMnemonic(
-            FormUtils.getBundleString("CTL_CW_Value_Mnemonic").charAt(0)); // NOI18N
-        beanButton.setMnemonic(
-            FormUtils.getBundleString("CTL_CW_Bean_Mnemonic").charAt(0)); // NOI18N
-        propertyButton.setMnemonic(
-            FormUtils.getBundleString("CTL_CW_Property_Mnemonic").charAt(0)); // NOI18N
-        methodButton.setMnemonic(
-            FormUtils.getBundleString("CTL_CW_Method_Mnemonic").charAt(0)); // NOI18N
-        codeButton.setMnemonic(
-            FormUtils.getBundleString("CTL_CW_UserCode_Mnemonic").charAt(0)); // NOI18N
+        Mnemonics.setLocalizedText(valueButton, FormUtils.getBundleString("CTL_CW_Value")); // NOI18N
+        Mnemonics.setLocalizedText(beanButton, FormUtils.getBundleString("CTL_CW_Bean")); // NOI18N
+        Mnemonics.setLocalizedText(propertyButton, FormUtils.getBundleString("CTL_CW_Property")); // NOI18N
+        Mnemonics.setLocalizedText(methodButton, FormUtils.getBundleString("CTL_CW_Method")); // NOI18N
+        Mnemonics.setLocalizedText(codeButton, FormUtils.getBundleString("CTL_CW_UserCode")); // NOI18N
 
         beansList = new ArrayList();
         for (Iterator it = formModel.getMetaComponents().iterator(); it.hasNext(); ) {
@@ -366,8 +356,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
         setLayout(new java.awt.GridBagLayout());
 
-        valueButton.setSelected(true);
-        valueButton.setText(FormUtils.getBundleString("CTL_CW_Value"));
+        valueButton.setText("Value:");
         valueButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeButtonPressed(evt);
@@ -395,7 +384,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(valueField, gridBagConstraints);
 
-        beanButton.setText(FormUtils.getBundleString("CTL_CW_Bean"));
+        beanButton.setText("Bean:");
         beanButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeButtonPressed(evt);
@@ -417,7 +406,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(beanCombo, gridBagConstraints);
 
-        propertyButton.setText(FormUtils.getBundleString("CTL_CW_Property"));
+        propertyButton.setText("Property:");
         propertyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeButtonPressed(evt);
@@ -455,7 +444,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(propertyDetailsButton, gridBagConstraints);
 
-        methodButton.setText(FormUtils.getBundleString("CTL_CW_MethodCall"));
+        methodButton.setText("Method Call:");
         methodButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeButtonPressed(evt);
@@ -492,7 +481,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(methodDetailsButton, gridBagConstraints);
 
-        codeButton.setText(FormUtils.getBundleString("CTL_CW_UserCode"));
+        codeButton.setText("User Code:");
         codeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 typeButtonPressed(evt);
@@ -528,7 +517,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         gridBagConstraints.weighty = 1.0;
         add(codeScrollPane, gridBagConstraints);
 
-        paramLabel.setText("label1");
+        paramLabel.setText(FormUtils.getBundleString("CTL_CW_GetParametersFrom"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

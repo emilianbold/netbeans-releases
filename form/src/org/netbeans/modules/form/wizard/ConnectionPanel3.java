@@ -16,6 +16,7 @@ package org.netbeans.modules.form.wizard;
 import javax.swing.event.*;
 import java.lang.reflect.Method;
 
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.form.*;
 
@@ -51,13 +52,8 @@ class ConnectionPanel3 extends javax.swing.JPanel {
             }
         };
 
-        paramLabel.setText(bundle.getString("CTL_CW_ParamTabs")); // NOI18N
-        paramLabel.setDisplayedMnemonic(
-            bundle.getString("CTL_CW_ParamTabs_Mnemonic").charAt(0)); // NOI18N
-        previewLabel.setText(
-            bundle.getString("CTL_CW_GeneratedPreview")); // NOI18N
-        previewLabel.setDisplayedMnemonic(
-            bundle.getString("CTL_CW_GeneratedPreview_Mnemonic").charAt(0)); // NOI18N
+        Mnemonics.setLocalizedText(paramLabel, bundle.getString("CTL_CW_ParamTabs")); // NOI18N
+        Mnemonics.setLocalizedText(previewLabel, bundle.getString("CTL_CW_GeneratedPreview")); // NOI18N
         previewField.setText(bundle.getString("CTL_CW_Preview")); // NOI18N
 
         previewField.getAccessibleContext().setAccessibleDescription(

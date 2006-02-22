@@ -14,6 +14,7 @@
 package org.netbeans.modules.form;
 
 import org.openide.*;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.*;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -63,10 +64,8 @@ public class FormCustomEditor extends JPanel
             });
         else
             advancedButton.setEnabled(false);
-        
-        jLabel1.setText(FormUtils.getBundleString("LAB_SelectMode")); //NOI18N
-        jLabel1.setDisplayedMnemonic((FormUtils.getBundleString(
-                                       "LAB_SelectMode.mnemonic").charAt(0))); //NOI18N
+
+        Mnemonics.setLocalizedText(jLabel1, FormUtils.getBundleString("LAB_SelectMode")); // NOI18N
         jLabel1.setLabelFor(editorsCombo);
         
         this.editor = editor;

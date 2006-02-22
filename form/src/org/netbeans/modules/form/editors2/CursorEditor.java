@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.form.editors2;
 
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.editors.*;
 
 import java.beans.*;
@@ -148,7 +149,8 @@ public class CursorEditor extends PropertyEditorSupport  implements
                 list.setSelectedValue(value.getName(), true);
 
             ResourceBundle bundle = org.openide.util.NbBundle.getBundle(CursorEditor.class);
-            JLabel cursorListLabel = new JLabel(bundle.getString("CTL_SelectCursorName"));
+            JLabel cursorListLabel = new JLabel();
+            Mnemonics.setLocalizedText(cursorListLabel, bundle.getString("CTL_SelectCursorName")); // NOI18N
             cursorListLabel.setLabelFor(list);
             
             gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -169,7 +171,6 @@ public class CursorEditor extends PropertyEditorSupport  implements
             
             add(cursorListLabel, gridBagConstraints1);
 
-            cursorListLabel.setDisplayedMnemonic(bundle.getString("CTL_SelectCursorName_Mnemonic").charAt(0));
             list.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_SelectCursorName"));
             scrollPane.getVerticalScrollBar().getAccessibleContext().setAccessibleName(bundle.getString("ACSD_CTL_SelectCursorName")); // NOI18N
             scrollPane.getVerticalScrollBar().getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_SelectCursorName")); // NOI18N
