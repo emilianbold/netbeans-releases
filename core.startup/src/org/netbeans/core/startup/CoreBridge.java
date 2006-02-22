@@ -168,7 +168,6 @@ public abstract class CoreBridge {
             org.openide.util.lookup.InstanceContent.Convertor convertor, 
             boolean add
         ) {
-            throw new UnsupportedOperationException();
         }
 
         protected void loadActionSection(ManifestSection.ActionSection s, boolean load) throws Exception {
@@ -176,7 +175,6 @@ public abstract class CoreBridge {
         }
 
         protected void loadLoaderSection(ManifestSection.LoaderSection s, boolean load) throws Exception {
-            throw new UnsupportedOperationException();
         }
 
         protected void loaderPoolTransaction (boolean begin) {
@@ -184,17 +182,14 @@ public abstract class CoreBridge {
         }
 
         protected void addToSplashMaxSteps (int cnt) {
-            throw new UnsupportedOperationException();
         }
         protected void incrementSplashProgressBar () {
-            throw new UnsupportedOperationException();
         }
 
         public Lookup lookupCacheLoad () {
             return Lookup.EMPTY;
         }
         public void lookupCacheStore (Lookup l) throws java.io.IOException {
-            throw new UnsupportedOperationException();
         }
 
         public void setStatusText (String status) {
@@ -202,7 +197,6 @@ public abstract class CoreBridge {
         }
 
         public void initializePlaf (Class uiClass, int uiFontSize, java.net.URL themeURL) {
-            throw new UnsupportedOperationException();
         }
 
         public void cliUsage(PrintWriter printWriter) {
