@@ -52,7 +52,17 @@ public class CLICoreBridge extends CLIHandler {
     protected int cli(Args arguments) {
         Lookup clis = Lookup.getDefault();
         Collection handlers = clis.lookup(new Lookup.Template(CLIHandler.class)).allInstances();
-        return notifyHandlers(arguments, handlers, WHEN_EXTRA, true, true);
+        int h = notifyHandlers(arguments, handlers, WHEN_EXTRA, true, true);
+        if (h == 0) {
+            h = CoreBridge.getDefault().cli(
+                arguments.getArguments(),
+                arguments.getInputStream(),
+                arguments.getOutputStream(),
+                arguments.getErrorStream(),
+                arguments.getCurrentDirectory()
+            );
+        }
+        return h;
     }
 
     protected void usage(PrintWriter w) {
