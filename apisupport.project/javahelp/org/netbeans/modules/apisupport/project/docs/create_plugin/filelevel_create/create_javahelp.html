@@ -17,23 +17,57 @@
         <a href="#seealso">See Also</a> 
     </small></p>
 
-    <p>A <a href="about_javahelp.html">JavaHelp help set</a> 
+    <p>A <a href="../libs_jhelp/about_libs_jhelp.html">JavaHelp help set</a> 
     provides help files that explain the features and
-    functionality of your plg-in module.
+    functionality of your plug-in module.
 
     <p><b>To create a new JavaHelp help set:</b>
     <ol>
         <li>Right-click a module project and choose New &gt; File/Folder. In the
         New File wizard, choose JavaHelp Help Set under the NetBeans Module
         Development category.
-        <li>In the Location page, note the files that will be created
-        and also note where they will be housed: 
+        <li>In the Location page, note the files that will be created and also note that they will be housed in a new folder called <tt>docs</tt>:
         <ul>
-            <li><b>a.</b> Specifies... 
-            <li><b>b.</b> Specifies...
+            <li><b>-about.html.</b> A sample HTML file that is registered
+             in the <tt>idx.xml.</tt> file, <tt>map.xml</tt> file, and <tt>toc.xml</tt> file.
+            <li><b>-hs.xml.</b> Helpset file.
+            <li><b>-idx.xml.</b> Index file.
+            <li><b>-map.xml.</b> Map file. Each HTML file must be registered in the
+             map file. The map ID that you create for the HTML file is used in
+              the <tt>toc.xml</tt> file and <tt>idx.xml</tt> file.
+            <li><b>-toc.html.</b> Table of contents file.
+            <li><b>-helpset.xml.</b> The reference file that is registered in
+             the <tt>layer.xml</tt> file.
         </ul>
+        <p><b>Note:</b> Each of the names above is prefixed by the name of
+         the project. For example, if the project name is <tt>myproject</tt>,
+          the files above would be <tt>myproject-about.html</tt>, <tt>myproject-hs.xml</tt>, etc.
         <li>Click Finish.
     </ol>
+
+<p><b>To hide the IDE's default JavaHelp help sets:</b>
+
+<p>Optionally, if you do not want to include the IDE's default JavaHelp help sets with
+ your plug-in module,
+ you can hide them. Particularly when you are creating a rich-client
+ application on top of the NetBeans Platform, it is unlikely that you
+ will want the IDE's JavaHelp help sets to be included with your application.
+ Therefore, in such scenarios, add the following tags to your module's <tt>layer.xml</tt> file:
+
+<pre>&lt;folder name="Services"&gt;
+    &lt;folder name="JavaHelp"&gt;
+	&lt;!--All 9 sub-helpsets provided by default by the IDE will be hidden: --&gt;
+	&lt;file name="com-sun-enterprise-tools-studio-j2ee-helpset.xml_hidden"/&gt;
+	&lt;file name="org-netbeans-modules-j2ee-helpset.xml_hidden"/&gt;
+	&lt;file name="org-netbeans-modules-usersguide-helpset.xml_hidden"/&gt;
+	&lt;file name="org-netbeans-modules-apisupport-project-helpset.xml_hidden"/&gt;
+        &lt;file name="org-netbeans-modules-web-monitor-resources-helpset.xml_hidden"/&gt;
+        &lt;file name="org-netbeans-modules-db-helpset.xml_hidden"/&gt;            
+	&lt;file name="org-netbeans-modules-tomcat5-helpset.xml_hidden"/&gt;            
+	&lt;file name="org-netbeans-modules-dbschema-helpset.xml_hidden"/&gt;            
+	&lt;file name="org-netbeans-modules-versioning-system-cvss-resources-helpset.xml_hidden"/&gt;
+    &lt;/folder&gt;
+&lt;/folder&gt;</pre>
 
     <dl>
         <dt><a name="seealso">See Also</a></dt>
