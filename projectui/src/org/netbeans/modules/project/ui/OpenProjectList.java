@@ -975,15 +975,14 @@ public final class OpenProjectList {
             String n2 = ProjectUtils.getInformation(p2).getDisplayName();
             if (n1 != null && n2 != null) {
                 return COLLATOR.compare(n1, n2);
-            } else {
-                if (n1 == null) {
-                    ERR.log(ErrorManager.WARNING, p1 + ": ProjectInformation.getDisplayName() should not return null!");
-                }
-                if (n2 == null) {
-                    ERR.log(ErrorManager.WARNING, p2 + ": ProjectInformation.getDisplayName() should not return null!");
-                }
-                return 0; // cannot compare
+            } else if (n1 == null && n2 != null) {
+                ERR.log(ErrorManager.WARNING, p1 + ": ProjectInformation.getDisplayName() should not return null!");
+                return -1;
+            } else if (n1 != null && n2 == null) {
+                ERR.log(ErrorManager.WARNING, p2 + ": ProjectInformation.getDisplayName() should not return null!");
+                return 1;
             }
+            return 0; // both null
             
         }
         
