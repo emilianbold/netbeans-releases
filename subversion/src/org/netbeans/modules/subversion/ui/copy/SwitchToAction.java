@@ -20,8 +20,6 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -30,21 +28,22 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Petr Kuzel
  */
-public class CreateCopyAction extends ContextAction {
+public class SwitchToAction extends ContextAction {
     
-    /** Creates a new instance of CreateCopyAction */
-    public CreateCopyAction() {
-        
+    /**
+     * Creates a new instance of SwitchToAction
+     */
+    public SwitchToAction() {        
     }
 
     protected String getBaseName(Node[] activatedNodes) {
-        return "CTL_MenuItem_Copy";    // NOI18N
+        return "CTL_MenuItem_Switch";    // NOI18N        
     }
 
     protected int getFileEnabledStatus() {
-        return ~0; // XXX ???
+        return ~0; // XXX
     }
 
     protected int getDirectoryEnabledStatus() {
@@ -54,33 +53,33 @@ public class CreateCopyAction extends ContextAction {
     protected void performContextAction(Node[] nodes) {
         Context ctx = getContext(nodes);        
         
-        File root = ctx.getRootFiles()[0];
-        
-        // XXX optimize - in this case we need only the info if there is any modified file
-        File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
-        boolean isChanged = files.length > 0;
+        File root = ctx.getRootFiles()[0];        
                 
         SVNUrl url = SvnUtils.getRepositoryUrl(root);
         RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
         String sourcePath = SvnUtils.getRelativePath(root);        
      
-        CreateCopy createCopy = new CreateCopy(repositoryRoot, nodes[0].getName(), isChanged); // XXX name or dispayname or what?                
-        if(createCopy.createCopy()) {
-            SVNUrl repositoryFolderUrl = createCopy.getRepositoryFileUrl();
-            String message = createCopy.getMessage();
+        SwitchTo switchTo = new SwitchTo(repositoryRoot, nodes[0].getName()); // XXX name or dispayname or what?                
+        if(switchTo.switchTo()) {
+            RepositoryFile repository = switchTo.getRepositoryFile();            
+            boolean replaceModifications = switchTo.replaceModifications();            
 
             ISVNClientAdapter client;
             try {
                 
                 client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
                 
-                client.copy(root, repositoryFolderUrl, message);
+                client.switchToUrl(root, repository.getRepositoryUrl(), repository.getRevision(), true);
+                
+                if(replaceModifications) {
+                    client.revert(root, true);
+                }
                 
             } catch (SVNClientException ex) {
-                ErrorManager.getDefault().notify(ex);
+                ex.printStackTrace(); // should not hapen
                 return;
             }            
-        }
+        }        
     }
     
 }

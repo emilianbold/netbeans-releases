@@ -92,6 +92,12 @@ public class RepositoryPathNode extends AbstractNode {
         return entry.getRepositoryFile().getName();
     }
 
+    public void setName(String name) {
+        entry = new RepositoryPathEntry(
+                    entry.getRepositoryFile().replaceLastSegment(name), 
+                    entry.getSvnNodeKind()
+                );
+    }
     
     public Image getIcon(int type) {
         Image img = null;

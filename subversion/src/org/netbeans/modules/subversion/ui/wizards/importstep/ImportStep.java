@@ -14,6 +14,7 @@
 package org.netbeans.modules.subversion.ui.wizards.importstep;
 
 import java.awt.event.FocusEvent;
+import java.net.MalformedURLException;
 import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -105,7 +106,12 @@ public class ImportStep extends AbstractStep implements DocumentListener {
     }
 
     public SVNUrl getRepositoryFolderUrl() {
-        return repositoryPaths.getRepositoryFiles()[0].getFileUrl(); // more doesn't make sence
+        try {
+            return repositoryPaths.getRepositoryFiles()[0].getFileUrl(); // more files doesn't make sence
+        } catch (MalformedURLException ex) {
+            ex.printStackTrace();
+        } 
+        return null;
     }
 
     public boolean checkoutAfterImport() {

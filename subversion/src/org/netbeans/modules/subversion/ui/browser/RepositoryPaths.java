@@ -92,47 +92,40 @@ public class RepositoryPaths implements ActionListener {
         this.browserActions = browserActions;
     }            
     
-    public RepositoryFile[] getRepositoryFiles() {
+    public RepositoryFile[] getRepositoryFiles() throws MalformedURLException {
         if(repositoryPathTextField.getText().equals("")) {
             return EMPTY_REPOSITORY_FILES;
         }
         
         String[] paths = repositoryPathTextField.getText().trim().split(",");
         RepositoryFile[] ret = new RepositoryFile[paths.length];
-        SVNUrl repositoryUrl = repositoryFile.getRepositoryUrl();
+        SVNUrl repositoryUrl = getRepositoryUrl();
         SVNRevision revision = getRevision();
         if(revision == null) {
-            // XXX should not be even allowed to get here!
+            // XXX should not be even possible to get here!
         }
         
         for (int i = 0; i < paths.length; i++) {
-            try {
-        
-                String path = paths[i].trim();
-                String repositoryUrlString = repositoryFile.getRepositoryUrl().toString();
-                if(path.startsWith("file://") ||
-                   path.startsWith("http://") ||
-                   path.startsWith("https://") ||
-                   path.startsWith("svn://") ||
-                   path.startsWith("svn+ssh://")) { // XXX already listed at some another place
-                    // must be a complete URL 
-                    // so check if it matches with the given repository URL
-                    if(path.startsWith(repositoryUrlString)) {
-                        // lets take only the part without the repository base URL
-                        ret[i] = new RepositoryFile(repositoryUrl, path.substring(repositoryUrlString.length()), revision);
-                    } else {
-                        // XXX some kind of error msg
-                        return EMPTY_REPOSITORY_FILES;
-                    }
+            String path = paths[i].trim();
+            String repositoryUrlString = getRepositoryUrl().toString();
+            if(path.startsWith("file://") ||
+               path.startsWith("http://") ||
+               path.startsWith("https://") ||
+               path.startsWith("svn://") ||
+               path.startsWith("svn+ssh://")) { // XXX already listed at some another place
+                // must be a complete URL 
+                // so check if it matches with the given repository URL
+                if(path.startsWith(repositoryUrlString)) {
+                    // lets take only the part without the repository base URL
+                    ret[i] = new RepositoryFile(repositoryUrl, path.substring(repositoryUrlString.length()), revision);
                 } else {
-                    ret[i] = new RepositoryFile(repositoryUrl, path, revision);    
-                }                
-            } catch (MalformedURLException ex) {
-                ErrorManager.getDefault().notify(ex);
-                // XXX somethig more userfirendly
-            }
-        }                            
-        
+                    // XXX some kind of error msg
+                    return EMPTY_REPOSITORY_FILES;
+                }
+            } else {
+                ret[i] = new RepositoryFile(repositoryUrl, path, revision);    
+            }                
+        }                                    
         return ret;
     }
 
@@ -142,7 +135,13 @@ public class RepositoryPaths implements ActionListener {
             // XXX
             return;
         }
-        RepositoryFile[] repositoryFilesToSelect = getRepositoryFiles();
+        RepositoryFile[] repositoryFilesToSelect;
+        try {
+            repositoryFilesToSelect = getRepositoryFiles();
+        } catch (MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return;
+        }
         
         final Browser browser = 
             new Browser(
@@ -151,7 +150,7 @@ public class RepositoryPaths implements ActionListener {
                 singleSelection);        
         
         final DialogDescriptor dialogDescriptor = 
-                new DialogDescriptor(browser.getBrowserPanel(), "Repository browser - " + repositoryFile.getRepositoryUrl().toString()); // XXX
+                new DialogDescriptor(browser.getBrowserPanel(), "Repository browser - " + getRepositoryUrl().toString()); // XXX
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
         dialogDescriptor.setValid(false);
@@ -165,7 +164,7 @@ public class RepositoryPaths implements ActionListener {
         });
         
         browser.setup(
-            new RepositoryFile(repositoryFile.getRepositoryUrl(), revision), 
+            new RepositoryFile(getRepositoryUrl(), revision), 
             repositoryFilesToSelect, 
             browserActions
         );
@@ -192,7 +191,7 @@ public class RepositoryPaths implements ActionListener {
         }
     }      
     
-    public SVNRevision getRevision() {
+    public SVNRevision getRevision() throws NumberFormatException {
         if(revisionTextField == null) {
             return SVNRevision.HEAD;
         }
@@ -200,12 +199,7 @@ public class RepositoryPaths implements ActionListener {
         if(revisionString.equals("") || revisionString.equals(SVNRevision.HEAD.toString())) {
             return SVNRevision.HEAD;    
         }
-        try {            
-            return new SVNRevision.Number(Long.parseLong(revisionString));
-        } catch (NumberFormatException ex) {
-            ex.printStackTrace();
-            return null;
-        }                
+        return new SVNRevision.Number(Long.parseLong(revisionString));        
     }       
     
     public void actionPerformed(ActionEvent e) {
@@ -214,8 +208,8 @@ public class RepositoryPaths implements ActionListener {
         }        
     }
 
-    public RepositoryFile getRepositoryFile() {
-        return repositoryFile;
+    public SVNUrl getRepositoryUrl() {
+        return repositoryFile.getRepositoryUrl();
     }
     
 }
