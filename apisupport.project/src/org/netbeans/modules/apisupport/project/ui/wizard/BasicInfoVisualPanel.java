@@ -336,6 +336,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
                 assert false : "Unknown wizard type = " + getData().getWizardType();
         }
         setProjectName(getMessage(bundlekey), counter);
+        nameValue.select(0, nameValue.getText().length());
         nameUpdated = false;
     }
     
