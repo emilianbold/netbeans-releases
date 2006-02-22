@@ -424,20 +424,29 @@ class LayoutDragger implements LayoutConstants {
                 int align = position.alignment;
                 LayoutInterval interval = position.interval;
                 LayoutInterval parent = interval.getParent();
-                LayoutRegion posRegion = interval.getCurrentSpace();
-                if (parent != null && parent.isParallel()) {
-                    // check if the interval alignment coincides with parent
-                    if (align == LEADING || align == TRAILING) {
-                        if (!position.nextTo
-                            && LayoutRegion.distance(posRegion, movingSpace, i, align, align) == 0)
-                        {
-                            interval = parent;
+                boolean parentUsed;
+                do {
+                    parentUsed = false;
+                    if (parent != null && parent.isParallel()) {
+                        // check if the interval alignment coincides with parent
+                        if (align == LEADING || align == TRAILING) {
+                            LayoutRegion parRegion = parent.getCurrentSpace();
+                            if (!position.nextTo
+                                && LayoutRegion.distance(parRegion, movingSpace, i, align, align) == 0)
+                            {
+                                parentUsed = true;
+                            }
+                        }
+                        else if (align == parent.getGroupAlignment()) {
+                            parentUsed = true;
                         }
                     }
-                    else if (align == parent.getGroupAlignment()) {
+                    if (parentUsed) {
                         interval = parent;
+                        parent = LayoutInterval.getFirstParent(parent, PARALLEL);
                     }
-                }
+                } while (parentUsed);
+                LayoutRegion posRegion = interval.getCurrentSpace();
                 LayoutRegion contRegion = targetContainer.getLayoutRoot(0).getCurrentSpace();
                 int conty1 = contRegion.positions[dir][LEADING];
                 int conty2 = contRegion.positions[dir][TRAILING];
@@ -460,8 +469,8 @@ class LayoutDragger implements LayoutConstants {
                         g.drawLine(Math.min(y1, posy1), x, Math.max(y2, posy2), x);
                     }
                 } else { // adding aligned
-                    int ay1 = Math.min(y1, posy1);
-                    int ay2 = Math.max(y2, posy2);
+                    //int ay1 = Math.min(y1, posy1);
+                    //int ay2 = Math.max(y2, posy2);
                     if (x == posx) {
                         if (i == HORIZONTAL) {
                             g.drawLine(posx, Math.min(y1, posy1), posx, Math.max(y2, posy2));
