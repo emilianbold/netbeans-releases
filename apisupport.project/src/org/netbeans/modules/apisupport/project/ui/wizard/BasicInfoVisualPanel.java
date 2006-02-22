@@ -238,11 +238,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     }
     
     private void updateGUI() {
-        if (!"".equals(getNameValue()) && !"".equals(getLocationValue())) { // NOI18N
-            // update project folder
-            File destFolder = getFolder();
-            folderValue.setText(destFolder.getPath());
-        }
+        // update project folder
+        folderValue.setText(getFolder().getPath());
         
         if (isSuiteWizard() || isNetBeansOrgFolder()) {
             detachModuleTypeGroup();
@@ -362,8 +359,12 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     }
     
     private File getFolder() {
-        String destFolderS = getLocationValue() + File.separator + getNameValue();
-        return FileUtil.normalizeFile(new File(destFolderS));
+        StringBuffer destFolder = new StringBuffer(getLocationValue());
+        if (destFolder.length() != 0) {
+            destFolder.append(File.separator);
+        }
+        destFolder.append(getNameValue());
+        return FileUtil.normalizeFile(new File(destFolder.toString()));
     }
     
     private boolean isNetBeansOrgFolder() {
