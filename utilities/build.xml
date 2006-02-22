@@ -16,21 +16,23 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="compile-cli" depends="init">
-        <mkdir dir="build/cliclasses"/>
-        <javac srcdir="clisrc" destdir="build/cliclasses" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+        <mkdir dir="build/classes"/>
+        <javac srcdir="clisrc" destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
             <classpath path="${cp.cli}"/>
         </javac>
-        <copy todir="build/cliclasses">
+        <copy todir="build/classes">
             <fileset dir="clisrc" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
         </copy>
     </target>
 
     <target name="jar-cli" depends="init,compile-cli">
+        <!--
         <mkdir dir="${cluster}/core" />
         <jar jarfile="${cluster}/core/org-netbeans-modules-utilities-cli.jar"
              compress="false">
             <fileset dir="build/cliclasses"/>
         </jar>
+        -->
     </target>
 
     <target name="compile" depends="jar-cli,projectized-common.compile"/>

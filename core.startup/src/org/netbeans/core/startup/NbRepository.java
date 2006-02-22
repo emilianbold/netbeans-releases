@@ -65,7 +65,8 @@ public final class NbRepository extends Repository {
             // 1. Initialization and checking of netbeans.home and netbeans.user directories
 
             File homeDirFile = new File (CLIOptions.getHomeDir ());
-            File userDirFile = new File (CLIOptions.getUserDir ());
+            String ud = CLIOptions.getUserDir ();
+            File userDirFile = new File (ud);
             if (!homeDirFile.exists ()) {
                 System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome_notexists"));
                 doExit (2);
@@ -74,13 +75,15 @@ public final class NbRepository extends Repository {
                 System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome1"));
                 doExit (3);
             }
-            if (!userDirFile.exists ()) {
-                System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome2"));
-                doExit (4);
-            }
-            if (!userDirFile.isDirectory ()) {
-                System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome3"));
-                doExit (5);
+            if (!ud.equals("memory")) { // NOI18N
+                if (!userDirFile.exists ()) {
+                    System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome2"));
+                    doExit (4);
+                }
+                if (!userDirFile.isDirectory ()) {
+                    System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome3"));
+                    doExit (5);
+                }
             }
             
             // #27151: may also be additional install dirs

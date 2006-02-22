@@ -81,6 +81,9 @@ public abstract class CLIHandler extends Object {
      * Used during later initialization or while NetBeans is up and running.
      */
     public static final int WHEN_INIT = 2;
+     /** Extra set of inits.
+     */
+    public static final int WHEN_EXTRA = 3;
     
     /** reference to our server.
      */
@@ -109,14 +112,18 @@ public abstract class CLIHandler extends Object {
      */
     protected abstract int cli(Args args);
     
-    private static void showHelp(PrintWriter w, Collection handlers) {
-//        w.println("  -? or --help          Show this help information.");
+    protected static void showHelp(PrintWriter w, Collection handlers, int when) {
         Iterator it = handlers.iterator();
         while (it.hasNext()) {
-            ((CLIHandler)it.next()).usage(w);
+            CLIHandler h = (CLIHandler)it.next();
+            if (when != -1 && when != h.when) {
+                continue;
+            }
+            
+            h.usage(w);
         }
     }
-    
+
     /**
      * Print usage information for this handler.
      * @param w a writer to print to
@@ -166,19 +173,8 @@ public abstract class CLIHandler extends Object {
     /** Notification of available handlers.
      * @return non-zero if one of the handlers fails
      */
-    private static int notifyHandlers(Args args, Collection handlers, int when, boolean failOnUnknownOptions, boolean consume) {
+    protected static int notifyHandlers(Args args, Collection handlers, int when, boolean failOnUnknownOptions, boolean consume) {
         try {
-            //System.err.println("notifyHandlers: handlers=" + handlers + " when=" + when + " args=" + Arrays.asList(args.getArguments()));
-            String[] argv = args.getArguments();
-            for (int i = 0; i < argv.length; i++) {
-                assert argv[i] != null;
-                if (argv[i].equals("-?") || argv[i].equals("--help") || argv[i].equals ("-help")) { // NOI18N
-                    PrintWriter w = new PrintWriter(args.getOutputStream());
-                    showHelp(w, handlers);
-                    w.flush();
-                    return 2;
-                }
-            }
             int r = 0;
             Iterator it = handlers.iterator();
             while (it.hasNext()) {
@@ -189,6 +185,20 @@ public abstract class CLIHandler extends Object {
                 //System.err.println("notifyHandlers: exit code " + r + " from " + h);
                 if (r != 0) {
                     return r;
+                }
+            }
+            //System.err.println("notifyHandlers: handlers=" + handlers + " when=" + when + " args=" + Arrays.asList(args.getArguments()));
+            String[] argv = args.getArguments();
+            for (int i = 0; i < argv.length; i++) {
+                if (argv[i] == null) {
+                    continue;
+                }
+                
+                if (argv[i].equals("-?") || argv[i].equals("--help") || argv[i].equals ("-help")) { // NOI18N
+                    PrintWriter w = new PrintWriter(args.getOutputStream());
+                    showHelp(w, handlers, -1);
+                    w.flush();
+                    return 2;
                 }
             }
             if (failOnUnknownOptions) {

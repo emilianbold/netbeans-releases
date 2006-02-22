@@ -17,14 +17,25 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.security.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Locale;
 import javax.swing.*;
 import javax.swing.border.*;
 
 import org.netbeans.CLIHandler;
+import org.netbeans.Module;
+import org.openide.ErrorManager;
+import org.openide.filesystems.Repository;
+import org.openide.util.Lookup;
 
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Handler for core.jar options.
@@ -39,18 +50,45 @@ public class CLICoreBridge extends CLIHandler {
     }
     
     protected int cli(Args arguments) {
-        return CoreBridge.getDefault().cli(
-            arguments.getArguments(), 
-            arguments.getInputStream(), 
-            arguments.getOutputStream(),
-            arguments.getErrorStream(),
-            arguments.getCurrentDirectory()
-        );
+        Lookup clis = Lookup.getDefault();
+        Collection handlers = clis.lookup(new Lookup.Template(CLIHandler.class)).allInstances();
+        return notifyHandlers(arguments, handlers, WHEN_EXTRA, true, true);
     }
 
     protected void usage(PrintWriter w) {
-        // #65157: Currently this is not needed, when it will be we need
-        // to be more careful and initialize module system first...
-        //CoreBridge.getDefault().cliUsage(w);
+        ModuleSystem moduleSystem;
+        try {
+            moduleSystem = new ModuleSystem(Repository.getDefault().getDefaultFileSystem());
+        } catch (IOException ioe) {
+            // System will be screwed up.
+            throw (IllegalStateException) new IllegalStateException("Module system cannot be created").initCause(ioe); // NOI18N
+        }
+
+//        moduleSystem.loadBootModules();
+        moduleSystem.readList();
+        
+        
+        ArrayList urls = new ArrayList();
+        {
+            Iterator it = moduleSystem.getManager().getModules().iterator();
+            while (it.hasNext()) {
+                Module m = (Module)it.next();
+                Iterator files = m.getAllJars().iterator();
+                while (files.hasNext()) {
+                    File f = (File)files.next();
+                    try {
+                        urls.add(f.toURI().toURL());
+                    } catch (MalformedURLException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }
+            }
+        }
+        
+        URLClassLoader loader = new URLClassLoader((URL[])urls.toArray(new URL[0]), getClass().getClassLoader());
+        Lookup clis = Lookups.metaInfServices(loader);
+        Collection handlers = clis.lookup(new Lookup.Template(CLIHandler.class)).allInstances();
+        showHelp(w, handlers, WHEN_EXTRA);
+        w.flush();
     }
 }
