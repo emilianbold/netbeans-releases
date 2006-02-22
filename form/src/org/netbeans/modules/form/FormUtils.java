@@ -499,7 +499,7 @@ public class FormUtils
                 catch (Exception e2) { // ignore - do not clone property value
                 }
                 try {
-                    setter.invoke(clone, new Object[] {  });
+                    setter.invoke(clone, new Object[] { propertyValue });
                 }
                 catch (Exception e3) { // ignore - do not copy this property
                 }
