@@ -90,7 +90,7 @@ public class ChildrenArrayNodeAtShouldNotBeSlowTest extends NbTestCase {
         int middle = node.getChildren ().getNodesCount () / 2;
         String middleName = String.valueOf (middle);
         Node prev = null;
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 100000; i++) {
             Node n = node.getChildren ().getNodeAt (middle);
             if (prev != null) {
                 assertSame ("The node is still the same", prev, n);
