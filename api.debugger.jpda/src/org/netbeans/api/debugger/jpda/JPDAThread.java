@@ -154,8 +154,8 @@ public interface JPDAThread {
     /**
      * Returns call stack for this thread on the given indexes.
      *
-     * @param from a from index
-     * @param to a to index
+     * @param from a from index, inclusive
+     * @param to a to index, exclusive
      * @throws AbsentInformationException if the thread is running or not able
      *         to return callstack. If the thread is in an incompatible state
      *         (e.g. running), the AbsentInformationException has
