@@ -122,7 +122,7 @@ class JavaCodeGenerator extends CodeGenerator {
     
     private SwingLayoutCodeGenerator swingGenerator;
 
-    private class PropertiesFilter implements FormProperty.Filter {
+    private static class PropertiesFilter implements FormProperty.Filter {
 		
 	private final java.util.List properties;
 	

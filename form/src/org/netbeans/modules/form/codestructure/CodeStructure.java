@@ -627,7 +627,7 @@ public class CodeStructure {
     public Iterator getVariablesIterator(int type, int typeMask,
                                          Class declaredType)
     {
-        return new VariablesIterator(type, typeMask, declaredType);
+        return new VariablesIterator(namesToVariables.values().iterator(), type, typeMask, declaredType);
     }
 
     /** Returns all variables in this CodeStructure. */
@@ -897,7 +897,7 @@ public class CodeStructure {
         }
     }
 
-    private final class VariablesIterator implements Iterator {
+    private static final class VariablesIterator implements Iterator {
         private int type;
         private int typeMask;
         private Class declaredType;
@@ -906,12 +906,11 @@ public class CodeStructure {
 
         private CodeVariable currentVar;
 
-        public VariablesIterator(int type, int typeMask, Class declaredType) {
+        public VariablesIterator(Iterator subIterator, int type, int typeMask, Class declaredType) {
             this.type = type;
             this.typeMask = typeMask;
             this.declaredType = declaredType;
-
-            subIterator = namesToVariables.values().iterator();
+            this.subIterator = subIterator;
         }
 
         public boolean hasNext() {

@@ -72,7 +72,7 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
     /**
      * List view used in the non visual tray.
      */
-    private class NonVisualView extends ListView {
+    private static class NonVisualView extends ListView {
         
         /**
          * Creates new <code>NonVisualView</code>.
@@ -102,7 +102,7 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
     /**
      * Renderer for the list view of the non visual tray.
      */
-    private class Renderer implements ListCellRenderer {
+    private static class Renderer implements ListCellRenderer {
         /** Button used as a renderer component. */
         private JButton button;
         /** Border for the selected rendered items. */
@@ -225,7 +225,7 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
     /**
      * Nodes used in the non visual tray.
      */
-    private class NonVisualNode extends FilterNode {
+    private static class NonVisualNode extends FilterNode {
         
         /**
          * Creates new <code>NonVisualNode</code>.

@@ -139,7 +139,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
         return "new java.awt.Cursor("+current.getType()+")"; // NOI18N
     }
 
-    class CursorPanel extends JPanel implements EnhancedCustomPropertyEditor {
+    static class CursorPanel extends JPanel implements EnhancedCustomPropertyEditor {
         CursorPanel(Cursor value) {
             setLayout(new java.awt.GridBagLayout());
             java.awt.GridBagConstraints gridBagConstraints1;

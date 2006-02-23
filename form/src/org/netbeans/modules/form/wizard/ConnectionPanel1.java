@@ -273,7 +273,7 @@ class ConnectionPanel1 extends javax.swing.JPanel {
     // --------
     // Innerclasses
 
-    class EventSetNode implements TreeNode {
+    static class EventSetNode implements TreeNode {
         private String eventSetName;
         private List subNodes;
 
@@ -308,7 +308,7 @@ class ConnectionPanel1 extends javax.swing.JPanel {
         }
     }
 
-    class EventNode implements TreeNode {
+    static class EventNode implements TreeNode {
         private TreeNode parent;
         private Event event;
         public EventNode(TreeNode parent, Event event) {

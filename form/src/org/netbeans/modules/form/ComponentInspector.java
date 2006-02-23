@@ -579,7 +579,7 @@ public class ComponentInspector extends TopComponent
     }
 
     // paste type used for ExTransferable.Multi
-    private class MultiPasteType extends PasteType
+    private static class MultiPasteType extends PasteType
                                  implements Mutex.ExceptionAction
     {
         private Transferable[] transIn;
