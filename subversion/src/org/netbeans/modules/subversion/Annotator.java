@@ -422,7 +422,7 @@ public class Annotator {
                 null,
                 SystemActionBridge.createAction(SystemAction.get(CreateCopyAction.class), loc.getString("CTL_PopupMenuItem_Copy"), context),
                 SystemActionBridge.createAction(SystemAction.get(SwitchToAction.class), loc.getString("CTL_PopupMenuItem_Switch"), context),
-                SystemActionBridge.createAction(SystemAction.get(MergeCopyAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context),
+                SystemActionBridge.createAction(SystemAction.get(MergeAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context),
                 null,
                 SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context),
                 null,
@@ -443,7 +443,7 @@ public class Annotator {
                 null,
                 SystemActionBridge.createAction(SystemAction.get(CreateCopyAction.class), loc.getString("CTL_PopupMenuItem_Copy"), context),
                 SystemActionBridge.createAction(SystemAction.get(SwitchToAction.class), loc.getString("CTL_PopupMenuItem_Switch"), context),
-                SystemActionBridge.createAction(SystemAction.get(MergeCopyAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context),
+                SystemActionBridge.createAction(SystemAction.get(MergeAction.class), loc.getString("CTL_PopupMenuItem_Merge"), context),
                 null,
                 SystemActionBridge.createAction(SystemAction.get(BlameAction.class),
 //                                        ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(nodes) ? 

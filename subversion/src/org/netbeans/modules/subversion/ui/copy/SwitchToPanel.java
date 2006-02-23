@@ -44,7 +44,7 @@ public class SwitchToPanel extends javax.swing.JPanel {
 
         urlComboBox.setEditable(true);
 
-        replaceModifiedCheckBox.setText("Replace Locally Modified Files");
+        replaceModifiedCheckBox.setText("Revert Local Changes");
         replaceModifiedCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         replaceModifiedCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 

@@ -39,6 +39,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  *
  * @author Petr Kuzel
+ * XXX also a context action ???
  */
 public final class ImportAction extends NodeAction {
 
@@ -219,90 +220,5 @@ public final class ImportAction extends NodeAction {
         }
         return importDirectory;
     }
-
-//    private void copyMetadata() {
-//        File dest = new File(folder);
-//        File src = new File(checkoutDir, module);  // checkout creates new subdir
-//
-//        assert src.isDirectory() : src.getAbsolutePath();
-//
-//        copyFolderMeta(src, dest);
-//
-//        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-//        cache.refresh(dest, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-//    }
-//    
-//    private void copyFolderMeta(File src, File dest) {
-//        File[] files = src.listFiles();
-//        for (int i = 0; i < files.length; i++) {
-//            File file = files[i];
-//            if (file.isDirectory()) {
-//                if ("CVS".equals(file.getName())) { // NOI18N
-//                    copyCvsMeta(file, dest);
-//                } else {
-//                    File destDir = new File(dest, file.getName());
-//                    if (destDir.isDirectory()) {
-//                        copyFolderMeta(file, destDir);  // RESURSION
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    private void copyCvsMeta(File src, File dest) {
-//        File destCvsDir = new File(dest, "CVS"); // NOI18N
-//        if (destCvsDir.exists() == false || (destCvsDir.isDirectory() && destCvsDir.listFiles().length == 0) ) {
-//            destCvsDir.mkdirs();
-//            if (destCvsDir.isDirectory()) {
-//                // be on safe side copy only Root, Entries, RepositoryFile
-//                try {
-//                    File root = new File(src, "Root"); // NOI18N
-//                    copyFile(root, new File(destCvsDir, "Root")); // NOI18N
-//                    File repository = new File(src, "RepositoryFile"); // NOI18N
-//                    copyFile(repository, new File(destCvsDir, "RepositoryFile")); // NOI18N
-//                    File entries = new File(src, "Entries"); // NOI18N
-//                    copyFile(entries, new File(destCvsDir, "Entries")); // NOI18N
-//
-//                    // set file timestamps according to entries
-//                    StandardAdminHandler parser = new StandardAdminHandler();
-//                    Iterator it = parser.getEntries(dest);
-//                    while (it.hasNext()) {
-//                        Entry entry = (Entry) it.next();
-//                        String name = entry.getName();
-//                        // TODO GMT conversions to local
-//                        Date date = entry.getLastModified();
-//
-//                        File sourceFile = new File(dest, name);
-//                        if (sourceFile.isFile()) {
-//                            sourceFile.setLastModified(date.getTime());
-//                        }
-//                    }
-//                } catch (IOException e) {
-//                    ErrorManager err = ErrorManager.getDefault();
-//                    err.annotate(e, NbBundle.getMessage(ImportExecutor.class, "BK3001"));
-//                    err.notify(e);
-//                }
-//            }
-//        }
-//    }
-//
-//    private static void copyFile(File src, File dst) throws IOException {
-//        FileOutputStream fos = new FileOutputStream(dst);
-//        FileInputStream fis = new FileInputStream(src);
-//        long len = src.length();
-//        assert ((int) len) == len : "Unsupported file size:" + len; // NOI18N
-//        copyStream(fos, fis, (int) len);
-//    }
-//
-//    private static void copyStream(OutputStream out, InputStream in, int len) throws IOException {
-//        byte [] buffer = new byte[4096];
-//        for (;;) {
-//            int n = (len <= 4096) ? len : 4096;
-//            n = in.read(buffer, 0, n);
-//            if (n < 0) throw new EOFException();
-//            out.write(buffer, 0, n);
-//            if ((len -= n) == 0) break;
-//        }
-//    }
     
 }

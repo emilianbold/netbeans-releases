@@ -18,9 +18,9 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.ui.wizards.CheckoutWizard;
 import org.openide.DialogDescriptor;
@@ -41,8 +41,8 @@ public class RepositoryPaths implements ActionListener {
 
     // controled components
     private RepositoryFile repositoryFile;
-    private JTextField repositoryPathTextField;
-    private JTextField revisionTextField;
+    private JTextComponent repositoryPathTextField;
+    private JTextComponent revisionTextField;
     private JButton browseButton;
     private JButton searchRevisionButton;
 
@@ -53,7 +53,7 @@ public class RepositoryPaths implements ActionListener {
     private BrowserAction[] browserActions;
     
     public RepositoryPaths(RepositoryFile repositoryFile, 
-                           JTextField repositoryPathTextField,  
+                           JTextComponent repositoryPathTextField,  
                            JButton browseButton) 
     {
         assert repositoryFile != null;
@@ -68,7 +68,7 @@ public class RepositoryPaths implements ActionListener {
     }
     
     public RepositoryPaths(RepositoryFile repositoryFile, 
-                           JTextField repositoryPathTextField,  
+                           JTextComponent repositoryPathTextField,  
                            JButton browseButton, 
                            JTextField  revisionTextField, 
                            JButton searchRevisionButton) 
@@ -92,7 +92,7 @@ public class RepositoryPaths implements ActionListener {
         this.browserActions = browserActions;
     }            
     
-    public RepositoryFile[] getRepositoryFiles() throws MalformedURLException {
+    public RepositoryFile[] getRepositoryFiles() throws MalformedURLException, NumberFormatException {
         if(repositoryPathTextField.getText().equals("")) {
             return EMPTY_REPOSITORY_FILES;
         }
@@ -191,7 +191,7 @@ public class RepositoryPaths implements ActionListener {
         }
     }      
     
-    public SVNRevision getRevision() throws NumberFormatException {
+    private SVNRevision getRevision() throws NumberFormatException {
         if(revisionTextField == null) {
             return SVNRevision.HEAD;
         }

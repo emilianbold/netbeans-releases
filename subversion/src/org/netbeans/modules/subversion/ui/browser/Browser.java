@@ -259,15 +259,6 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         }
     }    
     
-    private boolean nodesOnDifferentLevelsAreSelected(Node[] selection) {
-        for (int i = 0; i < selection.length; i++) {
-            if(selection[i] == getExplorerManager().getRootContext()) {
-                return true; 
-            }
-        }        
-        return false;
-    }
-    
     private boolean selectionIsAtLevel(Node[] newSelection, int level) {
         for (int i = 0; i < newSelection.length; i++) {
              if (getNodeLevel(newSelection[i]) != level)  {

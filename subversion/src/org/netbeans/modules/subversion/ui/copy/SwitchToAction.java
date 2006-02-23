@@ -53,32 +53,37 @@ public class SwitchToAction extends ContextAction {
     protected void performContextAction(Node[] nodes) {
         Context ctx = getContext(nodes);        
         
-        File root = ctx.getRootFiles()[0];        
-                
+        final File root = ctx.getRootFiles()[0];                        
         SVNUrl url = SvnUtils.getRepositoryUrl(root);
-        RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
-        String sourcePath = SvnUtils.getRelativePath(root);        
+        final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
      
         SwitchTo switchTo = new SwitchTo(repositoryRoot, nodes[0].getName()); // XXX name or dispayname or what?                
-        if(switchTo.switchTo()) {
-            RepositoryFile repository = switchTo.getRepositoryFile();            
-            boolean replaceModifications = switchTo.replaceModifications();            
+        if(switchTo.showDialog()) {
+            final RepositoryFile repository = switchTo.getRepositoryFile();            
+            final boolean replaceModifications = switchTo.replaceModifications();            
 
-            ISVNClientAdapter client;
-            try {
-                
-                client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
-                
-                client.switchToUrl(root, repository.getRepositoryUrl(), repository.getRevision(), true);
-                
-                if(replaceModifications) {
-                    client.revert(root, true);
+            Runnable run = new Runnable() {
+                public void run() {
+                    startProgress();
+                    try {
+                        ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
+                        if(replaceModifications) {
+                            // get rid of all changes ...
+                            client.revert(root, true);
+                            // XXX doesn't work for added files
+                        }
+                        // ... and switch
+                        client.switchToUrl(root, repository.getFileUrl(), repository.getRevision(), true);                                
+                    } catch (SVNClientException ex) {
+                        ex.printStackTrace(); // should not hapen
+                        return;
+                    } finally {
+                        finished();
+                    }
                 }
-                
-            } catch (SVNClientException ex) {
-                ex.printStackTrace(); // should not hapen
-                return;
-            }            
+            };
+            Subversion.getInstance().postRequest(run);                  
+               
         }        
     }
     

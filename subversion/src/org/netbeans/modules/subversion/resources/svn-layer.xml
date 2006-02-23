@@ -77,8 +77,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-subversion-ui-copy-SwitchToAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.copy.SwitchToAction"/>
             </file>
-            <file name="org-netbeans-modules-subversion-ui-copy-MergeCopyAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.copy.MergeCopyAction"/>
+            <file name="org-netbeans-modules-subversion-ui-copy-MergeAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.copy.MergeAction"/>
             </file>
             <file name="org-netbeans-modules-subversion-ui-blame-BlameAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.blame.BlameAction"/>
@@ -193,12 +193,12 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-subversion-ui-copy-SwitchAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-copy-SwitchToAction.instance"/>
             </file>            
-            <attr name="org-netbeans-modules-subversion-ui-copy-SwitchAction.shadow/org-netbeans-modules-subversion-ui-copy-MergeCopyAction.shadow" boolvalue="true"/>            
+            <attr name="org-netbeans-modules-subversion-ui-copy-SwitchAction.shadow/org-netbeans-modules-subversion-ui-copy-MergeAction.shadow" boolvalue="true"/>            
 
-            <file name="org-netbeans-modules-subversion-ui-copy-MergeCopyAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-copy-MergeCopyAction.instance"/>
+            <file name="org-netbeans-modules-subversion-ui-copy-MergeAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-copy-MergeAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-subversion-ui-copy-MergeCopyAction.shadow/Separator6.instance" boolvalue="true"/>                        
+            <attr name="org-netbeans-modules-subversion-ui-copy-MergeAction.shadow/Separator6.instance" boolvalue="true"/>                        
             
             <file name="Separator6.instance">
         		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

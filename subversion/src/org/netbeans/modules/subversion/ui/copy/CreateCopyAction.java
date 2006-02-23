@@ -54,32 +54,34 @@ public class CreateCopyAction extends ContextAction {
     protected void performContextAction(Node[] nodes) {
         Context ctx = getContext(nodes);        
         
-        File root = ctx.getRootFiles()[0];
-        
+        final File root = ctx.getRootFiles()[0];        
         // XXX optimize - in this case we need only the info if there is any modified file
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
-        boolean isChanged = files.length > 0;
-                
+        boolean isChanged = files.length > 0;                
         SVNUrl url = SvnUtils.getRepositoryUrl(root);
-        RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
-        String sourcePath = SvnUtils.getRelativePath(root);        
+        final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);        
      
         CreateCopy createCopy = new CreateCopy(repositoryRoot, nodes[0].getName(), isChanged); // XXX name or dispayname or what?                
-        if(createCopy.createCopy()) {
-            SVNUrl repositoryFolderUrl = createCopy.getRepositoryFileUrl();
-            String message = createCopy.getMessage();
+        if(createCopy.showDialog()) {
+                        
+            final SVNUrl repositoryFolderUrl = createCopy.getRepositoryFileUrl();
+            final String message = createCopy.getMessage();
 
-            ISVNClientAdapter client;
-            try {
-                
-                client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
-                
-                client.copy(root, repositoryFolderUrl, message);
-                
-            } catch (SVNClientException ex) {
-                ErrorManager.getDefault().notify(ex);
-                return;
-            }            
+            Runnable run = new Runnable() {
+                public void run() {
+                    startProgress();                    
+                    try {                
+                        ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
+                        client.copy(root, repositoryFolderUrl, message);
+                    } catch (SVNClientException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                        return;
+                    } finally {
+                        finished();
+                    }
+                }
+            };
+            Subversion.getInstance().postRequest(run);            
         }
     }
     
