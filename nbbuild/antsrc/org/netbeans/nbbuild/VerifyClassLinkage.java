@@ -39,7 +39,7 @@ import org.apache.tools.ant.types.Path;
  * Verifies linkage between classes in a JAR (typically a module).
  * @author Jesse Glick
  * @see "#71675"
- * @see http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html
+ * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html">Class file spec</a>
  */
 public class VerifyClassLinkage extends Task {
     
