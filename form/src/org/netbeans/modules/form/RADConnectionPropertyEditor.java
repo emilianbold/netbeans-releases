@@ -39,8 +39,7 @@ public class RADConnectionPropertyEditor
     protected PropertyChangeSupport support;
     private Class propertyType;
     private FormModel formModel = null;
-    private RADConnectionDesignValue emptyValue = null;
-    private RADConnectionDesignValue designValue = emptyValue;
+    private RADConnectionDesignValue designValue = null;
     private Object realValue = null;
 
     /** Creates a new RADConnectionPropertyEditor */
@@ -72,7 +71,7 @@ public class RADConnectionPropertyEditor
         if (value instanceof RADConnectionDesignValue) {
             designValue =(RADConnectionDesignValue)value;
         } else {
-            designValue = emptyValue;
+            designValue = null;
             realValue = value;
         }
         support.firePropertyChange("", null, null); // NOI18N

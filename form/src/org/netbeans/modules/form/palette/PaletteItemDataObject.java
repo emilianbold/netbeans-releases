@@ -282,7 +282,6 @@ class PaletteItemDataObject extends MultiDataObject {
 
     /** Node representing the palette item (node delegate for the DataObject). */
     class ItemNode extends DataNode {
-        private Action[] actions;
 
         ItemNode() {
             super(PaletteItemDataObject.this, Children.LEAF);
