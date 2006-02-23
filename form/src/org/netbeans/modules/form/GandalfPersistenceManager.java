@@ -5465,12 +5465,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
             public int hashCode() {            
                 return tostring.hashCode();
             }            
-            private String getBeanName() {
-                return beanName;
-            }                   
-            private Property getProperty() {
-                return property;
-            }   
             RADConnectionPropertyEditor.RADConnectionDesignValue getValue() {
                 return value;
             }               
@@ -5533,7 +5527,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             for (Iterator it = sorted.iterator(); it.hasNext();) {                
                 ConnectedProperty compProperty = (ConnectedProperty) it.next();                
                 try {                    
-                    compProperty.getProperty().setValue(compProperty.getValue()); 
+                    compProperty.property.setValue(compProperty.getValue()); 
                 } catch(Exception ex) {
                     org.w3c.dom.Node node = 
                         (org.w3c.dom.Node) compProperty.getAuxiliaryValue();                    

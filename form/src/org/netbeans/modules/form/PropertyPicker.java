@@ -276,10 +276,6 @@ public class PropertyPicker extends javax.swing.JPanel {
         updatePropertyList();
     }//GEN-LAST:event_componentsComboItemStateChanged
 
-    /** Closes the dialog */
-    private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:closeDialog
-    }//GEN-LAST:closeDialog
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel componentLabel;
     private javax.swing.JComboBox componentsCombo;

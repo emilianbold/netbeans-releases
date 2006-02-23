@@ -282,10 +282,6 @@ public class MethodPicker extends javax.swing.JPanel {
             selectedComponent = components[componentsCombo.getSelectedIndex()];
         updateMethodList();
     }//GEN-LAST:event_componentsComboItemStateChanged
-    
-    /** Closes the dialog */
-    private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:closeDialog
-    }//GEN-LAST:closeDialog
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel componentLabel;

@@ -75,14 +75,6 @@ class LayoutFeeder implements LayoutConstants {
         }
     }
 
-    private static boolean sameInclusionGroup(IncludeDesc iDesc1, IncludeDesc iDesc2) {
-        LayoutInterval parent1 = iDesc1.parent.isSequential() && !iDesc1.newSubGroup ?
-                                 iDesc1.parent.getParent() : iDesc1.parent;
-        LayoutInterval parent2 = iDesc2.parent.isSequential() && !iDesc2.newSubGroup ?
-                                 iDesc2.parent.getParent() : iDesc2.parent;
-        return parent1 == parent2;
-    }
-
     // -----
 
     LayoutFeeder(LayoutOperations operations, LayoutDragger dragger, LayoutInterval[] addingIntervals) {
@@ -2193,26 +2185,6 @@ class LayoutFeeder implements LayoutConstants {
         inclusions.add(iDesc);
 
         return iDesc;
-    }
-
-    private static boolean sameSubGroupAlignment(LayoutInterval group, LayoutInterval subgroup) {
-        assert group.isParallel() && subgroup.isParallel();
-
-        int align = subgroup.getAlignment();
-        boolean sameAlign = true;
-        Iterator it = subgroup.getSubIntervals();
-        while (it.hasNext()) {
-            LayoutInterval li = (LayoutInterval) it.next();
-            if (LayoutInterval.wantResize(li)) { // will span over whole group
-                sameAlign = true;
-                break;
-            }
-            if (li.getAlignment() != align) {
-                sameAlign = false;
-            }
-        }
-
-        return sameAlign && LayoutInterval.canResize(subgroup) == LayoutInterval.canResize(group);
     }
 
     /**

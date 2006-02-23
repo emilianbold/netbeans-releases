@@ -852,7 +852,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
             return null;
         }
         
-        private Node findSelectedNode(Node root, String name) {
+        /*private Node findSelectedNode(Node root, String name) {
             Node node = root;
             StringTokenizer st = new StringTokenizer(name, "/"); // NOI18N
             while (st.hasMoreTokens()) {
@@ -874,7 +874,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
                 }
             }
             return node;
-        }
+        }*/
         
         /**
          * Returns the property value that is result of the CustomPropertyEditor.

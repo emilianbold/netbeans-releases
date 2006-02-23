@@ -973,16 +973,6 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }   
     
-    private void regenerateEventHandlers() {
-        // only missing handler methods are generated, existing are left intact
-        FormEvents formEvents = formModel.getFormEvents();
-        String[] handlers = formEvents.getAllEventHandlers();
-        for (int i=0; i < handlers.length; i++)
-            generateEventHandler(handlers[i],
-                                 formEvents.getOriginalListenerMethod(handlers[i]),
-                                 null);
-    }
-
     private void addCreateCode(RADComponent comp, Writer initCodeWriter)
         throws IOException
     {
@@ -1337,50 +1327,6 @@ class JavaCodeGenerator extends CodeGenerator {
                                      || prop.getPostCode() != null)
                     generatePropertySetter(prop, comp, initCodeWriter);
             }
-        }
-    }
-
-    // This method generates all layout code in one block. Currently not used.
-    private void generateVisualCode(RADVisualContainer container,
-                                    Writer initCodeWriter)
-        throws IOException
-    {
-        LayoutSupportManager layoutSupport = container.getLayoutSupport();
-
-        if (layoutSupport.isLayoutChanged()) {
-            Iterator it = layoutSupport.getLayoutCode()
-                                            .getStatementsIterator();
-            while (it.hasNext()) {
-                CodeStatement statement = (CodeStatement) it.next();
-                initCodeWriter.write(getStatementJavaString(statement, "")); // NOI18N
-                initCodeWriter.write("\n"); // NOI18N
-            }
-        }
-
-        for (int i=0, n=layoutSupport.getComponentCount(); i < n; i++) {
-            Iterator it = layoutSupport.getComponentCode(i)
-                                            .getStatementsIterator();
-            while (it.hasNext()) {
-                CodeStatement statement = (CodeStatement) it.next();
-                initCodeWriter.write(getStatementJavaString(statement, "")); // NOI18N
-                initCodeWriter.write("\n"); // NOI18N
-            }
-        }
-
-        initCodeWriter.write("\n"); // NOI18N
-
-        // hack for properties that can't be set until all child components
-        // are added to the container
-        java.util.List postProps;
-        if (containerDependentProperties != null
-            && (postProps = (java.util.List)containerDependentProperties.get(container))
-                != null)
-        {
-            for (Iterator it = postProps.iterator(); it.hasNext(); ) {
-                RADProperty prop = (RADProperty) it.next();
-                generatePropertySetter(prop, container, initCodeWriter);
-            }
-            initCodeWriter.write("\n"); // NOI18N
         }
     }
 

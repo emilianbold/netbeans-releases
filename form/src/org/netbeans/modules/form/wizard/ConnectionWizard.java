@@ -308,21 +308,6 @@ public class ConnectionWizard extends WizardDescriptor {
                 listenerList.remove(ChangeListener.class, listener);
         }
 
-        private void fireStateChanged() {
-            if (listenerList == null)
-                return;
-
-            ChangeEvent e = null;
-            Object[] listeners = listenerList.getListenerList();
-            for (int i = listeners.length-2; i>=0; i-=2) {
-                if (listeners[i] == ChangeListener.class) {
-                    if (e == null)
-                        e = new ChangeEvent(this);
-                    ((ChangeListener)listeners[i+1]).stateChanged(e);
-                }
-            }
-        }
-
         public void stateChanged(ChangeEvent p1) {
             if (stage == 2) {
                 panel2Changed = true;
