@@ -80,6 +80,7 @@
  <mapID target="apisupport_general_update_center" url="distribute_plugin/apisupport_general_update_center.html"/>
 <mapID target="apisupport_generate_autoupdate_descriptor" url="distribute_plugin/generate_autoupdate_descriptor.html"/>
 <mapID target="apisupport_using_shared_jnlp_repository" url="distribute_plugin/apisupport_using_shared_jnlp_repository.html"/>
+<mapID target="apisupport_register_nbm_file" url="distribute_plugin/apisupport_register_nbm_file.html"/>
 
 
 

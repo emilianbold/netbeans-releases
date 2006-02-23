@@ -16,7 +16,33 @@
     <p><small> 
         <a href="#seealso">See Also</a> 
     </small></p>
-    <p>tbd
+
+    An autoupdate descriptor is an XML file that describes
+    the NBM files that you want to make available to your users.
+    For example, an autoupdate descriptor
+    specifies a name, a description, and a URL for
+    each plug-in module that it describes.
+
+    <p>When you put an autoupdate descriptor on a host, and make its URL
+    available to your users, your users are able to register the URL in
+    your IDE. After registering the URL, they can access your NBM files
+    via the Update Center wizard, under the Tools menu.
+
+    <p><b>To generate an autoupdate descriptor:</b>
+
+    <ol><li>If you have not already done so,
+        <a href="../create_plugin/create_module_suite.html">create a module suite project</a>.
+        <li>In the Projects window, right-click the node of the
+        module suite project you want to build.
+        <li>Choose Create NBMs.
+        <p>The IDE builds the NBM files in the module suite project. The IDE
+        also creates a file called <tt>updates.xml</tt>, which is the
+        autoupdate descriptor. To see it, look in the Files window (Ctrl-2).
+        <li>Tweak the autoupdate descriptor, if needed. For example, customize
+        the <tt>distribution</tt> element for each module, so that the URL
+        to the NBM file is correct.
+
+    </ol>
     <dl>
         <dt><a name="seealso">See Also</a></dt>
         <dd>  <a href="../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
