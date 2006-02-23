@@ -467,17 +467,23 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void setCurrentCallStackFrame (CallStackFrame callStackFrame) {
-        CallStackFrame old;
-        synchronized (this) {
-            if (callStackFrame == currentCallStackFrame) return;
-            old = currentCallStackFrame;
-            currentCallStackFrame = callStackFrame;
-        }
+        CallStackFrame old = setCurrentCallStackFrameNoFire(callStackFrame);
+        if (old == callStackFrame) return ;
         pcs.firePropertyChange (
             PROP_CURRENT_CALL_STACK_FRAME,
             old,
             callStackFrame
         );
+    }
+    
+    private CallStackFrame setCurrentCallStackFrameNoFire (CallStackFrame callStackFrame) {
+        CallStackFrame old;
+        synchronized (this) {
+            if (callStackFrame == currentCallStackFrame) return callStackFrame;
+            old = currentCallStackFrame;
+            currentCallStackFrame = callStackFrame;
+        }
+        return old;
     }
 
     /**
@@ -524,7 +530,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         int depth = csf.getFrameDepth();
                         try {
                             CallStackFrame csf2 = frameThread.getCallStack(depth, depth + 1)[0];
-                            setCurrentCallStackFrame(csf2);
+                            setCurrentCallStackFrameNoFire(csf2);
                         } catch (AbsentInformationException aiex) {
                             setCurrentCallStackFrame(null);
                         }
@@ -680,7 +686,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         int depth = csf.getFrameDepth();
                         try {
                             CallStackFrame csf2 = frameThread.getCallStack(depth, depth + 1)[0];
-                            setCurrentCallStackFrame(csf2);
+                            setCurrentCallStackFrameNoFire(csf2);
                         } catch (AbsentInformationException aiex) {
                             setCurrentCallStackFrame(null);
                         }
