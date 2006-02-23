@@ -146,8 +146,7 @@ Microsystems, Inc. All Rights Reserved.
             <extra-compilation-unit>
                 <package-root>clisrc</package-root>
                 <classpath>${cp.cli}</classpath>
-                <built-to>build/cliclasses</built-to>
-                <built-to>${cluster}/core/org-netbeans-modules-utilities-cli.jar</built-to>
+                <built-to>build/classes</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>
