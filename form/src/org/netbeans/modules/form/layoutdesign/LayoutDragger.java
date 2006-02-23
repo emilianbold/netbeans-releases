@@ -107,7 +107,6 @@ class LayoutDragger implements LayoutConstants {
     private LayoutRegion movingSpace;
     private int dimension;
     private boolean snapping;
-    private LayoutInterval[] inside = new LayoutInterval[2]; // LEADING, TRAILING
 
     // arrays of position candidates for the moving/resizing component
     private PositionDef[][] findingsNextTo;
@@ -1556,8 +1555,6 @@ class LayoutDragger implements LayoutConstants {
         private LayoutInterval resizingGap; // inside resizing container
         private int originalGapSize;
         private int preferredGapSize;
-
-        private int distance = LayoutRegion.UNKNOWN;
 
         LayoutInterval getResizingGap() {
             return resizingGap;

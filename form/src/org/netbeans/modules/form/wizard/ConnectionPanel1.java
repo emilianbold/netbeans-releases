@@ -97,8 +97,7 @@ class ConnectionPanel1 extends javax.swing.JPanel {
 
             if (eventSetDesc != lastEventSetDesc) {
                 eventSetEvents = new ArrayList();
-                eventSetNode = new EventSetNode(rootNode,
-                                                eventSetDesc.getName(),
+                eventSetNode = new EventSetNode(eventSetDesc.getName(),
                                                 eventSetEvents);
                 eventNodes.add(eventSetNode);
                 lastEventSetDesc = eventSetDesc;
@@ -275,12 +274,10 @@ class ConnectionPanel1 extends javax.swing.JPanel {
     // Innerclasses
 
     class EventSetNode implements TreeNode {
-        private TreeNode parent;
         private String eventSetName;
         private List subNodes;
 
-        public EventSetNode(TreeNode parent, String eventSetName, List subNodes) {
-            this.parent = parent;
+        public EventSetNode(String eventSetName, List subNodes) {
             this.eventSetName = eventSetName;
             this.subNodes = subNodes;
         }
