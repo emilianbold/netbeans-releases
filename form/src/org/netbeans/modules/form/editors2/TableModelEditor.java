@@ -425,8 +425,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor, Name
         if (o == null) return "null"; // NOI18N
 
         if (o instanceof String)
-            if (o == null) return "\"\""; // NOI18N
-            else return "\"" + o + "\""; // NOI18N
+            return "\"" + o + "\""; // NOI18N
 
         String s = o.getClass ().getName ();
         int g = s.lastIndexOf ('.');

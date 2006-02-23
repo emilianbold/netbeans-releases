@@ -284,7 +284,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
                 if (string.startsWith(CLASSPATH_PREFIX)) {
                     String s = string.substring(CLASSPATH_PREFIX.length() + 1).trim();
                     
-                    if((s == null)|| ("".equals(s)) || ("/".equals(s)) // NOI18N
+                    if(("".equals(s)) || ("/".equals(s)) // NOI18N
                     || ("///".equals(s)) || (s.endsWith("#"))) {    // NOI18N
                         // #13035
                         // the empty string and couple of others has to be treated specially
@@ -887,7 +887,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
             NbImageIcon ii = null;
             String s = tfName.getText().trim();
             
-            if ((s == null)|| ("".equals(s)) || ("/".equals(s)) || // NOI18N
+            if (("".equals(s)) || ("/".equals(s)) || // NOI18N
             ("///".equals(s)) || (s.endsWith("#"))) {          // NOI18N
                 // #13035
                 // the empty string and couple of others has to be treated specially
@@ -932,7 +932,6 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
         
         void setValue() {
             String val = tfName.getText();
-            val.trim();
             if ("".equals(val)) { // NOI18N
                 localIcon = null;
                 updateIcon();

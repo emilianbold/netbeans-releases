@@ -190,13 +190,13 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
                     x = containerDelegate.getSize().width / 2 - 5;
                 }
                 y1 = 0;
-                y2 = (component != null ? component.getHeight() : 20);
+                y2 = component.getHeight();
             }
             else {
                 Rectangle b = components[(draggedIndex == 0) ? 1 : 0].getBounds();
                 x = b.x;
                 y1 = b.y;
-                y2 = b.y + (component != null ? component.getHeight() : b.height);
+                y2 = b.y + component.getHeight();
             }
         }
         else if ((newIndex >= components.length) ||
@@ -205,13 +205,13 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
             Rectangle b = components[(last == draggedIndex) ? last-1 : last].getBounds();
             x = b.x + b.width;
             y1 = b.y;
-            y2 = b.y + (component != null ? component.getHeight() : b.height);
+            y2 = b.y + component.getHeight();
         }
         else {
             Rectangle b = components[(newIndex == draggedIndex) ? newIndex+1 : newIndex].getBounds();
             x = b.x;
             y1 = b.y;
-            y2 = b.y + (component != null ? component.getHeight() : b.height);
+            y2 = b.y + component.getHeight();
         }
         g.drawRect(x - 10 - hgap / 2, y1, 20, y2 - y1);
         return true;
