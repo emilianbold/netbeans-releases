@@ -64,6 +64,9 @@ Microsystems, Inc. All Rights Reserved.
         <fileset id="jnlp.included.modules" dir="${netbeans.dest.dir}">
             <and>
                 <filename name="**/*.jar"/>
+                <not>
+                    <filename name="**/update/**/*.jar"/>
+                </not>
                 <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
                     <param name="excludeModules" value="${disabled.modules}"/>
                     <param name="includeClusters" value="${enabled.clusters}"/>
