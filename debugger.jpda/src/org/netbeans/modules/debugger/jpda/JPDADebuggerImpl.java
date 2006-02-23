@@ -514,8 +514,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
             CallStackFrameImpl csf = (CallStackFrameImpl) 
                 getCurrentCallStackFrame ();
             if (csf != null) {
+                JPDAThread frameThread = csf.getThread();
                 try {
-                    return evaluateIn (expression, csf.getStackFrame ());
+                    Value value = evaluateIn (expression, csf.getStackFrame ());
+                    try {
+                        csf.getThread();
+                    } catch (InvalidStackFrameException isfex) {
+                        // The frame is invalidated, set the new current...
+                        int depth = csf.getFrameDepth();
+                        try {
+                            CallStackFrame csf2 = frameThread.getCallStack(depth, depth + 1)[0];
+                            setCurrentCallStackFrame(csf2);
+                        } catch (AbsentInformationException aiex) {
+                            setCurrentCallStackFrame(null);
+                        }
+                    }
+                    return value;
                 } catch (com.sun.jdi.VMDisconnectedException e) {
                     // Causes kill action when something is being evaluated. 
                     return null;
@@ -631,6 +645,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
             JPDAThreadImpl thread = (JPDAThreadImpl) getThread(tr);
             boolean threadSuspended = thread.isSuspended();
             thread.notifyToBeRunning();
+            // Remember the current stack frame, it might be necessary to re-set.
+            CallStackFrameImpl csf = (CallStackFrameImpl) 
+                getCurrentCallStackFrame ();
+            JPDAThread frameThread = null;
+            if (csf != null) {
+                try {
+                    frameThread = csf.getThread();
+                } catch (InvalidStackFrameException isfex) {}
+            }
             try {
                 return org.netbeans.modules.debugger.jpda.expr.Evaluator.
                     invokeVirtual (
@@ -649,6 +672,20 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     thread.notifySuspended();
                 }
                 enableAllBreakpoints (l);
+                if (frameThread != null) {
+                    try {
+                        csf.getThread();
+                    } catch (InvalidStackFrameException isfex) {
+                        // The current frame is invalidated, set the new current...
+                        int depth = csf.getFrameDepth();
+                        try {
+                            CallStackFrame csf2 = frameThread.getCallStack(depth, depth + 1)[0];
+                            setCurrentCallStackFrame(csf2);
+                        } catch (AbsentInformationException aiex) {
+                            setCurrentCallStackFrame(null);
+                        }
+                    }
+                }
             }
         }
     }
