@@ -15,6 +15,7 @@ package org.netbeans.modules.subversion.ui.copy;
 import java.net.MalformedURLException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
@@ -35,10 +36,7 @@ public class CreateCopy extends CopyDialog {
         super(new CreateCopyPanel(), "Copy " + context + "to...", "Copy");        
         CreateCopyPanel panel = getCreateCopyPanel();
         panel.warningLabel.setVisible(localChanges);                              
-        
-        registerDocument(((JTextComponent) panel.urlComboBox.getEditor().getEditorComponent()).getDocument());
-        registerDocument(panel.messageTextArea.getDocument());
-        
+                
         repositoryPaths = 
             new RepositoryPaths(
                 repositoryRoot, 
@@ -46,6 +44,9 @@ public class CreateCopy extends CopyDialog {
                 panel.browseRepositoryButton
             );
         repositoryPaths.setupBrowserBehavior(true, false, new BrowserAction[] { new CreateFolderAction(context)} );                
+        
+        setupUrlComboBox(panel.urlComboBox, CreateCopy.class.getName());
+        panel.messageTextArea.getDocument().addDocumentListener(this);        
     }    
     
     protected void validateUserInput() {        

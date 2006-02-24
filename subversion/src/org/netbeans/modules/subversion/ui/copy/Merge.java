@@ -12,26 +12,19 @@
  */
 package org.netbeans.modules.subversion.ui.copy;
 
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.net.MalformedURLException;
-import javax.swing.JButton;
+import java.util.List;
+import java.util.Vector;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.JComboBox;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.ui.browser.BrowserAction;
-import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
+import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.HelpCtx;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -42,23 +35,18 @@ public class Merge extends CopyDialog implements ActionListener {
     private RepositoryPaths mergeFromRepositoryPaths;
     private RepositoryPaths mergeAfterRepositoryPaths;
     
+    private String MERGE_FROM_URL_HISTORY_KEY = Merge.class.getName() + "_merge_from";
+    private String MERGE_AFTER_URL_HISTORY_KEY = Merge.class.getName() + "_merge_after";
+    
     public Merge(RepositoryFile repositoryRoot, String context) {
         super(new MergePanel(), "Merge " + context + " to...", "Merge");
 
-        MergePanel panel = getMergePanel();
-        JTextComponent mergeFromUrlEditor = ((JTextComponent) panel.mergeFromUrlComboBox.getEditor().getEditorComponent());
-        JTextComponent mergeAfterUrlEditor = ((JTextComponent) panel.mergeAfterUrlComboBox.getEditor().getEditorComponent());
-        registerDocument( mergeFromUrlEditor.getDocument() );        
-        registerDocument( panel.mergeFromRevisionTextField.getDocument() );        
-        registerDocument( mergeAfterUrlEditor.getDocument() );        
-        registerDocument( panel.mergeAfterRevisionTextField.getDocument() );        
-        
-        panel.onlyMadeAfterCheckBox.addActionListener(this);
+        MergePanel panel = getMergePanel();        
         
         mergeFromRepositoryPaths = 
             new RepositoryPaths(
                 repositoryRoot, 
-                mergeFromUrlEditor,
+                (JTextComponent) panel.mergeFromUrlComboBox.getEditor().getEditorComponent(),
                 panel.mergeFromBrowseRepositoryButton,
                 panel.mergeFromRevisionTextField,
                 panel.mergeFromSearchRevisionButton
@@ -68,22 +56,31 @@ public class Merge extends CopyDialog implements ActionListener {
         mergeAfterRepositoryPaths = 
             new RepositoryPaths(
                 repositoryRoot, 
-                mergeAfterUrlEditor,
+                (JTextComponent) panel.mergeAfterUrlComboBox.getEditor().getEditorComponent(),
                 panel.mergeAfterBrowseRepositoryButton,
                 panel.mergeAfterRevisionTextField,
                 panel.mergeAfterSearchRevisionButton
             );
-        mergeAfterRepositoryPaths.setupBrowserBehavior(true, false);                        
+        mergeAfterRepositoryPaths.setupBrowserBehavior(true, false);                                        
+        
+        setupUrlComboBox(panel.mergeFromUrlComboBox,MERGE_FROM_URL_HISTORY_KEY);        
+        setupUrlComboBox(panel.mergeAfterUrlComboBox, MERGE_AFTER_URL_HISTORY_KEY);        
+        panel.mergeFromRevisionTextField.getDocument().addDocumentListener(this);                                
+        panel.mergeAfterRevisionTextField.getDocument().addDocumentListener(this);
+        
+        panel.onlyMadeAfterCheckBox.addActionListener(this);
+        setMergeAfterEnabled(false);
         
     }        
-
+    
     protected void validateUserInput() {
         // XXX error message               
-        if(!validateRepositoryPath(mergeFromRepositoryPaths)) {
+        if(mergeFromRepositoryPaths!= null && !validateRepositoryPath(mergeFromRepositoryPaths)) {
             return;            
         }
         
-        if(getMergePanel().onlyMadeAfterCheckBox.isSelected() && 
+        if(getMergePanel().onlyMadeAfterCheckBox.isSelected() &&                 
+           mergeAfterRepositoryPaths != null &&     
            !validateRepositoryPath(mergeAfterRepositoryPaths)) 
         {    
             return;            
@@ -91,8 +88,6 @@ public class Merge extends CopyDialog implements ActionListener {
         
         getOKButton().setEnabled(true);
     }    
-
-    
     
     RepositoryFile getMergeFromRepositoryFile() {        
         try {
@@ -103,7 +98,7 @@ public class Merge extends CopyDialog implements ActionListener {
             ex.printStackTrace();             
         }
         return null;
-    }    
+    }
 
     RepositoryFile getMergeAfterRepositoryFile() {        
         try {
@@ -142,4 +137,5 @@ public class Merge extends CopyDialog implements ActionListener {
         panel.mergeAfterRepositoryFolderLabel.setEnabled(bl);        
         
     }
+
 }

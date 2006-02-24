@@ -43,6 +43,9 @@ public class RepositoryPaths implements ActionListener {
     private RepositoryFile repositoryFile;
     private JTextComponent repositoryPathTextField;
     private JTextComponent revisionTextField;
+    
+    // XXX don't use directly the fields - do it through accessors (cbo...)
+    
     private JButton browseButton;
     private JButton searchRevisionButton;
 
