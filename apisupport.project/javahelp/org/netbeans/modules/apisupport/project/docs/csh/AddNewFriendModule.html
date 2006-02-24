@@ -5,24 +5,36 @@
 -->
 <html>
 <head>
-	<title>Add New Friend Module Dialog Box</title>
-<link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
+    <title>Add New Friend Module Dialog Box</title>
+    <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>Add New Friend Module Dialog Box</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+    <h2>Add New Friend Module Dialog Box</h2>
+    <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 
-<p>tbd
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd>  <a href="../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
-    <dd><a href="../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
-</dl> 
-<hr>
-<small><a href="../credits.html">Legal Notices</a></small> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-</table> 
+    <p>The Add New Friend Module dialog box lets a plug-in module with an API in public packages
+    provide access only to certain "friend" modules.
+    This is possible if the module declares public packages
+    together with a list of code base names of "friend" modules that can access them. Type
+    the code name base of the "friend" modules in the Add New Friend dialog box. When you click
+    OK, the IDE adds entries to the Manifest
+    file as follows:
+
+    <p><tt>OpenIDE-Module-Friends: org.foo, org.boo</tt>
+
+    <p>Only enumerated modules can access the public packages; access from others is forbidden.
+
+
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd>  <a href="../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
+        <dd><a href="../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
+    </dl> 
+    <hr>
+    <small><a href="../credits.html">Legal Notices</a></small> 
+    <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
 </body></html>
