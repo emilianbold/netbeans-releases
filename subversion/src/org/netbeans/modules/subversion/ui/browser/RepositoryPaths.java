@@ -214,5 +214,9 @@ public class RepositoryPaths implements ActionListener {
     public SVNUrl getRepositoryUrl() {
         return repositoryFile.getRepositoryUrl();
     }
+
+    public void setRepositoryFile(RepositoryFile repositoryFile) {
+        this.repositoryFile = repositoryFile;
+    }
     
 }

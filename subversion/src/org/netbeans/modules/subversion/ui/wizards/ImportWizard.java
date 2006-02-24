@@ -36,7 +36,7 @@ public final class ImportWizard implements ChangeListener {
     
     private WizardDescriptor.Panel[] panels;
     private RepositoryStep repositoryStep;
-    private ImportStep messageStep;
+    private ImportStep importStep;
     
     private String errorMessage;
     private WizardDescriptor wizardDescriptor;
@@ -101,9 +101,9 @@ public final class ImportWizard implements ChangeListener {
             
             repositoryStep = new RepositoryStep();               
             
-            messageStep = new ImportStep();
+            importStep = new ImportStep(new BrowserAction[] { new CreateFolderAction(defaultFolderNameToImport)});
 
-            panels = new  WizardDescriptor.Panel[] {repositoryStep, messageStep};
+            panels = new  WizardDescriptor.Panel[] {repositoryStep, importStep};
 
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
@@ -132,7 +132,7 @@ public final class ImportWizard implements ChangeListener {
         public void nextPanel() {            
             //
             if(current() == repositoryStep) {                                            
-                messageStep.setup(repositoryStep.getRepositoryFile(), new BrowserAction[] { new CreateFolderAction(defaultFolderNameToImport)});
+                importStep.setup(repositoryStep.getRepositoryFile());
             }            
             super.nextPanel();
         }
@@ -150,15 +150,15 @@ public final class ImportWizard implements ChangeListener {
     }
 
     public String getMessage() {
-        return messageStep.getMessage();
+        return importStep.getMessage();
     }
 
     public SVNUrl getRepositoryFolderUrl() {
-        return messageStep.getRepositoryFolderUrl();
+        return importStep.getRepositoryFolderUrl();
     }
 
     public boolean checkoutAfterImport() {
-        return messageStep.checkoutAfterImport();
+        return importStep.checkoutAfterImport();
     }
 }
 

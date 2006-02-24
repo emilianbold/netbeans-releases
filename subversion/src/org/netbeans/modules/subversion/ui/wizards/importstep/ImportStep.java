@@ -19,6 +19,7 @@ import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
@@ -35,6 +36,11 @@ public class ImportStep extends AbstractStep implements DocumentListener {
     private ImportPanel messagePanel;
 
     private RepositoryPaths repositoryPaths;
+    private BrowserAction[] actions;
+    
+    public ImportStep(BrowserAction[] actions) {
+        this.actions = actions;
+    }
     
     public HelpCtx getHelp() {    
         return new HelpCtx(ImportStep.class);
@@ -94,14 +100,18 @@ public class ImportStep extends AbstractStep implements DocumentListener {
         return messagePanel.messageTextArea.getText();
     }
 
-    public void setup(RepositoryFile repositoryFile, BrowserAction[] browserAction) {
-        repositoryPaths = 
-            new RepositoryPaths (
-                repositoryFile,
-                messagePanel.repositoryPathTextField,
-                messagePanel.browseRepositoryButton
-            );   
-        repositoryPaths.setupBrowserBehavior(true, false, browserAction);
+    public void setup(RepositoryFile repositoryFile) {
+        if(repositoryPaths == null) {
+            repositoryPaths = 
+                new RepositoryPaths (
+                    repositoryFile,
+                    messagePanel.repositoryPathTextField,
+                    messagePanel.browseRepositoryButton
+                );                   
+            repositoryPaths.setupBrowserBehavior(true, false, actions);
+        } else {
+            repositoryPaths.setRepositoryFile(repositoryFile);
+        }                                
         messagePanel.repositoryPathTextField.setText(repositoryFile.getPath());        
     }
 
