@@ -18,6 +18,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.regex.Pattern;
 import junit.framework.TestCase;
 
 public class LayoutModelTest extends TestCase {
@@ -38,6 +39,8 @@ public class LayoutModelTest extends TestCase {
         LayoutModel layoutModel = new LayoutModel();
         LayoutModelTest.fillModelToDump(layoutModel);
         String dump = layoutModel.dump(null);
+        dump = Pattern.compile("\n").matcher(dump) // NOI18N
+            .replaceAll(System.getProperty("line.separator")); // NOI18N
 
         boolean same = dump.equals(golden);
         if (!same) {
