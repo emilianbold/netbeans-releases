@@ -23,6 +23,10 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="Edit">
+            <file name="org-netbeans-modules-editor-MainMenuAction$PasteFormattedAction.instance"/>
+            <attr name="org-openide-actions-PasteAction.instance/org-netbeans-modules-editor-MainMenuAction$PasteFormattedAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$PasteFormattedAction.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+            
             <file name="org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance"/>
             <attr name="org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance/org-netbeans-modules-editor-MainMenuAction$FindNextAction.instance" boolvalue="true"/>
             

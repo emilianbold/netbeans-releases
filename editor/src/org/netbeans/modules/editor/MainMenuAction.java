@@ -819,5 +819,32 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
 
     } // end of RemoveTrailingSpacesAction
 
+    /** Paste Formatted action in Edit main menu, wrapper for BaseKit.pasteFormattedAction
+     */ 
+    public static final class PasteFormattedAction extends MainMenuAction {
+
+        private JMenuItem menuItem;
+
+        public PasteFormattedAction() {
+            super(true, BLANK_ICON);
+            menuItem = new JMenuItem(getMenuItemText());
+            setMenu();
+        }
+
+        protected String getMenuItemText () {
+            return NbBundle.getBundle(PasteFormattedAction.class).getString(
+                "paste_formatted_main_menu_item"); //NOI18N
+        }
+
+        public JMenuItem getMenuPresenter () {
+            return menuItem;
+        }
+
+        protected String getActionName () {
+            return BaseKit.pasteFormatedAction;
+        }
+
+    } // end of PasteFormattedAction
+    
 }
     
