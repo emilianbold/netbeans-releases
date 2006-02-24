@@ -120,10 +120,7 @@ public class RADVisualComponent extends RADComponent {
     }
 
     void setConstraintsMap(Map map) {
-        for (Iterator it = map.keySet().iterator(); it.hasNext(); ) {
-            Object layoutClassName = it.next();
-            constraints.put(layoutClassName, map.get(layoutClassName));
-        }
+        constraints.putAll(map);
     }
 
     // ---------------
