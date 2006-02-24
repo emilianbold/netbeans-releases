@@ -122,7 +122,10 @@
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerCompiling" url="csh/proj_props/CustomizerCompiling.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerPackaging" url="csh/proj_props/CustomizerPackaging.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerDocumenting" url="csh/proj_props/CustomizerDocumenting.html"/>
-    <!-- Suite -->
+ <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel" url="csh/proj_props/EditDependencyPanel.html"/>
+
+
+<!-- Suite -->
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerSources" url="csh/proj_props/SuiteCustomizerSources.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerLibraries" url="csh/proj_props/SuiteCustomizerLibraries.html"/>
     <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBranding" url="csh/proj_props/SuiteCustomizerBasicBranding.html"/>
