@@ -74,7 +74,14 @@ public final class ClassMemberPanel implements NavigatorPanel, LookupListener, M
      */
     public void panelActivated (Lookup context) {
         curContext = context.lookup(JDOS);
-        curData = (JavaDataObject)(((List)curContext.allInstances()).get(0));
+        Collection collection = curContext.allInstances();
+        JavaDataObject jdo = null;
+        if (collection != null) {
+            Iterator i = collection.iterator ();
+            if (i.hasNext ())
+                jdo = (JavaDataObject) i.next ();
+        }
+        curData = jdo;
         setNewContent(curData);
         curContext.addLookupListener(this);
     }
