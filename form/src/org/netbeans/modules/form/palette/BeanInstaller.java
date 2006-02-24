@@ -149,13 +149,14 @@ public final class BeanInstaller {
 
             String jarPath = jarFiles[i].getAbsolutePath();
             Map entries = manifest.getEntries();
-            Iterator it = entries.keySet().iterator();
+            Iterator it = entries.entrySet().iterator();
             while (it.hasNext()) {
-                String key = (String) it.next();
+                Map.Entry entry = (Map.Entry)it.next();
+                String key = (String)entry.getKey();
                 if (!key.endsWith(".class")) // NOI18N
                     continue;
 
-                String value = ((Attributes)entries.get(key)).getValue("Java-Bean"); // NOI18N
+                String value = ((Attributes)entry.getValue()).getValue("Java-Bean"); // NOI18N
                 if (!"True".equalsIgnoreCase(value)) // NOI18N
                     continue;
 

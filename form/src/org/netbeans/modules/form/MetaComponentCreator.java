@@ -639,9 +639,10 @@ public class MetaComponentCreator {
         // 4th - copy aux values
         Map auxValues = sourceComp.getAuxValues();
         if (auxValues != null)
-            for (it = auxValues.keySet().iterator(); it.hasNext(); ) {
-                String auxName = (String) it.next();
-                Object auxValue = auxValues.get(auxName);
+            for (it = auxValues.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry entry = (Map.Entry)it.next();
+                String auxName = (String)entry.getKey();
+                Object auxValue = entry.getValue();
                 try {
                     newComp.setAuxValue(auxName,
                                         FormUtils.cloneObject(auxValue, formModel));
@@ -658,10 +659,11 @@ public class MetaComponentCreator {
             Map constraints = ((RADVisualComponent)sourceComp).getConstraintsMap();
             Map newConstraints = new HashMap();
 
-            for (it = constraints.keySet().iterator(); it.hasNext(); ) {
-                Object layoutClassName = it.next();
+            for (it = constraints.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry entry = (Map.Entry)it.next();
+                Object layoutClassName = entry.getKey();
                 LayoutConstraints clonedConstr =
-                    ((LayoutConstraints) constraints.get(layoutClassName))
+                    ((LayoutConstraints)entry.getValue())
                         .cloneConstraints();
                 newConstraints.put(layoutClassName, clonedConstr);
             }

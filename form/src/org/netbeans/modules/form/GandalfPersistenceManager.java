@@ -3806,9 +3806,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     private void saveAuxValues(Map auxValues, StringBuffer buf, String indent) {
-        for (Iterator it = auxValues.keySet().iterator(); it.hasNext();) {
-            String valueName =(String) it.next();
-            Object value = auxValues.get(valueName);
+        for (Iterator it = auxValues.entrySet().iterator(); it.hasNext();) {
+            Map.Entry entry = (Map.Entry)it.next();
+            String valueName = (String)entry.getKey();
+            Object value = entry.getValue();
             if (value == null) continue; // such values are not saved
             String valueType = value.getClass().getName();
             String encodedValue = encodePrimitiveValue(value);
