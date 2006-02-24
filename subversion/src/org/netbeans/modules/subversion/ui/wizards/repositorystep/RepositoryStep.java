@@ -233,8 +233,12 @@ public class RepositoryStep
                     //     -> some server configurations don't authenticate readonly commands
                 }                                
                 
-                if(info != null) {
+                if(info != null) {                    
                     SVNUrl repositoryUrl = info.getRepository();
+                    if(repositoryUrl==null) {
+                        // XXX see issue #72810 and #72921. workaround! 
+                        repositoryUrl = selectedRepository.url;                        
+                    }
                     SVNRevision revision = selectedRepository.revision; 
                     // XXX
 //                    if(Long.getLong(revision.toString()).longValue() > 
