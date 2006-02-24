@@ -90,10 +90,11 @@ final class CreatedModifiedFilesProvider  {
     }
     
     
-    private static String transformURL(final String pathPrefix, final String archiveName) {
+    private static String transformURL(final String cnb, final String pathPrefix, final String archiveName) {
         StringBuffer sb = new StringBuffer();
         
-        sb.append("jar:nbinst:///").append(pathPrefix).append(archiveName).append("!/");//NOI18N
+        sb.append("jar:nbinst://").append(cnb).append("/");//NOI18N
+        sb.append(pathPrefix).append(archiveName).append("!/");//NOI18N
         
         return sb.toString();
     }
@@ -124,7 +125,8 @@ final class CreatedModifiedFilesProvider  {
             String archiveName;
             archiveName = addArchiveToCopy(fileSupport, data, originalURL, "release/"+pathPrefix);//NOI18N
             if (archiveName != null) {
-                String urlToString = transformURL(pathPrefix, archiveName);//NOI18N
+                String codeNameBase = ManifestManager.getInstance(data.getProject().getManifest(), false).getCodeNameBase();
+                String urlToString = transformURL(codeNameBase, pathPrefix, archiveName);//NOI18N
                 sb.append("<resource>");//NOI18N
                 sb.append(urlToString);
                 if (it.hasNext()) {
