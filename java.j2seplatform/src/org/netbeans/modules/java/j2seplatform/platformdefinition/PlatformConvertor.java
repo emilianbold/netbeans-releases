@@ -440,7 +440,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 pw.println("  <jdkhome>");
                 for (Iterator it = instance.getInstallFolders().iterator(); it.hasNext();) {
                     URL url = ((FileObject)it.next ()).getURL();
-                    pw.println("    <resource>"+url.toExternalForm()+"</resource>");
+                    pw.println("    <resource>"+XMLUtil.toElementContent(url.toExternalForm())+"</resource>");
                 }
                 pw.println("  </jdkhome>");
             }
@@ -449,7 +449,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 pw.println ("  <sources>");
                 for (Iterator it = pl.iterator(); it.hasNext();) {
                     URL url = ((ClassPath.Entry)it.next ()).getURL();
-                    pw.println("    <resource>"+url.toExternalForm()+"</resource>");
+                    pw.println("    <resource>"+XMLUtil.toElementContent(url.toExternalForm())+"</resource>");
                 }
                 pw.println ("  </sources>");
             }
@@ -458,7 +458,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 pw.println("  <javadoc>");
                 for (Iterator it = pl.iterator(); it.hasNext();) {
                     URL url = (URL) it.next ();
-                    pw.println("<resource>"+url.toExternalForm()+"</resource>");
+                    pw.println("<resource>"+XMLUtil.toElementContent(url.toExternalForm())+"</resource>");
                 }
                 pw.println("  </javadoc>");
             }
