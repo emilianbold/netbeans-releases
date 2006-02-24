@@ -1730,10 +1730,12 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 boolean intersects = selRect.intersects(bounds);
 
                 RADComponent metacomp = formDesigner.getMetaComponent(comp);
-                if (intersects)
-                    toSelect.add(metacomp);
-                if (!(metacomp instanceof ComponentContainer))
-                    continue;
+                if (metacomp != null) {
+                    if (intersects)
+                        toSelect.add(metacomp);
+                    if (!(metacomp instanceof ComponentContainer))
+                        continue;
+                }
 
                 if (intersects && comp instanceof Container)
                     subContainers.add(comp);
