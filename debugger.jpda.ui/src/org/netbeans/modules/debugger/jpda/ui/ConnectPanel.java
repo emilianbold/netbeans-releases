@@ -37,6 +37,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.TreeSet;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -222,8 +223,14 @@ Controller, ActionListener {
         while (it.hasNext ()) {
             String name = (String) it.next ();
             Argument a = (Argument) args.get (name);
-            String label = translate (a.label ());
-            char mnemonic = getMnemonic (a.label ());
+            String label = translate (a.name());
+            if (label == null) {
+                label = a.label();
+            }
+            char mnemonic = getMnemonic(a.name());
+            if (mnemonic == 0) {
+                mnemonic = a.label().charAt(0);
+            }
                 c = new GridBagConstraints ();
                 c.insets = new Insets (6, 0, 0, 3);
                 c.anchor = GridBagConstraints.WEST;
@@ -237,7 +244,7 @@ Controller, ActionListener {
                 tfParam.getAccessibleContext ().setAccessibleDescription (
                     new MessageFormat (NbBundle.getMessage (
                         ConnectPanel.class, "ACSD_CTL_Argument"
-                    )).format (new Object[] { translate(a.label()) })
+                    )).format (new Object[] { label })
                 ); 
                 tfParam.setToolTipText (a.description ());
                 c = new GridBagConstraints ();
@@ -445,9 +452,13 @@ Controller, ActionListener {
                     ( paramValue.equals ("") && a.mustSpecify () )
             ) {
                 NotifyDescriptor.InputLine in = null;
+                String label = translate (a.name());
+                if (label == null) {
+                    label = a.label();
+                }
                 if ( paramValue.equals ("") && a.mustSpecify ())
                     in = new NotifyDescriptor.InputLine (
-                        translate(a.label ()),
+                        label,
                         NbBundle.getMessage (
                             ConnectPanel.class, 
                             "CTL_Required_value_title"
@@ -455,7 +466,7 @@ Controller, ActionListener {
                     );
                 else
                     in = new NotifyDescriptor.InputLine (
-                        translate(a.label ()),
+                        label,
                         NbBundle.getMessage (
                             ConnectPanel.class, 
                             "CTL_Invalid_value_title"
@@ -501,49 +512,21 @@ Controller, ActionListener {
     }
     
     private static String translate (String str) {
-        if (str.equalsIgnoreCase ("Host"))
-            return NbBundle.getMessage (ConnectPanel.class, "CTL_Host");
-        if (str.equalsIgnoreCase ("Port"))
-            return NbBundle.getMessage (ConnectPanel.class, "CTL_Port");
-        if (str.equalsIgnoreCase ("Java executable"))
-            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_JavaExecutable");
-        if (str.equalsIgnoreCase ("Corefile"))
-            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_Corefile");
-        if (str.equalsIgnoreCase ("Debug server"))
-            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_DebugServer");
-        if (str.equalsIgnoreCase ("PID"))
-            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_PID");
-        if (str.equalsIgnoreCase ("Name"))
-            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_Name");
-        if (str.equalsIgnoreCase ("Timeout"))
-            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_Timeout");
-        if (str.equalsIgnoreCase ("Local Address"))
-            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_LocalAddress");
-        return str;
+        try {
+            return NbBundle.getMessage(ConnectPanel.class, "CTL_CA_"+str);
+        } catch (MissingResourceException mrex) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Missing resource "+"CTL_CA_"+str+" from "+ConnectPanel.class.getName());
+            return null;
+        }
     }
     
     private static char getMnemonic (String str) {
-        if (str.equalsIgnoreCase ("Host"))
-            return NbBundle.getMessage (ConnectPanel.class, 
-                "CTL_Host_mnemonic").charAt (0);
-        if (str.equalsIgnoreCase ("Port"))
-            return NbBundle.getMessage (ConnectPanel.class, 
-                "CTL_Port_mnemonic").charAt (0);
-        if (str.equalsIgnoreCase("Java executable"))
-            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_JavaExecutable_mnemonic").charAt(0);
-        if (str.equalsIgnoreCase("Corefile"))
-            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_Corefile_mnemonic").charAt(0);
-        if (str.equalsIgnoreCase("Debug server"))
-            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_DebugServer_mnemonic").charAt(0);
-        if (str.equalsIgnoreCase("PID"))
-            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_PID_mnemonic").charAt(0);
-        if (str.equalsIgnoreCase("Name"))
-            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_Name_mnemonic").charAt(0);
-        if (str.equalsIgnoreCase("Timeout"))
-            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_Timeout_mnemonic").charAt(0);
-        if (str.equalsIgnoreCase("Local Address"))
-            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_LocalAddress_mnemonic").charAt(0);
-        return str.charAt (0);
+        try {
+            return NbBundle.getMessage(ConnectPanel.class, "CTL_CA_"+str+"_mnc").charAt(0);
+        } catch (MissingResourceException mrex) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Missing resource "+"CTL_CA_"+str+"_mnc"+" from "+ConnectPanel.class.getName());
+            return 0;
+        }
     }
 }
 
