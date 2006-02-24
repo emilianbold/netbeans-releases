@@ -55,7 +55,7 @@ import org.netbeans.modules.form.NamedPropertyEditor;
  *
  * @author Jan Jancura, Jan Stola
  */
-public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
+public class IconEditor extends PropertyEditorSupport implements
         XMLPropertyEditor, ExPropertyEditor, FormAwareEditor, NamedPropertyEditor {
     /** Type constant for icons from URL. */
     public static final int TYPE_URL = 1;

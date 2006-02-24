@@ -854,7 +854,7 @@ public class FormEditorSupport extends JavaEditor
 
     private static class JavaEditorTopComponent
                      extends JavaEditor.JavaEditorComponent
-                     implements MultiViewElement, CloneableEditorSupport.Pane
+                     implements MultiViewElement
     {
         private static final long serialVersionUID =-3126744316624172415L;        
 
