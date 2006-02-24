@@ -16,13 +16,11 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
     public static final String PROP_PROJECT_NAME = "projectName";
     
     private @@TEMPLATENAME@@WizardPanel panel;
-    private int type;
     
     /** Creates new form PanelProjectLocationVisual */
     public @@TEMPLATENAME@@PanelVisual(@@TEMPLATENAME@@WizardPanel panel) {
         initComponents();
         this.panel = panel;
-        this.type = type;
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
         projectLocationTextField.getDocument().addDocumentListener(this);
