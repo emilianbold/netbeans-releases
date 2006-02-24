@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.*;
 import junit.framework.TestCase;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.GandalfPersistenceManager;
@@ -76,12 +77,17 @@ public abstract class LayoutTestCase extends TestCase {
             Method m = methods[i];
             if (m.getName().startsWith("doChanges")) {
                 try {
-                    System.out.println("Invoking " + getClass().getSimpleName()+"."+m.getName());
+                    String name = getClass().getName();
+                    String simpleName = name.substring(name.lastIndexOf('.')+1);
+                    System.out.println("Invoking " + simpleName + "." + m.getName());
                     m.invoke(this, null);
                     
                     String methodCount = m.getName().substring(9); // "doChanges".length()
                     
                     String currentLayout = getCurrentLayoutDump();
+                    // Equiv. to Tiger's code: currentLayout.replace("\n", System.getProperty("line.separator"));
+                    currentLayout = Pattern.compile("\n").matcher(currentLayout) // NOI18N
+                        .replaceAll(System.getProperty("line.separator")); // NOI18N
                     String expectedLayout = getExpectedLayoutDump(methodCount);
 
                     System.out.print("Comparing ... ");
