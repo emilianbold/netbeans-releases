@@ -5037,19 +5037,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         char[] bisChars = strValue.toCharArray();
         byte[] bytes = new byte[bisChars.length];
-        String singleNum = ""; // NOI18N
+        StringBuffer singleNum = new StringBuffer();
         int count = 0;
         for (int i = 0; i < bisChars.length; i++) {
             if (',' == bisChars[i]) {
-                bytes[count++] = Byte.parseByte(singleNum);
-                singleNum = ""; // NOI18N
+                bytes[count++] = Byte.parseByte(singleNum.toString());
+                singleNum = new StringBuffer();
             } else {
-                singleNum += bisChars[i];
+                singleNum.append(bisChars[i]);
             }
         }
 
         // add the last byte
-        bytes[count++] = Byte.parseByte(singleNum);
+        bytes[count++] = Byte.parseByte(singleNum.toString());
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes, 0, count);
         return new OIS(bis).readObject();
     }

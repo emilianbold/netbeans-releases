@@ -92,9 +92,8 @@ public class LayoutTestUtils implements LayoutConstants {
     }
     
     static void dumpTestcode(List codeList, DataObject form, int modelCounter) {
-
         FileWriter fw = null;
-        String template = ""; //NOI18N
+        StringBuffer template = new StringBuffer();
         
         if (form == null) return;
         try {
@@ -105,16 +104,16 @@ public class LayoutTestUtils implements LayoutConstants {
             InputStream in = LayoutTestUtils.class.getResourceAsStream("/org/netbeans/modules/form/resources/LayoutModelAutoTest_template"); //NOI18N
             LineNumberReader lReader = new LineNumberReader(new InputStreamReader(in));
             while (lReader.ready()) {
-                template += lReader.readLine() + "\n"; //NOI18N
+                template.append(lReader.readLine()).append('\n');
             }
             lReader.close();
 
             //Get the code into one string
-            String code = ""; //NOI18N
+            StringBuffer code = new StringBuffer();
             Iterator i = codeList.iterator();
             while (i.hasNext()) {
                 String line = (String)i.next();
-                code += line + "\n"; //NOI18N
+                code.append(line).append('\n');
             }
 	    
             //Find a name for the test file
@@ -129,7 +128,7 @@ public class LayoutTestUtils implements LayoutConstants {
                 testFO = primaryFile.getParent().createData(testClassName, "java"); //NOI18N
                 
                 //Rename the class in template to correct class name
-                String output = Utilities.replaceString(template, "${CLASS_NAME}", testFO.getName()); //NOI18N
+                String output = Utilities.replaceString(template.toString(), "${CLASS_NAME}", testFO.getName()); //NOI18N
 
                 //Write the file to disc
                 fw = new FileWriter(FileUtil.toFile(testFO));
@@ -146,7 +145,7 @@ public class LayoutTestUtils implements LayoutConstants {
                 if (!(testClass instanceof UnresolvedClass)) {
                     org.netbeans.jmi.javamodel.Method m = ((JavaModelPackage)testClass.refImmediatePackage()).getMethod().createMethod();
                     m.setName("doChanges" + modelCounter); // NOI18N
-                    m.setBodyText(code);
+                    m.setBodyText(code.toString());
                     m.setType(resolveType("void")); // NOI18N
                     m.setModifiers(Modifier.PUBLIC);
                                         
