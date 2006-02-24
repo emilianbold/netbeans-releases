@@ -143,7 +143,7 @@ public class FormNode extends AbstractNode implements FormCookie {
     }
 
     static class Handle implements Node.Handle {
-        static long serialVersionUID = 1;
+        static final long serialVersionUID = 1;
         public Node getNode() throws java.io.IOException {
             return new ClosingNode();
         }
