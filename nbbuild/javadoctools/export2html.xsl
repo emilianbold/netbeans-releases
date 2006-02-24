@@ -84,9 +84,9 @@ Microsystems, Inc. All Rights Reserved.
         <h4>FAQ and Mailing List</h4>
 
         <p>Can't find what you're looking for? Try the <a
-        href="http://wiki.java.net/bin/view/Netbeans/NetBeansDeveloperFAQ">FAQ</a>
+        href="http://wiki.java.net/bin/view/Netbeans/NetBeansDeveloperFAQ" target="_top">FAQ</a>
         and then <a
-        href="http://www.netbeans.org/community/lists/top.html">dev@openide.netbeans.org</a>.</p>
+        href="http://www.netbeans.org/community/lists/top.html" target="_top">dev@openide.netbeans.org</a>.</p>
 
         <hr/>
         <xsl:call-template name="list-modules" />
