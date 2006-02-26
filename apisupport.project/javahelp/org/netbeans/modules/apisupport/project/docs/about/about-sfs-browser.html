@@ -6,17 +6,40 @@
 <html>
 <head>
 
-    <title>About the System Filesystem Browser</title>
+    <title>Viewing the System Filesystem</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
     <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-    <h2>About the System Filesystem Browser</h2>
+    <h2>Viewing the System Filesystem</h2>
     <p><small> 
         <a href="#seealso">See Also</a> 
     </small></p>
-    <p>tbd
+    The <a href="nbmodule-about-system-filesystem.html">system filesystem</a> is the general registry
+    for publicly accessible data and objects.
+    It is a virtual filesystem that contains configuration information.  <a href="about-xml-layers.html">Layer files</a>
+    (<tt>layer.xml</tt>) define
+    folders
+    and files that will be merged into the system filesystem.
+
+    <p><b>To view the system filesystem:</b>
+    <ol>
+        <li><a href="../create_plugin/projectlevel_create/create_module.html">Create a module project</a>.
+        <li>In the Projects window, expand the Important Files node.
+        <li>Expand the XML Layer node. After a moment, two subnodes appear:
+        <ul>
+            <li><b>&lt;this layer&gt;.</b> The folders and files provided by the current module project's layer file.
+            <li><b>&lt;this layer in context&gt;.</b> All the folders and files provided by
+            all the layer files in all plug-in modules available in the system.
+        </ul>
+        <li>Expand a subnode to explore the folders and files within it. When you right-click
+        a subnode, you can, for example, rename it. You can also use actions such as "Cut", "Copy",
+        and "Paste". In addition, you can drag a subnode and drop it elsewhere, to reorder a folder
+        or a file. All of these actions
+        will result in XML entries being added to your module project's layer file.
+
+    </ol>
 
 
     <dl>

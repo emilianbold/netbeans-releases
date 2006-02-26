@@ -6,64 +6,65 @@
 <html>
 <head>
 
-	<title>Creating a Module Project</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <title>Creating a Module Project</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-	<h2>Creating a Module Project</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p>
-Use a module project as the place where you code your plug-in 
-module. Module projects implement the plug-in module's features 
-and functionality that extend the NetBeans APIs, which you kickstart 
-by using file templates. In addition, module projects include the 
-business logic that integrate the library wrapper module projects 
-into the plug-in module. Code housed in module projects also provide, 
-for example, the user interface for receiving and processing user input.
-<p><b>To create a module project:</b>
-<ol>
-  <li>Choose File &gt; New Project 
-  (Ctrl-Shift-N). </li>
-  <li>From the NetBeans Plug-in Module category, select Module Project. Click Next.
-<li>In the Name and Location panel, specify the following:
-<ul>
-  <li><b>Project Name. </b>Specifies the display name of the project. This name 
-    is also used to create the project folder and the context path.</li>
-  <li><b>Project Location. </b>Specifies the location where you want to store the 
-  project metadata and source code.</li>
-  <li><b>Project Folder. </b>Specifies the folder where you want 
-  to store the project metadata and source code. The folder is a concatenation
-  of the project location and the project name.</li>
-  <li><b>Standalone Module.</b> Specifies that the module does not belong to a module suite. In addition,
-   you must specify which platform the module will be compiled and deployed against. To add additional
-    platforms to the list, click Manage and use the <a href="../../csh/NbPlatformCustomizer.html">NetBeans Platform Manager</a>.
-    <li><b>Add to Module Suite.</b> Specifies that the module belongs to a module suite. If the module
-     suite is not currently available in the IDE, click Browse to locate the module suite in your
-      filesystem.
-  <li><b>Set as Main Project.</b> Sets the newly created project as the <a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_main.html">main
-	project</a>.</li>
-</ul>
-<li>Click Finish.
-</ol>
+    <h2>Creating a Module Project</h2>
+    <p><small> 
+        <a href="#seealso">See Also</a> 
+    </small></p>
+    Use a module project template to create a module project. The module
+    project is the place where you code your plug-in 
+    module. Module projects implement the plug-in module's features 
+    and functionality that extend the NetBeans APIs, which you kickstart 
+    by using file templates. In addition, module projects include the 
+    business logic that integrate the library wrapper module projects 
+    into the plug-in module. Code housed in module projects also provide, 
+    for example, the user interface for receiving and processing user input.
+    <p><b>To create a module project:</b>
+    <ol>
+        <li>Choose File &gt; New Project 
+        (Ctrl-Shift-N). </li>
+        <li>From the NetBeans Plug-in Module category, select Module Project. Click Next.
+        <li>In the Name and Location panel, specify the following:
+        <ul>
+            <li><b>Project Name. </b>Specifies the display name of the project. This name 
+            is also used to create the project folder and the context path.</li>
+            <li><b>Project Location. </b>Specifies the location where you want to store the 
+            project metadata and source code.</li>
+            <li><b>Project Folder. </b>Specifies the folder where you want 
+            to store the project metadata and source code. The folder is a concatenation
+            of the project location and the project name.</li>
+            <li><b>Standalone Module.</b> Specifies that the module does not belong to a module suite. In addition,
+            you must specify which platform the module will be compiled and deployed against. To add additional
+            platforms to the list, click Manage and use the <a href="../../csh/NbPlatformCustomizer.html">NetBeans Platform Manager</a>.
+            <li><b>Add to Module Suite.</b> Specifies that the module belongs to a module suite. If the module
+            suite is not currently available in the IDE, click Browse to locate the module suite in your
+            filesystem.
+            <li><b>Set as Main Project.</b> Sets the newly created project as the <a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_main.html">main
+            project</a>.</li>
+        </ul>
+        <li>Click Finish.
+    </ol>
 
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
- <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
- <dd><a href="../../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
- <dd><a href="../../about/nbmodule-about-system-filesystem.html">About the System Filesystem</a></dd>
- <dd><a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
- <dd><a href="../../about/about-xml-layers.html">About XML Layer Files</a></dd>
- <dd><a href="../../about/modules_process.html">Working with Modules</a></dd>
- <dd><a href="../../about/modules_quickref.html">Module Tasks: Quick Reference</a></dd>
- </dl> 
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-</table> 
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
+        <dd><a href="../../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
+        <dd><a href="../../about/nbmodule-about-system-filesystem.html">About the System Filesystem</a></dd>
+        <dd><a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
+        <dd><a href="../../about/about-xml-layers.html">About XML Layer Files</a></dd>
+        <dd><a href="../../about/modules_process.html">Working with Modules</a></dd>
+        <dd><a href="../../about/modules_quickref.html">Module Tasks: Quick Reference</a></dd>
+    </dl> 
+    <hr>
+    <small><a href="../../credits.html">Legal Notices</a></small> 
+    <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
 </body></html>

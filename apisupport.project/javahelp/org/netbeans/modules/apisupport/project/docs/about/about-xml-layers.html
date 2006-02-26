@@ -16,15 +16,37 @@
     <p><small> 
         <a href="#seealso">See Also</a> 
     </small></p>
-    <p>You use a XML layer file (<tt>layer.xml</tt>) as part of
-    the installation system for your module. The contents of the <tt>layer.xml</tt> will be
-    automatically included in the <a href="nbmodule-about-system-filesystem.html">system filesystem</a> when your module is
-    installed. 
+    <p>Layer files (<tt>layer.xml</tt>) are small XML files provided by plug-in modules,
+    which define a virtual filesystem. The layer file defines folders
+    and files that will be merged into the <a href="nbmodule-about-system-filesystem.html">system filesystem</a> that
+    makes up the runtime configuration information that the NetBeans Platform
+    and its derivatives (such as the IDE) use.
 
-    <p>When you use a <a href="../create_plugin/projectlevel_create/about_project_wizards.html">module project template</a>, 
-    a <tt>layer.xml</tt> file is automatically created for you. When you use a <a href="../create_plugin/filelevel_create/about_file_wizards.html">module file template</a>
-    to create a new action or to have the IDE recognize a new file type, the IDE automatically registers the
-    new items in the <tt>layer.xml</tt>. You can use the System Filesystem Browser to tweak the <tt>layer.xml</tt> file, or you
+    <p>Layer files help to make it possible for plug-in modules to be
+    dynamically installed. The components of the IDE whose content is composed
+    from folders in the system filesystem listen for changes
+    in folders and files in a filesystem. If a plug-in module is added at
+    runtime, the system filesystem fires changes; the user interface notices
+    that the contents of the folder has changed and
+    updates the user interface to reflect the changes.
+
+    <p>If you create your module using a <a href="../create_plugin/projectlevel_create/create_module.html">module project template</a>,
+    you already have an XML layer in your module, and
+    you can expand the node for it under
+    Important Files in your module project to see and modify its contents.
+    The way it is declared is simple: 
+
+    <ul><li>In your jar, provide the layer file, for example, com/foo/mymodule/resources/layer.xml
+    <li>In your module's manifest, include the following line somewhere in the top section:
+    <p><tt>OpenIDE-Module-Layer: com/foo/mymodule/resources/layer.xml</tt></ul>
+
+    <p>Just as the <a href="../create_plugin/projectlevel_create/create_module.html">module project template</a>
+    provides a <tt>layer.xml</tt> file, so the <a href="../create_plugin/filelevel_create/about_file_wizards.html">module file templates</a>
+    provide the layer files's entries. For example, when you use a file template to
+    create a new action or to have the IDE recognize a new file type, the IDE automatically registers the
+    new items in the layer file.
+
+    <p>You can use the System Filesystem Browser to tweak the <tt>layer.xml</tt> file, or you
     can do so manually using code completion in the Source Editor.
 
 
