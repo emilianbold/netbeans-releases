@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.apisupport.project.queries;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +24,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,7 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProjectType;
@@ -55,9 +59,6 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
     
     /** for use from unit tests */
     static boolean quiet = false;
-    
-    /** Default constructor for lookup. */
-    public GlobalSourceForBinaryImpl() {}
     
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         try {
@@ -108,67 +109,122 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                 Util.err.log("Cannot found FileObject for " + binaryRootF + "(" + binaryRoot + ")"); // NOI18N
                 return null;
             }
-            String cnb = fo.getName().replace('-', '.');
-            
-            final List/*<FileObject>*/ candidates = new ArrayList();
-            URL[] roots = supposedPlaf.getSourceRoots();
-            for (int i = 0; i < roots.length; i++) {
-                if (roots[i].getProtocol().equals("jar")) { // NOI18N
-                    // suppose zipped sources
-                    File nbSrcF = new File(URI.create(FileUtil.getArchiveFile(roots[i]).toExternalForm()));
-                    if (!nbSrcF.exists()) {
-                        continue;
-                    }
-                    NetBeansSourcesParser nbsp;
-                    try {
-                        nbsp = NetBeansSourcesParser.getInstance(nbSrcF);
-                    } catch (ZipException e) {
-                        if (!quiet) {
-                            Util.err.annotate(e, ErrorManager.UNKNOWN, nbSrcF + " does not seem to be a valid ZIP file.", null, null, null); // NOI18N
-                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                        }
-                        continue;
-                    }
-                    if (nbsp == null) {
-                        continue;
-                    }
-                    String pathInZip = nbsp.findSourceRoot(cnb);
-                    if (pathInZip == null) {
-                        continue;
-                    }
-                    URL u = new URL(roots[i], pathInZip);
-                    FileObject entryFO = URLMapper.findFileObject(u);
-                    if (entryFO != null) {
-                        candidates.add(entryFO);
-                    }
-                } else {
-                    // Does not resolve nbjunit and similar from ZIPped
-                    // sources. Not a big issue since the default distributed
-                    // sources do not contain them anyway.
-                    String relPath = resolveSpecialNBSrcPath(binaryRoot);
-                    if (relPath == null) {
-                        continue;
-                    }
-                    URL url = new URL(roots[i], relPath);
-                    FileObject dir = URLMapper.findFileObject(url);
-                    if (dir != null) {
-                        candidates.add(dir);
-                    } // others dirs are currently resolved by o.n.m.apisupport.project.queries.SourceForBinaryImpl
-                }
-            }
-            return new SourceForBinaryQuery.Result() {
-                public FileObject[] getRoots() {
-                    return (FileObject[]) candidates.toArray(new FileObject[candidates.size()]);
-                }
-                public void addChangeListener(ChangeListener l) {}
-                public void removeChangeListener(ChangeListener l) {}
-            };
+            return new NbPlatformResult(supposedPlaf, binaryRoot, fo.getName().replace('-', '.'));
         } catch (IOException ex) {
             throw new AssertionError(ex);
         }
     }
     
-    private String resolveSpecialNBSrcPath(URL binaryRoot) throws MalformedURLException {
+    private static final class NbPlatformResult implements
+            SourceForBinaryQuery.Result, PropertyChangeListener {
+        
+        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        private final NbPlatform platform;
+        private final URL binaryRoot;
+        private final String cnb;
+        
+        private boolean alreadyListening;
+        
+        NbPlatformResult(final NbPlatform platform, final URL binaryRoot, final String cnb) {
+            this.platform = platform;
+            this.binaryRoot = binaryRoot;
+            this.cnb = cnb;
+        }
+        
+        public FileObject[] getRoots() {
+            final List/*<FileObject>*/ candidates = new ArrayList();
+            URL[] roots = platform.getSourceRoots();
+            try {
+                for (int i = 0; i < roots.length; i++) {
+                    if (roots[i].getProtocol().equals("jar")) { // NOI18N
+                        // suppose zipped sources
+                        File nbSrcF = new File(URI.create(FileUtil.getArchiveFile(roots[i]).toExternalForm()));
+                        if (!nbSrcF.exists()) {
+                            continue;
+                        }
+                        NetBeansSourcesParser nbsp;
+                        try {
+                            nbsp = NetBeansSourcesParser.getInstance(nbSrcF);
+                        } catch (ZipException e) {
+                            if (!quiet) {
+                                Util.err.annotate(e, ErrorManager.UNKNOWN, nbSrcF + " does not seem to be a valid ZIP file.", null, null, null); // NOI18N
+                                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                            }
+                            continue;
+                        }
+                        if (nbsp == null) {
+                            continue;
+                        }
+                        String pathInZip = nbsp.findSourceRoot(cnb);
+                        if (pathInZip == null) {
+                            continue;
+                        }
+                        URL u = new URL(roots[i], pathInZip);
+                        FileObject entryFO = URLMapper.findFileObject(u);
+                        if (entryFO != null) {
+                            candidates.add(entryFO);
+                        }
+                    } else {
+                        // Does not resolve nbjunit and similar from ZIPped
+                        // sources. Not a big issue since the default distributed
+                        // sources do not contain them anyway.
+                        String relPath = resolveSpecialNBSrcPath(binaryRoot);
+                        if (relPath == null) {
+                            continue;
+                        }
+                        URL url = new URL(roots[i], relPath);
+                        FileObject dir = URLMapper.findFileObject(url);
+                        if (dir != null) {
+                            candidates.add(dir);
+                        } // others dirs are currently resolved by o.n.m.apisupport.project.queries.SourceForBinaryImpl
+                    }
+                }
+            } catch (IOException ex) {
+                throw new AssertionError(ex);
+            }
+            return (FileObject[]) candidates.toArray(new FileObject[candidates.size()]);
+        }
+        
+        public void addChangeListener(ChangeListener l) {
+            // start listening on NbPlatform
+            synchronized (listeners) {
+                listeners.add(l);
+            }
+            if (!alreadyListening) {
+                platform.addPropertyChangeListener(this);
+                alreadyListening = true;
+            }
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+            synchronized (listeners) {
+                listeners.remove(l);
+            }
+            if (listeners.isEmpty()) {
+                platform.removePropertyChangeListener(this);
+                alreadyListening = false;
+            }
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName() == NbPlatform.PROP_SOURCE_ROOTS) {
+                Iterator it;
+                synchronized (listeners) {
+                    if (listeners.isEmpty()) {
+                        return;
+                    }
+                    it = new HashSet(listeners).iterator();
+                }
+                ChangeEvent ev = new ChangeEvent(this);
+                while (it.hasNext()) {
+                    ((ChangeListener) it.next()).stateChanged(ev);
+                }
+            }
+        }
+        
+    }
+    
+    private static String resolveSpecialNBSrcPath(URL binaryRoot) throws MalformedURLException {
         String binaryRootS = binaryRoot.toExternalForm();
         String result = null;
         if (binaryRootS.startsWith("jar:file:")) { // NOI18N
@@ -193,8 +249,8 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         private static final String NBBUILD_ENTRY = "nbbuild/"; // NOI18N
         
         private Map/*<String,String>*/ cnbToPrjDir;
-        private ZipFile nbSrcZip;
-        private String zipNBCVSRoot;
+        private final ZipFile nbSrcZip;
+        private final String zipNBCVSRoot;
         
         /**
          * May return <code>null</code> if the given zip is not a valid

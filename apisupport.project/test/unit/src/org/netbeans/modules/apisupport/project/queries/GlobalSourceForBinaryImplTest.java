@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
@@ -91,12 +93,29 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
         assertResolved("testtools/modules/ext/insanelib.jar", "performance/insanelib/src");
     }
     
+    public void testListeningToNbPlatform() throws Exception {
+        File nbSrcZip = generateNbSrcZip("");
+        URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"));
+        SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(loadersURL);
+        assertNotNull("got result", res);
+        ResultChangeListener resultCL = new ResultChangeListener();
+        res.addChangeListener(resultCL);
+        assertFalse("not changed yet", resultCL.changed);
+        assertEquals("non source root", 0, res.getRoots().length);
+        NbPlatform.getDefaultPlatform().addSourceRoot(Util.urlForJar(nbSrcZip));
+        assertTrue("changed yet", resultCL.changed);
+        assertEquals("one source root", 1, res.getRoots().length);
+        URL loadersSrcURL = new URL(Util.urlForJar(nbSrcZip), "openide/loaders/src/");
+        assertEquals("right results for " + loadersURL,
+                Collections.singletonList(URLMapper.findFileObject(loadersSrcURL)),
+                Arrays.asList(SourceForBinaryQuery.findSourceRoots(loadersURL).getRoots()));
+    }
+    
     private void assertResolved(String jarInNBBuild, String dirInNBSrc) {
         File jarFile = new File(file("nbbuild/netbeans"), jarInNBBuild);
         assertEquals("right result for " + jarFile.getAbsolutePath(),
                 Collections.singletonList(FileUtil.toFileObject((file(dirInNBSrc)))),
                 Arrays.asList(SourceForBinaryQuery.findSourceRoots(Util.urlForJar(jarFile)).getRoots()));
-        
     }
     
     private File generateNbSrcZip(String topLevelEntry) throws IOException {
@@ -120,6 +139,16 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
             zos.close();
         }
         return zip;
+    }
+    
+    private static final class ResultChangeListener implements ChangeListener {
+        
+        private boolean changed;
+        
+        public void stateChanged(ChangeEvent e) {
+            changed = true;
+        }
+        
     }
     
 }
