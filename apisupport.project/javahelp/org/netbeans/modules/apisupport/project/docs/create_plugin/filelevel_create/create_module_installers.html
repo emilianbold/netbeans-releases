@@ -6,33 +6,52 @@
 <html>
 <head>
 
-	<title>Creating a Module Installer</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <title>Creating a Module Installer</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-	<h2>Creating a Module Installer</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p>
+    <h2>Creating a Module Installer</h2>
+    <p><small> 
+        <a href="#seealso">See Also</a> 
+    </small></p>
 
 
-<p>tbd
+    <p>A <a href="about_module_installers.html">module installer</a>
+    is a Java class that provides hooks for
+    running code on startup or when a plug-in module is loaded.
+    It can also run cleanup code when a plug-in module is uninstalled
+    or disabled.
+
+    <p><b>To create a new module installer:</b>
+    <ol>
+        <li>Right-click a module project and choose New &gt; File/Folder. In the
+        New File wizard, choose Module Installer under the NetBeans Module
+        Development category.
+        <li>In the Module Installer page, you have to set the following:
+        <ul>
+
+            <li><b>Package.</b> Specifies the name of the package where the
+            module installer will be housed. The module installer will always be
+            named <tt>Installer</tt>.
+        </ul>
+            
+    </ol>
 
 
 
 
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
-    <dd><a href="../../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
-</dl> 
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-</table> 
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
+        <dd><a href="../../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
+    </dl> 
+    <hr>
+    <small><a href="../../credits.html">Legal Notices</a></small> 
+    <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
 </body></html>

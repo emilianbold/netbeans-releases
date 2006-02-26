@@ -6,29 +6,57 @@
 <html>
 <head>
 
-	<title>About Module Installers</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <title>About Module Installers</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-	<h2>About Module Installers</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p>
+    <h2>About Module Installers</h2>
+    <p><small> 
+        <a href="#seealso">See Also</a> 
+    </small></p>
 
-<p>tbd
+    <p>A module installer is a Java class that provides hooks for
+    running code on startup or when a plug-in module is loaded.
+    It can also run cleanup code when a plug-in module is uninstalled
+    or disabled.
 
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
-    <dd><a href="../../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
-</dl> 
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-</table> 
+    <p>In general, using a module installer is not recommended, because
+    it slows down startup time. Before using a module installer, make sure
+    that there is no declarative way of doing what you are trying to do.
+    The main declarative way of installing items, is to put a file
+    in your JAR's <tt>META-INF/services</tt> directory or creating
+    an <a href="../../about/about-xml-layers.html">XML layer file</a> that
+    declares information about the items
+    your module is installing. Then, when they are needed to do actual work,
+    your items will be instantiated.
+
+    <p>In addition to providing a module installer class, you need to add
+    an entry to the <tt>MANIFEST</tt> file. The <a href="create_module_installers.html">Module Installer Wizard</a>
+    creates a skeleton implementation of a module installer, adds the entry
+    to the <tt>MANIFEST</tt> file, as well as entries to the <tt>project.xml</tt> file,
+    which provides the plug-in module's metadata.
+
+    <p>For an example of an implementation of a module installer, see:
+
+    <p><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://platform.netbeans.org/tutorials/nbm-mfsyntax.html#colorrestoring">
+        <param name="text" value="<html><u>NetBeans Manifest File Syntax Highlighting Module Tutorial</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object>
+
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
+        <dd><a href="../../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
+    </dl> 
+    <hr>
+    <small><a href="../../credits.html">Legal Notices</a></small> 
+    <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
 </body></html>
