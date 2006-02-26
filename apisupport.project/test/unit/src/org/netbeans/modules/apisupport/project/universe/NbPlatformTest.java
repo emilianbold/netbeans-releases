@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.apisupport.project.universe;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
@@ -254,6 +256,27 @@ public class NbPlatformTest extends TestBase {
         assertEquals(testPlatform, p.getDestDir());
         assertEquals(defaultHarnessLocation, p.getHarnessLocation());
         assertEquals(NbPlatform.HARNESS_VERSION_50u1, p.getHarnessVersion());
+    }
+    
+    public void testSourceRootChangeFiring() throws Exception {
+        NbPlatform p = NbPlatform.getDefaultPlatform();
+        SourceRootsPCL pcl = new SourceRootsPCL();
+        p.addPropertyChangeListener(pcl);
+        assertFalse("source roots has not changed yet (sanity check)", pcl.sourcesChanged);
+        doAddSourceRoot(p, ARTIFICIAL_DIR);
+        assertTrue("source roots has changed", pcl.sourcesChanged);
+    }
+    
+    private static final class SourceRootsPCL implements PropertyChangeListener {
+        
+        boolean sourcesChanged;
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName() == NbPlatform.PROP_SOURCE_ROOTS) {
+                sourcesChanged = true;
+            }
+        }
+        
     }
     
     // XXX testHarnessSelection

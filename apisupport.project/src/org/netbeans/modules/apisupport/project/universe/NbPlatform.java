@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.apisupport.project.universe;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -53,7 +55,7 @@ import org.openide.util.NbBundle;
  * Represents one NetBeans platform, i.e. installation of the NB platform or IDE
  * or some derivative product.
  * Has a code id and can have associated sources and Javadoc, just like e.g. Java platforms.
- * 
+ *
  * @author Jesse Glick
  */
 public final class NbPlatform {
@@ -66,8 +68,12 @@ public final class NbPlatform {
     private static final String PLATFORM_HARNESS_DIR_SUFFIX = ".harness.dir"; // NOI18N
     public static final String PLATFORM_ID_DEFAULT = "default"; // NOI18N
     
+    public static final String PROP_SOURCE_ROOTS = "sourceRoots"; // NOI18N
+    
     private static Set/*<NbPlatform>*/ platforms;
-
+    
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    
     // should proceed in chronological order so we can do compatibility tests with >=
     /** Unknown version - platform might be invalid, or just predate any 5.0 release version. */
     public static final int HARNESS_VERSION_UNKNOWN = 0;
@@ -75,7 +81,7 @@ public final class NbPlatform {
     public static final int HARNESS_VERSION_50 = 1;
     /** Harness version found in 5.0 update 1. */
     public static final int HARNESS_VERSION_50u1 = 2;
-
+    
     /**
      * Reset cached info so unit tests can start from scratch.
      */
@@ -125,7 +131,7 @@ public final class NbPlatform {
         }
         return platforms;
     }
-
+    
     /**
      * Get the default platform.
      * @return the default platform, if there is one (usually should be)
@@ -173,7 +179,7 @@ public final class NbPlatform {
         }
         return new URL[0];
     }
-
+    
     /**
      * Get any Javadoc which should by default be associated with the default platform.
      */
@@ -185,7 +191,7 @@ public final class NbPlatform {
             return new URL[0];
         }
     }
-
+    
     /**
      * Find a platform by its ID.
      * @param id an ID (as in {@link #getID})
@@ -201,7 +207,7 @@ public final class NbPlatform {
         }
         return null;
     }
-
+    
     /**
      * Find a platform by its installation directory.
      * If there is a registered platform for that directory, returns it.
@@ -250,7 +256,7 @@ public final class NbPlatform {
         }
         return new File(destDir, "harness"); // NOI18N
     }
-
+    
     /**
      * Check whether a given directory is really a valid harness.
      */
@@ -397,7 +403,7 @@ public final class NbPlatform {
      * Get a unique ID for this platform.
      * Used e.g. in <code>nbplatform.active</code> in <code>platform.properties</code>.
      * @return a unique ID, or <code>null</code> for <em>anonymous</em>
-     *         platforms (see {@link #getPlatformByDestDir}). 
+     *         platforms (see {@link #getPlatformByDestDir}).
      */
     public String getID() {
         return id;
@@ -410,7 +416,7 @@ public final class NbPlatform {
     public boolean isDefault() {
         return PLATFORM_ID_DEFAULT.equals(id);
     }
-
+    
     /**
      * Get a display label suitable for the user.
      * If not set, {@link #computeDisplayName} is used.
@@ -434,7 +440,7 @@ public final class NbPlatform {
             return label;
         }
     }
-
+    
     /**
      * Get the installation directory.
      * @return the installation directory
@@ -464,9 +470,10 @@ public final class NbPlatform {
     private void maybeUpdateDefaultPlatformSources() {
         if (sourceRoots.length == 0 && isDefault()) {
             sourceRoots = defaultPlatformSources(getDestDir());
+            pcs.firePropertyChange(PROP_SOURCE_ROOTS, null, null);
         }
     }
-
+    
     /**
      * Add given source root to the current source root list and save the
      * result into the global properties in the <em>userdir</em> (see {@link
@@ -522,6 +529,7 @@ public final class NbPlatform {
                 PLATFORM_PREFIX + getID() + PLATFORM_SOURCES_SUFFIX,
                 urlsToAntPath(roots));
         sourceRoots = roots;
+        pcs.firePropertyChange(PROP_SOURCE_ROOTS, null, null);
         listsForSources = null;
     }
     
@@ -539,13 +547,13 @@ public final class NbPlatform {
             return javadocRoots;
         }
     }
-
+    
     private void maybeUpdateDefaultPlatformJavadoc() {
         if (javadocRoots.length == 0 && isDefault()) {
             javadocRoots = defaultPlatformJavadoc();
         }
     }
-
+    
     /**
      * Add given javadoc root to the current javadoc root list and save the
      * result into the global properties in the <em>userdir</em> (see {@link
@@ -603,20 +611,20 @@ public final class NbPlatform {
         javadocRoots = roots;
     }
     
-    /** 
+    /**
      * Test whether this platform is valid or not. See
      * {@link #isPlatformDirectory}
      */
     public boolean isValid() {
         return NbPlatform.isPlatformDirectory(getDestDir());
     }
-
+    
     static String urlsToAntPath(final URL[] urls) {
         StringBuffer path = new StringBuffer();
         for (int i = 0; i < urls.length; i++) {
             if (urls[i].getProtocol().equals("jar")) { // NOI18N
                 path.append(urlToAntPath(FileUtil.getArchiveFile(urls[i])));
-            } else {                
+            } else {
                 path.append(urlToAntPath(urls[i]));
             }
             if (i != urls.length - 1) {
@@ -628,7 +636,7 @@ public final class NbPlatform {
     
     private static String urlToAntPath(final URL url) {
         return new File(URI.create(url.toExternalForm())).getAbsolutePath();
-    } 
+    }
     
     private void putGlobalProperty(final String key, final String value) throws IOException {
         try {
@@ -860,7 +868,7 @@ public final class NbPlatform {
         }
         return props.getProperty("currentVersion"); // NOI18N
     }
-
+    
     /**
      * Returns whether the given label (see {@link #getLabel}) is valid.
      * <em>Valid</em> label must be non-null and must not be used by any
@@ -882,7 +890,7 @@ public final class NbPlatform {
     public String toString() {
         return "NbPlatform[" + getID() + ":" + getDestDir() + ";sources=" + Arrays.asList(getSourceRoots()) + ";javadoc=" + Arrays.asList(getJavadocRoots()) + "]"; // NOI18N;
     }
-
+    
     /**
      * Get the version of this platform's harness.
      */
@@ -918,7 +926,7 @@ public final class NbPlatform {
         }
         return harnessVersion = HARNESS_VERSION_UNKNOWN;
     }
-
+    
     /**
      * Get the current location of this platform's harness
      */
@@ -927,7 +935,7 @@ public final class NbPlatform {
     }
     
     /**
-     * Get the location of the harness bundled with this platform. 
+     * Get the location of the harness bundled with this platform.
      */
     public File getBundledHarnessLocation() {
         return findHarness(nbdestdir);
@@ -972,5 +980,13 @@ public final class NbPlatform {
                 return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_unknown");
         }
     }
-
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+    
 }
