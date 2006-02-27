@@ -114,7 +114,7 @@ public class LoggingRepaintManager extends RepaintManager {
      */
     public synchronized void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
         String log = "addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h;
-        if (w > 10 && h > 18) { // painted region isn't cursor (or painted region is greater than cursor)
+        if (w > 10 || h > 18) { // painted region isn't cursor (or painted region is greater than cursor)
             if (regionFilter != null) {
                 if (regionFilter.accept(c)) {
                     tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, log);
