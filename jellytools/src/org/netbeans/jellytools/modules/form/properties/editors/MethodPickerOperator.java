@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.form.properties.editors;
@@ -57,8 +57,8 @@ public class MethodPickerOperator extends NbDialogOperator {
     public JLabelOperator lblComponent() {
         if(_lblComponent == null) {
             _lblComponent = new JLabelOperator(this, 
-                            Bundle.getString("org.netbeans.modules.form.Bundle", 
-                                             "CTL_CW_Component"));
+                            Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle", 
+                                                    "CTL_CW_Component"));
         }
         return _lblComponent;
     }
@@ -79,8 +79,8 @@ public class MethodPickerOperator extends NbDialogOperator {
     public JLabelOperator lblMethods() {
         if(_lblMethods == null) {
             _lblMethods = new JLabelOperator( this, 
-                            Bundle.getString("org.netbeans.modules.form.Bundle", 
-                                             "CTL_CW_MethodList"));
+                            Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle",
+                                                    "CTL_CW_MethodList"));
         }
         return _lblMethods;
     }

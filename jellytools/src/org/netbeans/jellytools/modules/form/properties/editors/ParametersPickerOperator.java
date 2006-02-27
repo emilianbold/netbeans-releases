@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.form.properties.editors;
@@ -109,8 +109,8 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
     public JRadioButtonOperator rbValue() {
         if(_rbValue == null) {
             _rbValue = new JRadioButtonOperator(this, 
-                            Bundle.getString("org.netbeans.modules.form.Bundle",
-                                             "CTL_CW_Value"));
+                            Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle",
+                                                    "CTL_CW_Value"));
         }
         return _rbValue;
     }
@@ -131,8 +131,8 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
     public JRadioButtonOperator rbBean() {
         if(_rbBean == null) {
             _rbBean = new JRadioButtonOperator(this, 
-                            Bundle.getString("org.netbeans.modules.form.Bundle", 
-                                             "CTL_CW_Bean"));
+                            Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle",
+                                                    "CTL_CW_Bean"));
         }
         return _rbBean;
     }
@@ -153,8 +153,8 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
     public JRadioButtonOperator rbProperty() {
         if(_rbProperty == null) {
             _rbProperty = new JRadioButtonOperator(this, 
-                            Bundle.getString("org.netbeans.modules.form.Bundle", 
-                                             "CTL_CW_Property"));
+                            Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle",
+                                                    "CTL_CW_Property"));
         }
         return _rbProperty;
     }
@@ -185,8 +185,8 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
     public JRadioButtonOperator rbMethodCall() {
         if(_rbMethodCall == null) {
             _rbMethodCall = new JRadioButtonOperator(this, 
-                            Bundle.getString("org.netbeans.modules.form.Bundle",
-                                             "CTL_CW_Method"));
+                            Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle",
+                                                    "CTL_CW_Method"));
         }
         return _rbMethodCall;
     }
@@ -217,8 +217,8 @@ public class ParametersPickerOperator extends FormCustomEditorOperator {
     public JRadioButtonOperator rbUserCode() {
         if(_rbUserCode == null) {
             _rbUserCode = new JRadioButtonOperator(this, 
-                            Bundle.getString("org.netbeans.modules.form.Bundle", 
-                                             "CTL_CW_UserCode"));
+                            Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle",
+                                                    "CTL_CW_UserCode"));
         }
         return _rbUserCode;
     }
