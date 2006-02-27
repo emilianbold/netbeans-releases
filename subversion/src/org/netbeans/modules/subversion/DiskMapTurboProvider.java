@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion;
 
+import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.turbo.TurboProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -49,6 +50,10 @@ class DiskMapTurboProvider implements TurboProvider {
             File [] files = cacheStore.listFiles();
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
+                if (file.getName().endsWith(".bin") == false) {
+                    // on windows list returns already deleted .new files
+                    continue;
+                }
                 DataInputStream dis = null;
                 try {
                     int retry = 0;
@@ -125,7 +130,7 @@ class DiskMapTurboProvider implements TurboProvider {
                     retry++;
                     if (retry > 7) {
                         throw ioex;
-                    }                    
+                    }
                     Thread.sleep(retry * 30);
                 }
             }
@@ -230,8 +235,11 @@ class DiskMapTurboProvider implements TurboProvider {
             if (dis != null) try { dis.close(); } catch (IOException e) {}
         }
         storeSerial++;
-        store.delete();
-        storeNew.renameTo(store);
+        try {
+            FileUtils.renameFile(storeNew, store);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);            
+        }
         return true;
     }
 
