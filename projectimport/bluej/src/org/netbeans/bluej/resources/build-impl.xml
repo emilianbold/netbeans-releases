@@ -126,6 +126,9 @@ is divided into following sections:
                 <javac srcdir="@{srcdir}" destdir="@{destdir}" debug="@{debug}" deprecation="${javac.deprecation}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
                     <classpath>
                         <path path="@{classpath}"/>
+                        <fileset dir="${basedir}">
+                            <include name="+libs/*.jar"/>
+                        </fileset>
                     </classpath>
                     <compilerarg line="${javac.compilerargs}"/>
                     <customize/>
@@ -143,6 +146,9 @@ is divided into following sections:
                     </batchtest>
                     <classpath>
                         <path path="${run.test.classpath}"/>
+                        <fileset dir="${basedir}">
+                            <include name="+libs/*.jar"/>
+                        </fileset>
                     </classpath>
                     <syspropertyset>
                         <propertyref prefix="test-sys-prop."/>
@@ -164,6 +170,9 @@ is divided into following sections:
                 <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="@{name}" stopclassname="@{stopclassname}">
                     <classpath>
                         <path path="@{classpath}"/>
+                        <fileset dir="${basedir}">
+                            <include name="+libs/*.jar"/>
+                        </fileset>
                     </classpath>
                 </nbjpdastart>
             </sequential>
@@ -191,6 +200,9 @@ is divided into following sections:
                     <jvmarg line="${run.jvmargs}"/>
                     <classpath>
                         <path path="@{classpath}"/>
+                        <fileset dir="${basedir}">
+                            <include name="+libs/*.jar"/>
+                        </fileset>
                     </classpath>
                     <syspropertyset>
                         <propertyref prefix="run-sys-prop."/>
@@ -210,6 +222,9 @@ is divided into following sections:
                     <jvmarg line="${run.jvmargs}"/>
                     <classpath>
                         <path path="${run.classpath}"/>
+                        <fileset dir="${basedir}">
+                            <include name="+libs/*.jar"/>
+                        </fileset>
                     </classpath>
                     <syspropertyset>
                         <propertyref prefix="run-sys-prop."/>
@@ -299,6 +314,9 @@ is divided into following sections:
         <property name="dist.jar.resolved" location="${dist.jar}"/>
         <pathconvert property="run.classpath.with.dist.jar">
             <path path="${run.classpath}"/>
+            <fileset dir="${basedir}">
+                <include name="+libs/*.jar"/>
+            </fileset>
             <map from="${build.classes.dir.resolved}" to="${dist.jar.resolved}"/>
         </pathconvert>
         <echo>java -cp "${run.classpath.with.dist.jar}" ${main.class}</echo>
@@ -307,6 +325,9 @@ is divided into following sections:
         <property name="build.classes.dir.resolved" location="${build.classes.dir}"/>
         <pathconvert property="run.classpath.without.build.classes.dir">
             <path path="${run.classpath}"/>
+            <fileset dir="${basedir}">
+                <include name="+libs/*.jar"/>
+            </fileset>
             <map from="${build.classes.dir.resolved}" to=""/>
         </pathconvert>
         <pathconvert property="jar.classpath" pathsep=" ">
@@ -392,6 +413,9 @@ is divided into following sections:
         <javadoc destdir="${dist.javadoc.dir}" source="${javac.source}" notree="${javadoc.notree}" use="${javadoc.use}" nonavbar="${javadoc.nonavbar}" noindex="${javadoc.noindex}" splitindex="${javadoc.splitindex}" author="${javadoc.author}" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}" private="${javadoc.private}" additionalparam="${javadoc.additionalparam}" failonerror="true" useexternalfile="true">
             <classpath>
                 <path path="${javac.classpath}"/>
+                <fileset dir="${basedir}">
+                    <include name="+libs/*.jar"/>
+                </fileset>
             </classpath>
             <sourcepath>
                 <pathelement location="${src.dir}"/>
