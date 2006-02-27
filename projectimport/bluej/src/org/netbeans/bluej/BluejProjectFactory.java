@@ -109,7 +109,15 @@ public class BluejProjectFactory implements ProjectFactory {
     }
     
     public void saveProject(Project project) throws IOException {
-        // what to do here??
+        // when creating a project through this factory, route the saving to the ant based factory.
+        Lookup.Result res = Lookup.getDefault().lookup(new Lookup.Template(ProjectFactory.class));
+        Iterator it = res.allInstances().iterator();
+        while (it.hasNext()) {
+            ProjectFactory elem = (ProjectFactory) it.next();
+            if (elem.getClass().getName().indexOf("AntBasedProjectFactorySingleton") != -1) {
+                elem.saveProject(project);
+            }
+        }
     }
     
     private void copyAndReplaceInStream(InputStream is, OutputStream os, 

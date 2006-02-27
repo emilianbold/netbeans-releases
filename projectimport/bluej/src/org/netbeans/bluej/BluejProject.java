@@ -355,6 +355,22 @@ public final class BluejProject implements Project, AntProjectListener {
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
+            // Make it easier to run headless builds on the same machine at least.
+            ProjectManager.mutex().writeAccess(new Mutex.Action() {
+                public Object run() {
+                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N                    
+                    updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                    try {
+                        ProjectManager.getDefault().saveProject(BluejProject.this);
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                    return null;
+                }
+            });
+            
 ////            // Check up on build scripts.
 ////            try {
 ////                if (updateHelper.isCurrent()) {
@@ -383,21 +399,6 @@ public final class BluejProject implements Project, AntProjectListener {
 ////            mainClassUpdater = new MainClassUpdater (BluejProject.this, eval, updateHelper,
 ////                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], J2SEProjectProperties.MAIN_CLASS);
 
-            // Make it easier to run headless builds on the same machine at least.
-            ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                public Object run() {
-                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
-                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N                    
-                    updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                    try {
-                        ProjectManager.getDefault().saveProject(BluejProject.this);
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
-                    return null;
-                }
-            });
 ////            J2SELogicalViewProvider physicalViewProvider = (J2SELogicalViewProvider)
 ////                BluejProject.this.getLookup().lookup (J2SELogicalViewProvider.class);
 ////            if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
