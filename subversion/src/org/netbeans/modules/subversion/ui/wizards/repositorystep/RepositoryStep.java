@@ -278,6 +278,7 @@ public class RepositoryStep
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(e, "Passing interrupt to possibly uninterruptible nested thread: " + workerThread);  // NOI18N
             workerThread.interrupt();
+            valid("Action interrupted by user."); // should be a user action, so set again on valid ... // XXX
             err.notify(ErrorManager.INFORMATIONAL, e);
         } finally {
             backgroundValidationThread = null;
