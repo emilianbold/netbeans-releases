@@ -223,6 +223,7 @@ public class FileStatusCache implements ISVNNotifyListener {
                 status = null;
             }
         } catch (SVNClientException e) {
+            e.printStackTrace();
             // no or damaged entries
             // or ignored file
         }
