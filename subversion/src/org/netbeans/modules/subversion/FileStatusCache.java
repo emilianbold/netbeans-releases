@@ -482,6 +482,8 @@ public class FileStatusCache implements ISVNNotifyListener {
      */ 
     private FileInformation createVersionedFileInformation(File file, ISVNStatus status) {
 
+//        System.err.println("File: "  + file.getAbsolutePath() + " \nstatus: " + statusText(status));  // XXX remove
+
         SVNStatusKind kind = status.getTextStatus();
         SVNStatusKind pkind = status.getPropStatus();
         if (SVNStatusKind.NONE.equals(pkind)) {
@@ -533,6 +535,10 @@ public class FileStatusCache implements ISVNNotifyListener {
         } else {        
             throw new IllegalArgumentException("Unknown text status: " + status.getTextStatus());
         }
+    }
+
+    static String statusText(ISVNStatus status) {
+        return "file: " + status.getTextStatus().toString() + " copied: " + status.isCopied() + " prop: " + status.getPropStatus().toString();
     }
 
     /**

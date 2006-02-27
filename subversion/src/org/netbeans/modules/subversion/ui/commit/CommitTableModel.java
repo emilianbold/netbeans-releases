@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
+import org.netbeans.modules.subversion.*;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.FileInformation;
@@ -123,11 +124,15 @@ class CommitTableModel extends AbstractTableModel {
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
+        SvnFileNode node;
         String col = columns[columnIndex];
         if (col.equals(COLUMN_NAME_NAME)) {
             return nodes[rowIndex].getName();
         } else if (col.equals(COLUMN_NAME_STATUS)) {
-            return nodes[rowIndex].getInformation().getStatusText();
+            node = nodes[rowIndex];
+            FileInformation finfo =  node.getInformation();
+            finfo.getEntry(node.getFile());  // XXX side effect loads ISVNStatus structure
+            return finfo.getStatusText();
         } else if (col.equals(COLUMN_NAME_ACTION)) {
             return commitOptions[rowIndex];
         } else if (col.equals(COLUMN_NAME_PATH)) {

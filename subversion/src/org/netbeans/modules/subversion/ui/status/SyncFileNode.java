@@ -204,7 +204,9 @@ public class SyncFileNode extends AbstractNode {
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
-            return node.getInformation().getStatusText();
+            FileInformation finfo =  node.getInformation();
+            finfo.getEntry(node.getFile());  // XXX side effect loads ISVNStatus structure
+            return finfo.getStatusText();
         }
     }
 }

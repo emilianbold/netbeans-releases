@@ -168,6 +168,9 @@ public class FileInformation implements Serializable {
     private static final String STATUS_VERSIONED_DELETEDLOCALLY_EXT = "E"; // NOI18N
     private static final String STATUS_VERSIONED_ADDEDLOCALLY_EXT = "A"; // NOI18N
 
+    // for debuging purposes
+    private final Exception origin;
+
     /**
      * For deserialization purposes only.
      */ 
@@ -175,6 +178,7 @@ public class FileInformation implements Serializable {
         status = 0;
         propStatus = 0;
         isDirectory = false;
+        origin = new RuntimeException("allocated at:"); // NOI18N
     }
 
     private FileInformation(int status, int propStatus, ISVNStatus entry, boolean isDirectory) {
@@ -182,6 +186,7 @@ public class FileInformation implements Serializable {
         this.propStatus = propStatus;
         this.entry = entry;
         this.isDirectory = isDirectory;
+        origin = new RuntimeException("allocated at:"); // NOI18N
     }
 
     FileInformation(int status, ISVNStatus entry) {
@@ -218,7 +223,9 @@ public class FileInformation implements Serializable {
      * is not versioned or its entry is invalid
      */
     public ISVNStatus getEntry(File file) {
-        if (entry == null && file != null) readEntry(file);
+        if (entry == null && file != null) {
+            readEntry(file);
+        }
         return entry;
     }
     
@@ -244,6 +251,9 @@ public class FileInformation implements Serializable {
         } else if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
             return loc.getString("CTL_FileInfoStatus_NewLocally");
         } else if (status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
+            if (entry != null && entry.isCopied()) {
+                return loc.getString("CTL_FileInfoStatus_AddedLocallyCopied");
+            }
             return loc.getString("CTL_FileInfoStatus_AddedLocally");
         } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
             return loc.getString("CTL_FileInfoStatus_UpToDate");

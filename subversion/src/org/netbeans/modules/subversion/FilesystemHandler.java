@@ -82,6 +82,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
 
     public void fileDataCreated(FileEvent fe) {
         if (Thread.currentThread() == ignoredThread) return;
+//        new RuntimeException("new: " + fe.getFile().getPath()).printStackTrace();
         eventProcessor.post(new FileCreatedTask(FileUtil.toFile(fe.getFile())));
     }
     
@@ -98,6 +99,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
 
     public void fileRenamed(FileRenameEvent fe) {
         if (Thread.currentThread() == ignoredThread) return;
+//        new RuntimeException("move: " +  fe.getFile().getPath()).printStackTrace();
         eventProcessor.post(new FileRenamedTask(fe));
     }
 
@@ -399,11 +401,26 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
             String oldExtension = event.getExt();
             if (oldExtension.length() > 0) oldExtension = "." + oldExtension; // NOI18N
         
+            File copied = FileUtil.toFile(newFile);
             File parent = FileUtil.toFile(newFile.getParent());
             File removed = new File(parent, oldName + oldExtension);
-        
-            fileDeletedImpl(removed);
-            fileCreatedImpl(FileUtil.toFile(newFile));
+
+            if (removed == null) return;
+
+            try {
+                // XXX this is event handler files are already gone
+                // but svn requires them to exist
+                copied.renameTo(removed);                
+                boolean force = true; // file with local chanegs must be forced
+                ISVNClientAdapter client = Subversion.getInstance().getClient();
+                client.move(removed, copied, force);
+            } catch (SVNClientException e) {
+                // ignore; we do not know what to do here; does no harm
+                e.printStackTrace();
+            }
+            cache.refresh(removed, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            cache.refresh(copied, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+
         }
     }
 }
