@@ -470,6 +470,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                 model.addToken((String) selected[i]);
             }
             if (selected.length > 0) {
+                reqTokenList.clearSelection();
                 reqTokenList.setSelectedValue(selected[0], true);
             }
         }

@@ -431,7 +431,7 @@ public final class CustomizerComponentFactory {
         }
         
         public Object getElementAt(int index) {
-            return tokens.toArray()[index];
+            return index >= tokens.size() ? null : tokens.toArray()[index];
         }
         
         public int getSize() {
