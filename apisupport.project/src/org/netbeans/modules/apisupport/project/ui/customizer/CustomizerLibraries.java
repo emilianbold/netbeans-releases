@@ -63,6 +63,27 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         }
         refresh();
         dependencyList.setCellRenderer(CustomizerComponentFactory.getDependencyCellRenderer(false));
+        javaPlatformCombo.setRenderer(JavaPlatformComponentFactory.javaPlatformListCellRenderer());
+        removeTokenButton.setEnabled(false);
+        attachListeners();
+    }
+    
+    void refresh() {
+        refreshJavaPlatforms();
+        refreshPlatforms();
+        platformValue.setEnabled(getProperties().isStandalone());
+        managePlafsButton.setEnabled(getProperties().isStandalone());
+        updateEnabled();
+        reqTokenList.setModel(getProperties().getRequiredTokenListModel());
+        dependencyList.setModel(getProperties().getDependenciesListModel());
+        dependencyList.getModel().addListDataListener(new ListDataListener() {
+            public void contentsChanged(ListDataEvent e) { updateEnabled(); }
+            public void intervalAdded(ListDataEvent e) { updateEnabled(); }
+            public void intervalRemoved(ListDataEvent e) { updateEnabled(); }
+        });
+    }
+    
+    private void attachListeners() {
         platformValue.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -81,7 +102,6 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                 }
             }
         });
-        javaPlatformCombo.setRenderer(JavaPlatformComponentFactory.javaPlatformListCellRenderer());
         javaPlatformCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -90,20 +110,12 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
                 }
             }
         });
-    }
-    
-    void refresh() {
-        refreshJavaPlatforms();
-        refreshPlatforms();
-        platformValue.setEnabled(getProperties().isStandalone());
-        managePlafsButton.setEnabled(getProperties().isStandalone());
-        updateEnabled();
-        reqTokenList.setModel(getProperties().getRequiredTokenListModel());
-        dependencyList.setModel(getProperties().getDependenciesListModel());
-        dependencyList.getModel().addListDataListener(new ListDataListener() {
-            public void contentsChanged(ListDataEvent e) { updateEnabled(); }
-            public void intervalAdded(ListDataEvent e) { updateEnabled(); }
-            public void intervalRemoved(ListDataEvent e) { updateEnabled(); }
+        reqTokenList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    removeTokenButton.setEnabled(reqTokenList.getSelectedIndex() != -1);
+                }
+            }
         });
     }
     
@@ -456,6 +468,9 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
             CustomizerComponentFactory.RequiredTokenListModel model = (CustomizerComponentFactory.RequiredTokenListModel) reqTokenList.getModel();
             for (int i = 0; i < selected.length; i++) {
                 model.addToken((String) selected[i]);
+            }
+            if (selected.length > 0) {
+                reqTokenList.setSelectedValue(selected[0], true);
             }
         }
         reqTokenList.requestFocusInWindow();
