@@ -97,7 +97,7 @@ public class AttachDialogOperator extends NbDialogOperator {
      */
     public JLabelOperator lblConnector() {
         if (_lblConnector==null) {
-            _lblConnector = new JLabelOperator(this, Bundle.getString(
+            _lblConnector = new JLabelOperator(this, Bundle.getStringTrimmed(
                                     "org.netbeans.modules.debugger.jpda.ui.Bundle",
                                     "CTL_Connector"));
         }
@@ -120,7 +120,7 @@ public class AttachDialogOperator extends NbDialogOperator {
      */
     public JLabelOperator lblTransport() {
         if (_lblTransport==null) {
-            _lblTransport = new JLabelOperator(this, Bundle.getString(
+            _lblTransport = new JLabelOperator(this, Bundle.getStringTrimmed(
                                     "org.netbeans.modules.debugger.jpda.ui.Bundle",
                                     "CTL_Transport"));
         }
@@ -142,9 +142,9 @@ public class AttachDialogOperator extends NbDialogOperator {
      */
     public JLabelOperator lblName() {
         if (_lblName==null) {
-            _lblName = new JLabelOperator(this, Bundle.getString(
+            _lblName = new JLabelOperator(this, Bundle.getStringTrimmed(
                                     "org.netbeans.modules.debugger.jpda.ui.Bundle",
-                                    "CTL_ConnectorArgument_Name"));
+                                    "CTL_CA_name"));
         }
         return _lblName;
     }
@@ -165,9 +165,9 @@ public class AttachDialogOperator extends NbDialogOperator {
      */
     public JLabelOperator lblTimeout() {
         if (_lblTimeoutMs==null) {
-            _lblTimeoutMs = new JLabelOperator(this, Bundle.getString(
+            _lblTimeoutMs = new JLabelOperator(this, Bundle.getStringTrimmed(
                                     "org.netbeans.modules.debugger.jpda.ui.Bundle",
-                                    "CTL_ConnectorArgument_Timeout"));
+                                    "CTL_CA_timeout"));
         }
         return _lblTimeoutMs;
     }
@@ -188,9 +188,9 @@ public class AttachDialogOperator extends NbDialogOperator {
      */
     public JLabelOperator lblHost() {
         if (_lblHost==null) {
-            _lblHost = new JLabelOperator(this, Bundle.getString(
+            _lblHost = new JLabelOperator(this, Bundle.getStringTrimmed(
                                     "org.netbeans.modules.debugger.jpda.ui.Bundle",
-                                    "CTL_Host"));
+                                    "CTL_CA_hostname"));
         }
         return _lblHost;
     }
@@ -214,9 +214,9 @@ public class AttachDialogOperator extends NbDialogOperator {
             try {
                 // set exact comparator because port vs. trasport clash
                 setComparator(new DefaultStringComparator(true, true));
-                _lblPort = new JLabelOperator(this, Bundle.getString(
+                _lblPort = new JLabelOperator(this, Bundle.getStringTrimmed(
                                    "org.netbeans.modules.debugger.jpda.ui.Bundle",
-                                    "CTL_Port"));
+                                    "CTL_CA_port"));
             } finally {
                 setComparator(old);
             }
