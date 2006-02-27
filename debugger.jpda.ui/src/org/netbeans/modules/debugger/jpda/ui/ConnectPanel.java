@@ -59,6 +59,7 @@ import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -159,11 +160,10 @@ Controller, ActionListener {
                 c = new GridBagConstraints ();
                 c.insets = new Insets (0, 0, 3, 3);
                 c.anchor = c.WEST;
-                JLabel lblConnectors = new JLabel (
-                    NbBundle.getMessage (ConnectPanel.class, "CTL_Connector") // NOI18N
-                );
-                lblConnectors.setDisplayedMnemonic (
-                    NbBundle.getMessage (ConnectPanel.class, "MN_CTL_Connector").charAt (0) // NOI18N
+                JLabel lblConnectors = new JLabel();
+                Mnemonics.setLocalizedText(
+                        lblConnectors,
+                        NbBundle.getMessage (ConnectPanel.class, "CTL_Connector") // NOI18N
                 );
                 lblConnectors.getAccessibleContext ().setAccessibleDescription (
                     NbBundle.getMessage (ConnectPanel.class, "ACSD_CTL_Connector")
@@ -183,12 +183,10 @@ Controller, ActionListener {
             c = new GridBagConstraints ();
             c.insets = new Insets (3, 0, 0, 6);
             c.anchor = c.WEST;
-            JLabel lblTransport = new JLabel (
-                NbBundle.getMessage (ConnectPanel.class, "CTL_Transport")
-            );
-            lblTransport.setDisplayedMnemonic (
-                NbBundle.getMessage (ConnectPanel.class, 
-                "CTL_Transport_Mnemonic").charAt(0)
+            JLabel lblTransport = new JLabel();
+            Mnemonics.setLocalizedText(
+                    lblTransport,
+                    NbBundle.getMessage (ConnectPanel.class, "CTL_Transport") // NOI18N
             );
             lblTransport.getAccessibleContext ().setAccessibleDescription (
                 NbBundle.getMessage (ConnectPanel.class, "ACSD_CTL_Transport")
@@ -225,17 +223,13 @@ Controller, ActionListener {
             Argument a = (Argument) args.get (name);
             String label = translate (a.name());
             if (label == null) {
-                label = a.label();
-            }
-            char mnemonic = getMnemonic(a.name());
-            if (mnemonic == 0) {
-                mnemonic = a.label().charAt(0);
+                label = "&"+a.label();
             }
                 c = new GridBagConstraints ();
                 c.insets = new Insets (6, 0, 0, 3);
                 c.anchor = GridBagConstraints.WEST;
-                JLabel iLabel = new JLabel (label);
-                iLabel.setDisplayedMnemonic (mnemonic);
+                JLabel iLabel = new JLabel();// (label);
+                Mnemonics.setLocalizedText(iLabel, label);
                 iLabel.setToolTipText (a.description ());
             add (iLabel, c);
                 JTextField tfParam = new JTextField (a.value ());
@@ -455,6 +449,11 @@ Controller, ActionListener {
                 String label = translate (a.name());
                 if (label == null) {
                     label = a.label();
+                } else {
+                    int amp = Mnemonics.findMnemonicAmpersand(label);
+                    if (amp >= 0) {
+                        label = label.substring(0, amp) + label.substring(amp + 1);
+                    }
                 }
                 if ( paramValue.equals ("") && a.mustSpecify ())
                     in = new NotifyDescriptor.InputLine (
@@ -520,13 +519,5 @@ Controller, ActionListener {
         }
     }
     
-    private static char getMnemonic (String str) {
-        try {
-            return NbBundle.getMessage(ConnectPanel.class, "CTL_CA_"+str+"_mnc").charAt(0);
-        } catch (MissingResourceException mrex) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Missing resource "+"CTL_CA_"+str+"_mnc"+" from "+ConnectPanel.class.getName());
-            return 0;
-        }
-    }
 }
 
