@@ -408,6 +408,12 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
             if (removed == null) return;
 
             try {
+                // TODO replace by InterceptionListener beforeMove, moveSuccess, moveFailure
+                try {
+                    Thread.sleep(2376);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
                 // XXX this is event handler files are already gone
                 // but svn requires them to exist
                 copied.renameTo(removed);                
