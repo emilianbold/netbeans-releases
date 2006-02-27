@@ -15,11 +15,9 @@ package org.netbeans.modules.subversion.ui.copy;
 import java.net.MalformedURLException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -68,9 +66,9 @@ public class CreateCopy extends CopyDialog {
         return (CreateCopyPanel) getPanel();
     }
     
-    SVNUrl getRepositoryFileUrl() {
+    RepositoryFile getRepositoryFile() {
         try {
-            return repositoryPaths.getRepositoryFiles()[0].getFileUrl();
+            return repositoryPaths.getRepositoryFiles()[0];
         } catch (MalformedURLException ex) {
             ex.printStackTrace(); // should not happen
         }

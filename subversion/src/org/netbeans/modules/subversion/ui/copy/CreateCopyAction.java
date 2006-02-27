@@ -24,6 +24,7 @@ import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -64,15 +65,33 @@ public class CreateCopyAction extends ContextAction {
         CreateCopy createCopy = new CreateCopy(repositoryRoot, nodes[0].getName(), isChanged); // XXX name or dispayname or what?                
         if(createCopy.showDialog()) {
                         
-            final SVNUrl repositoryFolderUrl = createCopy.getRepositoryFileUrl();
-            final String message = createCopy.getMessage();
-
+            final RepositoryFile repositoryFolder = createCopy.getRepositoryFile();
+            final String message = createCopy.getMessage();            
+            
             Runnable run = new Runnable() {
                 public void run() {
                     startProgress();                    
                     try {                
                         ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
-                        client.copy(root, repositoryFolderUrl, message);
+                        
+                        if(!repositoryFolder.isRepositoryRoot()) {
+                            ISVNInfo info = null;
+                            try{
+                                info = client.getInfo(repositoryFolder.getFileUrl());                                                                
+                            } catch (SVNClientException ex) {                               
+                               if(!(ex.getMessage().indexOf("(Not a valid URL)") > - 1)) {
+                                   throw ex;
+                               }                               
+                            }            
+                            
+                            if(info == null) {
+                                client.mkdir(repositoryFolder.getFileUrl(),
+                                             true, 
+                                             "[Netbeans SVN client generated message: create a new folder for the following copy]: " + message); // XXX                           
+                            }                            
+                        }                        
+                        
+                        client.copy(root, repositoryFolder.getFileUrl(), message);
                     } catch (SVNClientException ex) {
                         ErrorManager.getDefault().notify(ex);
                         return;

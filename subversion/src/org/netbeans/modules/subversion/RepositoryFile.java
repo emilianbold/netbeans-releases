@@ -174,5 +174,5 @@ public class RepositoryFile {
             ex.printStackTrace();  // should not happen
         }                        
         return new RepositoryFile(repositoryUrl, newUrl, revision);
-    }
+    }        
 }
