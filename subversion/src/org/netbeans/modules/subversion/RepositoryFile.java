@@ -175,4 +175,21 @@ public class RepositoryFile {
         }                        
         return new RepositoryFile(repositoryUrl, newUrl, revision);
     }        
+
+    public RepositoryFile  removeLastSegment() {                
+        assert !isRepositoryRoot(); // can't do this 
+        
+        String fileUrlStrint = fileUrl.toString();
+        int idx = fileUrlStrint.lastIndexOf('/');
+        
+        assert !(idx < repositoryUrl.toString().length());
+        SVNUrl newUrl = null;
+        try {
+            newUrl = new SVNUrl(fileUrlStrint.substring(0, idx));
+        } catch (MalformedURLException ex) {
+            ex.printStackTrace();  // should not happen
+        }                        
+        return new RepositoryFile(repositoryUrl, newUrl, revision);
+    }        
+    
 }

@@ -73,11 +73,12 @@ public class CreateCopyAction extends ContextAction {
                     startProgress();                    
                     try {                
                         ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
-                        
+                                                
                         if(!repositoryFolder.isRepositoryRoot()) {
+                            SVNUrl folderToCreate = repositoryFolder.removeLastSegment().getFileUrl();
                             ISVNInfo info = null;
                             try{
-                                info = client.getInfo(repositoryFolder.getFileUrl());                                                                
+                                info = client.getInfo(folderToCreate);                                                                
                             } catch (SVNClientException ex) {                               
                                if(!(ex.getMessage().indexOf("(Not a valid URL)") > - 1)) {
                                    throw ex;
@@ -85,7 +86,7 @@ public class CreateCopyAction extends ContextAction {
                             }            
                             
                             if(info == null) {
-                                client.mkdir(repositoryFolder.getFileUrl(),
+                                client.mkdir(folderToCreate,
                                              true, 
                                              "[Netbeans SVN client generated message: create a new folder for the following copy]: " + message); // XXX                           
                             }                            
