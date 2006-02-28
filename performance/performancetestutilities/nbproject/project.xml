@@ -62,7 +62,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">/local_export/sources/nb_all/jemmy/builds/jemmy.jar:/local_export/sources/nb_all/jellytools/builds/jelly2-nb.jar:/local_export/sources/nb_all/xtest/lib/nbjunit.jar:/local_export/sources/nb_all/xtest/lib/junit.jar</classpath>
+                <classpath mode="compile">../../jemmy/builds/jemmy.jar:../../jellytools/builds/jelly2-nb.jar:../../xtest/lib/nbjunit.jar:../../xtest/lib/junit.jar</classpath>
                 <source-level>1.4</source-level>
             </compilation-unit>
         </java-data>

@@ -549,55 +549,126 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         boolean onwindows = platformString.equalsIgnoreCase("Windows_NT,x86") || platformString.equalsIgnoreCase("Windows_2000,x86") ||
                 platformString.equalsIgnoreCase("Windows_XP,x86") || platformString.equalsIgnoreCase("Windows_95,x86") ||
                 platformString.equalsIgnoreCase("Windows_98,x86") || platformString.equalsIgnoreCase("Windows_Me,x86");
+        if (!onunix && !onwindows)
+            return;
 
         // find IDE process's PID using JPS utility
         String pid = null;
-        String jprocs = executeNativeCommand ("jps -m");
+        String jprocs = executeNativeCommand ("jps -mv");
         String[] procstrings = jprocs.split("\n");
         for (int i=0; i<procstrings.length; i++) {
-            if (procstrings[i].matches(".*test/work/sys/ide.*")) {
+            if (procstrings[i].matches(".*Main.*test.work.sys.ide.*")) {
                 log (procstrings[i]);
-                log ("");
                 pid = procstrings[i].split(" ")[0];
                 break;
             }
         }
-        
-        // find the information using JSTAT
-        if (pid!=null) {
-            String commandoutput;
-            
-            log (commandoutput = executeNativeCommand ("jstat -class " + pid));
-            reportPerformance ("Loaded",Long.valueOf(getOutputSubstring(commandoutput,1,0)).longValue(),"classes",runOrder);
-            reportPerformance ("Unloaded",Long.valueOf(getOutputSubstring(commandoutput,1,2)).longValue(),"classes",runOrder);
-            
-            log (commandoutput = executeNativeCommand ("jstat -gc " + pid));
-            reportPerformance ("S0U+S1U+EU",Float.valueOf(getOutputSubstring(commandoutput,1,2)).longValue()+Float.valueOf(getOutputSubstring(commandoutput,1,3)).longValue()+Float.valueOf(getOutputSubstring(commandoutput,1,5)).longValue(),"kB",runOrder);
-            reportPerformance ("0U",Float.valueOf(getOutputSubstring(commandoutput,1,7)).longValue(),"kB",runOrder);
-            reportPerformance ("PU",Float.valueOf(getOutputSubstring(commandoutput,1,9)).longValue(),"kB",runOrder);
-            reportPerformance ("YGC",Float.valueOf(getOutputSubstring(commandoutput,1,10)).longValue(),"occurences",runOrder);
-            reportPerformance ("YGCT",(long) (Float.valueOf(getOutputSubstring(commandoutput,1,11)).floatValue()*1000),"ms",runOrder);
-            reportPerformance ("FGC",Float.valueOf(getOutputSubstring(commandoutput,1,12)).longValue(),"occurences",runOrder);
-            reportPerformance ("FGCT",(long) (Float.valueOf(getOutputSubstring(commandoutput,1,13)).floatValue()*1000),"ms",runOrder);
-            reportPerformance ("GCT",(long) (Float.valueOf(getOutputSubstring(commandoutput,1,14)).floatValue()*1000),"ms",runOrder);
-            
-            //log (commandoutput = executeNativeCommand ("bash -c \"footprint -s 1 -p " + pid + " 2>&1\""));
-        }
-        
+
+        // Full GC several times
         runGC(5);
-        
-        Runtime runtime = Runtime.getRuntime();
-        long totalHeap = runtime.totalMemory();
-        long heapUsage = totalHeap - runtime.freeMemory();
-        reportPerformance ("Used Heap", heapUsage/1024, "kB", runOrder);
-        reportPerformance ("Heap Capacity", totalHeap/1024, "kB", runOrder);
-        log ("Heap = " + (long)(heapUsage/1024) + "/" + (long)(totalHeap/1024));
+
+        String commandoutput = null;
+        String xtestHome = System.getProperty("xtest.tmpdir");
+        if (onunix)
+            log (commandoutput = executeNativeCommand (xtestHome + "/measure_footprint " + pid).trim());
+        else
+            log (commandoutput = measureFootprintOnWindows (pid));
+        String[] outputarray = commandoutput.split("; ");
+        if (outputarray!=null && outputarray.length==4) {
+            String[] rssvsz = outputarray[0].split("/");
+            String[] heap = outputarray[1].split("/");
+            String[] permgen = outputarray[2].split("/");
+            String[] classes = outputarray[3].split("/");
+            reportPerformance ("Footprint-RSS", Long.valueOf(rssvsz[0]).longValue(), "kB", runOrder);
+            reportPerformance ("Footprint-VSZ", Long.valueOf(rssvsz[1]).longValue(), "kB", runOrder);
+            reportPerformance ("Heap-Used", Long.valueOf(heap[0]).longValue(), "kB", runOrder);
+            reportPerformance ("Heap-Commited", Long.valueOf(heap[1]).longValue(), "kB", runOrder);
+            reportPerformance ("PermGen-Used", Long.valueOf(permgen[0]).longValue(), "kB", runOrder);
+            reportPerformance ("PermGen-Commited", Long.valueOf(permgen[1]).longValue(), "kB", runOrder);
+            reportPerformance ("Classes-Loaded", Long.valueOf(classes[0]).longValue(), "", runOrder);
+            reportPerformance ("Classes-Unloaded", Long.valueOf(classes[1]).longValue(), "", runOrder);
+        }
+
         log ("----------------------------------------------");
     }
 
-    private String getOutputSubstring (String source, int line, int item) {
-        String[] linestrings = source.split("\n");
-        String[] lineitems = linestrings[line].split(" ");
+    private String measureFootprintOnWindows (String PID) {
+        String result = "";
+
+        /*
+            ./pslist -m $PID | tail -1 |
+            {
+             read NAME0 PID0 VM0 WS WSPK0 PRIV REST0
+             echo "$WS/$PRIV; " # resident/virtual memory
+            }
+         */
+        String xtestHome = System.getProperty("xtest.tmpdir");
+        String pslist = executeNativeCommand(xtestHome+"/pslist.exe -m "+PID);
+        int pslist_lines = numberOfLines(pslist);
+        String pslist_line = getLine (pslist, pslist_lines-1);
+        result += getItem(pslist_line, 3);
+        result += "/";
+        result += getItem(pslist_line, 5);
+        result += "; ";
+
+        /*
+            jstat -gc $PID | tail -1 |
+            {
+             read S0C S1C S0U S1U EC EU OC OU PC PU YGC YGCT FGC FGCT GCT
+             echo "($S0U+$S1U+$EU+$OU)/1" | bc # heap utilization
+             echo "/"
+             echo "($S0C+$S1C+$EC+$OC)/1" | bc # heap capacity
+             echo "; "
+             echo "$PU/1" | bc # utilization of permgen
+             echo "/"
+             echo "$PC/1" | bc # capacity of permgen
+             echo "; "
+            }
+         */
+        String jstat = executeNativeCommand("jstat -gc "+PID);
+        int jstat_lines = numberOfLines(jstat);
+        String jstat_line = getLine (jstat, jstat_lines-1);
+        int heapU = (int)Math.floor(itemToNumber(getItem(jstat_line,2)) + itemToNumber(getItem(jstat_line,3)) +
+                itemToNumber(getItem(jstat_line,5)) + itemToNumber(getItem(jstat_line,7)));
+        int heapC = (int)Math.floor(itemToNumber(getItem(jstat_line,0)) + itemToNumber(getItem(jstat_line,1)) +
+                itemToNumber(getItem(jstat_line,4)) + itemToNumber(getItem(jstat_line,6)));
+        result += Integer.toString(heapU);
+        result += "/";
+        result += Integer.toString(heapC);
+        result += "; ";
+        result += Integer.toString((int)Math.floor(itemToNumber(getItem(jstat_line,9))));
+        result += "/";
+        result += Integer.toString((int)Math.floor(itemToNumber(getItem(jstat_line,8))));
+        result += "; ";
+
+        /*
+            jstat -class $PID | tail -1 |
+            {
+             read L BL U BU BY TI
+             echo "$L/$U" # loaded/unloaded classes
+            }
+         */
+        String jstat2 = executeNativeCommand("jstat -class "+PID);
+        int jstat2_lines = numberOfLines(jstat2);
+        String jstat2_line = getLine(jstat2, jstat2_lines-1);
+        result += getItem(jstat2_line, 0);
+        result += "/";
+        result += getItem(jstat2_line, 2);
+
+        return result;
+    }
+
+    private int numberOfLines (String string) {
+        return string==null || string.length()<1 ? 0 : string.split("\n").length;
+    }
+
+    private String getLine (String string, int line) {
+        String[] linestrings = string.split("\n");
+        return linestrings[line];
+    }
+
+    private String getItem (String line, int item) {
+        String[] lineitems = line.split(" ");
         for (int i=0, j=0; i<lineitems.length; i++)
             if (lineitems[i].trim().length()>0) {
                 if (item==j)
@@ -605,6 +676,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                 j++;
             }
         return "N/A";
+    }
+
+    private float itemToNumber (String item) {
+        return Float.parseFloat(item);
     }
     
     private String executeNativeCommand (String commandLine){
