@@ -29,7 +29,7 @@ public class SafeException extends FoldingIOException {
     /** Default constructor.
     */
     public SafeException(Exception ex) {
-        super(ex);
+        super(ex, null);
         this.ex = ex;
     }
 

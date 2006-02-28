@@ -18,7 +18,6 @@ import java.io.IOException;
 /** Encapsulates an exception.
 *
 * @author Ales Novak
-* @deprecated Better to create a new <code>IOException</code> and {@link org.openide.ErrorManager}'s annotate with the throwable.
 */
 public class FoldingIOException extends IOException {
     static final long serialVersionUID = 1079829841541926901L;
@@ -27,11 +26,19 @@ public class FoldingIOException extends IOException {
     private Throwable t;
 
     /**
+    * @deprecated Better to create a new <code>IOException</code> and use its {@link initCause} method.
     * @param t a foreign folded Throwable
     */
     public FoldingIOException(Throwable t) {
         super(t.getMessage());
         this.t = t;
+    }
+    
+    /** Constructor for SafeException which extends FoldingIOException
+     * and is not deprecated.
+     */
+    FoldingIOException(Throwable t, Object nothing) {
+        super(t.getMessage());
     }
 
     /** Prints stack trace of the foreign exception */

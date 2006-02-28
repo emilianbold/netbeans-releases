@@ -24,9 +24,11 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -68,6 +70,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.modules.openide.util.AWTBridge;
 import org.openide.ErrorManager;
@@ -1263,7 +1266,7 @@ widthcheck:  {
     * @see Component#isFocusTraversable
     */
     public static Component getFocusTraversableComponent(Component c) {
-        if (c.isFocusTraversable()) {
+        if (c.isFocusable()) {
             return c;
         }
 
@@ -1853,12 +1856,10 @@ widthcheck:  {
      * input focus
      */
     private static GraphicsConfiguration getCurrentGraphicsConfiguration() {
-        Frame[] frames = Frame.getFrames();
-
-        for (int i = 0; i < frames.length; i++) {
-            if (javax.swing.SwingUtilities.findFocusOwner(frames[i]) != null) {
-                return frames[i].getGraphicsConfiguration();
-            }
+	Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if (focusOwner != null) {
+            Window w = SwingUtilities.getWindowAncestor(focusOwner);
+            return w.getGraphicsConfiguration();
         }
 
         return GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();

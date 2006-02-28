@@ -174,14 +174,16 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
             return;
         }
 
-        final ActionPerformer ap = getActionPerformer();
+        final Object ap = getActionPerformer();
 
         if (ap != null) {
             org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(
                 this,
                 new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(ev, this, asynchronous ()) {
                     public void run() {
-                        ap.performAction(CallbackSystemAction.this);
+                        if (ap == getActionPerformer()) {
+                            getActionPerformer().performAction(CallbackSystemAction.this);
+                        }
                     }
                 }
             );
