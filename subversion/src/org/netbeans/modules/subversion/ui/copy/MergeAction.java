@@ -80,10 +80,10 @@ public class MergeAction extends ContextAction {
                         }
                         
                         if(mergeAfter) {
-                            client.merge(mergeFromRepository.getFileUrl(), 
-                                         mergeFromRepository.getRevision(),
-                                         mergeAfterRepository.getFileUrl(), 
+                            client.merge(mergeAfterRepository.getFileUrl(), 
                                          mergeAfterRepository.getRevision(),
+                                         mergeFromRepository.getFileUrl(), 
+                                         mergeFromRepository.getRevision(),
                                          root,
                                          false,
                                          true);                                                                                    
