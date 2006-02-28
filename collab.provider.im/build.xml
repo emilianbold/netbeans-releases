@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
                  needsrestart="${nbm.needs.restart}"
                  releasedate="${nbm.release.date}"
 		 moduleauthor="${nbm.module.author}">
-            <license name="im-libs-license.html">
+            <license>
                 <text>For the integration module:</text>
                 <file location="${license.file}"/>
 		<text>Jabber Stream Objects 0.12.5</text>

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,12 +32,14 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
@@ -184,22 +187,29 @@ public class MakeNBM extends Task {
                 return "<![CDATA[" + text.toString () + "]]>"; //NOI18N
             }
 	}
-        /** You can either set a name for the blurb, or using the <code>file</code> attribute does this.
-         * The name is mandatory for licenses, as this identifies the license in
-         * an update description.
-         */
-	public void setName (String name) {
-	    this.name = name;
-	}
+        /** @deprecated */
+        public void setName(String name) {
+            getProject().log(getLocation() + ": the 'name' attribute on <license> is deprecated", Project.MSG_WARN);
+        }
 	public String getName () {
+            if (name == null) {
+                name = crcOf(text);
+            }
 	    return name;
 	}
+        private String crcOf(StringBuffer text) {
+            CRC32 crc = new CRC32();
+            try {
+                crc.update(text.toString().replaceAll("\\s+", " ").trim().getBytes("UTF-8"));
+            } catch (UnsupportedEncodingException ex) {
+                throw new BuildException(ex);
+            }
+            return Long.toHexString(crc.getValue()).toUpperCase(Locale.ENGLISH);
+        }
         /** Include a file (and set the license name according to its basename). */
 	public void setFile (File file) {
 	    // This actually adds the text and so on:
 	    new FileInsert ().setLocation (file);
-	    // Default for the name too, as a convenience.
-	    if (name == null) name = file.getName ();
 	}
     }
 
@@ -669,7 +679,7 @@ public class MakeNBM extends Task {
 		throw new BuildException ("must define storepass attribute on <signature/>");
 	    if (signature.alias == null)
 		throw new BuildException ("must define alias attribute on <signature/>");
-            if (signature.storepass.equals ("?") || !signature.keystore.exists()) { //NOI18N
+            if (signature.storepass.equals ("?") || signature.storepass.indexOf("${") != -1 || !signature.keystore.exists()) { //NOI18N
                 log ("Not signing NBM file " + file + "; no stored-key password provided or keystore (" 
 		     + signature.keystore.toString() + ") doesn't exist", Project.MSG_WARN);
             } else {

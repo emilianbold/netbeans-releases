@@ -59,7 +59,7 @@ Microsystems, Inc. All Rights Reserved.
                  global="${nbm.is.global}"
                  releasedate="${nbm.release.date}"
 		 moduleauthor="${nbm.module.author}"> 
-            <license name="apisupport-harness-license.txt">
+            <license>
                 <text>For the main build harness:</text>
                 <file location="${license.file}"/>
                 <text>For the bundled JavaHelp search indexer library:</text>
