@@ -157,7 +157,7 @@ public final class NbModuleProject implements Project {
                 if (testDir.getFileObject("build-" + name + ".xml") == null) { // NOI18N
                     continue;
                 }
-                if (name.equals("unit") || name.equals("qa-functional")) { // NOI18N
+                if (name.equals("unit") || name.equals("qa-functional") || name.equals("qa-performance")) { // NOI18N
                     // Already handled specially.
                     continue;
                 }
