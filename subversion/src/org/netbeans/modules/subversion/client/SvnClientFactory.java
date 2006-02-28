@@ -88,6 +88,9 @@ public class SvnClientFactory {
         return new SvnClientImpl(adapter);
     }
     
+    // XXX this should be at some another place - maybe at settings?
+    // XXX there is also a systemwide config folder /etc/subversion - use it
+    //     - find out if there is also something like this on windows ...
     private static File createTempConfig(ProxyDescriptor pd) {
         
         // create the IDE config dir
