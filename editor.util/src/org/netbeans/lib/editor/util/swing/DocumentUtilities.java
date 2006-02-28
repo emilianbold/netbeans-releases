@@ -15,7 +15,11 @@ package org.netbeans.lib.editor.util.swing;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.Segment;
+import org.netbeans.lib.editor.util.AbstractCharSequence;
 
 /**
  * Various utility methods related to swing text documents.
@@ -27,6 +31,19 @@ import javax.swing.text.Document;
 public final class DocumentUtilities {
     
     private static final Object TYPING_MODIFICATION_DOCUMENT_PROPERTY = new Object();
+    
+    /**
+     * Instance of an element that can be used to obtain the text removed/inserted
+     * by a document modification.
+     * <br>
+     * The text is obtained by doing
+     * <code>DocumentEvent.getChange(MODIFICATION_TEXT_ELEMENT).toString()</code>.
+     * <br>
+     * The documents that want to support this need to insert the element change
+     * for the given element into the created document event.
+     */
+    public static final Element MODIFICATION_TEXT_ELEMENT = ModificationTextElement.INSTANCE;
+    
     
     private DocumentUtilities() {
         // No instances
@@ -116,7 +133,7 @@ public final class DocumentUtilities {
         doc.putProperty(PriorityDocumentListenerList.class, instance);
         return instance;
     }
-    
+
     /**
      * Mark that the ongoing document modification(s) will be caused
      * by user's typing.
@@ -164,6 +181,123 @@ public final class DocumentUtilities {
     public static boolean isTypingModification(Document doc) {
         Boolean b = (Boolean)doc.getProperty(TYPING_MODIFICATION_DOCUMENT_PROPERTY);
         return (b != null) ? b.booleanValue() : false;
+    }
+
+    /**
+     * Get text of the given document as char sequence.
+     * <br>
+     *
+     * @param doc document for which the charsequence is being obtained.
+     * @return non-null character sequence.
+     *  <br>
+     *  The returned character sequence should only be accessed under
+     *  document's readlock (or writelock).
+     */
+    public static CharSequence getText(Document doc) {
+        CharSequence text = (CharSequence)doc.getProperty(CharSequence.class);
+        if (text == null) {
+            text = new DocumentCharSequence(doc);
+            doc.putProperty(CharSequence.class, doc);
+        }
+        return text;
+    }
+    
+    /**
+     * Get text of the given document modification.
+     *
+     * @param evt document event describing either document insertion or removal
+     *  (change event type events will produce null result).
+     * @return text that was inserted/removed from the document by the given
+     *  document modification or null if that information is not provided
+     *  by that document event.
+     */
+    public static String getModificationText(DocumentEvent evt) {
+        DocumentEvent.ElementChange change = evt.getChange(MODIFICATION_TEXT_ELEMENT);
+        return (change != null) ? change.toString() : null;
+    }
+
+    /**
+     * Implementation of the character sequence for a generic document
+     * that does not provide its own implementation of character sequence.
+     */
+    private static final class DocumentCharSequence extends AbstractCharSequence.StringLike {
+        
+        private final Segment segment = new Segment();
+        
+        private final Document doc;
+        
+        DocumentCharSequence(Document doc) {
+            this.doc = doc;
+        }
+
+        public int length() {
+            return doc.getLength();
+        }
+
+        public synchronized char charAt(int index) {
+            try {
+                doc.getText(index, 1, segment);
+            } catch (BadLocationException e) {
+                throw new IndexOutOfBoundsException(e.getMessage()
+                    + " at offset=" + e.offsetRequested()); // NOI18N
+            }
+            return segment.array[segment.offset];
+        }
+
+    }
+    
+    /**
+     * Helper element to used for notification about removed/inserted text
+     * into the document.
+     */
+    private static final class ModificationTextElement implements Element {
+        
+        static final ModificationTextElement INSTANCE = new ModificationTextElement();
+        
+        public int getStartOffset() {
+            return 0;
+        }
+
+        public int getEndOffset() {
+            return 0;
+        }
+
+        public int getElementCount() {
+            return 0;
+        }
+
+        public int getElementIndex(int offset) {
+            return -1;
+        }
+
+        public Element getElement(int index) {
+            return null;
+        }
+
+        public boolean isLeaf() {
+            return true;
+        }
+
+        public Element getParentElement() {
+            return null;
+        }
+
+        public String getName() {
+            return "Helper element for modification text providing"; // NOI18N
+        }
+
+        public Document getDocument() {
+            return null;
+        }
+
+        public javax.swing.text.AttributeSet getAttributes() {
+            return null;
+        }
+        
+        public String toString() {
+            return getName();
+        }
+
     }
     
 }
