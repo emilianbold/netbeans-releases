@@ -508,6 +508,51 @@ class LayoutDragger implements LayoutConstants {
         }
     }
 
+    String[] positionCode() {
+        String[] code = new String[DIM_COUNT];
+        for (int i=0; i < DIM_COUNT; i++) {    
+            LayoutDragger.PositionDef position = bestPositions[i];
+            if (position != null) {
+                int alignment = position.alignment;
+                if (position.nextTo) { // adding next to
+                    code[i] = "nextTo" + dimensionCode(i) + alignmentCode(alignment); // NOI18N
+                } else { // adding aligned
+                    int x = movingSpace.positions[i][alignment];
+                    int posx = position.interval.getCurrentSpace().positions[i][alignment];
+                    if (x == posx) {
+                        code[i] = "align" + dimensionCode(i) + alignmentCode(alignment); // NOI18N
+                    } else {
+                        code[i] = "indent"; // NOI18N
+                    }
+                }
+            } else if (snappedToDefaultSize(i)) {
+                code[i] = "snappedToDefault" + dimensionCode(i); // NOI18N
+            }
+        }
+        if (code[0] == null) {
+            code[0] = code[1];
+            code[1] = null;
+        }
+        if (code[0] == null) {
+            code[0] = isResizing() ? "generalResizing" : "generalPosition"; // NOI18N
+        }
+        return code;
+    }
+
+    private static String dimensionCode(int dim) {
+        return (dim == HORIZONTAL) ? "Horizontal" : "Vertical"; // NOI18N
+    }
+
+    private static String alignmentCode(int alignment) {
+        String code = null;
+        switch (alignment) {
+            case LEADING: code = "Leading"; break; // NOI18N
+            case TRAILING: code = "Trailing"; break; // NOI18N
+            case BASELINE: code = "Baseline"; break; // NOI18N
+        }
+        return code;
+    }
+
     // -----
     // finding position in the layout
 

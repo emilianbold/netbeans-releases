@@ -129,7 +129,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                 new PropertyDescriptor(FormLoaderSettings.PROP_FOLD_GENERATED_CODE,
                                        FormLoaderSettings.class,
                                        "getFoldGeneratedCode", // NOI18N
-                                       "setFoldGeneratedCode") // NOI18N
+                                       "setFoldGeneratedCode"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_ASSISTANT_SHOWN,
+                                       FormLoaderSettings.class,
+                                       "getAssistantShown", // NOI18N
+                                       "setAssistantShown") // NOI18N
             };
 
             ResourceBundle bundle = FormUtils.getBundle();
@@ -213,6 +217,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[++i].setDisplayName(bundle.getString("PROP_FOLD_GENERATED_CODE")); // NOI18N
             desc[i].setShortDescription(bundle.getString("HINT_FOLD_GENERATED_CODE")); // NOI18N
             desc[i].setExpert(true);
+
+            desc[++i].setDisplayName(bundle.getString("PROP_ASSISTANT_SHOWN")); // NOI18N
+            desc[i].setShortDescription(bundle.getString("HINT_ASSISTANT_SHOWN")); // NOI18N
+            desc[i].setPreferred(true);
 
             return desc;
         }

@@ -39,6 +39,7 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 
+import org.netbeans.modules.form.assistant.*;
 import org.netbeans.modules.form.wizard.ConnectionWizard;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 import org.netbeans.modules.form.layoutdesign.*;
@@ -51,7 +52,7 @@ import org.netbeans.modules.form.palette.PaletteUtils;
  * ComponentLayer (presenting the components, not accessible to the user).
  *
  * FormDesigner
- *  +- FormToolBar
+ *  +- AssistantView
  *  +- JScrollPane
  *      +- JLayeredPane
  *          +- HandleLayer
@@ -109,6 +110,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private ExplorerManager explorerManager;
     private FormProxyLookup lookup;
 
+    private AssistantView assistantView;
+    private PropertyChangeListener settingsListener;
+
     /** The icons for FormDesigner */
     private static String iconURL =
         "org/netbeans/modules/form/resources/formDesigner.gif"; // NOI18N
@@ -127,13 +131,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         Color borderColor = settings.getFormDesignerBorderColor();
 
         JPanel loadingPanel = new JPanel();
-        loadingPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 12, 12));
+        loadingPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 12, 12 + (settings.getAssistantShown() ? 40 : 0)));
         loadingPanel.setBackground(backgroundColor);
         JLabel loadingLbl = new JLabel(FormUtils.getBundleString("LBL_FormLoading")); // NOI18N
         loadingLbl.setOpaque(true);
         loadingLbl.setPreferredSize(new Dimension(410,310));
         loadingLbl.setHorizontalAlignment(SwingConstants.CENTER);
-        loadingPanel.add(loadingLbl);        
+        loadingPanel.add(loadingLbl);
         loadingLbl.setBorder(new CompoundBorder(new LineBorder(borderColor, 5),
             new EmptyBorder(new Insets(6, 6, 6, 6))));
         add(loadingPanel, BorderLayout.CENTER);
@@ -187,6 +191,19 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         layeredPane.add(designPanel, new Integer(1000));
         layeredPane.add(handleLayer, new Integer(1001));
 
+        formModel = formEditor.getFormModel();
+
+        FormLoaderSettings settings = FormLoaderSettings.getInstance();
+        updateAssistant();
+        settingsListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (FormLoaderSettings.PROP_ASSISTANT_SHOWN.equals(evt.getPropertyName())) {
+                    updateAssistant();
+                }
+            }
+        };
+        settings.addPropertyChangeListener(settingsListener);
+
         JScrollPane scrollPane = new JScrollPane(layeredPane);
         scrollPane.setBorder(null); // disable border, winsys will handle borders itself
         scrollPane.getVerticalScrollBar().setUnitIncrement(5); // Issue 50054
@@ -223,9 +240,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             });            
             hasPropertyChangeListener = true;
         }
-        
-        
-        formModel = formEditor.getFormModel();
+
         if (formModelListener == null)
             formModelListener = new FormListener();
         formModel.addFormModelListener(formModelListener);
@@ -306,6 +321,22 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         }
         lookup.setSubLookups(lookups);
     }
+
+    private void updateAssistant() {
+        if (FormLoaderSettings.getInstance().getAssistantShown()) {
+            AssistantModel assistant = FormEditor.getAssistantModel(formModel);
+            assistantView = new AssistantView(assistant);
+            assistant.setContext("select"); // NOI18N
+            add(assistantView, BorderLayout.NORTH);
+        } else {
+            if (assistantView != null) {
+                remove(assistantView);
+                assistantView = null;
+            }
+        }
+        revalidate();
+    }
+
 
     // ------
     // important getters
@@ -583,6 +614,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         handleLayer.endDragging(null);
         updateResizabilityActions();
+        AssistantModel aModel = FormEditor.getAssistantModel(formModel);
+        switch (mode) {
+            case MODE_CONNECT: aModel.setContext("connectSource"); break; // NOI18N
+            case MODE_SELECT: aModel.setContext("select"); break; // NOI18N
+        }
     }
 
     int getDesignerMode() {
@@ -1207,6 +1243,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     void connectBean(RADComponent metacomp, boolean showDialog) {
         if (connectionSource == null) {
             connectionSource = metacomp;
+            FormEditor.getAssistantModel(formModel).setContext("connectTarget"); // NOI18N
             handleLayer.repaint();
         }
         else {
@@ -1220,8 +1257,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             connectionTarget = metacomp;
             handleLayer.repaint();
             if (showDialog) {
-                if (connectionTarget != null) 
+                if (connectionTarget != null)  {
+                    FormEditor.getAssistantModel(formModel).setContext("connectWizard"); // NOI18N
                     createConnection(connectionSource, connectionTarget);
+                }
 //                resetConnection();
                 toggleSelectionMode();
             }
@@ -1499,6 +1538,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 formModel.removeFormModelListener(formModelListener);
             topDesignComponent = null;
             formModel = null;
+        }
+        if (settingsListener != null) {
+            FormLoaderSettings.getInstance().removePropertyChangeListener(settingsListener);
         }
     }
 

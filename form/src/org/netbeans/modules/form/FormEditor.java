@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.text.Document;
+import org.netbeans.modules.form.assistant.AssistantModel;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.spi.palette.PaletteController;
 
@@ -70,6 +71,9 @@ public class FormEditor {
     
     /** Table of opened FormModel instances (FormModel to FormEditor map) */
     private static Map openForms = new Hashtable();
+
+    /* Maps form model to assistant model. */
+    private static Map formModelToAssistant = new WeakHashMap();
     
     /** List of floating windows - must be closed when the form is closed. */
     private List floatingWindows;
@@ -517,6 +521,7 @@ public class FormEditor {
             formModel.fireFormToBeClosed();
             
             openForms.remove(formModel);
+            formModelToAssistant.remove(formModel);
             formLoaded = false;
             
             // remove nodes hierarchy
@@ -833,7 +838,17 @@ public class FormEditor {
             codeGen.regenerateCode();                                                    
         }
     }
-    
+
+    public static synchronized AssistantModel getAssistantModel(FormModel formModel) {
+        assert (formModel != null);
+        AssistantModel assistant = (AssistantModel)formModelToAssistant.get(formModel);
+        if (assistant == null) {
+            assistant = new AssistantModel();
+            formModelToAssistant.put(formModel, assistant);
+        }
+        return assistant;
+    }
+
     /** @return FormDesigner for given form */
     public static FormDesigner getFormDesigner(FormModel formModel) {
         FormEditor formEditor = (FormEditor) openForms.get(formModel);

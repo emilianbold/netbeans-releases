@@ -41,6 +41,7 @@ import org.openide.util.NbBundle;
  */
 public final class FormEditorCustomizer extends JPanel implements  ActionListener, ChangeListener {
     private JCheckBox cbFold = new JCheckBox ();
+    private JCheckBox cbAssistant = new JCheckBox();
     private JComboBox cbModifier = new JComboBox ();
     private JRadioButton rbGenerateLocals = new JRadioButton ();
     private JRadioButton rbGenerateFields = new JRadioButton ();
@@ -53,6 +54,8 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         ButtonGroup group = new ButtonGroup ();
         loc(cbFold, "Fold"); // NOI18N
         cbFold.setBackground (Color.white);
+        loc(cbAssistant, "Assistant"); // NOI18N
+        cbAssistant.setBackground(Color.white);
         loc(rbGenerateLocals, "Generate_Locals"); // NOI18N
         rbGenerateLocals.setBackground (Color.white);
         group.add (rbGenerateLocals);
@@ -75,6 +78,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         variableModifierLabel.setToolTipText(loc("HINT_VARIABLES_MODIFIER")); // NOI18N
         listenerStyleLabel.setToolTipText(loc("HINT_LISTENER_GENERATION_STYLE")); // NOI18N
         cbFold.setToolTipText(loc("HINT_FOLD_GENERATED_CODE")); // NOI18N
+        cbAssistant.setToolTipText(loc("HINT_ASSISTANT_SHOWN")); // NOI18N
 
         variableModifierLabel.setLabelFor(cbModifier);
         listenerStyleLabel.setLabelFor(cbListenerStyle);
@@ -93,6 +97,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                     .add(rbGenerateLocals)
                     .add(rbGenerateFields)
                     .add(cbFold)
+                    .add(cbAssistant)
                     .add(cbModifier, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(cbListenerStyle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -115,12 +120,14 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                     .add(cbListenerStyle))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(cbFold)
+                .add(cbAssistant)
                 .addContainerGap()
         );
         setBorder(new TitledBorder(loc("Code_Generation"))); // NOI18N
         setBackground (Color.white);
 
         cbFold.addActionListener (this);
+        cbAssistant.addActionListener(this);
         cbListenerStyle.addActionListener (this);
         cbModifier.addActionListener (this);
         rbGenerateFields.addActionListener (this);
@@ -147,6 +154,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         FormLoaderSettings options = FormLoaderSettings.getInstance ();
         
         cbFold.setSelected (options.getFoldGeneratedCode ());
+        cbAssistant.setSelected(options.getAssistantShown());
         rbGenerateLocals.setSelected (options.getVariablesLocal ());
         rbGenerateFields.setSelected (!options.getVariablesLocal ());
         if ((options.getVariablesModifier () & Modifier.PUBLIC) > 0)
@@ -168,6 +176,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         FormLoaderSettings options = FormLoaderSettings.getInstance ();
         
         options.setFoldGeneratedCode (cbFold.isSelected ());
+        options.setAssistantShown(cbAssistant.isSelected());
         options.setListenerGenerationStyle (cbListenerStyle.getSelectedIndex ());
         options.setVariablesLocal (rbGenerateLocals.isSelected ());
         switch (cbModifier.getSelectedIndex ()) {

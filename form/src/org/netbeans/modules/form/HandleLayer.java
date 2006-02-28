@@ -878,6 +878,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             StatusDisplayer.getDefault().setStatusText(""); // NOI18N
         }
 
+        FormEditor.getAssistantModel(getFormModel()).setContext("select"); // NOI18N
         return done;
     }
 
@@ -1924,6 +1925,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                                                       ((modifiers & InputEvent.ALT_MASK) == 0),
                                                       ((modifiers & InputEvent.CTRL_MASK) != 0),
                                                       movingBounds);
+                String[] position = formDesigner.getLayoutDesigner().positionCode();
+                FormEditor.getAssistantModel(getFormModel()).setContext(position[0], position[1]);
             }
             else if (oldDrag && targetContainer != null && targetContainer.getLayoutSupport() != null) {
                 oldMove(p);
@@ -2219,6 +2222,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
         void oldMove(Point p) {
             oldDragger.drag(p, targetContainer);
+            FormEditor.getAssistantModel(getFormModel()).setContext("generalPosition"); // NOI18N
         }
 
         void oldPaintFeedback(Graphics2D g, Graphics gg, int index) {
@@ -2443,6 +2447,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
         void oldMove(Point p) {
             oldDragger.drag(p, targetContainer);
+            FormEditor.getAssistantModel(getFormModel()).setContext("generalResizing"); // NOI18N
         }
 
         void oldPaintFeedback(Graphics2D g, Graphics gg, int index) {
@@ -2638,6 +2643,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             constraints = laysup.getNewConstraints(cont, contDel,
                                                    showingComponents[0], -1,
                                                    posInCont, posInComp);
+            FormEditor.getAssistantModel(getFormModel()).setContext("generalPosition"); // NOI18N
         }
 
         void oldPaintFeedback(Graphics2D g, Graphics gg, int index) {

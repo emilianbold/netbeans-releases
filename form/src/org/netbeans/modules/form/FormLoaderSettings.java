@@ -83,6 +83,8 @@ public class FormLoaderSettings extends SystemOption {
     public static final String PROP_PALETTE_IN_TOOLBAR = "toolBarPalette"; // NOI18N
     /** Property name of the foldGeneratedCode property. */
     public static final String PROP_FOLD_GENERATED_CODE = "foldGeneratedCode"; // NOI18N
+    /** Property name of the assistantShown property. */
+    public static final String PROP_ASSISTANT_SHOWN = "assistantShown"; // NOI18N
 
 //    public static final String PROP_CONTAINER_BEANS = "containerBeans"; // NOI18N
 
@@ -144,6 +146,9 @@ public class FormLoaderSettings extends SystemOption {
 
     /** If true then the generated code will be folded. */
     private static boolean foldGeneratedCode = true;
+
+    /** If true then the assistant is show in the designer. */
+    private static boolean assistantShown = true;
 
     /** Array of package names to search for property editors used in Form Editor */
     private static String [] editorSearchPath =
@@ -529,6 +534,20 @@ public class FormLoaderSettings extends SystemOption {
         Boolean oldValue = foldGeneratedCode ? Boolean.TRUE : Boolean.FALSE;
         foldGeneratedCode = value;
         firePropertyChange(PROP_FOLD_GENERATED_CODE,
+                           oldValue, 
+                           value ? Boolean.TRUE : Boolean.FALSE);
+    }
+
+    /** Getter for the assistantShown option */
+    public boolean getAssistantShown() {
+        return assistantShown;
+    }
+
+    /** Setter for the foldGeneratedCode option */
+    public void setAssistantShown(boolean value) {
+        Boolean oldValue = assistantShown ? Boolean.TRUE : Boolean.FALSE;
+        assistantShown = value;
+        firePropertyChange(PROP_ASSISTANT_SHOWN,
                            oldValue, 
                            value ? Boolean.TRUE : Boolean.FALSE);
     }

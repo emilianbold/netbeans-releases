@@ -3004,6 +3004,10 @@ public class LayoutDesigner implements LayoutConstants {
         }
     }
 
+    public String[] positionCode() {
+        return dragger.positionCode();
+    }
+
     // -----
     // auxiliary fields holding temporary objects used frequently
 
