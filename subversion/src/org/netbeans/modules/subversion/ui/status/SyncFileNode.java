@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion.ui.status;
 
+import java.io.IOException;
 import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -48,6 +49,8 @@ public class SyncFileNode extends AbstractNode {
     
     private String htmlDisplayName;
     private String sticky;
+
+    private RequestProcessor.Task repoload;
 
     private final VersioningPanel panel;
 
@@ -172,15 +175,33 @@ public class SyncFileNode extends AbstractNode {
 
         public PathProperty() {
             super(COLUMN_NAME_PATH, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2003"), NbBundle.getMessage(SyncFileNode.class, "BK2004"));
-            shortPath = SvnUtils.getRelativePath(node.getFile());
-            if (shortPath == null) {
-                shortPath = "[not in repository]";
-            }
-            setValue("sortkey", shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
+            setValue("sortkey", "\u65000\t" + SyncFileNode.this.getName()); // NOI18N
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
+            if (shortPath == null) {
+                Runnable run = new Runnable() {
+                    public void run() {
+                        shortPath = SvnUtils.getRelativePath(node.getFile());
+                        if (shortPath == null) {
+                            shortPath = "[not in repository]";
+                        }
+                        setValue("sortkey", shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
+                        firePropertyChange(COLUMN_NAME_PATH, null, null);
+                    }
+                };
+                repoload = Subversion.getInstance().postRequest(run);
+                return "Asking remote repository...";
+            }
             return shortPath;
+        }
+    }
+
+    // XXX it's not probably called
+    public void destroy() throws IOException {
+        super.destroy();
+        if (repoload != null) {
+            repoload.cancel();
         }
     }
     

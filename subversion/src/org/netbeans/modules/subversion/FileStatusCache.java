@@ -215,7 +215,7 @@ public class FileStatusCache implements ISVNNotifyListener {
                 status = null;
             }
         } catch (SVNClientException e) {
-            if (e.getLocalizedMessage().indexOf("(Not a versioned resource)") == -1) {  // NOI18N
+            if (e.getMessage().indexOf("(Not a versioned resource)") == -1) {  // NOI18N
                 // no or damaged entries
                 // or ignored file
                 e.printStackTrace();

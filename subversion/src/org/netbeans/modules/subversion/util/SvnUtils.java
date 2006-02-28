@@ -378,69 +378,133 @@ public class SvnUtils {
     }
 
     /**
-     * Translate to relative path to repository root
+     * Compute relative path to repository root.
+     * For not yet versioned files guess the URL
+     * from parent context.
      *
-     * @return relative repositpry path or null for unknown
-     */
+     * <p>I/O intensive avoid calling it frnm AWT.
+     *
+     * @return the repository url or null for unknown
+     */    
     public static String getRelativePath(File file) {
         String repositoryPath = null;
-        try {
-            SvnClient client = Subversion.getInstance().getClient();
-            // XXX won't get an valid info or an info at all if the file is new
-            //     - search parents for the first repository url you find, 
-            //       and localy check if this is a known repository url (settings, or config/srvers file, ...)            
-            ISVNInfo info = client.getInfoFromWorkingCopy(file);  
-            SVNUrl fileURL = info.getUrl();
-            if (fileURL == null) {  // on Windows for locally new files
-                return null;
+        SvnClient client = Subversion.getInstance().getClient();
+
+        List path = new ArrayList();
+        SVNUrl repositoryURL = null;
+        while (Subversion.getInstance().isManaged(file)) {
+
+            ISVNInfo info = null;
+            try {
+                info = client.getInfoFromWorkingCopy(file);
+            } catch (SVNClientException ex) {
+                if (ex.getMessage().indexOf("(Not a versioned resource)") == -1) {  // NOI18N
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
             }
-            SVNUrl repositoryURL = info.getRepository();
-            if (repositoryURL == null) {                
-                // checked out with 1.2 client
-                // XXX - IMPORTANT! this hack won't work as long you get the client by 
-                //       calling the getClient() method and connecting through a PROXY
-                //     - use getClient(SVNUrl, *) to obtain a client properly configured for the given url
-                repositoryURL = client.getInfo(fileURL).getRepository();
+
+            if (info != null) {
+                SVNUrl fileURL = info.getUrl();
+                repositoryURL = info.getRepository();
+                int status = Subversion.getInstance().getStatusCache().getStatus(file).getStatus();
+                if (repositoryURL == null && (status & FileInformation.STATUS_MANAGED) != 0) {
+                    // checked out with 1.2 client
+                    // XXX - IMPORTANT! this hack won't work as long you get the client by
+                    //       calling the getClient() method and connecting through a PROXY
+                    //     - use getClient(SVNUrl, *) to obtain a client properly configured for the given url
+                    try {
+                        repositoryURL = client.getInfo(fileURL).getRepository();
+                    } catch (SVNClientException ex) {
+                        if (ex.getMessage().indexOf("(Not a versioned resource)") == -1) {  // NOI18N
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        }
+                    }
+                }
+
+                if (fileURL != null && repositoryURL !=  null) {
+                    String fileLink = fileURL.toString();
+                    String repositoryLink = repositoryURL.toString();
+                    repositoryPath = fileLink.substring(repositoryLink.length());
+
+                    Iterator it = path.iterator();
+                    StringBuffer sb = new StringBuffer();
+                    while (it.hasNext()) {
+                        String segment = (String) it.next();
+                        sb.append("/" + segment);
+                    }
+                    repositoryPath += sb.toString();
+                    break;
+                }
             }
-            String fileLink = fileURL.toString();
-            String repositoryLink = repositoryURL.toString();
-            repositoryPath = fileLink.substring(repositoryLink.length());
-        } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+
+            path.add(0, file.getName());
+            file = file.getParentFile();
+
         }
                 
         return repositoryPath;
     }
 
     /**
-     * Returns the repository root for the given file
+     * Returns the repository root for the given file.
+     * For not yet versioned files guess the URL
+     * from parent context.
+     *
+     * <p>I/O intensive avoid calling it frnm AWT.
      *
      * @return the repository url or null for unknown
-     * // XXX merge with getRelativePath ???
      */    
     public static SVNUrl getRepositoryUrl(File file) {        
         String repositoryPath = null;
-        try {
-            SvnClient client = Subversion.getInstance().getClient();
-            ISVNInfo info = client.getInfoFromWorkingCopy(file);  // XXX info does not contain repository URL
-            // XXX won't get an valid info or an info at all if the file is new
-            //     - search parents for the first repository url you find, 
-            //       and localy check if this is a known repository url (settings, or config/srvers file, ...)
-            SVNUrl fileURL = info.getUrl();
-            SVNUrl repositoryURL = info.getRepository();
-            if (repositoryURL == null) {
-                // checked out with 1.2 client 
-                // XXX - IMPORTANT! this hack won't work as long you get the client by 
-                //       calling the getClient() method and connecting through a PROXY
-                //     - use getClient(SVNUrl, *) to obtain a client properly configured for the given url                
-                //       - 
-                repositoryURL = client.getInfo(fileURL).getRepository();
-            }  
-            return repositoryURL;
-        } catch (SVNClientException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }                
-        return null;
+        SvnClient client = Subversion.getInstance().getClient();
+        List path = new ArrayList();
+        SVNUrl repositoryURL = null;
+        while (Subversion.getInstance().isManaged(file)) {
+            ISVNInfo info = null;
+            try {
+                info = client.getInfoFromWorkingCopy(file);
+            } catch (SVNClientException ex) {
+                if (ex.getMessage().indexOf("(Not a versioned resource)") == -1) {  // NOI18N
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+
+            if (info != null) {
+                SVNUrl fileURL = info.getUrl();
+                repositoryURL = info.getRepository();
+                int status = Subversion.getInstance().getStatusCache().getStatus(file).getStatus();
+                if (repositoryURL == null && (status & FileInformation.STATUS_MANAGED) != 0) {
+                    // checked out with 1.2 client
+                    // XXX - IMPORTANT! this hack won't work as long you get the client by
+                    //       calling the getClient() method and connecting through a PROXY
+                    //     - use getClient(SVNUrl, *) to obtain a client properly configured for the given url
+                    //       -
+                    try {
+                        repositoryURL = client.getInfo(fileURL).getRepository();
+                    } catch (SVNClientException ex) {
+                        if (ex.getMessage().indexOf("(Not a versioned resource)") == -1) {  // NOI18N
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        }
+                    }
+                }
+
+                if (repositoryURL != null) {
+                    Iterator it = path.iterator();
+                    StringBuffer sb = new StringBuffer();
+                    while (it.hasNext()) {
+                        String segment = (String) it.next();
+                        sb.append("/" + segment);
+                    }
+                    repositoryURL.appendPath(sb.toString());
+                    break;
+                }
+            }
+
+            path.add(0, file.getName());
+            file = file.getParentFile();
+
+        }
+        return repositoryURL;
     }
 
     /**
