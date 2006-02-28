@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,18 +26,16 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.jar.JarFile;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.openide.ErrorManager;
-
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.options.SystemOption;
-import org.openide.util.NbBundle;
-
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.util.DriverListUtil;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.options.SystemOption;
+import org.openide.util.NbBundle;
 
 /** Root system option. It stores a list of available drivers and open connections.
 * These connections will be restored at startup, drivers will be placed in Drivers
@@ -132,7 +130,7 @@ public class DatabaseOption extends SystemOption {
 
     /** Description of object */
     public String toString() {
-        return drivers.size() + " drivers, " + connections.size() + " connections"; //NOI18N
+        return (drivers != null ? drivers.size() : 0) + " drivers, " + (connections != null ? connections.size() : 0) + " connections"; //NOI18N
     }
     
     /** Writes data
