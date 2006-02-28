@@ -241,6 +241,10 @@ public final class CompletionLayout {
         }
     }
     
+    CompletionPopup testGetCompletionPopup() {
+        return completionPopup;
+    }
+    
     private static final class CompletionPopup extends CompletionLayoutPopup {
         
         private CompletionScrollPane getCompletionScrollPane() {

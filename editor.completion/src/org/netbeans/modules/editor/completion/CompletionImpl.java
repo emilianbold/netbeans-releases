@@ -64,8 +64,8 @@ import org.openide.util.NbBundle;
 public class CompletionImpl extends MouseAdapter implements DocumentListener,
 CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener, SettingsChangeListener {
     
-    private static final boolean debug
-            = Boolean.getBoolean("netbeans.debug.editor.completion");
+    private static final boolean debug = true;
+            //= Boolean.getBoolean("netbeans.debug.editor.completion");
 
     private static CompletionImpl singleton = null;
 
@@ -1189,6 +1189,18 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
     }
 
+    // ..........................................................................
+    
+    CompletionLayout testGetCompletionLayout() {
+        return layout;
+    }
+    
+    void testSetActiveComponent(JTextComponent component) {
+        activeComponent = new WeakReference(component);
+    }
+    
+    // ..........................................................................
+    
     private final class CompletionShowAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
             showCompletion(true, false);

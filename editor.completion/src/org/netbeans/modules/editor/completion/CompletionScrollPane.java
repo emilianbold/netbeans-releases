@@ -65,6 +65,8 @@ public class CompletionScrollPane extends JScrollPane {
 
     private CompletionJList view;
     
+    private List dataObj;
+    
     private JLabel topLabel;
     
     public CompletionScrollPane(JTextComponent editorComponent,
@@ -89,6 +91,7 @@ public class CompletionScrollPane extends JScrollPane {
     }
     
     public void setData(List data, String title) {
+        dataObj = data;
         view.setData(data);
         setTitle(title);
         // Force the viewport preferred size to be taken into account
@@ -206,6 +209,10 @@ public class CompletionScrollPane extends JScrollPane {
         BaseKit.endLineAction, component);
     }
 
+    List testGetData() {
+        return dataObj;
+    }
+    
     private class CompletionPaneAction extends AbstractAction {
         private int action;
 
