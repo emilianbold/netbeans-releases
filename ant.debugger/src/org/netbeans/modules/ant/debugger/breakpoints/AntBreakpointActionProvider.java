@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,7 +32,6 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
-
 
 /**
  *
@@ -111,7 +110,9 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport
             caret.getDot ()
         );
         try {
-            return lineCookie.getLineSet ().getCurrent (lineNumber);
+            Line.Set lineSet = lineCookie.getLineSet();
+            assert lineSet != null : lineCookie;
+            return lineSet.getCurrent(lineNumber);
         } catch (IndexOutOfBoundsException ex) {
             return null;
         }
