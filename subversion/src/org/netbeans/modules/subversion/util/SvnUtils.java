@@ -483,37 +483,36 @@ public class SvnUtils {
      * @return status constant suitable for 'by importance' comparators
      */ 
     public static int getComparableStatus(int status) {
-        switch (status) {
-        case FileInformation.STATUS_VERSIONED_CONFLICT:
+        if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
             return 0;
-        case FileInformation.STATUS_VERSIONED_MERGE:
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_MERGE)) {
             return 1;
-        case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
             return 10;
-        case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
             return 11;
-        case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
+        } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
             return 12;
-        case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             return 13;
-        case FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY:
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
             return 14;
-        case FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY:
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY)) {
             return 30;
-        case FileInformation.STATUS_VERSIONED_NEWINREPOSITORY:
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
             return 31;
-        case FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY:
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY)) {
             return 32;
-        case FileInformation.STATUS_VERSIONED_UPTODATE:
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
             return 50;
-        case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
+        } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
             return 100;
-        case FileInformation.STATUS_NOTVERSIONED_NOTMANAGED:
+        } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NOTMANAGED)) {
             return 101;
-        case FileInformation.STATUS_UNKNOWN:
+        } else if (status == FileInformation.STATUS_UNKNOWN) {
             return 102;
-        default:
-            throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
+        } else {
+            throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
         }
     }
 

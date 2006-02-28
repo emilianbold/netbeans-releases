@@ -290,11 +290,15 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
         for (int i = 0; i < fnodes.length; i++) {
             if (Thread.interrupted()) return null;
             SvnFileNode fnode = fnodes[i];
-            nodes[i] = new SyncFileNode(fnode);
+            nodes[i] = new SyncFileNode(fnode, this);
         }
         return nodes;
     }
-    
+
+    public int getDisplayStatuses() {
+        return displayStatuses;
+    }
+
     /**
      * Performs the "cvs commit" command on all diplayed roots plus "cvs add" for files that are not yet added.
      */ 
@@ -361,7 +365,15 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
             File[] roots = context.getRootFiles();
             for (int i=0; i<roots.length; i++) {
                 File root = roots[i];
-                client.getStatus(root, true, false);  // cache refires events
+                ISVNStatus[] statuses = client.getStatus(root, true, false, true);  // cache refires events
+                for (int s = 0; s < statuses.length; s++) {
+                    ISVNStatus status = statuses[s];
+                    FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                    File file = status.getFile();
+                    SVNStatusKind kind = status.getRepositoryTextStatus();
+//                    System.err.println(" File: " + file.getAbsolutePath() + " repo-status:" + kind );
+                    cache.refresh(file, status);
+                }
             }
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().notify(ex);

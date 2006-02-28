@@ -163,37 +163,42 @@ public class Annotator {
         if (textAnnotation.length() > 0) {
             textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation); 
         }
-        
-        switch (status) {
-        case FileInformation.STATUS_UNKNOWN:
-        case FileInformation.STATUS_NOTVERSIONED_NOTMANAGED:
-            return name;
-        case FileInformation.STATUS_VERSIONED_UPTODATE:
-            return uptodateFormat.format(new Object [] { name, textAnnotation });
-        case FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY:
-            return modifiedLocallyFormat.format(new Object [] { name, textAnnotation });
-        case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY: 
-            return newLocallyFormat.format(new Object [] { name, textAnnotation });
-        case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
-            return removedLocallyFormat.format(new Object [] { name, textAnnotation });
-        case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
-            return deletedLocallyFormat.format(new Object [] { name, textAnnotation });
-        case FileInformation.STATUS_VERSIONED_NEWINREPOSITORY:
-            return newInRepositoryFormat.format(new Object [] { name, textAnnotation });
-        case FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY:
-            return modifiedInRepositoryFormat.format(new Object [] { name, textAnnotation });
-        case FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY:
-            return removedInRepositoryFormat.format(new Object [] { name, textAnnotation });
-        case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
-            return addedLocallyFormat.format(new Object [] { name, textAnnotation });
-        case FileInformation.STATUS_VERSIONED_MERGE:
-            return mergeableFormat.format(new Object [] { name, textAnnotation });
-        case FileInformation.STATUS_VERSIONED_CONFLICT:
+
+        // aligned with SvnUtils.getComparableStatus
+
+        if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
             return conflictFormat.format(new Object [] { name, textAnnotation });
-        case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_MERGE)) {
+            return mergeableFormat.format(new Object [] { name, textAnnotation });
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
+            return deletedLocallyFormat.format(new Object [] { name, textAnnotation });
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
+            return removedLocallyFormat.format(new Object [] { name, textAnnotation });
+        } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
+            return newLocallyFormat.format(new Object [] { name, textAnnotation });
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
+            return addedLocallyFormat.format(new Object [] { name, textAnnotation });
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
+            return modifiedLocallyFormat.format(new Object [] { name, textAnnotation });
+
+        // repository changes - lower annotator priority
+
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY)) {
+            return removedInRepositoryFormat.format(new Object [] { name, textAnnotation });
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
+            return newInRepositoryFormat.format(new Object [] { name, textAnnotation });
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY)) {
+            return modifiedInRepositoryFormat.format(new Object [] { name, textAnnotation });
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
+            return uptodateFormat.format(new Object [] { name, textAnnotation });
+        } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
             return excludedFormat.format(new Object [] { name, textAnnotation });
-        default:
-            throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
+        } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NOTMANAGED)) {
+            return name;
+        } else if (status == FileInformation.STATUS_UNKNOWN) {
+            return name;
+        } else {
+            throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
         }
     }
 
@@ -258,29 +263,43 @@ public class Annotator {
             textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation);
         }
         
-        switch (status) {
-        case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
-        case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
-        case FileInformation.STATUS_VERSIONED_NEWINREPOSITORY:
-        case FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY:
-        case FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY:
-        case FileInformation.STATUS_NOTVERSIONED_NOTMANAGED:
-        case FileInformation.STATUS_VERSIONED_MERGE:
-        case FileInformation.STATUS_UNKNOWN:
-        case FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY:
-        case FileInformation.STATUS_VERSIONED_CONFLICT:
+        if (status == FileInformation.STATUS_UNKNOWN) {
             return name;
-        case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY: 
-        case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
-        case FileInformation.STATUS_VERSIONED_UPTODATE:
+        } else if (match(status, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
+            return name;
+        } else if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
             return uptodateFormat.format(new Object [] { name, textAnnotation });
-        case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
+        } else if (match(status, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
+            return uptodateFormat.format(new Object [] { name, textAnnotation });
+        } else if (match(status, FileInformation.STATUS_VERSIONED_UPTODATE)) {
+            return uptodateFormat.format(new Object [] { name, textAnnotation });
+        } else if (match(status, FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
             return excludedFormat.format(new Object [] { name, textAnnotation });
-        default:
+        } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
+            return name;
+        } else if (match(status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
+            return name;
+        } else if (match(status, FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY)) {
+            return name;
+        } else if (match(status, FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY)) {
+            return name;
+        } else if (match(status, FileInformation.STATUS_NOTVERSIONED_NOTMANAGED)) {
+            return name;
+        } else if (match(status, FileInformation.STATUS_VERSIONED_MERGE)) {
+            return name;
+        } else if (match(status, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
+            return name;
+        } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
+            return name;
+        } else {
             throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
         }
     }
-    
+
+    private static boolean match(int status, int mask) {
+        return (status & mask) != 0;
+    }
+
     private String htmlEncode(String name) {
         if (name.indexOf('<') == -1) return name;
         return lessThan.matcher(name).replaceAll("&lt;"); // NOI18N

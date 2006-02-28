@@ -240,59 +240,82 @@ public class FileInformation implements Serializable {
     /**
      * Returns localized text representation of status.
      * 
-     * @return
+     * @return status name, for multistatuses prefers local
+     * status name.
      */ 
     public String getStatusText() {
+        return getStatusText(~0);
+    }    
+
+    /**
+     * Returns localized text representation of status.
+     *
+     * @param displayStatuses statuses bitmask
+     *
+     * @return status name, for multistatuses prefers local
+     * status name, for masked <tt>""</tt>.
+     */
+    public String getStatusText(int displayStatuses) {
+        int status = this.status & displayStatuses;
         ResourceBundle loc = NbBundle.getBundle(FileInformation.class);
         if (status == FileInformation.STATUS_UNKNOWN) {
             return loc.getString("CTL_FileInfoStatus_Unknown");            
-        } else if (status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+        } else if (match(status, FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
             return loc.getString("CTL_FileInfoStatus_Excluded");
-        } else if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+        } else if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
             return loc.getString("CTL_FileInfoStatus_NewLocally");
-        } else if (status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
+        } else if (match(status, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             if (entry != null && entry.isCopied()) {
                 return loc.getString("CTL_FileInfoStatus_AddedLocallyCopied");
             }
             return loc.getString("CTL_FileInfoStatus_AddedLocally");
-        } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
+        } else if (match(status, FileInformation.STATUS_VERSIONED_UPTODATE)) {
             return loc.getString("CTL_FileInfoStatus_UpToDate");
-        } else if (status == FileInformation.STATUS_VERSIONED_NEWINREPOSITORY) {
-            return loc.getString("CTL_FileInfoStatus_NewInRepository");
-        } else if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
-            return loc.getString("CTL_FileInfoStatus_RemovedLocally");
-        } else if (status == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) {
-            return loc.getString("CTL_FileInfoStatus_DeletedLocally");
-        } else if (status == FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY) {
-            return loc.getString("CTL_FileInfoStatus_ModifiedLocally");
-        } else if (status == FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY) {
-            return loc.getString("CTL_FileInfoStatus_ModifiedInRepository");
-        } else if (status == FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY) {
-            return loc.getString("CTL_FileInfoStatus_RemovedInRepository");
-        } else if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+        } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
             return loc.getString("CTL_FileInfoStatus_Conflict");
-        } else if (status == FileInformation.STATUS_VERSIONED_MERGE) {
-            return loc.getString("CTL_FileInfoStatus_Merge");
+        } else if (match(status, FileInformation.STATUS_VERSIONED_MERGE)) {
+            return loc.getString("CTL_FileInfoStatus_Merge");            
+        } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
+            return loc.getString("CTL_FileInfoStatus_DeletedLocally");
+        } else if (match(status, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
+            return loc.getString("CTL_FileInfoStatus_RemovedLocally");
+        } else if (match(status, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
+            return loc.getString("CTL_FileInfoStatus_ModifiedLocally");
+
+        } else if (match(status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
+            return loc.getString("CTL_FileInfoStatus_NewInRepository");
+        } else if (match(status, FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY)) {
+            return loc.getString("CTL_FileInfoStatus_ModifiedInRepository");
+        } else if (match(status, FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY)) {
+            return loc.getString("CTL_FileInfoStatus_RemovedInRepository");
         } else {
             return "";   // NOI18N                     
         }
     }    
 
+    /**
+     * @return short status name for local changes, for remote
+     * changes returns <tt>""</tt>
+     */
     public String getShortStatusText() {
         ResourceBundle loc = NbBundle.getBundle(FileInformation.class);
-        if (status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+        if (match(status, FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
             return loc.getString("CTL_FileInfoStatus_Excluded_Short");
-        } else if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+        } else if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
             return loc.getString("CTL_FileInfoStatus_NewLocally_Short");
-        } else if (status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
+        } else if (match(status, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             return loc.getString("CTL_FileInfoStatus_AddedLocally_Short");
-        } else if (status == FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY) {
+        } else if (match(status, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
             return loc.getString("CTL_FileInfoStatus_ModifiedLocally_Short");
-        } else if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
+        } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
             return loc.getString("CTL_FileInfoStatus_Conflict_Short");
         } else {
             return "";  // NOI18N                  
         }
-    }    
+    }
+
+    private static boolean match(int status, int mask) {
+        return (status & mask) != 0;
+    }
 }
 

@@ -207,7 +207,7 @@ public class Subversion {
     }
 
     /**
-     * Tests whether a file or directory is managed by Subversion. All files and folders that have a parent with .svn/Repository
+     * Tests whether a file or directory is managed by Subversion. All files and folders that have a parent with .svn/entriesy
      * file are considered managed by WC. This method accesses disk and should NOT be routinely called.
      * 
      * @param file a file or directory

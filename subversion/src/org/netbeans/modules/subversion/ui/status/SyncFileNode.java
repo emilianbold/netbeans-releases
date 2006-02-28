@@ -49,13 +49,17 @@ public class SyncFileNode extends AbstractNode {
     private String htmlDisplayName;
     private String sticky;
 
-    public SyncFileNode(SvnFileNode node) {
-        this(Children.LEAF, node);
+    private final VersioningPanel panel;
+
+    public SyncFileNode(SvnFileNode node, VersioningPanel _panel) {
+        this(Children.LEAF, node, _panel);
+        
     }
 
-    private SyncFileNode(Children children, SvnFileNode node) {
+    private SyncFileNode(Children children, SvnFileNode node, VersioningPanel _panel) {
         super(children, Lookups.fixed(node.getLookupObjects()));
         this.node = node;
+        this.panel = _panel;
         initProperties();
         refreshHtmlDisplayName();
     }
@@ -206,7 +210,8 @@ public class SyncFileNode extends AbstractNode {
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             FileInformation finfo =  node.getInformation();
             finfo.getEntry(node.getFile());  // XXX side effect loads ISVNStatus structure
-            return finfo.getStatusText();
+            int mask = panel.getDisplayStatuses();
+            return finfo.getStatusText(mask);
         }
     }
 }
