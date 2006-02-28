@@ -369,7 +369,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
 
         tokenButtonPanel.setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(addTokenButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_AddButton_NoMnem"));
+        org.openide.awt.Mnemonics.setLocalizedText(addTokenButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_AddButton_d"));
         addTokenButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addToken(evt);
@@ -383,7 +383,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         gridBagConstraints.weightx = 1.0;
         tokenButtonPanel.add(addTokenButton, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeTokenButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_RemoveButton_NoMnem"));
+        org.openide.awt.Mnemonics.setLocalizedText(removeTokenButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "CTL_RemoveButton_v"));
         removeTokenButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeToken(evt);
