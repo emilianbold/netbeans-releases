@@ -1859,7 +1859,9 @@ widthcheck:  {
 	Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
         if (focusOwner != null) {
             Window w = SwingUtilities.getWindowAncestor(focusOwner);
-            return w.getGraphicsConfiguration();
+            if (w != null) {
+                return w.getGraphicsConfiguration();
+            }
         }
 
         return GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
