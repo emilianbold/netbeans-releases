@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -156,7 +156,7 @@ public class ProxyClassLoader extends ClassLoader {
         String pkg = filename.substring(0, idx + 1); // "org/netbeans/modules/foo/"
         Class c = smartLoadClass(name, filename, pkg);
         if(c == null) {
-            throw new ClassNotFoundException(name);
+            throw new ClassNotFoundException(name + " from " + this);
         }
         if (resolve) resolveClass(c);
         return c;
