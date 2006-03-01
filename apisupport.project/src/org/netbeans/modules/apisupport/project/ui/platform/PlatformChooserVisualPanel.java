@@ -71,27 +71,30 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
         if (propName.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
-            File plafDir = FileUtil.normalizeFile(platformChooser.getSelectedFile());
-            if (/* #60133 */ plafDir != null && NbPlatform.isPlatformDirectory(plafDir)) {
-                try {
-                    setPlafLabel(NbPlatform.computeDisplayName(plafDir));
-                } catch (IOException e) {
-                    setPlafLabel(plafDir.getAbsolutePath());
-                }
-                if (!NbPlatform.isSupportedPlatform(plafDir)) {
-                    setError(getMessage("MSG_UnsupportedPlatform"));
-                } else if (NbPlatform.contains(plafDir)) {
-                    setError(getMessage("MSG_AlreadyAddedPlatform"));
-                } else if (!NbPlatform.isLabelValid(plafLabelValue.getText())) {
-                    setWarning(getMessage("MSG_NameIsAlreadyUsedGoToNext"));
+            File selFile = platformChooser.getSelectedFile();
+            if (selFile != null) { // #73123
+                File plafDir = FileUtil.normalizeFile(selFile);
+                if (/* #60133 */ plafDir != null && NbPlatform.isPlatformDirectory(plafDir)) {
+                    try {
+                        setPlafLabel(NbPlatform.computeDisplayName(plafDir));
+                    } catch (IOException e) {
+                        setPlafLabel(plafDir.getAbsolutePath());
+                    }
+                    if (!NbPlatform.isSupportedPlatform(plafDir)) {
+                        setError(getMessage("MSG_UnsupportedPlatform"));
+                    } else if (NbPlatform.contains(plafDir)) {
+                        setError(getMessage("MSG_AlreadyAddedPlatform"));
+                    } else if (!NbPlatform.isLabelValid(plafLabelValue.getText())) {
+                        setWarning(getMessage("MSG_NameIsAlreadyUsedGoToNext"));
+                    } else {
+                        markValid();
+                        ModuleUISettings.getDefault().setLastUsedNbPlatformLocation(plafDir.getParentFile().getAbsolutePath());
+                    }
                 } else {
-                    markValid();
-                    ModuleUISettings.getDefault().setLastUsedNbPlatformLocation(plafDir.getParentFile().getAbsolutePath());
+                    markInvalid();
+                    setPlafLabel(null);
+                    storeData();
                 }
-            } else {
-                markInvalid();
-                setPlafLabel(null);
-                storeData();
             }
         }
     }
