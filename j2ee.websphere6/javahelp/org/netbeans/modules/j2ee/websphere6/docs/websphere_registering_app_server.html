@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved. 
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Registering an IBM WebSphere Application Server</title>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Registering an IBM WebSphere Application Server</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Before you can start developing and deploying applications to an application server, you must register your application server with the IDE. </p>
+<p><b>To register an instance of an IBM WebSphere application server:</b></p>
+<ol>
+<li>Choose Tools &gt; Server Manager, and in the Server Manager, click Add Server.
+<ul class="note">
+<li>Alternatively, right-click the Servers node in the Runtime window and choose Add Server from the contextual menu.</li>
+</ul>
+The Add Server Instance wizard starts.</li>
+<li>In the Choose Server pane, do the following:
+<ol type="a">
+<li>From the Server drop-down list, select your application server.</li>
+<li>In the Name field, type a name for the server instance. <br>
+This name is used to identify the server in the IDE.</li>
+<li>Click Next.</li>
+</ol>
+</li>
+<li>In the Server Location pane, use the Browse button to navigate to and select the installation directory of your application server.
+<ul class="note">
+<li>The Next button is only enabled when you have selected the correct installation directory.</li>
+</ul>
+</li>
+<li>Click Next.</li>
+<li>To define a local server instance, do the following:
+<ol type="a">
+<li>In the Instance Properties pane, from the Local/Remote drop-down list, select Local.</li>
+<li>From the Local instances drop-down list, select a server instance.<br>
+When you select a server instance, the IDE updates the Profile path, Host, and Port fields.</li>
+<li>(Optional) Fill in the Username and Password fields.</li>
+</ol></li>
+<li>To define a remote server instance, do the following:
+<ol type="a">
+<li>In the Instance Properties pane, from the Local/Remote drop-down list, select Remote.</li>
+<li>Define the location of the server in the Host and three Port fields.<br>
+The port number you should enter in the <b>SOAP Port</b> field is the SOAP connector port you defined during the installation of your IBM WebSphere application server.</li>
+<li>(Optional) Fill in the Username and Password fields.</li>
+</ol></li>
+<li>Click Finish.</li>
+<li>If you started the Add Server Instance wizard from the Server Manager, click Close in the Server Manager dialog box.<br>
+The IDE displays a server node for your application server in the Runtime window under the Servers node.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="websphere_property_sheet_server_node.html" title="IBM WebSphere Application Server Properties">IBM WebSphere Application Server Properties</a></dd>
+<dd><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/csh_server_manager.html" title="Server Manager Dialog Box">Server Manager Dialog Box</a></dd>
+</dl>
+<hr>
+<small>Copyright &copy; 2006 Sun Microsystems, Inc. All rights reserved.<br>
+<a href="credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

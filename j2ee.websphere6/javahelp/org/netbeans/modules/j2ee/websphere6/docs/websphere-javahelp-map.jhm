@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+                     "http://java.sun.com/products/javahelp/map_1_0.dtd">
+<!-- 
+*     Copyright (c) 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+
+
+<map version="1.0">
+	<mapID target="j2eeplugins_credits" url="credits.html"/>
+	<mapID target="j2eeplugins_websphere_property_sheet_server_node" url="websphere_property_sheet_server_node.html"/>
+	<mapID target="j2eeplugins_registering_app_server_websphere" url="websphere_registering_app_server.html"/>
+</map>
