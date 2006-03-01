@@ -57,6 +57,10 @@ public final class PaletteItem implements Node.Cookie {
         itemDataObject = dobj;
     }
 
+    public PaletteItem(ClassSource componentClassSource) {
+        this.componentClassSource = componentClassSource;
+    }
+
     void setComponentClassSource(String className,
                                  String[] cpTypes,
                                  String[] cpNames)
@@ -72,7 +76,7 @@ public final class PaletteItem implements Node.Cookie {
 
     /** @return a node visually representing this palette item */
     public Node getNode() {
-        return itemDataObject.getNodeDelegate();
+        return (itemDataObject == null) ? null : itemDataObject.getNodeDelegate();
     }
 
     /** @return a String identifying this palette item */

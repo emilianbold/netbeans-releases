@@ -23,7 +23,6 @@ import javax.swing.*;
 import java.util.*;
 import java.text.MessageFormat;
 import javax.swing.undo.UndoableEdit;
-import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.DialogDisplayer;
@@ -38,6 +37,8 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.Utilities;
 
 import org.netbeans.modules.form.palette.PaletteItem;
+import org.netbeans.modules.form.palette.PaletteUtils;
+import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutdesign.*;
@@ -2524,9 +2525,11 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             else {
                 if (paletteItem.getComponentClass() != null) {
                     // non-visual component - present it as icon
-                    showingComponents[0] = new JLabel(
-                        new ImageIcon(paletteItem.getNode().getIcon(
-                            java.beans.BeanInfo.ICON_COLOR_16x16)));
+                    Node node = paletteItem.getNode();
+                    Image icon = (node == null) ?
+                        Utilities.loadImage("org/netbeans/modules/form/resources/form.gif") // NOI18N
+                        : node.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+                    showingComponents[0] = new JLabel(new ImageIcon(icon));
                     Dimension dim = showingComponents[0].getPreferredSize();
                     hotSpot = new Point(dim.width/2, dim.height/2);
                     if (hotSpot.x < 0) {
@@ -2674,27 +2677,28 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 java.lang.reflect.Method method = context.getClass().getDeclaredMethod("getTransferable", new Class[0]); // NOI18N
                 method.setAccessible(true);
                 Transferable transferable = (Transferable)method.invoke(context, new Object[0]);
+                PaletteItem item = null;
                 if (dtde.isDataFlavorSupported(PaletteController.ITEM_DATA_FLAVOR)) {
                     Lookup itemLookup = (Lookup)transferable.getTransferData(PaletteController.ITEM_DATA_FLAVOR);
-                    PaletteItem item = (PaletteItem)itemLookup.lookup(PaletteItem.class);
-                    if (item != null) {
-                        draggedComponent = new NewComponentDrag(item);
-                        draggedComponent.move(dtde.getLocation(), 0);
-                        repaint();                    
-                    }
+                    item = (PaletteItem)itemLookup.lookup(PaletteItem.class);
                 } else {
-                    Node node = NodeTransfer.node(transferable, NodeTransfer.DND_COPY);
-                    if(node != null) {
-                        NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
-                        if (newComponentDrop != null) {
-                            PaletteItem item = newComponentDrop.getPaletteItem();
-                            if (item != null) {                                
-                                draggedComponent = new NewComponentDrag(item);
-                                draggedComponent.move(dtde.getLocation(), 0);
-                                repaint();                    
+                    ClassSource classSource = CopySupport.getCopiedBeanClassSource(transferable);
+                    if (classSource != null) {
+                        item = new PaletteItem(classSource);
+                    } else {
+                        Node node = NodeTransfer.node(transferable, NodeTransfer.DND_COPY);
+                        if(node != null) {
+                            NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
+                            if (newComponentDrop != null) {
+                                item = newComponentDrop.getPaletteItem();
                             }
                         }
                     }
+                }
+                if (item != null) {
+                    draggedComponent = new NewComponentDrag(item);
+                    draggedComponent.move(dtde.getLocation(), 0);
+                    repaint();                    
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
