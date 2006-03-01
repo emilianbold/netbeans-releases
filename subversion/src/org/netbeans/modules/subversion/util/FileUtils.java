@@ -29,17 +29,72 @@ public class FileUtils {
             throw new NullPointerException("sourceFile and targetFile must not be null"); // NOI18N
         }
 
+        InputStream inputStream = null;
+        try {
+            int retry = 0;
+            while (true) {
+                try {
+                    inputStream = new BufferedInputStream(new FileInputStream(sourceFile));
+                    break;
+                } catch (IOException ex) {
+                    retry++;
+                    if (retry > 7) {
+                        throw ex;
+                    }
+                    try {
+                        Thread.sleep(retry * 34);
+                    } catch (InterruptedException iex) {
+                        throw ex;
+                    }
+                }
+            }
+            copyStreamToFile(inputStream, targetFile);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                }
+                catch (IOException ex) {
+                    // ignore
+                }
+            }
+        }
+    }
+
+    /**
+     * Copies the specified sourceFile to the specified targetFile.
+     * It <b>closes</b> the input stream.
+     */
+    public static void copyStreamToFile(InputStream inputStream, File targetFile) throws IOException {
+        if (inputStream == null || targetFile == null) {
+            throw new NullPointerException("sourcStream and targetFile must not be null"); // NOI18N
+        }
+
         // ensure existing parent directories
         File directory = targetFile.getParentFile();
         if (!directory.exists() && !directory.mkdirs()) {
             throw new IOException("Could not create directory '" + directory + "'"); // NOI18N
         }
 
-        InputStream inputStream = null;
         OutputStream outputStream = null;
-        try {
-            inputStream = new BufferedInputStream(new FileInputStream(sourceFile));
-            outputStream = new BufferedOutputStream(new FileOutputStream(targetFile));
+        try {            
+            int retry = 0;
+            while (true) {
+                try {
+                    outputStream = new BufferedOutputStream(new FileOutputStream(targetFile));
+                    break;
+                } catch (IOException ex) {
+                    retry++;
+                    if (retry > 7) {
+                        throw ex;
+                    }
+                    try {
+                        Thread.sleep(retry * 34);
+                    } catch (InterruptedException iex) {
+                        throw ex;
+                    }
+                }
+            }
 
             try {
                 byte[] buffer = new byte[32768];

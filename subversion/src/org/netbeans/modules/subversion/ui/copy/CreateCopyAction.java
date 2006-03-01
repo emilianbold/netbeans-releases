@@ -59,7 +59,7 @@ public class CreateCopyAction extends ContextAction {
         // XXX optimize - in this case we need only the info if there is any modified file
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         boolean isChanged = files.length > 0;                
-        SVNUrl url = SvnUtils.getRepositoryUrl(root);
+        SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
         final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);        
      
         CreateCopy createCopy = new CreateCopy(repositoryRoot, nodes[0].getName(), isChanged); // XXX name or dispayname or what?                

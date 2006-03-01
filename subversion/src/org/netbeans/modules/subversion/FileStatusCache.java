@@ -498,7 +498,8 @@ public class FileStatusCache implements ISVNNotifyListener {
                 // no remote change at all
             } else {
                 // TODO systematically handle all statuses
-                System.err.println("SVN.FSC: unhandler repository status");
+                // XXX text: replaced
+                System.err.println("SVN.FSC: unhandled repository status: " + file.getAbsolutePath());
                 System.err.println("\ttext: " + repositoryStatus.getRepositoryTextStatus());
                 System.err.println("\tprop: " + repositoryStatus.getRepositoryPropStatus());
             }

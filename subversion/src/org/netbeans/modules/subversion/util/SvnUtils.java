@@ -407,7 +407,7 @@ public class SvnUtils {
                 SVNUrl fileURL = info.getUrl();
                 repositoryURL = info.getRepository();
                 int status = Subversion.getInstance().getStatusCache().getStatus(file).getStatus();
-                if (repositoryURL == null && (status & FileInformation.STATUS_MANAGED) != 0) {
+                if (repositoryURL == null && (status & FileInformation.STATUS_VERSIONED) != 0) {
                     // checked out with 1.2 client
                     // XXX - IMPORTANT! this hack won't work as long you get the client by
                     //       calling the getClient() method and connecting through a PROXY
@@ -454,7 +454,7 @@ public class SvnUtils {
      *
      * @return the repository url or null for unknown
      */    
-    public static SVNUrl getRepositoryUrl(File file) {        
+    public static SVNUrl getRepositoryRootUrl(File file) {        
         String repositoryPath = null;
         SvnClient client = Subversion.getInstance().getClient();
         List path = new ArrayList();
@@ -473,7 +473,7 @@ public class SvnUtils {
                 SVNUrl fileURL = info.getUrl();
                 repositoryURL = info.getRepository();
                 int status = Subversion.getInstance().getStatusCache().getStatus(file).getStatus();
-                if (repositoryURL == null && (status & FileInformation.STATUS_MANAGED) != 0) {
+                if (repositoryURL == null && (status & FileInformation.STATUS_VERSIONED) != 0) {
                     // checked out with 1.2 client
                     // XXX - IMPORTANT! this hack won't work as long you get the client by
                     //       calling the getClient() method and connecting through a PROXY
@@ -495,7 +495,7 @@ public class SvnUtils {
                         String segment = (String) it.next();
                         sb.append("/" + segment);
                     }
-                    repositoryURL.appendPath(sb.toString());
+                    repositoryURL = repositoryURL.appendPath(sb.toString());
                     break;
                 }
             }
@@ -505,6 +505,52 @@ public class SvnUtils {
 
         }
         return repositoryURL;
+    }
+
+    /**
+     * Returns the repository URL for the given file.
+     * For not yet versioned files guess the URL
+     * from parent context.
+     *
+     * <p>I/O intensive avoid calling it frnm AWT.
+     *
+     * @return the repository url or null for unknown
+     */    
+    public static SVNUrl getRepositoryUrl(File file) {
+        String repositoryPath = null;
+        SvnClient client = Subversion.getInstance().getClient();
+        List path = new ArrayList();
+        SVNUrl fileURL = null;
+        while (Subversion.getInstance().isManaged(file)) {
+            ISVNInfo info = null;
+            try {
+                info = client.getInfoFromWorkingCopy(file);
+            } catch (SVNClientException ex) {
+                if (ex.getMessage().indexOf("(Not a versioned resource)") == -1) {  // NOI18N
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+
+            if (info != null) {
+                fileURL = info.getUrl();
+
+                if (fileURL != null ) {
+                    Iterator it = path.iterator();
+                    StringBuffer sb = new StringBuffer();
+                    while (it.hasNext()) {
+                        String segment = (String) it.next();
+                        sb.append("/" + segment);
+                    }
+                    fileURL = fileURL.appendPath(sb.toString());
+                    break;
+                }
+            }
+
+            path.add(0, file.getName());
+            file = file.getParentFile();
+
+        }
+        return fileURL;
     }
 
     /**

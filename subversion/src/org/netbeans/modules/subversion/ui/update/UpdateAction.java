@@ -64,7 +64,7 @@ public class UpdateAction extends ContextAction {
         // FIXME add shalow logic allowing to ignore nested projects
 
         File[] roots = ctx.getRootFiles();
-        SVNUrl repositoryUrl = SvnUtils.getRepositoryUrl(roots[0]);
+        SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
         ISVNClientAdapter client;
         try {
             client = Subversion.getInstance().getClient(repositoryUrl);

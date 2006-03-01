@@ -101,7 +101,7 @@ public class DiffStreamSource extends StreamSource {
             failure = null;
         } catch (Exception e) {
             // TODO detect interrupted IO, i.e. user cancel
-            failure = new IOException("Cannot initialize stream source"); // NOI18N
+            failure = new IOException("Can not load remote file for " + baseFile); // NOI18N
             failure.initCause(e);
             throw failure;
         }

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion;
 
+import java.util.*;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.Context;
@@ -143,12 +144,19 @@ public class Subversion {
         }               
         return client;
     }
-    
+
+    public SvnClient getClient(File file) throws SVNClientException {
+        SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(file);
+        assert repositoryUrl != null : "Unable to get repository: " + file.getAbsolutePath() + " is probably unmanaged.";
+
+        return getClient(repositoryUrl);
+    }
+
     public SvnClient getClient(Context ctx) throws SVNClientException {
         File[] roots = ctx.getRootFiles();
         SVNUrl repositoryUrl = null;
         for (int i = 0; i<roots.length; i++) {
-             repositoryUrl = SvnUtils.getRepositoryUrl(roots[0]);
+             repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
             if (repositoryUrl != null) {
                 break;
             }

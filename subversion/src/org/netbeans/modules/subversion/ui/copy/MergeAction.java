@@ -52,7 +52,7 @@ public class MergeAction extends ContextAction {
         Context ctx = getContext(nodes);        
         
         final File root = ctx.getRootFiles()[0];                        
-        SVNUrl url = SvnUtils.getRepositoryUrl(root);        
+        SVNUrl url = SvnUtils.getRepositoryRootUrl(root);        
         final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
      
         Merge merge = new Merge(repositoryRoot, nodes[0].getName()); // XXX name or dispayname or what?                
