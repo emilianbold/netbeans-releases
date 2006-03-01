@@ -55,6 +55,8 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
         });
         platformChooser.addPropertyChangeListener(this);
         setName(NbPlatformCustomizer.CHOOSER_STEP);
+        platformChooser.putClientProperty(
+                "JFileChooser.appBundleIsTraversable", "always"); // NOI18N #73124
     }
     
     /** Stores collected data into model. */
