@@ -426,7 +426,11 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         } else {
             if ((oldInfo.getStatus() & displayStatuses) + (newInfo.getStatus() & displayStatuses) == 0) return false;
         }
-        return context.contains(file);
+        if (context != null) {
+            return context.contains(file);
+        } else {
+            return false;
+        }
     }
 
     /** Reloads data from cache */
