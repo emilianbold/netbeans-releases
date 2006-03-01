@@ -14,11 +14,11 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="QA functional config">
 
-    <!-- Validation suite for my module -->
     <testbag testattribs="validation" executor="ide" name="web/jspdebug validation">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="validation/*Test.class"/>
+                <include name="validation/JSPDebuggingOverallTest.class"/>
+                <include name="validation/ServletDebuggingTest.class"/>
             </patternset>
         </testset>
     </testbag>
