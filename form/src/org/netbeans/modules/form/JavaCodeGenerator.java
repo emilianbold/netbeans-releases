@@ -57,6 +57,8 @@ class JavaCodeGenerator extends CodeGenerator {
     static final String PROP_CREATE_CODE_CUSTOM = "creationCodeCustom"; // NOI18N
     static final String PROP_INIT_CODE_PRE = "initCodePre"; // NOI18N
     static final String PROP_INIT_CODE_POST = "initCodePost"; // NOI18N
+    static final String PROP_DECLARATION_PRE = "declarationPre"; // NOI18N
+    static final String PROP_DECLARATION_POST = "declarationPost"; // NOI18N
     static final String PROP_GENERATE_MNEMONICS = "generateMnemonicsCode"; // Mnemonics support NOI18N
     static final String PROP_LISTENER_GENERATION_STYLE = "listenerGenerationStyle"; // NOI18N
 
@@ -78,6 +80,10 @@ class JavaCodeGenerator extends CodeGenerator {
         "JavaCodeGenerator_InitCodePre"; // NOI18N
     static final String AUX_INIT_CODE_POST =
         "JavaCodeGenerator_InitCodePost"; // NOI18N
+    static final String AUX_DECLARATION_PRE =
+        "JavaCodeGenerator_DeclarationPre"; // NOI18N
+    static final String AUX_DECLARATION_POST =
+        "JavaCodeGenerator_DeclarationPost"; // NOI18N
 
     static final Integer VALUE_GENERATE_CODE = new Integer(0);
     static final Integer VALUE_SERIALIZE = new Integer(1);
@@ -592,6 +598,74 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 public Object getValue() {
                     Object value = component.getAuxValue(AUX_INIT_CODE_POST);
+                    if (value == null)
+                        value = ""; // NOI18N
+                    return value;
+                }
+            });
+
+            propList.add(new CodePropertySupportRW(
+                PROP_DECLARATION_PRE,
+                String.class,
+                bundle.getString("MSG_JC_PreDeclaration"), // NOI18N
+                bundle.getString("MSG_JC_PreDeclarationDesc")) // NOI18N
+            {
+                public void setValue(Object value) {
+                    if (!(value instanceof String))
+                        throw new IllegalArgumentException();
+
+                    Object oldValue = getValue();
+
+                    if (!"".equals(value))
+                        component.setAuxValue(AUX_DECLARATION_PRE, value);
+                    else if (component.getAuxValue(AUX_DECLARATION_PRE) != null) {
+                        component.getAuxValues().remove(AUX_DECLARATION_PRE);
+                    }
+
+                    formModel.fireSyntheticPropertyChanged(
+                        component, PROP_DECLARATION_PRE, oldValue, value);
+                    if (component.getNodeReference() != null) {
+                        component.getNodeReference().firePropertyChangeHelper(
+                            PROP_DECLARATION_PRE, null, null);
+                    }
+                }
+
+                public Object getValue() {
+                    Object value = component.getAuxValue(AUX_DECLARATION_PRE);
+                    if (value == null)
+                        value = ""; // NOI18N
+                    return value;
+                }
+            });
+
+            propList.add(new CodePropertySupportRW(
+                PROP_DECLARATION_POST,
+                String.class,
+                bundle.getString("MSG_JC_PostDeclaration"), // NOI18N
+                bundle.getString("MSG_JC_PostDeclarationDesc")) // NOI18N
+            {
+                public void setValue(Object value) {
+                    if (!(value instanceof String))
+                        throw new IllegalArgumentException();
+
+                    Object oldValue = getValue();
+
+                    if (!"".equals(value))
+                        component.setAuxValue(AUX_DECLARATION_POST, value);
+                    else if (component.getAuxValue(AUX_DECLARATION_POST) != null) {
+                        component.getAuxValues().remove(AUX_DECLARATION_POST);
+                    }
+
+                    formModel.fireSyntheticPropertyChanged(
+                        component, PROP_DECLARATION_POST, oldValue, value);
+                    if (component.getNodeReference() != null) {
+                        component.getNodeReference().firePropertyChangeHelper(
+                            PROP_DECLARATION_POST, null, null);
+                    }
+                }
+
+                public Object getValue() {
+                    Object value = component.getAuxValue(AUX_DECLARATION_POST);
                     if (value == null)
                         value = ""; // NOI18N
                     return value;
@@ -1737,6 +1811,18 @@ class JavaCodeGenerator extends CodeGenerator {
             generateCatchCode(exceptions, codeWriter);
     }
 
+    private RADComponent codeVariableToRADComponent(CodeVariable var) {
+        RADComponent metacomp = null;
+        Iterator iter = var.getAttachedExpressions().iterator();
+        if (iter.hasNext()) {
+            Object metaobject = ((CodeExpression)iter.next()).getOrigin().getMetaObject();
+            if (metaobject instanceof RADComponent) {
+                metacomp = (RADComponent)metaobject;
+            }
+        }
+        return metacomp;
+    }
+
     private void addVariables(Writer variablesWriter)
         throws IOException
     {
@@ -1745,24 +1831,22 @@ class JavaCodeGenerator extends CodeGenerator {
 
         while (it.hasNext()) {
             CodeVariable var = (CodeVariable) it.next();
+            RADComponent metacomp = codeVariableToRADComponent(var);
+            if (metacomp == null) continue;
+
+            generateDeclarationPre(variablesWriter, metacomp);
 
             if ((var.getType() & CodeVariable.FINAL) == CodeVariable.FINAL) {
                 // final field variable - add also creation assignment
-                Iterator it2 = var.getAttachedExpressions().iterator();
-                if (it2.hasNext()) {
-                    Object metaobject =
-                        ((CodeExpression)it2.next()).getOrigin().getMetaObject();
-                    if (metaobject instanceof RADComponent)
-                        generateComponentCreate((RADComponent) metaobject,
-                                                variablesWriter,
-                                                false);
-                }
+                generateComponentCreate(metacomp, variablesWriter, false);
             }
             else { // simple field variable declaration
                 variablesWriter.write(
                     var.getDeclaration().getJavaCodeString(null, null));
                 variablesWriter.write("\n"); // NOI18N
             }
+
+            generateDeclarationPost(variablesWriter, metacomp);
         }
     }
 
@@ -1776,13 +1860,36 @@ class JavaCodeGenerator extends CodeGenerator {
         boolean anyVariable = false;
         while (it.hasNext()) {
             CodeVariable var = (CodeVariable) it.next();
+            RADComponent metacomp = codeVariableToRADComponent(var);
+            if (metacomp != null) {
+                generateDeclarationPre(initCodeWriter, metacomp);
+            }
             initCodeWriter.write(
                 var.getDeclaration().getJavaCodeString(null, null));
             initCodeWriter.write("\n"); // NOI18N
+            if (metacomp != null) {
+                generateDeclarationPost(initCodeWriter, metacomp);
+            }
             anyVariable = true;
         }
 
         return anyVariable;
+    }
+
+    private void generateDeclarationPre(Writer writer, RADComponent metacomp) throws IOException {
+        String preCode = (String)metacomp.getAuxValue(AUX_DECLARATION_PRE);
+        if (preCode != null && !preCode.equals("")) { // NOI18N
+            writer.write(preCode);
+            writer.write("\n"); // NOI18N
+        }
+    }
+
+    private void generateDeclarationPost(Writer writer, RADComponent metacomp) throws IOException {
+        String postCode = (String)metacomp.getAuxValue(AUX_DECLARATION_POST);
+        if (postCode != null && !postCode.equals("")) { // NOI18N
+            writer.write(postCode);
+            writer.write("\n"); // NOI18N
+        }
     }
 
     private Iterator getSortedVariables(int type, int typeMask) {
