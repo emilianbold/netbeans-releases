@@ -61,7 +61,7 @@ public class ComboTest extends NbTestCase {
     }
     
     public static void registerPropertyEditors () {
-        org.netbeans.core.startup.Main.registerPropertyEditors();
+        //org.netbeans.core.startup.Main.registerPropertyEditors();
     }
     
     public ComboTest(String name) {
