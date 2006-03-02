@@ -67,9 +67,6 @@ import org.openide.util.Utilities;
 
 public class CategoryList extends JList implements Autoscroll {
 
-    static final String laf = UIManager.getLookAndFeel ().getClass ().getName ();
-    static final boolean isMetalLAF = laf.equals ("javax.swing.plaf.metal.MetalLookAndFeel"); // NOI18N
-    static final boolean isWindowsLAF = laf.equals ("com.sun.java.swing.plaf.windows.WindowsLookAndFeel"); // NOI18N
     static final Color panelBackgroundColor = UIManager.getDefaults ().getColor ("Panel.background");
 
     private int rolloverIndex = -1;
@@ -249,18 +246,13 @@ public class CategoryList extends JList implements Autoscroll {
             if (button == null) {
                 button = new JToggleButton ();
 
-                if (isMetalLAF  ||  isWindowsLAF) { // for Metal and Windows Look&Feel use toolbar button rendering
-                    button.setMargin (new Insets (1, 1, 1, 0));
-                    JToolBar toolbar = new JToolBar ();
-                    toolbar.setRollover (true);
-                    toolbar.setFloatable (false);
-                    toolbar.setLayout (new BorderLayout (0, 0));
-                    toolbar.setBorder (new EmptyBorder (0, 0, 0, 0));
-                    toolbar.add (button);
-                } else { // otherwise use normal button with default or empty border
-                    button.setMargin (new Insets (1, 1, 1, 1));
-                    defaultBorder = button.getBorder ();
-                }
+                button.setMargin (new Insets (1, 1, 1, 0));
+                JToolBar toolbar = new JToolBar ();
+                toolbar.setRollover (true);
+                toolbar.setFloatable (false);
+                toolbar.setLayout (new BorderLayout (0, 0));
+                toolbar.setBorder (new EmptyBorder (0, 0, 0, 0));
+                toolbar.add (button);
             }
         }
 
