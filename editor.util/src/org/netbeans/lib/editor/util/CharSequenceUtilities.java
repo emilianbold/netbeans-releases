@@ -177,6 +177,93 @@ public final class CharSequenceUtilities {
 	return -1;
     }
     
+    public static int indexOf(CharSequence text, CharSequence seq) {
+        return indexOf(text, seq, 0);
+    }
+    
+    public static int indexOf(CharSequence text, CharSequence seq, int fromIndex) {
+        int textLength = text.length();
+        int seqLength = seq.length();
+	if (fromIndex >= textLength) {
+            return (seqLength == 0 ? textLength : -1);
+	}
+    	if (fromIndex < 0) {
+    	    fromIndex = 0;
+    	}
+	if (seqLength == 0) {
+	    return fromIndex;
+	}
+
+        char first = seq.charAt(0);
+        int max = textLength - seqLength;
+
+        for (int i = fromIndex; i <= max; i++) {
+            // look for first character
+            if (text.charAt(i) != first) {
+                while (++i <= max && text.charAt(i) != first);
+            }
+
+            // found first character, now look at the rest of seq
+            if (i <= max) {
+                int j = i + 1;
+                int end = j + seqLength - 1;
+                for (int k = 1; j < end && text.charAt(j) == seq.charAt(k); j++, k++);
+                if (j == end) {
+                    // found whole sequence
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+    
+    public static int lastIndexOf(CharSequence text, CharSequence seq) {
+        return lastIndexOf(text, seq, text.length());
+    }
+    
+    public static int lastIndexOf(CharSequence text, CharSequence seq, int fromIndex) {
+        int textLength = text.length();
+        int seqLength = seq.length();
+        int rightIndex = textLength - seqLength;
+	if (fromIndex < 0) {
+	    return -1;
+	}
+	if (fromIndex > rightIndex) {
+	    fromIndex = rightIndex;
+	}
+	// empty string always matches
+	if (seqLength == 0) {
+	    return fromIndex;
+	}
+
+        int strLastIndex = seqLength - 1;
+	char strLastChar = seq.charAt(strLastIndex);
+	int min = seqLength - 1;
+	int i = min + fromIndex;
+
+    startSearchForLastChar:
+	while (true) {
+	    while (i >= min && text.charAt(i) != strLastChar) {
+		i--;
+	    }
+            
+	    if (i < min) {
+		return -1;
+	    }
+	    int j = i - 1;
+	    int start = j - (seqLength - 1);
+	    int k = strLastIndex - 1;
+
+	    while (j > start) {
+	        if (text.charAt(j--) != seq.charAt(k--)) {
+		    i--;
+		    continue startSearchForLastChar;
+		}
+	    }
+	    return start + 1;
+	}
+    }
+    
     public static int lastIndexOf(CharSequence text, int ch) {
 	return lastIndexOf(text, ch, text.length() - 1);
     }
@@ -194,6 +281,48 @@ public final class CharSequenceUtilities {
 	return -1;
     }
 
+    public static boolean startsWith(CharSequence text, CharSequence prefix) {
+        int p_length = prefix.length();
+        if (p_length > text.length()) {
+            return false;
+        }
+        for (int x = 0; x < p_length; x++) {
+            if (text.charAt(x) != prefix.charAt(x))
+                return false;
+        }
+        return true;
+    }
+    
+    public static boolean endsWith(CharSequence text, CharSequence suffix) {
+        int s_length = suffix.length();
+        int text_length = text.length();
+        if (s_length > text_length) {
+            return false;
+        }
+        for (int x = 0; x < s_length; x++) {
+            if (text.charAt(text_length - s_length + x) != suffix.charAt(x))
+                return false;
+        }
+        return true;
+    }
+    
+    public static CharSequence trim(CharSequence text) {
+        int length = text.length();
+        if (length == 0)
+            return text;
+        int start = 0;
+        int end = length - 1;
+        while (start < length && text.charAt(start) == ' ') {
+            start++;
+        }
+        if (start == length)
+            return text.subSequence(0, 0);
+        while (end > start && text.charAt(end) == ' ') {
+            end--;
+        }
+        return text.subSequence(start, end + 1);
+    }
+    
     public static void debugChar(StringBuffer sb, char ch) {
         switch (ch) {
             case '\n':

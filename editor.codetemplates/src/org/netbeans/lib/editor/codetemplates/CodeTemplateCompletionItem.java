@@ -22,6 +22,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -144,7 +145,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     
     public static int getInitialMatchLength(Document doc, int caretOffset, String text) {
         int matchLength = Math.min(text.length(), caretOffset);
-        org.netbeans.editor.CharSeq docText = ((org.netbeans.editor.BaseDocument)doc).getText();
+        CharSequence docText = DocumentUtilities.getText((org.netbeans.editor.BaseDocument)doc);
         while (matchLength > 0) {
             int i;
             for (i = 1; i < matchLength; i++) {

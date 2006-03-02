@@ -44,6 +44,8 @@ import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessor;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessorFactory;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.openide.ErrorManager;
@@ -404,8 +406,8 @@ implements DocumentListener, KeyListener {
         int length = region.getFirstRegionLength();
         apiSetValueParamImpl = paramImpl;
         try {
-            String parameterText = doc.getText(offset, length);
-            if (!parameterText.equals(newValue)) {
+            CharSequence parameterText = DocumentUtilities.getText(doc, offset, length);
+            if (!CharSequenceUtilities.textEquals(parameterText, newValue)) {
                 doc.remove(offset, length);
                 doc.insertString(offset, newValue, null);
                 // Explicitly synchronize the other regions with the first

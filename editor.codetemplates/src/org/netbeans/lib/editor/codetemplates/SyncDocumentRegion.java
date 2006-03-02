@@ -21,6 +21,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.openide.ErrorManager;
@@ -121,7 +123,7 @@ public final class SyncDocumentRegion {
                 int offset = region.getStartOffset();
                 int length = region.getEndOffset() - offset;
                 try {
-                    if (!firstRegionText.equals(doc.getText(offset, length))) {
+                    if (!CharSequenceUtilities.textEquals(firstRegionText, DocumentUtilities.getText(doc, offset, length))) {
                         doc.remove(offset, length);
                         if (firstRegionText.length() > 0) {
                             doc.insertString(offset, firstRegionText, null);

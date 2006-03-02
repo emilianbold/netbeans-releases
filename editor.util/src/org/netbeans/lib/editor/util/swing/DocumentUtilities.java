@@ -197,9 +197,41 @@ public final class DocumentUtilities {
         CharSequence text = (CharSequence)doc.getProperty(CharSequence.class);
         if (text == null) {
             text = new DocumentCharSequence(doc);
-            doc.putProperty(CharSequence.class, doc);
+            doc.putProperty(CharSequence.class, text);
         }
         return text;
+    }
+    
+    /**
+     * Get a portion of text of the given document as char sequence.
+     * <br>
+     *
+     * @param doc document for which the charsequence is being obtained.
+     * @param offset starting offset of the charsequence to obtain.
+     * @param length length of the charsequence to obtain
+     * @return non-null character sequence.
+     * @exception BadLocationException  some portion of the given range
+     *   was not a valid part of the document.  The location in the exception
+     *   is the first bad position encountered.
+     *  <br>
+     *  The returned character sequence should only be accessed under
+     *  document's readlock (or writelock).
+     */
+    public static CharSequence getText(Document doc, int offset, int length) throws BadLocationException {
+        CharSequence text = (CharSequence)doc.getProperty(CharSequence.class);
+        if (text == null) {
+            text = new DocumentCharSequence(doc);
+            doc.putProperty(CharSequence.class, text);
+        }
+        try {
+            return text.subSequence(offset, offset + length);
+        } catch (IndexOutOfBoundsException e) {
+            int badOffset = offset;
+            if (offset >= 0 && offset + length > text.length()) {
+                badOffset = length;
+            }
+            throw new BadLocationException(e.getMessage(), badOffset);
+        }
     }
     
     /**

@@ -227,7 +227,7 @@ PropertyChangeListener, KeyListener {
                 // i.e. check that not start typing 'u' after existing 'p' which would
                 // errorneously expand to 'public'
                 if (offset == 0
-                        || resetAcceptor.accept(doc.getText(offset - 1, 1).charAt(0))
+                        || resetAcceptor.accept(DocumentUtilities.getText(doc, offset - 1, 1).charAt(0))
                 ) {
                     abbrevEndPosition = doc.createPosition(offset + insertLength);
                 }

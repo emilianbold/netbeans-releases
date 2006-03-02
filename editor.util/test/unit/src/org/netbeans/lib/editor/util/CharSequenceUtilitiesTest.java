@@ -19,6 +19,7 @@ import junit.framework.TestCase;
 public class CharSequenceUtilitiesTest extends TestCase {
     
     private static final int CHARS_LENGTH = 1000;
+    private static final int SUBSTR_LENGTH = 10;
     private static final Random rnd = new Random(0);
     
     public CharSequenceUtilitiesTest(String testName) {
@@ -79,9 +80,36 @@ public class CharSequenceUtilitiesTest extends TestCase {
         assertTrue(string.indexOf(ch) == CharSequenceUtilities.indexOf(string, ch));
         assertTrue(string.indexOf(ch, 2 * start) == CharSequenceUtilities.indexOf(string, ch, 2 * start));
         
+        String eta = string.substring(start, start + SUBSTR_LENGTH);
+        assertTrue(string.indexOf(eta) == CharSequenceUtilities.indexOf(string, eta));
+        eta = string.substring(2 * start, 2 * start + SUBSTR_LENGTH);
+        assertTrue(string.indexOf(eta, start) == CharSequenceUtilities.indexOf(string, eta, start));
+        
         // lastIndexOf
         assertTrue(string.lastIndexOf(ch) == CharSequenceUtilities.lastIndexOf(string, ch));
         assertTrue(string.lastIndexOf(ch, 2 * start) == CharSequenceUtilities.lastIndexOf(string, ch, 2 * start));
+        
+        eta = string.substring(start, start + SUBSTR_LENGTH);
+        assertTrue(string.lastIndexOf(eta) == CharSequenceUtilities.lastIndexOf(string, eta));
+        eta = string.substring(2 * start, 2 * start + SUBSTR_LENGTH);
+        assertTrue(string.lastIndexOf(eta, CHARS_LENGTH) == CharSequenceUtilities.lastIndexOf(string, eta, CHARS_LENGTH));
+        
+        // trim
+        buf = new StringBuffer();
+        for (int x = 0; x < SUBSTR_LENGTH; x++) {
+            buf.append(' ');
+        }
+        buf.append(string);
+        for (int x = 0; x < SUBSTR_LENGTH; x++) {
+            buf.append(' ');
+        }
+        assertTrue(CharSequenceUtilities.textEquals(string, CharSequenceUtilities.trim(buf.toString())));
+        
+        // startsWith
+        assertTrue(CharSequenceUtilities.startsWith(string, string.substring(0, SUBSTR_LENGTH)));
+        
+        // endsWith
+        assertTrue(CharSequenceUtilities.endsWith(string, string.substring(CHARS_LENGTH - SUBSTR_LENGTH)));
     }
     
     public void generateChars(char[] chars) {
