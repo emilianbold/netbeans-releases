@@ -18,6 +18,8 @@
  */
 package org.netbeans.jemmy.operators;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Hashtable;
@@ -39,6 +41,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.util.NameComponentChooser;
 
 /**
@@ -412,9 +415,11 @@ public class JTableOperatorTest extends TestCase {
         JTableOperator operator1 = new JTableOperator(operator);
         assertNotNull(operator1);
         
-        /*
-        operator1.waitCellComponent(new NameComponentChooser("Mary"), 0, 0);
-         */
+        try {
+            operator1.waitCellComponent(new NameComponentChooser("1234"), 0, 0);
+        }
+        catch(TimeoutExpiredException exception) {
+        }
     }
     
     /**
@@ -662,6 +667,7 @@ public class JTableOperatorTest extends TestCase {
         assertNotNull(operator1);
         
         operator1.editCellAt(0, 0);
+        operator1.editCellAt(0, 0, null);
     }
     
     /**
@@ -749,6 +755,8 @@ public class JTableOperatorTest extends TestCase {
         DefaultCellEditor editor = new DefaultCellEditor(new JTextField());
         operator1.setCellEditor(editor);
         assertEquals(editor, operator1.getCellEditor());
+        
+        operator1.getCellEditor(0, 0);
     }
     
     /**
@@ -866,7 +874,8 @@ public class JTableOperatorTest extends TestCase {
         JTableOperator operator1 = new JTableOperator(operator);
         assertNotNull(operator1);
         
-        operator1.getDefaultEditor(String.class);
+        operator1.setDefaultEditor(String.class, 
+            operator1.getDefaultEditor(String.class));
     }
     
     /**
@@ -1449,168 +1458,359 @@ public class JTableOperatorTest extends TestCase {
      * Test setColumnSelectionInterval method.
      */
     public void testSetColumnSelectionInterval() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setColumnSelectionInterval(0, 0);
     }
     
     /**
      * Test setDefaultRenderer method.
      */
     public void testSetDefaultRenderer() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setDefaultRenderer(String.class, null);
     }
     
     /**
      * Test setEditingColumn method.
      */
     public void testSetEditingColumn() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setEditingColumn(0);
     }
     
     /**
      * Test setEditingRow method.
      */
     public void testSetEditingRow() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setEditingRow(0);
     }
     
     /**
      * Test setGridColor method.
      */
     public void testSetGridColor() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setGridColor(Color.black);
     }
     
     /**
      * Test setIntercellSpacing method.
      */
     public void testSetIntercellSpacing() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setIntercellSpacing(new Dimension(1, 1));
     }
     
     /**
      * Test setModel method.
      */
     public void testSetModel() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setModel(operator1.getModel());
     }
     
     /**
      * Test setPreferredScrollableViewportSize method.
      */
     public void testSetPreferredScrollableViewportSize() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setPreferredScrollableViewportSize(null);
     }
     
     /**
      * Test setRowHeight method.
      */
     public void testSetRowHeight() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setRowHeight(1);
     }
     
     /**
      * Test setRowMargin method.
      */
     public void testSetRowMargin() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setRowMargin(1);
     }
     
     /**
      * Test setRowSelectionAllowed method.
      */
     public void testSetRowSelectionAllowed() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setRowSelectionAllowed(false);
     }
     
     /**
      * Test setRowSelectionInterval method.
      */
     public void testSetRowSelectionInterval() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setRowSelectionInterval(0, 0);
     }
     
     /**
      * Test setSelectionBackground method.
      */
     public void testSetSelectionBackground() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setSelectionBackground(Color.blue);
     }
     
     /**
      * Test setSelectionForeground method.
      */
     public void testSetSelectionForeground() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setSelectionForeground(Color.GREEN);
     }
     
     /**
      * Test setSelectionMode method.
      */
     public void testSetSelectionMode() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setSelectionMode(0);
     }
     
     /**
      * Test setSelectionModel method.
      */
     public void testSetSelectionModel() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setSelectionModel(operator1.getSelectionModel());
     }
     
     /**
      * Test setShowGrid method.
      */
     public void testSetShowGrid() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setShowGrid(true);
     }
     
     /**
      * Test setShowHorizontalLines method.
      */
     public void testSetShowHorizontalLines() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setShowHorizontalLines(true);
     }
     
     /**
      * Test setShowVerticalLines method.
      */
     public void testSetShowVerticalLines() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setShowVerticalLines(false);
     }
     
     /**
      * Test setTableHeader method.
      */
     public void testSetTableHeader() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setTableHeader(operator1.getTableHeader());
     }
     
     /**
      * Test setUI method.
      */
     public void testSetUI() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setUI(operator1.getUI());
     }
     
     /**
      * Test setValueAt method.
      */
     public void testSetValueAt() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.setValueAt("1", 0, 0);
     }
     
     /**
      * Test tableChanged method.
      */
     public void testTableChanged() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.tableChanged(null);
     }
     
     /**
      * Test valueChanged method.
      */
     public void testValueChanged() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTableOperator operator1 = new JTableOperator(operator);
+        assertNotNull(operator1);
+        
+        operator1.valueChanged(new ListSelectionEvent(this, 0, 0, false));
     }
-    
 }
