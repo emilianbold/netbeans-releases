@@ -13,8 +13,12 @@
 
 package org.openide.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.ref.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import org.openide.ErrorManager;
 import junit.framework.*;
@@ -524,7 +528,7 @@ public class MutexTest extends NbTestCase {
         final Ticker tickX2 = new Ticker();     
         final Ticker tickX3 = new Ticker();     
         
-        Thread A = new Thread() { public void run() {
+        Thread A = new Thread("A") { public void run() {
             PR.enterReadAccess();
             
             tickX1.tick();
@@ -533,9 +537,11 @@ public class MutexTest extends NbTestCase {
             synchronized(L) {
                 done[0] = true;
             }
+
+            PR.exitReadAccess();
         }};
                
-        Thread B = new Thread() { public void run() {
+        Thread B = new Thread("B") { public void run() {
             synchronized(L) {
                 
                 tickX2.tick();
@@ -548,7 +554,7 @@ public class MutexTest extends NbTestCase {
             }
         }};
 
-        Thread C = new Thread() { public void run() {
+        Thread C = new Thread("C") { public void run() {
             PR.enterReadAccess();
             M.postWriteRequest(new Runnable() {public void run() {
                    done[2] = true;
@@ -574,10 +580,19 @@ public class MutexTest extends NbTestCase {
         A.join(2000);
         B.join(2000);
         C.join(2000);
-        
-        assertTrue("Thread A finished", done[0]);
-        assertTrue("Thread B finished", done[1]);
-        assertTrue("Thread C finished", done[2]);
+
+        if (!done[0] || !done[1] || !done[2]) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("A: "); sb.append(done[0]);
+            sb.append(" B: "); sb.append(done[1]);
+            sb.append(" C: "); sb.append(done[2]);
+            sb.append("\n");
+            dumpStrackTrace(A, sb);
+            dumpStrackTrace(B, sb);
+            dumpStrackTrace(C, sb);
+
+            fail(sb.toString());
+        }
     }
 
     
@@ -918,6 +933,24 @@ public class MutexTest extends NbTestCase {
     public void testThrowingRuntimeExceptionInSpecialCase() throws Exception {
         exceptionsReporting(new RuntimeException());
     } 
+
+    private void dumpStrackTrace(Thread thread, StringBuffer sb) throws IllegalAccessException, InvocationTargetException {
+        sb.append("StackTrace for thread: " + thread.getName() + "\n");
+
+        StackTraceElement[] arr;
+        try {
+            Method m = Thread.class.getDeclaredMethod("getStackTrace", new Class[0]);
+            arr = (StackTraceElement[])m.invoke(thread, new Object[0]);
+        } catch (NoSuchMethodException ex) {
+            // no such method on 1.4
+            return;
+        }
+
+        for (int i = 0; i < arr.length; i++) {
+            sb.append(arr[i].toString());
+            sb.append("\n");
+        }
+    }
     
     private class ReadWriteChecking implements Runnable {
         public Boolean read;
