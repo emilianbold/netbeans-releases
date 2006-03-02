@@ -25,7 +25,7 @@ import org.openide.filesystems.FileObject;
  * May be used by the New File wizard, Find in Files, to-do task scanning,
  * the Files tab, etc.
  * </p>
- * @see <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/SourcesHelper.html"><code>SourcesHelper</code></a>
+ * @see <a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/support/ant/SourcesHelper.html"><code>SourcesHelper</code></a>
  * @author Jesse Glick
  */
 public interface Sources {

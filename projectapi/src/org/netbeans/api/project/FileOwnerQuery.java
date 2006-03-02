@@ -160,7 +160,7 @@ public class FileOwnerQuery {
      *                                  if the root is already a project directory,
      *                                  or if the root is already equal to or inside the owner's
      *                                  project directory (it may however be an ancestor)
-     * @see <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/SourcesHelper.html"><code>SourcesHelper</code></a>
+     * @see <a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/support/ant/SourcesHelper.html"><code>SourcesHelper</code></a>
      */
     public static void markExternalOwner(FileObject root, Project owner, int algorithm) throws IllegalArgumentException {
         switch (algorithm) {
@@ -196,7 +196,7 @@ public class FileOwnerQuery {
      *                                  if the root is already a project directory,
      *                                  or if the root is already equal to or inside the owner's
      *                                  project directory (it may however be an ancestor)
-     * @see <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/SourcesHelper.html"><code>SourcesHelper</code></a>
+     * @see <a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/support/ant/SourcesHelper.html"><code>SourcesHelper</code></a>
      */
     public static void markExternalOwner(URI root, Project owner, int algorithm) throws IllegalArgumentException {
         switch (algorithm) {
