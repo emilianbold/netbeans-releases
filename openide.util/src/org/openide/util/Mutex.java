@@ -128,7 +128,7 @@ public final class Mutex extends Object {
     // [requested][granted]
     private static final boolean[][] cmatrix = {null,
         null, // NONE, CHAIN
-        { true, false, false, false },{ true, true, false, true }
+        { true, false, false, false },{ true, false, false, true }
     };
 
     /** granted mode */
