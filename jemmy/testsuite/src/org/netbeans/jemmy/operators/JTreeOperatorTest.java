@@ -18,8 +18,15 @@
  */
 package org.netbeans.jemmy.operators;
 
+import java.awt.Rectangle;
 import javax.swing.JFrame;
 import javax.swing.JTree;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.TreeWillExpandListener;
+import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -644,581 +651,1113 @@ public class JTreeOperatorTest extends TestCase {
      * Test getDump method.
      */
     public void testGetDump() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getDump();
     }
 
     /**
      * Test addSelectionInterval method.
      */
     public void testAddSelectionInterval() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.addSelectionInterval(0, 0);
+        operator2.removeSelectionInterval(0, 0);
     }
 
     /**
      * Test addSelectionPath method.
      */
     public void testAddSelectionPath() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.addSelectionPath(null);
+        operator2.removeSelectionPath(null);
     }
 
     /**
      * Test addSelectionPaths method.
      */
     public void testAddSelectionPaths() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.addSelectionPaths(null);
+        operator2.removeSelectionPaths(null);
     }
 
     /**
      * Test addSelectionRow method.
      */
     public void testAddSelectionRow() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.addSelectionRow(0);
+        operator2.removeSelectionRow(0);
     }
 
     /**
      * Test addSelectionRows method.
      */
     public void testAddSelectionRows() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.addSelectionRows(null);
+        operator2.removeSelectionRows(null);
     }
 
     /**
      * Test addTreeExpansionListener method.
      */
     public void testAddTreeExpansionListener() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        TreeExpansionListenerTest listener = new TreeExpansionListenerTest();
+        operator2.addTreeExpansionListener(listener);
+        operator2.removeTreeExpansionListener(listener);
+    }
+    
+    /**
+     * Inner class used for testing.
+     */
+    public class TreeExpansionListenerTest implements TreeExpansionListener {
+        public void treeExpanded(TreeExpansionEvent event) {
+        }
+
+        public void treeCollapsed(TreeExpansionEvent event) {
+        }
     }
 
     /**
      * Test addTreeSelectionListener method.
      */
     public void testAddTreeSelectionListener() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        TreeSelectionListenerTest listener = new TreeSelectionListenerTest();
+        operator2.addTreeSelectionListener(listener);
+        operator2.removeTreeSelectionListener(listener);
     }
 
+    /**
+     * Inner class used for testing.
+     */
+    public class TreeSelectionListenerTest implements TreeSelectionListener {
+        public void valueChanged(TreeSelectionEvent e) {
+        }
+    }
+    
     /**
      * Test addTreeWillExpandListener method.
      */
     public void testAddTreeWillExpandListener() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        TreeWillExpandListenerTest listener = new TreeWillExpandListenerTest();
+        operator2.addTreeWillExpandListener(listener);
+        operator2.removeTreeWillExpandListener(listener);
     }
 
+    /**
+     * Inner class used for testing.
+     */
+    public class TreeWillExpandListenerTest implements TreeWillExpandListener {
+        public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
+        }
+
+        public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+        }
+    }
+    
     /**
      * Test cancelEditing method.
      */
     public void testCancelEditing() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.cancelEditing();
     }
 
     /**
      * Test clearSelection method.
      */
     public void testClearSelection() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.clearSelection();
     }
 
     /**
      * Test collapsePath method.
      */
     public void testCollapsePath() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.collapsePath(null);
     }
 
     /**
      * Test collapseRow method.
      */
     public void testCollapseRow() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.collapseRow(0);
     }
 
     /**
      * Test convertValueToText method.
      */
     public void testConvertValueToText() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        try {
+            operator2.convertValueToText("", false, false, false, false);
+        }
+        catch(UnsupportedOperationException exception) {
+        }
     }
 
     /**
      * Test expandPath method.
      */
     public void testExpandPath() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.expandPath(null);
     }
 
     /**
      * Test expandRow method.
      */
     public void testExpandRow() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.expandRow(0);
     }
 
     /**
      * Test fireTreeCollapsed method.
      */
     public void testFireTreeCollapsed() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.fireTreeCollapsed(null);
     }
 
     /**
      * Test fireTreeExpanded method.
      */
     public void testFireTreeExpanded() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.fireTreeExpanded(null);
     }
 
     /**
      * Test fireTreeWillCollapse method.
      */
     public void testFireTreeWillCollapse() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.fireTreeWillCollapse(null);
     }
 
     /**
      * Test fireTreeWillExpand method.
      */
     public void testFireTreeWillExpand() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.fireTreeWillExpand(null);
     }
 
     /**
      * Test getCellEditor method.
      */
     public void testGetCellEditor() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setCellEditor(operator2.getCellEditor());
     }
 
     /**
      * Test getCellRenderer method.
      */
     public void testGetCellRenderer() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setCellRenderer(operator2.getCellRenderer());
     }
 
     /**
      * Test getClosestPathForLocation method.
      */
     public void testGetClosestPathForLocation() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getClosestPathForLocation(0, 0);
     }
 
     /**
      * Test getClosestRowForLocation method.
      */
     public void testGetClosestRowForLocation() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getClosestRowForLocation(0, 0);
     }
 
     /**
      * Test getEditingPath method.
      */
     public void testGetEditingPath() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getEditingPath();
     }
 
     /**
      * Test getExpandedDescendants method.
      */
     public void testGetExpandedDescendants() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getExpandedDescendants(null);
     }
 
     /**
      * Test getInvokesStopCellEditing method.
      */
     public void testGetInvokesStopCellEditing() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setInvokesStopCellEditing(operator2.getInvokesStopCellEditing());
     }
 
     /**
      * Test getLastSelectedPathComponent method.
      */
     public void testGetLastSelectedPathComponent() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getLastSelectedPathComponent();
     }
 
     /**
      * Test getLeadSelectionPath method.
      */
     public void testGetLeadSelectionPath() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getLeadSelectionPath();
     }
 
     /**
      * Test getLeadSelectionRow method.
      */
     public void testGetLeadSelectionRow() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getLeadSelectionRow();
     }
 
     /**
      * Test getMaxSelectionRow method.
      */
     public void testGetMaxSelectionRow() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getMaxSelectionRow();
     }
 
     /**
      * Test getMinSelectionRow method.
      */
     public void testGetMinSelectionRow() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getMinSelectionRow();
     }
 
     /**
      * Test getModel method.
      */
     public void testGetModel() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setModel(operator2.getModel());
     }
 
     /**
      * Test getPathBounds method.
      */
     public void testGetPathBounds() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getPathBounds(null);
     }
 
     /**
      * Test getPathForLocation method.
      */
     public void testGetPathForLocation() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getPathForLocation(0, 0);
     }
 
     /**
      * Test getPathForRow method.
      */
     public void testGetPathForRow() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getPathForRow(0);
     }
 
     /**
      * Test getPreferredScrollableViewportSize method.
      */
     public void testGetPreferredScrollableViewportSize() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getPreferredScrollableViewportSize();
     }
 
     /**
      * Test getRowBounds method.
      */
     public void testGetRowBounds() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getRowBounds(0);
     }
 
     /**
      * Test getRowCount method.
      */
     public void testGetRowCount() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getRowCount();
     }
 
     /**
      * Test getRowForLocation method.
      */
     public void testGetRowForLocation() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getRowForLocation(0 ,0);
     }
 
     /**
      * Test getRowForPath method.
      */
     public void testGetRowForPath() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getRowForPath(null);
     }
 
     /**
      * Test getRowHeight method.
      */
     public void testGetRowHeight() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setRowHeight(operator2.getRowHeight());
     }
 
     /**
      * Test getScrollableBlockIncrement method.
      */
     public void testGetScrollableBlockIncrement() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getScrollableBlockIncrement(new Rectangle(0, 0), 0, 0);
     }
 
     /**
      * Test getScrollableTracksViewportHeight method.
      */
     public void testGetScrollableTracksViewportHeight() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getScrollableTracksViewportHeight();
     }
 
     /**
      * Test getScrollableTracksViewportWidth method.
      */
     public void testGetScrollableTracksViewportWidth() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getScrollableTracksViewportWidth();
     }
 
     /**
      * Test getScrollableUnitIncrement method.
      */
     public void testGetScrollableUnitIncrement() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getScrollableUnitIncrement(new Rectangle(0, 0), 0, 0);
     }
 
     /**
      * Test getScrollsOnExpand method.
      */
     public void testGetScrollsOnExpand() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setScrollsOnExpand(operator2.getScrollsOnExpand());
     }
 
     /**
      * Test getSelectionCount method.
      */
     public void testGetSelectionCount() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getSelectionCount();
     }
 
     /**
      * Test getSelectionModel method.
      */
     public void testGetSelectionModel() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setSelectionModel(operator2.getSelectionModel());
     }
 
     /**
      * Test getSelectionPath method.
      */
     public void testGetSelectionPath() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setSelectionPath(operator2.getSelectionPath());
     }
 
     /**
      * Test getSelectionPaths method.
      */
     public void testGetSelectionPaths() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setSelectionPaths(operator2.getSelectionPaths());
     }
 
     /**
      * Test getSelectionRows method.
      */
     public void testGetSelectionRows() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setSelectionRows(operator2.getSelectionRows());
     }
 
     /**
      * Test getShowsRootHandles method.
      */
     public void testGetShowsRootHandles() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getShowsRootHandles();
     }
 
     /**
      * Test getUI method.
      */
     public void testGetUI() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getUI();
     }
 
     /**
      * Test getVisibleRowCount method.
      */
     public void testGetVisibleRowCount() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.getVisibleRowCount();
     }
 
     /**
      * Test hasBeenExpanded method.
      */
     public void testHasBeenExpanded() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.hasBeenExpanded(null);
     }
 
     /**
      * Test isCollapsed method.
      */
     public void testIsCollapsed() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.isCollapsed(0);
+        operator2.isCollapsed(null);
     }
 
     /**
      * Test isEditable method.
      */
     public void testIsEditable() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setEditable(operator2.isEditable());
     }
 
     /**
      * Test isEditing method.
      */
     public void testIsEditing() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.isEditing();
     }
 
     /**
      * Test isExpanded method.
      */
     public void testIsExpanded() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.isExpanded(null);
+        operator2.isExpanded(0);
     }
 
     /**
      * Test isFixedRowHeight method.
      */
     public void testIsFixedRowHeight() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.isFixedRowHeight();
     }
 
     /**
      * Test isLargeModel method.
      */
     public void testIsLargeModel() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.isLargeModel();
     }
 
     /**
      * Test isPathEditable method.
      */
     public void testIsPathEditable() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.isPathEditable(null);
     }
 
     /**
      * Test isPathSelected method.
      */
     public void testIsPathSelected() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.isPathSelected(null);
     }
 
     /**
      * Test isRootVisible method.
      */
     public void testIsRootVisible() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setRootVisible(operator2.isRootVisible());
     }
 
     /**
      * Test isRowSelected method.
      */
     public void testIsRowSelected() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.isRowSelected(0);
     }
 
     /**
      * Test isSelectionEmpty method.
      */
     public void testIsSelectionEmpty() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.isSelectionEmpty();
     }
 
     /**
      * Test isVisible method.
      */
     public void testIsVisible() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.isVisible();
+        operator2.isVisible(null);
     }
 
     /**
      * Test makeVisible method.
      */
     public void testMakeVisible() {
+        frame.setVisible(true);
         
-    }
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
 
-    /**
-     * Test removeSelectionInterval method.
-     */
-    public void testRemoveSelectionInterval() {
-        
-    }
-
-    /**
-     * Test removeSelectionPath method.
-     */
-    public void testRemoveSelectionPath() {
-        
-    }
-
-    /**
-     * Test removeSelectionPaths method.
-     */
-    public void testRemoveSelectionPaths() {
-        
-    }
-
-    /**
-     * Test removeSelectionRow method.
-     */
-    public void testRemoveSelectionRow() {
-        
-    }
-
-    /**
-     * Test removeSelectionRows method.
-     */
-    public void testRemoveSelectionRows() {
-        
-    }
-
-    /**
-     * Test removeTreeExpansionListener method.
-     */
-    public void testRemoveTreeExpansionListener() {
-        
-    }
-
-    /**
-     * Test removeTreeSelectionListener method.
-     */
-    public void testRemoveTreeSelectionListener() {
-        
-    }
-
-    /**
-     * Test removeTreeWillExpandListener method.
-     */
-    public void testRemoveTreeWillExpandListener() {
-        
+        operator2.makeVisible(null);
     }
 
     /**
      * Test scrollPathToVisible method.
      */
     public void testScrollPathToVisible() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.scrollPathToVisible(null);
     }
 
     /**
      * Test scrollRowToVisible method.
      */
     public void testScrollRowToVisible() {
+        frame.setVisible(true);
         
-    }
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
 
-    /**
-     * Test setCellEditor method.
-     */
-    public void testSetCellEditor() {
-        
-    }
-
-    /**
-     * Test setCellRenderer method.
-     */
-    public void testSetCellRenderer() {
-        
-    }
-
-    /**
-     * Test setEditable method.
-     */
-    public void testSetEditable() {
-        
-    }
-
-    /**
-     * Test setInvokesStopCellEditing method.
-     */
-    public void testSetInvokesStopCellEditing() {
-        
+        operator2.scrollRowToVisible(0);
     }
 
     /**
@@ -1229,73 +1768,33 @@ public class JTreeOperatorTest extends TestCase {
     }
 
     /**
-     * Test setModel method.
-     */
-    public void testSetModel() {
-        
-    }
-
-    /**
-     * Test setRootVisible method.
-     */
-    public void testSetRootVisible() {
-        
-    }
-
-    /**
-     * Test setRowHeight method.
-     */
-    public void testSetRowHeight() {
-        
-    }
-
-    /**
-     * Test setScrollsOnExpand method.
-     */
-    public void testSetScrollsOnExpand() {
-        
-    }
-
-    /**
      * Test setSelectionInterval method.
      */
     public void testSetSelectionInterval() {
+        frame.setVisible(true);
         
-    }
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
 
-    /**
-     * Test setSelectionModel method.
-     */
-    public void testSetSelectionModel() {
-        
-    }
-
-    /**
-     * Test setSelectionPath method.
-     */
-    public void testSetSelectionPath() {
-        
-    }
-
-    /**
-     * Test setSelectionPaths method.
-     */
-    public void testSetSelectionPaths() {
-        
+        operator2.setSelectionInterval(0 ,0);
     }
 
     /**
      * Test setSelectionRow method.
      */
     public void testSetSelectionRow() {
+        frame.setVisible(true);
         
-    }
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
 
-    /**
-     * Test setSelectionRows method.
-     */
-    public void testSetSelectionRows() {
-        
+        operator2.setSelectionRow(0);
     }
 
     /**
