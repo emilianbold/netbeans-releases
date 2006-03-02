@@ -98,7 +98,6 @@ public class CommitExecutor extends ExecutorSupport {
         // refresh all command roots
         File [] files = xcmd.getFiles();
         for (int i = 0; i < files.length; i++) {
-            refreshRecursively(files[i]);
             FileObject fo = FileUtil.toFileObject(files[i]);
             if (fo != null) {
                 fo.refresh(true);
@@ -106,21 +105,4 @@ public class CommitExecutor extends ExecutorSupport {
         }
     }
 
-    private void refreshRecursively(File file) {
-        if (cvs.isIgnoredFilename(file)) return;
-        if (refreshedFiles.contains(file)) return;
-        if (file.isDirectory()) {
-            File [] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                refreshRecursively(files[i]);
-            }
-            cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        } else {
-            if (cache.getStatus(file.getParentFile()).getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UPTODATE);
-            } else {
-                cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                
-            }
-        }
-    }
 }
