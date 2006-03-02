@@ -19,7 +19,7 @@ import junit.framework.TestCase;
 public class CharSequenceUtilitiesTest extends TestCase {
     
     private static final int CHARS_LENGTH = 1000;
-    private static final int SUBSTR_LENGTH = 10;
+    private static final int SUBSTR_LENGTH = 100;
     private static final Random rnd = new Random(0);
     
     public CharSequenceUtilitiesTest(String testName) {
