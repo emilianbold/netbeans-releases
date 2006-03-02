@@ -896,7 +896,7 @@ public class JTreeOperatorTest extends TestCase {
         assertNotNull(operator2);
 
         try {
-            operator2.convertValueToText("", false, false, false, false);
+            operator2.convertValueToText(null, true, true, true, 0, true);
         }
         catch(UnsupportedOperationException exception) {
         }
