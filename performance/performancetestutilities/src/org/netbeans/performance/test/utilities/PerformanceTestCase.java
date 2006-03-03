@@ -564,10 +564,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         String commandoutput = null;
         String xtestHome = System.getProperty("xtest.tmpdir");
-        if (onunix)
-            log (commandoutput = executeNativeCommand (xtestHome + "/measure_footprint " + pid).trim());
-        else
-            log (commandoutput = measureFootprintOnWindows (pid));
+        log (commandoutput = measureFootprint (pid, onwindows));
         String[] outputarray = commandoutput.split("; ");
         if (outputarray!=null && outputarray.length==4) {
             String[] rssvsz = outputarray[0].split("/");
@@ -609,24 +606,46 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         return null;
     }
 
-    private String measureFootprintOnWindows (String PID) {
+    private String measureFootprint (String PID, boolean onwindows) {
         String result = "";
 
-        /*
-            ./pslist -m $PID | tail -1 |
-            {
-             read NAME0 PID0 VM0 WS WSPK0 PRIV REST0
-             echo "$WS/$PRIV; " # resident/virtual memory
-            }
-         */
-        String xtestHome = System.getProperty("xtest.tmpdir");
-        String pslist = executeNativeCommand(xtestHome+"/pslist.exe -m "+PID);
-        int pslist_lines = numberOfLines(pslist);
-        String pslist_line = getLine (pslist, pslist_lines-1);
-        result += getItem(pslist_line, 3);
-        result += "/";
-        result += getItem(pslist_line, 5);
-        result += "; ";
+        if (onwindows) {
+            /*
+                ./pslist -m $PID | tail -1 |
+                {
+                 read NAME0 PID0 VM0 WS WSPK0 PRIV REST0
+                 echo "$WS/$PRIV; " # resident/virtual memory
+                }
+             */
+            String xtestHome = System.getProperty("xtest.tmpdir");
+            String pslist = executeNativeCommand(xtestHome+"/pslist.exe -m "+PID);
+            int pslist_lines = numberOfLines(pslist);
+            String pslist_line = getLine (pslist, pslist_lines-1);
+            result += getItem(pslist_line, 3);
+            result += "/";
+            result += getItem(pslist_line, 5);
+            result += "; ";
+        } else {
+            /*
+                ps -o rss -p $PID | tail -1 |
+                {
+                 read RSS
+                 ps -o vsz -p $PID | tail -1 |
+                 {
+                  read VSZ
+                  echo "$RSS/$VSZ; " # resident/virtual memory
+                 }
+                }
+             */
+            String ps_rss = executeNativeCommand("ps -o rss -p "+PID);
+            int ps_rss_lines = numberOfLines(ps_rss);
+            String ps_vsz = executeNativeCommand("ps -o vsz -p "+PID);
+            int ps_vsz_lines = numberOfLines(ps_vsz);
+            result += getLine(ps_rss,ps_rss_lines-1).trim();
+            result += "/";
+            result += getLine(ps_vsz,ps_vsz_lines-1).trim();
+            result += "; ";
+        }
 
         /*
             jstat -gc $PID | tail -1 |
