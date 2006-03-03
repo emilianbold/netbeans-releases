@@ -204,9 +204,9 @@ public class OpenProjectListTest extends NbTestCase {
         Project project2 = ProjectManager.getDefault().findProject(p2);
         
         assertNotNull("project2 is recognized", project2);
-        OpenProjectList.getDefault().open(project1);
+        OpenProjectList.getDefault().open(project2);
         
-        OpenProjectList.getDefault().close(new Project[] {project1});
+        OpenProjectList.getDefault().close(new Project[] {project2});
         
         TestSupport.notifyDeleted(project2);
         
