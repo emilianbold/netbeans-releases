@@ -236,7 +236,7 @@ public final class ParseProjectXml extends Task {
                 }
                 NO_JAVA_DOC_PROPERTY_SET: if (javadocPackagesProperty != null) {
                     if (pkgs.length > 0) {
-                        String sep = ", ";
+                        String sep = "";
                         StringBuffer b = new StringBuffer();
                         for (int i = 0; i < pkgs.length; i++) {
                             b.append(sep);
