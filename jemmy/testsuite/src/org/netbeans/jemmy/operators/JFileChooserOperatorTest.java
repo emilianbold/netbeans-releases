@@ -18,6 +18,9 @@
  */
 package org.netbeans.jemmy.operators;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -50,7 +53,7 @@ public class JFileChooserOperatorTest extends TestCase {
     public JFileChooserOperatorTest(String testName) {
         super(testName);
     }
-
+    
     /**
      * Setup for testing.
      */
@@ -60,8 +63,17 @@ public class JFileChooserOperatorTest extends TestCase {
         frame.getContentPane().add(fileChooser);
         frame.pack();
         frame.setLocationRelativeTo(null);
+        
+        File file = new File(".");
+        fileChooser.setCurrentDirectory(file);
+        
+        File file2 = new File("showit.txt");
+        if(!file2.exists()) file2.createNewFile();
+        
+        File file3 = new File("showit");
+        file3.mkdir();
     }
-
+    
     /**
      * Cleanup after testing.
      */
@@ -69,8 +81,14 @@ public class JFileChooserOperatorTest extends TestCase {
         frame.setVisible(false);
         frame.dispose();
         frame = null;
+        
+        File file = new File("showit.txt");
+        file.delete();
+        
+        File file2 = new File("showit");
+        file2.delete();
     }
-
+    
     /**
      * Suite method.
      */
@@ -106,19 +124,19 @@ public class JFileChooserOperatorTest extends TestCase {
         JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
         assertNotNull(operator3);
     }
-
+    
     /**
      * Test findJFileChooserDialog method.
      */
     public void testFindJFileChooserDialog() {
     }
-
+    
     /**
-     * Test of waitJFileChooserDialog method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test waitJFileChooserDialog method.
      */
     public void testWaitJFileChooserDialog() {
     }
-
+    
     /**
      * Test findJFileChooser method.
      */
@@ -144,575 +162,818 @@ public class JFileChooserOperatorTest extends TestCase {
     }
     
     /**
-     * Test of waitJFileChooser method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test waitJFileChooser method.
      */
     public void testWaitJFileChooser() {
+        frame.setVisible(true);
+        
+        JFileChooser fileChooser1 = JFileChooserOperator.waitJFileChooser(frame);
+        assertNotNull(fileChooser1);
     }
-
+    
     /**
-     * Test of setTimeouts method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetTimeouts() {
-    }
-
-    /**
-     * Test of getTimeouts method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testGetTimeouts() {
-    }
-
-    /**
-     * Test of setOutput method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetOutput() {
-    }
-
-    /**
-     * Test of getOutput method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testGetOutput() {
-    }
-
-    /**
-     * Test of getPathCombo method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getPathCombo method.
      */
     public void testGetPathCombo() {
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getPathCombo();
     }
-
+    
     /**
-     * Test of getFileTypesCombo method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getFileTypesCombo method.
      */
     public void testGetFileTypesCombo() {
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getFileTypesCombo();
     }
-
+    
     /**
-     * Test of getApproveButton method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getApproveButton method.
      */
     public void testGetApproveButton() {
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getApproveButton();
     }
-
+    
     /**
-     * Test of getCancelButton method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getCancelButton method.
      */
     public void testGetCancelButton() {
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getCancelButton();
     }
-
+    
     /**
-     * Test of getHomeButton method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getHomeButton method.
      */
     public void testGetHomeButton() {
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getHomeButton();
     }
-
+    
     /**
-     * Test of getUpLevelButton method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getUpLevelButton method.
      */
     public void testGetUpLevelButton() {
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getUpLevelButton();
     }
-
+    
     /**
-     * Test of getListToggleButton method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getListToggleButton method.
      */
     public void testGetListToggleButton() {
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getListToggleButton();
     }
-
+    
     /**
-     * Test of getDetailsToggleButton method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getDetailsToggleButton method.
      */
     public void testGetDetailsToggleButton() {
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getDetailsToggleButton();
     }
-
+    
     /**
-     * Test of getPathField method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getPathField method.
      */
     public void testGetPathField() {
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getPathField();
     }
-
+    
     /**
-     * Test of getFileList method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getFileList method.
      */
     public void testGetFileList() {
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getFileList();
     }
-
+    
     /**
-     * Test of approve method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test approve method.
      */
     public void testApprove() {
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.approve();
     }
-
+    
     /**
-     * Test of cancel method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test cancel method.
      */
     public void testCancel() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.cancel();
     }
-
+    
     /**
-     * Test of chooseFile method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test chooseFile method.
      */
     public void testChooseFile() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.chooseFile("1234");
     }
-
+    
     /**
-     * Test of goUpLevel method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test goUpLevel method.
      */
     public void testGoUpLevel() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setCurrentDirectory(new File("showit"));
+        operator3.goUpLevel();
     }
-
+    
     /**
-     * Test of goHome method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test goHome method.
      */
     public void testGoHome() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.goHome();
     }
-
+    
     /**
-     * Test of clickOnFile method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test clickOnFile method.
      */
     public void testClickOnFile() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.clickOnFile("showit.txt");
     }
-
+    
     /**
-     * Test of enterSubDir method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test enterSubDir method.
      */
     public void testEnterSubDir() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.enterSubDir("showit");
     }
-
+    
     /**
-     * Test of selectFile method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test selectFile method.
      */
     public void testSelectFile() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.selectFile("showit.txt");
     }
-
+    
     /**
-     * Test of selectPathDirectory method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test selectPathDirectory method.
      */
     public void testSelectPathDirectory() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.selectPathDirectory("1234");
     }
-
+    
     /**
-     * Test of selectFileType method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test selectFileType method.
      */
     public void testSelectFileType() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.selectFileType("1234");
     }
-
+    
     /**
-     * Test of checkFileDisplayed method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test checkFileDisplayed method.
      */
     public void testCheckFileDisplayed() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.checkFileDisplayed("showit.txt");
     }
-
+    
     /**
-     * Test of getFileCount method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getFileCount method.
      */
     public void testGetFileCount() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getFileCount();
     }
-
+    
     /**
-     * Test of getFiles method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getFiles method.
      */
     public void testGetFiles() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getFiles();
     }
-
+    
     /**
-     * Test of waitFileCount method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test waitFileCount method.
      */
     public void testWaitFileCount() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        fileChooser.setCurrentDirectory(new File("showit"));
+        operator3.waitFileCount(0);
+        fileChooser.setCurrentDirectory(new File("."));
     }
-
+    
     /**
-     * Test of waitFileDisplayed method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test waitFileDisplayed method.
      */
     public void testWaitFileDisplayed() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.waitFileDisplayed("showit.txt");
     }
-
+    
     /**
-     * Test of accept method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test accept method.
      */
     public void testAccept() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.accept(new File("showit.txt"));
     }
-
+    
     /**
-     * Test of addActionListener method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test addActionListener method.
      */
     public void testAddActionListener() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        ActionListenerTest listener = new ActionListenerTest();
+        operator3.addActionListener(listener);
+        operator3.removeActionListener(listener);
     }
-
+    
     /**
-     * Test of addChoosableFileFilter method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Inner class needed for testing.
+     */
+    public class ActionListenerTest implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
+    
+    /**
+     * Test addChoosableFileFilter method.
      */
     public void testAddChoosableFileFilter() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.addChoosableFileFilter(operator3.getChoosableFileFilters()[0]);
+        operator3.removeChoosableFileFilter(operator3.getChoosableFileFilters()[0]);
     }
-
+    
     /**
-     * Test of approveSelection method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test approveSelection method.
      */
     public void testApproveSelection() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.approveSelection();
     }
-
+    
     /**
-     * Test of cancelSelection method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test cancelSelection method.
      */
     public void testCancelSelection() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.cancelSelection();
     }
-
+    
     /**
-     * Test of changeToParentDirectory method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test changeToParentDirectory method.
      */
     public void testChangeToParentDirectory() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.changeToParentDirectory();
     }
-
+    
     /**
-     * Test of ensureFileIsVisible method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test ensureFileIsVisible method.
      */
     public void testEnsureFileIsVisible() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.ensureFileIsVisible(new File("showit.txt"));
     }
-
+    
     /**
-     * Test of getAcceptAllFileFilter method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getAcceptAllFileFilter method.
      */
     public void testGetAcceptAllFileFilter() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getAcceptAllFileFilter();
     }
-
+    
     /**
-     * Test of getAccessory method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getAccessory method.
      */
     public void testGetAccessory() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setAccessory(operator3.getAccessory());
     }
-
+    
     /**
-     * Test of getApproveButtonMnemonic method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getApproveButtonMnemonic method.
      */
     public void testGetApproveButtonMnemonic() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setApproveButtonMnemonic(operator3.getApproveButtonMnemonic());
+        operator3.setApproveButtonMnemonic('a');
     }
-
+    
     /**
-     * Test of getApproveButtonText method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getApproveButtonText method.
      */
     public void testGetApproveButtonText() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setApproveButtonText(operator3.getApproveButtonText());
     }
-
+    
     /**
-     * Test of getApproveButtonToolTipText method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getApproveButtonToolTipText method.
      */
     public void testGetApproveButtonToolTipText() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setApproveButtonToolTipText(operator3.getApproveButtonToolTipText());
     }
-
+    
     /**
-     * Test of getChoosableFileFilters method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getChoosableFileFilters method.
      */
     public void testGetChoosableFileFilters() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getChoosableFileFilters();
     }
-
+    
     /**
-     * Test of getCurrentDirectory method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getCurrentDirectory method.
      */
     public void testGetCurrentDirectory() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setCurrentDirectory(operator3.getCurrentDirectory());
     }
-
+    
     /**
-     * Test of getDescription method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getDescription method.
      */
     public void testGetDescription() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getDescription(new File("showit.txt"));
     }
-
+    
     /**
-     * Test of getDialogTitle method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getDialogTitle method.
      */
     public void testGetDialogTitle() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setDialogTitle(operator3.getDialogTitle());
     }
-
+    
     /**
-     * Test of getDialogType method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getDialogType method.
      */
     public void testGetDialogType() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setDialogType(operator3.getDialogType());
     }
-
+    
     /**
-     * Test of getFileFilter method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getFileFilter method.
      */
     public void testGetFileFilter() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setFileFilter(operator3.getFileFilter());
     }
-
+    
     /**
-     * Test of getFileSelectionMode method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getFileSelectionMode method.
      */
     public void testGetFileSelectionMode() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setFileSelectionMode(operator3.getFileSelectionMode());
     }
-
+    
     /**
-     * Test of getFileSystemView method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getFileSystemView method.
      */
     public void testGetFileSystemView() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setFileSystemView(operator3.getFileSystemView());
     }
-
+    
     /**
-     * Test of getFileView method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getFileView method.
      */
     public void testGetFileView() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setFileView(operator3.getFileView());
     }
-
+    
     /**
-     * Test of getIcon method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getIcon method.
      */
     public void testGetIcon() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getIcon(new File("showit.txt"));
     }
-
+    
     /**
-     * Test of getName method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getName method.
      */
     public void testGetName() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getName(new File("showit.txt"));
     }
-
+    
     /**
-     * Test of getSelectedFile method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getSelectedFile method.
      */
     public void testGetSelectedFile() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setSelectedFile(operator3.getSelectedFile());
     }
-
+    
     /**
-     * Test of getSelectedFiles method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getSelectedFiles method.
      */
     public void testGetSelectedFiles() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setSelectedFiles(operator3.getSelectedFiles());
     }
-
+    
     /**
-     * Test of getTypeDescription method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getTypeDescription method.
      */
     public void testGetTypeDescription() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getTypeDescription(new File("showit.txt"));
     }
-
+    
     /**
-     * Test of getUI method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test getUI method.
      */
     public void testGetUI() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.getUI();
     }
-
+    
     /**
-     * Test of isDirectorySelectionEnabled method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test isDirectorySelectionEnabled method.
      */
     public void testIsDirectorySelectionEnabled() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.isDirectorySelectionEnabled();
     }
-
+    
     /**
-     * Test of isFileHidingEnabled method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test isFileHidingEnabled method.
      */
     public void testIsFileHidingEnabled() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setFileHidingEnabled(operator3.isFileHidingEnabled());
     }
-
+    
     /**
-     * Test of isFileSelectionEnabled method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test isFileSelectionEnabled method.
      */
     public void testIsFileSelectionEnabled() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.isFileSelectionEnabled();
     }
-
+    
     /**
-     * Test of isMultiSelectionEnabled method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test isMultiSelectionEnabled method.
      */
     public void testIsMultiSelectionEnabled() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.setMultiSelectionEnabled(operator3.isMultiSelectionEnabled());
     }
-
+    
     /**
-     * Test of isTraversable method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test isTraversable method.
      */
     public void testIsTraversable() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.isTraversable(new File("showit.txt"));
     }
-
+    
     /**
-     * Test of removeActionListener method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test removeActionListener method.
      */
     public void testRemoveActionListener() {
         // TODO add your test code.
     }
-
+    
     /**
-     * Test of removeChoosableFileFilter method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test removeChoosableFileFilter method.
      */
     public void testRemoveChoosableFileFilter() {
         // TODO add your test code.
     }
-
+    
     /**
-     * Test of rescanCurrentDirectory method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
+     * Test rescanCurrentDirectory method.
      */
     public void testRescanCurrentDirectory() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of resetChoosableFileFilters method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testResetChoosableFileFilters() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setAccessory method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetAccessory() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setApproveButtonMnemonic method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetApproveButtonMnemonic() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setApproveButtonText method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetApproveButtonText() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setApproveButtonToolTipText method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetApproveButtonToolTipText() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setCurrentDirectory method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetCurrentDirectory() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setDialogTitle method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetDialogTitle() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setDialogType method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetDialogType() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setFileFilter method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetFileFilter() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setFileHidingEnabled method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetFileHidingEnabled() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setFileSelectionMode method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetFileSelectionMode() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setFileSystemView method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetFileSystemView() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setFileView method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetFileView() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setMultiSelectionEnabled method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetMultiSelectionEnabled() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setSelectedFile method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetSelectedFile() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of setSelectedFiles method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testSetSelectedFiles() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of showDialog method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testShowDialog() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of showOpenDialog method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testShowOpenDialog() {
-        // TODO add your test code.
-    }
-
-    /**
-     * Test of showSaveDialog method, of class org.netbeans.jemmy.operators.JFileChooserOperator.
-     */
-    public void testShowSaveDialog() {
-        // TODO add your test code.
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.rescanCurrentDirectory();
     }
     
+    /**
+     * Test resetChoosableFileFilters method.
+     */
+    public void testResetChoosableFileFilters() {
+        frame.setVisible(true);
+        
+        JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        operator3.resetChoosableFileFilters();
+    }
+        
+    /**
+     * Test showDialog method.
+     */
+    public void testShowDialog() {
+        final JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        Runnable runnable = new Runnable() {
+            public void run() {
+                operator3.showDialog(null, "Plus");
+            }
+        };
+        
+        new Thread(runnable).start();
+
+        try {
+            Thread.sleep(1000);
+        }
+        catch(InterruptedException exception) {
+        }
+        operator3.setVisible(false);
+    }
+    
+    /**
+     * Test showOpenDialog method.
+     */
+    public void testShowOpenDialog() {
+        final JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+        
+        Runnable runnable = new Runnable() {
+            public void run() {
+                operator3.showOpenDialog(null);
+            }
+        };
+        
+        new Thread(runnable).start();
+        
+        try {
+            Thread.sleep(1000);
+        }
+        catch(InterruptedException exception) {
+        }
+        operator3.setVisible(false);
+    }
+    
+    /**
+     * Test showSaveDialog method.
+     */
+    public void testShowSaveDialog() {
+        final JFileChooserOperator operator3 = new JFileChooserOperator(fileChooser);
+        assertNotNull(operator3);
+
+        Runnable runnable = new Runnable() {
+            public void run() {
+                operator3.showSaveDialog(null);
+            }
+        };
+        
+        new Thread(runnable).start();
+
+        try {
+            Thread.sleep(1000);
+        }
+        catch(InterruptedException exception) {
+        }
+        operator3.setVisible(false);
+    }
 }
