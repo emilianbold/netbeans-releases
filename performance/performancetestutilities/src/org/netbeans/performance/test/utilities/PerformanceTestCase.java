@@ -552,18 +552,12 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         if (!onunix && !onwindows)
             return;
 
-        // find IDE process's PID using JPS utility
-        String pid = null;
-        String jprocs = executeNativeCommand (getJavaBinDirectory()+"jps -mv");
-        log (jprocs);
-        String[] procstrings = jprocs.split("\n");
-        for (int i=0; i<procstrings.length; i++) {
-            if (procstrings[i].matches(".*Main.*test.work.sys.ide.*")) {
-                //log (procstrings[i]);
-                pid = procstrings[i].split(" ")[0];
-                break;
-            }
-        }
+        // find process's PID
+        String pid = getPID();
+        if (pid!=null)
+            log ("PID = "+pid);
+        else
+            fail("Process's PID not found.");
 
         // Full GC several times
         runGC(5);
@@ -591,6 +585,28 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         }
 
         log ("----------------------------------------------");
+    }
+
+    private String getPID() {
+        String xtestWorkdir = System.getProperty("xtest.workdir");
+        if (xtestWorkdir!=null) {
+            File ideRunning = new File(xtestWorkdir,"ide.pid");
+            if (ideRunning.exists()) {
+                try {
+                    LineNumberReader reader = new LineNumberReader(new FileReader(ideRunning));
+                    String line = reader.readLine();
+                    if (line != null)
+                        return line.trim();
+                } catch (IOException ioe) {
+                    ioe.printStackTrace(getLog());
+                    log("IOException when reading PID from ide.pid file");
+                }
+            } else {
+                fail("Cannot find file containing PID of running IDE ("+ideRunning.getAbsolutePath());
+            }
+        } else log("xtest.workdir property is not specified");
+
+        return null;
     }
 
     private String measureFootprintOnWindows (String PID) {
