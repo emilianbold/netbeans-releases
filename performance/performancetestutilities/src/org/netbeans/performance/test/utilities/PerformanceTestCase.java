@@ -554,7 +554,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         // find IDE process's PID using JPS utility
         String pid = null;
-        String jprocs = executeNativeCommand ("jps -mv");
+        String jprocs = executeNativeCommand (getJavaBinDirectory()+"jps -mv");
         String[] procstrings = jprocs.split("\n");
         for (int i=0; i<procstrings.length; i++) {
             if (procstrings[i].matches(".*Main.*test.work.sys.ide.*")) {
@@ -625,7 +625,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
              echo "; "
             }
          */
-        String jstat = executeNativeCommand("jstat -gc "+PID);
+        String jstat = executeNativeCommand(getJavaBinDirectory()+"jstat -gc "+PID);
         int jstat_lines = numberOfLines(jstat);
         String jstat_line = getLine (jstat, jstat_lines-1);
         int heapU = (int)Math.floor(itemToNumber(getItem(jstat_line,2)) + itemToNumber(getItem(jstat_line,3)) +
@@ -648,7 +648,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
              echo "$L/$U" # loaded/unloaded classes
             }
          */
-        String jstat2 = executeNativeCommand("jstat -class "+PID);
+        String jstat2 = executeNativeCommand(getJavaBinDirectory()+"jstat -class "+PID);
         int jstat2_lines = numberOfLines(jstat2);
         String jstat2_line = getLine(jstat2, jstat2_lines-1);
         result += getItem(jstat2_line, 0);
@@ -680,6 +680,14 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
     private float itemToNumber (String item) {
         return Float.parseFloat(item);
+    }
+
+    private String getJavaBinDirectory (){
+        String separator = System.getProperty("file.separator");
+        String javaDir = System.getProperty("java.home");
+        if (javaDir.endsWith(separator+"jre"))
+            javaDir = javaDir.substring(0,javaDir.length()-4);
+        return javaDir+separator+"bin"+separator;
     }
     
     private String executeNativeCommand (String commandLine){
