@@ -42,8 +42,6 @@ import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
-// XXX check against CVS RepositoryStep
-// XXX error output isn't very userfriendly
 /**
  *
  *
@@ -65,6 +63,8 @@ public class Repository implements ActionListener, DocumentListener {
 
     private String message;
 
+    private boolean acceptRevision;
+
     public class SelectedRepository {
         private final SVNUrl url;
         private final SVNRevision revision;
@@ -80,11 +80,12 @@ public class Repository implements ActionListener, DocumentListener {
         }
     }    
 
-    public Repository(boolean urlEditable, String titleLabel) {
+    public Repository(boolean urlEditable, boolean acceptRevision, String titleLabel) {
         getPanel().urlComboBox.setEnabled(urlEditable);
-        getPanel().titleLabel.setText(titleLabel);        
+        getPanel().titleLabel.setText(titleLabel);
+        this.acceptRevision = acceptRevision;
     }
-
+    
     public void actionPerformed(ActionEvent e) {
         if(e.getSource()==repositoryPanel.proxySettingsButton) {
             onProxyConfiguration();
@@ -131,24 +132,7 @@ public class Repository implements ActionListener, DocumentListener {
         }
         
         Set recentRoots = new LinkedHashSet();
-//        if (preferedCvsRoot != null) { // XXX is there somthing like a preffered root???
-//            recentRoots.add(preferedCvsRoot);
-//        }
-        recentRoots.addAll(HistorySettings.getRecent(HistorySettings.PROP_SVN_URLS));
-//        if (initialCvsRoot != null) { // XXX is there somthing like a initial root???
-//            // it's first => initially selected
-//            recentRoots.add(initialCvsRoot);
-//        }
-        
-          // XXX is there somethig like this ???
-//        Iterator cvsPassRoots = PasswordsFile.listRoots(":pserver:").iterator();  // NOI18N
-//        while (cvsPassRoots.hasNext()) {
-//            String next = (String) cvsPassRoots.next();
-//            if (recentRoots.contains(next) == false) {
-//                recentRoots.add(next);
-//            }
-//        }
-        
+        recentRoots.addAll(HistorySettings.getRecent(HistorySettings.PROP_SVN_URLS));        
         // templates for supported connection methods        
         recentRoots.add("file:");       // NOI18N
         recentRoots.add("http:");       // NOI18N
@@ -215,23 +199,7 @@ public class Repository implements ActionListener, DocumentListener {
                 } else {
                     // XXX should be stored in some way ...
                 }               
-            }                    
-            
-            
-//        if (svnUrl. .startsWith(":pserver:")) { // NOI18N
-//            storeProxySettings = true;
-//            try {
-//                // CVSclient library reads password directly from .cvspass file
-//                // store it here into the file. It's potentionally necessary for
-//                // next step branch and module browsers
-//
-//                PasswordsFile.storePassword(root, getScrambledPassword());
-//            } catch (IOException e) {
-//                ErrorManager err = ErrorManager.getDefault();
-//                err.annotate(e, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2020"));
-//                err.notify(e);
-//            }
-//        } 
+            }                                
         }
 
         if (storeProxySettings) {
@@ -271,7 +239,7 @@ public class Repository implements ActionListener, DocumentListener {
         SwingUtilities.invokeLater(awt);
     }
         
-    public SelectedRepository getSelectedRepository() throws Exception {     // XXX rename
+    public SelectedRepository getSelectedRepository() throws Exception {    
         String urlString = selectedUrlString();        
         if(urlString == null ) {
             return null;
@@ -281,7 +249,7 @@ public class Repository implements ActionListener, DocumentListener {
             SVNRevision revision = null;
             if(idx < 0) {                
                 revision = SVNRevision.HEAD;                    
-            } else {                
+            } else if (acceptRevision) {
                 try {                    
                     revision = new SVNRevision.Number(Long.parseLong(urlString.substring(idx+1))); 
                 } catch (NumberFormatException ex) {
@@ -289,12 +257,14 @@ public class Repository implements ActionListener, DocumentListener {
                     throw ex;                    
                 } 
                 urlString = urlString.substring(0, idx);            
-            }               
-            // XXX what if this is used for the import wizard? the only revision which make sense is HEAD!
-            return new SelectedRepository(new SVNUrl (urlString), revision);    
+            } else {
+                throw new MalformedURLException("The only revision allowed here is HEAD!"); 
+            }            
+            return new SelectedRepository(new SVNUrl (urlString), revision);
+
         } catch (MalformedURLException ex) {
             setValid(false, ex.getLocalizedMessage());
-            throw ex;            
+            throw ex;
         }        
     }
     
@@ -352,11 +322,7 @@ public class Repository implements ActionListener, DocumentListener {
      * Load selected root from Swing structures (from arbitrary thread).
      * @return null on failure
      */
-    private String selectedUrlString() {
-//        if (initialCvsRoot != null) { 
-//            return initialCvsRoot;
-//        }
-        
+    private String selectedUrlString() {        
         final String[] svnUrl = new String[1];
         try {
             Runnable awt = new Runnable() {

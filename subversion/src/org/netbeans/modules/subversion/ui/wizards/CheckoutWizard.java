@@ -22,7 +22,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep;
-import org.netbeans.modules.subversion.ui.wizards.checkoutstep.WorkdirStep;
+import org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -37,7 +37,7 @@ public final class CheckoutWizard implements ChangeListener {
     private WizardDescriptor.Panel[] panels;
     private RepositoryStep repositoryStep;
     //private BrowserStep browseStep;
-    private WorkdirStep workdirStep;        
+    private CheckoutStep workdirStep;        
     
     private String errorMessage;
     private WizardDescriptor wizardDescriptor;
@@ -63,10 +63,7 @@ public final class CheckoutWizard implements ChangeListener {
                value == WizardDescriptor.CANCEL_OPTION ) 
             {
                 // wizard was closed or canceled -> reset all steps & kill all running tasks
-                repositoryStep.stop();
-                
-                // XXX
-                //browseStep.reset();                                     
+                repositoryStep.stop();                          
             }            
         }
         return finnished;
@@ -100,8 +97,8 @@ public final class CheckoutWizard implements ChangeListener {
 
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];
-            repositoryStep = new RepositoryStep();            
-            workdirStep = new WorkdirStep();            
+            repositoryStep = new RepositoryStep(true);            
+            workdirStep = new CheckoutStep();            
 
             panels = new  WizardDescriptor.Panel[] {repositoryStep, workdirStep};
 
@@ -130,22 +127,10 @@ public final class CheckoutWizard implements ChangeListener {
         }
 
         public void nextPanel() {          
-            // XXX
             if(current() == repositoryStep) {
-//                browseStep = new BrowserStep(org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "LBL_CheckoutBrowser"));
                 workdirStep.setup(repositoryStep.getRepositoryFile());
             }            
             super.nextPanel();
-        }
-
-        public void previousPanel() {            
-            // XXX
-//            if(current() == browseStep) {                
-//                // svnClient.cancelOperation() not implemented, but we still should look
-//                // that browse is reseted in some way
-//                browseStep.reset();
-//            }            
-            super.previousPanel();
         }
     }
     

@@ -33,8 +33,6 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
  * @author Tomas Stupka
  */
 public class CreateFolderAction extends BrowserAction implements PropertyChangeListener {
-    // XXX maybe some another kind of action        
-    
     private final String defaultFolderName;    
     
     public CreateFolderAction(String defaultFolderName) {        
@@ -110,7 +108,6 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                     return;
                 }                    
 
-                // XXX isn't fully sufficient yet ...
                 children = repositoryPathNode.getChildren();
                 if(children != null && children.getNodesCount() > 0) {
                     childNodes = children.getNodes();

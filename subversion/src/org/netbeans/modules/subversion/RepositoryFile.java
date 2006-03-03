@@ -135,9 +135,9 @@ public class RepositoryFile {
                 if(idx >= 0) {
                     url = url.substring(idx+3);
                 }
-                name = url;
+                return  url;
             } else {
-                name = getFileUrl().getLastPathSegment();            
+                return  getFileUrl().getLastPathSegment();
             }    
         }
         return name;

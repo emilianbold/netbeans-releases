@@ -139,7 +139,7 @@ public final class CheckoutAction extends CallableSystemAction {
         try {
             client = Subversion.getInstance().getClient(repository);
         } catch (SVNClientException ex) {
-            ex.printStackTrace(); // XXX
+            ErrorManager.getDefault().notify(ex); // should not happen 
             return;
         }
         

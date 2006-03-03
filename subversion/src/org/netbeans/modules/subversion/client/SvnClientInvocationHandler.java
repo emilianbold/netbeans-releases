@@ -53,8 +53,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 if(handleException(e)) {
                     return invoke(proxy, method, args); // XXX hm...
                 } else {
-                    // XXX some action canceled by user message ...
-                    return null;
+                    // XXX some action canceled by user message ... wrap the exception ???
+                    throw e;
                 }                        
             } catch (Exception ex) {
                 throw ex;
@@ -84,11 +84,11 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     }
 
     private boolean handleAuthenticationError() {
-        Repository repository = new Repository(false, "Authentication failed:"); // XXX
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(repository.getPanel(), ""); // XXX        
+        Repository repository = new Repository(false, false, "Correct the password, username and proxy settings for ths URL:"); 
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(repository.getPanel(), "Authentication failed"); 
 
-        JButton retryButton = new JButton("Retry"); // XXX
-        dialogDescriptor.setOptions(new Object[] {retryButton, "Cancel"}); // XXX
+        JButton retryButton = new JButton("Retry"); 
+        dialogDescriptor.setOptions(new Object[] {retryButton, "Cancel"}); 
         
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));

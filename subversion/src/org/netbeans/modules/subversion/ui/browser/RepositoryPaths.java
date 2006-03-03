@@ -134,10 +134,6 @@ public class RepositoryPaths implements ActionListener {
 
     public void browseRepository() {
         SVNRevision revision = getRevision();
-        if(revision==null) {
-            // XXX
-            return;
-        }
         RepositoryFile[] repositoryFilesToSelect;
         try {
             repositoryFilesToSelect = getRepositoryFiles();
@@ -153,7 +149,7 @@ public class RepositoryPaths implements ActionListener {
                 singleSelection);        
         
         final DialogDescriptor dialogDescriptor = 
-                new DialogDescriptor(browser.getBrowserPanel(), "Repository browser - " + getRepositoryUrl().toString()); // XXX
+                new DialogDescriptor(browser.getBrowserPanel(), "Repository browser - " + getRepositoryUrl().toString()); 
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
         dialogDescriptor.setValid(false);
@@ -190,11 +186,11 @@ public class RepositoryPaths implements ActionListener {
                 repositoryPathTextField.setText(paths.toString());
             } 
         } else {
-            browser.reset(); // XXX
+            browser.reset(); 
         }
     }      
     
-    private SVNRevision getRevision() throws NumberFormatException {
+    private SVNRevision getRevision() {
         if(revisionTextField == null) {
             return SVNRevision.HEAD;
         }
@@ -202,6 +198,7 @@ public class RepositoryPaths implements ActionListener {
         if(revisionString.equals("") || revisionString.equals(SVNRevision.HEAD.toString())) {
             return SVNRevision.HEAD;    
         }
+        // XXX check for wrong revision formats
         return new SVNRevision.Number(Long.parseLong(revisionString));        
     }       
     

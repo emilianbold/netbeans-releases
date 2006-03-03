@@ -41,8 +41,6 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
         
-// XXX check against CVS RepositoryStep
-// XXX error output isn't very userfriendly
 /**
  *
  *
@@ -64,14 +62,20 @@ public class RepositoryStep
     private Thread backgroundValidationThread;
 
     private RepositoryFile repositoryFile;    
-    
+
+    private boolean acceptRevision;
+
+    public RepositoryStep(boolean acceptRevision) {
+        this.acceptRevision = acceptRevision;
+    }
+
     public HelpCtx getHelp() {
         return new HelpCtx(RepositoryStep.class);
     }        
 
     protected JComponent createComponent() {
         if (repository == null) {
-            repository = new Repository(true, "Specify Subversion repository location:"); // XXX
+            repository = new Repository(true, acceptRevision, "Specify Subversion repository location:");
             repository.addPropertyChangeListener(this);
             panel = new RepositoryStepPanel();            
             panel.repositoryPanel.setLayout(new BorderLayout());
@@ -96,8 +100,7 @@ public class RepositoryStep
                                                         repository.getUserName(),
                                                         repository.getPassword());
         } catch (SVNClientException ex) {
-            ex.printStackTrace(); // XXX
-            invalid(null);
+            invalid(ex.getLocalizedMessage());
             validationDone();
             return; 
         }
@@ -126,15 +129,7 @@ public class RepositoryStep
                         // XXX see issue #72810 and #72921. workaround! 
                         repositoryUrl = selectedRepository.getUrl();                        
                     }
-                    SVNRevision revision = selectedRepository.getRevision(); 
-                    // XXX
-//                    if(Long.getLong(revision.toString()).longValue() > 
-//                       Long.getLong(info.getRevision().toString()).longValue()) 
-//                    {
-//                        invalidMsg[0] = "Revision does not exist"; // XXX
-//                        return;
-//                    }                    
-                    
+                    SVNRevision revision = selectedRepository.getRevision();                                   
                     String[] repositorySegments = repositoryUrl.getPathSegments();
                     String[] selectedSegments = selectedRepository.getUrl().getPathSegments();
                     String[] repositoryFolder = new String[selectedSegments.length - repositorySegments.length];
@@ -165,7 +160,7 @@ public class RepositoryStep
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(e, "Passing interrupt to possibly uninterruptible nested thread: " + workerThread);  // NOI18N
             workerThread.interrupt();
-            valid("Action interrupted by user."); // should be a user action, so set again on valid ... // XXX
+            valid("Action interrupted by user."); // should be a user action, so set again on valid ... 
             err.notify(ErrorManager.INFORMATIONAL, e);
         } finally {
             backgroundValidationThread = null;
@@ -233,7 +228,7 @@ public class RepositoryStep
         return repositoryFile;
     }
     
-    private Repository.SelectedRepository getSelectedRepository() {     // XXX rename   
+    private Repository.SelectedRepository getSelectedRepository() {      
         try {
             return repository.getSelectedRepository();
         } catch (Exception ex) {

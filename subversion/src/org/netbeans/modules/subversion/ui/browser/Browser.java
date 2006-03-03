@@ -114,7 +114,6 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         List nodesToSelect = new ArrayList(select.length);                                                           
 
         for (int i = 0; i < select.length; i++) {                
-            // XXX what happens when the rootnodes children starts to run? - probably nothing                            
             String[] segments = select[i].getPathSegments();                
             segmentParentNode = rootNode;
             RepositoryFile segmentFile = repositoryRoot;

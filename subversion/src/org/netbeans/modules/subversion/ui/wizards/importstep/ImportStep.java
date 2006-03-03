@@ -23,7 +23,7 @@ import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.netbeans.modules.subversion.ui.wizards.checkoutstep.WorkdirStep;
+import org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep;
 import org.openide.util.HelpCtx;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -64,7 +64,7 @@ public class ImportStep extends AbstractStep implements DocumentListener {
         String text = messagePanel.repositoryPathTextField.getText();
         if (text == null || text.length() == 0) {
             // XXX can't see the msg 
-            invalid(org.openide.util.NbBundle.getMessage(WorkdirStep.class, "BK2014"));
+            invalid(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2014"));
             return false;
         }        
         

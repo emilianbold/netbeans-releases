@@ -62,7 +62,7 @@ public class CreateCopyAction extends ContextAction {
         SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
         final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);        
      
-        CreateCopy createCopy = new CreateCopy(repositoryRoot, nodes[0].getName(), isChanged); // XXX name or dispayname or what?                
+        CreateCopy createCopy = new CreateCopy(repositoryRoot, nodes[0].getName(), isChanged); // XXX name or dispayname or what? - lookup...
         if(createCopy.showDialog()) {
                         
             final RepositoryFile repositoryFolder = createCopy.getRepositoryFile();
@@ -80,7 +80,7 @@ public class CreateCopyAction extends ContextAction {
                             try{
                                 info = client.getInfo(folderToCreate);                                                                
                             } catch (SVNClientException ex) {                               
-                               if(!(ex.getMessage().indexOf("(Not a valid URL)") > - 1)) { // XXX SvnClient ???
+                               if(!(ex.getMessage().indexOf("(Not a valid URL)") > - 1)) { // XXX SvnClient ??? may should be the svnexception handler also reachable from here ...
                                    throw ex;
                                }                               
                             }            
@@ -88,7 +88,7 @@ public class CreateCopyAction extends ContextAction {
                             if(info == null) {
                                 client.mkdir(folderToCreate,
                                              true, 
-                                             "[Netbeans SVN client generated message: create a new folder for the following copy]: " + message); // XXX                           
+                                             "[Netbeans SVN client generated message: create a new folder for the following copy]: " + message); // XXX how shoul be this done                      
                             }                            
                         }                        
                         

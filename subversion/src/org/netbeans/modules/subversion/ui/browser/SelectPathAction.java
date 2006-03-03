@@ -26,7 +26,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka
  */
 public class SelectPathAction extends AbstractAction {
-    // XXX maybe some another kind of action        
     
     private final SVNUrl selectionUrl;
     private Node[] selectionNodes;

@@ -69,8 +69,8 @@ public class SwitchToAction extends ContextAction {
                         ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
                         if(replaceModifications) {
                             // get rid of all changes ...
+                            // doesn't wok for added (new) files
                             client.revert(root, true);
-                            // XXX doesn't work for added files
                         }
                         // ... and switch
                         client.switchToUrl(root, repository.getFileUrl(), repository.getRevision(), true);                                

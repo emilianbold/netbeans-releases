@@ -99,7 +99,7 @@ public class SvnClientFactory {
             adapter.setUsername(username);
             adapter.setPassword(password);
         } catch (SVNClientException ex) {
-            ex.printStackTrace(); // XXX should not happen
+            ex.printStackTrace(); // should not happen
         }        
         return adapter;
     }        
@@ -171,7 +171,7 @@ public class SvnClientFactory {
         if(Utilities.isUnix()) {
             copyToIDEConfigDir(new File(userHome + "/.subversion/config"));  
         } else if (Utilities.isWindows()){
-            copyToIDEConfigDir(new File(userHome + "/Application Data/Subversion/config"));  // XXX test me
+            copyToIDEConfigDir(new File(userHome + "/Application Data/Subversion/config"));  
         } else {
             // skip            
             // XXX what about another platforms?    
@@ -181,7 +181,7 @@ public class SvnClientFactory {
         if(Utilities.isUnix()) {
             copyToIDEAuthDir(new File(userHome + "/.subversion/"));  
         } else if (Utilities.isWindows()){
-            copyToIDEAuthDir(new File(userHome + "/Application Data/Subversion/"));  // XXX test me
+            copyToIDEAuthDir(new File(userHome + "/Application Data/Subversion/"));  
         } else {
             // skip            
             // XXX what about another platforms?    

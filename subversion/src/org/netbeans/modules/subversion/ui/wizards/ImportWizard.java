@@ -60,17 +60,13 @@ public final class ImportWizard implements ChangeListener {
         Object value = wizardDescriptor.getValue();
         boolean finnished = value == WizardDescriptor.FINISH_OPTION;
         
-        if(finnished) {
-            // XXX do nothing
-        } else {
+        if(!finnished) {
             // wizard wasn't properly finnished ...
             if(value == WizardDescriptor.CLOSED_OPTION || 
                value == WizardDescriptor.CANCEL_OPTION ) 
             {
                 // wizard was closed or canceled -> reset all steps & kill all running tasks                
                 repositoryStep.stop();
-                // XXX
-            //    browseStep.reset();                                     
             }            
         }
         return finnished;
@@ -99,7 +95,7 @@ public final class ImportWizard implements ChangeListener {
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];
             
-            repositoryStep = new RepositoryStep();               
+            repositoryStep = new RepositoryStep(false);
             
             importStep = new ImportStep(new BrowserAction[] { new CreateFolderAction(defaultFolderNameToImport)});
 

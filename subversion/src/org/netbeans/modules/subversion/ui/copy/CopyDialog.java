@@ -50,7 +50,7 @@ public abstract class CopyDialog implements DocumentListener, FocusListener {
     
     public CopyDialog(JPanel panel, String title, String okLabel) {                
         this.panel = panel;
-        dialogDescriptor = new DialogDescriptor(panel, title); // XXX
+        dialogDescriptor = new DialogDescriptor(panel, title); 
         
         okButton = new JButton(okLabel);
         dialogDescriptor.setOptions(new Object[] {okButton, "Canel"});

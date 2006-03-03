@@ -38,8 +38,8 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public class RepositoryPathNode extends AbstractNode {
     
     private RepositoryPathEntry entry;
-    private final BrowserClient client;
-    private String name = null;    
+    private final BrowserClient client;    
+    private final boolean canRename;
     private final static Node[] EMPTY_NODES = new Node[0];        
 
     static class RepositoryPathEntry {
@@ -63,24 +63,25 @@ public class RepositoryPathNode extends AbstractNode {
     
     static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryPathEntry entry) {
         RepositoryPathChildren kids = new RepositoryPathChildren(client, entry);
-        RepositoryPathNode node = new RepositoryPathNode(kids, client, entry);        
+        RepositoryPathNode node = new RepositoryPathNode(kids, client, entry, false);
         return node;
     }
 
     static RepositoryPathNode createBrowserPathNode(BrowserClient client, RepositoryPathEntry entry) {
-        RepositoryPathNode node = new RepositoryPathNode(new Children.Array(), client, entry);        
+        RepositoryPathNode node = new RepositoryPathNode(new Children.Array(), client, entry, true);
         return node;
     }
             
-    private RepositoryPathNode(Children children, BrowserClient client, RepositoryPathEntry entry) {
+    private RepositoryPathNode(Children children, BrowserClient client, RepositoryPathEntry entry, boolean canRename) {
         super(children);
         this.entry = entry;
         this.client = client;
-        
+        this.canRename = canRename;
+
         if(entry.getSvnNodeKind()==SVNNodeKind.DIR){
             setIconBaseWithExtension("org/netbeans/modules/subversion/ui/wizards/browser/defaultFolder.gif");       // NOI18N
         } else {
-            // XXX 
+            // XXX need a files icon
         }
     }
 
@@ -93,10 +94,14 @@ public class RepositoryPathNode extends AbstractNode {
     }
 
     public void setName(String name) {
-        entry = new RepositoryPathEntry(
-                    entry.getRepositoryFile().replaceLastSegment(name), 
-                    entry.getSvnNodeKind()
-                );
+        String oldName = getName();
+        if(!oldName.equals(name)) {
+            entry = new RepositoryPathEntry(
+                        entry.getRepositoryFile().replaceLastSegment(name),
+                        entry.getSvnNodeKind()
+                    );
+            this.fireNameChange(oldName, name);
+        }                
     }
     
     public Image getIcon(int type) {
@@ -134,7 +139,7 @@ public class RepositoryPathNode extends AbstractNode {
     }       
 
     public boolean canRename() {
-        return !(getChildren() instanceof RepositoryPathChildren); // XXX implicit logic
+        return canRename;
     }
     
     private static class RepositoryPathChildren extends Children.Keys implements Runnable {

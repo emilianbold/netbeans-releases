@@ -409,8 +409,8 @@ public class SvnUtils {
                 int status = Subversion.getInstance().getStatusCache().getStatus(file).getStatus();
                 if (repositoryURL == null && (status & FileInformation.STATUS_VERSIONED) != 0) {
                     // checked out with 1.2 client
-                    // XXX - IMPORTANT! this hack won't work as long you get the client by
-                    //       calling the getClient() method and connecting through a PROXY
+                    // XXX - IMPORTANT! this hack won't work if you get the client by
+                    //       calling the getClient() method and you are connecting through a PROXY
                     //     - use getClient(SVNUrl, *) to obtain a client properly configured for the given url
                     try {
                         repositoryURL = client.getInfo(fileURL).getRepository();
@@ -475,8 +475,8 @@ public class SvnUtils {
                 int status = Subversion.getInstance().getStatusCache().getStatus(file).getStatus();
                 if (repositoryURL == null && (status & FileInformation.STATUS_VERSIONED) != 0) {
                     // checked out with 1.2 client
-                    // XXX - IMPORTANT! this hack won't work as long you get the client by
-                    //       calling the getClient() method and connecting through a PROXY
+                    // XXX - IMPORTANT! this hack won't work if you get the client by
+                    //       calling the getClient() method and you are connecting through a PROXY
                     //     - use getClient(SVNUrl, *) to obtain a client properly configured for the given url
                     //       -
                     try {

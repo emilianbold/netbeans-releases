@@ -112,7 +112,7 @@ public final class ImportAction extends NodeAction {
                 if (!wizard.show()) return;
                 
                 final SVNUrl repositoryUrl = wizard.getRepositoryUrl();
-                final SVNUrl repositoryFolderUrl = wizard.getRepositoryFolderUrl(); // XXX get the file, U will need it for the eventuell checkout
+                final SVNUrl repositoryFolderUrl = wizard.getRepositoryFolderUrl(); 
                 final String message = wizard.getMessage();        
                 final boolean checkout = wizard.checkoutAfterImport();
                 final File file = lookupImportDirectory(nodes[0]);                 
@@ -123,10 +123,10 @@ public final class ImportAction extends NodeAction {
                         importThread = Thread.currentThread();                         
                         progressHandle = ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(ImportAction.class, "BK0001"), cancellable);       // NOI18N
                         progressHandle.start();                
-                        try{                                    
+                        try{                            
                             doImport(repositoryUrl, repositoryFolderUrl, file, message);
                             if(checkout) {
-                                doCheckout(repositoryUrl, repositoryFolderUrl, file);   
+                                doCheckout(repositoryUrl, repositoryFolderUrl, file);
                             }                            
                         } catch (SVNClientException ex) {
                             org.openide.ErrorManager.getDefault().notify(ex);                                    
@@ -150,7 +150,7 @@ public final class ImportAction extends NodeAction {
             client.doImport(file, folderUrl, message, true);                    
             
         } catch (SVNClientException ex) {
-            org.openide.ErrorManager.getDefault().notify(ex); // XXX
+            org.openide.ErrorManager.getDefault().notify(ex); 
             return;
         }                           
     }    
