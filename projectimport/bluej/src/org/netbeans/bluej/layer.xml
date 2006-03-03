@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="BlueJ.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.bluej.options.BluejAdvancedOption"/>
+            </file>
+        </folder>
+   </folder>
+  <folder name="Services">
+      <file name="org-netbeans-bluej-options-BlueJSettings.settings" 
+            url="options/BlueJSettings.xml">
+      </file>
+  </folder>
+
 </filesystem>
 

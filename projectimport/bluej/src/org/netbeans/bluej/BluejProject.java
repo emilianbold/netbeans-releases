@@ -13,6 +13,7 @@
 
 package org.netbeans.bluej;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -28,6 +29,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.bluej.api.BluejOpenCloseCallback;
 import org.netbeans.bluej.classpath.ClassPathProviderImpl;
+import org.netbeans.bluej.options.BlueJSettings;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -350,7 +352,7 @@ public final class BluejProject implements Project, AntProjectListener {
         
     }
     
-    private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
+    private final class ProjectOpenedHookImpl extends ProjectOpenedHook implements PropertyChangeListener {
         
         ProjectOpenedHookImpl() {}
         
@@ -361,6 +363,12 @@ public final class BluejProject implements Project, AntProjectListener {
                     EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
                     ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N                    
+                    File bjHome = BlueJSettings.getDefault().getHome();
+                    if (bjHome != null) {
+                        ep.setProperty("bluej.home", bjHome.getAbsolutePath());
+                    } else {
+                        ep.remove("bluej.home");
+                    }
                     updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     try {
                         ProjectManager.getDefault().saveProject(BluejProject.this);
@@ -370,6 +378,7 @@ public final class BluejProject implements Project, AntProjectListener {
                     return null;
                 }
             });
+            BlueJSettings.getDefault().addPropertyChangeListener(this);
             
 ////            // Check up on build scripts.
 ////            try {
@@ -411,6 +420,7 @@ public final class BluejProject implements Project, AntProjectListener {
         }
         
         protected void projectClosed() {
+            BlueJSettings.getDefault().removePropertyChangeListener(this);
             // Probably unnecessary, but just in case:
             try {
                 ProjectManager.getDefault().saveProject(BluejProject.this);
@@ -431,6 +441,27 @@ public final class BluejProject implements Project, AntProjectListener {
 ////                mainClassUpdater.unregister ();
 ////                mainClassUpdater = null;
 ////            }
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            ProjectManager.mutex().writeAccess(new Mutex.Action() {
+                public Object run() {
+                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    File bjHome = BlueJSettings.getDefault().getHome();
+                    if (bjHome != null) {
+                        ep.setProperty("bluej.home", bjHome.getAbsolutePath());
+                    } else {
+                        ep.remove("bluej.home");
+                    }
+                    updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                    try {
+                        ProjectManager.getDefault().saveProject(BluejProject.this);
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                    return null;
+                }
+            });
         }
         
     }
