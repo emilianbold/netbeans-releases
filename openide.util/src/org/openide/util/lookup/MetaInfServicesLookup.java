@@ -7,19 +7,28 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util.lookup;
 
-import org.openide.util.*;
-
-import java.io.*;
-
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
-
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
+import org.openide.util.Lookup;
+import org.openide.util.SharedClassObject;
+import org.openide.util.WeakSet;
 
 /** A lookup that implements the JDK1.3 JAR services mechanism and delegates
  * to META-INF/services/name.of.class files.
@@ -340,7 +349,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
     /** Pair that holds name of a class and maybe the instance.
      */
-    private static final class P extends Pair {
+    private static final class P extends AbstractLookup.Pair {
         /** May be one of three things:
          * 1. The implementation class which was named in the services file.
          * 2. An instance of it.
@@ -403,7 +412,11 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         }
 
                         if (o == null) {
-                            o = c.newInstance();
+                            if (SharedClassObject.class.isAssignableFrom(c)) {
+                                o = SharedClassObject.findObject(c, true);
+                            } else {
+                                o = c.newInstance();
+                            }
 
                             synchronized (knownInstances) { // guards only the static cache
                                 knownInstances.put(c, o);
