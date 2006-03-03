@@ -128,6 +128,7 @@ is divided into following sections:
                         <path path="@{classpath}"/>
                         <fileset dir="${basedir}">
                             <include name="+libs/*.jar"/>
+                            <include name="+libs/*.zip"/>
                         </fileset>
                     </classpath>
                     <compilerarg line="${javac.compilerargs}"/>
@@ -148,7 +149,9 @@ is divided into following sections:
                         <path path="${run.test.classpath}"/>
                         <fileset dir="${basedir}">
                             <include name="+libs/*.jar"/>
+                            <include name="+libs/*.zip"/>
                         </fileset>
+                        <!--path path="${run.test.classpath}"/-->
                     </classpath>
                     <syspropertyset>
                         <propertyref prefix="test-sys-prop."/>
@@ -172,6 +175,7 @@ is divided into following sections:
                         <path path="@{classpath}"/>
                         <fileset dir="${basedir}">
                             <include name="+libs/*.jar"/>
+                            <include name="+libs/*.zip"/>
                         </fileset>
                     </classpath>
                 </nbjpdastart>
@@ -202,6 +206,7 @@ is divided into following sections:
                         <path path="@{classpath}"/>
                         <fileset dir="${basedir}">
                             <include name="+libs/*.jar"/>
+                            <include name="+libs/*.zip"/>
                         </fileset>
                     </classpath>
                     <syspropertyset>
@@ -224,6 +229,7 @@ is divided into following sections:
                         <path path="${run.classpath}"/>
                         <fileset dir="${basedir}">
                             <include name="+libs/*.jar"/>
+                            <include name="+libs/*.zip"/>
                         </fileset>
                     </classpath>
                     <syspropertyset>
@@ -316,6 +322,7 @@ is divided into following sections:
             <path path="${run.classpath}"/>
             <fileset dir="${basedir}">
                 <include name="+libs/*.jar"/>
+                <include name="+libs/*.zip"/>
             </fileset>
             <map from="${build.classes.dir.resolved}" to="${dist.jar.resolved}"/>
         </pathconvert>
@@ -327,6 +334,7 @@ is divided into following sections:
             <path path="${run.classpath}"/>
             <fileset dir="${basedir}">
                 <include name="+libs/*.jar"/>
+                <include name="+libs/*.zip"/>
             </fileset>
             <map from="${build.classes.dir.resolved}" to=""/>
         </pathconvert>
@@ -415,6 +423,7 @@ is divided into following sections:
                 <path path="${javac.classpath}"/>
                 <fileset dir="${basedir}">
                     <include name="+libs/*.jar"/>
+                    <include name="+libs/*.zip"/>
                 </fileset>
             </classpath>
             <sourcepath>
