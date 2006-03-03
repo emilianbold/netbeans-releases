@@ -136,7 +136,7 @@ public class Subversion {
     {
         SvnClient client = (SvnClient) getClients().get(repositoryUrl.toString());
         if(client == null) {
-            client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, pd, username, password);            
+            client = SvnClientFactory.getInstance().createSvnClient(pd, username, password);            
             attachListeners(client);
             getClients().put(repositoryUrl.toString(), client);            
         } else {
@@ -191,8 +191,7 @@ public class Subversion {
      *
      * <p>It hanldes cancellability, XXX e.g. by Thread,interrupt?
      */
-    public SvnClient getClient() {
-        // XXX also cache ???
+    public SvnClient getClient() {        
         SvnClient client = SvnClientFactory.getInstance().createSvnClient();
         attachListeners(client);
         return client;

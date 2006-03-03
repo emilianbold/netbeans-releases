@@ -15,9 +15,10 @@ package org.netbeans.modules.subversion.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import org.netbeans.modules.subversion.settings.SvnRootSettings;
 import org.netbeans.modules.subversion.settings.PasswordFile;
-import org.netbeans.modules.subversion.client.ProxyDescriptor;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -34,7 +35,8 @@ import org.tigris.subversion.svnclientadapter.commandline.CmdLineClientAdapterFa
 public class SvnClientFactory {
     
     private static SvnClientFactory instance;
-    
+    //private static String 
+            
     /** Creates a new instance of SvnClientFactory */
     private SvnClientFactory() {
     }
@@ -47,13 +49,13 @@ public class SvnClientFactory {
     }
     
     public SvnClient createSvnClient() {
-        return createSvnClientImplementation();           
+        ISVNClientAdapter adapter = createSvnClientAdapter();
+        return createSvnClient(adapter);          
     }
     
     public SvnClient createSvnClient(SVNUrl repositoryUrl) 
     throws SVNClientException 
     {                                
-
         ProxyDescriptor pd = SvnRootSettings.getProxyFor(repositoryUrl);       
                 
         String username = "";
@@ -63,30 +65,53 @@ public class SvnClientFactory {
             username = passwordFile.getUsername();
             password = passwordFile.getPassword();            
         }        
-        
-        return createSvnClient(repositoryUrl, pd, username, password);             
+        ISVNClientAdapter adapter = createSvnClientAdapter(pd, username, password);
+        return createSvnClient(adapter);             
     }    
 
-    public SvnClient createSvnClient(SVNUrl repositoryUrl, 
-                                     ProxyDescriptor pd, 
+    public SvnClient createSvnClient(ProxyDescriptor pd, 
                                      String username, 
                                      String password) 
-    throws SVNClientException 
-    {        
-        File configDir = createTempConfig(pd);            
-        SvnClientImpl svnClient = createSvnClientImplementation();
-        svnClient.setup(configDir, username, password);
-        return svnClient;         
-    }    
+    {                                                                                   
+        ISVNClientAdapter adapter = createSvnClientAdapter(pd, username, password);
+        return createSvnClient(adapter);                     
+    }
     
-    private SvnClientImpl createSvnClientImplementation() {
+    private SvnClient createSvnClient(ISVNClientAdapter adapter) {
+        Class proxyClass = Proxy.getProxyClass(SvnClient.class.getClassLoader(), new Class[]{ SvnClient.class } );        
+        SvnClientInvocationHandler handler = new SvnClientInvocationHandler(adapter);         
+        try {
+           return (SvnClient) proxyClass.getConstructor(new Class[] { InvocationHandler.class }).newInstance(new Object[] { handler });                   
+        } catch (Exception e) {
+            org.openide.ErrorManager.getDefault().notify(e);
+        }
+        return null;
+    }    
+
+    private ISVNClientAdapter createSvnClientAdapter(ProxyDescriptor pd, 
+                                                 String username, 
+                                                 String password) 
+    {        
+        ISVNClientAdapter adapter = createSvnClientAdapter();
+        File configDir = createTempConfig(pd);
+        try {
+            adapter.setConfigDirectory(configDir);
+            adapter.setUsername(username);
+            adapter.setPassword(password);
+        } catch (SVNClientException ex) {
+            ex.printStackTrace(); // XXX should not happen
+        }        
+        return adapter;
+    }        
+
+    private ISVNClientAdapter createSvnClientAdapter() {
         ISVNClientAdapter adapter = SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
         if (adapter == null) {
             adapter = new UnsupportedSvnClientAdapter();
-        }
-        // TODO add version check, but there is no API
-        return new SvnClientImpl(adapter);
-    }
+        }        
+        // TODO add version check, but there is no API                                
+        return adapter;
+    }  
     
     // XXX this should be at some another place - maybe at settings?
     // XXX there is also a systemwide config folder /etc/subversion - use it
@@ -218,20 +243,5 @@ public class SvnClientFactory {
             }                
         }                       
     }
-//    private static ProxyDescriptor getProxyDescriptor() {
-////        // XXX one way or another - should be located somewhere else ... (settings?)
-////        List list = HistorySettings.getRecent(HistorySettings.PROP_SVN_URLS);
-////        if(list ==null || list.size() < 1) {
-////            return null;
-////        }
-//        ProxyDescriptor proxyDescriptor;
-//        try {
-//            proxyDescriptor = 
-//        } catch (MalformedURLException ex) {
-//            ex.printStackTrace(); 
-//            return null;
-//        } 
-//        return proxyDescriptor;
-//    }
     
 }

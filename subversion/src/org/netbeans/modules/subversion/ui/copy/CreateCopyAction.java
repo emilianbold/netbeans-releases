@@ -80,7 +80,7 @@ public class CreateCopyAction extends ContextAction {
                             try{
                                 info = client.getInfo(folderToCreate);                                                                
                             } catch (SVNClientException ex) {                               
-                               if(!(ex.getMessage().indexOf("(Not a valid URL)") > - 1)) {
+                               if(!(ex.getMessage().indexOf("(Not a valid URL)") > - 1)) { // XXX SvnClient ???
                                    throw ex;
                                }                               
                             }            
