@@ -696,6 +696,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         
         try {
             Process proc = Runtime.getRuntime().exec(commandLine);
+            proc.waitFor();
             
             StringBuffer buffer = new StringBuffer();
             BufferedReader dataInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
@@ -706,7 +707,6 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                 buffer.append('\n');
             }
             
-            proc.waitFor();
             return buffer.toString();
             
         } catch (InterruptedException ie) {
