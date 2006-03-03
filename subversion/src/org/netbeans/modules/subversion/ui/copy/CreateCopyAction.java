@@ -17,11 +17,13 @@ import java.io.File;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.ExceptionInformation;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
@@ -53,16 +55,16 @@ public class CreateCopyAction extends ContextAction {
     }
     
     protected void performContextAction(Node[] nodes) {
-        Context ctx = getContext(nodes);        
-        
+        Context ctx = getContext(nodes);
+
         final File root = ctx.getRootFiles()[0];        
         // XXX optimize - in this case we need only the info if there is any modified file
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         boolean isChanged = files.length > 0;                
         SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
-        final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);        
-     
-        CreateCopy createCopy = new CreateCopy(repositoryRoot, nodes[0].getName(), isChanged); // XXX name or dispayname or what? - lookup...
+        final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);                
+
+        CreateCopy createCopy = new CreateCopy(repositoryRoot, root.getName(), isChanged); 
         if(createCopy.showDialog()) {
                         
             final RepositoryFile repositoryFolder = createCopy.getRepositoryFile();
@@ -79,10 +81,11 @@ public class CreateCopyAction extends ContextAction {
                             ISVNInfo info = null;
                             try{
                                 info = client.getInfo(folderToCreate);                                                                
-                            } catch (SVNClientException ex) {                               
-                               if(!(ex.getMessage().indexOf("(Not a valid URL)") > - 1)) { // XXX SvnClient ??? may should be the svnexception handler also reachable from here ...
-                                   throw ex;
-                               }                               
+                            } catch (SVNClientException ex) {
+                                ExceptionInformation ei = new ExceptionInformation(ex);
+                                if(!ei.isWrongUrl()) {
+                                    throw ex;
+                                }
                             }            
                             
                             if(info == null) {

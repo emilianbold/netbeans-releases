@@ -55,7 +55,7 @@ public class MergeAction extends ContextAction {
         SVNUrl url = SvnUtils.getRepositoryRootUrl(root);        
         final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
      
-        Merge merge = new Merge(repositoryRoot, nodes[0].getName()); // XXX name or dispayname or what?                
+        Merge merge = new Merge(repositoryRoot, root.getName());           
         if(merge.showDialog()) {
             final RepositoryFile mergeFromRepository = merge.getMergeFromRepositoryFile();
             final boolean mergeAfter = merge.madeAfter();

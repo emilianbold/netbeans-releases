@@ -69,15 +69,12 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         } 
         if( !(t instanceof SVNClientException) ) {
             throw t;
-        } 
+        }
         
-        String msg = t.getMessage();
-        
-        if( msg.indexOf("Authentication error from server: Username not found") > - 1 ||
-            msg.indexOf("authorization failed") > - 1 )         
-        {         
-            return handleAuthenticationError();            
-        }        
+        ExceptionInformation ei = new ExceptionInformation((SVNClientException) t);
+        if(ei.isAuthentication()) {
+            return handleAuthenticationError();
+        }
 
         // no handling for this exception -> throw it, so the caller may decide what to do...
         throw t;
