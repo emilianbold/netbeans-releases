@@ -555,10 +555,11 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         // find IDE process's PID using JPS utility
         String pid = null;
         String jprocs = executeNativeCommand (getJavaBinDirectory()+"jps -mv");
+        log (jprocs);
         String[] procstrings = jprocs.split("\n");
         for (int i=0; i<procstrings.length; i++) {
             if (procstrings[i].matches(".*Main.*test.work.sys.ide.*")) {
-                log (procstrings[i]);
+                //log (procstrings[i]);
                 pid = procstrings[i].split(" ")[0];
                 break;
             }
