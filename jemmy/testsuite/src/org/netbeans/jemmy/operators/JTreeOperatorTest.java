@@ -19,6 +19,7 @@
 package org.netbeans.jemmy.operators;
 
 import java.awt.Rectangle;
+import java.util.Comparator;
 import javax.swing.JFrame;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
@@ -31,6 +32,8 @@ import javax.swing.tree.TreePath;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.netbeans.jemmy.operators.JTreeOperator.NoSuchPathException;
+import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.jemmy.util.NameComponentChooser;
 
 /**
@@ -310,6 +313,17 @@ public class JTreeOperatorTest extends TestCase {
         assertNotNull(operator2);
 
         assertEquals(-1, operator2.findRow(new NameComponentChooser("colors")));
+        
+        operator2.findRow("1", new StringComparatorTest(), 0);
+    }
+    
+    /**
+     * Inner class needed for testing.
+     */
+    public class StringComparatorTest implements StringComparator {
+        public boolean equals(String caption, String match) {
+            return true;
+        }
     }
 
     /**
@@ -327,6 +341,13 @@ public class JTreeOperatorTest extends TestCase {
         Object node = tree.getModel().getRoot();
         TreePath path = new TreePath(node);
         operator2.doCollapsePath(path);
+        
+        try {
+            operator2.doCollapsePath(null);
+            fail();
+        }
+        catch(NoSuchPathException exception) {
+        }
     }
 
     /**
@@ -556,6 +577,7 @@ public class JTreeOperatorTest extends TestCase {
         Object node = tree.getModel().getRoot();
         TreePath path = new TreePath(node);
         operator2.waitExpanded(path);
+        operator2.waitExpanded(0);
     }
 
     /**
@@ -1764,7 +1786,15 @@ public class JTreeOperatorTest extends TestCase {
      * Test setLargeModel method.
      */
     public void testSetLargeModel() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+        
+        operator2.setLargeModel(true);
     }
 
     /**
@@ -1801,42 +1831,89 @@ public class JTreeOperatorTest extends TestCase {
      * Test setShowsRootHandles method.
      */
     public void testSetShowsRootHandles() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setShowsRootHandles(false);
     }
 
     /**
      * Test setUI method.
      */
     public void testSetUI() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setUI(operator2.getUI());
     }
 
     /**
      * Test setVisibleRowCount method.
      */
     public void testSetVisibleRowCount() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.setVisibleRowCount(1);
     }
 
     /**
      * Test startEditingAtPath method.
      */
     public void testStartEditingAtPath() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.startEditingAtPath(null);
     }
 
     /**
      * Test stopEditing method.
      */
     public void testStopEditing() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.stopEditing();
     }
 
     /**
      * Test treeDidChange method.
      */
     public void testTreeDidChange() {
+        frame.setVisible(true);
         
+        JFrameOperator operator = new JFrameOperator();
+        assertNotNull(operator);
+        
+        JTreeOperator operator2 = new JTreeOperator(operator);
+        assertNotNull(operator2);
+
+        operator2.treeDidChange();
     }
-    
 }
