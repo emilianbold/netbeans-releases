@@ -240,6 +240,9 @@ final class NewLoaderIterator extends BasicWizardIterator {
         }
         
         fileChanges.add(fileChanges.addLoaderSection(packageName.replace('.', '/')  + "/" + namePrefix + "DataLoader", installBefore)); // NOI18N
+
+        // 7a. create matching test registration for convenience (#73202)
+        fileChanges.add(fileChanges.addLookupRegistration("org.openide.loaders.DataLoader", packageName + '.' + namePrefix + "DataLoader", true)); // NOI18N
         
         //8. create layerfile actions subsection
         
@@ -319,7 +322,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
             }
             buff.append("        <ext name=\"").append(element).append("\"/>\n"); //NOI18N
         }
-        buff.append("        <resolver mime=\"").append(mime).append("\"/>\n"); //NOI18N
+        buff.append("        <resolver mime=\"").append(mime).append("\"/>"); //NOI18N
         return buff.toString();
     }
     
@@ -349,7 +352,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
             assert false : ex;
         }
         buff.append("            </xml-rule>\n"); //NOI18N
-        buff.append("        </resolver>\n"); //NOI18N
+        buff.append("        </resolver>"); //NOI18N
         return buff.toString();
     }
     

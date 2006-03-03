@@ -57,8 +57,8 @@ public final class CreatedModifiedFilesFactory {
     }
     
     static CreatedModifiedFiles.Operation addLookupRegistration(
-            NbModuleProject project, String interfaceClass, String implClass) {
-        return new AddLookupRegistration(project, interfaceClass, implClass);
+            NbModuleProject project, String interfaceClass, String implClass, boolean inTests) {
+        return new AddLookupRegistration(project, interfaceClass, implClass, inTests);
     }
     
     static CreatedModifiedFiles.Operation addModuleDependency(NbModuleProject project,
@@ -407,10 +407,10 @@ public final class CreatedModifiedFilesFactory {
         private String interfaceClassPath;
         private String implClass;
         
-        public AddLookupRegistration(NbModuleProject project, String interfaceClass, String implClass) {
+        public AddLookupRegistration(NbModuleProject project, String interfaceClass, String implClass, boolean inTests) {
             super(project);
             this.implClass = implClass;
-            this.interfaceClassPath = getProject().getSourceDirectoryPath() +
+            this.interfaceClassPath = getProject().evaluator().getProperty(inTests ? "test.unit.src.dir" : "src.dir") + // NOI18N
                     "/META-INF/services/" + interfaceClass; // NOI18N
             addCreatedOrModifiedPath(interfaceClassPath, true);
         }
@@ -442,7 +442,6 @@ public final class CreatedModifiedFilesFactory {
                         }
                     }
                     pw.println(implClass);
-                    pw.println();
                 } finally {
                     pw.close();
                 }

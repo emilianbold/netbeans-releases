@@ -265,16 +265,17 @@ public final class CreatedModifiedFiles {
      * Provides {@link Operation} that will register an <code>implClass</code>
      * implementation of <code>interfaceClass</code> interface in the lookup.
      * If a file representing <code>interfaceClass</code> service already
-     * exists in <em>src/META-INF/services</em> directory
+     * exists in <em>META-INF/services</em> directory
      * <code>implClass</code> will be appended to the end of the list of
      * implementations. If it doesn't exist a new file will be created.
      *
      * @param interfaceClass e.g. org.example.spi.somemodule.ProvideMe
      * @param implClass e.g. org.example.module1.ProvideMeImpl
+     * @param inTests if true, add to test/unit/src/META-INF/services/, else to src/META-INF/services/
      */
-    public Operation addLookupRegistration(String interfaceClass, String implClass) {
+    public Operation addLookupRegistration(String interfaceClass, String implClass, boolean inTests) {
         return CreatedModifiedFilesFactory.addLookupRegistration(
-                project, interfaceClass, implClass);
+                project, interfaceClass, implClass, inTests);
     }
     
     /**

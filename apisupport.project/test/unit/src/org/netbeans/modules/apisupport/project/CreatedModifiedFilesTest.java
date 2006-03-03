@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -89,7 +90,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         cmf.add(cmf.createFile("src/org/example/module1/resources/template.html", createFile(HTML_CONTENT)));
         cmf.add(cmf.addLookupRegistration(
                 "org.example.spi.somemodule.ProvideMe",
-                "org.example.module1.ProvideMeImpl"));
+                "org.example.module1.ProvideMeImpl", false));
         
         assertRelativePaths(
                 new String[] {"src/META-INF/services/org.example.spi.somemodule.ProvideMe", "src/custom.properties", "src/org/example/module1/resources/template.html"},
@@ -151,14 +152,45 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
-        Operation op = cmf.addLookupRegistration(
+        cmf.add(cmf.addLookupRegistration(
                 "org.example.spi.somemodule.ProvideMe",
-                "org.example.module1.ProvideMeImpl");
+                "org.example.module1.ProvideMeImpl1", false));
+        cmf.add(cmf.addLookupRegistration(
+                "org.example.spi.somemodule.ProvideMe",
+                "org.example.module1.ProvideMeImpl2", false));
+        cmf.add(cmf.addLookupRegistration(
+                "org.example.spi.somemodule.ProvideMe",
+                "org.example.module1.ProvideMeImpl1", true));
+
+        String[] paths = {
+            "src/META-INF/services/org.example.spi.somemodule.ProvideMe",
+            "test/unit/src/META-INF/services/org.example.spi.somemodule.ProvideMe",
+        };
+        assertRelativePaths(paths, cmf.getCreatedPaths());
         
-        assertRelativePath("src/META-INF/services/org.example.spi.somemodule.ProvideMe", op.getCreatedPaths());
-        
-        cmf.add(op);
         cmf.run();
+
+        FileObject registry = project.getProjectDirectory().getFileObject(paths[0]);
+        assertNotNull(registry);
+        InputStream is = registry.getInputStream();
+        try {
+            BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            assertEquals("org.example.module1.ProvideMeImpl1", r.readLine());
+            assertEquals("org.example.module1.ProvideMeImpl2", r.readLine());
+            assertEquals(null, r.readLine());
+        } finally {
+            is.close();
+        }
+        registry = project.getProjectDirectory().getFileObject(paths[1]);
+        assertNotNull(registry);
+        is = registry.getInputStream();
+        try {
+            BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            assertEquals("org.example.module1.ProvideMeImpl1", r.readLine());
+            assertEquals(null, r.readLine());
+        } finally {
+            is.close();
+        }
     }
     
     public void testCreateFile() throws Exception {
