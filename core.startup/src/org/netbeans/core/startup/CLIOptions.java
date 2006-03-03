@@ -19,6 +19,8 @@ import java.io.PrintWriter;
 import java.util.Locale;
 import org.netbeans.CLIHandler;
 import org.netbeans.CLIHandler.Args;
+import org.netbeans.TopSecurityManager;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -252,29 +254,28 @@ public class CLIOptions extends CLIHandler {
             if (userDir == null) {
                 System.err.println(NbBundle.getMessage(CLIOptions.class, "ERR_no_user_directory"));
                 Thread.dumpStack(); // likely to happen from misbehaving unit tests, etc.
-                org.netbeans.TopSecurityManager.exit(1);
+                TopSecurityManager.exit(1);
             }
-            if (userDir.equals(getHomeDir())) { 
-                System.err.println(NbBundle.getMessage(CLIOptions.class, "ERR_user_directory_is_home"));
-                org.netbeans.TopSecurityManager.exit(1);
+
+            // #11735, #21085: avoid relative user dirs, or ../ seqs
+            File userDirF = FileUtil.normalizeFile(new File(userDir));
+
+            String homeDir = getHomeDir();
+            if (homeDir != null) {
+                File homeDirF = FileUtil.normalizeFile(new File(homeDir));
+                if (userDirF.getAbsolutePath().startsWith(homeDirF.getParentFile().getAbsolutePath())) {
+                    System.err.println(NbBundle.getMessage(CLIOptions.class, "ERR_user_directory_is_inside_home"));
+                    TopSecurityManager.exit(1);
+                }
             }
-            
-            /** #11735. Relative userDir is converted to absolute*/
-            // #21085: userDir might contain ../ sequences which should be removed
-            File f = new File (userDir);
-            try {
-                f = f.getCanonicalFile ();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-            
-            userDir = f.getPath();
+
+            userDir = userDirF.getPath();
             System.setProperty("netbeans.user", userDir); // NOI18N
             
-            File systemDirFile = new File (userDir, NbRepository.SYSTEM_FOLDER);
+            File systemDirFile = new File(userDirF, NbRepository.SYSTEM_FOLDER);
             makedir (systemDirFile);
             systemDir = systemDirFile.getAbsolutePath ();
-            makedir(new File(userDir, DIR_MODULES)); // NOI18N
+            makedir(new File(userDirF, DIR_MODULES)); // NOI18N
         }
         return userDir;
     }
