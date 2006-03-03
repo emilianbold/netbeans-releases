@@ -14,9 +14,9 @@
 package org.openide.util.lookup;
 
 import java.io.Serializable;
-import java.lang.ref.Reference;
 import org.openide.util.*;
 
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import junit.framework.*;
@@ -299,23 +299,35 @@ implements AbstractLookupBaseHid.Impl {
         assertEquals("3x100+1 checks", 301, listener.round);
     }
 
+    static Object holder;
+    
     public void testProxyWithLiveResultCanBeCollected() {
-        Lookup orig = Lookups.singleton("Hello");
-        ProxyLookup over = new ProxyLookup(new Lookup[] { orig });
-        Lookup.Result origResult = orig.lookup(new Lookup.Template(String.class));
-        
-        assertEquals("One instance", 1, origResult.allInstances().size());
+        Lookup layer0 = Lookups.singleton("Hello");
+        Lookup layer1 = new ProxyLookup(new Lookup[] { layer0 });
+        Lookup layer2 = new ProxyLookup(new Lookup[] { layer1 });
+        Lookup.Result result1 = layer1.lookup(new Lookup.Template(String.class));
+
+        assertEquals("One instance", 1, result1.allInstances().size());
 
         // this will create ProxyLookup$R which listens on origResult
-        Lookup.Result overResult = over.lookup(new Lookup.Template(String.class));
-        overResult.addLookupListener(new LookupListener() {
-            public void resultChanged(LookupEvent ev) {
-            }
+        Lookup.Result result2 = layer2.lookup(new Lookup.Template(String.class));
+        
+        // this line is necessary. W/o actually querying the result,
+        // it will nether compute it nor attach the listener.
+        assertEquals("One instance", 1, result2.allInstances().size());
+        
+        result2.addLookupListener(new LookupListener() {
+            public void resultChanged(LookupEvent ev) {}
         });
-        Reference ref = new WeakReference(over);
-        over = null;
-        overResult = null;
-        assertGC("The proxy lookup not been garbage collected!", ref);
+        
+        Reference ref = new WeakReference(layer2);
+        layer2 = null;
+        result2 = null;
+        try {
+            holder = result1;
+            assertGC ("The proxy lookup not been garbage collected!", ref);
+        } finally {
+            holder = null;
+        }
     }
-    
 }
