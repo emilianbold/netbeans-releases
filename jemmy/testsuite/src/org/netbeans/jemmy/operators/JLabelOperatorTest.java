@@ -139,11 +139,11 @@ public class JLabelOperatorTest extends TestCase {
         assertNotNull(operator2);
         
         operator2.setText("JLabelOperatorTest-");
-        assertEquals(label.getText(), "JLabelOperatorTest-");
+        assertEquals(operator2.getText(), "JLabelOperatorTest-");
         
         operator2.setText("JLabelOperatorTest");
         operator2.waitText("JLabelOperatorTest");
-        assertNotNull(label.getText());
+        assertNotNull(operator2.getText());
     }
 
     /**
@@ -162,7 +162,7 @@ public class JLabelOperatorTest extends TestCase {
         assertEquals("JLabelOperatorTest", hashtable.get(JLabelOperator.TEXT_DPROP));
         
         operator2.setText(null);
-        assertNull(label.getText());
+        assertNull(operator2.getText());
         
         hashtable = operator2.getDump();
         assertEquals("null", hashtable.get(JLabelOperator.TEXT_DPROP));
@@ -181,7 +181,7 @@ public class JLabelOperatorTest extends TestCase {
         assertNotNull(operator2);
         
         operator2.setDisabledIcon(null);
-        assertNull(label.getDisabledIcon());
+        assertNull(operator2.getDisabledIcon());
     }
 
     /**
@@ -218,7 +218,7 @@ public class JLabelOperatorTest extends TestCase {
         assertNotNull(operator2);
         
         operator2.setHorizontalAlignment(SwingConstants.TRAILING);
-        assertEquals(SwingConstants.TRAILING, label.getHorizontalAlignment());
+        assertEquals(SwingConstants.TRAILING, operator2.getHorizontalAlignment());
     }
 
     /**
@@ -234,7 +234,7 @@ public class JLabelOperatorTest extends TestCase {
         assertNotNull(operator2);
         
         operator2.setHorizontalTextPosition(SwingConstants.LEFT);
-        assertEquals(SwingConstants.LEFT, label.getHorizontalTextPosition());
+        assertEquals(SwingConstants.LEFT, operator2.getHorizontalTextPosition());
     }
 
     /**
@@ -250,7 +250,7 @@ public class JLabelOperatorTest extends TestCase {
         assertNotNull(operator2);
         
         operator2.setIcon(null);
-        assertNull(label.getIcon());
+        assertNull(operator2.getIcon());
     }
 
     /**
@@ -266,7 +266,7 @@ public class JLabelOperatorTest extends TestCase {
         assertNotNull(operator2);
         
         operator2.setIconTextGap(15);
-        assertEquals(15, label.getIconTextGap());
+        assertEquals(15, operator2.getIconTextGap());
     }
 
     /**
@@ -323,7 +323,7 @@ public class JLabelOperatorTest extends TestCase {
         assertNotNull(operator2);
         
         operator2.setVerticalAlignment(SwingConstants.TOP);
-        assertEquals(SwingConstants.TOP, label.getVerticalAlignment());
+        assertEquals(SwingConstants.TOP, operator2.getVerticalAlignment());
     }
 
     /**
@@ -339,6 +339,6 @@ public class JLabelOperatorTest extends TestCase {
         assertNotNull(operator2);
         
         operator2.setVerticalTextPosition(SwingConstants.TOP);
-        assertEquals(SwingConstants.TOP, label.getVerticalTextPosition());
+        assertEquals(SwingConstants.TOP, operator2.getVerticalTextPosition());
     }
 }
