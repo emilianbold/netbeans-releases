@@ -191,6 +191,8 @@ public final class NbModuleProject implements Project {
         Info info = new Info();
         if (bundleInfo != null) {
             bundleInfo.addPropertyChangeListener(info);
+        }
+        if (mf != null) {
             getManifestFile().addFileChangeListener(new FileChangeAdapter() {
                 public void fileChanged(FileEvent fe) {
                     // cannot reload manifest-depended things immediatelly (see 67961 for more details)
@@ -831,6 +833,9 @@ public final class NbModuleProject implements Project {
         public LocalizedBundleInfo getLocalizedBundleInfo() {
             if (manifestChanged) {
                 bundleInfo = Util.findLocalizedBundleInfo(getSourceDirectory(), getManifest());
+                if (bundleInfo != null) {
+                    bundleInfo.addPropertyChangeListener((Info) getLookup().lookup(Info.class));
+                }
                 manifestChanged = false;
             }
             return bundleInfo;
