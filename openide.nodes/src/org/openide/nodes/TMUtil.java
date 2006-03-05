@@ -7,15 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.nodes;
 
+import java.util.Hashtable;
 import org.openide.util.Mutex;
-
-import java.util.*;
-
 
 /** Class that serves as interface to various parts of OpenAPIs that need
  * not be present.
@@ -140,7 +139,7 @@ abstract class TMUtil extends Object {
                 Mutex.EVENT.readAccess(
                     new Mutex.Action() {
                         public Object run() {
-                            ic.show();
+                            ic.setVisible(true);
 
                             return null;
                         }

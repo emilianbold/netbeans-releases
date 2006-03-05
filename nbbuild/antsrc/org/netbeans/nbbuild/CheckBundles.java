@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -289,7 +289,7 @@ public class CheckBundles extends Task {
                         }
                     });
                 reader.setContentHandler (new SAXHandler(files));
-                reader.parse(new InputSource (xmlFile.toURL().toExternalForm()) );
+                reader.parse(new InputSource(xmlFile.toURI().toString()));
             }
         }
         catch (Exception e) {

@@ -7,23 +7,20 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
 import java.io.UnsupportedEncodingException;
-
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-
 import java.util.StringTokenizer;
-
 
 /**
  * @author Radek Matous
@@ -163,9 +160,7 @@ final class NbfsUtil {
         try {
             return URLEncoder.encode(elem, "UTF-8"); // NOI18N
         } catch (UnsupportedEncodingException e) {
-            ExternalUtil.log(e.getLocalizedMessage());
-
-            return URLEncoder.encode(elem);
+            throw new AssertionError(e);
         }
     }
 
@@ -173,9 +168,7 @@ final class NbfsUtil {
         try {
             return URLDecoder.decode(elem, "UTF-8"); // NOI18N
         } catch (UnsupportedEncodingException e) {
-            ExternalUtil.log(e.getLocalizedMessage());
-
-            return URLDecoder.decode(elem);
+            throw new AssertionError(e);
         }
     }
 

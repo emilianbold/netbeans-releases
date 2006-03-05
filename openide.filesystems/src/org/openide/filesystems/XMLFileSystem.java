@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,14 +38,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
-import javax.xml.parsers.SAXParserFactory;
 import org.openide.util.NbBundle;
-import org.xml.sax.AttributeList;
-import org.xml.sax.HandlerBase;
+import org.openide.xml.XMLUtil;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
-import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /** XML-based filesystem.
  * <PRE>
@@ -273,13 +273,9 @@ public final class XMLFileSystem extends AbstractFileSystem {
         URL act = null;
 
         try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setValidating(validate);
-            factory.setNamespaceAware(false);
-
-            Parser xp = factory.newSAXParser().getParser();
+            XMLReader xp = XMLUtil.createXMLReader(validate, false);
             xp.setEntityResolver(handler);
-            xp.setDocumentHandler(handler);
+            xp.setContentHandler(handler);
             xp.setErrorHandler(handler);
 
             for (int index = 0; index < urls.length; index++) {
@@ -1187,7 +1183,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
     /** Class that can be used to parse XML document (Expects array of ElementHandler clasess).  Calls handler methods of ElementHandler clasess.
      */
-    static class Handler extends HandlerBase {
+    static class Handler extends DefaultHandler {
         private static final int FOLDER_CODE = "folder".hashCode(); // NOI18N
         private static final int FILE_CODE = "file".hashCode(); // NOI18N
         private static final int ATTR_CODE = "attr".hashCode(); // NOI18N
@@ -1221,7 +1217,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
             throw exception;
         }
 
-        public void startElement(String name, AttributeList amap)
+        public void startElement(String xmluri, String lname, String name, Attributes amap)
         throws SAXException {
             int controlCode = name.hashCode();
 
@@ -1273,7 +1269,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
                 int len = amap.getLength();
 
                 for (int i = 0; i < len; i++) {
-                    String key = amap.getName(i);
+                    String key = amap.getQName(i);
                     String value = amap.getValue(i);
 
                     if (XMLMapAttr.Attr.isValid(key) != -1) {
@@ -1291,7 +1287,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
             }
         }
 
-        public void endElement(String name) throws SAXException {
+        public void endElement(String uri, String lname, String name) throws SAXException {
             if ((elementStack.peek().hashCode() == FILE_CODE) && !topRE.isFolder()) {
                 String string = pcdata.toString().trim();
 
@@ -1327,7 +1323,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
             pcdata.append(new String(ch, start, length));
         }
 
-        public InputSource resolveEntity(java.lang.String pid, java.lang.String sid)
+        public InputSource resolveEntity(String pid, String sid)
         throws SAXException {
             String publicURL = (String) dtdMap.get(pid);
 
@@ -1344,7 +1340,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
             return new InputSource(sid);
         }
 
-        public void startDocument() throws org.xml.sax.SAXException {
+        public void startDocument() throws SAXException {
             super.startDocument();
             resElemStack = new Stack();
             resElemStack.push(rootElem);
@@ -1354,7 +1350,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
             elementStack.push("<root>"); // NOI18N
         }
 
-        public void endDocument() throws org.xml.sax.SAXException {
+        public void endDocument() throws SAXException {
             super.endDocument();
             resElemStack.pop();
             elementStack.pop();

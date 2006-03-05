@@ -7,24 +7,31 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/************************************************************************
-
-        FILENAME: L10nTask.java
-
-        AUTHOR: Erica Grevemeyer      DATE: Jan  30 11:21:09 PST 2002
-
-************************************************************************/
 package org.netbeans.nbbuild;
 
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.taskdefs.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.StringTokenizer;
+import java.util.Vector;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Delete;
+import org.apache.tools.ant.taskdefs.GZip;
+import org.apache.tools.ant.taskdefs.MatchingTask;
+import org.apache.tools.ant.taskdefs.Tar;
 import org.apache.tools.ant.types.FileSet;
-import java.io.*;
-import java.util.*;
 import org.netbeans.nbbuild.utils.cvsutils.CvsEntries;
 
 /**
@@ -363,7 +370,7 @@ public class L10nTask extends MatchingTask {
 		File incBaseDir = new File(srcDir);
 		Tar tar = (Tar)p.createTask("tar");
 		tar.setBasedir(new File(srcDir)); 
-		tar.setTarfile(new File(fullTarfilePath));
+		tar.setDestFile(new File(fullTarfilePath));
 		
 		File incFile = new File(fullIncludesFilePath); 
 

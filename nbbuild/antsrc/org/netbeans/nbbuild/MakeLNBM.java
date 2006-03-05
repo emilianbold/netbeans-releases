@@ -7,24 +7,41 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.nbbuild;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
-import java.util.zip.*;
-import java.net.*;
-
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.taskdefs.Jar;
-import org.apache.tools.ant.taskdefs.Zip;
+import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.taskdefs.SignJar;
 import org.apache.tools.ant.types.FileSet;
 
@@ -598,7 +615,7 @@ public class MakeLNBM extends MatchingTask {
 	long jarModified = file.lastModified (); // may be 0
 	//log ("Ensuring existence of NBM file " + file);
 	Jar jar = (Jar) getProject().createTask("jar"); //NOI18N
-	jar.setJarfile (file);
+        jar.setDestFile(file);
 	//jar.setBasedir (topdir.getAbsolutePath ());
         jar.setCompress(true);
 	//jar.createInclude ().setName ("netbeans/"); //NOI18N

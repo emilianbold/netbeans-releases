@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -75,9 +75,6 @@ import org.openide.util.io.SafeException;
 * @author Dafe Simonek et al.
 */
 public final class LoaderPoolNode extends AbstractNode {
-    /** Default icon base for loader pool node.*/
-    private static final String LOADER_POOL_ICON_BASE =
-        "org/netbeans/core/resources/loaderPool"; // NOI18N
     /** The only instance of the LoaderPoolNode class in the system.
     * This value is returned from the getLoaderPoolNode() static method */
     private static LoaderPoolNode loaderPoolNode;
@@ -121,7 +118,6 @@ public final class LoaderPoolNode extends AbstractNode {
         
         setName("LoaderPoolNode"); // NOI18N
         setDisplayName(NbBundle.getMessage(LoaderPoolNode.class, "CTL_LoaderPool"));
-        setIconBase(LOADER_POOL_ICON_BASE);
 
         getCookieSet ().add (new Index ());
         getCookieSet ().add (new InstanceSupport.Instance (getNbLoaderPool ()));
@@ -136,8 +132,8 @@ public final class LoaderPoolNode extends AbstractNode {
     *
     * @return array of system actions that should be in popup menu
     */
-    public SystemAction[] createActions () {
-        return new SystemAction[] {
+    public Action[] getActions(boolean context) {
+        return new Action[] {
                    SystemAction.get(ReorderAction.class),
                    null,
                    SystemAction.get(ToolsAction.class),
@@ -741,14 +737,14 @@ public final class LoaderPoolNode extends AbstractNode {
         *
         * @return array of system actions that should be in popup menu
         */
-        public SystemAction[] createActions () {
+        public Action[] getActions(boolean context) {
             if (isSystem)
-                return new SystemAction[] {
+                return new Action[] {
                            SystemAction.get(ToolsAction.class),
                            SystemAction.get(PropertiesAction.class),
                        };
             else
-                return new SystemAction[] {
+                return new Action[] {
                            SystemAction.get(MoveUpAction.class),
                            SystemAction.get(MoveDownAction.class),
                            null,

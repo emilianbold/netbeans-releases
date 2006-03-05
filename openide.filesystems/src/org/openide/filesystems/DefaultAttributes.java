@@ -7,26 +7,48 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.Externalizable;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.PushbackInputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeSet;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.xml.XMLUtil;
-import org.xml.sax.*;
-import org.xml.sax.helpers.XMLReaderAdapter;
-
-import java.io.*;
-
-import java.lang.ref.*;
-
-import java.util.*;
-
-import javax.xml.parsers.*;
-
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /** Implementation of <code>AbstractFileSystem.Attr</code> using a special file
  * in each folder for holding attributes.
@@ -1081,12 +1103,12 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
         private static final String[] EMPTY = {  };
         private int mandatAttrCount;
 
-        public void startElement(String elemName, AttributeList attrList)
+        public void startElement(String elemName, Attributes attrs)
         throws SAXException {
             HashMap mapAllowed = new HashMap();
             HashMap mapMandatory = new HashMap();
 
-            if (checkAttributes(attrList, mapMandatory, mapAllowed) == false) {
+            if (checkAttributes(attrs, mapMandatory, mapAllowed) == false) {
                 throw new SAXException(
                     NbBundle.getMessage(DefaultAttributes.class, "XML_InaccurateParam") + ": " + elemName
                 ); // NOI18N 
@@ -1178,7 +1200,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
             return -1;
         }
 
-        private boolean checkAttributes(AttributeList attrList, HashMap mapMandatory, HashMap mapAllowed) {
+        private boolean checkAttributes(Attributes attrList, HashMap mapMandatory, HashMap mapAllowed) {
             String temp;
             mandatAttrCount = 0;
 
@@ -1187,15 +1209,15 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
             }
 
             for (int i = 0; i < attrList.getLength(); i++) {
-                if (isMandatoryAttr(attrList.getName(i)) != -1) {
-                    temp = attrList.getName(i).toUpperCase();
+                if (isMandatoryAttr(attrList.getQName(i)) != -1) {
+                    temp = attrList.getQName(i).toUpperCase(Locale.ENGLISH);
                     mapMandatory.put(temp, attrList.getValue(i));
 
                     continue;
                 }
 
-                if (isAllowedAttr(attrList.getName(i)) != -1) {
-                    temp = attrList.getName(i).toUpperCase();
+                if (isAllowedAttr(attrList.getQName(i)) != -1) {
+                    temp = attrList.getQName(i).toUpperCase(Locale.ENGLISH);
                     mapAllowed.put(temp, attrList.getValue(i));
 
                     continue;
@@ -1208,7 +1230,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
 
     /** Class that can be used to parse XML document (Expects array of ElementHandler clasess).  Calls handler methods of ElementHandler clasess.
      */
-    static class InnerParser extends HandlerBase {
+    static class InnerParser extends DefaultHandler {
         private ElementHandler[] elmKeyService; // = {fileSystemElement(attrStack),folderElement(attrStack),fileElement(attrStack),attrElement(attrStack)};        
         private String tagInProcess = ""; // NOI18N
         private String publicId;
@@ -1228,7 +1250,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
          * @throws SAXException  */
         public void parseXML(String uri, boolean validate)
         throws IOException, SAXException, ParserConfigurationException, FactoryConfigurationError {
-            Parser parser = getParser(validate);
+            XMLReader parser = getParser(validate);
             parser.parse(uri);
         }
 
@@ -1241,19 +1263,17 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
         public void parseXML(InputStream is, boolean validate)
         throws IOException, SAXException, ParserConfigurationException, FactoryConfigurationError {
             InputSource iSource = new InputSource(is);
-            Parser parser = getParser(validate);
+            XMLReader parser = getParser(validate);
             parser.parse(iSource);
         }
 
-        private Parser getParser(boolean validate)
+        private XMLReader getParser(boolean validate)
         throws SAXException, ParserConfigurationException, FactoryConfigurationError {
-            Parser parser;
-            parser = new XMLReaderAdapter(XMLUtil.createXMLReader(validate));
+            XMLReader parser = XMLUtil.createXMLReader(validate);
 
             // create document handler and register it
-            //parser.setEntityResolver(entityRes);                                    
             parser.setEntityResolver(this);
-            parser.setDocumentHandler(this); //before new InnerParser() - now this            
+            parser.setContentHandler(this);
             parser.setErrorHandler(this);
 
             return parser;
@@ -1274,28 +1294,22 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
             throw exception;
         }
 
-        public void startDocument() throws SAXException {
-        }
-
-        public void endDocument() throws SAXException {
-        }
-
-        public void startElement(String name, AttributeList amap)
+        public void startElement(String uri, String lname, String name, Attributes attrs)
         throws SAXException {
             tagInProcess = name = name.trim();
 
             for (int i = 0; i < elmKeyService.length; i++) {
                 if (elmKeyService[i].isMyTag(name) != -1) {
-                    elmKeyService[i].startElement(name, amap);
+                    elmKeyService[i].startElement(name, attrs);
 
                     return;
                 }
             }
 
-            throw new SAXException(NbBundle.getMessage(DefaultAttributes.class, "XML_UnknownElement") + " " + name); // NOI18N 
+            throw new SAXException(NbBundle.getMessage(DefaultAttributes.class, "XML_UnknownElement") + " " + name); // NOI18N
         }
 
-        public void endElement(String name) throws SAXException {
+        public void endElement(String uri, String lname, String name) throws SAXException {
             for (int i = 0; i < elmKeyService.length; i++) {
                 if (elmKeyService[i].isMyTag(name.trim()) != -1) {
                     elmKeyService[i].endElement(name.trim());
@@ -1304,7 +1318,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
                 }
             }
 
-            throw new SAXException(NbBundle.getMessage(DefaultAttributes.class, "XML_UnknownElement") + " " + name); // NOI18N 
+            throw new SAXException(NbBundle.getMessage(DefaultAttributes.class, "XML_UnknownElement") + " " + name); // NOI18N
         }
 
         public void characters(char[] ch, int start, int length)

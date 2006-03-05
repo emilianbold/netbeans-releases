@@ -7,23 +7,37 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.xml.catalog;
 
-import java.awt.*;
-import java.beans.*;
-import java.util.*;
-import java.io.*;
-
-import org.openide.nodes.*;
-import org.openide.util.actions.*;
-import org.openide.util.*;
-import org.openide.actions.*;
-
-import org.netbeans.modules.xml.catalog.spi.*;
+import java.awt.Image;
+import java.beans.IntrospectionException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+import javax.swing.Action;
 import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogListener;
+import org.netbeans.modules.xml.catalog.spi.CatalogReader;
+import org.netbeans.modules.xml.catalog.spi.CatalogWriter;
+import org.openide.actions.PropertiesAction;
+import org.openide.nodes.BeanNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Node representing a catalog.
@@ -65,10 +79,9 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
         return catalog;
     }
 
-    /** Lazy action initialization. */
-    protected SystemAction[] createActions() {
+    public Action[] getActions(boolean context) {
         if (catalog instanceof CatalogWriter)
-            return new SystemAction[] {
+            return new Action[] {
                 SystemAction.get(AddCatalogEntryAction.class),
                 SystemAction.get(RefreshAction.class),
                 SystemAction.get(CatalogNode.UnmountAction.class),
@@ -77,7 +90,7 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
                 SystemAction.get(PropertiesAction.class)
             };
         else
-            return new SystemAction[] {
+            return new Action[] {
                 SystemAction.get(RefreshAction.class),
                 SystemAction.get(CatalogNode.UnmountAction.class),
                 null,

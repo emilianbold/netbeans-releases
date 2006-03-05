@@ -53,7 +53,7 @@ public class BeanNode extends AbstractNode {
     // static ..................................................................................................................
 
     /** Icon base for bean nodes */
-    private static final String ICON_BASE = "org/openide/resources/beans"; // NOI18N
+    private static final String ICON_BASE = "org/openide/resources/beans.gif"; // NOI18N
 
     // variables .............................................................................................................
 
@@ -298,14 +298,7 @@ public class BeanNode extends AbstractNode {
         return false;
     }
 
-    /* Getter for set of actions that should be present in the
-    * popup menu of this node. This set is used in construction of
-    * menu returned from getContextMenu and specially when a menu for
-    * more nodes is constructed.
-    *
-    * @return array of system actions that should be in popup menu
-    */
-    protected SystemAction[] createActions() {
+    public Action[] getActions(boolean context) {
         return NodeOp.createFromNames(
             new String[] { "CustomizeBean", null, "Copy", null, "Tools", "Properties" // NOI18N
         }
@@ -495,7 +488,7 @@ public class BeanNode extends AbstractNode {
     /** Performs initalization of the node
     */
     private void initialization() throws IntrospectionException {
-        setIconBase(ICON_BASE);
+        setIconBaseWithExtension(ICON_BASE);
 
         setSynchronizeName(true);
 

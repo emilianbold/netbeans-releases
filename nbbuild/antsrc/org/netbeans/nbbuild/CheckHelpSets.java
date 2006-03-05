@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,19 +15,40 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import javax.help.HelpSet;
+import javax.help.IndexItem;
+import javax.help.IndexView;
+import javax.help.NavigatorView;
+import javax.help.TOCItem;
+import javax.help.TOCView;
+import javax.help.TreeItem;
+import javax.help.TreeItemFactory;
 import javax.swing.tree.DefaultMutableTreeNode;
-
-import org.apache.tools.ant.*;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.FileScanner;
+import org.apache.tools.ant.Location;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
-
-import javax.help.*;
-
-import javax.xml.parsers.*;
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /** Task to check various aspects of JavaHelp helpsets.
  * <ol>
@@ -73,7 +94,7 @@ public class CheckHelpSets extends Task {
     
     private void checkHelpSet(File hsfile) throws Exception {
         log("Checking helpset: " + hsfile);
-        HelpSet hs = new HelpSet(null, hsfile.toURL());
+        HelpSet hs = new HelpSet(null, hsfile.toURI().toURL());
         javax.help.Map map = hs.getCombinedMap();
         log("Parsed helpset, checking map IDs in TOC/Index navigators...");
         NavigatorView[] navs = hs.getNavigatorViews();
@@ -83,16 +104,16 @@ public class CheckHelpSets extends Task {
             if (! navfile.exists()) throw new BuildException("Navigator " + name + " not found", new Location(navfile.getAbsolutePath()));
             if (navs[i] instanceof IndexView) {
                 log("Checking index navigator " + name, Project.MSG_VERBOSE);
-                IndexView.parse(navfile.toURL(), hs, Locale.getDefault(), new VerifyTIFactory(hs, map, navfile, false));
+                IndexView.parse(navfile.toURI().toURL(), hs, Locale.getDefault(), new VerifyTIFactory(hs, map, navfile, false));
             } else if (navs[i] instanceof TOCView) {
                 log("Checking TOC navigator " + name, Project.MSG_VERBOSE);
-                TOCView.parse(navfile.toURL(), hs, Locale.getDefault(), new VerifyTIFactory(hs, map, navfile, true));
+                TOCView.parse(navfile.toURI().toURL(), hs, Locale.getDefault(), new VerifyTIFactory(hs, map, navfile, true));
             } else {
                 log("Skipping non-TOC/Index view: " + name, Project.MSG_VERBOSE);
             }
         }
         log("Checking for duplicate map IDs...");
-        HelpSet.parse(hsfile.toURL(), null, new VerifyHSFactory());
+        HelpSet.parse(hsfile.toURI().toURL(), null, new VerifyHSFactory());
         log("Checking links from help map and between HTML files...");
         Enumeration e = map.getAllIDs();
         Set okurls = new HashSet(1000); // Set<URI>
@@ -186,17 +207,16 @@ public class CheckHelpSets extends Task {
             }
         }
         
-        // XXX use SAX 2 here
-        private final class Handler extends HandlerBase {
+        private final class Handler extends DefaultHandler {
             
             private final String map;
             public Handler(String map) {
                 this.map = map;
             }
             
-            public void startElement(String name, AttributeList attr) {
+            public void startElement(String uri, String lname, String name, Attributes attributes) throws SAXException {
                 if (name.equals("mapID")) {
-                    String target = attr.getValue("target");
+                    String target = attributes.getValue("target");
                     if (target != null) {
                         if (ids.add(target)) {
                             log("Found map ID: " + target, Project.MSG_DEBUG);

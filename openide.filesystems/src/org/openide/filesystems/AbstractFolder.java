@@ -7,24 +7,32 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
-import org.openide.ErrorManager;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
-import java.io.*;
-
-import java.lang.ref.*;
-
-import java.net.URL;
-
-import java.util.*;
-
 
 /** Implementation of the file object that simplyfies common
 * tasks with hierarchy of objects for AbstractFileObject and MultiFileObject.
@@ -968,11 +976,9 @@ abstract class AbstractFolder extends FileObject {
                 // Fall back to URL.
                 assert url != null : "Should always have a non-null URL here";
 
-                FileObject[] fos = URLMapper.findFileObjects(url);
+                f = URLMapper.findFileObject(url);
 
-                if (fos.length >= 1) {
-                    f = fos[0];
-                } else {
+                if (f == null) {
                     throw new FileNotFoundException("Could not restore: " + url); // NOI18N
                 }
             }

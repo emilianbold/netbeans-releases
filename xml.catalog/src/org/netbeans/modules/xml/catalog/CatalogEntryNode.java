@@ -7,34 +7,40 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.xml.catalog;
 
-import java.beans.*;
-import java.net.*;
-import java.io.*;
-
-import org.openide.nodes.*;
-import org.openide.actions.*;
-import org.openide.cookies.*;
-import org.openide.util.actions.*;
-import org.openide.util.*;
-import org.openide.text.*;
-import org.openide.*;
-
-import org.netbeans.modules.xml.catalog.lib.*;
+import java.beans.IntrospectionException;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.swing.Action;
+import org.netbeans.modules.xml.catalog.lib.URLEnvironment;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.modules.xml.catalog.spi.CatalogWriter;
-
 import org.netbeans.modules.xml.catalog.user.UserXMLCatalog;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.EditAction;
+import org.openide.actions.PropertiesAction;
+import org.openide.actions.ViewAction;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.cookies.EditCookie;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-
+import org.openide.nodes.BeanNode;
+import org.openide.nodes.Node;
+import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.CloneableEditorSupport.Env;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Node representing single catalog entry. It can be viewed.
@@ -95,24 +101,20 @@ final class CatalogEntryNode extends BeanNode implements EditCookie {
         return catalogReader;
     }
     
-    protected SystemAction[] createActions() {
+    public Action[] getActions(boolean context) {
         if (isCatalogWriter)
-            return new SystemAction[] {
+            return new Action[] {
                 SystemAction.get(EditAction.class),
                 SystemAction.get(DeleteAction.class),
                 null,
                 SystemAction.get(PropertiesAction.class)
             };
         else
-            return new SystemAction[] {
+            return new Action[] {
                 SystemAction.get(ViewAction.class),
                 null,
                 SystemAction.get(PropertiesAction.class)
             };
-    }
-    
-    public SystemAction getDefaultAction() {
-        return SystemAction.get(ViewAction.class);
     }
     
     /**

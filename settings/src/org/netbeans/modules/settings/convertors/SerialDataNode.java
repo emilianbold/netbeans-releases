@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1047,19 +1048,19 @@ public final class SerialDataNode extends DataNode {
             return false;
         }
 
-        public SystemAction[] getActions() {
-            return removeActions(super.getActions(), new SystemAction[] {SystemAction.get(ToolsAction.class)});
+        public Action[] getActions(boolean context) {
+            return removeActions(super.getActions(context), new Action[] {SystemAction.get(ToolsAction.class)});
         }
         
-        private static SystemAction[] removeActions(SystemAction[] allActions, SystemAction[] toDeleteActions) {
-            SystemAction[] retVal = allActions;
-            List actions = java.util.Arrays.asList(allActions);
+        private static Action[] removeActions(Action[] allActions, Action[] toDeleteActions) {
+            Action[] retVal = allActions;
+            List actions = Arrays.asList(allActions);
             for (int i = 0; i < toDeleteActions.length; i++) {
-                SystemAction a = toDeleteActions[i];
+                Action a = toDeleteActions[i];
                 if(actions.contains(a)) {
                     actions = new ArrayList(actions); // to be mutable
                     actions.remove(a);
-                    retVal = (SystemAction[])actions.toArray(new SystemAction[0]);
+                    retVal = (Action[]) actions.toArray(new Action[0]);
                 }                
             }            
             return retVal;
