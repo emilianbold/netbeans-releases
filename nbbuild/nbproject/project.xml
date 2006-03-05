@@ -17,6 +17,7 @@ Microsystems, Inc. All Rights Reserved.
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
             <name>NetBeans Build System</name>
             <properties>
+                <property name="nb_all">${basedir}/..</property>
                 <property-file>user.build.properties</property-file>
                 <property-file>site.build.properties</property-file>
                 <property name="nbjdk.home">${java.home}/..</property>
@@ -361,7 +362,7 @@ Microsystems, Inc. All Rights Reserved.
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
                 <package-root>antsrc</package-root>
-                <classpath mode="compile">${ant.home}/lib/ant.jar</classpath>
+                <classpath mode="compile">${ant.home}/lib/ant.jar:${nb_all}/core/external/jh-2.0_02.jar</classpath>
                 <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
                 <built-to>build/antclasses</built-to>
                 <built-to>nbantext.jar</built-to>
