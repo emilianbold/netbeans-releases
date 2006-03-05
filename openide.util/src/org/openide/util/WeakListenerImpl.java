@@ -507,7 +507,13 @@ abstract class WeakListenerImpl implements java.util.EventListener {
                 weakListener = null;
             }
 
-            Class methodClass = src.getClass();
+            Class methodClass;
+            if (src instanceof Class) {
+                // Handle static listener methods sanely.
+                methodClass = (Class) src;
+            } else {
+                methodClass = src.getClass();
+            }
             String methodName = ref.removeMethodName();
 
             synchronized (LOCK) {

@@ -7,20 +7,24 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.util;
 
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Vector;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
+import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 public class WeakListenersTest extends NbTestCase {
     static {
@@ -30,7 +34,7 @@ public class WeakListenersTest extends NbTestCase {
 
     private ErrorManager log;
     
-    public WeakListenersTest(java.lang.String testName) {
+    public WeakListenersTest(String testName) {
         super(testName);
     }
 
@@ -336,6 +340,25 @@ public class WeakListenersTest extends NbTestCase {
         bean.listeners.firePropertyChange (null, null, null);
         
         assertEquals ("No listeners", 0, bean.listeners.getPropertyChangeListeners ().length);
+    }
+
+    public void testStaticRemoveMethod() throws Exception {
+        ChangeListener l = new ChangeListener() {public void stateChanged(ChangeEvent e) {}};
+        Singleton.addChangeListener(WeakListeners.change(l, Singleton.class));
+        assertEquals(1, Singleton.listeners.size());
+        Reference r = new WeakReference(l);
+        l = null;
+        assertGC("could collect listener", r);
+        assertEquals("called remove method", 0, Singleton.listeners.size());
+    }
+    public static class Singleton {
+        public static List listeners = new ArrayList();
+        public static void addChangeListener(ChangeListener l) {
+            listeners.add(l);
+        }
+        public static void removeChangeListener(ChangeListener l) {
+            listeners.remove(l);
+        }
     }
     
     private static final class Listener 
