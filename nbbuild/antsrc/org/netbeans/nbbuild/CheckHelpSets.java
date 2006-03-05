@@ -233,14 +233,7 @@ public class CheckHelpSets extends Task {
                     // Ignore.
                     return new InputSource(new ByteArrayInputStream(new byte[0]));
                 } else {
-                    try {
-                        return super.resolveEntity(pub, sys);
-                    } catch (SAXException e) {
-                        throw e;
-                    } catch (/*IO*/Exception e) {
-                        // JDK 1.4 does not let it throw IOException; 1.5 does.
-                        throw new SAXException(e);
-                    }
+                    return null;
                 }
             }
             
