@@ -7,30 +7,61 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.nodes;
 
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
-import org.openide.util.datatransfer.ExTransferable;
-
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.awt.dnd.*;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.Autoscroll;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DragSourceDragEvent;
+import java.awt.dnd.DragSourceDropEvent;
+import java.awt.dnd.DragSourceEvent;
+import java.awt.dnd.DragSourceListener;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+import java.awt.dnd.InvalidDnDOperationException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.beans.Customizer;
 import java.beans.PropertyChangeListener;
-
 import java.io.IOException;
-
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
+import org.openide.util.datatransfer.ExTransferable;
 
 /** A dialog for reordering nodes. This dialog can reorder
 * nodes for all implementors of the {@link Index} cookie.
@@ -41,10 +72,10 @@ import javax.swing.event.*;
 * <p>This class is final only for performance reasons.
 *
 * @author   Jan Jancura, Ian Formanek, Dafe Simonek
-* @deprecated Better to use Index.Support.showIndexedCustomizer which behaves better
+* @deprecated Better to use {@link Index.Support#showIndexedCustomizer} which behaves better
 *             with the window system.
 */
-public final class IndexedCustomizer extends JDialog implements java.beans.Customizer {
+public final class IndexedCustomizer extends JDialog implements Customizer {
     // initializations ................................................................................
     static final long serialVersionUID = -8731362267771694641L;
 
