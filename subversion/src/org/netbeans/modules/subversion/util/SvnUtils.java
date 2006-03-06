@@ -35,6 +35,7 @@ import java.awt.Window;
 import java.awt.KeyboardFocusManager;
 import java.awt.Dialog;
 import java.awt.Frame;
+import org.netbeans.modules.subversion.client.ExceptionInformation;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -398,7 +399,8 @@ public class SvnUtils {
             try {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
-                if (ex.getMessage().indexOf("(Not a versioned resource)") == -1) {  // NOI18N
+                ExceptionInformation ei = new ExceptionInformation(ex);
+                if (ei.isUnversionedResource()) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
@@ -415,7 +417,8 @@ public class SvnUtils {
                     try {
                         repositoryURL = client.getInfo(fileURL).getRepository();
                     } catch (SVNClientException ex) {
-                        if (ex.getMessage().indexOf("(Not a versioned resource)") == -1) {  // NOI18N
+                        ExceptionInformation ei = new ExceptionInformation(ex);
+                        if (ei.isUnversionedResource()) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
                     }
@@ -464,7 +467,8 @@ public class SvnUtils {
             try {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
-                if (ex.getMessage().indexOf("(Not a versioned resource)") == -1) {  // NOI18N
+                ExceptionInformation ei = new ExceptionInformation(ex);
+                if (ei.isUnversionedResource()) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
@@ -482,7 +486,8 @@ public class SvnUtils {
                     try {
                         repositoryURL = client.getInfo(fileURL).getRepository();
                     } catch (SVNClientException ex) {
-                        if (ex.getMessage().indexOf("(Not a versioned resource)") == -1) {  // NOI18N
+                        ExceptionInformation ei = new ExceptionInformation(ex);
+                        if (ei.isUnversionedResource()) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
                     }
@@ -526,7 +531,8 @@ public class SvnUtils {
             try {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
-                if (ex.getMessage().indexOf("(Not a versioned resource)") == -1) {  // NOI18N
+                ExceptionInformation ei = new ExceptionInformation(ex);
+                if (ei.isUnversionedResource()) {  
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }

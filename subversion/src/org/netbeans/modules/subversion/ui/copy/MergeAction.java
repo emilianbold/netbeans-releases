@@ -41,11 +41,15 @@ public class MergeAction extends ContextAction {
     }
 
     protected int getFileEnabledStatus() {
-        return ~0; // XXX
+        return FileInformation.STATUS_MANAGED 
+             & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
+             & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
 
     protected int getDirectoryEnabledStatus() {
-        return FileInformation.STATUS_MANAGED; // XXX
+        return FileInformation.STATUS_MANAGED 
+             & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
+             & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
     protected void performContextAction(final Node[] nodes) {
@@ -71,13 +75,6 @@ public class MergeAction extends ContextAction {
                     Object pair = startProgress(nodes);
                     try {
                         ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
-                        ISVNInfo info = client.getInfo(root); // XXX SvnUtils get the whole RepositoryFile if possible ...
-                        SVNUrl fileUrl = null; 
-                        if(info != null) {
-                            fileUrl = info.getUrl();
-                        } else {
-                            // XXX
-                        }
                         
                         if(mergeAfter) {
                             client.merge(mergeAfterRepository.getFileUrl(), 
@@ -88,7 +85,15 @@ public class MergeAction extends ContextAction {
                                          false,
                                          true);                                                                                    
                         } else {
-                            client.merge(fileUrl, 
+
+                            ISVNInfo info = client.getInfoFromWorkingCopy(root);// XXX SvnUtils get the whole RepositoryFile if possible ...
+                            SVNUrl fileUrl = null;
+                            if(info == null) {
+                                // oops
+                                return;
+                            }
+                        
+                            client.merge(info.getUrl(), 
                                          info.getRevision(), 
                                          mergeFromRepository.getFileUrl(), 
                                          mergeFromRepository.getRevision(),

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion;
 
+import org.netbeans.modules.subversion.client.ExceptionInformation;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.subversion.settings.MetadataAttic;
@@ -215,7 +216,8 @@ public class FileStatusCache implements ISVNNotifyListener {
                 status = null;
             }
         } catch (SVNClientException e) {
-            if (e.getMessage().indexOf("(Not a versioned resource)") == -1) {  // NOI18N
+            ExceptionInformation ei = new ExceptionInformation(e);            
+            if (ei.isUnversionedResource()) {  
                 // no or damaged entries
                 // or ignored file
                 e.printStackTrace();

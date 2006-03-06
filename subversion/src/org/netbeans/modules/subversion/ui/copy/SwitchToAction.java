@@ -43,12 +43,20 @@ public class SwitchToAction extends ContextAction {
     }
 
     protected int getFileEnabledStatus() {
-        return ~0; // XXX
+        return FileInformation.STATUS_MANAGED 
+             & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
+             & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
 
     protected int getDirectoryEnabledStatus() {
-        return FileInformation.STATUS_MANAGED; // XXX
+        return FileInformation.STATUS_MANAGED 
+             & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
+             & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
+
+    protected boolean enable(Node[] nodes) {
+        return nodes != null && nodes.length == 1 &&  getContext(nodes).getRoots().size() > 0;
+    }        
     
     protected void performContextAction(final Node[] nodes) {
         Context ctx = getContext(nodes);        
