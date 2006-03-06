@@ -104,7 +104,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="netbeans-javadoc" depends="netbeans,javadoc" />
     
-    <target name="-conditional-15-init" depends="build-init">
+    <target name="-conditional-15-init" depends="basic-init">
         <condition property="skip.15">
             <and>
                 <equals arg1="1.5" arg2="${javac.source}"/>
