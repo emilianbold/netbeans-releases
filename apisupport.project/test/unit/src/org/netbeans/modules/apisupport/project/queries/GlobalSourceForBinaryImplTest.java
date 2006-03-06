@@ -58,7 +58,7 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
         File nbSrcZip = generateNbSrcZip("");
         NbPlatform.getDefaultPlatform().addSourceRoot(Util.urlForJar(nbSrcZip));
         
-        URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"));
+        URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/platform7/modules/org-openide-loaders.jar"));
         URL loadersSrcURL = new URL(Util.urlForJar(nbSrcZip), "openide/loaders/src/");
         assertEquals("right results for " + loadersURL,
                 Collections.singletonList(URLMapper.findFileObject(loadersSrcURL)),
@@ -69,7 +69,7 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
         File nbSrcZip = generateNbSrcZip("netbeans-src/");
         NbPlatform.getDefaultPlatform().addSourceRoot(Util.urlForJar(nbSrcZip));
         
-        URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"));
+        URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/platform7/modules/org-openide-loaders.jar"));
         URL loadersSrcURL = new URL(Util.urlForJar(nbSrcZip), "netbeans-src/openide/loaders/src/");
         assertEquals("right results for " + loadersURL,
                 Collections.singletonList(URLMapper.findFileObject(loadersSrcURL)),
@@ -82,7 +82,7 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
         File nbSrcZip = new File(getWorkDir(), "wrong-nbsrc.zip");
         nbSrcZip.createNewFile();
         NbPlatform.getDefaultPlatform().addSourceRoot(Util.urlForJar(nbSrcZip));
-        URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"));
+        URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/platform7/modules/org-openide-loaders.jar"));
         SourceForBinaryQuery.findSourceRoots(loadersURL).getRoots();
     }
     
@@ -95,7 +95,7 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
     
     public void testListeningToNbPlatform() throws Exception {
         File nbSrcZip = generateNbSrcZip("");
-        URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"));
+        URL loadersURL = Util.urlForJar(file("nbbuild/netbeans/platform7/modules/org-openide-loaders.jar"));
         SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(loadersURL);
         assertNotNull("got result", res);
         ResultChangeListener resultCL = new ResultChangeListener();

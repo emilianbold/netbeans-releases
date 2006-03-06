@@ -84,7 +84,7 @@ public class BuildZipDistributionTest extends TestBase {
         EditableProperties ep = suite.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty("app.name", "fakeapp");
         
-        ep.setProperty("enabled.clusters", "platform6");
+        ep.setProperty("enabled.clusters", "platform7");
         ep.setProperty("disabled.modules", "org.netbeans.modules.autoupdate," +
             "org.openide.compat," +
             "org.netbeans.api.progress," +

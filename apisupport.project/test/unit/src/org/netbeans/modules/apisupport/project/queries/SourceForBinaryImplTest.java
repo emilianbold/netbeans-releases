@@ -50,16 +50,16 @@ public class SourceForBinaryImplTest extends TestBase {
         doTestFindSourceRootForCompiledClasses("ant/src-bridge", "ant/build/bridge-classes");
         // Have to load at least one module to get the scan going.
         ClassPath.getClassPath(FileUtil.toFileObject(file("beans/src")), ClassPath.COMPILE);
-        check("ant/src-bridge", "ide6/ant/nblib/bridge.jar");
+        check("ant/src-bridge", "ide8/ant/nblib/bridge.jar");
     }
     
     public void testFindSourceRootForModuleJar() throws Exception {
         ClassPath.getClassPath(FileUtil.toFileObject(file("ant/src")), ClassPath.COMPILE);
-        check("java/project/src", "ide6/modules/org-netbeans-modules-java-project.jar");
-        check("openide/loaders/src", "platform6/modules/org-openide-loaders.jar");
-        check("core/bootstrap/src", "platform6/lib/boot.jar");
-        check("diff/src", "ide6/modules/org-netbeans-modules-diff.jar");
-        check("editor/libsrc", "ide6/modules/org-netbeans-modules-editor-lib.jar");
+        check("java/project/src", "ide8/modules/org-netbeans-modules-java-project.jar");
+        check("openide/loaders/src", "platform7/modules/org-openide-loaders.jar");
+        check("core/bootstrap/src", "platform7/lib/boot.jar");
+        check("diff/src", "ide8/modules/org-netbeans-modules-diff.jar");
+        check("editor/libsrc", "ide8/modules/org-netbeans-modules-editor-lib.jar");
         check("xtest/nbjunit/src", "testtools/modules/org-netbeans-modules-nbjunit.jar");
     }
     
