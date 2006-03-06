@@ -67,7 +67,7 @@ public final class ExcludeFromCommitAction extends ContextAction {
     }
 
     public void performContextAction(Node[] nodes) {
-        Object pair = startProgress();
+        Object pair = startProgress(nodes);
         try {            
             SvnModuleConfig config = SvnModuleConfig.getDefault();
             int status = getActionStatus(nodes);

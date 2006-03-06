@@ -48,12 +48,17 @@ public class UpdateAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
-    protected void performContextAction(Node[] nodes) {
+    protected void performContextAction(final Node[] nodes) {
         final Context ctx = getContext(nodes);
 
         Runnable run = new Runnable() {
             public void run() {
-                performUpdate(ctx);
+                Object pair = startProgress(nodes);
+                try {
+                    performUpdate(ctx);
+                } finally {
+                    finished(pair);
+                }
             }
         };
         Subversion.getInstance().postRequest(run);
@@ -73,7 +78,7 @@ public class UpdateAction extends ContextAction {
             return;
         }
 
-        Object pair = startProgress();
+        
         try {
             
             // XXX how to detect conflicts
@@ -102,8 +107,6 @@ roots_loop:
             ErrorManager err = ErrorManager.getDefault();
             err.annotate(e1, "Can not update");
             err.notify(e1);
-        } finally {
-            finished(pair);
         }
     }
 }

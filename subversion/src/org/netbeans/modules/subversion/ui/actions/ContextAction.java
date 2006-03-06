@@ -50,7 +50,8 @@ import java.awt.event.ActionEvent;
  */
 public abstract class ContextAction extends NodeAction {
 
-    private Node[] nodes;
+    // it's singleton
+    // do not declare any instance data
 
     protected ContextAction() {
         setIcon(null);
@@ -74,7 +75,6 @@ public abstract class ContextAction extends NodeAction {
     protected void performAction(Node[] nodes) {
         // TODO try to save files in invocation context only
         LifecycleManager.getDefault().saveAll();
-        this.nodes = nodes;
         performContextAction(nodes);
     }
     
@@ -284,7 +284,7 @@ public abstract class ContextAction extends NodeAction {
      * @return action data (SystemAction is singleton
      * so it must be held by clients).
      */
-    protected final Object startProgress(){
+    protected final Object startProgress(Node[] nodes){
         PD pd = new PD();
         OutputLogger logger = new OutputLogger();
         logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + getRunningName(nodes));

@@ -48,7 +48,7 @@ public class MergeAction extends ContextAction {
         return FileInformation.STATUS_MANAGED; // XXX
     }
     
-    protected void performContextAction(Node[] nodes) {
+    protected void performContextAction(final Node[] nodes) {
         Context ctx = getContext(nodes);        
         
         final File root = ctx.getRootFiles()[0];                        
@@ -68,7 +68,7 @@ public class MergeAction extends ContextAction {
             
             Runnable run = new Runnable() {
                 public void run() {
-                    Object pair = startProgress();
+                    Object pair = startProgress(nodes);
                     try {
                         ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
                         ISVNInfo info = client.getInfo(root); // XXX SvnUtils get the whole RepositoryFile if possible ...
