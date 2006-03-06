@@ -68,7 +68,7 @@ public class MergeAction extends ContextAction {
             
             Runnable run = new Runnable() {
                 public void run() {
-                    startProgress();
+                    Object pair = startProgress();
                     try {
                         ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
                         ISVNInfo info = client.getInfo(root); // XXX SvnUtils get the whole RepositoryFile if possible ...
@@ -101,7 +101,7 @@ public class MergeAction extends ContextAction {
                         ex.printStackTrace(); // should not hapen
                         return;
                     } finally {
-                        finished();
+                        finished(pair);
                     }
                 }
             };

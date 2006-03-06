@@ -72,7 +72,7 @@ public class CreateCopyAction extends ContextAction {
             
             Runnable run = new Runnable() {
                 public void run() {
-                    startProgress();                    
+                    Object pair = startProgress();
                     try {                
                         ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
                                                 
@@ -100,7 +100,7 @@ public class CreateCopyAction extends ContextAction {
                         ErrorManager.getDefault().notify(ex);
                         return;
                     } finally {
-                        finished();
+                        finished(pair);
                     }
                 }
             };

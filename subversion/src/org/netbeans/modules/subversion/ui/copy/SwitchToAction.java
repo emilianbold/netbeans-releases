@@ -64,7 +64,7 @@ public class SwitchToAction extends ContextAction {
 
             Runnable run = new Runnable() {
                 public void run() {
-                    startProgress();
+                    Object pair = startProgress();
                     try {
                         ISVNClientAdapter client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
                         if(replaceModifications) {
@@ -78,7 +78,7 @@ public class SwitchToAction extends ContextAction {
                         ex.printStackTrace(); // should not hapen
                         return;
                     } finally {
-                        finished();
+                        finished(pair);
                     }
                 }
             };

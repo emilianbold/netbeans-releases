@@ -50,10 +50,7 @@ import java.awt.event.ActionEvent;
  */
 public abstract class ContextAction extends NodeAction {
 
-    private ProgressHandle progress;
     private Node[] nodes;
-
-    private long progressStamp;
 
     protected ContextAction() {
         setIcon(null);
@@ -268,32 +265,56 @@ public abstract class ContextAction extends NodeAction {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
-    protected final void startProgress(){
+    private static class PD {
+        ProgressHandle progress;
+        long progressStamp;
+        Node[] nodes;
+    }
+
+    /**
+     * <pre>
+     * Object handle = startProgress();
+     * try {
+     *    // impl
+     * } finally {
+     *    finished(handle);
+     * }
+     * </pre>
+     *
+     * @return action data (SystemAction is singleton
+     * so it must be held by clients).
+     */
+    protected final Object startProgress(){
+        PD pd = new PD();
         OutputLogger logger = new OutputLogger();
         logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + getRunningName(nodes));
-        progress = ProgressHandleFactory.createHandle(getRunningName(nodes));
-        progress.setInitialDelay(500);
-        progressStamp = System.currentTimeMillis() + 500;
-        progress.start();
+        pd.progress = ProgressHandleFactory.createHandle(getRunningName(nodes));
+        pd.progress.setInitialDelay(500);
+        pd.progressStamp = System.currentTimeMillis() + 500;
+        pd.progress.start();
+        pd.nodes = nodes;  // XXX OK untill called from performContextAction()
+        return pd;
     }
 
     /**
      * Action is complete, switch progress to complete 100%
      * and remove it after 15 sec.
      */
-    protected final void finished() {
+    protected final void finished(Object progressHandle) {
 
         // TODO add failed and restart texts
 
-        OutputLogger logger = new OutputLogger();
-        logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + getName("", nodes) + " finished.");
+        final PD pd = (PD) progressHandle;
 
-        progress.switchToDeterminate(100);
-        progress.progress("Complete!", 100);
-        if (System.currentTimeMillis() > progressStamp) {
+        OutputLogger logger = new OutputLogger();
+        logger.logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + getName("", pd.nodes) + " finished.");
+
+        pd.progress.switchToDeterminate(100);
+        pd.progress.progress("Done!", 100);
+        if (System.currentTimeMillis() > pd.progressStamp) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    progress.finish();
+                    pd.progress.finish();
                 }
             }, 15 * 1000);
         }

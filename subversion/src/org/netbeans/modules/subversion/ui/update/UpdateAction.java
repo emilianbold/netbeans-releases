@@ -73,9 +73,9 @@ public class UpdateAction extends ContextAction {
             return;
         }
 
+        Object pair = startProgress();
         try {
-            startProgress();
-
+            
             // XXX how to detect conflicts
             boolean conflict = false;
 
@@ -103,7 +103,7 @@ roots_loop:
             err.annotate(e1, "Can not update");
             err.notify(e1);
         } finally {
-            finished();
+            finished(pair);
         }
     }
 }
