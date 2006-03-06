@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="appname" value="NetBeans"/>
   <property name="appversion" value="6.0 Development Version"/>
   <property name="version" value="6.0 Development Version"/>
-  <property name="nbClusterDir" value="nb5.0"/>
+  <property name="nbClusterDir" value="nb6.0"/>
   
   <property name="appdir" value="${appname}.app"/>
   <property name="tarball-name" value="netbeans6.0dev-macosx.tar.gz"/>
