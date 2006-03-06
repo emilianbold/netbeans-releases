@@ -22,8 +22,9 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- Specific to Mac OS X installer -->
   <property name="appname" value="NetBeans"/>
-  <property name="appversion" value="5.1 Development Version"/>
-  <property name="version" value="5.1 Development Version"/>
+  <property name="appversion" value="6.0 Development Version"/>
+  <property name="version" value="6.0 Development Version"/>
+  <property name="nbClusterDir" value="nb6.0"/>
                                                                                                                                  
   <property name="app.dir" value="${appname}.app"/>
   <property name="build.dir" value="build"/>
@@ -69,7 +70,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="set-installer.basename" unless="installer.basename" depends="set-buildnumber">
-    <property name="installer.basename" value="NetBeans5.1dev-asbundle-${buildnumber}"/>
+    <property name="installer.basename" value="NetBeans6.0dev-asbundle-${buildnumber}"/>
   </target>
   
   <macrodef name="transform-ml">
@@ -337,7 +338,7 @@ Creating NetBeans.app bundle using ${nb.dir} as master
     </exec>
                                                                                                                                  
     <echo message="Copying the icon into the correct place" />
-    <copy file="${build.dir}/${app.dir}/Contents/Resources/NetBeans/nb5.0/netbeans.icns"
+    <copy file="${build.dir}/${app.dir}/Contents/Resources/NetBeans/${nbClusterDir}/netbeans.icns"
           todir="${build.dir}/${app.dir}/Contents/Resources"/>
                                                                                                                                  
     <echo message="Generating Info.plist" />
