@@ -7,33 +7,33 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup.layers;
 
-import junit.framework.*;
-import org.openide.util.WeakListeners;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.beans.*;
-import java.io.*;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.*;
-import org.openide.ErrorManager;
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
+import org.netbeans.core.startup.layers.SystemFileSystem;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class AttributeChangeIsNotifiedTest extends org.netbeans.junit.NbTestCase {
+public class AttributeChangeIsNotifiedTest extends NbTestCase {
     SystemFileSystem sfs;
     
     public AttributeChangeIsNotifiedTest(String testName) {
@@ -47,7 +47,7 @@ public class AttributeChangeIsNotifiedTest extends org.netbeans.junit.NbTestCase
         File uc = new File(u, "config");
         uc.mkdirs();
         System.setProperty("netbeans.user", u.toString());
-        File h = new File(getWorkDir(), "installdir");
+        File h = new File(getWorkDir(), "nb/installdir");
         new File(h, "config").mkdirs();
         System.setProperty("netbeans.home", h.toString());
         

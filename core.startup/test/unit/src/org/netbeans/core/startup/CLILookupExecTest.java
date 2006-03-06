@@ -14,18 +14,10 @@
 package org.netbeans.core.startup;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.Permission;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 import org.netbeans.CLIHandler;
 import org.netbeans.junit.NbTestCase;
-
 
 /** Make sure the CLIHandler can be in modules and really work.
  * @author Jaroslav Tulach
@@ -40,8 +32,8 @@ public class CLILookupExecTest extends NbTestCase {
     protected void setUp() throws Exception {
         clearWorkDir();
         
-        home = new File(getWorkDir(), "cluster1");
-        cluster2 = new File(getWorkDir(), "cluster2");
+        home = new File(getWorkDir(), "nb/cluster1");
+        cluster2 = new File(getWorkDir(), "nb/cluster2");
         user = new File(getWorkDir(), "testuserdir");
         
         home.mkdirs();

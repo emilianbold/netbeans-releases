@@ -7,14 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.core.startup;
 
 import java.io.File;
-
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
 
 /** Tests the behavior of the license check "api".
  */
@@ -45,7 +45,7 @@ public class NonGuiHandleCheckOfLicenseTest extends NbTestCase {
         clearWorkDir ();
         CLIOptions.clearForTests ();
         
-        File home = new File (getWorkDir (), "home");
+        File home = new File (getWorkDir (), "nb/home");
         user = new File (getWorkDir (), "user");
         userVar = new File (user,"var");
         

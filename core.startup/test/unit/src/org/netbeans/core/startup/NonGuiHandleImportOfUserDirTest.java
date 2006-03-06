@@ -7,21 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.core.startup;
 
 import java.io.File;
-import java.util.Enumeration;
-import java.util.MissingResourceException;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-import junit.framework.*;
-import org.netbeans.core.startup.CLIOptions;
-import org.netbeans.core.startup.Main;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
 
 /** Tests the behaviour of the import user dir "api".
  */
@@ -51,7 +44,7 @@ public class NonGuiHandleImportOfUserDirTest extends NbTestCase {
         clearWorkDir ();
         CLIOptions.clearForTests ();
         
-        File home = new File (getWorkDir (), "home");
+        File home = new File (getWorkDir (), "nb/home");
         user = new File (getWorkDir (), "user");
         
         assertTrue ("Home dir created", home.mkdirs ());
