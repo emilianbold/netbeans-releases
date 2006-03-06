@@ -31,9 +31,9 @@ static char options[4098] = "";
 static char dirs[4098] = "", extradirs[4098];
 static char jdkswitch[MAX_PATH] = "";
 
-static char* defaultDirs[] = { "nb5.0",
-                               "ide6",
-                               "enterprise2",
+static char* defaultDirs[] = { "nb6.0",
+                               "ide8",
+                               "enterprise4",
                                "harness",
                                "profiler1",
                                "mobility7.2",
@@ -106,7 +106,7 @@ int WINAPI
         strcat(strcat(dirs, ";"), extradirs);
     }
     
-    sprintf(nbexec, "%s\\platform6\\lib\\nbexec.exe", topdir);
+    sprintf(nbexec, "%s\\platform7\\lib\\nbexec.exe", topdir);
 
     sprintf(cmdline2, "\"%s\" %s -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense --branding nb --clusters \"%s\" --userdir \"%s\" %s %s",
             nbexec,
