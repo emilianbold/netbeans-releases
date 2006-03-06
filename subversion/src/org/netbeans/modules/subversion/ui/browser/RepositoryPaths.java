@@ -105,7 +105,8 @@ public class RepositoryPaths implements ActionListener {
         SVNUrl repositoryUrl = getRepositoryUrl();
         SVNRevision revision = getRevision();
         if(revision == null) {
-            // XXX should not be even possible to get here!
+            // should not be possible to get here!
+            return EMPTY_REPOSITORY_FILES;
         }
         
         for (int i = 0; i < paths.length; i++) {

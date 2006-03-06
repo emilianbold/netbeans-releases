@@ -223,10 +223,10 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
 
             Node[] newSelection = (Node[]) evt.getNewValue();
-                        
-            // FIXME in case that there is no selection in the view, 
-            // and ctrl-a is invoked will all nodes get selected (on each level)
-            
+            if(newSelection == null || newSelection.length == 0) {
+                return;
+            }
+
             // RULE: don't select the repository node
 //            if(containsRootNode(newSelection)) {                
 //                throw new PropertyVetoException("", evt); // NOI18N
@@ -235,26 +235,29 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             Node[] oldSelection =  (Node[]) evt.getOldValue();                                    
             
             // RULE: don't select nodes on a different level as the already selected 
-            if(oldSelection.length == 0) {
+            if(oldSelection.length == 0 && newSelection.length == 1) {
                 // it is first node selected ->
                 // -> there is nothig to check
                 return;
             }   
                                     
-            if(areDisjunct(oldSelection, newSelection)) {
+            if(oldSelection.length != 0 && areDisjunct(oldSelection, newSelection)) {
                 // as if the first node would be selected ->
                 // -> there is nothig to check
                 return;
             }
-            
-            // we anticipate that nothing went wrong and            
-            // all nodes in the old selection are at the same level
-            Node selectedNode = oldSelection[0];   
-                                                   
+
+            Node selectedNode = null;
+            if(oldSelection.length > 0) {
+                // we anticipate that nothing went wrong and
+                // all nodes in the old selection are at the same level
+                selectedNode = oldSelection[0];
+            } else {
+                selectedNode = newSelection[0];
+            }
             if(!selectionIsAtLevel(newSelection, getNodeLevel(selectedNode))) {
                 throw new PropertyVetoException("", evt); // NOI18N
             }
-            
         }
     }    
     

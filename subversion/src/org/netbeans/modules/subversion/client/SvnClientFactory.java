@@ -110,7 +110,7 @@ public class SvnClientFactory {
         if (adapter == null) {
             adapter = new UnsupportedSvnClientAdapter();
         }        
-        // TODO add version check, but there is no API                                
+        // TODO ask user for the svn binary path...
         return adapter;
     }  
     
