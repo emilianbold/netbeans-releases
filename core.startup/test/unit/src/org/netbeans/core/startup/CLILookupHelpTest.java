@@ -39,9 +39,10 @@ public class CLILookupHelpTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         clearWorkDir();
-        
-        home = new File(getWorkDir(), "cluster1");
-        cluster2 = new File(getWorkDir(), "cluster2");
+
+        File p = new File(getWorkDir(), "par");
+        home = new File(p, "cluster1");
+        cluster2 = new File(p, "cluster2");
         user = new File(getWorkDir(), "testuserdir");
         
         home.mkdirs();
