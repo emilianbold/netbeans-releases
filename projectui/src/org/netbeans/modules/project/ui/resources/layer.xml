@@ -54,6 +54,10 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.buildMainProject"/>            
             </file>
             
+            <file name="org-netbeans-modules-project-ui-CleanMainProject.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.cleanMainProject"/>            
+            </file>
+            
             <file name="org-netbeans-modules-project-ui-RebuildMainProject.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.rebuildMainProject"/>            
             </file>
@@ -77,6 +81,10 @@ Microsystems, Inc. All Rights Reserved.
             
             <file name="org-netbeans-modules-project-ui-BuildProject.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.buildProject"/>            
+            </file>
+            
+            <file name="org-netbeans-modules-project-ui-CleanProject.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.cleanProject"/>            
             </file>
             
             <file name="org-netbeans-modules-project-ui-RebuildProject.instance">

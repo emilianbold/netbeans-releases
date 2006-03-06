@@ -864,9 +864,24 @@ Nothing.
         </question>
 -->
  <answer id="resources-layer">
+  <api group="layer" name="RegisteredActions" type="export" category="devel">
   <p>
-   No.
+    Several project related actions are registered in the Actions folder in the layer.
+    Product branding is intended to use those actions to build main menu, toolbars and shortcuts.
   </p>
+   <ul>
+       <li>Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance</li>
+       <li>Actions/Project/org-netbeans-modules-project-ui-CleanMainProject.instance</li>
+       <li>Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance</li>
+       <li>Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance</li>
+       <li>Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance</li>
+       <li>Actions/Project/org-netbeans-modules-project-ui-TestProject.instance</li>
+       <li>Actions/Project/org-netbeans-modules-project-ui-BuildProject.instance</li>
+       <li>Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance</li>
+       <li>Actions/Project/org-netbeans-modules-project-ui-RebuildProject.instance</li>
+       <li>Actions/Project/org-netbeans-modules-project-ui-RunProject.instance</li>
+   </ul>
+  </api>
  </answer>
 
 

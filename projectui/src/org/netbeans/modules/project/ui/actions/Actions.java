@@ -163,6 +163,16 @@ public class Actions implements ActionsFactory {
         return a;
     }
     
+    public static Action cleanProject() {
+        Action a = new ProjectAction(
+                ActionProvider.COMMAND_CLEAN,
+                NbBundle.getMessage(Actions.class, "LBL_CleanProjectAction_Name" ), // NO18N
+                new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/cleanCurrentProject.gif" ) ), //NOI18N
+                null );
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/cleanCurrentProject.gif"); //NOI18N
+        return a;
+    }
+    
     public static Action rebuildProject() {
         Action a = new ProjectAction(
             ActionProvider.COMMAND_REBUILD,
@@ -303,6 +313,15 @@ public class Actions implements ActionsFactory {
         return a;
     }
     
+    public static Action cleanMainProject() {
+        Action a = new MainProjectAction(
+                ActionProvider.COMMAND_CLEAN,
+                NbBundle.getMessage(Actions.class, "LBL_CleanMainProjectAction_Name" ),
+                new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/cleanProject.gif" ) ) );  //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/cleanProject.gif"); //NOI18N
+        return a;
+    }
+
     public static Action rebuildMainProject() {
         Action a = new MainProjectAction(
             ActionProvider.COMMAND_REBUILD,
