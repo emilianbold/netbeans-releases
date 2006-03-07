@@ -227,7 +227,17 @@ void parseConfigFile(const char* path) {
             *(pc+1) = '\0';
             if (strstr(q, "${HOME}") == q) {
                 char userhome[MAX_PATH];
-                strcpy(userdir, getUserHomeFromRegistry(userhome));
+                char *userprofile = getenv("USERPROFILE");
+
+                if (userprofile == NULL) {
+		    userprofile = getUserHomeFromRegistry(userhome);
+                }
+                if (userprofile != NULL) {
+		    strcpy(userdir, userprofile);
+                }
+                // else {
+                //   ... keep the default userdir value 'c:\nbuser'
+                // }
                 strcat(userdir, q + strlen("${HOME}"));
             } else {
                 strcpy(userdir, q);
