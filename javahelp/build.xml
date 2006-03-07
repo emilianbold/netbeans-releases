@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
                 <text>For the JavaHelp integration module itself:</text>
                 <file location="${license.file}"/>
                 <text>For the bundled JavaHelp runtime library:</text>
-                <file location="../external/jh-2.0_02-license.txt"/>
+                <file location="../external/jh-2.0_03-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

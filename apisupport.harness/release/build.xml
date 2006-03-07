@@ -124,7 +124,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="javahelp" depends="init" if="has.javahelp">
         <!-- Similar to projectized.xml but does not fiddle with usersguide/.../ide.css, and finds jhall.jar differently: -->
-        <property name="jhall.jar" location="${harness.dir}/jsearch-2.0_02.jar"/>
+        <property name="jhall.jar" location="${harness.dir}/jsearch-2.0_03.jar"/>
         <available property="jhall.jar.exists" file="${jhall.jar}"/>
         <fail unless="jhall.jar.exists">You must set 'jhall.jar' (e.g. in private.properties) to the location of jsearch.jar from a JavaHelp distribution</fail>
         <mkdir dir="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}"/>
