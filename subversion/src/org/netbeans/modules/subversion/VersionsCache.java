@@ -19,6 +19,7 @@ import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.FileUtils;
+import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -78,6 +79,7 @@ public class VersionsCache {
                 }
                 // keep original extension so MIME can be guessed by the extension
                 File tmp = File.createTempFile("nb-svn", base.getName());  // NOI19N
+                tmp = FileUtil.normalizeFile(tmp);
                 tmp.deleteOnExit();  // hard to track actual lifetime
                 FileUtils.copyStreamToFile(new BufferedInputStream(in), tmp);
                 return tmp;
