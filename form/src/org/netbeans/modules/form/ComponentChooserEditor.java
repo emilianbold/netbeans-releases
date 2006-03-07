@@ -328,7 +328,7 @@ public class ComponentChooserEditor implements PropertyEditor,
             component = metacomp;
         }
 
-        public FormDesignValue copy(FormModel formModel) {
+        public FormDesignValue copy(FormProperty formProperty) {
             return null;
         }
         

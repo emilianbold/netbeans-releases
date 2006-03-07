@@ -288,7 +288,7 @@ public class RADConnectionPropertyEditor
             type = TYPE_CODE;
         }
 
-        public FormDesignValue copy(FormModel formModel) {
+        public FormDesignValue copy(FormProperty formProperty) {
             switch(type) {
                 case TYPE_CODE:
                     return new RADConnectionDesignValue(userCode);

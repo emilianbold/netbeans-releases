@@ -45,6 +45,7 @@ import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormDesignValue;
 import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.NamedPropertyEditor;
 
 /**
@@ -382,7 +383,7 @@ public class IconEditor extends PropertyEditorSupport implements
             return name;
         }
         
-        public FormDesignValue copy(FormModel formModel) {
+        public FormDesignValue copy(FormProperty formProperty) {
             return new IconEditor.NbImageIcon(this);   
         }
     }

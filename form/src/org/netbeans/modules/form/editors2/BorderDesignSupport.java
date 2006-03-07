@@ -81,7 +81,8 @@ public class BorderDesignSupport implements FormDesignValue
 
     // --------------------------
 
-    public FormDesignValue copy(FormModel formModel) {
+    public FormDesignValue copy(FormProperty formProperty) {
+        FormModel formModel = formProperty.getPropertyContext().getFormModel();
         try {
             return new BorderDesignSupport(this, BorderEditor.createFormPropertyContext(formModel));    
         } catch (Exception ex) {

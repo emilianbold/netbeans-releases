@@ -104,7 +104,7 @@ final public class FormPropertyEditorManager extends Object
         ArrayList editorsList = new ArrayList(5);
 
         // 1st - try standard way through PropertyEditorManager
-        PropertyEditor stdPropEd = type == Object.class ? null :
+        PropertyEditor stdPropEd = (type == Object.class || type == java.awt.Font.class) ? null :
                                      PropertyEditorManager.findEditor(type);
         if (stdPropEd != null) {
             editorsList.add(stdPropEd.getClass());

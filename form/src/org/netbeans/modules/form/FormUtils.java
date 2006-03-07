@@ -558,8 +558,7 @@ public class FormUtils
                     catch (CloneNotSupportedException ex) {} // ignore, don't report
                 }
                 else { // handle FormDesignValue                    
-                    FormModel formModel = (tfProp == null) ? null : tfProp.getPropertyContext().getFormModel();                        
-                    Object val = ((FormDesignValue)propertyValue).copy(formModel);
+                    Object val = ((FormDesignValue)propertyValue).copy(tfProp);
                     if (val != null)
                         propertyValue = val;
                     else if ((mode & PASS_DESIGN_VALUES) == 0)
