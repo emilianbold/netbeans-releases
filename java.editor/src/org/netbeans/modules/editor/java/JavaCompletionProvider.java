@@ -38,6 +38,7 @@ import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.Feature;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -90,7 +91,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             Document doc = component.getDocument();
             if (caretOffset >= creationCaretOffset) {
                 try {
-                    if (isJavaIdentifierPart(doc.getText(creationCaretOffset, caretOffset - creationCaretOffset)))
+                    if (isJavaIdentifierPart(DocumentUtilities.getText(doc, creationCaretOffset, caretOffset - creationCaretOffset)))
                         return;
                 } catch (BadLocationException e) {
                 }
@@ -149,7 +150,7 @@ public class JavaCompletionProvider implements CompletionProvider {
 	    resultSet.finish();
         }
 
-        private boolean isJavaIdentifierPart(String text) {
+        private boolean isJavaIdentifierPart(CharSequence text) {
             for (int i = 0; i < text.length(); i++) {
                 if (!(Character.isJavaIdentifierPart(text.charAt(i))) ) {
                     return false;
@@ -357,24 +358,28 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         protected boolean canFilter(JTextComponent component) {
-            String text = null;
+            CharSequence text = null;
+            int textLength = -1;
             int caretOffset = component.getCaretPosition();            
             Document doc = component.getDocument();
             try {
                 if (caretOffset - queryCaretOffset > 0)
-                    text = doc.getText(queryCaretOffset, caretOffset - queryCaretOffset);
+                    text = DocumentUtilities.getText(doc, queryCaretOffset, caretOffset - queryCaretOffset);
                 else if (caretOffset - queryCaretOffset < 0)
-                    text = doc.getText(caretOffset, queryCaretOffset - caretOffset);
+                    text = DocumentUtilities.getText(doc, caretOffset, queryCaretOffset - caretOffset);
                 else
-                    text = ""; //NOI18N
+                    textLength = 0;
             } catch (BadLocationException e) {
             }
-            if (text == null)
+            if (text != null) {
+                textLength = text.length();
+            } else if (textLength < 0) {
                 return false;
+            }
 
             boolean filter = true;
             int balance = 0;
-            for (int i = 0; i < text.length(); i++) {
+            for (int i = 0; i < textLength; i++) {
                 char ch = text.charAt(i);
                 switch (ch) {
                     case ',':
