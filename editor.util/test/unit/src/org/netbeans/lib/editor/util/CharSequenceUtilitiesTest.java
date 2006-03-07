@@ -97,11 +97,11 @@ public class CharSequenceUtilitiesTest extends TestCase {
         // trim
         buf = new StringBuffer();
         for (int x = 0; x < SUBSTR_LENGTH; x++) {
-            buf.append(' ');
+            buf.append((char)rnd.nextInt(' ' + 1));
         }
         buf.append(string);
         for (int x = 0; x < SUBSTR_LENGTH; x++) {
-            buf.append(' ');
+            buf.append((char)rnd.nextInt(' ' + 1));
         }
         assertTrue(CharSequenceUtilities.textEquals(string, CharSequenceUtilities.trim(buf.toString())));
         
