@@ -12,6 +12,7 @@
  */
 package org.openide.explorer.propertysheet.editors;
 
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
 * Enhances standard custom property editor with the possibility to return the customized value.
@@ -20,7 +21,9 @@ package org.openide.explorer.propertysheet.editors;
 * instead sets the acquired value after the custom editor is closed.
 *
 * @author  Ian Formanek
-* @deprecated Use PropertyEnv instead.
+* @deprecated Use {@link PropertyEnv} instead. An example of what needs to be
+*    done can be found in the rewrite of
+*    <a href="http://www.netbeans.org/source/browse/core/src/org/netbeans/beaninfo/editors/RectangleCustomEditor.java?r1=1.25&r2=1.26">RectangleCustomEditor</a>.
 */
 public interface EnhancedCustomPropertyEditor {
     /** Get the customized property value.
