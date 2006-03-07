@@ -97,6 +97,7 @@ public class Subversion {
     }
     
     public void shutdown() {
+        filesystemHandler.shutdown();
     }
 
     public SvnFileNode [] getNodes(Context context, int includeStatus) {
