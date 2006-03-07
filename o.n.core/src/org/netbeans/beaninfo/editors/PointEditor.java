@@ -58,7 +58,7 @@ public class PointEditor extends ArrayOfIntSupport {
     }
 
     public java.awt.Component getCustomEditor () {
-        return new PointCustomEditor (this);
+        return new PointCustomEditor (this, env);
     }
 
     /** @return the format of value set in property editor. */

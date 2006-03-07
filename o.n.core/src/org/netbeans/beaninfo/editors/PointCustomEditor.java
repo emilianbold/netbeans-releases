@@ -15,23 +15,28 @@ package org.netbeans.beaninfo.editors;
 
 import java.awt.Point;
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import org.openide.ErrorManager;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 /** Custom property editor for Point and Dimension
 *
 * @author   Ian Formanek
 */
-public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
+public class PointCustomEditor extends javax.swing.JPanel
+implements PropertyChangeListener {
 
     static final long serialVersionUID =-4067033871196801978L;
     
     private boolean dimensionMode = false;
+
+    private PropertyEnv env;
     
     /** Initializes the Form */
-    public PointCustomEditor(PointEditor editor) {
+    public PointCustomEditor(PointEditor editor, PropertyEnv env) {
         initComponents ();
         this.editor = editor;
         Point point = (Point)editor.getValue ();
@@ -45,12 +50,12 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
         xField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PointCustomEditor.class, "ACSD_CTL_X"));
         yField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PointCustomEditor.class, "ACSD_CTL_Y"));
         
-        commonInit( NbBundle.getMessage(PointCustomEditor.class, "CTL_Point") );
+        commonInit( NbBundle.getMessage(PointCustomEditor.class, "CTL_Point"), env );
     }
     
-    public PointCustomEditor(DimensionEditor editor) {
+    public PointCustomEditor(DimensionEditor editor, PropertyEnv env) {
         dimensionMode = true;
-        
+
         initComponents();
         this.editor = editor;
         Dimension dimension = (Dimension)editor.getValue ();
@@ -68,10 +73,10 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
         xField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PointCustomEditor.class, "ACSD_CTL_Width"));
         yField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PointCustomEditor.class, "ACSD_CTL_Height"));
         
-        commonInit( NbBundle.getMessage(PointCustomEditor.class, "CTL_Dimension") );
+        commonInit( NbBundle.getMessage(PointCustomEditor.class, "CTL_Dimension"), env );
     }
     
-    private void commonInit( String panelTitle ) {
+    private void commonInit( String panelTitle, PropertyEnv env ) {
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PointCustomEditor.class, "ACSD_PointCustomEditor"));
         
         setBorder (new javax.swing.border.EmptyBorder(12, 12, 0, 11));
@@ -81,13 +86,18 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
                                        " " + panelTitle + " "
                                    ),
                                    new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5))));
+
+
+        this.env = env;
+        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        env.addPropertyChangeListener(this);
     }
 
     public java.awt.Dimension getPreferredSize () {
         return new java.awt.Dimension (280, 160);
     }
 
-    public Object getPropertyValue () throws IllegalStateException {
+    private Object getPropertyValue () throws IllegalStateException {
         try {
             int x = Integer.parseInt (xField.getText ());
             int y = Integer.parseInt (yField.getText ());
@@ -110,6 +120,18 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
             throw ise;
         }
     }
+
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (
+            PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
+            &&
+            PropertyEnv.STATE_VALID.equals(evt.getNewValue())
+        ) {
+            editor.setValue(getPropertyValue());
+        }
+    }
+
 
     /** This method is called from within the constructor to
      * initialize the form.

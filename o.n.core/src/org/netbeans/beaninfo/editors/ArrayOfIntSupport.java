@@ -16,6 +16,9 @@ package org.netbeans.beaninfo.editors;
 import java.util.StringTokenizer;
 import java.text.MessageFormat;
 import org.openide.ErrorManager;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 
 /** Support for property editors for several integers.
 * for example:  Point - [2,4], Insets [2,3,4,4],...
@@ -23,7 +26,8 @@ import org.openide.ErrorManager;
 * @author   Petr Hamernik
 * @version  0.14, Jul 20, 1998
 */
-abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implements org.openide.explorer.propertysheet.editors.XMLPropertyEditor  {
+abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport
+implements XMLPropertyEditor, ExPropertyEditor  {
     private static final String VALUE_FORMAT = org.openide.util.NbBundle.getBundle(
                 ArrayOfIntSupport.class).getString("EXC_BadFormatValue");
 
@@ -35,6 +39,10 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implem
     */
     private String className;
 
+    /** associated env, accessible by package private subclasses */
+    PropertyEnv env;
+
+
     /** constructs new property editor.
     * @param className Name of the class which is this editor for. (e.g. "java.awt.Point")
     * @param count Length of the array of int
@@ -43,6 +51,11 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implem
         this.className = className;
         this.count = count;
     }
+
+    public void attachEnv(PropertyEnv env) {
+        this.env = env;
+    }
+
 
     /** This method is intended for use when generating Java code to set
     * the value of the property.  It should return a fragment of Java code

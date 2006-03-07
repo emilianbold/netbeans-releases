@@ -17,6 +17,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 import javax.swing.JLabel;
@@ -26,12 +28,12 @@ import javax.swing.UIManager;
 import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 /**
 * @author   Ian Formanek
 */
-public class RectangleCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor, KeyListener {
+public class RectangleCustomEditor extends javax.swing.JPanel
+implements KeyListener, PropertyChangeListener {
     static final long serialVersionUID =-9015667991684634296L;
    
     private HashMap labelMap = new HashMap();
@@ -83,13 +85,16 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
         labelMap.put(yField,yLabel);
         labelMap.put(heightField,heightLabel);
 //        HelpCtx.setHelpIDString (this, RectangleCustomEditor.class.getName ());
+
+        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        env.addPropertyChangeListener(this);
     }
 
     public java.awt.Dimension getPreferredSize () {
         return new java.awt.Dimension (280, 160);
     }
 
-    public Object getPropertyValue () throws IllegalStateException {
+    private Object getPropertyValue () throws IllegalStateException {
         try {
             int x = Integer.parseInt (xField.getText ());
             int y = Integer.parseInt (yField.getText ());
@@ -227,7 +232,7 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
             }
         }
         if (env != null) {
-           env.setState(valid ? env.STATE_VALID : env.STATE_INVALID);
+           env.setState(valid ? env.STATE_NEEDS_VALIDATION : env.STATE_INVALID);
         }
         return valid;
     }
@@ -264,6 +269,12 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
     
     private JLabel findLabelFor(JTextField c) {
         return (JLabel) labelMap.get(c);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+            editor.setValue(getPropertyValue());
+        }
     }
     
     // Variables declaration - do not modify

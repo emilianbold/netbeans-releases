@@ -18,14 +18,16 @@ import java.util.ResourceBundle;
 import org.openide.ErrorManager;
 
 import org.openide.NotifyDescriptor;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
 /** A property editor for Dimension class.
 * @author   Petr Hamernik
 * @version  0.10, 21 Jul, 1998
 */
-public class DimensionEditor extends ArrayOfIntSupport {
-
+public class DimensionEditor extends ArrayOfIntSupport
+implements ExPropertyEditor {
     public DimensionEditor() {
         super("java.awt.Dimension", 2); // NOI18N
     }
@@ -74,7 +76,7 @@ public class DimensionEditor extends ArrayOfIntSupport {
     }
 
     public java.awt.Component getCustomEditor () {
-        return new PointCustomEditor (this);
+        return new PointCustomEditor (this, env);
     }
 
 
