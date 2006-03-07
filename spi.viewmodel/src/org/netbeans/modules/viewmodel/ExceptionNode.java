@@ -60,7 +60,7 @@ public class ExceptionNode extends AbstractNode {
             Lookups.singleton (exception)
         );
         this.exception = exception;
-        setIconBase ("org/openide/resources/actions/empty");
+        setIconBaseWithExtension ("org/openide/resources/actions/empty.gif");
     }
     
     public String getName () {

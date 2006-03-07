@@ -296,7 +296,7 @@ public class TreeModelNode extends AbstractNode {
                 if (iconBase != null)
                     setIconBase (iconBase);
                 else
-                    setIconBase ("org/openide/resources/actions/empty");
+                    setIconBaseWithExtension ("org/openide/resources/actions/empty.gif");
             } catch (UnknownTypeException e) {
                 Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
@@ -351,7 +351,7 @@ public class TreeModelNode extends AbstractNode {
             if (iconBase != null)
                 setIconBase (iconBase);
             else
-                setIconBase ("org/openide/resources/actions/empty");
+                setIconBaseWithExtension ("org/openide/resources/actions/empty.gif");
             firePropertyChange(null, null, null);
         } catch (UnknownTypeException e) {
             Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
@@ -641,7 +641,7 @@ public class TreeModelNode extends AbstractNode {
             if (object == WAIT_KEY) {
                 AbstractNode n = new AbstractNode(Children.LEAF);
                 n.setName(NbBundle.getMessage(TreeModelNode.class, "WaitNode"));
-                n.setIconBase("org/netbeans/modules/viewmodel/wait");
+                n.setIconBaseWithExtension("org/netbeans/modules/viewmodel/wait.gif");
                 return new Node[] { n };
             }
             if (object instanceof Exception)
