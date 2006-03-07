@@ -12,6 +12,7 @@
  */
 package org.openide.util.lookup;
 
+import java.lang.ref.WeakReference;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -245,23 +246,24 @@ public class ProxyLookup extends Lookup {
      * that was found (not too useful) and also to all objects found
      * (more useful).
      */
-    private final class R extends WaitableResult implements LookupListener {
+    private final class R extends WaitableResult {
         /** list of listeners added */
         private javax.swing.event.EventListenerList listeners;
 
         /** template for this result */
         private Lookup.Template template;
 
-        /** all results */
-        private Lookup.Result[] results;
-
         /** collection of Objects */
         private Collection[] cache;
+
+        /** weak listener & result */
+        private WeakResult weakL;
 
         /** Constructor.
          */
         public R(Lookup.Template t) {
             template = t;
+            weakL = new WeakResult(this);
         }
 
         /** When garbage collected, remove the template from the has map.
@@ -274,8 +276,8 @@ public class ProxyLookup extends Lookup {
          */
         private Result[] initResults() {
             synchronized (this) {
-                if (results != null) {
-                    return results;
+                if (weakL.results != null) {
+                    return weakL.results;
                 }
             }
 
@@ -289,15 +291,15 @@ public class ProxyLookup extends Lookup {
             synchronized (this) {
                 // some other thread might compute the result mean while. 
                 // if not finish the computation yourself
-                if (results != null) {
-                    return results;
+                if (weakL.results != null) {
+                    return weakL.results;
                 }
 
                 for (int i = 0; i < arr.length; i++) {
-                    arr[i].addLookupListener(this);
+                    arr[i].addLookupListener(weakL);
                 }
 
-                results = arr;
+                weakL.results = arr;
 
                 return arr;
             }
@@ -310,7 +312,7 @@ public class ProxyLookup extends Lookup {
          */
         protected void lookupChange(Set added, Set removed, Lookup[] old, Lookup[] current) {
             synchronized (this) {
-                if (results == null) {
+                if (weakL.results == null) {
                     // not computed yet, do not need to do anything
                     return;
                 }
@@ -321,10 +323,10 @@ public class ProxyLookup extends Lookup {
                 for (int i = 0; i < old.length; i++) {
                     if (removed.contains(old[i])) {
                         // removed lookup
-                        results[i].removeLookupListener(this);
+                        weakL.results[i].removeLookupListener(weakL);
                     } else {
                         // remember the association
-                        map.put(old[i], results[i]);
+                        map.put(old[i], weakL.results[i]);
                     }
                 }
 
@@ -334,7 +336,7 @@ public class ProxyLookup extends Lookup {
                     if (added.contains(current[i])) {
                         // new lookup
                         arr[i] = current[i].lookup(template);
-                        arr[i].addLookupListener(this);
+                        arr[i].addLookupListener(weakL);
                     } else {
                         // old lookup
                         arr[i] = (Lookup.Result) map.get(current[i]);
@@ -347,7 +349,7 @@ public class ProxyLookup extends Lookup {
                 }
 
                 // remember the new results
-                results = arr;
+                weakL.results = arr;
             }
         }
 
@@ -451,7 +453,7 @@ public class ProxyLookup extends Lookup {
                     cache = new Collection[3];
                 }
                 
-                if (arr == results) {
+                if (arr == weakL.results) {
                     // updates the results, if the results have not been
                     // changed during the computation of allInstances
                     cache[indexToCache] = ret;
@@ -550,4 +552,75 @@ public class ProxyLookup extends Lookup {
             }
         }
     }
+    private static final class WeakResult extends WaitableResult implements LookupListener {
+        /** all results */
+        private Lookup.Result[] results;
+
+        private Reference result;
+        
+        public WeakResult(R r) {
+            this.result = new WeakReference(r);
+        }
+        
+        protected void beforeLookup(Lookup.Template t) {
+            R r = (R)result.get();
+            if (r != null) {
+                r.beforeLookup(t);
+            } else {
+                removeListeners();
+            }
+        }
+
+        private void removeListeners() {
+            Lookup.Result[] arr = this.results;
+            if (arr == null) {
+                return;
+            }
+
+            for(int i = 0; i < arr.length; i++) {
+                arr[i].removeLookupListener(this);
+            }
+        }
+
+        protected void collectFires(Collection evAndListeners) {
+            R r = (R)result.get();
+            if (r != null) {
+                r.collectFires(evAndListeners);
+            } else {
+                removeListeners();
+            }
+        }
+
+        public void addLookupListener(LookupListener l) {
+            assert false;
+        }
+
+        public void removeLookupListener(LookupListener l) {
+            assert false;
+        }
+
+        public Collection allInstances() {
+            assert false;
+            return null;
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            R r = (R)result.get();
+            if (r != null) {
+                r.resultChanged(ev);
+            } else {
+                removeListeners();
+            }
+        }
+
+        public Collection allItems() {
+            assert false;
+            return null;
+        }
+
+        public Set allClasses() {
+            assert false;
+            return null;
+        }
+    } // end of WeakResult
 }
