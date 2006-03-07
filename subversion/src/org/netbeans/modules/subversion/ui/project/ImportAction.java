@@ -40,7 +40,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  *
  * @author Petr Kuzel
- * XXX also a context action ???
  */
 public final class ImportAction extends NodeAction {
 
