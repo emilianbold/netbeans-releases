@@ -28,7 +28,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /*
  *
- * XXX make some abstract base for import and checkout.
  *
  * @author Tomas Stupka
  */
@@ -51,7 +50,6 @@ public final class ImportWizard implements ChangeListener {
     public boolean show() {
         wizardIterator = new PanelsIterator();
         wizardDescriptor = new WizardDescriptor(wizardIterator);
-        // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
         wizardDescriptor.setTitle("Import");
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
@@ -93,14 +91,10 @@ public final class ImportWizard implements ChangeListener {
         }
 
         protected WizardDescriptor.Panel[] initializePanels() {
-            WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];
-            
-            repositoryStep = new RepositoryStep(false);
-            
+            WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];            
+            repositoryStep = new RepositoryStep(false);            
             importStep = new ImportStep(new BrowserAction[] { new CreateFolderAction(defaultFolderNameToImport)});
-
             panels = new  WizardDescriptor.Panel[] {repositoryStep, importStep};
-
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
                 Component c = panels[i].getComponent();
@@ -126,18 +120,10 @@ public final class ImportWizard implements ChangeListener {
         }
 
         public void nextPanel() {            
-            //
             if(current() == repositoryStep) {                                            
                 importStep.setup(repositoryStep.getRepositoryFile());
             }            
             super.nextPanel();
-        }
-
-        public void previousPanel() {            
-//            if(current() == browseStep) {                
-//                browseStep.reset();
-//            }            
-            super.previousPanel();
         }
     }
 

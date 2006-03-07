@@ -15,6 +15,7 @@ package org.netbeans.modules.subversion.ui.project;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
 import org.openide.nodes.Node;
@@ -144,11 +145,8 @@ public final class ImportAction extends NodeAction {
      */
     private void doImport(SVNUrl repositoryUrl, SVNUrl folderUrl, File file, String message) throws SVNClientException {        
         try {
-            SvnClient client = Subversion.getInstance().getClient(folderUrl);
-            
-            // import into repository ...
-            client.doImport(file, folderUrl, message, true);                    
-            
+            SvnClient client = Subversion.getInstance().getClient(repositoryUrl);
+            client.doImport(file, folderUrl, message, true);                                
         } catch (SVNClientException ex) {
             org.openide.ErrorManager.getDefault().notify(ex); 
             return;
@@ -175,13 +173,30 @@ public final class ImportAction extends NodeAction {
 
     private void doCheckout(SVNUrl repositoryUrl, SVNUrl repositoryFolderUrl, File file)  throws SVNClientException {
         RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryFolderUrl, SVNRevision.HEAD) };                        
-        // XXX doing it this way we probably will get in troubles with the IDE
         File checkoutFile = new File(file.getAbsolutePath() + ".co");             
         CheckoutAction.checkout(repositoryUrl, repositoryFile, checkoutFile, false, true);                         
-        File tmpFile = new File(file.getAbsolutePath() + ".tmp");             
-        file.renameTo(tmpFile);
-        checkoutFile.renameTo(file);                          
-        deleteDirectory(tmpFile);               
+        copyMetadata(checkoutFile, file);
+        refreshRecursively(file);
+        checkoutFile.delete();
+    }
+
+    private void refreshRecursively(File folder) {
+        if (folder == null) return;
+        refreshRecursively(folder.getParentFile());
+        Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+    }
+
+    private void copyMetadata(File sourceFolder, File targetFolder) {
+        SvnUtils.copyDirFiles(new File(sourceFolder.getAbsolutePath() + "/.svn"), new File(targetFolder.getAbsolutePath() + "/.svn"), true);
+        targetFolder.setLastModified(sourceFolder.lastModified());
+        File[] files = sourceFolder.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            if(files[i].isDirectory() && !files[i].getName().equals(".svn")) {
+                copyMetadata(files[i], new File(targetFolder.getAbsolutePath() + "/" + files[i].getName()));
+            } else {
+                (new File(targetFolder.getAbsolutePath() + "/" + files[i].getName())).setLastModified(files[i].lastModified());
+            }
+        }
     }
     
     private File lookupImportDirectory(Node node) {

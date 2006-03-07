@@ -39,8 +39,9 @@ public class RepositoryPaths implements ActionListener {
     
     private final static RepositoryFile[] EMPTY_REPOSITORY_FILES = new RepositoryFile[0];
 
-    // controled components
     private RepositoryFile repositoryFile;
+
+    // controled components    
     private JTextComponent repositoryPathTextField;
     private JTextComponent revisionTextField;
     
@@ -116,7 +117,7 @@ public class RepositoryPaths implements ActionListener {
                path.startsWith("http://") ||
                path.startsWith("https://") ||
                path.startsWith("svn://") ||
-               path.startsWith("svn+ssh://")) { // XXX already listed at some another place
+               path.startsWith("svn+ssh://")) { 
                 // must be a complete URL 
                 // so check if it matches with the given repository URL
                 if(path.startsWith(repositoryUrlString)) {

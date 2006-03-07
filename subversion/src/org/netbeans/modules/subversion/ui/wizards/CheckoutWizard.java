@@ -36,7 +36,6 @@ public final class CheckoutWizard implements ChangeListener {
     
     private WizardDescriptor.Panel[] panels;
     private RepositoryStep repositoryStep;
-    //private BrowserStep browseStep;
     private CheckoutStep workdirStep;        
     
     private String errorMessage;
@@ -45,8 +44,7 @@ public final class CheckoutWizard implements ChangeListener {
         
     public boolean show() {
         wizardIterator = new PanelsIterator();
-        wizardDescriptor = new WizardDescriptor(wizardIterator);
-        // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
+        wizardDescriptor = new WizardDescriptor(wizardIterator);        
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
         wizardDescriptor.setTitle("Checkout");
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);

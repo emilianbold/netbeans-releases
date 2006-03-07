@@ -689,7 +689,35 @@ public class SvnUtils {
     public static String getConfigDir() {
         String nbHome = System.getProperty("netbeans.user");       
         return nbHome + "/config/svn/config/";
-    }               
+    }
+
+    public static void copyDirFiles(File sourceDir, File targetDir) {
+        copyDirFiles(sourceDir, targetDir, false);
+    }
+
+    public static void copyDirFiles(File sourceDir, File targetDir, boolean alsoTimestamp) {
+        File[] files = sourceDir.listFiles();
+
+        if(files==null || files.length == 0) {
+            targetDir.mkdirs();
+            if(alsoTimestamp) targetDir.setLastModified(sourceDir.lastModified());
+            return;
+        }
+        if(alsoTimestamp) targetDir.setLastModified(sourceDir.lastModified());
+        for (int i = 0; i < files.length; i++) {
+            try {
+                File target = FileUtil.normalizeFile(new File(targetDir.getAbsolutePath() + "/" + files[i].getName()));
+                if(files[i].isDirectory()) {
+                    copyDirFiles(files[i], target, alsoTimestamp);
+                } else {
+                    SvnUtils.copyFile (files[i], target);
+                    if(alsoTimestamp) target.setLastModified(files[i].lastModified());
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace(); // should not happen
+            }
+        }
+    }                 
 
     static Pattern branchesPattern = Pattern.compile(".*/branches/(.+?)/.*");
     static Pattern tagsPattern = Pattern.compile(".*/tags/(.+?)/.*");
