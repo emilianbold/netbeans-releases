@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion.util;
 
+import java.util.regex.*;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.*;
 import org.openide.nodes.Node;
@@ -689,4 +690,32 @@ public class SvnUtils {
         String nbHome = System.getProperty("netbeans.user");       
         return nbHome + "/config/svn/config/";
     }               
+
+    static Pattern branchesPattern = Pattern.compile(".*/branches/(.+?)/.*");
+    static Pattern tagsPattern = Pattern.compile(".*/tags/(.+?)/.*");
+
+    /**
+     * Returns copy branch or tag name if lives
+     * in typical location (branches, tags).
+     *
+     * @return name or null
+     */
+    public static String getCopy(File file) {
+
+        SVNUrl url = getRepositoryUrl(file);
+        if (url != null) {
+            Matcher m = branchesPattern.matcher(url.toString());
+            if (m.matches()) {
+                String paren = m.group(1);
+                return paren;
+            }
+
+            m = tagsPattern.matcher(url.toString());
+            if (m.matches()) {
+                String paren = m.group(1);
+                return paren;
+            }
+        }
+        return null;
+    }
 }

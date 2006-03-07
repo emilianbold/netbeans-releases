@@ -146,7 +146,7 @@ public class Annotator {
             if (format != null) {
                 textAnnotation = formatAnnotation(info, file);
             } else {
-                String sticky = null;//Utils.getSticky(file);
+                String sticky = SvnUtils.getCopy(file);
                 if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
                     textAnnotation = "";  // NOI18N
                 } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
@@ -246,7 +246,7 @@ public class Annotator {
         String textAnnotation;
         String textAnnotationFormat = SvnModuleConfig.getDefault().getTextAnnotationsFormat();        
         if (textAnnotationFormat != null && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
-            String sticky = null; //Utils.getSticky(file);
+            String sticky = SvnUtils.getCopy(file);
             if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
                 textAnnotation = ""; // NOI18N
             } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
