@@ -148,8 +148,26 @@ int WINAPI
     }
     // printf("%s\n", dirs);
     // printf("%s\n", userdir);
-    
-    sprintf(nbexec, "%s\\platform6\\lib\\nbexec.exe", topdir);
+
+    char pattern [MAX_PATH];
+    WIN32_FIND_DATA ffd;
+    HANDLE hFind;
+    BOOL bNext = TRUE;
+
+    sprintf(pattern, "%s\\platform*", topdir);
+
+    hFind = FindFirstFile(pattern, &ffd);
+    do {
+        if (hFind == INVALID_HANDLE_VALUE || bNext == FALSE) {
+            MessageBox(NULL, "Cannot find 'platform*' folder!", "Error", MB_ICONSTOP | MB_OK);
+            exit(1);
+        }
+        if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+            sprintf(nbexec, "%s\\%s\\lib\\nbexec.exe", topdir, ffd.cFileName);
+	    break;
+        }
+        bNext = FindNextFile(hFind, &ffd);
+    } while (1);   
 
     sprintf(cmdline2, "\"%s\" %s --branding %s --clusters \"%s\" --userdir \"%s\" %s %s",
             nbexec,

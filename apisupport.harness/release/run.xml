@@ -100,7 +100,11 @@ Microsystems, Inc. All Rights Reserved.
                 <dirset dir="${netbeans.dest.dir}" includes="${run.platform.clusters.duplicates}" excludes="platform*"/>
             </path>
         </pathconvert>
-        <property name="platform.cluster" location="${install}/platform6"/> <!-- XXX better to avoid hardcoding -->
+        <pathconvert property="platform.cluster">
+            <path>
+                <dirset dir="${install}" includes="platform*"/>
+            </path>
+        </pathconvert>
         <property name="run.exe" location="${platform.cluster}\lib\nbexec.exe"/>
         <property name="run.sh" location="${platform.cluster}/lib/nbexec"/>
         <property name="branding.token" value="-"/> <!-- fallback value if not set -->

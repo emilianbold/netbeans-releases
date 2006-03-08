@@ -147,7 +147,7 @@ public final class NbPlatform {
      */
     public static File defaultPlatformLocation() {
         // XXX cache the result?
-        // Semi-arbitrary platform6 component.
+        // Semi-arbitrary platform* component.
         File bootJar = InstalledFileLocator.getDefault().locate("core/core.jar", "org.netbeans.core.startup", false); // NOI18N
         if (bootJar == null) {
             return null;

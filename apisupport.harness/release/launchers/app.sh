@@ -55,10 +55,12 @@ readClusters() {
     echo=echo
   fi
   sep=""
-  while read X; do 
-    $echo -n $sep
-    $echo -n "$progdir/../$X"
-    sep=":"
+  while read X; do
+    if [ "$X" \!= "" ]; then
+      $echo -n $sep
+      $echo -n "$progdir/../$X"
+      sep=":"
+    fi
   done
 }
 clusters=`cat "$progdir/../etc/$APPNAME".clusters | readClusters`
@@ -67,7 +69,7 @@ if [ ! -z "$extraclusters" ] ; then
     clusters="$clusters:$extraclusters"
 fi
 
-nbexec="$progdir/../platform6/lib/nbexec"
+nbexec=`echo "$progdir"/../platform*/lib/nbexec`
 
 case "`uname`" in
     Darwin*)
