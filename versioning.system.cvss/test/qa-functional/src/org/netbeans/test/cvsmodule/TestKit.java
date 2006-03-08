@@ -168,7 +168,124 @@ public class TestKit {
         nfnlso.selectPackage(pack);
         nfnlso.finish();
     }
-    
+
+    public static void createNewElementsCommitCvs11(String projectName) {
+        String pack = "xx";
+        
+        NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Package");
+        nfwo.next();
+        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText(pack);
+        nfnlso.finish();
+        //
+        nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Class");
+        nfwo.next();
+        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText("NewClass");
+        nfnlso.selectPackage(pack);
+        nfnlso.finish();
+        //
+        nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Class");
+        nfwo.next();
+        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText("NewClass2");
+        nfnlso.selectPackage(pack);
+        nfnlso.finish();
+        //
+        nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Class");
+        nfwo.next();
+        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText("NewClass3");
+        nfnlso.selectPackage(pack);
+        nfnlso.finish();
+        //
+        nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Class");
+        nfwo.next();
+        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText("NewClass4");
+        nfnlso.selectPackage(pack);
+        nfnlso.finish();
+    }
+
+    public static void createNewElementsCommitCvs12(String projectName) {
+        String pack = "aa";
+        
+        NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Package");
+        nfwo.next();
+        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText("aa");
+        nfnlso.finish();
+
+        //
+        nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Package");
+        nfwo.next();
+        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText("bb");
+        nfnlso.finish();
+        //
+        nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Class");
+        nfwo.next();
+        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText("NewClass");
+        nfnlso.selectPackage("aa");
+        nfnlso.finish();
+        
+        //
+        nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Class");
+        nfwo.next();
+        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText("NewClass2");
+        nfnlso.selectPackage("aa");
+        nfnlso.finish();
+        //
+        nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Class");
+        nfwo.next();
+        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText("NewClass");
+        nfnlso.selectPackage("bb");
+        nfnlso.finish();
+        //
+        nfwo = NewFileWizardOperator.invoke();
+        nfwo.selectProject(projectName);
+        nfwo.selectCategory("Java Classes");
+        nfwo.selectFileType("Java Class");
+        nfwo.next();
+        nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.txtObjectName().typeText("NewClass2");
+        nfnlso.selectPackage("bb");
+        nfnlso.finish();
+    }
+
     public static int compareThem(Object[] expected, Object[] actual, boolean sorted) {
         int result = 0;
         if (expected == null || actual == null)
