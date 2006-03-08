@@ -129,7 +129,7 @@ final class ProjectSelectionPanel extends JPanel {
      * This all servers for remembering checked project when working with
      * project dependencies.
      */
-    private Set selectedProjects;
+    private Set/*<EclipseProject>*/ selectedProjects;
     
     /**
      * All projects we need to import (involving projects which selected
@@ -208,7 +208,7 @@ final class ProjectSelectionPanel extends JPanel {
     }
     
     // Helper for recursion check
-    private Stack solved = new Stack();
+    private final Stack/*<EclipseProject>*/ solved = new Stack();
     private EclipseProject currentRoot;
     
     /**
@@ -226,7 +226,8 @@ final class ProjectSelectionPanel extends JPanel {
             solved.push(selProject);
             currentRoot = selProject;
             fillUpRequiredProjects(selProject);
-            assert solved.pop().equals(currentRoot);
+            EclipseProject poped = (EclipseProject) solved.pop();
+            assert poped.equals(currentRoot);
             assert solved.isEmpty();
             currentRoot = null;
         }
@@ -247,7 +248,8 @@ final class ProjectSelectionPanel extends JPanel {
             requiredProjects.add(child);
             solved.push(child);
             fillUpRequiredProjects(child);
-            assert solved.pop().equals(child);
+            EclipseProject poped = (EclipseProject) solved.pop();
+            assert poped.equals(child);
         }
     }
     
@@ -258,9 +260,9 @@ final class ProjectSelectionPanel extends JPanel {
                 (EclipseProject) solved.get(solved.size() - where);
         StringBuffer cycle = new StringBuffer();
         for (Iterator it = solved.iterator(); it.hasNext(); ) {
-            cycle.append(((EclipseProject)it.next()).getName() + " --> "); // NOI18N
+            cycle.append(((EclipseProject)it.next()).getName()).append(" --> "); // NOI18N
         }
-        cycle.append(rootOfCycle.getName() + " --> ..."); // NOI18N
+        cycle.append(rootOfCycle.getName()).append(" --> ..."); // NOI18N
         logger.warning("Cycle dependencies was detected. Detected cycle: " + cycle); // NOI18N
         NotifyDescriptor d = new DialogDescriptor.Message(
                 ProjectImporterWizard.getMessage("MSG_CycleDependencies", cycle.toString()), // NOI18N
