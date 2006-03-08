@@ -16,6 +16,7 @@ package org.netbeans.jemmy.operators;
 
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -176,7 +177,7 @@ public class JComponentOperatorTest extends TestCase {
         JComponentOperator operator1 = new JComponentOperator(operator);
         assertNotNull(operator1);
         
-        // operator1.showToolTip().setVisible(true);
+        operator1.showToolTip();
     }
     
     /**
@@ -191,7 +192,7 @@ public class JComponentOperatorTest extends TestCase {
         JComponentOperator operator1 = new JComponentOperator(operator);
         assertNotNull(operator1);
         
-        // operator1.waitToolTip().setVisible(true);
+        operator1.waitToolTip();
     }
     
     /**
