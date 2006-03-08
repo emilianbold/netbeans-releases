@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="CVSmodule functional test config">
     
-    <testbag testattribs="tag,validation" executor="ide" name="Tagging">
+    <testbag testattribs="tag,validation" executor="ide" name="versioning">
 	<testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/cvsmodule/BranchTest.class"/>
