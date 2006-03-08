@@ -329,7 +329,7 @@ public class JSplitPaneOperatorTest extends TestCase {
         assertNotNull(operator1);
         
         operator1.setDividerLocation(1.0);
-        operator1.getDividerLocation();
+        operator1.setDividerLocation(operator1.getDividerLocation());
     }
 
     /**
