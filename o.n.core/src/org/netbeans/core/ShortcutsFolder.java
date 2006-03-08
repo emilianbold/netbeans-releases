@@ -130,7 +130,7 @@ class ShortcutsFolder {
                 KeyStroke[] keyStrokes = Utilities.stringToKeys (shortcuts);
                 addShortcut (keymap, action, keyStrokes);
             } catch (Exception ex) {
-                ErrorManager.getDefault ().notify (ex);
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
