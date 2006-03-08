@@ -150,11 +150,11 @@ public class Annotator {
                 if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
                     textAnnotation = "";  // NOI18N
                 } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                    textAnnotation = " [" + sticky.substring(1) + "]"; // NOI18N
+                    textAnnotation = " [" + sticky + "]"; // NOI18N
                 } else  if (sticky == null) {
                     textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
                 } else {
-                    textAnnotation = " [" + info.getShortStatusText() + "; " + sticky.substring(1) + "]"; // NOI18N
+                    textAnnotation = " [" + info.getShortStatusText() + "; " + sticky + "]"; // NOI18N
                 }
             }
         } else {
@@ -250,11 +250,11 @@ public class Annotator {
             if (status == FileInformation.STATUS_VERSIONED_UPTODATE && sticky == null) {
                 textAnnotation = ""; // NOI18N
             } else if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                textAnnotation = " [" + sticky.substring(1) + "]"; // NOI18N
+                textAnnotation = " [" + sticky + "]"; // NOI18N
             } else  if (sticky == null) {
                 textAnnotation = " [" + info.getShortStatusText() + "]"; // NOI18N
             } else {
-                textAnnotation = " [" + info.getShortStatusText() + "; " + sticky.substring(1) + "]"; // NOI18N
+                textAnnotation = " [" + info.getShortStatusText() + "; " + sticky + "]"; // NOI18N
             }
         } else {
             textAnnotation = ""; // NOI18N
