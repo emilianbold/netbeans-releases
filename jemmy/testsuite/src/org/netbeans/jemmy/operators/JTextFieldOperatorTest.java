@@ -93,9 +93,15 @@ public class JTextFieldOperatorTest extends TestCase {
         
         JFrameOperator operator1 = new JFrameOperator();
         assertNotNull(operator1);
+
+        JTextFieldOperator operator2 = new JTextFieldOperator(operator1);
+        assertNotNull(operator2);
         
         JTextFieldOperator operator3 = new JTextFieldOperator(operator1, new NameComponentChooser("JTextFieldOperatorTest"));
         assertNotNull(operator3);
+
+        JTextFieldOperator operator4 = new JTextFieldOperator(operator1, "JTextFieldOperatorTest");
+        assertNotNull(operator4);
     }
     
     /**
@@ -216,14 +222,7 @@ public class JTextFieldOperatorTest extends TestCase {
         JTextFieldOperator operator2 = new JTextFieldOperator(operator1, new NameComponentChooser("JTextFieldOperatorTest"));
         assertNotNull(operator2);
         
-        operator2.setScrollOffset(4);
-        
-        /*
-        JTextFieldOperator operator3 = new JTextFieldOperator(operator1, new NameComponentChooser("JTextFieldOperatorTest"));
-         
-        assertEquals(4, operator3.getScrollOffset());
-        assertEquals(textField.getScrollOffset(), operator3.getScrollOffset());
-         */
+        operator2.setScrollOffset(operator2.getScrollOffset());
     }
     
     /**
@@ -255,5 +254,20 @@ public class JTextFieldOperatorTest extends TestCase {
         public void actionPerformed(ActionEvent event) {
             actionCommand = event.getActionCommand();
         }
+    }
+    
+    /**
+     * Test getHorizontalVisiblity method.
+     */
+    public void testGetHorizontalVisibility() {
+        frame.setVisible(true);
+        
+        JFrameOperator operator1 = new JFrameOperator();
+        assertNotNull(operator1);
+
+        JTextFieldOperator operator2 = new JTextFieldOperator(operator1);
+        assertNotNull(operator2);
+
+        operator2.getHorizontalVisibility();
     }
 }

@@ -19,11 +19,15 @@
 package org.netbeans.jemmy.operators;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.Action;
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SingleSelectionModel;
@@ -70,8 +74,8 @@ public class JPopupMenuOperatorTest extends TestCase {
         popupMenu.add(new JMenuItem("1"));
         popupMenu.add(new JMenuItem("12"));
         popupMenu.add(new JMenuItem("123"));
-        frame.getContentPane().add(popupMenu);
-        frame.pack();
+        popupMenu.add(new JMenu("1234"));
+        frame.setSize(400, 300);
         frame.setLocationRelativeTo(null);
     }
     
@@ -119,7 +123,6 @@ public class JPopupMenuOperatorTest extends TestCase {
         frame.setVisible(true);
     }
     
-    
     /**
      * Test waitJPopupMenu method.
      */
@@ -148,8 +151,13 @@ public class JPopupMenuOperatorTest extends TestCase {
         frame.setVisible(true);
         popupMenu.show(frame, 0, 0);
         
-        JPopupMenuOperator operator = new JPopupMenuOperator();
+        JFrameOperator operator = new JFrameOperator();
         assertNotNull(operator);
+        
+        JPopupMenuOperator operator1 = new JPopupMenuOperator();
+        assertNotNull(operator1);
+        
+        // operator1.callPopup(frame, 1, 1);
     }
     
     /**
@@ -157,6 +165,19 @@ public class JPopupMenuOperatorTest extends TestCase {
      */
     public void testPushMenu() {
         frame.setVisible(true);
+        popupMenu.show(frame, 0, 0);
+        
+        JPopupMenuOperator operator = new JPopupMenuOperator();
+        assertNotNull(operator);
+        
+        operator.pushMenu("1");
+        
+        popupMenu.show(frame, 0, 0);
+        
+        String[] menus = new String[1];
+        menus[0] = "1";
+        
+        operator.pushMenu(menus);
     }
     
     /**
@@ -173,10 +194,30 @@ public class JPopupMenuOperatorTest extends TestCase {
     }
     
     /**
+     * Test show
+     */
+    public void testShow() {
+        frame.setVisible(true);
+        popupMenu.show(frame, 0, 0);
+        
+        JPopupMenuOperator operator = new JPopupMenuOperator();
+        assertNotNull(operator);
+        
+        operator.show(frame, 0, 0);
+    }
+    
+    /**
      * Test showMenuItems method.
      */
     public void testShowMenuItems() {
         frame.setVisible(true);
+        popupMenu.show(frame, 0, 0);
+        
+        JPopupMenuOperator operator = new JPopupMenuOperator();
+        assertNotNull(operator);
+        
+        operator.showMenuItems("1234");
+        operator.showMenuItems("1234", "/");
     }
     
     /**
@@ -190,6 +231,12 @@ public class JPopupMenuOperatorTest extends TestCase {
         assertNotNull(operator);
         
         operator.showMenuItem("1");
+        operator.showMenuItem("1", "/");
+        
+        String[] path = new String[1];
+        path[0] = "1";
+        
+        operator.showMenuItem(path);
     }
     
     /**
@@ -216,6 +263,8 @@ public class JPopupMenuOperatorTest extends TestCase {
         assertNotNull(operator);
         
         operator.add(new JMenuItem("4"));
+        operator.add("12345");
+        operator.add(new ActionTest());
     }
     
     /**
@@ -382,6 +431,35 @@ public class JPopupMenuOperatorTest extends TestCase {
         assertNotNull(operator);
         
         operator.insert(new JButton("Hello"), 0);
+        operator.insert(new ActionTest(), 0);
+    }
+    
+    /**
+     * Inner class needed for testing.
+     */
+    public class ActionTest implements Action {
+        public Object getValue(String key) {
+            return null;
+        }
+
+        public void putValue(String key, Object value) {
+        }
+
+        public void setEnabled(boolean b) {
+        }
+
+        public boolean isEnabled() {
+            return true;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
     }
     
     /**
