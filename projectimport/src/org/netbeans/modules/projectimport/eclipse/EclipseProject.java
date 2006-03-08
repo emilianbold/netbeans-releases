@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -48,9 +48,9 @@ public final class EclipseProject implements Comparable {
     private Set links;
     private Set otherNatures;
     
-    private File projectDir;
-    private File cpFile;
-    private File prjFile;
+    private final File projectDir;
+    private final File cpFile;
+    private final File prjFile;
     private String jdkDirectory;
     
     /**
@@ -66,8 +66,7 @@ public final class EclipseProject implements Comparable {
             logger.fine(projectDir + " doesn't contain regular Eclipse project."); // NOI18N
             return null;
         }
-        EclipseProject project = new EclipseProject(projectDir);
-        return project;
+        return new EclipseProject(projectDir);
     }
     
     /** Sets up a project directory. */
@@ -116,10 +115,20 @@ public final class EclipseProject implements Comparable {
         return projectDir;
     }
     
+    /**
+     * Returns metadata file containing information about this projects. I.e.
+     * normally <em>.project</em> file withing the project's directory. See
+     * {@link #PROJECT_FILE}.
+     */
     File getProjectFile() {
         return prjFile;
     }
     
+    /**
+     * Returns metadata file containing information about this projects. I.e.
+     * normally <em>.classpath</em> file withing the project's directory. See
+     * {@link #CLASSPATH_FILE}.
+     */
     File getClassPathFile() {
         return cpFile;
     }
@@ -258,15 +267,13 @@ public final class EclipseProject implements Comparable {
      * Returns collection of <code>EclipseProject</code> this project requires.
      */
     public Set getProjects() {
-        if (workspace != null) {
-            if (projectsWeDependOn == null) {
-                projectsWeDependOn = new HashSet();
-                for (Iterator it = cp.getProjects().iterator(); it.hasNext(); ) {
-                    ClassPathEntry cp = (ClassPathEntry) it.next();
-                    EclipseProject prj = workspace.getProjectByRawPath(cp.getRawPath());
-                    if (prj != null) {
-                        projectsWeDependOn.add(prj);
-                    }
+        if (workspace != null && projectsWeDependOn == null) {
+            projectsWeDependOn = new HashSet();
+            for (Iterator it = cp.getProjects().iterator(); it.hasNext(); ) {
+                ClassPathEntry cp = (ClassPathEntry) it.next();
+                EclipseProject prj = workspace.getProjectByRawPath(cp.getRawPath());
+                if (prj != null) {
+                    projectsWeDependOn.add(prj);
                 }
             }
         }
@@ -414,7 +421,7 @@ public final class EclipseProject implements Comparable {
     }
     
     public String toString() {
-        return getName();
+        return "EclipseProject[" + getName() + ", " + getDirectory() + "]"; // NOI18N
     }
     
     /* name is enough for now */
