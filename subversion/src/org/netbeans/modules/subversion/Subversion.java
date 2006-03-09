@@ -53,6 +53,8 @@ public class Subversion {
     private HashMap             clients;
     private RequestProcessor rp = new RequestProcessor("Subversion", 1, true); // NOI18N
 
+    private OutputLogger outputLogger;
+
     public static synchronized Subversion getInstance() {
         if (instance == null) {
             instance = new Subversion();
@@ -233,10 +235,17 @@ public class Subversion {
     }
 
     private void attachListeners(SvnClient client) {
-        client.addNotifyListener(new OutputLogger()); // XXX new ???
+        client.addNotifyListener(getLogger()); 
         client.addNotifyListener(fileStatusCache); 
     }
 
+    private OutputLogger getLogger() {
+        if(outputLogger==null) {
+           outputLogger = new OutputLogger();
+        }
+        return outputLogger;
+    }
+    
     public boolean isIgnored(File file) {
         if (file.isDirectory()) {
             File entries = new File(file, ".svn/entries");

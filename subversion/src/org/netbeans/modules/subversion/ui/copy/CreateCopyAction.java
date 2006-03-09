@@ -61,7 +61,6 @@ public class CreateCopyAction extends ContextAction {
         Context ctx = getContext(nodes);
 
         final File root = ctx.getRootFiles()[0];        
-        // XXX optimize - in this case we need only the info if there is any modified file
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         boolean isChanged = files.length > 0;                
         SVNUrl url = SvnUtils.getRepositoryRootUrl(root);

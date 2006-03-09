@@ -48,7 +48,6 @@ public class CreateCopy extends CopyDialog {
     }    
     
     protected void validateUserInput() {        
-        // XXX error message        
         if(!validateRepositoryPath(repositoryPaths)) {
             return;
         }

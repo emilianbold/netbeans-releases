@@ -46,8 +46,7 @@ public class SwitchTo extends CopyDialog {
         setupUrlComboBox(panel.urlComboBox, SwitchTo.class.getName());                
     }        
 
-    protected void validateUserInput() {
-        // XXX error message               
+    protected void validateUserInput() {           
         if(!validateRepositoryPath(repositoryPaths)) {
             return;
         }

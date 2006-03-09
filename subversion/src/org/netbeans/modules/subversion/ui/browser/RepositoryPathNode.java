@@ -81,7 +81,7 @@ public class RepositoryPathNode extends AbstractNode {
         if(entry.getSvnNodeKind()==SVNNodeKind.DIR){
             setIconBaseWithExtension("org/netbeans/modules/subversion/ui/wizards/browser/defaultFolder.gif");       // NOI18N
         } else {
-            // XXX need a files icon
+            setIconBaseWithExtension("org/netbeans/modules/subversion/ui/wizards/browser/defaultFile.gif");
         }
     }
 

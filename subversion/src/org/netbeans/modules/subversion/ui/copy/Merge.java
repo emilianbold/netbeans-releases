@@ -74,7 +74,6 @@ public class Merge extends CopyDialog implements ActionListener {
     }        
     
     protected void validateUserInput() {
-        // XXX error message               
         if(mergeFromRepositoryPaths!= null && !validateRepositoryPath(mergeFromRepositoryPaths)) {
             return;            
         }

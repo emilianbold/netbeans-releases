@@ -86,7 +86,7 @@ public class MergeAction extends ContextAction {
                                          true);                                                                                    
                         } else {
 
-                            ISVNInfo info = client.getInfoFromWorkingCopy(root);// XXX SvnUtils get the whole RepositoryFile if possible ...
+                            ISVNInfo info = client.getInfoFromWorkingCopy(root);
                             SVNUrl fileUrl = null;
                             if(info == null) {
                                 // oops

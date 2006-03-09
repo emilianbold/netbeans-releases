@@ -71,8 +71,7 @@ public class CheckoutCompleted implements ActionListener {
         // checkout creates new folders and cache must be aware of them
         refreshRecursively(normalizedWorkingFolder);
         FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
-        if (fo != null) {
-            // XXX create some execution progress
+        if (fo != null) {            
             for (int i = 0; i < checkedOutFolders.length; i++) {
                 String module = checkedOutFolders[i];
                 if (".".equals(module)) {  // NOI18N

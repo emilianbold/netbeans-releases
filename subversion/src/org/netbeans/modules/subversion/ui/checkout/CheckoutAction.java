@@ -65,7 +65,6 @@ public final class CheckoutAction extends CallableSystemAction {
     private Thread checkOutThread = null;
     private ProgressHandle progressHandle = null;
     
-    // XXX dummy
     private Cancellable cancellable = new Cancellable() {
         public boolean cancel() {
             if(checkOutTask!=null) {                    
@@ -77,8 +76,6 @@ public final class CheckoutAction extends CallableSystemAction {
             if(progressHandle != null) {
                 progressHandle.finish();
             }
-            // XXX checkout still running ...
-            // XXX client.cancleOperation is not implemented yet 
             return true;
         }
     };

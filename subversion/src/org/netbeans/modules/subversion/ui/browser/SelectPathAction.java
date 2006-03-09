@@ -22,7 +22,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * XXX same abstract base with createfolder ... 
  * @author Tomas Stupka
  */
 public class SelectPathAction extends AbstractAction {
