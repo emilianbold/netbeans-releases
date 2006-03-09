@@ -949,12 +949,36 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     
     
-    /** Assert GC. Tries to GC ref's referent.
+    /** Asserts that the object can be garbage collected. Tries to GC ref's referent.
      * @param text the text to show when test fails.
      * @param ref the referent to object that
      * should be GCed
      */
     public static void assertGC(String text, java.lang.ref.Reference ref) {
+        assertGC(text, ref, Collections.EMPTY_SET);
+    }
+    
+    /** Asserts that the object can be garbage collected. Tries to GC ref's referent.
+     * @param text the text to show when test fails.
+     * @param ref the referent to object that should be GCed
+     * @param rootsHint a set of objects that should be considered part of the
+     * rootset for this scan. This is useful if you want to verify that one structure
+     * (usually long living in real application) is not holding another structure
+     * in memory, without setting a static reference to the former structure.
+     * <h3>Example:</h3>
+     * <pre>
+     *  // test body
+     *  WeakHashMap map = new WeakHashMap();
+     *  Object target = new Object();
+     *  map.put(target, "Val");
+     *  
+     *  // verification step
+     *  Reference ref = new WeakReference(target);
+     *  target = null;
+     *  assertGC("WeakMap does not hold the key", ref, Collections.singleton(map));
+     * </pre>
+     */
+    public static void assertGC(String text, java.lang.ref.Reference ref, Set rootsHint) {
         ArrayList alloc = new ArrayList();
         int size = 100000;
         for (int i = 0; i < 50; i++) {
@@ -976,7 +1000,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             }
         }
         alloc = null;
-        fail(text + ":\n" + findRefsFromRoot(ref.get()));
+        fail(text + ":\n" + findRefsFromRoot(ref.get(), rootsHint));
     }
     
     /** Assert size of some structure. Traverses the whole reference
@@ -1065,8 +1089,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         return -1; // fail throws for sure
     }
     
-    
-    private static String findRefsFromRoot(final Object target) {
+    private static String findRefsFromRoot(final Object target, final Set rootsHint) {
         final Map objects = new IdentityHashMap();
         boolean found = false;
         
@@ -1099,20 +1122,22 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         };
         
         try {
-            ScannerUtils.scanExclusivelyInAWT(ScannerUtils.skipNonStrongReferencesFilter(), vis, ScannerUtils.interestingRoots());
+            Set s = new HashSet(ScannerUtils.interestingRoots());
+            s.addAll(rootsHint);
+            ScannerUtils.scanExclusivelyInAWT(ScannerUtils.skipNonStrongReferencesFilter(), vis, s);
         } catch (Exception ex) {
             // found object
             found = true;
         }
         
         if (found) {
-            return findRoots(objects, target);
+            return findRoots(objects, target, rootsHint);
         } else {
             return "Not found!!!";
         }
     }
     /** BFS scan of incomming refs*/
-    private static String  findRoots(Map objects, Object obj) {
+    private static String  findRoots(Map objects, Object obj, Set roots) {
         class PathElement {
             private Entry item;
             private PathElement next;
@@ -1144,7 +1169,12 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         while (!queue.isEmpty()) {
             PathElement act = (PathElement)queue.remove(0);
             // any static ref?
-            Iterator it = act.getItem().staticRefs();
+            Entry item = act.getItem();
+            if (roots.contains(item.getObject())) {
+                return "||root||:" + act;
+            }
+            
+            Iterator it = item.staticRefs();
             if (it.hasNext()) {
                 Field fld = (Field)it.next();
                 return fld + "->\n" + act;
@@ -1190,6 +1220,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         
         void addIn(Object o) {
             in = append(in, o);
+        }
+        
+        public Object getObject() {
+            return obj;
         }
         
         public Iterator incommingRefs() {
