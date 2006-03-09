@@ -130,7 +130,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
         firePropertyChange(PROP_CUSTOM_DEFS, null, null);
     }
     
-    static File getDefaultAntHome() {
+    private static File getDefaultAntHome() {
         if (defaultAntHome == null) {
             File antJar = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", "org.apache.tools.ant.module", false); // NOI18N
             assert antJar != null : "Missing binding for ant/lib/ant.jar in InstalledFileLocator";
