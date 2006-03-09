@@ -317,6 +317,8 @@ public abstract class ContextAction extends NodeAction {
                     pd.progress.finish();
                 }
             }, 15 * 1000);
+        } else {
+            pd.progress.finish();
         }
     }
 
