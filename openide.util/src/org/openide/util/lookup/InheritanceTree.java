@@ -1081,7 +1081,11 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
         /** Marks this item as being deserialized.
          */
         public void markDeserialized() {
-            items = (items == null) ? Collections.EMPTY_LIST : Collections.synchronizedList(items);
+            if (items == null || items == Collections.EMPTY_LIST) {
+                items = Collections.EMPTY_LIST;
+            } else {
+                items = Collections.synchronizedList(items);
+            }
         }
 
         /** Getter for the type associated with this node.

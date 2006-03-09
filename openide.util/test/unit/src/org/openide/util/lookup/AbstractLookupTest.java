@@ -20,6 +20,7 @@ import java.util.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import java.io.Serializable;
+import org.openide.util.io.NbMarshalledObject;
 
 public class AbstractLookupTest extends AbstractLookupBaseHid implements AbstractLookupBaseHid.Impl {
     public AbstractLookupTest(java.lang.String testName) {
@@ -209,5 +210,73 @@ public class AbstractLookupTest extends AbstractLookupBaseHid implements Abstrac
         assertEquals ("Just strings are there now", 1, res.allClasses ().size ());
         lookup.toAdd = null; // this will add integer
         assertEquals ("Two classes now", 2, res.allClasses ().size ());
+    }
+
+    public void testInconsistentAfterDeserIssue71744() throws Exception {
+        InheritanceTree inhTree = new InheritanceTree();
+
+        AbstractLookup al = new AbstractLookup(new AbstractLookup.Content(), inhTree);
+        {
+
+            Collection r = al.lookup(new Lookup.Template(Integer.class)).allInstances();
+            assertEquals("None", 0, r.size());
+        }
+
+        ICP item = new ICP(new Integer(10));
+        al.addPair(item);
+        al.removePair(item);
+
+        NbMarshalledObject mar = new NbMarshalledObject(al);
+
+        AbstractLookup newLookup = (AbstractLookup)mar.get();
+
+        newLookup.lookup(Number.class);
+
+
+        newLookup.addPair(new ICP(new Long(20)));
+
+        {
+
+            Collection r = newLookup.lookup(new Lookup.Template(Number.class)).allInstances();
+            assertEquals("one", 1, r.size());
+/*
+            Iterator it = r.iterator();
+            assertEquals(new Integer(10), it.next());
+            assertEquals(new Long(20), it.next());*/
+        }
+    }
+
+    private static final class ICP extends AbstractLookup.Pair {
+        private Number s;
+
+        public ICP (Number s) {
+            this.s = s;
+        }
+
+
+        protected boolean instanceOf(Class c) {
+            return c.isInstance(s);
+        }
+
+        protected boolean creatorOf(Object obj) {
+            return s == obj;
+        }
+
+        public Object getInstance() {
+            return s;
+        }
+
+        public Class getType() {
+            return s.getClass();
+        }
+
+        public String getId() {
+            return s.toString();
+        }
+
+        public String getDisplayName() {
+            return getId();
+        }
+
     }
 }
