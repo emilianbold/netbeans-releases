@@ -13,6 +13,7 @@ import java.awt.Dialog;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.*;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.ui.repository.Repository;
@@ -28,7 +29,33 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  * @author Tomas Stupka
  */
 public class SvnClientInvocationHandler implements InvocationHandler {        
-    
+
+    private static Set remoteMethods = new HashSet();
+    static {
+        remoteMethods.add("checkout");  // NOI19N
+        remoteMethods.add("commit"); // NOI19N
+        remoteMethods.add("commitAcrossWC"); // NOI19N
+        remoteMethods.add("getList"); // NOI19N
+        remoteMethods.add("getDirEntry"); // NOI19N
+        remoteMethods.add("copy"); // NOI19N
+        remoteMethods.add("remove"); // NOI19N
+        remoteMethods.add("doExport"); // NOI19N
+        remoteMethods.add("doImport"); // NOI19N
+        remoteMethods.add("mkdir"); // NOI19N
+        remoteMethods.add("move"); // NOI19N
+        remoteMethods.add("update"); // NOI19N
+        remoteMethods.add("getLogMessages"); // NOI19N
+        remoteMethods.add("getContent"); // NOI19N
+        remoteMethods.add("setRevProperty"); // NOI19N
+        remoteMethods.add("diff"); // NOI19N
+        remoteMethods.add("annotate"); // NOI19N
+        remoteMethods.add("getInfo"); // NOI19N
+        remoteMethods.add("switchToUrl"); // NOI19N
+        remoteMethods.add("merge"); // NOI19N
+        remoteMethods.add("lock"); // NOI19N
+        remoteMethods.add("unlock"); // NOI19N
+    }
+
     private final ISVNClientAdapter adapter;
     
     /**
@@ -43,7 +70,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
      */
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {               
 
-        assert !SwingUtilities.isEventDispatchThread();    
+        assert noRemoteCallinAWT(method, args) : "noRemoteCallinAWT(): " + method.getName();
 
         try {             
             Class[] parameters = method.getParameterTypes();        
@@ -61,6 +88,20 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 throw ex;
             }                        
         }                      
+    }
+
+    /**
+     * @return false for methods that perform calls over network
+     */
+    private static boolean noRemoteCallinAWT(Method method, Object[] args) {
+        String name = method.getName();
+        if (remoteMethods.contains(name)) {
+            return false;
+        } else if ("getStatus".equals(name)) { // NOI18N
+            return args.length != 4 || (Boolean.TRUE.equals(args[3]) == false);
+        }
+
+        return true;
     }
 
     private boolean handleException(Throwable t) throws Throwable {
