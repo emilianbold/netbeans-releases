@@ -14,9 +14,11 @@
 package org.openide.loaders;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Set;
 import junit.textui.TestRunner;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
 import java.util.Enumeration;
 import org.openide.nodes.Children;
@@ -28,6 +30,9 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /** Test things about node delegates.
+ * Note: if you mess with file status changes in this test, you may effectively
+ * break the testLeakAfterStatusChange test.
+ *
  * @author Jesse Glick
  */
 public class DataNodeTest extends NbTestCase {
@@ -117,6 +122,36 @@ public class DataNodeTest extends NbTestCase {
         assertNull("DataObject not found in cookies as they delegate to lookup", node.getCookie(DataObject.class));
     }
     
+    /**
+     * Verifues that a DataObject/DataNode is not leaked after firing a status
+     * change for one of its files. Note that this test used to fail only
+     * for the very first DataNode changed in the JVM run so if there are tests
+     * running before this one which fire a status change, this test may not
+     * catch a real regression.
+     */
+    public void testLeakAfterStatusChange() throws Exception {
+        org.openide.filesystems.FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
+            "F.java", "F.form"
+        });
+        
+        FSWithStatus fs = new FSWithStatus ();
+        fs.setRootDirectory(org.openide.filesystems.FileUtil.toFile(lfs.getRoot()));
+        
+        FileObject fo = fs.findResource("F.java");
+        DataObject obj = DataObject.find (fo);
+        Node n = obj.getNodeDelegate ();
+        fs.fireStatusChange(new FileStatusEvent(fs, fo, true, true));
+        
+        Thread.sleep(100); // let some async processing in DataNode
+        WeakReference refN = new WeakReference(n);
+        WeakReference refD = new WeakReference(obj);
+        n = null;
+        obj = null;
+        
+        assertGC("Node released", refN);
+        assertGC("DataObject released", refD);
+    }
+    
     private static final class FSWithStatus extends org.openide.filesystems.LocalFileSystem 
     implements FileSystem.HtmlStatus {
         public Set lastFiles;
@@ -144,6 +179,10 @@ public class DataNodeTest extends NbTestCase {
         public String annotateNameHtml(String name, java.util.Set files) {
             checkFirst (files);
             return name;
+        }
+        
+        void fireStatusChange(FileStatusEvent fse) {
+            fireFileStatusChanged(fse);
         }
     } // end of FSWithStatus
     

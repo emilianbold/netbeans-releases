@@ -736,7 +736,7 @@ public class DataNode extends AbstractNode {
     * properties to this node.
     */
     private class PropL extends Object
-        implements PropertyChangeListener, FileStatusListener, Runnable {
+        implements PropertyChangeListener, FileStatusListener {
         /** weak version of this listener */
         private FileStatusListener weakL;
         /** previous filesystem we were attached to */
@@ -802,7 +802,7 @@ public class DataNode extends AbstractNode {
                     if (post && !refreshNamesIconsRunning) {
                         refreshNamesIconsRunning = true;
                         if (refreshNamesIconsTask == null) {
-                            refreshNamesIconsTask = RequestProcessor.getDefault().post(this);
+                            refreshNamesIconsTask = RequestProcessor.getDefault().post(new NamesUpdater());
                         } else {
                             // Should be OK even if it is running right now.
                             // (Cf. RequestProcessorTest.testScheduleWhileRunning.)
@@ -812,7 +812,9 @@ public class DataNode extends AbstractNode {
                 }
             }
         }
-        
+    }
+            
+    private static class NamesUpdater implements Runnable {
         /** Refreshes names and icons for a whole batch of data nodes at once.
          */
         public void run() {
