@@ -315,24 +315,28 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
     }
     
     /**
-     * Refreshes statuses of all files in the view. It does that by issuing the "cvs -n update" command, updating the cache
+     * Refreshes statuses of all files in the view. It does
+     * that by issuing the "svn status -u" command, updating the cache
      * and refreshing file nodes.
      */ 
     private void onRefreshAction() {
         LifecycleManager.getDefault().saveAll();
+        // XXX call in async manner
         refreshStatuses();
     }
 
     /**
      * Programmatically invokes the Refresh action.
+     * Connects to repository and gets recent status.
      */ 
     void performRefreshAction() {
         refreshStatuses();
     }
 
+    /* Connects to repository and gets recent status. */
     private void refreshStatuses() {
         executeStatus();
-        reScheduleRefresh(1000);
+        reScheduleRefresh(1000);  //XXX why asynchronosly
     }
 
     /**
@@ -351,7 +355,10 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
             DiffAction.diff(context, Setup.DIFFTYPE_ALL, title);
         }
     }
-    
+
+    /**
+     * Connects to repository and gets recent status.
+     */
     private void executeStatus() {
 
         if (context == null || context.getRoots().size() == 0) {

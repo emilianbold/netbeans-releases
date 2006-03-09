@@ -54,7 +54,7 @@ public class ConflictResolvedAction extends ContextAction {
         try {
             File[] files = ctx.getFiles();
             for (int i = 0; i<files.length; i++) {
-                File file = files[1];
+                File file = files[i];
                 try {
                     client.resolved(file);
                     cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion;
 
+import java.util.regex.*;
 import org.netbeans.modules.subversion.client.ExceptionInformation;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -67,6 +68,8 @@ public class FileStatusCache implements ISVNNotifyListener {
     private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, false);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, true);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(FileInformation.STATUS_UNKNOWN, false);
+
+    private final Pattern auxConflictPattern = Pattern.compile("(.*)\\.((r\\d+)|(mine))$");  // *.r# or *.mine
 
     /*
      * Holds three kinds of information: what folders we have scanned, what files we have found
@@ -585,6 +588,26 @@ public class FileStatusCache implements ISVNNotifyListener {
                     FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_UPTODATE_DIRECTORY;
             } else {
                 return FILE_INFORMATION_NOTMANAGED;
+            }
+        }
+
+        // mark auxiliary conflict files as ignored
+        // C source.java
+        // I source.java.mine
+        // I source.java.r45
+        // I source.java.r57
+        // XXX why is not it returned from getSingleStatus() ?
+
+        String name = file.getName();
+        Matcher m = auxConflictPattern.matcher(name);
+        if (m.matches()) {
+            File dir = file.getParentFile();
+            if (dir != null) {
+                String masterName = m.group(1);
+                File master = new File(dir, masterName);
+                if (master.isFile()) {
+                    return FILE_INFORMATION_EXCLUDED;
+                }
             }
         }
         

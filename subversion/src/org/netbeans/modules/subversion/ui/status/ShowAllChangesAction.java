@@ -73,13 +73,17 @@ public class ShowAllChangesAction extends AbstractAllAction {
             }
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    SvnVersioningTopComponent stc = SvnVersioningTopComponent.getInstance();
+                    final SvnVersioningTopComponent stc = SvnVersioningTopComponent.getInstance();
                     stc.setContentTitle(title);
                     stc.setContext(ctx);
                     stc.open();
                     stc.requestActive();
                     if (shouldPostRefresh()) {
-                        stc.performRefreshAction();
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            public void run() {
+                                stc.performRefreshAction();
+                            }
+                        });
                     }
                 }
             });

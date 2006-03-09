@@ -18,6 +18,7 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.openide.nodes.Node;
+import org.openide.util.*;
 
 /**
  * Context sensitive status action. It opens the Subversion
@@ -39,11 +40,16 @@ public class StatusAction  extends ContextAction {
 
     public void performContextAction(Node[] nodes) {
         Context ctx = SvnUtils.getCurrentContext(nodes);
-        SvnVersioningTopComponent stc = SvnVersioningTopComponent.getInstance();
+        final SvnVersioningTopComponent stc = SvnVersioningTopComponent.getInstance();
         stc.setContentTitle(getContextDisplayName(nodes));
         stc.setContext(ctx);
         stc.open(); 
         stc.requestActive();
-        stc.performRefreshAction();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                stc.performRefreshAction();
+            }
+        });
+            
     }
 }
