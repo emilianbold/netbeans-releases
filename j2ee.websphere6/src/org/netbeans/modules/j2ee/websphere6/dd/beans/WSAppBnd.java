@@ -19,11 +19,8 @@ import java.io.*;
  */
 public class WSAppBnd extends DDXmi{
     
-    public  static final String AUTH_TABLE="AuthorizationTable";
-    public  static final String AUTH_TABLE_XMI_ID="AuthorizationTableXmiId";
-    public  static final String APPLICATION="Application";
-    private static final String ROOT="applicationbnd:ApplicationBinding";
-    private static final String ROOT_NAME="WebSphereApplicationBnd";
+    private static final String ROOT=TYPE_APP_BND_ID;
+    private static final String ROOT_NAME="ApplicationBnd";
     
     
     /** Creates a new instance of AppBndXmi */
@@ -44,7 +41,7 @@ public class WSAppBnd extends DDXmi{
         //initOptions(options);
     }
     
-   
+    
     public WSAppBnd(File f,boolean validate) throws IOException{
         this(GraphManager.createXmlDocument(new FileInputStream(f), validate), Common.NO_DEFAULT_VALUES);
     }
@@ -80,13 +77,13 @@ public class WSAppBnd extends DDXmi{
         setNsCommon();
         setNsXmi();
         setXmiId("Application_ID_Bnd");
-        setAuthTableId("AthorizationTable_1");
+        setAuthTableId(AUTH_TABLE+"_1");
         setApplication("");
         setApplicationHref("Application_ID");
     }
     protected void initOptions(int options) {
         this.graphManager = new GraphManager(this);
-        this.createRoot(ROOT, ROOT_NAME,	// NOI18N
+        this.createRoot(ROOT, ROOT_NAME,
                 Common.TYPE_1 | Common.TYPE_BEAN, WSAppBnd.class);
         
         this.createAttribute(XMI_ID_ID,    XMI_ID,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
@@ -96,20 +93,26 @@ public class WSAppBnd extends DDXmi{
         this.createAttribute(NS_XMI_ID,    NS_XMI,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         this.createAttribute(XMI_VERSION_ID,XMI_VERSION,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         // Properties (see root bean comments for the bean graph)
-        initPropertyTables(2);
+        initPropertyTables(3);
         
-        this.createProperty("authorizationTable", 	// NOI18N
+        this.createProperty(AUTH_TABLE_ID,
                 AUTH_TABLE,
                 Common.TYPE_1 | Common.TYPE_BEAN | Common.TYPE_KEY,
                 AuthorizationTableType.class);
-    this.createAttribute(AUTH_TABLE,XMI_ID_ID,AUTH_TABLE_XMI_ID,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
+        this.createAttribute(AUTH_TABLE,XMI_ID_ID,AUTH_TABLE_XMI_ID,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         
-        this.createProperty(APPLICATION_ID, 	// NOI18N
+        this.createProperty(APPLICATION_ID,
                 APPLICATION,
                 Common.TYPE_1 | Common.TYPE_STRING | Common.TYPE_KEY,
                 java.lang.String.class);
         this.createAttribute(APPLICATION,HREF_ID,APPLICATION_HREF,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         
+        
+        this.createProperty(RUN_AS_MAP_ID,
+                RUN_AS_MAP,
+                Common.TYPE_1 | Common.TYPE_STRING | Common.TYPE_KEY,
+                java.lang.String.class);
+        this.createAttribute(RUN_AS_MAP,XMI_ID_ID,RUN_AS_MAP_XMI_ID,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         this.initialize(options);
     }
     
@@ -130,6 +133,25 @@ public class WSAppBnd extends DDXmi{
     }
     public String getAuthTableId(){
         return (String)getAttributeValue(AUTH_TABLE,AUTH_TABLE_XMI_ID);
+    }
+    
+    public void setRunAsMapId(String value)  {
+        if(getRunAsMap()==null) {
+            setRunAsMap("");
+        }
+        setAttributeValue(RUN_AS_MAP,RUN_AS_MAP_XMI_ID,value);
+    }
+    public String getRunAsMapId(){
+        if(getRunAsMap()==null) {
+            return null;
+        }
+        return (String)getAttributeValue(RUN_AS_MAP,RUN_AS_MAP_XMI_ID);
+    }
+    public void setRunAsMap(String value)  {
+        setValue(RUN_AS_MAP,value);
+    }
+    public String getRunAsMap(){
+        return (String)getValue(RUN_AS_MAP);
     }
     
     
@@ -160,9 +182,9 @@ public class WSAppBnd extends DDXmi{
             throw new org.netbeans.modules.schema2beans.ValidateException("getNsXmi() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, ROOT, this);	// NOI18N
         }
         if(getAuthorizationTable()!=null)
-        if(getAuthTableId()==null) {
+            if(getAuthTableId()==null) {
             throw new org.netbeans.modules.schema2beans.ValidateException("getAuthTableId() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, AUTH_TABLE, this);	// NOI18N
-        }
+            }
         if(getXmiId()==null) {
             throw new org.netbeans.modules.schema2beans.ValidateException("getXmiId() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, ROOT, this);	// NOI18N
         }

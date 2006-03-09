@@ -139,7 +139,7 @@ public class WSEjbBndToolBarMVElement extends ToolBarMultiViewElement implements
             bindingsNode.setDisplayName("Ejb Bindings");
             
             
-            bindingsCont = new SectionContainer(this,bindingsNode,"Ejb Binding");
+            bindingsCont = new SectionContainer(this,bindingsNode,"Ejb Bindings");
             bindingsCont.setHeaderActions(new javax.swing.Action[]{addBindingAction});
             
             

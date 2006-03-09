@@ -75,7 +75,8 @@ public interface DDXmiConstants {
     public static final String VIRTUAL_HOST_NAME="VirtualHostName";
     public static final String VIRTUAL_HOST_NAME_ID="virtualHostName";
     
-    
+    public  static final String TYPE="Type";
+    public  static final String NAME="Name";
     public  static final String XMI_ID="XmiId";
     public  static final String XMI_ID_ID="xmi:id";
     
@@ -83,11 +84,17 @@ public interface DDXmiConstants {
     public  static final String HREF_ID="href";
     public  static final String XMI_TYPE_ID="xmi:type";
     public  static final String NAME_ID="name";
+    
+    
     static public final String URI_ID="uri";
     static public final String MIME_TYPE_ID="mimeType";
     static public final String ERROR_PAGE_ID="errorPage";
     static public final String DEFAULT_PAGE_ID="defaultPage";
     static public final String RES_AUTH_ID="resAuth";
+    static public final String GROUPS_ID="groups";
+    public  static final String USERS_ID="users";
+    public static final String ROLE_ID="role";
+    static public final String SPECIAL_SUBJECTS_ID="specialSubjects";
     
     public  static final String APPLICATION="Application";
     public static final  String APPLICATION_ID="application";
@@ -124,6 +131,8 @@ public interface DDXmiConstants {
     static public final  String TYPE_APP_EXT_EJB_ID="applicationext:EjbModuleExtension";
     static public final  String TYPE_APP_EXT_WEB_ID="applicationext:WebModuleExtension";
     static public final  String TYPE_APP_EXT_APP_ID="applicationext:ApplicationExtension";
+    
+    static public final  String TYPE_APP_BND_ID="applicationbnd:ApplicationBinding";
     
     static public final  String TYPE_WEB_APP_EXT_ID="webappext:WebAppExtension";
     static public final  String TYPE_WEB_APP_BND_ID="webappbnd:WebAppBinding";
@@ -260,7 +269,7 @@ public interface DDXmiConstants {
     
     static public final String RES_REF_BINDINGS_ID="resRefBindings";
     static public final String EJB_REF_BINDINGS_ID="ejbRefBindings";
-    static public final String RES_ENV_REF_BINDINGS_ID="resourceEnvRefBindings";
+    static public final String RES_ENV_REF_BINDINGS_ID="resEnvRefBindings";
     
     static public final String BINDING_REFERENCE_TYPE_RESOURCE="Resource Reference";
     static public final String BINDING_REFERENCE_TYPE_EJB="Ejb Reference";
@@ -270,4 +279,29 @@ public interface DDXmiConstants {
         BINDING_REFERENCE_TYPE_EJB,
         BINDING_REFERENCE_TYPE_RESOURCE_ENV};
     
+    
+    public  static final String AUTH_TABLE_ID="authorizationTable";
+    public  static final String AUTH_TABLE="AuthorizationTable";
+    public  static final String AUTH_TABLE_XMI_ID=AUTH_TABLE+XMI_ID;
+    public  static final String AUTHORIZATIONS="authorizations";
+    public  static final String AUTHORIZATION = "Authorization";
+    
+    public  static final String RUN_AS_MAP="RunAsMap";
+    public  static final String RUN_AS_MAP_ID="runAsMap";
+    public  static final String RUN_AS_MAP_XMI_ID=RUN_AS_MAP+XMI_ID;
+    
+    
+    
+    
+    static public final String SPECIAL_SUBJECTS="SpecialSubjects";
+    static public final String SPECIAL_SUBJECTS_TYPE=SPECIAL_SUBJECTS+TYPE;
+    static public final String SPECIAL_SUBJECTS_XMI_ID=SPECIAL_SUBJECTS+XMI_ID;
+    static public final String SPECIAL_SUBJECTS_NAME=SPECIAL_SUBJECTS+NAME;
+    static public final String SPECIAL_SUBJECTS_TYPE_EVERYONE_STRING="applicationbnd:Everyone";
+    static public final String SPECIAL_SUBJECTS_TYPE_ALL_AUTHENTICATED_USERS_STRING="applicationbnd:AllAuthenticatedUsers";
+    static public final String SPECIAL_SUBJECTS_TYPE_EVERYONE="Everyone";
+    static public final String SPECIAL_SUBJECTS_TYPE_ALL_AUTHENTICATED_USERS="All Authenticated Users";
+    static public final String []SPECIAL_SUBJECTS_TYPES= {
+        SPECIAL_SUBJECTS_TYPE_EVERYONE,
+        SPECIAL_SUBJECTS_TYPE_ALL_AUTHENTICATED_USERS};
 }

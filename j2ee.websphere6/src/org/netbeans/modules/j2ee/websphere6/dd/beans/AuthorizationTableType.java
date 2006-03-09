@@ -14,8 +14,8 @@ public class AuthorizationTableType extends org.netbeans.modules.schema2beans.Ba
     static Vector comparators = new Vector();
     static private final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(4, 2, 0);
     
-    static private final String AUTHORIZATION = "Authorization";	// NOI18N
-    static private final String AUTH_ID="Id";
+    
+    static private final String AUTH_ID=AUTHORIZATION+XMI_ID;
     
     public AuthorizationTableType() {
         this(Common.USE_DEFAULT_VALUES);
@@ -25,7 +25,7 @@ public class AuthorizationTableType extends org.netbeans.modules.schema2beans.Ba
         super(comparators, runtimeVersion);
         // Properties (see root bean comments for the bean graph)
         initPropertyTables(1);
-        this.createProperty("authorizations", 	// NOI18N
+        this.createProperty(AUTHORIZATIONS,
                 AUTHORIZATION,
                 Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY,
                 AuthorizationsType.class);
@@ -38,7 +38,7 @@ public class AuthorizationTableType extends org.netbeans.modules.schema2beans.Ba
     // Setting the default values of the properties
     void initialize(int options) {
         
-        setId("RoleAssignement_");
+        setXmiId("RoleAssignement_");
     }
     
     // This attribute is an array, possibly empty
@@ -88,10 +88,10 @@ public class AuthorizationTableType extends org.netbeans.modules.schema2beans.Ba
         return new AuthorizationsType();
     }
     
-    public void setId(String value) {
+    public void setXmiId(String value) {
         this.setAttributeValue(AUTHORIZATION,AUTH_ID,value);
     }
-    public String getId() {
+    public String getXmiId() {
         return (String)getAttributeValue(AUTHORIZATION,AUTH_ID);
     }
     //
@@ -113,8 +113,8 @@ public class AuthorizationTableType extends org.netbeans.modules.schema2beans.Ba
                 element.validate();
             }
         }
-        if(getId()==null) {
-            throw new org.netbeans.modules.schema2beans.ValidateException("getId() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, "authorizations", this);	// NOI18N
+        if(getXmiId()==null) {
+            throw new org.netbeans.modules.schema2beans.ValidateException("getXmiId() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, AUTHORIZATIONS, this);	// NOI18N
         }
     }
     
