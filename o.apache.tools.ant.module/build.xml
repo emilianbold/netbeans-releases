@@ -11,7 +11,6 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="ant" default="netbeans" basedir=".">
 
     <import file="../nbbuild/templates/projectized.xml"/>
@@ -23,10 +22,11 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="compile-bridge" depends="init,compile">
         <mkdir dir="build/bridge-classes"/>
-        <javac srcdir="src-bridge" destdir="build/bridge-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4" includeantruntime="false">
+        <javac srcdir="src-bridge" destdir="build/bridge-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.5" includeantruntime="false">
             <classpath>
                 <path path="${src-bridge.cp}"/>
             </classpath>
+            <compilerarg line="${javac.compilerargs}"/>
         </javac>
         <copy todir="build/bridge-classes">
             <fileset dir="src-bridge" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>

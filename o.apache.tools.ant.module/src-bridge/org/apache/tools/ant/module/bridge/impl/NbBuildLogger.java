@@ -707,7 +707,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     static {
         Method _targetGetLocation = null;
         try {
-            _targetGetLocation = Target.class.getMethod("getLocation", null); // NOI18N
+            _targetGetLocation = Target.class.getMethod("getLocation"); // NOI18N
             if (AntBridge.getInterface().getAntVersion().indexOf("1.6.2") != -1) { // NOI18N
                 // Unfortunately in 1.6.2 the method exists but it doesn't work (Ant #28599):
                 _targetGetLocation = null;
@@ -720,7 +720,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         targetGetLocation = _targetGetLocation;
         Method _locationGetFileName = null;
         try {
-            _locationGetFileName = Location.class.getMethod("getFileName", null); // NOI18N
+            _locationGetFileName = Location.class.getMethod("getFileName"); // NOI18N
         } catch (NoSuchMethodException e) {
             // OK
         } catch (Exception e) {
@@ -729,7 +729,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         locationGetFileName = _locationGetFileName;
         Method _locationGetLineNumber = null;
         try {
-            _locationGetLineNumber = Location.class.getMethod("getLineNumber", null); // NOI18N
+            _locationGetLineNumber = Location.class.getMethod("getLineNumber"); // NOI18N
         } catch (NoSuchMethodException e) {
             // OK
         } catch (Exception e) {
@@ -738,7 +738,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         locationGetLineNumber = _locationGetLineNumber;
         Method _runtimeConfigurableGetAttributeMap = null;
         try {
-            _runtimeConfigurableGetAttributeMap = RuntimeConfigurable.class.getMethod("getAttributeMap", null); // NOI18N
+            _runtimeConfigurableGetAttributeMap = RuntimeConfigurable.class.getMethod("getAttributeMap"); // NOI18N
         } catch (NoSuchMethodException e) {
             // OK
         } catch (Exception e) {
@@ -747,7 +747,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         runtimeConfigurableGetAttributeMap = _runtimeConfigurableGetAttributeMap;
         Method _runtimeConfigurableGetChildren = null;
         try {
-            _runtimeConfigurableGetChildren = RuntimeConfigurable.class.getMethod("getChildren", null); // NOI18N
+            _runtimeConfigurableGetChildren = RuntimeConfigurable.class.getMethod("getChildren"); // NOI18N
         } catch (NoSuchMethodException e) {
             // OK
         } catch (Exception e) {
@@ -756,7 +756,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         runtimeConfigurableGetChildren = _runtimeConfigurableGetChildren;
         Method _runtimeConfigurableGetText = null;
         try {
-            _runtimeConfigurableGetText = RuntimeConfigurable.class.getMethod("getText", null); // NOI18N
+            _runtimeConfigurableGetText = RuntimeConfigurable.class.getMethod("getText"); // NOI18N
         } catch (NoSuchMethodException e) {
             // OK
         } catch (Exception e) {
@@ -772,7 +772,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private Location getLocationOfTarget(Target target, Project project) {
         if (targetGetLocation != null) {
             try {
-                return (Location) targetGetLocation.invoke(target, null);
+                return (Location) targetGetLocation.invoke(target);
             } catch (Exception e) {
                 ERR.notify(EM_LEVEL, e);
             }
@@ -801,7 +801,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private static String getFileNameOfLocation(Location loc) {
         if (locationGetFileName != null) {
             try {
-                return (String) locationGetFileName.invoke(loc, null);
+                return (String) locationGetFileName.invoke(loc);
             } catch (Exception e) {
                 ERR.notify(EM_LEVEL, e);
             }
@@ -820,7 +820,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private static int getLineNumberOfLocation(Location loc) {
         if (locationGetLineNumber != null) {
             try {
-                return ((Integer) locationGetLineNumber.invoke(loc, null)).intValue();
+                return (Integer) locationGetLineNumber.invoke(loc);
             } catch (Exception e) {
                 ERR.notify(EM_LEVEL, e);
             }
@@ -846,7 +846,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private static Map/*<String,String>*/ getAttributeMapOfRuntimeConfigurable(RuntimeConfigurable rc) {
         if (runtimeConfigurableGetAttributeMap != null) {
             try {
-                return (Map) runtimeConfigurableGetAttributeMap.invoke(rc, null);
+                return (Map) runtimeConfigurableGetAttributeMap.invoke(rc);
             } catch (Exception e) {
                 ERR.notify(EM_LEVEL, e);
             }
@@ -857,7 +857,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private static Enumeration/*<RuntimeConfigurable>*/ getChildrenOfRuntimeConfigurable(RuntimeConfigurable rc) {
         if (runtimeConfigurableGetChildren != null) {
             try {
-                return (Enumeration) runtimeConfigurableGetChildren.invoke(rc, null);
+                return (Enumeration) runtimeConfigurableGetChildren.invoke(rc);
             } catch (Exception e) {
                 ERR.notify(EM_LEVEL, e);
             }
@@ -868,7 +868,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private static String getTextOfRuntimeConfigurable(RuntimeConfigurable rc) {
         if (runtimeConfigurableGetText != null) {
             try {
-                return ((StringBuffer) runtimeConfigurableGetText.invoke(rc, null)).toString();
+                return ((StringBuffer) runtimeConfigurableGetText.invoke(rc)).toString();
             } catch (Exception e) {
                 ERR.notify(EM_LEVEL, e);
             }

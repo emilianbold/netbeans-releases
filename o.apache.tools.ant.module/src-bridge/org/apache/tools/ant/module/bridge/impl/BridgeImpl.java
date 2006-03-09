@@ -322,8 +322,13 @@ public class BridgeImpl implements BridgeInterface {
         if (process.isAlive()) {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "MSG_halting"));
             // XXX try using process.interrupt() first, then wait a bit longer
-            process.stop();
+            stopThread(process);
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void stopThread(Thread process) {
+        process.stop();
     }
     
     //copy - paste programming
