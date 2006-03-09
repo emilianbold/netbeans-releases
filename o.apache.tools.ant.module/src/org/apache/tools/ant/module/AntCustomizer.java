@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbClassPath;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.NbBundle;
 
 /**
@@ -181,10 +180,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
             Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
             dialog.setVisible (true);
             if (dd.getValue () == NotifyDescriptor.OK_OPTION) {
-                if (customEditor instanceof EnhancedCustomPropertyEditor)
-                    properties = (Properties) ((EnhancedCustomPropertyEditor) customEditor).getPropertyValue ();
-                else
-                    properties = (Properties) editor.getValue ();
+                properties = (Properties) editor.getValue();
                 changed = true;
             }
         }
@@ -202,6 +198,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
         antHomeLabel = new javax.swing.JLabel();
         tfAntHome = new javax.swing.JTextField();
         bAntHome = new javax.swing.JButton();
+        bAntHomeDefault = new javax.swing.JButton();
         lAntVersion = new javax.swing.JLabel();
         cbSaveFiles = new javax.swing.JCheckBox();
         cbReuseOutput = new javax.swing.JCheckBox();
@@ -220,6 +217,13 @@ public class AntCustomizer extends JPanel implements ActionListener {
         org.openide.awt.Mnemonics.setLocalizedText(antHomeLabel, NbBundle.getMessage(AntCustomizer.class, "Ant_Home"));
 
         org.openide.awt.Mnemonics.setLocalizedText(bAntHome, NbBundle.getMessage(AntCustomizer.class, "Ant_Home_Button"));
+
+        org.openide.awt.Mnemonics.setLocalizedText(bAntHomeDefault, NbBundle.getMessage(AntCustomizer.class, "Ant_Home_Default_Button"));
+        bAntHomeDefault.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bAntHomeDefaultActionPerformed(evt);
+            }
+        });
 
         lAntVersion.setBackground(java.awt.Color.white);
         org.openide.awt.Mnemonics.setLocalizedText(lAntVersion, "<Ant version here...>");
@@ -318,10 +322,12 @@ public class AntCustomizer extends JPanel implements ActionListener {
                         .add(layout.createSequentialGroup()
                             .add(cbSaveFiles)
                             .addContainerGap())
-                        .add(layout.createSequentialGroup()
-                            .add(tfAntHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                        .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                            .add(tfAntHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(bAntHome)))))
+                            .add(bAntHome)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(bAntHomeDefault)))))
             .add(classpathPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -329,6 +335,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE, false)
                     .add(antHomeLabel)
+                    .add(bAntHomeDefault)
                     .add(bAntHome)
                     .add(tfAntHome, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -350,9 +357,17 @@ public class AntCustomizer extends JPanel implements ActionListener {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void bAntHomeDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bAntHomeDefaultActionPerformed
+        AntSettings.getDefault().setAntHome(null);
+        tfAntHome.setText(AntSettings.getDefault().getAntHomeWithDefault().getAbsolutePath());
+        lAntVersion.setText("(" + AntSettings.getDefault().getAntVersion() + ")");
+        changed = true;
+    }//GEN-LAST:event_bAntHomeDefaultActionPerformed
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bAntHome;
+    private javax.swing.JButton bAntHomeDefault;
     private javax.swing.JButton bClasspath;
     private javax.swing.JButton bProperties;
     private javax.swing.JCheckBox cbAlwaysShowOutput;

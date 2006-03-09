@@ -7,39 +7,42 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.beaninfo.editors;
 
-import java.io.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
-import java.util.StringTokenizer;
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.border.*;
-
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import java.util.regex.Pattern;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.NotifyDescriptor;
 
-/** A custom editor for Properties.
- *
- * @author  Ian Formanek
+/**
+ * A custom editor for Properties.
  */
-public class PropertiesCustomEditor extends JPanel
-    implements EnhancedCustomPropertyEditor
-{
+public class PropertiesCustomEditor extends JPanel implements DocumentListener {
 
     private PropertiesEditor editor;
-
-    private javax.swing.JScrollPane textAreaScroll;
-    private javax.swing.JEditorPane editorPane;
+    private JEditorPane editorPane;
+    private JTextField warnings;
     
-    private static final long serialVersionUID =2473843831910895646L;
-    /** Initializes the Form */
     public PropertiesCustomEditor(PropertiesEditor ed) {
         editor = ed;
         initComponents ();
@@ -49,53 +52,60 @@ public class PropertiesCustomEditor extends JPanel
         try {
             props.store (baos, ""); // NOI18N
         } catch (IOException e) {
-            // strange, strange -> ignore
+            throw new AssertionError(e);
         }
-        editorPane.setText (baos.toString ());
-        setBorder (new javax.swing.border.EmptyBorder (new Insets(12, 12, 0, 11)));
+        try {
+            // Remove all comments from text.
+            editorPane.setText(baos.toString("ISO-8859-1").replaceAll("(?m)^#.*" + System.getProperty("line.separator"), "")); // NOI18N
+        } catch (UnsupportedEncodingException x) {
+            throw new AssertionError(x);
+        }
+        setBorder (new EmptyBorder (new Insets(12, 12, 0, 11)));
         HelpCtx.setHelpIDString (this, PropertiesCustomEditor.class.getName ());
         
         editorPane.getAccessibleContext().setAccessibleName(NbBundle.getBundle(PropertiesCustomEditor.class).getString("ACS_PropertiesEditorPane"));
         editorPane.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(PropertiesCustomEditor.class).getString("ACSD_PropertiesEditorPane"));
+        editorPane.getDocument().addDocumentListener(this);
         getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(PropertiesCustomEditor.class).getString("ACSD_CustomPropertiesEditor"));
     }
-
-    private boolean containsCommentedProps() {
-        StringTokenizer tok = new StringTokenizer( editorPane.getText(), "\n", false); // NOI18N
-        while ( tok.hasMoreTokens() ) {
-            String row = tok.nextToken().trim();
-            if ( row.startsWith( "#" ) && row.indexOf( '=' ) > 0 )  // NOI18N
-                return true;
-        }
-        return false;
+    
+    public void insertUpdate(DocumentEvent e) {
+        change();
     }
 
-    /**
-    * @return Returns the property value that is result of the CustomPropertyEditor.
-    * @exception InvalidStateException when the custom property editor does not represent valid property value
-    *            (and thus it should not be set)
-    */
-    public Object getPropertyValue () throws IllegalStateException {
-        if ( containsCommentedProps() ) {
-            NotifyDescriptor.Confirmation nd = new NotifyDescriptor.Confirmation(
-                    NbBundle.getBundle(PropertiesCustomEditor.class).getString("MSG_PropertiesComments")
-                );
-            if ( !org.openide.DialogDisplayer.getDefault().notify( nd )
-            .equals( NotifyDescriptor.YES_OPTION ) ) {
-                throw new IllegalStateException();
+    public void removeUpdate(DocumentEvent e) {
+        change();
+    }
+
+    public void changedUpdate(DocumentEvent e) {}
+
+    private void change() {
+        Properties v = new Properties();
+        boolean loaded = false;
+        try {
+            v.load(new ByteArrayInputStream(editorPane.getText().getBytes("ISO-8859-1")));
+            loaded = true;
+        } catch (Exception x) { // IOException, IllegalArgumentException, maybe others
+            Color c = UIManager.getColor("nb.errorForeground"); // NOI18N
+            if (c != null) {
+                warnings.setForeground(c);
+            }
+            warnings.setText(x.toString());
+        }
+        if (loaded) {
+            editor.setValue(v);
+            if (Pattern.compile("^#", Pattern.MULTILINE).matcher(editorPane.getText()).find()) { // #20996
+                Color c = UIManager.getColor("nb.warningForeground"); // NOI18N
+                if (c != null) {
+                    warnings.setForeground(c);
+                }
+                warnings.setText(NbBundle.getMessage(PropertiesCustomEditor.class, "WARN_PropertiesComments"));
+            } else {
+                warnings.setText(null);
             }
         }
-        
-        Properties props = new Properties ();
-        try {
-            props.load (new ByteArrayInputStream (editorPane.getText ().getBytes ()));
-        } catch (IOException e) {
-            // strange, strange -> ignore
-        }
-        return props;
     }
-    
-    /** Returns preferredSize as the preferred height and the width of the panel */
+
     public Dimension getPreferredSize() {
         return new Dimension(600, 400);
     }
@@ -104,14 +114,14 @@ public class PropertiesCustomEditor extends JPanel
      * initialize the form.
      */
     private void initComponents() {
-        textAreaScroll = new JScrollPane();
-        editorPane = new JEditorPane();
         setLayout(new BorderLayout());
         
+        editorPane = new JEditorPane();
         editorPane.setContentType("text/x-properties"); // NOI18N
-        textAreaScroll.setViewportView(editorPane);
-        
-        add(textAreaScroll, BorderLayout.CENTER);
-        
+        add(new JScrollPane(editorPane), BorderLayout.CENTER);
+
+        warnings = new JTextField(30);
+        warnings.setEditable(false);
+        add(warnings, BorderLayout.SOUTH);
     }
 }

@@ -42,10 +42,12 @@
                           <Component id="cbSaveFiles" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="tfAntHome" pref="377" max="32767" attributes="0"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Component id="tfAntHome" pref="291" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="bAntHome" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="bAntHomeDefault" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -58,6 +60,7 @@
           <Group type="102" alignment="0" max="-2" attributes="0">
               <Group type="103" groupAlignment="3" max="-2" attributes="0">
                   <Component id="antHomeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="bAntHomeDefault" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="bAntHome" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="tfAntHome" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -106,6 +109,16 @@
           <ResourceString bundle="org/apache/tools/ant/module/Bundle.properties" key="Ant_Home_Button" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="bAntHomeDefault">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/apache/tools/ant/module/Bundle.properties" key="Ant_Home_Default_Button" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bAntHomeDefaultActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="lAntVersion">
       <Properties>
