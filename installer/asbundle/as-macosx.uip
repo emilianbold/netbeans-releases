@@ -47,11 +47,7 @@
         <property name="beanId">bean149</property>
         <extendedProperty name="macosxppk" type="com.installshield.wizard.platform.macosx.extras.MacOSXJVMResolutionExtra">
             <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142macosx.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
+            <property array="True" length="1" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15macosx.jvm</property>
                     <property name="fullSearch">False</property>
@@ -818,11 +814,7 @@
                     <property name="comments"/>
                     <property name="enabled">True</property>
                     <property name="fileName">setupMac.command</property>
-                    <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk142macosx.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
+                    <property array="True" length="1" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
                             <property name="fileName">$A(basedir)/../lib/resources/jdk15macosx.jvm</property>
                             <property name="fullSearch">False</property>

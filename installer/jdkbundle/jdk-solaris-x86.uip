@@ -47,13 +47,9 @@
         <property name="beanId">bean149</property>
         <extendedProperty name="solaris.jvm.resolution.extra.x86" type="com.installshield.wizard.platform.solaris.extra.SolarisJVMResolutionExtraX86">
             <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="3" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+            <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">

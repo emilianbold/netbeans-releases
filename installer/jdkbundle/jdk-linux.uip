@@ -47,7 +47,7 @@
         <property name="beanId">bean149</property>
         <extendedProperty name="linux.jvm.resolution" type="com.ibm.wizard.platform.linux.LinuxJVMResolutionExtra">
             <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="7" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+            <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
@@ -58,18 +58,6 @@
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_ibm.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_blackdown.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_ibm.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">

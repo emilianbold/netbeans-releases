@@ -80,7 +80,7 @@
         <property name="beanId">bean149</property>
         <extendedProperty name="genericunixppk" type="com.installshield.wizard.platform.genericunix.extras.GenericUnixJVMResolutionExtra">
             <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="7" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+            <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
@@ -91,18 +91,6 @@
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_ibm.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_blackdown.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_ibm.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
@@ -119,7 +107,7 @@
         </extendedProperty>
         <extendedProperty name="linux.jvm.resolution" type="com.ibm.wizard.platform.linux.LinuxJVMResolutionExtra">
             <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="7" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+            <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
@@ -130,18 +118,6 @@
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_ibm.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_blackdown.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_ibm.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
@@ -158,11 +134,7 @@
         </extendedProperty>
         <extendedProperty name="macosxppk" type="com.installshield.wizard.platform.macosx.extras.MacOSXJVMResolutionExtra">
             <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142macosx.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
+            <property array="True" length="1" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15macosx.jvm</property>
                     <property name="fullSearch">False</property>
@@ -177,13 +149,9 @@
         </extendedProperty>
         <extendedProperty name="solaris.jvm.resolution.extra.sparc" type="com.installshield.wizard.platform.solaris.extra.SolarisJVMResolutionExtra">
             <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="3" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+            <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
@@ -200,13 +168,9 @@
         </extendedProperty>
         <extendedProperty name="solaris.jvm.resolution.extra.x86" type="com.installshield.wizard.platform.solaris.extra.SolarisJVMResolutionExtraX86">
             <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="3" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+            <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
@@ -223,21 +187,13 @@
         </extendedProperty>
         <extendedProperty name="win32ppk" type="com.installshield.wizard.platform.win32.Win32JVMResolutionExtra">
             <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+            <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15win32_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142win32_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk16win32_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk142win32_ibm.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
             </property>
@@ -800,7 +756,7 @@
                     <property name="comments"/>
                     <property name="enabled">True</property>
                     <property name="fileName">setuplinux.bin</property>
-                    <property array="True" length="7" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+                    <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
                             <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
                             <property name="fullSearch">False</property>
@@ -811,18 +767,6 @@
                         </arrayItem>
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
                             <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_ibm.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_sun.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_blackdown.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_ibm.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
@@ -845,13 +789,9 @@
                     <property name="comments"/>
                     <property name="enabled">True</property>
                     <property name="fileName">setupSolarisSparc.bin</property>
-                    <property array="True" length="3" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+                    <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
                             <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
@@ -874,13 +814,9 @@
                     <property name="comments"/>
                     <property name="enabled">True</property>
                     <property name="fileName">setupSolarisx86.bin</property>
-                    <property array="True" length="3" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+                    <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
                             <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk142unix_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
@@ -903,11 +839,7 @@
                     <property name="comments"/>
                     <property name="enabled">True</property>
                     <property name="fileName">setupMac.command</property>
-                    <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk142macosx.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
+                    <property array="True" length="1" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
                             <property name="fileName">$A(basedir)/../lib/resources/jdk15macosx.jvm</property>
                             <property name="fullSearch">False</property>
@@ -928,21 +860,13 @@
                     <property name="comments"/>
                     <property name="enabled">True</property>
                     <property name="fileName">setupwin32.exe</property>
-                    <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+                    <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
                             <property name="fileName">$A(basedir)/../lib/resources/jdk15win32_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk142win32_sun.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
                             <property name="fileName">$A(basedir)/../lib/resources/jdk16win32_sun.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk142win32_ibm.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                     </property>
