@@ -193,12 +193,12 @@ public class ServerPropertiesPanel extends JPanel
                 getSelectedItem()).getName());
         instantiatingIterator.setConfigXmlPath(((Instance) localInstancesCombo.
                 getSelectedItem()).getConfigXmlPath());
+        instantiatingIterator.setAdminPort(((Instance) localInstancesCombo.
+                getSelectedItem()).getAdminPort());
         
         // everything seems ok
         return true;
     }
-    
-    
     
     
     ////////////////////////////////////////////////////////////////////////////
@@ -515,6 +515,4 @@ public class ServerPropertiesPanel extends JPanel
             fireChangeEvent();
         }
     }
-    
-    
 }

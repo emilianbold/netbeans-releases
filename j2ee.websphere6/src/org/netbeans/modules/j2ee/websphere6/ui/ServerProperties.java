@@ -1,13 +1,17 @@
 /*
- * ServerProperties.java
+ *                 Sun Public License Notice
  *
- * Created on 24 январь 2006 г., 14:13
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.j2ee.websphere6.ui;
+
 import java.util.*;
 import java.io.*;
 import java.awt.*;
@@ -244,6 +248,97 @@ public class ServerProperties {
         
     }
     
+    public static String getCellAdminPort(String cellPath) {
+        // get the list of files under the nodes subfolder
+        String[] files = new File(cellPath + "/nodes").list();
+        
+        // for each file check whether it is a directory and there exists
+        // serverindex.xml, if it does, remember the path and break the loop
+        for (int i = 0; i < files.length; i++) {
+            String path = cellPath + "/nodes/" + files[i] + "/serverindex.xml";
+            if (new File(path).exists()) { // NOI18N
+                cellPath = path; // NOI18N
+                break;
+            }
+        }
+        
+        // init the input stream for the file and the w3c document object
+        InputStream inputStream = null;
+        Document document = null;
+        
+        try {
+            // open the stream to the cell properties file
+            inputStream = new FileInputStream(new File(cellPath));
+            
+            // create a document from the input stream
+            document = DocumentBuilderFactory.newInstance().
+                    newDocumentBuilder().parse(inputStream);
+            
+            // get the root element
+            Element root = document.getDocumentElement();
+            
+            // get the child nodes
+            NodeList children = root.getChildNodes();
+            
+            // for each child
+            for (int i = 0; i < children.getLength(); i++) {
+                Node child = children.item(i);
+                // if the child's name equals 'serverEntries' get its children
+                // and iterate over them
+                if (child.getNodeName().equals("serverEntries")) {     // NOI18N
+                    NodeList nl = child.getChildNodes();
+                    for (int j = 0; j < nl.getLength(); j++){
+                        Node ch = nl.item(j);
+                        // if the grandchild's name equals specialEndpoints, and
+                        // it has the SOAP_CONNECTOR_ADDRESS attribute
+                        if (ch.getNodeName().equals(
+                                "specialEndpoints") && ch.             // NOI18N
+                                getAttributes().getNamedItem
+                                ("endPointName").getNodeValue().       // NOI18N
+                                equals("WC_adminhost")) {    // NOI18N
+                            NodeList nl2 = ch.getChildNodes();
+                            // iterate over its children (the
+                            // grandgrandchildren of the root node) and get the
+                            // one the the name 'endPoint', from it get the
+                            // port attribute
+                            for (int k = 0; k < nl2.getLength(); k++) {
+                                Node ch2 = nl2.item(k);
+                                if (ch2.getNodeName().equals(
+                                        "endPoint")) {                 // NOI18N
+                                    String port = ch2.getAttributes().
+                                            getNamedItem("port").      // NOI18N
+                                            getNodeValue();
+                                    return port;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (ParserConfigurationException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (SAXException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } finally {
+            // close the input stream
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        
+        // if nothing is found - return an empty string
+        return "";                                                     // NOI18N
+        
+    }
+    
     /**
      * Gets the path to the server's server.xml file
      *
@@ -376,10 +471,11 @@ public class ServerProperties {
                         files[j];
                 String address = "localhost";                          // NOI18N
                 String port = ServerProperties.getCellPort(nextCellPath);
+                String adminPort = ServerProperties.getCellAdminPort(nextCellPath);
                 String serverName = ServerProperties.getServerName(nextCellPath);
                 String configXmlPath = ServerProperties.getConfigXmlPath(nextCellPath);
                 result.add(new Instance(serverName, address, port, domains[i],
-                        configXmlPath));
+                        configXmlPath, adminPort));
             }
         }
         

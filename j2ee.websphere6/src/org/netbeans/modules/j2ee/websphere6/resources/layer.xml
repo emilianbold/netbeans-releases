@@ -12,23 +12,22 @@
  Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
-
 <filesystem>
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
             <folder name="WebSphere6">
                 <!--
-                    The additional deployment information supplied to NetBeans,
-                    Currently we define only two things: the web module's 
-                    context root xpath and the URL for the disconnected 
-                    deployment manager
+                The additional deployment information supplied to NetBeans,
+                Currently we define only two things: the web module's 
+                context root xpath and the URL for the disconnected 
+                deployment manager
                 -->
                 <file name="Descriptor" url="nbdep.xml"/>
                 
                 <!-- 
-                    An instance of the class implementing the DeploymentFactory 
-                    interface, it will be used as the main entry point for the
-                    plugin
+                An instance of the class implementing the DeploymentFactory 
+                interface, it will be used as the main entry point for the
+                plugin
                 -->
                 <file name="Factory.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.websphere6.WSDeploymentFactory.create"/>
@@ -37,9 +36,9 @@
                 </file>
                 
                 <!--
-                    An instance of the factory for creating the nodes that will 
-                    appear in the Server Registry, namely the Manager (Instance)
-                    node and the Target node
+                An instance of the factory for creating the nodes that will 
+                appear in the Server Registry, namely the Manager (Instance)
+                node and the Target node
                 -->
                 <file name="RegistryNodeFactory.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.ui.nodes.WSRegistryNodeFactory"/>
@@ -48,16 +47,16 @@
                 
                 <!--
                 <file name="ConfigurationSupport.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.genericserver.GSConfigurationSupport"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.genericserver.GSConfigurationSupport"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/>
                 </file>
                 -->
                 
                 <!--
-                    An instance of the class implementing the 
-                    J2eeDeploymentFactory interface, it will be used to create 
-                    objects that describe the environment that exists on a 
-                    particular instance of the server
+                An instance of the class implementing the 
+                J2eeDeploymentFactory interface, it will be used to create 
+                objects that describe the environment that exists on a 
+                particular instance of the server
                 -->
                 <file name="J2eePlatformFactory.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.websphere6.j2ee.WSJ2eePlatformFactory"/>
@@ -66,10 +65,10 @@
                 </file>
                 
                 <!--
-                    A factory that creates objects that provide optional 
-                    functionality for the plugin, i.e. starting/stopping the
-                    server, getting a custom wizard for instance registration, 
-                    etc.
+                A factory that creates objects that provide optional 
+                functionality for the plugin, i.e. starting/stopping the
+                server, getting a custom wizard for instance registration, 
+                etc.
                 -->
                 <file name="OptionalFactory.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.websphere6.optional.WSOptionalDeploymentManagerFactory"/>
@@ -81,36 +80,282 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/>
                 </file>
                 
-                
                 <!--
-                    An instance of the class responsible for splitting the 
-                    server-generated deployment plan and creating the server
-                    specific deployment descriptors of it.
-                -->
-                <!--
-                <file name="AppServerPlanSplitter.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.websphere6.optional.WSDeploymentPlanSplitter"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.optional.WSDeploymentPlanSplitter"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
-                </file>
-                -->
-                <!--
-                    Server-specific deployment configuration files' names, 
-                    grouped by module type
+                Server-specific deployment configuration files' names, 
+                grouped by module type
                 -->
                 <folder name="DeploymentFileNames">
                     <folder name="EAR">
-                        <file name="WebSphere6.dpf"/>
+                        <!--                       <file name="META-INF\WebSphere6.dpf"/> -->
+                        <file name="ibm-application-bnd.xmi"/>
+                        <file name="ibm-application-ext.xmi"/>
+
                     </folder>
                     <folder name="EJB">
-                        <file name="WebSphere6.dpf"/>
+                        <!--                        <file name="META-INF\WebSphere6.dpf"/> -->
+                        <file name="ibm-ejb-jar-bnd.xmi"/>
+                        <file name="ibm-ejb-jar-ext.xmi"/>
                     </folder>
                     <folder name="WAR">
                         <file name="WEB-INF\ibm-web-bnd.xmi"/>
-<!--                        <file name="WEB-INF\ibm-web-ext.xmi"/> -->
+                        <file name="WEB-INF\ibm-web-ext.xmi"/> 
                     </folder>
                 </folder>
             </folder>
         </folder>
+    </folder>              
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-appbnd+xml">
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance"/>
+                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-RenameAction.instance"/>
+                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-appext+xml">
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance"/>
+                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-RenameAction.instance"/>
+                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-ejbbnd+xml">
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance"/>
+                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-RenameAction.instance"/>
+                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-ejbext+xml">
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance"/>
+                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-RenameAction.instance"/>
+                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-webbnd+xml">
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance"/>
+                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-RenameAction.instance"/>
+                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-webext+xml">
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance"/>
+                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-RenameAction.instance"/>
+                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                </folder>
+            </folder>
+        </folder>
     </folder>
+    <folder name="Services">
+        <folder name="MIMEResolver">            
+            <file name="WSAppBndResolver.xml" url="WSAppBndResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.websphere6.resources.Bundle"/>
+            </file>
+            <file name="WSAppExtResolver.xml" url="WSAppExtResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.websphere6.resources.Bundle"/>
+            </file>
+            <file name="WSEjbBndResolver.xml" url="WSEjbBndResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.websphere6.resources.Bundle"/>
+            </file>
+            <file name="WSEjbExtResolver.xml" url="WSEjbExtResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.websphere6.resources.Bundle"/>
+            </file>
+            <file name="WSWebBndResolver.xml" url="WSWebBndResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.websphere6.resources.Bundle"/>
+            </file>
+            <file name="WSWebExtResolver.xml" url="WSWebExtResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.websphere6.resources.Bundle"/>
+            </file>
+            
+            <folder name="JavaHelp">
+              <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-j2ee-websphere6-helpset.xml" boolvalue="true"/>
+              <file name="org-netbeans-modules-j2ee-websphere6-helpset.xml" url="helpset.xml"/>
+              <attr name="org-netbeans-modules-j2ee-websphere6-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
+            </folder>
+        </folder>
+    </folder>    
 </filesystem>

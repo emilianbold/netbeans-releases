@@ -22,6 +22,7 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.*;
 import javax.enterprise.deploy.spi.factories.*;
 import javax.enterprise.deploy.spi.status.*;
+import org.netbeans.modules.j2ee.websphere6.config.*;
 
 import org.openide.*;
 import org.openide.util.*;
@@ -78,8 +79,6 @@ public class WSDeploymentManager implements DeploymentManager {
      */
     private boolean isConnected;
     
-    
-    
     /**
      * Creates a new instance of the deployment manager
      *
@@ -93,7 +92,6 @@ public class WSDeploymentManager implements DeploymentManager {
                     username + ", " + password + ")");                 // NOI18N
         
         // save the connection properties
-        
         this.uri = uri;
         this.username = username;
         this.password = password;
@@ -181,6 +179,7 @@ public class WSDeploymentManager implements DeploymentManager {
         return (getInstanceProperties()!=null)?getInstanceProperties().getProperty(
                 WSDeploymentFactory.DOMAIN_ROOT_ATTR):"";
     }
+    
     /**
      * Returns true if the type of server is local. Otherwise return false
      */
@@ -188,6 +187,7 @@ public class WSDeploymentManager implements DeploymentManager {
         return (getInstanceProperties()!=null)?getInstanceProperties().getProperty(
                 WSDeploymentFactory.IS_LOCAL_ATTR):"";
     }
+    
     /**
      * Set server root property
      */
@@ -203,6 +203,7 @@ public class WSDeploymentManager implements DeploymentManager {
         if(getInstanceProperties()!=null)
             getInstanceProperties().setProperty(WSDeploymentFactory.DOMAIN_ROOT_ATTR,domainRoot);
     }
+    
     /**
      * Set host property
      */
@@ -228,6 +229,7 @@ public class WSDeploymentManager implements DeploymentManager {
         if(getInstanceProperties()!=null)
             getInstanceProperties().setProperty(WSDeploymentFactory.PASSWORD_ATTR,password);
     }
+    
     /**
      * Set username property
      */
@@ -243,6 +245,7 @@ public class WSDeploymentManager implements DeploymentManager {
         if(getInstanceProperties()!=null)
             getInstanceProperties().setProperty(WSDeploymentFactory.SERVER_NAME_ATTR,name);
     }
+    
     /**
      * Set .xml configuration file path
      */
@@ -258,7 +261,6 @@ public class WSDeploymentManager implements DeploymentManager {
         if(getInstanceProperties()!=null)
             getInstanceProperties().setProperty(WSDeploymentFactory.IS_LOCAL_ATTR,isLocal);
     }
-    
     
     ////////////////////////////////////////////////////////////////////////////
     // Class loading related things
@@ -371,6 +373,10 @@ public class WSDeploymentManager implements DeploymentManager {
         return instanceProperties;
     }
     
+    public boolean getIsConnected() {
+        return isConnected;
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // DeploymentManager Implementation
     ////////////////////////////////////////////////////////////////////////////
@@ -422,12 +428,22 @@ public class WSDeploymentManager implements DeploymentManager {
         // update the deployment manager
         updateDeploymentManager();
         
+       
+        
         // update the context classloader
         loader.updateLoader();
+        ModuleType type = deployableObject.getType();
         try {
-            // return the wrapper deployment configuration
-            return new WSDeploymentConfiguration(dm, deployableObject,
-                    getInstanceProperties());
+            InstanceProperties ip=getInstanceProperties();
+            if (type == ModuleType.WAR) {
+                return new WarDeploymentConfiguration(dm, deployableObject,ip);
+            } else if (type == ModuleType.EAR) {
+                return new EarDeploymentConfiguration(dm, deployableObject,ip);
+            } else if (type == ModuleType.EJB) {
+                return new EjbDeploymentConfiguration(dm, deployableObject,ip);
+            } else {
+                throw new InvalidModuleException("Unsupported module type: " + type.toString()); // NOI18N
+            }
         } finally {
             // restore the context classloader
             loader.restoreLoader();

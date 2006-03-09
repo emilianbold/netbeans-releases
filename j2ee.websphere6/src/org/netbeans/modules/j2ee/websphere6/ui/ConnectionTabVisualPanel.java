@@ -1,9 +1,15 @@
 /*
- * ConnectionTabVisualPanel.java
+ *                 Sun Public License Notice
  *
- * Created on 17 январь 2006 г., 21:59
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.j2ee.websphere6.ui;
 
 import java.util.Vector;
@@ -15,7 +21,6 @@ import org.netbeans.modules.j2ee.websphere6.WSURIManager;
 import org.netbeans.modules.j2ee.websphere6.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
-//import org.netbeans.modules.j2ee.websphere6.ui.wizard;
 /**
  *
  * @author  dlm198383

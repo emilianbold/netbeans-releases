@@ -113,6 +113,7 @@ public class WSInstantiatingIterator
             ip.setProperty(WSDeploymentFactory.DEBUGGER_PORT_ATTR, 
                     DEFAULT_DEBUGGER_PORT);
             ip.setProperty(WSDeploymentFactory.CONFIG_XML_PATH, configXmlPath);
+            ip.setProperty(WSDeploymentFactory.ADMIN_PORT_ATTR, adminPort);
             
             // add the created instance properties to the result set
             result.add(ip);
@@ -171,6 +172,7 @@ public class WSInstantiatingIterator
     private String password;
     private String serverName;
     private String configXmlPath;
+    private String adminPort;
     
     /**
      * Setter for the server installation directory
@@ -336,6 +338,14 @@ public class WSInstantiatingIterator
      */
     public void setConfigXmlPath(String configXmlPath) {
         this.configXmlPath = configXmlPath;
+    }
+    
+    public String getAdminPort() {
+        return adminPort;
+    }
+    
+    public void setAdminPort(String adminPort) {
+        this.adminPort = adminPort;
     }
     
     ////////////////////////////////////////////////////////////////////////////

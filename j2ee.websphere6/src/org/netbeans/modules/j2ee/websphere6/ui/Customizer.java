@@ -1,14 +1,4 @@
 /*
- * Customizer.java
- *
- * Created on 18 январь 2006 г., 15:26
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
-
-/*
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -46,7 +36,6 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
  *
  * @author Dmitry Lipin 
  */
-
 public class Customizer extends JTabbedPane {
 
     private static final String CLASSPATH = J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH;

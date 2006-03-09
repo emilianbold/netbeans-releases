@@ -77,6 +77,8 @@ public class WSTailer extends Thread {
      */
     public void run() {
         try {
+            this.io.select();
+            
             // check the source for the tailing, if it is a file we create a 
             // new FileInputStream
             if (file != null) {
