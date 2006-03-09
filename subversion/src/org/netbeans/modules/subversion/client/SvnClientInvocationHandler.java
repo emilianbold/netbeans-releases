@@ -14,6 +14,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -41,9 +42,9 @@ public class SvnClientInvocationHandler implements InvocationHandler {
      * @see InvocationHandler#invoke(Object proxy, Method method, Object[] args)
      */
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {               
-        
-        // TODO assert that no method is called from AWT
-        
+
+        assert !SwingUtilities.isEventDispatchThread();    
+
         try {             
             Class[] parameters = method.getParameterTypes();        
             Method thisMethod = adapter.getClass().getMethod(method.getName(), parameters);        
