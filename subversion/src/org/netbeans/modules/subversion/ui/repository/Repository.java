@@ -55,11 +55,11 @@ public class Repository implements ActionListener, DocumentListener {
     private RequestProcessor.Task updatePasswordTask;
     private volatile boolean internalDocumentChange;   
     private boolean passwordExpected;        
-    private boolean valid = false;
+    private boolean valid = true;
     private boolean userVisitedProxySettings;
     private List listeners;
 
-    public static final String PROP_VALID = "valid";
+    public static final String PROP_VALID = "valid"; // XXX do it via a changelistener
 
     private String message;
 
@@ -394,8 +394,9 @@ public class Repository implements ActionListener, DocumentListener {
 
     private void setValid(boolean valid, String message) {
         boolean oldValue = this.valid;
+        String oldMessage = this.message;
         this.message = message;
-        if(oldValue != valid) {
+        if(oldValue != valid || oldMessage != message) {
             this.valid = valid;
             fireValidPropertyChanged(oldValue, valid);
         };

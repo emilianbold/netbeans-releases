@@ -36,7 +36,7 @@ public final class CheckoutWizard implements ChangeListener {
     
     private WizardDescriptor.Panel[] panels;
     private RepositoryStep repositoryStep;
-    private CheckoutStep workdirStep;        
+    private CheckoutStep checkoutStep;        
     
     private String errorMessage;
     private WizardDescriptor wizardDescriptor;
@@ -69,7 +69,7 @@ public final class CheckoutWizard implements ChangeListener {
     
     /** Called on sucessfull finish. */
     private void onFinished() {
-        String checkout = workdirStep.getWorkdir().getPath();
+        String checkout = checkoutStep.getWorkdir().getPath();
         HistorySettings.addRecent(HistorySettings.PROP_CHECKOUT_DIRECTORY, checkout);
     }
 
@@ -81,7 +81,13 @@ public final class CheckoutWizard implements ChangeListener {
     }
 
     public void stateChanged(ChangeEvent e) {
+        if(wizardIterator==null) {
+            return;
+        }
         AbstractStep step = (AbstractStep) wizardIterator.current();
+        if(step==null) {
+            return;
+        }
         setErrorMessage(step.getErrorMessage());
     }
     
@@ -95,10 +101,12 @@ public final class CheckoutWizard implements ChangeListener {
 
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];
-            repositoryStep = new RepositoryStep(true);            
-            workdirStep = new CheckoutStep();            
-
-            panels = new  WizardDescriptor.Panel[] {repositoryStep, workdirStep};
+            repositoryStep = new RepositoryStep(true);
+            repositoryStep.addChangeListener(CheckoutWizard.this);
+            checkoutStep = new CheckoutStep();            
+            checkoutStep.addChangeListener(CheckoutWizard.this);
+            
+            panels = new  WizardDescriptor.Panel[] {repositoryStep, checkoutStep};
 
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
@@ -126,18 +134,18 @@ public final class CheckoutWizard implements ChangeListener {
 
         public void nextPanel() {          
             if(current() == repositoryStep) {
-                workdirStep.setup(repositoryStep.getRepositoryFile());
+                checkoutStep.setup(repositoryStep.getRepositoryFile());
             }            
             super.nextPanel();
         }
     }
     
     public RepositoryFile[] getRepositoryFiles() {
-        return workdirStep.getRepositoryFiles();
+        return checkoutStep.getRepositoryFiles();
     }
     
     public File getWorkdir() {
-        return workdirStep.getWorkdir();
+        return checkoutStep.getWorkdir();
     }
 
     public SVNUrl getRepositoryRoot() {

@@ -61,9 +61,8 @@ public class ImportStep extends AbstractStep implements DocumentListener {
     }   
 
     private boolean validateUserInput() {
-        String text = messagePanel.repositoryPathTextField.getText();
+        String text = messagePanel.repositoryPathTextField.getText().trim();
         if (text == null || text.length() == 0) {
-            // XXX can't see the message
             invalid(org.openide.util.NbBundle.getMessage(ImportStep.class, "BK2014"));
             return false;
         }        
@@ -96,7 +95,7 @@ public class ImportStep extends AbstractStep implements DocumentListener {
         validateUserInput();
     }
 
-    public String getMessage() {
+    public String getImportMessage() {
         return messagePanel.messageTextArea.getText();
     }
 
