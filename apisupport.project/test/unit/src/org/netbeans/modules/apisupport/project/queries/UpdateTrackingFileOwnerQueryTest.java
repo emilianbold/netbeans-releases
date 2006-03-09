@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -43,7 +43,7 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
         assertOwnership("ant", "nbbuild/netbeans/ide8/config/Modules/org-apache-tools-ant-module.xml");
         assertOwnership("ant", "nbbuild/netbeans/ide8/update_tracking/org-apache-tools-ant-module.xml");
         // Different pattern match ("modules/ext/jh*.jar"):
-        assertOwnership("core/javahelp", "nbbuild/netbeans/platform7/modules/ext/jh-2.0_02.jar");
+        assertOwnership("core/javahelp", "nbbuild/netbeans/platform7/modules/ext/jh-2.0_03.jar");
         // Use of release dir:
         assertOwnership("extbrowser", "nbbuild/netbeans/ide8/modules/lib/extbrowser.dll");
     }
