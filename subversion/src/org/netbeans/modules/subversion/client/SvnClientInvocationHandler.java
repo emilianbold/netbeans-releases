@@ -94,6 +94,11 @@ public class SvnClientInvocationHandler implements InvocationHandler {
      * @return false for methods that perform calls over network
      */
     private static boolean noRemoteCallinAWT(Method method, Object[] args) {
+
+        if(!SwingUtilities.isEventDispatchThread()) {
+            return true;
+        }
+
         String name = method.getName();
         if (remoteMethods.contains(name)) {
             return false;
