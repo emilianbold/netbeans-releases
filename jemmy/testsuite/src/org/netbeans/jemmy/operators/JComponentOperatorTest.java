@@ -177,7 +177,8 @@ public class JComponentOperatorTest extends TestCase {
         JComponentOperator operator1 = new JComponentOperator(operator);
         assertNotNull(operator1);
         
-        operator1.showToolTip();
+        // TODO: disabled, because this test currently requires user interaction.
+        // operator1.showToolTip();
     }
     
     /**
@@ -192,7 +193,8 @@ public class JComponentOperatorTest extends TestCase {
         JComponentOperator operator1 = new JComponentOperator(operator);
         assertNotNull(operator1);
         
-        operator1.waitToolTip();
+        // TODO: disabled, because this test currently requires user interaction.
+        // operator1.waitToolTip();
     }
     
     /**
