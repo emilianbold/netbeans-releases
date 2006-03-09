@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.jnlp
+OpenIDE-Module-Specification-Version: 0.8
+OpenIDE-Module-Layer: org/netbeans/modules/java/jnlp/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/java/jnlp/Bundle.properties
+
+
+Name: org/netbeans/modules/java/jnlp/core/JNLPDataLoader.class
+OpenIDE-Module-Class: Loader
+
+
