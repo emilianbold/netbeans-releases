@@ -97,18 +97,21 @@ public class RepositoryPaths implements ActionListener {
     }            
     
     public RepositoryFile[] getRepositoryFiles() throws MalformedURLException, NumberFormatException {
+
+        SVNRevision revision = getRevision();
+
         if(repositoryPathTextField.getText().equals("")) {
             return EMPTY_REPOSITORY_FILES;
         }
-        
-        String[] paths = repositoryPathTextField.getText().trim().split(",");
-        RepositoryFile[] ret = new RepositoryFile[paths.length];
-        SVNUrl repositoryUrl = getRepositoryUrl();
-        SVNRevision revision = getRevision();
         if(revision == null) {
             // should not be possible to get here!
             return EMPTY_REPOSITORY_FILES;
-        }
+        }        
+        String[] paths = repositoryPathTextField.getText().trim().split(",");
+        RepositoryFile[] ret = new RepositoryFile[paths.length];
+        SVNUrl repositoryUrl = getRepositoryUrl();
+
+
         
         for (int i = 0; i < paths.length; i++) {
             String path = paths[i].trim();

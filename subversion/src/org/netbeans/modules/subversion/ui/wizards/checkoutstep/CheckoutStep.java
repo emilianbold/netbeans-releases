@@ -61,7 +61,9 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
             workdirPanel.workdirTextField.getDocument().addDocumentListener(this);                
             workdirPanel.workdirTextField.addFocusListener(this);
             workdirPanel.repositoryPathTextField.getDocument().addDocumentListener(this);        
-            workdirPanel.repositoryPathTextField.addFocusListener(this);                           
+            workdirPanel.repositoryPathTextField.addFocusListener(this);
+            workdirPanel.revisionTextField.getDocument().addDocumentListener(this);
+            workdirPanel.revisionTextField.addFocusListener(this);
         }          
         validateUserInput(true);                                
         return workdirPanel;              
@@ -100,25 +102,12 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         }
     }
 
-    private boolean validateUserInput(boolean full) {
-        
-//        text = workdirPanel.repositoryPathTextField.getText();
-////        if (text == null || text.length() == 0) {            
-////            invalid(org.openide.util.NbBundle.getMessage(WorkdirStep.class, "BK2015"));// NOI18N
-////            return false;
-////        }
-//        
-//        try {
-//            new SVNUrl(repositoryPaths.getRepositoryUrl().toString() + "/" + text);
-//        } catch (MalformedURLException ex) {
-//            
-//        }
-        
+    private boolean validateUserInput(boolean full) {                
         if(repositoryPaths != null) {
             try {           
                 repositoryPaths.getRepositoryFiles();
             } catch (NumberFormatException ex) {
-                invalid(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2015"));// NOI18N
+                invalid(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2018"));// NOI18N
                 return false;
             } catch (MalformedURLException ex) {
                 invalid(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2015"));// NOI18N
@@ -145,7 +134,6 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
                         }
                         break;
                     }
-
                     parent = parent.getParentFile();
                 }
             } else {

@@ -127,8 +127,7 @@ public class Repository implements ActionListener, DocumentListener {
                         cancelPasswordUpdate();
                     }
                 }
-            });
-        
+            });        
         }
         
         Set recentRoots = new LinkedHashSet();
@@ -161,7 +160,7 @@ public class Repository implements ActionListener, DocumentListener {
         }
         textEditor.selectAll();
         textEditor.getDocument().addDocumentListener(this);
-                        
+
         onSelectedRepositoryChange();
         return repositoryPanel;
     }
