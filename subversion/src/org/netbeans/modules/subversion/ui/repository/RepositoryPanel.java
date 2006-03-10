@@ -47,8 +47,6 @@ public class RepositoryPanel extends javax.swing.JPanel {
 
         leaveBlankLabel.setText("(leave blank for anonymous access)");
 
-        userPasswordField.setText("jPasswordField1");
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(

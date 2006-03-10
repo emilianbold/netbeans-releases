@@ -28,12 +28,11 @@ import org.openide.util.HelpCtx;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
- * rename me
  * @author Tomas Stupka
  */
 public class ImportStep extends AbstractStep implements DocumentListener {
     
-    private ImportPanel messagePanel;
+    private ImportPanel importPanel;
 
     private RepositoryPaths repositoryPaths;
     private BrowserAction[] actions;
@@ -47,13 +46,13 @@ public class ImportStep extends AbstractStep implements DocumentListener {
     }    
 
     protected JComponent createComponent() {
-        if (messagePanel == null) {
-            messagePanel = new ImportPanel();            
-            messagePanel.messageTextArea.getDocument().addDocumentListener(this);            
-            messagePanel.repositoryPathTextField.getDocument().addDocumentListener(this);                       
+        if (importPanel == null) {
+            importPanel = new ImportPanel();            
+            importPanel.messageTextArea.getDocument().addDocumentListener(this);            
+            importPanel.repositoryPathTextField.getDocument().addDocumentListener(this);                       
         }         
         validateUserInput();        
-        return messagePanel;              
+        return importPanel;              
     }
 
     protected void validateBeforeNext() {        
@@ -61,13 +60,13 @@ public class ImportStep extends AbstractStep implements DocumentListener {
     }   
 
     private boolean validateUserInput() {
-        String text = messagePanel.repositoryPathTextField.getText().trim();
+        String text = importPanel.repositoryPathTextField.getText().trim();
         if (text == null || text.length() == 0) {
             invalid(org.openide.util.NbBundle.getMessage(ImportStep.class, "BK2014"));
             return false;
         }        
         
-        text = messagePanel.messageTextArea.getText().trim();
+        text = importPanel.messageTextArea.getText().trim();
         boolean valid = text.length() > 0;
         if(valid) {
             valid();
@@ -89,6 +88,7 @@ public class ImportStep extends AbstractStep implements DocumentListener {
     }
 
     public void focusGained(FocusEvent e) {
+        
     }
 
     public void focusLost(FocusEvent e) {
@@ -96,7 +96,7 @@ public class ImportStep extends AbstractStep implements DocumentListener {
     }
 
     public String getImportMessage() {
-        return messagePanel.messageTextArea.getText();
+        return importPanel.messageTextArea.getText();
     }
 
     public void setup(RepositoryFile repositoryFile) {
@@ -104,14 +104,14 @@ public class ImportStep extends AbstractStep implements DocumentListener {
             repositoryPaths = 
                 new RepositoryPaths (
                     repositoryFile,
-                    messagePanel.repositoryPathTextField,
-                    messagePanel.browseRepositoryButton
+                    importPanel.repositoryPathTextField,
+                    importPanel.browseRepositoryButton
                 );                   
             repositoryPaths.setupBrowserBehavior(true, false, actions);
         } else {
             repositoryPaths.setRepositoryFile(repositoryFile);
         }                                
-        messagePanel.repositoryPathTextField.setText(repositoryFile.getPath());        
+        importPanel.repositoryPathTextField.setText(repositoryFile.getPath());        
     }
 
     public SVNUrl getRepositoryFolderUrl() {
@@ -124,7 +124,7 @@ public class ImportStep extends AbstractStep implements DocumentListener {
     }
 
     public boolean checkoutAfterImport() {
-        return messagePanel.checkoutCheckBox.isSelected();
+        return importPanel.checkoutCheckBox.isSelected();
     }
 }
 

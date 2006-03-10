@@ -16,6 +16,8 @@ package org.netbeans.modules.subversion.ui.repository;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
@@ -48,7 +50,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  */
-public class Repository implements ActionListener, DocumentListener {
+public class Repository implements ActionListener, DocumentListener, FocusListener {
     
     private RepositoryPanel repositoryPanel;
     private ProxyDescriptor proxyDescriptor;   
@@ -118,8 +120,7 @@ public class Repository implements ActionListener, DocumentListener {
                         return;
                     }                    
                     PasswordFile passwordFile = PasswordFile.findFileForUrl(repository.getUrl());
-                    if (passwordFile !=null && passwordFile.getPassword() != null && passwordExpected) {                        
-                        //scrambledPassword = password;
+                    if (passwordFile !=null && passwordFile.getPassword() != null && passwordExpected) {                                                
                         internalDocumentChange = true;
                         repositoryPanel.userPasswordField.setText(passwordFile.getPassword());
                         repositoryPanel.userTextField.setText(passwordFile.getUsername());
@@ -160,6 +161,8 @@ public class Repository implements ActionListener, DocumentListener {
         }
         textEditor.selectAll();
         textEditor.getDocument().addDocumentListener(this);
+        
+        repositoryPanel.userPasswordField.addFocusListener(this);
 
         onSelectedRepositoryChange();
         return repositoryPanel;
@@ -427,6 +430,15 @@ public class Repository implements ActionListener, DocumentListener {
 
     public String getMessage() {
         return message;
+    }
+
+    public void focusGained(FocusEvent focusEvent) {
+        if(focusEvent.getSource()==repositoryPanel.userPasswordField) {
+            repositoryPanel.userPasswordField.selectAll();
+        }
+    }
+
+    public void focusLost(FocusEvent focusEvent) {
     }
     
 }
