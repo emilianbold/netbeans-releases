@@ -349,7 +349,7 @@ public class JPDAStart extends Task implements Runnable {
             String pathName = project.replaceProperties(paths[i]);
             File f = FileUtil.normalizeFile (project.resolveFile (pathName));
             if (!isValid (f, project)) continue;
-            URL url = fileToURL (f);
+            URL url = fileToURL (f, project);
             if (f == null) continue;
             l.add (url);
         }
@@ -373,7 +373,7 @@ public class JPDAStart extends Task implements Runnable {
             File file = FileUtil.normalizeFile 
                 (project.resolveFile (pathName));
             if (!isValid (file, project)) continue;
-            URL url = fileToURL (file);
+            URL url = fileToURL (file, project);
             if (url == null) continue;
             if (startVerbose)
                 System.out.println ("class: " + url);
@@ -416,12 +416,22 @@ public class JPDAStart extends Task implements Runnable {
     }
 
 
-    private static URL fileToURL (File file) {
+    private static URL fileToURL (File file, Project project) {
         try {
             FileObject fileObject = FileUtil.toFileObject (file);
             if (fileObject == null) return null;
-            if (FileUtil.isArchiveFile (fileObject))
+            if (FileUtil.isArchiveFile (fileObject)) {
                 fileObject = FileUtil.getArchiveRoot (fileObject);
+                if (fileObject == null) {
+                    project.log("Bad archive "+file.getAbsolutePath(), Project.MSG_WARN);
+                    /*
+                    ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(
+                            new NullPointerException("Bad archive "+file.toString()),
+                            NbBundle.getMessage(JPDAStart.class, "MSG_WrongArchive", file.getAbsolutePath())));
+                     */
+                    return null;
+                }
+            }
             return fileObject.getURL ();
         } catch (FileStateInvalidException e) {
             ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
