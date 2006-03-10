@@ -500,7 +500,7 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
 
         newMenu.add(createSmileButton(":-)", "emo_smiley", "Smile", listener));
         newMenu.add(createSmileButton(":-(", "emo_sad", "Frown", listener));
-        newMenu.add(createSmileButton(";-(", "emo_wink", "Wink", listener));
+        newMenu.add(createSmileButton(";-)", "emo_wink", "Wink", listener));
         newMenu.add(createSmileButton(":=)", "emo_laughing", "Laugh", listener));
         newMenu.add(createSmileButton("8-)", "emo_cool", "Cool", listener));
         newMenu.add(createSmileButton(":-D", "emo_grin", "Grin", listener));
