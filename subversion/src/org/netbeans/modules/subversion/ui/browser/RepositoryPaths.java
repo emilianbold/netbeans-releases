@@ -203,7 +203,6 @@ public class RepositoryPaths implements ActionListener {
         if(revisionString.equals("") || revisionString.equals(SVNRevision.HEAD.toString())) {
             return SVNRevision.HEAD;    
         }
-        // XXX check for wrong revision formats
         return new SVNRevision.Number(Long.parseLong(revisionString));        
     }       
     

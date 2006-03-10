@@ -53,11 +53,12 @@ public abstract class CopyDialog implements DocumentListener, FocusListener {
         dialogDescriptor = new DialogDescriptor(panel, title); 
         
         okButton = new JButton(okLabel);
+        okButton.setEnabled(false);
         dialogDescriptor.setOptions(new Object[] {okButton, "Canel"});
         
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
-        dialogDescriptor.setValid(false);                                                
+        dialogDescriptor.setValid(false);
     }
     
     protected void setupUrlComboBox(JComboBox cbo, String key) {        

@@ -44,7 +44,7 @@ public class CreateCopy extends CopyDialog {
         repositoryPaths.setupBrowserBehavior(true, false, new BrowserAction[] { new CreateFolderAction(context)} );                
         
         setupUrlComboBox(panel.urlComboBox, CreateCopy.class.getName());
-        panel.messageTextArea.getDocument().addDocumentListener(this);        
+        panel.messageTextArea.getDocument().addDocumentListener(this);
     }    
     
     protected void validateUserInput() {        
