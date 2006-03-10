@@ -66,7 +66,7 @@ public final class BrandingSupport {
         this.suiteProject = suiteProperties.getProject();
         File suiteDir = FileUtil.toFile(suiteProject.getProjectDirectory());
         assert suiteDir != null && suiteDir.exists();
-        brandingDir = new File(suiteDir,NAME_OF_BRANDING_FOLDER);//NOI18N
+        brandingDir = new File(suiteDir, getNameOfBrandingFolder());//NOI18N
         init();        
     }        
     
@@ -81,7 +81,7 @@ public final class BrandingSupport {
      * @return the top-level branding directory
      */
     public File getBrandingRoot() {
-        return new File(getProjectDirectory(),NAME_OF_BRANDING_FOLDER);
+        return new File(getProjectDirectory(), getNameOfBrandingFolder());
     }
     
     /**
@@ -618,5 +618,10 @@ public final class BrandingSupport {
             return 0;
         }
         
+    }
+
+    public String getNameOfBrandingFolder() {
+        String retval = suiteProject.getEvaluator().getProperty("branding.dir");//NOI18N
+        return (retval != null) ? retval : NAME_OF_BRANDING_FOLDER;
     }
 }
