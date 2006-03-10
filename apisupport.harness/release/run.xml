@@ -86,7 +86,7 @@ Microsystems, Inc. All Rights Reserved.
                     </selector>
                 </fileset>
             </path>
-            <mapper type="regexp" from="[/\\]([^/\\]+)[/\\]config[/\\]Modules[/\\]" to="\1"/> <!-- #71849 -->
+            <mapper type="regexp" from="[/\\]([^/\\]+)[/\\](config[/\\]Modules|update_tracking)[/\\]" to="\1"/> <!-- #71849, #73494 -->
         </pathconvert>
         <fail message="Must have at least one cluster from the platform">
             <!-- Otherwise ${run.platform.clusters} gets filled with nonsense. -->
