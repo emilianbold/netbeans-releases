@@ -2185,8 +2185,7 @@ public class FileObjectTestHid extends TestBaseHid {
                 
         }
     }
-
-
+    
     /** Test of getURL method, of class org.openide.filesystems.FileObject. */
     public void  testGetURL() throws Exception {
         checkSetUp();
@@ -2212,7 +2211,7 @@ public class FileObjectTestHid extends TestBaseHid {
             String path2 = path1 + f2.getNameExt();
             assertNull("No query for " + uri1, uri1.getQuery());
             assertNull("No fragment for " + uri1, uri1.getFragment());
-            URI uri2 = new URI(uri1.getScheme(), uri1.getAuthority(), path2, null, null);
+            URI uri2 = new URI(uri1.getScheme(), path2, null);
             Repository.getDefault().addFileSystem(fs); // so that fFO will work
             FileObject[] fos;
             try {
