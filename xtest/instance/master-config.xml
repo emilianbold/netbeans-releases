@@ -98,9 +98,6 @@ Microsystems, Inc. All Rights Reserved.
         <!-- does not run: core/multiview -->
         <!-- other candidate modules in current default moduleconfig: debuggercore debuggerjpda editor editor/fold editor/util httpserver mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks web/core web/jspparser xml/api xml/core xml/schema xml/text-edit xml/xsl -->
         
-        <!-- a bit of contrib modules -->
-        <module name="contrib/sendopts" testtypes="unit" attributes="stable" />
-        
     </config>
     
   <config name="unit-nb-nbm">
