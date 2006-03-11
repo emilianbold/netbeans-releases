@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -15,6 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="clean" description="clean all subprojects">
     <ant antfile="asbundle/build.xml" target="clean" inheritAll="false"/>
+    <ant antfile="cnd/build.xml" target="clean" inheritAll="false"/>
     <ant antfile="coreide/build.xml" target="clean" inheritAll="false"/>
     <ant antfile="j2ee/build.xml" target="clean" inheritAll="false"/>
     <ant antfile="jdkbundle/build.xml" target="clean" inheritAll="false"/>
