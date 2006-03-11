@@ -1,0 +1,38 @@
+/*
+ * __NAME__.java
+ * NetBeans JUnit based test
+ *
+ * Created on __DATE__, __TIME__
+ */                
+
+package Template.Classes;
+ 
+import junit.framework.*;
+import org.netbeans.junit.*;
+         
+/**
+ *
+ * @author __USER__                       
+ */
+public class SimpleNbJUnitTest extends NbTestCase {
+
+    public SimpleNbJUnitTest(java.lang.String testName) {
+        super(testName);
+    }        
+        
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+    
+    public static Test suite() {
+        TestSuite suite = new NbTestSuite(__NAME__.class);
+        return suite;
+    }            
+    
+    // Add test methods here, they have to start with 'test' name.
+    // for example: 
+    // public void testHello() {}
+
+
+
+}

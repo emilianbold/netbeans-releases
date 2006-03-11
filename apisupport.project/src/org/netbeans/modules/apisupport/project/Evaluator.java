@@ -314,14 +314,20 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         "${netbeans.dest.dir}/ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/ext/nbjunit.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/ext/insanelib.jar:" + // NOI18N
+                        "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar:" + // NOI18N, new for 6.0
+                        "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar:" + // NOI18N, new for 6.0
                         "${netbeans.home}/../ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/ext/nbjunit.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/ext/insanelib.jar:" + // NOI18N
+                        "${netbeans.home}/../testtools/modules/org-netbeans-modules-nbjunit.jar:" + // NOI18N, new for 6.0
+                        "${netbeans.home}/../testtools/modules/org-netbeans-modules-nbjunit-ide.jar:" + // NOI18N, new for 6.0
                         "${netbeans.user}/modules/ext/nbjunit.jar:" + // NOI18N
                         "${netbeans.user}/modules/ext/insanelib.jar:" + // NOI18N
                         "${netbeans.dest.dir}/../../xtest/lib/junit.jar:" + // NOI18N
                         "${netbeans.dest.dir}/../../xtest/lib/nbjunit.jar:" + // NOI18N
-                        "${netbeans.dest.dir}/../../xtest/lib/insanelib.jar"; // NOI18N
+                        "${netbeans.dest.dir}/../../xtest/lib/insanelib.jar:" + // NOI18N
+                        "${netbeans.user}/modules/org-netbeans-modules-nbjunit.jar:" + // NOI18N, new for 6.0
+                        "${netbeans.user}/modules/org-netbeans-modules-nbjunit-ide.jar"; // NOI18N, new for 6.0
             }
             buildDefaults.put("test.unit.cp", "${cp}:${cluster}/${module.jar}:" + testJars + ":${test.unit.cp.extra}"); // NOI18N
             buildDefaults.put("test.unit.run.cp.extra", ""); // NOI18N

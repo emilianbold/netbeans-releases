@@ -102,3 +102,4 @@ Microsystems, Inc. All Rights Reserved.
 <link href="${javadoc.docs.org-netbeans-api-web-webmodule}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-web-webmodule"/>
 <link href="${javadoc.docs.org-netbeans-modules-editor-codetemplates}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-editor-codetemplates"/>
 <link href="${javadoc.docs.org-netbeans-modules-sendopts}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-sendopts"/>
+<link href="${javadoc.docs.org-netbeans-modules-nbjunit-ide}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-nbjunit-ide"/>

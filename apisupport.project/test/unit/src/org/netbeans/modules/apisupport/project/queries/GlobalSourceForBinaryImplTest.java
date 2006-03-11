@@ -87,8 +87,8 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
     }
     
     public void testResolveSpecialNBSrcPaths() throws Exception {
-        assertResolved("testtools/modules/ext/nbjunit.jar", "xtest/nbjunit/src");
-        assertResolved("testtools/modules/ext/nbjunit-ide.jar", "xtest/nbjunit/src");
+//        assertResolved("testtools/modules/ext/nbjunit.jar", "xtest/nbjunit/src");
+//        assertResolved("testtools/modules/ext/nbjunit-ide.jar", "xtest/nbjunit/src");
         assertTrue("performance.netbeans.org checked out", file("performance").isDirectory());
         assertResolved("testtools/modules/ext/insanelib.jar", "performance/insanelib/src");
     }

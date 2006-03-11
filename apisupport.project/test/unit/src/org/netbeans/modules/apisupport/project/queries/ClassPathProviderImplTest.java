@@ -98,7 +98,10 @@ public class ClassPathProviderImplTest extends TestBase {
     }
     
     private static final Set/*<String>*/ TESTLIBS = new HashSet(Arrays.asList(new String[] {
-        "junit.jar", "nbjunit.jar", "nbjunit-ide.jar", "insanelib.jar"}));
+        "junit.jar", "nbjunit.jar", "nbjunit-ide.jar", "insanelib.jar",
+        "org-netbeans-modules-nbjunit.jar",
+        "org-netbeans-modules-nbjunit-ide.jar",
+    }));
     private Set/*<String>*/ urlsOfCp4Tests(ClassPath cp) {
         Set/*<String>*/ s = new TreeSet();
         Iterator it = cp.entries().iterator();
@@ -308,6 +311,8 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add("junit.jar");
         expectedRoots.add("nbjunit.jar");
         expectedRoots.add("insanelib.jar");
+        expectedRoots.add("org-netbeans-modules-nbjunit.jar");
+        expectedRoots.add("org-netbeans-modules-nbjunit-ide.jar");
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
         // Now test in suite3, where there is no source...
         src = extexamples.getFileObject("suite3/dummy-project/test/unit/src");
@@ -320,6 +325,8 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add("junit.jar");
         expectedRoots.add("nbjunit.jar");
         expectedRoots.add("insanelib.jar");
+        expectedRoots.add("org-netbeans-modules-nbjunit.jar");
+        expectedRoots.add("org-netbeans-modules-nbjunit-ide.jar");
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
     }
     
@@ -362,6 +369,8 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add("insanelib.jar");
         expectedRoots.add(urlForJar("jemmy/builds/jemmy.jar"));
         expectedRoots.add(urlForJar("jellytools/builds/jelly2-nb.jar"));
+        expectedRoots.add("org-netbeans-modules-nbjunit.jar");
+        expectedRoots.add("org-netbeans-modules-nbjunit-ide.jar");
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
         TestBase.TestPCL l = new TestBase.TestPCL();
         cp.addPropertyChangeListener(l);
@@ -497,6 +506,8 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add("junit.jar");
         expectedRoots.add("nbjunit.jar");
         expectedRoots.add("insanelib.jar");
+        expectedRoots.add("org-netbeans-modules-nbjunit.jar");
+        expectedRoots.add("org-netbeans-modules-nbjunit-ide.jar");
         assertEquals("right initial COMPILE classpath", expectedRoots.toString(), urlsOfCp4Tests(cp).toString());
         TestBase.TestPCL l = new TestBase.TestPCL();
         cp.addPropertyChangeListener(l);
