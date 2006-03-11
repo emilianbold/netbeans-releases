@@ -14,42 +14,16 @@ Microsystems, Inc. All Rights Reserved.
 <project name="xtest/nbjunit" basedir="." default="netbeans">
 
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <target name="compile" depends="init">
-        <copy file="../external/insanelib.jar" todir="${cluster}/modules/ext"/>
-        <antcall target="projectized-common.compile"/>
-    </target>
     
-    <!-- Called after jar target and before module-* targets in projectized.xml -->
-    <target name="netbeans-extra" depends="jar-nbjunit,javadoc">
-        <copy file="${netbeans.javadoc.dir}/org-netbeans-modules-nbjunit.zip" todir="${cluster}/docs"/>
+    <target name="files-init" depends="projectized-common.files-init">
+        <copy file="../external/insanelib.jar" todir="${cluster}/modules/ext"/>
     </target>
 
-    <!-- XXX this is a mess; should use separate source roots for main module, nbjunit.jar, and nbjunit-ide.jar -->
-    <target name="jar" depends="init,compile,jar-prep">
-        <jarwithmoduleattributes jarfile="${cluster}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
-            <!-- includes only module resources because other classes are in library jars (target jar-nbjunit). -->
-            <fileset dir="${build.classes.dir}" includes="**/resources/**"/>
-        </jarwithmoduleattributes>
+    <target name="netbeans-extra" depends="projectized-common.netbeans-extra">
+        <mkdir dir="build/javadoc"/>
+        <ant dir="." target="javadoc" inheritall="false">
+            <property name="netbeans.javadoc.dir" location="build/javadoc"/>
+        </ant>
+        <copy file="build/javadoc/org-netbeans-modules-nbjunit.zip" todir="${cluster}/docs"/>
     </target>
-
-    <!-- build nbjunit libraries -->
-    <target name="jar-nbjunit" depends="compile">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <jar jarfile="${cluster}/modules/ext/nbjunit.jar"
-            basedir="${build.classes.dir}"
-            excludesfile="../../nbbuild/standard-jar-excludes.txt"
-            compress="true"
-            includes="org/netbeans/junit/**"
-            excludes="org/netbeans/junit/ide/**,org/netbeans/junit/resources/**"
-        />
-        <!-- Project support available in test cases -->
-        <jar jarfile="${cluster}/modules/ext/nbjunit-ide.jar"
-            basedir="${build.classes.dir}"
-            excludesfile="../../nbbuild/standard-jar-excludes.txt"
-            compress="true"
-            includes="org/netbeans/junit/ide/**"
-        />
-    </target>
-
 </project>

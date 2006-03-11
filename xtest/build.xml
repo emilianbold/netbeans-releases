@@ -16,13 +16,36 @@ Microsystems, Inc. All Rights Reserved.
     <property name="netbeans.dest.dir" location="../nbbuild/netbeans"/>
     <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
     <property file="build.properties"/>
+
+    <condition property="do.not.need.to.prepare.nbjunit">
+        <and>
+            <available file="lib/nbjunit.jar"/>
+            <available file="lib/insanelib.jar"/>
+            <available file="lib/nbjunit-ide.jar"/>
+        </and>
+    </condition>
     
-    <target name="prepare-nbjunit"> 
-        <ant dir="nbjunit" target="jar-nbjunit" inheritAll="false"/>
+    
+    <target name="prepare-nbjunit" unless="do.not.need.to.prepare.nbjunit"> 
+        <ant dir="nbjunit" target="jar" inheritAll="false"/>
+        <ant dir="nbjunit/ide" target="jar" inheritAll="false"/>
         <!-- Need to initialize ${xtest/nbjunit.dir} property -->
         <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
-        <copy file="${xtest/nbjunit.dir}/modules/ext/nbjunit.jar" todir="lib"/>
-        <copy file="${xtest/nbjunit.dir}/modules/ext/nbjunit-ide.jar" todir="lib"/>
+
+        <!-- to keep compatibility, just copy the content of the JARs but not its manifest -->
+        <jar jarfile="lib/nbjunit.jar">
+            <zipfileset src="${xtest/nbjunit.dir}/modules/org-netbeans-modules-nbjunit.jar">
+                <include name="**/*"/>
+                <exclude name="META-INF/MANIFEST.MF"/>
+            </zipfileset>
+        </jar>
+        <jar jarfile="lib/nbjunit-ide.jar">
+            <zipfileset src="${xtest/nbjunit/ide.dir}/modules/org-netbeans-modules-nbjunit-ide.jar">
+                <include name="**/*"/>
+                <exclude name="META-INF/MANIFEST.MF"/>
+            </zipfileset>
+        </jar>
+        <copy file="${xtest/nbjunit.dir}/modules/ext/insanelib.jar" todir="lib"/>
     </target>
 
     <target name="compile" depends="prepare-nbjunit">
@@ -32,7 +55,6 @@ Microsystems, Inc. All Rights Reserved.
             debug="${build.compiler.debug}" source="1.4">
             <classpath path="${basecp}"/> 
         </javac>
-
     </target>
   
 
