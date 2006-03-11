@@ -489,7 +489,8 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
                     }
                     //No order is defined.
                     if (orderLength == 0) {
-                        String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty3," + dest + ")");
+                        String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty3," + dest + ","
+                        + BUNDLE + "Product.baseName))");
                         showErrorMsg(title,msg);
                         return false;
                     }
@@ -513,12 +514,14 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
                     }
                     if (currentIndex < installedIndex) {
                         //Newer version is installed ie. currentUID < installedUID
-                        String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty4," + dest + ")");
+                        String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty4," + dest + ","
+                        + BUNDLE + "Product.baseName))");
                         showErrorMsg(title,msg);
                         return false;
                     } else if (currentIndex > installedIndex) {
                         //Older version is installed ie. currentUID > installedUID
-                        String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty2," + dest + ")");
+                        String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty2," + dest + ","
+                        + BUNDLE + "Product.baseName))");
                         String uninstall = "Uninstall";
                         String cancel = "Cancel";
                         Object ret = getWizard().getServices().getUserInput(title, msg, new Object [] {uninstall,cancel},cancel);
@@ -531,7 +534,8 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
                         }
                     } else {
                         //The same version
-                        String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty3," + dest + ")");
+                        String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty3," + dest + ","
+                        + BUNDLE + "Product.baseName))");
                         String uninstall = "Uninstall";
                         String cancel = "Cancel";
                         Object ret = getWizard().getServices().getUserInput(title, msg, new Object [] {uninstall,cancel},cancel);
@@ -546,12 +550,14 @@ public class NbSelectionPanel extends DirectoryChooserPanel {
                 } else {
                     if (currentUID.compareTo(installedUID) < 0) {
                         //Newer version is installed ie. currentUID < installedUID
-                        String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty4," + dest + ")");
+                        String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty4," + dest + ","
+                        + BUNDLE + "Product.baseName))");
                         showErrorMsg(title,msg);
                         return false;
                     } else if (currentUID.compareTo(installedUID) > 0) {
                         //Older version is installed ie. currentUID > installedUID
-                        String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty2," + dest + ")");
+                        String msg = resolveString(BUNDLE + "NetBeansDirChooser.notEmpty2," + dest + ","
+                        + BUNDLE + "Product.baseName))");
                         String uninstall = "Uninstall";
                         String cancel = "Cancel";
                         Object ret = getWizard().getServices().getUserInput(title, msg, new Object [] {uninstall,cancel},cancel);

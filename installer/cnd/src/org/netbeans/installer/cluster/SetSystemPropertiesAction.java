@@ -109,22 +109,22 @@ public class SetSystemPropertiesAction extends WizardAction {
             service.setRetainedProductBeanProperty
             (ProductService.DEFAULT_PRODUCT_SOURCE, "beanProduct", "key", keyObject);
             
-            // ------------------ Profiler Cluster -----------------------------
+            // ------------------ CND Cluster -----------------------------
             keyObject = (SoftwareObjectKey) service.getProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "beanProfilerCluster", "key");
-            key = resolveString("$L(org.netbeans.installer.cluster.Bundle,ProfilerCluster.UID)");
-            logEvent(this, Log.DBG,"Profiler Cluster UID: " + key);
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "beanCNDCluster", "key");
+            key = resolveString("$L(org.netbeans.installer.cluster.Bundle, CNDCluster.UID)");
+            logEvent(this, Log.DBG,"CND Cluster UID: " + key);
             keyObject.setUID(key);
             
             version = new SoftwareVersion();
             version.setMajor(major);
             version.setMinor(minor);
             version.setMaintenance(maintenance);
-            logEvent(this, Log.DBG,"Profiler Cluster version: " + getStringForm(version));
+            logEvent(this, Log.DBG,"CND Cluster version: " + getStringForm(version));
             keyObject.setVersion(version);
             
             service.setRetainedProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE, "beanProfilerCluster", "key", keyObject);
+            (ProductService.DEFAULT_PRODUCT_SOURCE, "beanCNDCluster", "key", keyObject);
         } catch (ServiceException ex) {
             ex.printStackTrace();
             Util.logStackTrace(this,ex);

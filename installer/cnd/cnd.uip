@@ -215,7 +215,7 @@
         </key>
         <built>19700001 010000.000 0100</built>
         <name>$L(org.netbeans.installer.cluster.Bundle, Product.name)</name>
-        <displayName>NetBeans Profiler</displayName>
+        <displayName>NetBeans C/C++ Development Pack</displayName>
         <localizedDisplayName>$L(org.netbeans.installer.cluster.Bundle, Product.displayName)</localizedDisplayName>
         <description>$L(org.netbeans.installer.cluster.Bundle, Product.description)</description>
         <vendor>$L(org.netbeans.installer.cluster.Bundle, Product.vendor)</vendor>
@@ -237,14 +237,14 @@
         <uninstallPrecedence>-1</uninstallPrecedence>
         <comments/>
         <conditionOperator>AND</conditionOperator>
-        <component id="beanProfilerCluster">
+        <component id="beanCNDCluster">
             <key>
                 <uid>26c26781a1d4b2bfcc6780d690000000</uid>
                 <version maintenance="0" major="0" minor="0"/>
             </key>
             <built>19700001 010000.000 0100</built>
-            <name>Profiler Cluster</name>
-            <displayName>Profiler Cluster</displayName>
+            <name>CND Cluster</name>
+            <displayName>CND Cluster</displayName>
             <shareable>true</shareable>
             <activeForUninstall>true</activeForUninstall>
             <active>true</active>
