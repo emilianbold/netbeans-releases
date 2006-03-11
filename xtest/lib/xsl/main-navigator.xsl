@@ -8,7 +8,7 @@
  http://www.sun.com/
  
  The Original Code is NetBeans. The Initial Developer of the Original
- Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  Microsystems, Inc. All Rights Reserved.
 
 -->
@@ -84,6 +84,10 @@
 					</UL>				
 				</xsl:for-each>
 			</UL>
+                        
+                        <xsl:if test="count(document('testreport-performance.xml',/*)/XTestResultsReport/TestRun/TestBag/UnitTestSuite/Data/PerformanceData)!=0">
+                			<BR/><LI><A HREF="testreport-performance.html" TARGET="report">Performance Results</A></LI>	
+			</xsl:if>
 		</UL>
 		<UL>
 			<LI><A HREF="../index.html" TARGET="_top">Home</A></LI>

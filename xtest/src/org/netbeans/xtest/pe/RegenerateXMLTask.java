@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -447,11 +447,9 @@ public class RegenerateXMLTask extends Task{
                         exist_perf = true;
                     }
                 }
-                if (exist_perf) {
-                    debugInfo("regenerateTestRun(): serializing new testrun with performance");
-                    testRun.xmlel_TestBag = testBagsWithPerformance;
-                    SerializeDOM.serializeToFile(testRun.toDocument(),testRunPerformanceFile);      
-                }
+                debugInfo("regenerateTestRun(): serializing new testrun with performance");
+                testRun.xmlel_TestBag = testBagsWithPerformance;
+                SerializeDOM.serializeToFile(testRun.toDocument(),testRunPerformanceFile);
             }
                         
             // here delete all suites - no longer needed
@@ -567,19 +565,12 @@ public class RegenerateXMLTask extends Task{
                 File testReportPerformanceFile = new File(testReportResultsDir,PEConstants.TESTREPORT_PERFORMANCE_XML_FILE);
                 TestRun[] testRunsWithPerformance = new TestRun[testRunsDirs.length];
                 debugInfo("regenerateTestReport(): loading testruns with performance");
-                boolean empty_report = true;
                 for (int i=0;i<testReport.xmlel_TestRun.length;i++) {
                     testRunsWithPerformance[i] = ResultsUtils.getTestRun(new File(testRunsDirs[i],PEConstants.XMLRESULTS_DIR+File.separator+PEConstants.TESTRUN_PERFORMANCE_XML_FILE));
-                    if (testRunsWithPerformance[i].xmlel_TestBag == null || testRunsWithPerformance[i].xmlel_TestBag.length == 0)
-                        testRunsWithPerformance[i] = null;
-                    if (testRunsWithPerformance[i] != null) 
-                        empty_report = false;
                 }
-                if (!empty_report) {
-                    debugInfo("regenerateTestReport(): serializing new testrun with performance");
-                    testReport.xmlel_TestRun = testRunsWithPerformance;
-                    SerializeDOM.serializeToFile(testReport.toDocument(),testReportPerformanceFile);          
-                }
+                debugInfo("regenerateTestReport(): serializing new testrun with performance");
+                testReport.xmlel_TestRun = testRunsWithPerformance;
+                SerializeDOM.serializeToFile(testReport.toDocument(),testReportPerformanceFile);
             }
             
             testReport.xmlel_SystemInfo = si;
