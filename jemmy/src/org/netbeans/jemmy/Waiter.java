@@ -1,20 +1,22 @@
 /*
+ * $Id$
+ *
+ * ---------------------------------------------------------------------------
+ *
  * Sun Public License Notice
- * 
- * The contents of this file are subject to the Sun Public License Version
- * 1.0 (the "License"). You may not use this file except in compliance with
- * the License. A copy of the License is available at http://www.sun.com/
- * 
- * The Original Code is the Jemmy library.
- * The Initial Developer of the Original Code is Alexandre Iline.
- * All Rights Reserved.
- * 
- * Contributor(s): Alexandre Iline.
- * 
- * $Id$ $Revision$ $Date$
- * 
+ *
+ * The contents of this file are subject to the Sun Public License Version 1.0
+ * (the "License"). You may not use this file except in compliance with the
+ * License. A copy of the License is available at http://www.sun.com/.
+ *
+ * The Original Code is the Jemmy library. The Initial Developer of the
+ * Original Code is Alexandre Iline. All Rights Reserved.
+ *
+ * ---------------------------------------------------------------------------
+ *
+ * Contributor(s): Alexandre Iline,
+ *                 Manfred Riem (mriem@netbeans.org).
  */
-
 package org.netbeans.jemmy;
 
 import java.awt.Component;
@@ -53,8 +55,15 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
      */
     public Waiter(Waitable w) {
 	super();
-	setTimeouts(JemmyProperties.getProperties().getTimeouts());
-	setOutput(JemmyProperties.getProperties().getOutput());
+        // TODO: refactor code to get timeouts from another place, because 
+        //       JemmyProperties initializes the Robot.
+	// setTimeouts(JemmyProperties.getProperties().getTimeouts());
+        // TODO: refactor code to use JDK logging.
+	// setOutput(JemmyProperties.getProperties().getOutput());
+        timeouts = new Timeouts();
+        timeouts.setTimeout("Waiter.TimeDelta", TIME_DELTA);
+        timeouts.setTimeout("Waiter.WaitingTime", WAIT_TIME);
+        timeouts.setTimeout("Waiter.AfterWaitingTime", AFTER_WAIT_TIME);
 	waitable = w;
     }
 
@@ -63,8 +72,15 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
      */
     protected Waiter() {
 	super();
-	setTimeouts(JemmyProperties.getProperties().getTimeouts());
-	setOutput(JemmyProperties.getProperties().getOutput());
+        // TODO: refactor code to get timeouts from another place, because 
+        //       JemmyProperties initializes the Robot.
+	// setTimeouts(JemmyProperties.getProperties().getTimeouts());
+        // TODO: refactor code to use JDK logging.
+	// setOutput(JemmyProperties.getProperties().getOutput());
+        timeouts = new Timeouts();
+        timeouts.setTimeout("Waiter.TimeDelta", TIME_DELTA);
+        timeouts.setTimeout("Waiter.WaitingTime", WAIT_TIME);
+        timeouts.setTimeout("Waiter.AfterWaitingTime", AFTER_WAIT_TIME);
     }
 
     static {
@@ -129,20 +145,20 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
     public Object waitAction(Object waitableObject)
 	throws InterruptedException {
 	startTime = System.currentTimeMillis();
-	out.printTrace(getWaitingStartedMessage());
-	out.printGolden(getGoldenWaitingStartedMessage());
+	// out.printTrace(getWaitingStartedMessage());
+	// out.printGolden(getGoldenWaitingStartedMessage());
 	long timeDelta = timeouts.getTimeout("Waiter.TimeDelta");
 	while((result = checkActionProduced(waitableObject)) == null) {
 	    Thread.currentThread().sleep(timeDelta);
 	    if(timeoutExpired()) {
-		out.printError(getTimeoutExpiredMessage(timeFromStart()));
-		out.printGolden(getGoldenTimeoutExpiredMessage());
+		// out.printError(getTimeoutExpiredMessage(timeFromStart()));
+		// out.printGolden(getGoldenTimeoutExpiredMessage());
 		throw(new TimeoutExpiredException(getActualDescription()));
 	    }
 	}
 	endTime = System.currentTimeMillis();
-	out.printTrace(getActionProducedMessage(endTime - startTime, result));
-	out.printGolden(getGoldenActionProducedMessage());
+	// out.printTrace(getActionProducedMessage(endTime - startTime, result));
+	//out.printGolden(getGoldenActionProducedMessage());
 	Thread.currentThread().sleep(timeouts.getTimeout("Waiter.AfterWaitingTime"));
 	return(result);
     }
