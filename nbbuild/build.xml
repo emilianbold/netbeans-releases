@@ -40,7 +40,15 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="bootstrap"
           description="Bootstrap NetBeans-specific Ant extensions."
-          depends="-jdk-init,-assure-jdk-1.4,assure-ant">
+          depends="-jdk-init,assure-ant">
+    <fail message="You need JDK 1.5 to build NetBeans">
+        <condition>
+            <not>
+                <isset property="have-jdk-1.5"/>
+            </not>
+        </condition>
+    </fail>
+
     <property file="build.properties"/>
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
     <property name="ant.jar" value="${ant.home}/lib/ant.jar"/>
