@@ -202,6 +202,9 @@ public class Annotator {
         }
     }
 
+    /**
+     * Applies custom format.
+     */
     private String formatAnnotation(FileInformation info, File file) {
         String statusString = "";  // NOI18N
         int status = info.getStatus();
@@ -221,15 +224,11 @@ public class Annotator {
             }
         }
 */
-        String stickyString = "";
-/*
-        String stickyString = Utils.getSticky(file);
-        if (stickyString != null) {
-            stickyString = stickyString.substring(1);
-        } else {
+
+        String stickyString = SvnUtils.getCopy(file);
+        if (stickyString == null) {
             stickyString = ""; // NOI18N
         }
-*/
 
         Object[] arguments = new Object[] {
             revisionString,
