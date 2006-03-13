@@ -18,6 +18,9 @@
  */
 package org.netbeans.jemmy;
 
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -42,6 +45,11 @@ public class WaiterTest extends TestCase {
      * @throws Exception when a serious error occurs.
      */
     protected void setUp() throws Exception {
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setLevel(Level.FINER);
+        Logger logger = Logger.getLogger(Waiter.class.getName());
+        logger.addHandler(handler);
+        logger.setLevel(Level.FINER);
     }
     
     /**
@@ -63,90 +71,6 @@ public class WaiterTest extends TestCase {
     }
     
     /**
-     * Test setTimeouts method.
-     */
-    public void testSetTimeouts() {
-    }
-    
-    /**
-     * Test getTimeouts method.
-     */
-    public void testGetTimeouts() {
-    }
-    
-    /**
-     * Test setOutput method.
-     */
-    public void testSetOutput() {
-    }
-    
-    /**
-     * Test getOutput method.
-     */
-    public void testGetOutput() {
-    }
-    
-    /**
-     * Test waitAction method.
-     */
-    public void testWaitAction() throws Exception {
-    }
-    
-    /**
-     * Test actionProduced method.
-     */
-    public void testActionProduced() {
-    }
-    
-    /**
-     * Test getDescription method.
-     */
-    public void testGetDescription() {
-    }
-    
-    /**
-     * Test getWaitingStartedMessage method.
-     */
-    public void testGetWaitingStartedMessage() {
-    }
-    
-    /**
-     * Test getTimeoutExpiredMessage method.
-     */
-    public void testGetTimeoutExpiredMessage() {
-    }
-    
-    /**
-     * Test getActionProducedMessage method.
-     */
-    public void testGetActionProducedMessage() {
-    }
-    
-    /**
-     * Test getGoldenWaitingStartedMessage method.
-     */
-    public void testGetGoldenWaitingStartedMessage() {
-    }
-    
-    /**
-     * Test getGoldenTimeoutExpiredMessage method.
-     */
-    public void testGetGoldenTimeoutExpiredMessage() {
-    }
-    
-    /**
-     * Test getGoldenActionProducedMessage method.
-     */
-    public void testGetGoldenActionProducedMessage() {
-    }
-    
-    /**
-     * Test timeFromStart method.
-     */
-    public void testTimeFromStart() {
-    }
-    
-    /**
      * Test issue #30537.
      */
     public void testIssue30537() {
@@ -160,7 +84,7 @@ public class WaiterTest extends TestCase {
                 }
             });
             
-            waiter.waitAction(new Object());
+            waiter.waitAction("testIssue30537");
         }
         catch(InterruptedException exception) {
             fail();
