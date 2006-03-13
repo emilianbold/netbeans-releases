@@ -1095,20 +1095,24 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         
         return null;
     }  
-    
-    
-    private static Image findIcon(String k1, String k2) {
+
+    /** array to cache images in */
+    private static Image[] IMGS = new Image[2];
+
+    static Image findIcon(int index, String k1, String k2) {
+        if (IMGS[index] != null) {
+            return IMGS[index];
+        }
+
         Image i1 = icon2image(k1);
         if (i1 == null) {
             i1 = icon2image(k2);
         }
+
+        IMGS[index] = i1;
         return i1;
     }
     
-    // icons for FolderNode
-    static final Image DEFAULT_ICON = findIcon("Nb.Explorer.Folder.icon", "Tree.closedIcon"); // NOI18N
-    static final Image DEFAULT_OPENED_ICON = findIcon("Nb.Explorer.Folder.openedIcon", "Tree.openIcon"); // NOI18N
-        
     /** Node for a folder.
     */
     public class FolderNode extends DataNode {
@@ -1137,7 +1141,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             Image img = null;
             if (type == BeanInfo.ICON_COLOR_16x16) {
                 // search for proper folder icon installed by core/windows module
-                img = DEFAULT_ICON;
+                img = findIcon(0, "Nb.Explorer.Folder.icon", "Tree.closedIcon"); // NOI18N
             }
             if (img == null) {
                 img = super.getIcon(type);
@@ -1164,7 +1168,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             Image img = null;
             if (type == BeanInfo.ICON_COLOR_16x16) {
                 // search for proper folder icon installed by core/windows module
-                img = DEFAULT_OPENED_ICON;
+                img = findIcon(1, "Nb.Explorer.Folder.openedIcon", "Tree.openIcon"); // NOI18N
             }
             if (img == null) {
                 img = super.getOpenedIcon(type);
