@@ -20,6 +20,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
@@ -121,6 +122,7 @@ public  class NbCodeFoldingAction extends GlobalContextAction implements Present
         public JPopupMenu getPopupMenu(){
             JPopupMenu pm = super.getPopupMenu();
             pm.removeAll();
+            boolean enable = false;
             BaseKit bKit = getKit();
             if (bKit==null) bKit = BaseKit.getKit(NbEditorKit.class);
             if (bKit!=null){
@@ -149,10 +151,14 @@ public  class NbCodeFoldingAction extends GlobalContextAction implements Present
                         Component comps[] = menu.getMenuComponents();
                         for (int i=0; i<comps.length; i++){
                             pm.add(comps[i]);
+                            if (comps[i].isEnabled() && !(comps[i] instanceof JSeparator)) {
+                                enable = true;
+                            }
                         }
                     }
                 }
             }
+            setEnabled(enable);
             pm.pack();
             return pm;
         }
