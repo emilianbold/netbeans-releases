@@ -896,6 +896,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * Used by ContinueActionProvider & StepActionProvider.
      */
     public void resume () {
+        if (operator.flushStaledEvents()) {
+            return ;
+        }
         synchronized (LOCK) {
             if (virtualMachine != null)
                 virtualMachine.resume ();
@@ -1053,10 +1056,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 l.remove (i);
             else
                 ((EventRequest) l.get (i)).disable ();
+        operator.breakpointsDisabled();
         return l;
     }
     
     private void enableAllBreakpoints (List l) {
+        operator.breakpointsEnabled();
         int i, k = l.size ();
         for (i = 0; i < k; i++)
             try {

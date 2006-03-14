@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,6 +17,11 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequest;
+import com.sun.jdi.request.StepRequest;
+import com.sun.jdi.ThreadReference;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.openide.ErrorManager;
 
 /**
@@ -46,6 +51,10 @@ import org.openide.ErrorManager;
 public class Operator {
 
     private Thread            thread;
+    private boolean           breakpointsDisabled;
+    private List              staledEvents = new ArrayList();
+    private List              staledRequests = new ArrayList();
+    private boolean           stop;
 
     private static boolean verbose = 
         System.getProperty ("netbeans.debugger.jdievents") != null;
@@ -79,10 +88,53 @@ public class Operator {
             params [0] = null;
             params [1] = null;
             params [2] = null;
+            boolean processStaledEvents = false;
             
              try {
                  for (;;) {
-                     EventSet eventSet = eventQueue.remove ();
+                     EventSet eventSet = null;
+                     if (processStaledEvents) {
+                         synchronized (Operator.this) {
+                             if (staledEvents.size() == 0) {
+                                 processStaledEvents = false;
+                             } else {
+                                eventSet = (EventSet) staledEvents.remove(0);
+                                while (staledRequests.size() > 0) {
+                                    EventRequest request = (EventRequest) staledRequests.remove(0);
+                                    request.virtualMachine().eventRequestManager().deleteEventRequest(request);
+                                }
+                                //eventSet.virtualMachine.suspend();
+                             }
+                         }
+                     }
+                     if (eventSet == null) {
+                        try {
+                            eventSet = eventQueue.remove ();
+                            if (verbose) {
+                                System.out.println("HAVE EVENT(s) in the Queue: "+eventSet);
+                            }
+                        } catch (InterruptedException iexc) {
+                            synchronized (Operator.this) {
+                                if (stop) {
+                                    break;
+                                }
+                            }
+                            processStaledEvents = true;
+                            continue;
+                        }
+                     }
+                     synchronized (Operator.this) {
+                         if (breakpointsDisabled) {
+                             if (eventSet.suspendPolicy() == EventRequest.SUSPEND_ALL) {
+                                staledEvents.add(eventSet);
+                                eventSet.resume();
+                                if (verbose) {
+                                    System.out.println("RESUMING "+eventSet);
+                                }
+                             }
+                             continue;
+                         }
+                     }
                      boolean resume = true, startEventOnly = true;
                      EventIterator i = eventSet.eventIterator ();
                      if (verbose)
@@ -162,7 +214,7 @@ public class Operator {
                      }
                  }// for
              } catch (VMDisconnectedException e) {   
-             } catch (InterruptedException e) {
+             //} catch (InterruptedException e) {
              } catch (Exception e) {
                  ErrorManager.getDefault().notify(e);
              }
@@ -192,8 +244,35 @@ public class Operator {
      *            (if <TT>null</TT>, the binding is removed - the same as <TT>unregister()</TT>)
      * @see  #unregister
      */
-    public void register (EventRequest req, Executor e) {
+    public synchronized void register (EventRequest req, Executor e) {
         req.putProperty ("executor", e); // NOI18N
+        if (staledEvents.size() > 0 && req instanceof StepRequest) {
+            boolean addAsStaled = false;
+            for (Iterator it = staledEvents.iterator(); it.hasNext(); ) {
+                EventSet evSet = (EventSet) it.next();
+                for (Iterator itSet = evSet.iterator(); itSet.hasNext(); ) {
+                    Event ev = (Event) itSet.next();
+                    EventRequest evReq = ev.request();
+                    if (!(evReq instanceof StepRequest)) {
+                        addAsStaled = true;
+                        break;
+                    } else {
+                        ThreadReference evThread = ((StepRequest) evReq).thread();
+                        ThreadReference reqThread = ((StepRequest) req).thread();
+                        if (reqThread.equals(evThread)) {
+                            addAsStaled = true;
+                            break;
+                        }
+                    }
+                }
+                if (addAsStaled) break;
+            }
+            // Will be added if there is not a staled step event or if all staled
+            // step events are on different threads.
+            if (addAsStaled) {
+                staledRequests.add(req);
+            }
+        };
     }
 
     /**
@@ -202,15 +281,47 @@ public class Operator {
      * @param  req  request
      * @see  #register
      */
-    public void unregister (EventRequest req) {
+    public synchronized void unregister (EventRequest req) {
         req.putProperty ("executor", null); // NOI18N
+        staledRequests.remove(req);
     }
     
     /**
      * Stop the operator thread.
      */
     public void stop() {
+        synchronized (this) {
+            stop = true;
+            staledRequests.clear();
+            staledEvents.clear();
+        }
         thread.interrupt();
+    }
+    
+    /**
+     * Notifies that breakpoints were disabled and therefore no breakpoint events should occur
+     * until {@link #breakpointsEnabled} is called.
+     */
+    public synchronized void breakpointsDisabled() {
+        breakpointsDisabled = true;
+    }
+    
+    /**
+     * Notifies that breakpoints were enabled again and therefore breakpoint events can occur.
+     */
+    public synchronized void breakpointsEnabled() {
+        breakpointsDisabled = false;
+    }
+    
+    public boolean flushStaledEvents() {
+        boolean areStaledEvents;
+        synchronized (this) {
+            areStaledEvents = staledEvents.size() > 0;
+            if (areStaledEvents) {
+                thread.interrupt();
+            }
+        }
+        return areStaledEvents;
     }
 
     private void printEvent (Event e, Executor exec) {
