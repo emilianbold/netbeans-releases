@@ -350,12 +350,11 @@
             <file name="WSWebExtResolver.xml" url="WSWebExtResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.websphere6.resources.Bundle"/>
             </file>
-            
-            <folder name="JavaHelp">
-              <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-j2ee-websphere6-helpset.xml" boolvalue="true"/>
-              <file name="org-netbeans-modules-j2ee-websphere6-helpset.xml" url="helpset.xml"/>
-              <attr name="org-netbeans-modules-j2ee-websphere6-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
-            </folder>
+        </folder>
+        <folder name="JavaHelp">
+            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-j2ee-websphere6-helpset.xml" boolvalue="true"/>
+            <file name="org-netbeans-modules-j2ee-websphere6-helpset.xml" url="helpset.xml"/>
+            <attr name="org-netbeans-modules-j2ee-websphere6-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
         </folder>
     </folder>    
 </filesystem>
