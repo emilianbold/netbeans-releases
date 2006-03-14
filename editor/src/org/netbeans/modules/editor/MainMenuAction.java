@@ -244,10 +244,12 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             setMenu();
         }
 
+        /*
         protected Action getGlobalKitAction(){
             BaseKit kit = BaseKit.getKit(NbEditorKit.class);
             return (kit!=null) ? kit.getActionByName(getActionName()) : null;
         }
+         */
         
         protected void setMenu(){
             super.setMenu();
