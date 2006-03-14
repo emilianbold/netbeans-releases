@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,8 +17,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import org.openide.ErrorManager;
-
-import org.netbeans.core.startup.layers.PatchedURLStreamHandlerFactory;
 
 import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
@@ -31,8 +29,6 @@ import org.openide.util.*;
  */
 final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, LookupListener {
     
-    private static final boolean J2SE_141 = System.getProperty("java.version").startsWith("1.4.1");  //NOI18N
-    
     private Lookup.Result r = null;
     private URLStreamHandlerFactory[] handlers = null;
     
@@ -42,16 +38,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
         if (protocol.equals("jar") || protocol.equals("file") || // NOI18N
                 protocol.equals("http") || protocol.equals("resource")) { // NOI18N
             // Well-known handlers in JRE. Do not try to initialize lookup, etc.
-           
-            URLStreamHandler handler = null;
-            if (J2SE_141) {
-            	// In case we are running on J2SE 1.4.1  the jar and file protocol
-            	// handling have to be patched. So we reroute the URL stream handler
-            	// Craetion to the PatchedURLStreamHandlerFactory.
-            	// Fixes: #44367 and #48280
-                handler = PatchedURLStreamHandlerFactory.getInstance().createURLStreamHandler(protocol);
-            }
-            return handler;
+            return null;
         }
         
         if (protocol.equals("nbfs")) { // NOI18N
