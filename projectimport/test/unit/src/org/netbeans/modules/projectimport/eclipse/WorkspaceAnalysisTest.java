@@ -29,7 +29,6 @@ public class WorkspaceAnalysisTest extends ProjectImporterTestCase {
     
     public WorkspaceAnalysisTest(String name) {
         super(name);
-        setVerbose(true);
     }
     
     public void testComplexAloneProjectFor_3_1_M6() throws Exception {
