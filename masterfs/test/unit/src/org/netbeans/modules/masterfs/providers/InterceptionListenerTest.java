@@ -13,8 +13,8 @@
 
 package org.netbeans.modules.masterfs.providers;
 
-import java.awt.Image;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
@@ -47,11 +47,11 @@ public class InterceptionListenerTest extends NbTestCase  {
         assertNotNull(iListener);
         assertEquals(0,iListener.beforeCreateCalls);
         assertEquals(0,iListener.createSuccessCalls);
-
+        
         assertNotNull(fo.createData("aa"));
         assertEquals(1,iListener.beforeCreateCalls);
         assertEquals(1,iListener.createSuccessCalls);
-
+        
         iListener.clear();
         try {
             assertEquals(0,iListener.createSuccessCalls);
@@ -63,7 +63,7 @@ public class InterceptionListenerTest extends NbTestCase  {
             assertEquals(1,iListener.createFailureCalls);
         }
     }
-            
+    
     public void testBeforeDelete() throws IOException {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
         assertNotNull(fo);
@@ -78,7 +78,7 @@ public class InterceptionListenerTest extends NbTestCase  {
         assertFalse(toDel.isValid());
         assertEquals(1,iListener.beforeDeleteCalls);
         assertEquals(1,iListener.deleteSuccessCalls);
-
+        
         iListener.clear();
         try {
             assertEquals(0,iListener.deleteSuccessCalls);
@@ -88,7 +88,7 @@ public class InterceptionListenerTest extends NbTestCase  {
         } catch (IOException ex) {
             assertEquals(0,iListener.deleteSuccessCalls);
             assertEquals(1,iListener.deleteFailureCalls);
-        }        
+        }
     }
     
     public static class InterceptionListenerImpl extends AnnotationProvider implements InterceptionListener {
@@ -132,16 +132,27 @@ public class InterceptionListenerTest extends NbTestCase  {
             deleteFailureCalls++;
         }
         
-        public String annotateNameHtml(String name, Set files) {
-            return name;
+        public String annotateName(String name, java.util.Set files) {
+            java.lang.StringBuffer sb = new StringBuffer(name);
+            Iterator it = files.iterator();
+            while (it.hasNext()) {
+                FileObject fo = (FileObject)it.next();
+                try {
+                    sb.append("," +fo.getNameExt());//NOI18N
+                } catch (Exception ex) {
+                    fail();
+                }
+            }
+            
+            return sb.toString() ;
         }
         
-        public String annotateName(String name, Set files) {
-            return name;
-        }
-        
-        public Image annotateIcon(Image icon, int iconType, Set files) {
+        public java.awt.Image annotateIcon(java.awt.Image icon, int iconType, java.util.Set files) {
             return icon;
+        }
+        
+        public String annotateNameHtml(String name, Set files) {
+            return annotateName(name, files);
         }
         
         public Action[] actions(Set files) {
