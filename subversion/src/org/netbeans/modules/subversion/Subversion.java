@@ -50,7 +50,8 @@ public class Subversion {
     private FileStatusCache     fileStatusCache;
     private FilesystemHandler   filesystemHandler;
     private Annotator           annotator;
-    private HashMap             clients;
+    private HashMap             clientsToUrl;
+    private HashMap             urlToClients;
     private RequestProcessor rp = new RequestProcessor("Subversion", 1, true); // NOI18N
 
     private OutputLogger outputLogger;
@@ -131,17 +132,24 @@ public class Subversion {
         return annotator;
     }
 
+    public SVNUrl getUrl(SvnClient client) {
+        if(urlToClients!=null) {
+            return (SVNUrl) urlToClients.get(client);
+        }
+        return null;
+    }
+            
     public SvnClient getClient(SVNUrl repositoryUrl,
                                ProxyDescriptor pd, 
                                String username, 
                                String password) 
     throws SVNClientException    
     {
-        SvnClient client = (SvnClient) getClients().get(repositoryUrl.toString());
+        SvnClient client = (SvnClient) getClientsToUrl().get(repositoryUrl);
         if(client == null) {
             client = SvnClientFactory.getInstance().createSvnClient(pd, username, password);            
             attachListeners(client);
-            getClients().put(repositoryUrl.toString(), client);            
+            clientAndURl(client, repositoryUrl);
         } else {
             // XXX - some kind of check if it's still the same configuration (proxy, psswd, user)            
         }               
@@ -173,11 +181,11 @@ public class Subversion {
     public SvnClient getClient(SVNUrl repositoryUrl) 
     throws SVNClientException 
     {        
-        SvnClient client = (SvnClient) getClients().get(repositoryUrl.toString());
+        SvnClient client = (SvnClient) getClientsToUrl().get(repositoryUrl);
         if(client == null) {        
             client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl);        
             attachListeners(client);
-            getClients().put(repositoryUrl.toString(), client);
+            clientAndURl(client, repositoryUrl);
         }
         return client;
     }
@@ -200,11 +208,23 @@ public class Subversion {
         return client;
     }    
     
-    private HashMap getClients() {
-        if(clients == null) {
-            clients = new HashMap();
+    private HashMap getClientsToUrl() {
+        if(clientsToUrl == null) {
+            clientsToUrl = new HashMap();
         }
-        return clients;
+        return clientsToUrl;
+    }    
+
+    private HashMap getUrlToClients() {
+        if(urlToClients == null) {
+            urlToClients = new HashMap();
+        }
+        return urlToClients;
+    }
+
+    private void clientAndURl(SvnClient client, SVNUrl repositoryUrl) {
+        getClientsToUrl().put(repositoryUrl, client);
+        getUrlToClients().put(client, repositoryUrl);
     }    
     
     public ISVNStatus getLocalStatus(File file) throws SVNClientException {

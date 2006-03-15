@@ -16,12 +16,22 @@ import java.lang.reflect.Method;
 import java.util.*;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.settings.SVNCredentialFile;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import java.security.cert.X509Certificate;
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.swing.JPanel;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -78,7 +88,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             return thisMethod.invoke(adapter, args);                                             
         } catch (Exception e) {
             try {
-                if(handleException(e)) {
+                if(handleException( (SvnClient) proxy, e) ) {
                     return invoke(proxy, method, args); // XXX hm...
                 } else {
                     // XXX some action canceled by user message ... wrap the exception ???
@@ -109,7 +119,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         return true;
     }
 
-    private boolean handleException(Throwable t) throws Throwable {
+    private boolean handleException(SvnClient client, Throwable t) throws Throwable {
         SVNClientException svnException = null;
         if( t instanceof InvocationTargetException ) {
             t = ((InvocationTargetException) t).getCause();            
@@ -121,6 +131,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         ExceptionInformation ei = new ExceptionInformation((SVNClientException) t);
         if(ei.isAuthentication()) {
             return handleAuthenticationError();
+        } if(ei.isNoCertificate()) {
+            return handleNoCertificateError(client);
         }
 
         // no handling for this exception -> throw it, so the caller may decide what to do...
@@ -149,4 +161,78 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         }        
         return ret;
     }        
+    
+    private boolean handleNoCertificateError(SvnClient client) throws Exception {
+        try {
+            TrustManager[] trust = new TrustManager[]{
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                    }
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                    }
+                }
+            }; 
+
+            SSLContext context = SSLContext.getInstance("SSL");
+            context.init(null, trust, new java.security.SecureRandom());
+            
+            SocketFactory factory = context.getSocketFactory();                             
+            SVNUrl url = Subversion.getInstance().getUrl(client);
+            SSLSocket socket = (SSLSocket) factory.createSocket(url.getHost(), url.getPort());
+            socket.startHandshake();
+
+            X509Certificate cert = null;
+            java.security.cert.Certificate[] serverCerts = socket.getSession().getPeerCertificates();
+            for (int i = 0; i < serverCerts.length; i++) {
+                if(serverCerts[i] instanceof X509Certificate) {
+                    cert = (X509Certificate) serverCerts[i];
+                    break; 
+                }
+            }
+
+            AcceptCertificatePanel acceptCertificatePanel = new AcceptCertificatePanel();
+            acceptCertificatePanel.certificatePane.setText(cert.toString());
+            DialogDescriptor dialogDescriptor = new DialogDescriptor(acceptCertificatePanel, "Server certificate verification failed"); 
+
+            JButton permanentlyButton = new JButton("Accept permanently"); 
+            JButton temporarilyButton = new JButton("Accept temporarily"); 
+            JButton rejectButton = new JButton("Reject"); 
+            dialogDescriptor.setOptions(new Object[] {permanentlyButton, temporarilyButton, rejectButton}); 
+
+            dialogDescriptor.setModal(true);
+            dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
+            dialogDescriptor.setValid(false);     
+
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
+            dialog.setVisible(true);
+                                                        
+            
+            if(dialogDescriptor.getValue()!=permanentlyButton && dialogDescriptor.getValue()!=temporarilyButton) {                
+                return false;
+            }
+            
+            SVNCredentialFile.CertificateFile cf = new SVNCredentialFile.CertificateFile(url.getProtocol() + "://" + url.getHost() + ":" + url.getPort());
+            String encodedCert = new sun.misc.BASE64Encoder().encode(cert.getEncoded());                
+            encodedCert.replaceAll("\\n", ""); // XXX where does this come from ????!!!
+            String[] str = encodedCert.split("\n"); // XXX whats wrong with replace ???
+            encodedCert = "";
+            for (int i = 0; i < str.length; i++) {
+                encodedCert+=str[i];
+            }
+            cf.setCert(encodedCert);
+            cf.setFailures("10"); // XXX what is this !!??            
+            if(dialogDescriptor.getValue() == temporarilyButton) {
+                cf.deleteOnExit();
+            }
+            cf.store();
+            return true;
+            
+        } catch (Exception ex) {
+            throw ex;
+        }
+    }
+    
 }

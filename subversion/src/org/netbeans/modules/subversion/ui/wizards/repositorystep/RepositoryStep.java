@@ -117,7 +117,7 @@ public class RepositoryStep
 
                 ISVNInfo info = null;
                 
-                try {                                    
+                try {      
                     info = client.getInfo(selectedRepository.getUrl());                                                                                                        
                 } catch (SVNClientException ex) {                                    
                     invalidMsg[0] = ex.getLocalizedMessage();                    
