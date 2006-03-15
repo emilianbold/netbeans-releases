@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.diff.builtin.visualizer;
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -228,9 +229,19 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
     }
 
     public void setCurrentDifference(int diffNo) throws UnsupportedOperationException {
-        if (diffNo < 0 || diffNo >= diffs.length) throw new IllegalArgumentException("Illegal difference number: " + diffNo);
-        currentDiffLine = diffNo;
-        showCurrentLine();
+
+
+        if (diffNo < -1 || diffNo >= diffs.length) throw new IllegalArgumentException("Illegal difference number: " + diffNo);
+
+        if (diffNo == -1) {
+            this.linesComp1.setActiveLine(-1);
+            this.linesComp2.setActiveLine(-1);
+            linesComp2.repaint();
+            linesComp1.repaint();
+        } else {
+            currentDiffLine = diffNo;
+            showCurrentLine();
+        }
     }
 
     public int getCurrentDifference() throws UnsupportedOperationException {
@@ -530,7 +541,35 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
             jViewport1.setViewPosition(p1);  // joinScrollBar will move paired view
         }
     }
-    
+
+    public ViewHandle joinScrollPane(JScrollPane pane) {
+        jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        // synchronize horizontal bars
+        return new ViewHandle();
+    }
+
+    public  class ViewHandle {
+        public int getWidth() {
+            Dimension d1 = jScrollPane1.getViewport().getViewSize();
+            Dimension d2 = jScrollPane2.getViewport().getViewSize();
+            int w = Math.max(d1.width, d2.width) * 2;
+            return w;
+        }
+
+        public void setHorizontalPosition(int pos) {
+            pos /= 2;
+            jScrollPane1.getViewport().setViewPosition(new Point(pos,0));
+            jScrollPane1.repaint();
+            jScrollPane2.getViewport().setViewPosition(new Point(pos,0));
+            jScrollPane2.repaint();
+        }
+    }
+
+
     private void joinScrollBars() {
         final JScrollBar scrollBarH1 = jScrollPane1.getHorizontalScrollBar();
         final JScrollBar scrollBarV1 = jScrollPane1.getVerticalScrollBar();

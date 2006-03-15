@@ -53,7 +53,7 @@ public interface DiffView {
     /**
      * Instructs the DIFF view to navigate to the n-th difference.
      * 
-     * @param diffNo The difference number
+     * @param diffNo The difference number (-1 means hide current difference visualization)
      * @throws UnsupportedOperationException iff {@link #canSetCurrentDifference}
      *         returns <code>false</code>.
      */ 
