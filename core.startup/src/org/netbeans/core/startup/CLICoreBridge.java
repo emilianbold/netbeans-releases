@@ -96,7 +96,8 @@ public class CLICoreBridge extends CLIHandler {
         }
         
         URLClassLoader loader = new URLClassLoader((URL[])urls.toArray(new URL[0]), getClass().getClassLoader());
-        Lookup clis = Lookups.metaInfServices(loader);
+        MainLookup.systemClassLoaderChanged(loader);
+        Lookup clis = Lookup.getDefault();
         Collection handlers = clis.lookup(new Lookup.Template(CLIHandler.class)).allInstances();
         showHelp(w, handlers, WHEN_EXTRA);
         w.flush();
