@@ -22,7 +22,7 @@ public class WSEjbBnd extends DDXmi{
     
     private static final String ROOT_NAME="EjbJarBnd";
     
-    /** Creates a new instance of WSAppBnd */
+    /** Creates a new instance of WSEjbBnd */
     public WSEjbBnd() {
         this(null, Common.USE_DEFAULT_VALUES);
     }

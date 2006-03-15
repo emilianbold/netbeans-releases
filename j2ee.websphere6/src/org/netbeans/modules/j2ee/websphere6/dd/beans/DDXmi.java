@@ -117,6 +117,9 @@ public abstract class DDXmi extends org.netbeans.modules.schema2beans.BaseBean i
     }
     
     public void setApplicationHref(String value) {
+        if(getApplication()==null) {
+            setApplication("");
+        }
         setAttributeValue(APPLICATION,APPLICATION_HREF,addAppHrefToId(value));
     }
     
@@ -200,7 +203,8 @@ public abstract class DDXmi extends org.netbeans.modules.schema2beans.BaseBean i
         setAttributeValue(RELOAD_INTERVAL,value);
     }
     public String getReloadInterval() {
-        return (String)this.getAttributeValue(RELOAD_INTERVAL);
+        String getString=(String)this.getAttributeValue(RELOAD_INTERVAL);
+        return  (getString==null)?"0":getString;        
     }
     
     public void setReload() {
@@ -210,7 +214,9 @@ public abstract class DDXmi extends org.netbeans.modules.schema2beans.BaseBean i
         setAttributeValue(RELOAD_ENABLED,(value==true)?"true":"false");
     }
     public boolean getReload() {
-        return (this.getAttributeValue(RELOAD_ENABLED).equals("true")?true:false);
+        String getReloadString=this.getAttributeValue(RELOAD_ENABLED);
+        if(getReloadString==null) return false;
+        else return (getReloadString.equals("true")?true:false);
     }
     
     public void setAdditionalClassPath() {

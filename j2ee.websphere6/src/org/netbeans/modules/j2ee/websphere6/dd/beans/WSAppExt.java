@@ -21,10 +21,7 @@ public class WSAppExt extends DDXmi{
     private static final String ROOT=TYPE_APP_EXT_APP_ID;
     
     private static final String ROOT_NAME="ApplicationExt";
-    private static final String MODULE_EXTENSIONS="ModuleExtensions";
-    private static final String MODULE_EXTENSIONS_XMI_ID="ModuleExtensionsXmiId";
-    private static final String MODULE_EXTENSIONS_APPROOT="ModuleExtensionsAppRoot";
-    private static final String MODULE_EXTENSIONS_XMI_TYPE="ModuleExtensionsXmiType";
+    
     /** Creates a new instance of WSAppExt */
     public WSAppExt() {
         this(null, Common.USE_DEFAULT_VALUES);
@@ -73,10 +70,10 @@ public class WSAppExt extends DDXmi{
     public void setDefaults() {
         setXmiVersion();
         setNsXmi();
+        setNsXsi();
         setNsAppExt();
         setNsApp();
-        setXmiId("Application_ID_Ext");
-        setApplication("");
+        setXmiId("Application_ID_Ext");                
         setApplicationHref("Application_ID");
     }
     
@@ -90,19 +87,23 @@ public class WSAppExt extends DDXmi{
         this.createAttribute(NS_APP_ID,     NS_APP,      AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         this.createAttribute(NS_APP_EXT_ID, NS_APP_EXT,  AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         this.createAttribute(NS_XMI_ID,     NS_XMI,      AttrProp.CDATA | AttrProp.IMPLIED,null, null);
+        this.createAttribute(NS_XSI_ID,     NS_XSI,      AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         this.createAttribute(XMI_VERSION_ID,XMI_VERSION, AttrProp.CDATA | AttrProp.IMPLIED,null, null);
+        this.createAttribute(RELOAD_ENABLED_ID,RELOAD_ENABLED, AttrProp.CDATA | AttrProp.IMPLIED,null, null);
+        this.createAttribute(RELOAD_INTERVAL_ID,RELOAD_INTERVAL, AttrProp.CDATA | AttrProp.IMPLIED,null, null);
+        this.createAttribute(SHARED_SESSION_CONTEXT_ID,SHARED_SESSION_CONTEXT, AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         
-        
-        
-        this.createProperty("moduleExtensions", 	// NOI18N
+        this.createProperty(MODULE_EXTENSIONS_ID, 	
                 MODULE_EXTENSIONS,
                 Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY,
                 ModuleExtensionsType.class);
-        this.createAttribute(MODULE_EXTENSIONS,XMI_TYPE_ID,MODULE_EXTENSIONS_XMI_TYPE,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
-        this.createAttribute(MODULE_EXTENSIONS,APPROOT_ID ,MODULE_EXTENSIONS_APPROOT ,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
-        this.createAttribute(MODULE_EXTENSIONS,XMI_ID_ID  ,MODULE_EXTENSIONS_XMI_ID  ,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
+        this.createAttribute(MODULE_EXTENSIONS,XMI_TYPE_ID,        MODULE_EXTENSIONS_XMI_TYPE,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
+        this.createAttribute(MODULE_EXTENSIONS,ALT_ROOT_ID ,       MODULE_EXTENSIONS_ALT_ROOT ,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
+        this.createAttribute(MODULE_EXTENSIONS,ALT_BINDINGS_ID,    MODULE_EXTENSIONS_ALT_BINDINGS ,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
+        this.createAttribute(MODULE_EXTENSIONS,ALT_EXTENSIONS_ID , MODULE_EXTENSIONS_ALT_EXTENSIONS ,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
+        this.createAttribute(MODULE_EXTENSIONS,XMI_ID_ID  ,        MODULE_EXTENSIONS_XMI_ID  ,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         
-        this.createProperty(APPLICATION_ID, 	// NOI18N
+        this.createProperty(APPLICATION_ID, 	
                 APPLICATION,
                 Common.TYPE_1 | Common.TYPE_STRING | Common.TYPE_KEY,
                 java.lang.String.class);
@@ -132,42 +133,24 @@ public class WSAppExt extends DDXmi{
         return positionOfNewItem;
     }
     
-    //
-    // Remove an element using its reference
-    // Returns the index the element had in the list
-    //
+    
     public int removeModuleExtensions(ModuleExtensionsType value) {
         return this.removeValue(MODULE_EXTENSIONS, value);
     }
     
-    
-    public void setModuleExtensionsId(String value,int index)  {
-        setAttributeValue(MODULE_EXTENSIONS,index,XMI_ID,value);
+    public void setSharedSession(boolean value) {
+        this.setAttributeValue(SHARED_SESSION_CONTEXT, (value==true)?"true":"false");
     }
-    
-    public String getModuleExtensionsId(int index){
-        return (String)getAttributeValue(MODULE_EXTENSIONS,index,MODULE_EXTENSIONS_XMI_ID);
-    }
-    
-    public String getModuleExtensionsType(int index){
-        return (String)getAttributeValue(MODULE_EXTENSIONS,index,MODULE_EXTENSIONS_XMI_TYPE);
-    }
-    public void setModuleExtensionsType(String value,int index)  {
-        setAttributeValue(MODULE_EXTENSIONS,index,MODULE_EXTENSIONS_XMI_TYPE,value);
-    }
-    
-    public void setModuleExtensionsAppRoot(String value,int index)  {
-        setAttributeValue(MODULE_EXTENSIONS,index,MODULE_EXTENSIONS_APPROOT,value);
-    }
-    
-    public String getModuleExtensionsAppRoot(int index){
-        return (String)getAttributeValue(MODULE_EXTENSIONS,index,MODULE_EXTENSIONS_APPROOT);
+    //
+    public boolean getSharedSession() {
+        String getSharedSting=this.getAttributeValue(SHARED_SESSION_CONTEXT);
+        if(getSharedSting==null) return false;
+        else return (getSharedSting.equals("true")?true:false);        
     }
     
     
     
-    public void validate() throws org.netbeans.modules.schema2beans.ValidateException {
-        
+    public void validate() throws org.netbeans.modules.schema2beans.ValidateException {        
         if (getModuleExtensions()!= null) {
             // Validating property jdbcConnectionPool
             for (int _index = 0; _index < sizeModuleExtensions(); ++_index) {
@@ -175,16 +158,6 @@ public class WSAppExt extends DDXmi{
                 if (element != null) {
                     element.validate();
                 }
-                if(getModuleExtensionsId(_index)==null) {
-                    throw new org.netbeans.modules.schema2beans.ValidateException("getModuleExtensionsId["+_index+"] == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, MODULE_EXTENSIONS, this);	// NOI18N
-                }
-                if(getModuleExtensionsAppRoot(_index)==null){
-                    throw new org.netbeans.modules.schema2beans.ValidateException("getModuleExtensionsAppRoot["+_index+"] == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, MODULE_EXTENSIONS, this);	// NOI18N
-                }
-                if(getModuleExtensionsType(_index)==null){
-                    throw new org.netbeans.modules.schema2beans.ValidateException("getModuleExtensionsType["+_index+"] == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, MODULE_EXTENSIONS, this);	// NOI18N
-                }
-                
             }
         }
         if (getApplication()== null) {

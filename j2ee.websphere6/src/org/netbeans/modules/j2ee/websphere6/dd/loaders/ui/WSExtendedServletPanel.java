@@ -139,7 +139,8 @@ public class WSExtendedServletPanel extends /*javax.swing.JPanel*/ SectionInnerP
     
     
     public void changeLocalTransactionState() {
-        if(localTransactionCheckBox.isSelected()) {
+        ((LocalTransactionPanel)containerPanel).setEnabledComponents();
+        if(localTransactionCheckBox.isSelected()) {            
             extendedServlet.setLocalTransaction("");
             extendedServlet.setLocalTransactionXmiId(transactionNameField.getText());
             
@@ -158,7 +159,7 @@ public class WSExtendedServletPanel extends /*javax.swing.JPanel*/ SectionInnerP
             extendedServlet.setLocalTransaction(null);
             //extendedServlet.setLocalTransactionXmiId(null);
         }
-        ((LocalTransactionPanel)containerPanel).setEnabledComponents();
+        
     }
     
     
@@ -274,9 +275,9 @@ public class WSExtendedServletPanel extends /*javax.swing.JPanel*/ SectionInnerP
 
         jLabel2.setText("Name:");
 
-        jLabel5.setText("Markup Languages");
+        jLabel5.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/dd/loaders/ui/Bundle").getString("LBL_MarkupLanguages"));
 
-        addMarkupLanguagesButton.setText("Add");
+        addMarkupLanguagesButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/dd/loaders/ui/Bundle").getString("LBL_AddMarkupLanguage"));
         addMarkupLanguagesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addMarkupLanguagesButtonActionPerformed(evt);
@@ -299,21 +300,21 @@ public class WSExtendedServletPanel extends /*javax.swing.JPanel*/ SectionInnerP
                     .add(nameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .add(hrefField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .add(10, 10, 10))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(containerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
+                .add(containerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
-                .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
+                .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(markupLanguagesTabPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
+                    .add(markupLanguagesTabPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(jLabel5)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 267, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 242, Short.MAX_VALUE)
                         .add(addMarkupLanguagesButton)))
                 .addContainerGap())
         );

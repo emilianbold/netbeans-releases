@@ -13,10 +13,6 @@ public class AuthorizationTableType extends org.netbeans.modules.schema2beans.Ba
     
     static Vector comparators = new Vector();
     static private final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(4, 2, 0);
-    
-    
-    static private final String AUTH_ID=AUTHORIZATION+XMI_ID;
-    
     public AuthorizationTableType() {
         this(Common.USE_DEFAULT_VALUES);
     }
@@ -38,7 +34,6 @@ public class AuthorizationTableType extends org.netbeans.modules.schema2beans.Ba
     // Setting the default values of the properties
     void initialize(int options) {
         
-        setXmiId("RoleAssignement_");
     }
     
     // This attribute is an array, possibly empty
@@ -52,7 +47,7 @@ public class AuthorizationTableType extends org.netbeans.modules.schema2beans.Ba
     }
     
     // Return the number of properties
-    public int sizeAuthorization() {
+    public int sizeAuthorizations() {
         return this.size(AUTHORIZATION);
     }
     
@@ -62,7 +57,7 @@ public class AuthorizationTableType extends org.netbeans.modules.schema2beans.Ba
     }
     
     //
-    public AuthorizationsType[] getAuthorization() {
+    public AuthorizationsType[] getAuthorizations() {
         return (AuthorizationsType[])this.getValues(AUTHORIZATION);
     }
     
@@ -88,12 +83,7 @@ public class AuthorizationTableType extends org.netbeans.modules.schema2beans.Ba
         return new AuthorizationsType();
     }
     
-    public void setXmiId(String value) {
-        this.setAttributeValue(AUTHORIZATION,AUTH_ID,value);
-    }
-    public String getXmiId() {
-        return (String)getAttributeValue(AUTHORIZATION,AUTH_ID);
-    }
+    
     //
     public static void addComparator(org.netbeans.modules.schema2beans.BeanComparator c) {
         comparators.add(c);
@@ -107,15 +97,13 @@ public class AuthorizationTableType extends org.netbeans.modules.schema2beans.Ba
         boolean restrictionFailure = false;
         boolean restrictionPassed = false;
         // Validating property parameter
-        for (int _index = 0; _index < sizeAuthorization(); ++_index) {
+        for (int _index = 0; _index < sizeAuthorizations(); ++_index) {
             AuthorizationsType element = getAuthorization(_index);
             if (element != null) {
                 element.validate();
             }
         }
-        if(getXmiId()==null) {
-            throw new org.netbeans.modules.schema2beans.ValidateException("getXmiId() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, AUTHORIZATIONS, this);	// NOI18N
-        }
+       
     }
     
     // Dump the content of this bean returning it as a String
@@ -124,8 +112,8 @@ public class AuthorizationTableType extends org.netbeans.modules.schema2beans.Ba
         Object o;
         org.netbeans.modules.schema2beans.BaseBean n;
         str.append(indent);
-        str.append("Authorizations["+this.sizeAuthorization()+"]");	// NOI18N
-        for(int i=0; i<this.sizeAuthorization(); i++) {
+        str.append("Authorizations["+this.sizeAuthorizations()+"]");	// NOI18N
+        for(int i=0; i<this.sizeAuthorizations(); i++) {
             str.append(indent+"\t");
             str.append("#"+i+":");
             n = (org.netbeans.modules.schema2beans.BaseBean) this.getAuthorization(i);

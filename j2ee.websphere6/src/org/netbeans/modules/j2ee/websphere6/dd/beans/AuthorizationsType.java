@@ -13,18 +13,6 @@ public class AuthorizationsType extends org.netbeans.modules.schema2beans.BaseBe
     static Vector comparators = new Vector();
     private static final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(4, 2, 0);
     
-    static private final String ROLE   = "Role";	// NOI18N
-    static private final String GROUPS = "Groups";	// NOI18N
-    static private final String USERS  = "Users";
-    static private final String GROUP = "Group";	// NOI18N
-    static private final String USER  = "User";
-    
-    static private final String ROLE_HREF   = "RoleHref";
-    static private final String GROUPS_XMI_ID = GROUPS+XMI_ID;
-    static private final String GROUPS_NAME   = GROUPS+NAME;
-    static private final String USERS_XMI_ID = USERS+XMI_ID;
-    static private final String USERS_NAME   = USERS+NAME;
-    
     
     public AuthorizationsType() {
         this(Common.USE_DEFAULT_VALUES);
@@ -36,7 +24,7 @@ public class AuthorizationsType extends org.netbeans.modules.schema2beans.BaseBe
         initPropertyTables(4);
         this.createProperty(ROLE_ID,
                 ROLE,
-                Common.TYPE_1 | Common.TYPE_STRING | Common.TYPE_KEY,
+                Common.TYPE_0_1 | Common.TYPE_STRING | Common.TYPE_KEY,
                 java.lang.String.class);
         this.createAttribute(ROLE, HREF_ID, ROLE_HREF,
                 AttrProp.CDATA | AttrProp.IMPLIED,
@@ -44,7 +32,7 @@ public class AuthorizationsType extends org.netbeans.modules.schema2beans.BaseBe
         
         this.createProperty(GROUPS_ID,
                 GROUPS,
-                Common.TYPE_1 | Common.TYPE_STRING | Common.TYPE_KEY,
+                Common.TYPE_0_1 | Common.TYPE_STRING | Common.TYPE_KEY,
                 java.lang.String.class);
         
         this.createAttribute(GROUPS, XMI_ID_ID, GROUPS_XMI_ID,
@@ -56,7 +44,7 @@ public class AuthorizationsType extends org.netbeans.modules.schema2beans.BaseBe
         
         this.createProperty(USERS_ID,
                 USERS,
-                Common.TYPE_1 | Common.TYPE_STRING | Common.TYPE_KEY,
+                Common.TYPE_0_1 | Common.TYPE_STRING | Common.TYPE_KEY,
                 java.lang.String.class);
         
         this.createAttribute(USERS, XMI_ID_ID, USERS_XMI_ID,
@@ -68,8 +56,8 @@ public class AuthorizationsType extends org.netbeans.modules.schema2beans.BaseBe
         
         this.createProperty(SPECIAL_SUBJECTS_ID,
                 SPECIAL_SUBJECTS,
-                Common.TYPE_0_N | Common.TYPE_STRING | Common.TYPE_KEY,
-                java.lang.String.class);
+                Common.TYPE_0_1 | Common.TYPE_BEAN | Common.TYPE_KEY,
+                SpecialSubjectType.class);
         
         this.createAttribute(SPECIAL_SUBJECTS, XMI_ID_ID, SPECIAL_SUBJECTS_XMI_ID,
                 AttrProp.CDATA | AttrProp.IMPLIED,
@@ -91,20 +79,24 @@ public class AuthorizationsType extends org.netbeans.modules.schema2beans.BaseBe
     void initialize(int options) {
         
     }
-    void setDefaults(){
+    public void setDefaults(){
+        String time_id="_"+java.lang.System.currentTimeMillis();
         setRoleHref("SOME_ROLE");
-        setGroupsXmiId(GROUP+"_"+("" + java.lang.System.currentTimeMillis()));
-        setGroupsName("sampadmn");
-        setUsersXmiId(USER+"_"+("" + java.lang.System.currentTimeMillis()));
-        setUsersName("samples");
-        SpecialSubjectType sst=new SpecialSubjectType();
+        setXmiId(AUTHORIZATION+time_id);
+        SpecialSubjectType sst=new SpecialSubjectType();        
         sst.setType(SPECIAL_SUBJECTS_TYPE_EVERYONE);
-        sst.setXmiId(SPECIAL_SUBJECTS_TYPE_EVERYONE
-                + ("" + java.lang.System.currentTimeMillis()));
+        sst.setXmiId(SPECIAL_SUBJECTS_TYPE_EVERYONE + time_id);
         sst.setName(SPECIAL_SUBJECTS_TYPE_EVERYONE);
-        addSpecialSubjects(sst);
+        setSpecialSubjects(sst);
+        ;
     }
     
+    public void setXmiId(String value) {
+        this.setAttributeValue(AUTH_ID,value);
+    }
+    public String getXmiId() {
+        return (String)getAttributeValue(AUTH_ID);
+    }
     
     // This attribute is mandatory
     public void setRole(java.lang.String value) {
@@ -220,38 +212,26 @@ public class AuthorizationsType extends org.netbeans.modules.schema2beans.BaseBe
     
     
     // functions for manupulation SpecialSubjects
-    public void setSpecialSubjects(int index,SpecialSubjectType value) {
-        this.setValue(SPECIAL_SUBJECTS, index,value);
+    public void setSpecialSubjects(SpecialSubjectType value) {
+        this.setValue(SPECIAL_SUBJECTS,value);
     }
     
-    public void setSpecialSubjects(SpecialSubjectType[]value) {
-        this.setValue(SPECIAL_SUBJECTS, value);
+    public SpecialSubjectType getSpecialSubjects() {
+        return (SpecialSubjectType) this.getValue(SPECIAL_SUBJECTS);
     }
     
-    public SpecialSubjectType[] getSpecialSubjects() {
-        return (SpecialSubjectType[]) this.getValues(SPECIAL_SUBJECTS);
-    }
-    public SpecialSubjectType getSpecialSubjects(int index) {
-        return (SpecialSubjectType)this.getValue(SPECIAL_SUBJECTS,index);
-    }
     public int sizeSpecialSubjects() {
         return this.size(SPECIAL_SUBJECTS);
     }
-    public int addSpecialSubjects(SpecialSubjectType value) {
-        int positionOfNewItem = this.addValue(SPECIAL_SUBJECTS, value);
-        return positionOfNewItem;
-    }
-    
-    public int removeSpecialSubjects(SpecialSubjectType value) {
-        return this.removeValue(SPECIAL_SUBJECTS, value);
-    }
-    
     
     
     public void validate() throws org.netbeans.modules.schema2beans.ValidateException {
         boolean restrictionFailure = false;
         boolean restrictionPassed = false;
-        // Validating propertys
+        
+         if(getXmiId()==null) {
+            throw new org.netbeans.modules.schema2beans.ValidateException("getXmiId() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, AUTHORIZATIONS, this);	// NOI18N
+        }
         if(getRoleHref()==null) {
             throw new org.netbeans.modules.schema2beans.ValidateException("getRoleHref() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, ROLE, this);	// NOI18N
         }
@@ -270,6 +250,9 @@ public class AuthorizationsType extends org.netbeans.modules.schema2beans.BaseBe
             if(getUsersXmiId()==null) {
                 throw new org.netbeans.modules.schema2beans.ValidateException("getUsersXmiId() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, USERS, this);	// NOI18N
             }
+        }
+         if(getSpecialSubjects()!=null){
+            getSpecialSubjects().validate();
         }
         
         

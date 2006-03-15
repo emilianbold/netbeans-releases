@@ -22,8 +22,6 @@ public class ExtendedServletsType extends org.netbeans.modules.schema2beans.Base
     private static final org.netbeans.modules.schema2beans.Version runtimeVersion = new org.netbeans.modules.schema2beans.Version(4, 2, 0);
     
     static public final String EXTENDED_SERVLET_HREF="ExtendedServletHref";
-    static public final String EXTENDED_SERVLET="ExtendedServlet";
-    static public final String MARKUP_LANGUAGES="MarkupLanguages";
     
     /**
      * Creates a new instance of ExtendedServletExtensionsType
@@ -35,7 +33,7 @@ public class ExtendedServletsType extends org.netbeans.modules.schema2beans.Base
         super(comparators, runtimeVersion);
         // Properties (see root bean comments for the bean graph)
         initPropertyTables(3);
-        this.createProperty("extendedServlet", 	// NOI18N
+        this.createProperty(EXTENDED_SERVLET_ID,
                 EXTENDED_SERVLET,
                 Common.TYPE_1 | Common.TYPE_STRING | Common.TYPE_KEY,
                 java.lang.String.class);
@@ -46,7 +44,7 @@ public class ExtendedServletsType extends org.netbeans.modules.schema2beans.Base
         
         
         
-        this.createProperty("markupLanguages", //NOI18N
+        this.createProperty(MARKUP_LANGUAGES_ID, 
                 MARKUP_LANGUAGES,
                 Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY,
                 MarkupLanguagesType.class);
@@ -69,20 +67,20 @@ public class ExtendedServletsType extends org.netbeans.modules.schema2beans.Base
                 null, null);
         
         
-        this.createProperty("localTransaction", //NOI18N
+        this.createProperty(LOCAL_TRANSACTION_ID,
                 LOCAL_TRANSACTION,
                 Common.TYPE_0_1 | Common.TYPE_STRING | Common.TYPE_KEY,
                 java.lang.String.class);
         this.createAttribute(LOCAL_TRANSACTION, XMI_ID_ID, LOCAL_TRANSACTION_XMI_ID,
                 AttrProp.CDATA | AttrProp.IMPLIED,
                 null, null);
-        this.createAttribute(LOCAL_TRANSACTION,"unresolvedAction",LOCAL_TRANSACTION_UNRESOLVED_ACTION,
+        this.createAttribute(LOCAL_TRANSACTION,UNRESOLVED_ACTION_ID,LOCAL_TRANSACTION_UNRESOLVED_ACTION,
                 AttrProp.CDATA | AttrProp.IMPLIED,
                 null, null);
-        this.createAttribute(LOCAL_TRANSACTION,"boundary",LOCAL_TRANSACTION_BOUNDARY,
+        this.createAttribute(LOCAL_TRANSACTION,BOUNDARY_ID,LOCAL_TRANSACTION_BOUNDARY,
                 AttrProp.CDATA | AttrProp.IMPLIED,
                 null, null);
-        this.createAttribute(LOCAL_TRANSACTION,"resolver",LOCAL_TRANSACTION_RESOLVER,
+        this.createAttribute(LOCAL_TRANSACTION,RESOLVER_ID,LOCAL_TRANSACTION_RESOLVER,
                 AttrProp.CDATA | AttrProp.IMPLIED,
                 null, null);
         

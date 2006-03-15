@@ -130,7 +130,6 @@ public class WSWebExtToolBarMVElement extends ToolBarMultiViewElement implements
             Node servletsNode = new SectionContainerNode(servch);
             servletsNode.setDisplayName("Extended Servlets");
             
-            //rootChildren.add(new Node[]{webbndNode,servletsNode});
             servletsCont = new SectionContainer(this,servletsNode,"Extended Servlets");
             servletsCont.setHeaderActions(new javax.swing.Action[]{addServletAction});
             

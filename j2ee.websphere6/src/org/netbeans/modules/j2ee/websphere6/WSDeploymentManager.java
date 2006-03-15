@@ -438,6 +438,9 @@ public class WSDeploymentManager implements DeploymentManager {
             if (type == ModuleType.WAR) {
                 return new WarDeploymentConfiguration(dm, deployableObject,ip);
             } else if (type == ModuleType.EAR) {
+                if(deployableObject instanceof J2eeApplicationObject) {
+                    return new EarDeploymentConfiguration(dm, (J2eeApplicationObject)deployableObject,ip);
+                }
                 return new EarDeploymentConfiguration(dm, deployableObject,ip);
             } else if (type == ModuleType.EJB) {
                 return new EjbDeploymentConfiguration(dm, deployableObject,ip);

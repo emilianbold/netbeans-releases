@@ -111,12 +111,60 @@ public interface DDXmiConstants {
     public  static final String EJB_JAR_HREF="EjbJarHref";
     
     
+    public static final  String ALT_ROOT="AltRoot";
+    public static final  String ALT_BINDINGS_ID="altBindings";
+    public static final  String ALT_EXTENSIONS_ID="altExtensions";
+    public static final  String ALT_ROOT_ID="altRoot";
+    //public static final  String APPROOT_ID="appRoot";
     
-    public static final  String APPROOT_ID="appRoot";
+    public static final String MODULE="Module";
+    public static final String MODULE_ID="module";
+    static public final String MODULE_XMI_TYPE="ModuleXmiType";
+    static public final String MODULE_HREF="ModuleHref";
+    static public final String MODULE_EXTENSIONS_ID="moduleExtensions";
+    static public final String MODULE_EXTENSIONS="ModuleExtensions";
+    static public final String MODULE_EXTENSIONS_XMI_ID="ModuleExtensionsXmiId";
+    static public final String MODULE_EXTENSIONS_ALT_ROOT="ModuleExtensionsAltRoot";
+    static public final String MODULE_EXTENSIONS_ALT_EXTENSIONS="ModuleExtensionsAltExtensions";
+    static public final String MODULE_EXTENSIONS_ALT_BINDINGS="ModuleExtensionsAltBindings";
+    static public final String MODULE_EXTENSIONS_XMI_TYPE="ModuleExtensionsXmiType";
     
     
-    static public final  String MODULE_XMI_TYPE_EJB_ID="application:EjbModule";
-    static public final  String MODULE_XMI_TYPE_WEB_ID="application:WebModule";
+    static public final  String MODULE_TYPE_EJB_STRING="application:EjbModule";
+    static public final  String MODULE_TYPE_WEB_STRING="application:WebModule";
+    static public final  String MODULE_TYPE_JAVA_CLIENT_MODULE_STRING="application:JavaClientModule";
+    static public final  String MODULE_TYPE_CONNECTOR_MODULE_STRING="application:ConnectorModule";
+    static public final  String [] MODULE_TYPE_STRINGS= {
+        MODULE_TYPE_EJB_STRING,
+        MODULE_TYPE_WEB_STRING,
+        MODULE_TYPE_JAVA_CLIENT_MODULE_STRING,
+        MODULE_TYPE_CONNECTOR_MODULE_STRING};
+    
+    
+    static public final  String MODULE_EXTENSIONS_TYPE_EJB_STRING="applicationext:EjbModuleExtension";
+    static public final  String MODULE_EXTENSIONS_TYPE_WEB_STRING="applicationext:WebModuleExtension";
+    static public final  String MODULE_EXTENSIONS_TYPE_JAVA_CLIENT_MODULE_STRING="applicationext:JavaClientModuleExtension";
+    static public final  String MODULE_EXTENSIONS_TYPE_CONNECTOR_MODULE_STRING="applicationext:ConnectorModuleExtension";
+    static public final  String [] MODULE_EXTENSIONS_TYPE_STRINGS= {
+        MODULE_EXTENSIONS_TYPE_EJB_STRING,
+        MODULE_EXTENSIONS_TYPE_WEB_STRING,
+        MODULE_EXTENSIONS_TYPE_JAVA_CLIENT_MODULE_STRING,
+        MODULE_EXTENSIONS_TYPE_CONNECTOR_MODULE_STRING};
+    
+    
+    
+    static public final  String MODULE_TYPE_EJB="Ejb";
+    static public final  String MODULE_TYPE_WEB="Web";
+    static public final  String MODULE_TYPE_JAVA_CLIENT="JavaClient";
+    static public final  String MODULE_TYPE_CONNECTOR="Connector";
+    static public final  String [] MODULE_TYPES={
+        MODULE_TYPE_EJB,
+        MODULE_TYPE_WEB,
+        MODULE_TYPE_JAVA_CLIENT,
+        MODULE_TYPE_CONNECTOR
+    };
+    
+    
     
     static public final  String EJB_EXTENSIONS_TYPE_SESSION="ejbext:SessionExtension";
     static public final  String EJB_EXTENSIONS_TYPE_ENTITY="ejbext:EntityExtension";
@@ -176,6 +224,7 @@ public interface DDXmiConstants {
     static public final String EJB_REF_BINDINGS="EjbRefBindings";
     static public final String EJB_BINDINGS_ID="ejbBindings";
     static public final String EXTENDED_SERVLETS="ExtendedServlets";
+    static public final String EXTENDED_SERVLETS_ID="extendedServlets";
     static public final String EXTENDED_SERVLETS_XMI_ID="ExtendedServletsXmiId";
     
     
@@ -205,6 +254,9 @@ public interface DDXmiConstants {
     
     static public final String DEFAULT_ERROR_PAGE="DefaultErrorPage";
     static public final String DEFAULT_ERROR_PAGE_ID="defaultErrorPage";
+    
+    static public final String PAGES_ID="pages";
+    static public final String PAGES   = "Pages";	// NOI18N
     static public final String PAGES_XMI_ID="PagesXmiId";
     static public final String PAGES_NAME="PagesName";
     static public final String PAGES_URI="PagesUri";
@@ -230,6 +282,7 @@ public interface DDXmiConstants {
     static public final String WEB_HREF_PREFIX    = "WEB-INF/web.xml#";
     
     static public final String EJB_EXTENSIONS="EjbExtensions";
+    static public final String EJB_EXTENSIONS_ID="ejbExtensions";    
     static public final String EJB_EXTENSIONS_XMI_ID="EjbExtensionsXmiId";
     static public final String EJB_EXTENSIONS_XMI_TYPE="EjbExtensionsXmiType";
     static public final String EJB_EXTENSIONS_XMI_NAME="EjbExtensionsXmiName";
@@ -244,12 +297,21 @@ public interface DDXmiConstants {
     static public final String [] LOCAL_TRANSACTION_BOUNDARY_TYPES={"BeanMethod", "ActivitySession"};
     static public final String [] LOCAL_TRANSACTION_RESOLVER_TYPES={"Application","ContainerAtBoundary"};
     static public final String [] LOCAL_TRANSACTION_UNRESOLVED_ACTION_TYPES={"Commi","Rollback"};
-    
+    static public final String LOCAL_TRANSACTION_ID="localTransaction";
     static public final String LOCAL_TRANSACTION="LocalTransaction";
     static public final String LOCAL_TRANSACTION_XMI_ID="LocalTransactionXmiId";
     static public final String LOCAL_TRANSACTION_UNRESOLVED_ACTION="LocalTransactionUnresolverAction";
     static public final String LOCAL_TRANSACTION_BOUNDARY="LocalTransactionBoundary";
     static public final String LOCAL_TRANSACTION_RESOLVER="LocalTransactionResolver";
+    static public final String UNRESOLVED_ACTION_ID="unresolvedAction";
+    static public final String BOUNDARY_ID="boundary";
+    static public final String RESOLVER_ID="resolver";
+    
+    
+    static public final String EXTENDED_SERVLET="ExtendedServlet";
+    static public final String MARKUP_LANGUAGES="MarkupLanguages";
+    static public final String EXTENDED_SERVLET_ID="extendedServlet";
+    static public final String MARKUP_LANGUAGES_ID="markupLanguages";
     
     static public final String CURRENT_BACKEND_ID_ID="currentBackendId";
     static public final String CURRENT_BACKEND_ID="CurrentBackendId";
@@ -285,23 +347,50 @@ public interface DDXmiConstants {
     public  static final String AUTH_TABLE_XMI_ID=AUTH_TABLE+XMI_ID;
     public  static final String AUTHORIZATIONS="authorizations";
     public  static final String AUTHORIZATION = "Authorization";
+    public  static final String AUTH_ID=AUTHORIZATION+XMI_ID;
+    
     
     public  static final String RUN_AS_MAP="RunAsMap";
     public  static final String RUN_AS_MAP_ID="runAsMap";
     public  static final String RUN_AS_MAP_XMI_ID=RUN_AS_MAP+XMI_ID;
     
+    public static final String ROLE   = "Role";	// NOI18N
+    public static final String GROUPS = "Groups";	// NOI18N
+    public static final String USERS  = "Users";
+    public static final String GROUP = "Group";	// NOI18N
+    public static final String USER  = "User";
     
+    public static final String ROLE_HREF   = "RoleHref";
+    public static final String GROUPS_XMI_ID = GROUPS+XMI_ID;
+    public static final String GROUPS_NAME   = GROUPS+NAME;
+    public static final String USERS_XMI_ID = USERS+XMI_ID;
+    public static final String USERS_NAME   = USERS+NAME;
+    
+    public static final String USERS_DEFAULT_NAME="samples";
+    public static final String GROUPS_DEFAULT_NAME="sampadmn";
     
     
     static public final String SPECIAL_SUBJECTS="SpecialSubjects";
     static public final String SPECIAL_SUBJECTS_TYPE=SPECIAL_SUBJECTS+TYPE;
     static public final String SPECIAL_SUBJECTS_XMI_ID=SPECIAL_SUBJECTS+XMI_ID;
     static public final String SPECIAL_SUBJECTS_NAME=SPECIAL_SUBJECTS+NAME;
+    
     static public final String SPECIAL_SUBJECTS_TYPE_EVERYONE_STRING="applicationbnd:Everyone";
     static public final String SPECIAL_SUBJECTS_TYPE_ALL_AUTHENTICATED_USERS_STRING="applicationbnd:AllAuthenticatedUsers";
+    static public final String SPECIAL_SUBJECTS_TYPE_SERVER_STRING="applicationbnd:Server";
+    
     static public final String SPECIAL_SUBJECTS_TYPE_EVERYONE="Everyone";
-    static public final String SPECIAL_SUBJECTS_TYPE_ALL_AUTHENTICATED_USERS="All Authenticated Users";
+    static public final String SPECIAL_SUBJECTS_TYPE_ALL_AUTHENTICATED_USERS="AllAuthenticatedUsers";
+    
+    
     static public final String []SPECIAL_SUBJECTS_TYPES= {
         SPECIAL_SUBJECTS_TYPE_EVERYONE,
-        SPECIAL_SUBJECTS_TYPE_ALL_AUTHENTICATED_USERS};
+        SPECIAL_SUBJECTS_TYPE_ALL_AUTHENTICATED_USERS
+    };
+    
+    
+    static public final String SHARED_SESSION_CONTEXT_ID="sharedSessionContext";
+    static public final String SHARED_SESSION_CONTEXT="SharedSessionContext";
+    
+    
 }

@@ -1,5 +1,5 @@
 /*
- * WSAppBnd.java
+ * WSWebBnd.java
  *
  *
  * To change this template, choose Tools | Template Manager

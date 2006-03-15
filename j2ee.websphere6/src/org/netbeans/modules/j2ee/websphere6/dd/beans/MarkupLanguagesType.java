@@ -17,8 +17,6 @@ public class MarkupLanguagesType extends org.netbeans.modules.schema2beans.BaseB
     static public final String [] AVALIABLE_NAMES={"WML","HTML","VXML"};
     static public final String [] AVALIABLE_MIME_TYPES={"vnd.wap.wml","text/html","text/x-vxml"};
     
-    static public final String PAGES   = "Pages";	// NOI18N
-    static public final String NAME = "Name";	// NOI18N
     static public final String URI   = "Uri";
     
     public MarkupLanguagesType() {
@@ -30,7 +28,7 @@ public class MarkupLanguagesType extends org.netbeans.modules.schema2beans.BaseB
         // Properties (see root bean comments for the bean graph)
         initPropertyTables(1);
         
-        this.createProperty("pages", 	// NOI18N
+        this.createProperty(PAGES_ID,
                 PAGES,
                 Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY,
                 PageType.class);
@@ -90,27 +88,7 @@ public class MarkupLanguagesType extends org.netbeans.modules.schema2beans.BaseB
     public int removePages(PageType  value) {
         return this.removeValue(PAGES, value);
     }
-    /*
-    public void setPagesXmiId(int index,String value) {
-        this.setAttributeValue(PAGES,index,PAGES_XMI_ID,value);
-    }
-    
-    public String getPagesXmiId(int index) {
-        return (String)this.getAttributeValue(PAGES,index,PAGES_XMI_ID);
-    }
-    public void setPagesName(int index,String value) {
-        this.setAttributeValue(PAGES,index,PAGES_NAME,value);
-    }
-    public String getPagesName(int index) {
-        return (String)this.getAttributeValue(PAGES,index,PAGES_NAME);
-    }
-    public void setPagesUri(int index,String value) {
-        this.setAttributeValue(PAGES,index,PAGES_URI,value);
-    }
-    public String getPagesUri(int index) {
-        return (String)this.getAttributeValue(PAGES,index,PAGES_URI);
-    }*/
-    
+       
     public static void addComparator(org.netbeans.modules.schema2beans.BeanComparator c) {
         comparators.add(c);
     }

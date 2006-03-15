@@ -65,16 +65,20 @@ public class SpecialSubjectType extends org.netbeans.modules.schema2beans.BaseBe
     }
     public void setType(String value) {
         if(value.equals(SPECIAL_SUBJECTS_TYPE_ALL_AUTHENTICATED_USERS)) {
-            this.setAttributeValue(SPECIAL_SUBJECTS_TYPE,SPECIAL_SUBJECTS_TYPE_ALL_AUTHENTICATED_USERS_STRING);
+            this.setAttributeValue(SPECIAL_SUBJECTS_TYPE,
+                    SPECIAL_SUBJECTS_TYPE_ALL_AUTHENTICATED_USERS_STRING);
         } else if(value.equals(SPECIAL_SUBJECTS_TYPE_EVERYONE)) {
-            this.setAttributeValue(SPECIAL_SUBJECTS_TYPE,SPECIAL_SUBJECTS_TYPE_EVERYONE_STRING);
+            this.setAttributeValue(SPECIAL_SUBJECTS_TYPE,
+                    SPECIAL_SUBJECTS_TYPE_EVERYONE_STRING);
         } else {
             this.setAttributeValue(SPECIAL_SUBJECTS_TYPE,value);
         }
     }
     public String getType() {
         String str=(String)this.getAttributeValue(SPECIAL_SUBJECTS_TYPE);
-        if(str.equals(SPECIAL_SUBJECTS_TYPE_EVERYONE_STRING)) {
+        if(str==null) {
+            return null;
+        } else if(str.equals(SPECIAL_SUBJECTS_TYPE_EVERYONE_STRING)) {
             return SPECIAL_SUBJECTS_TYPE_EVERYONE;
         } else if(str.equals(SPECIAL_SUBJECTS_TYPE_ALL_AUTHENTICATED_USERS_STRING)) {
             return SPECIAL_SUBJECTS_TYPE_ALL_AUTHENTICATED_USERS;
@@ -85,19 +89,15 @@ public class SpecialSubjectType extends org.netbeans.modules.schema2beans.BaseBe
     
     
     public void validate() throws org.netbeans.modules.schema2beans.ValidateException {
-        
         if(getXmiId()==null) {
-            throw new org.netbeans.modules.schema2beans.ValidateException("getXmiId() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, "PageType", this);	// NOI18N
+            throw new org.netbeans.modules.schema2beans.ValidateException("getXmiId() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, "SpecialSubjectType", this);	// NOI18N
         }
         if(getName()==null) {
-            throw new org.netbeans.modules.schema2beans.ValidateException("getName() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, "PageType", this);	// NOI18N
+            throw new org.netbeans.modules.schema2beans.ValidateException("getName() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, "SpecialSubjectType", this);	// NOI18N
         }
         if(getType()==null) {
-            throw new org.netbeans.modules.schema2beans.ValidateException("getType() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, "PageType", this);	// NOI18N
+            throw new org.netbeans.modules.schema2beans.ValidateException("getType() == null", org.netbeans.modules.schema2beans.ValidateException.FailureType.NULL_VALUE, "SpecialSubjectType", this);	// NOI18N
         }
-        
-        
-        
     }
     
     

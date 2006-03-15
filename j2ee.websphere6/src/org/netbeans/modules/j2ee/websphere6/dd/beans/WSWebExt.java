@@ -117,7 +117,7 @@ public class WSWebExt extends DDXmi{
         this.createAttribute(AUTO_RESPONSE_ENCODING_ID,AUTO_RESPONSE_ENCODING,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         this.createAttribute(AUTO_LOAD_FILTERS_ID,AUTO_LOAD_FILTERS,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         
-        this.createProperty("extendedServlets", 	// NOI18N
+        this.createProperty(EXTENDED_SERVLETS_ID,
                 EXTENDED_SERVLETS,
                 Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY,
                 ExtendedServletsType.class);

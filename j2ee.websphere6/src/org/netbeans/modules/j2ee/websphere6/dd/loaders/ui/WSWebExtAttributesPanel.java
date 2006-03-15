@@ -137,7 +137,7 @@ public class WSWebExtAttributesPanel extends  SectionInnerPanel  implements java
         nameField = new javax.swing.JTextField();
         autoLoadFiltersCheckBox = new javax.swing.JCheckBox();
 
-        reloadIntervalCheckBox.setText("Reload Interval:");
+        reloadIntervalCheckBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/dd/loaders/ui/Bundle").getString("LBL_ReloadInterval"));
         reloadIntervalCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         reloadIntervalCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 

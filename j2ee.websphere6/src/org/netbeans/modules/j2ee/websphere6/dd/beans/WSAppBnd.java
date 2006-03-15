@@ -66,8 +66,7 @@ public class WSAppBnd extends DDXmi{
         this.initialize(options);
     };
     
-    public void initialize(int options) {
-        
+    public void initialize(int options) {        
     }
     
     
@@ -76,7 +75,9 @@ public class WSAppBnd extends DDXmi{
         setNsAppBnd();
         setNsCommon();
         setNsXmi();
+        setNsXsi();
         setXmiId("Application_ID_Bnd");
+        setAuthTable(new AuthorizationTableType());
         setAuthTableId(AUTH_TABLE+"_1");
         setApplication("");
         setApplicationHref("Application_ID");
@@ -91,6 +92,7 @@ public class WSAppBnd extends DDXmi{
         this.createAttribute(NS_COMMON_ID, NS_COMMON,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         this.createAttribute(NS_APP_BND_ID,NS_APP_BND,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         this.createAttribute(NS_XMI_ID,    NS_XMI,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
+        this.createAttribute(NS_XSI_ID,    NS_XSI,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         this.createAttribute(XMI_VERSION_ID,XMI_VERSION,AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         // Properties (see root bean comments for the bean graph)
         initPropertyTables(3);

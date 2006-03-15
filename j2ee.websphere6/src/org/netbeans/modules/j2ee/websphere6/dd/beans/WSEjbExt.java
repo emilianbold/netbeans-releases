@@ -89,7 +89,7 @@ public class WSEjbExt extends DDXmi{
         this.createAttribute(NS_COMMONEXT_LOCALTRAN_ID,NS_COMMONEXT_LOCALTRAN,      AttrProp.CDATA | AttrProp.IMPLIED,null, null);
         
         
-        this.createProperty("ejbExtensions", 	// NOI18N
+        this.createProperty(EJB_EXTENSIONS_ID, 	
                 EJB_EXTENSIONS,
                 Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY,
                 EjbExtensionsType.class);
