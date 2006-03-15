@@ -736,6 +736,22 @@ public class JavaFormatSupport extends ExtFormatSupport {
                         }
                         break;
 
+                    case JavaTokenContext.COLON_ID:
+                        TokenItem ttt = findAnyToken(t, null, new TokenID[] {JavaTokenContext.CASE, JavaTokenContext.DEFAULT, JavaTokenContext.FOR, JavaTokenContext.QUESTION, JavaTokenContext.ASSERT}, t.getTokenContextPath(), true);
+                        if (ttt != null && ttt.getTokenID().getNumericID() == JavaTokenContext.QUESTION_ID) {
+                            indent = getTokenIndent(ttt) + getShiftWidth();
+                        } else {
+                            // Indent of line with ':' plus one indent level
+                            indent = getTokenIndent(t) + getShiftWidth();
+                        }
+                        break;
+
+                    case JavaTokenContext.QUESTION_ID:
+                    case JavaTokenContext.DO_ID:
+                    case JavaTokenContext.ELSE_ID:
+                        indent = getTokenIndent(t) + getShiftWidth();
+                        break;
+
                     case JavaTokenContext.RPAREN_ID:
                         // Try to find the matching left paren
                         TokenItem rpmt = findMatchingToken(t, null, JavaTokenContext.LPAREN, true);
@@ -753,24 +769,11 @@ public class JavaFormatSupport extends ExtFormatSupport {
                                 }
                             }
                         }
-                        break;
-
-                    case JavaTokenContext.COLON_ID:
-                        TokenItem ttt = findAnyToken(t, null, new TokenID[] {JavaTokenContext.CASE, JavaTokenContext.DEFAULT, JavaTokenContext.FOR, JavaTokenContext.QUESTION, JavaTokenContext.ASSERT}, t.getTokenContextPath(), true);
-                        if (ttt != null && ttt.getTokenID().getNumericID() == JavaTokenContext.QUESTION_ID) {
-                            indent = getTokenIndent(ttt) + getShiftWidth();
-                        } else {
-                            // Indent of line with ':' plus one indent level
-                            indent = getTokenIndent(t) + getShiftWidth();
+                        if (indent < 0) {
+                            indent = computeStatementIndent(t);
                         }
                         break;
-
-                    case JavaTokenContext.QUESTION_ID:
-                    case JavaTokenContext.DO_ID:
-                    case JavaTokenContext.ELSE_ID:
-                        indent = getTokenIndent(t) + getShiftWidth();
-                        break;
-
+                        
                     case JavaTokenContext.COMMA_ID:
                         if (isEnumComma(t)) {
                             indent = getTokenIndent(t);
@@ -778,24 +781,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                         } // else continue to default
 
                     default: {
-                        // Find stmt start and add continuation indent
-                        TokenItem stmtStart = findStatementStart(t);
-                        indent = getTokenIndent(stmtStart);
-                        if (stmtStart != null) {
-                            // Check whether there is a comma on the previous line end
-                            // and if so then also check whether the present
-                            // statement is inside array initialization statement
-                            // and not inside parens and if so then do not indent
-                            // statement continuation
-                            if (t != null && tokenEquals(t, JavaTokenContext.COMMA, tokenContextPath)) {
-                                if (isArrayInitializationBraceBlock(t, null) && !isInsideParens(t, stmtStart)) {
-                                    // Eliminate the later effect of statement continuation shifting
-                                    indent -= getFormatStatementContinuationIndent();
-                                }
-                            }
-                            indent += getFormatStatementContinuationIndent();
-                        }
-
+                        indent = computeStatementIndent(t);
                         break;
                     }
                 }
@@ -810,6 +796,28 @@ public class JavaFormatSupport extends ExtFormatSupport {
             indent = 0;
         }
 
+        return indent;
+    }
+
+    private int computeStatementIndent(final TokenItem t) {
+        int indent;
+        // Find stmt start and add continuation indent
+        TokenItem stmtStart = findStatementStart(t);
+        indent = getTokenIndent(stmtStart);
+        if (stmtStart != null) {
+            // Check whether there is a comma on the previous line end
+            // and if so then also check whether the present
+            // statement is inside array initialization statement
+            // and not inside parents and if so then do not indent
+            // statement continuation
+            if (t != null && tokenEquals(t, JavaTokenContext.COMMA, tokenContextPath)) {
+                if (isArrayInitializationBraceBlock(t, null) && !isInsideParens(t, stmtStart)) {
+                    // Eliminate the later effect of statement continuation shifting
+                    indent -= getFormatStatementContinuationIndent();
+                }
+            }
+            indent += getFormatStatementContinuationIndent();
+        }
         return indent;
     }
 
