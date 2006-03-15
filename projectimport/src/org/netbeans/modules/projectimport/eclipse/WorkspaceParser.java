@@ -32,6 +32,7 @@ import org.netbeans.modules.projectimport.ProjectImporterException;
 final class WorkspaceParser {
     
     private static final String VM_XML = "org.eclipse.jdt.launching.PREF_VM_XML"; // NOI18N
+    private static final String IGNORED_CP_ENTRY = "##<cp entry ignore>##"; // NOI18N
     
     private static final String VARIABLE_PREFIX = "org.eclipse.jdt.core.classpathVariable."; // NOI18N
     private static final int VARIABLE_PREFIX_LENGTH = VARIABLE_PREFIX.length();
@@ -46,7 +47,7 @@ final class WorkspaceParser {
     //            "|org.eclipse.jdt.launching.JRE_CONTAINER";
     //    private static final int CP_CONTAINER_SUFFIX_LENGTH = CP_CONTAINER_SUFFIX.length();
     
-    private Workspace workspace;
+    private final Workspace workspace;
     
     /** Creates a new instance of WorkspaceParser */
     WorkspaceParser(Workspace workspace) {
@@ -89,7 +90,7 @@ final class WorkspaceParser {
                 var.setName(key.substring(VARIABLE_PREFIX_LENGTH));
                 var.setLocation(value);
                 workspace.addVariable(var);
-            } else if (key.startsWith(USER_LIBRARY_PREFIX)) {
+            } else if (key.startsWith(USER_LIBRARY_PREFIX) && !value.startsWith(IGNORED_CP_ENTRY)) { // #73542
                 String libName = key.substring(USER_LIBRARY_PREFIX_LENGTH);
                 workspace.addUserLibrary(libName, UserLibraryParser.getJars(value));
             } // else we don't use other properties in the meantime
