@@ -1814,6 +1814,37 @@ public class FileObjectTestHid extends TestBaseHid {
         }       
     }
 
+    public void testUseWrongLock()  throws IOException {
+        if (!root.canWrite() || root.getFileSystem().isReadOnly()) {
+            return;
+        }
+        checkSetUp();
+        
+        FileObject fo1 = getTestFile1 (root);
+        FileObject fo2 = getTestFile2 (root);
+        FileObject target = getTestFolder1(root);
+
+        FileLock lock = null;
+        try {
+            lock = fo1.lock();
+            try {
+                fo2.delete(lock);
+                fail();
+            } catch (IOException ex) {}
+            try {
+                fo2.move(lock,target,"by","hi");
+                fail();
+            } catch (IOException ex) {}
+            try {
+                fo2.rename(lock,"hi","by");
+                fail();
+            } catch (IOException ex) {}
+        } finally {
+            if (lock != null) lock.releaseLock();
+        }
+    }
+
+
     /** Test of rename method, of class org.openide.filesystems.FileObject. */
     public void testRename() throws IOException {
         checkSetUp();
@@ -1903,7 +1934,7 @@ public class FileObjectTestHid extends TestBaseHid {
         fsAssert("attributes should be available too: " + fo1.getAttribute(attrName),
         value.equals((String)fo1.getAttribute(attrName)) );
         fsAssert ("",fold.getFileObject(fo1.getName(),fo1.getExt()) != null);
-        fsAssert ("",fo1.getName().equals("testXY") && fo1.getExt().equals(""));        
+        fsAssert ("",fo1.getName().equals("testXY") && fo1.getExt().equals(""));
         this.fileRenamedAssert("File was actually renamed.",1);
     }
 
