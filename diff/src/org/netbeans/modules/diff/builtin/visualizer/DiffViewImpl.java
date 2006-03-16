@@ -235,10 +235,15 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
         if (diffNo < -1 || diffNo >= diffs.length) throw new IllegalArgumentException("Illegal difference number: " + diffNo);
 
         if (diffNo == -1) {
-            this.linesComp1.setActiveLine(-1);
-            this.linesComp2.setActiveLine(-1);
-            linesComp2.repaint();
-            linesComp1.repaint();
+            if (linesComp1 != null) {
+                this.linesComp1.setActiveLine(-1);
+                linesComp1.repaint();
+            }
+
+            if (linesComp2 != null) {
+                this.linesComp2.setActiveLine(-1);
+                linesComp2.repaint();
+            }
         } else {
             currentDiffLine = diffNo;
             showCurrentLine();

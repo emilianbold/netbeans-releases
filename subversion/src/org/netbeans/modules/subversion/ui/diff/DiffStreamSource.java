@@ -55,8 +55,19 @@ public class DiffStreamSource extends StreamSource {
         this.title = title;
     }
 
+    /** Creates DiffStreamSource for nonexiting files. */
+    public DiffStreamSource(String title) {
+        this.baseFile = null;
+        this.revision = null;
+        this.title = title;
+    }
+
     public String getName() {
-        return baseFile.getName();
+        if (baseFile != null) {
+            return baseFile.getName();
+        } else {
+            return "anonymous";
+        }
     }
 
     public String getTitle() {
