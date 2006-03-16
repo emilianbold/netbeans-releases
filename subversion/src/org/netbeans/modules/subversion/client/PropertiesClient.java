@@ -60,7 +60,7 @@ public final class PropertiesClient {
         if (file.isDirectory()) {
             store = new File(file, ".svn/dir-props-base");  // NOI18N
         } else {
-            store = new File(file.getParentFile(), ".svn/props-base/" + file.getName() + ".svn-base");  // NOI18N
+            store = new File(file.getParentFile(), ".svn/prop-base/" + file.getName() + ".svn-base");  // NOI18N
         }
         if (store.isFile()) {
             return normalize(KVParser.parse(store));
@@ -78,7 +78,7 @@ public final class PropertiesClient {
         if (file.isDirectory()) {
             store = new File(file, ".svn/dir-props");  // NOI18N
         } else {
-            store = new File(file.getParentFile(), ".svn/props/" + file.getName() + ".svn-base");  // NOI18N
+            store = new File(file.getParentFile(), ".svn/props/" + file.getName() + ".svn-work");  // NOI18N
         }
         if (store.isFile()) {
             return normalize(KVParser.parse(store));
@@ -93,7 +93,7 @@ public final class PropertiesClient {
         while (it.hasNext()) {
             Map.Entry next = (Map.Entry) it.next();
             // getKey().toString() == the normalization
-            map.put(next.getKey().toString(), next.getValue());
+            ret.put(next.getKey().toString(), next.getValue());
         }
         return ret;
     }
