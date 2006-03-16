@@ -31,6 +31,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.text.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.modules.diff.NestableDiffView;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 
 import org.openide.actions.CopyAction;
@@ -53,7 +54,7 @@ import org.netbeans.editor.ext.ExtCaret;
  * 
  * @author Maros Sandor
  */
-public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api.diff.DiffView, javax.swing.event.CaretListener {
+public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api.diff.DiffView, javax.swing.event.CaretListener, NestableDiffView {
 
 //    static final long serialVersionUID =3683458237532937983L;
     
@@ -542,31 +543,57 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
         }
     }
 
-    public ViewHandle joinScrollPane(JScrollPane pane) {
+    // NestableDiffView implementation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    public void joinScrollPane(JScrollPane pane) {
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        // synchronize horizontal bars
-        return new ViewHandle();
     }
 
-    public  class ViewHandle {
-        public int getWidth() {
-            Dimension d1 = jScrollPane1.getViewport().getViewSize();
-            Dimension d2 = jScrollPane2.getViewport().getViewSize();
-            int w = Math.max(d1.width, d2.width) * 2;
-            return w;
-        }
+    public int getInnerWidth() {
+        Dimension d1 = jScrollPane1.getViewport().getView().getPreferredSize();
+        Dimension d2 = jScrollPane2.getViewport().getView().getPreferredSize();
+        int w = Math.max(d1.width, d2.width) * 2;
+        return w;
+    }
 
-        public void setHorizontalPosition(int pos) {
-            pos /= 2;
-            jScrollPane1.getViewport().setViewPosition(new Point(pos,0));
-            jScrollPane1.repaint();
-            jScrollPane2.getViewport().setViewPosition(new Point(pos,0));
-            jScrollPane2.repaint();
+    public void setInnerWidth(int width) {
+        Dimension dim = jScrollPane1.getViewport().getViewSize();
+        dim.width = width/2;
+        jScrollPane1.getViewport().setViewSize(dim);
+
+        dim = jScrollPane2.getViewport().getViewSize();
+        dim.width = width/2;
+        jScrollPane2.getViewport().setViewSize(dim);
+    }
+
+    public void setHorizontalPosition(int pos) {
+        pos /= 2;
+
+        Point p = jScrollPane1.getViewport().getViewPosition();
+        p.x =  pos;
+        jScrollPane1.getViewport().setViewPosition(p);
+
+        p = jScrollPane2.getViewport().getViewPosition();
+        p.x =  pos;
+        jScrollPane2.getViewport().setViewPosition(p);
+    }
+
+    /** Return change's top y-axis position. */
+    public int getChangeY(int change) {
+        Difference diff = diffs[change];
+        int line = diff.getFirstStart() + diffShifts[change][0];
+        int padding = 5;
+        if (line <= 5) {
+            padding = line/2;
         }
+        initGlobalSizes();
+        int ypos = (totalHeight*(line - padding - 1))/(totalLines + 1);
+        ypos += fileLabel1.getHeight();
+        return ypos;
     }
 
 
