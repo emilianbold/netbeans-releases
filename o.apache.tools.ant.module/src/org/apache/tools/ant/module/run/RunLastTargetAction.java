@@ -46,10 +46,12 @@ public final class RunLastTargetAction extends AbstractAction implements ChangeL
         LastTargetExecuted.addChangeListener(WeakListeners.change(this, LastTargetExecuted.class));
     }
     
+    @Override
     public boolean isEnabled() {
         return LastTargetExecuted.getLastBuildScript() != null;
     }
     
+    @Override
     public Object getValue(String key) {
         if (key.equals(Action.SHORT_DESCRIPTION)) {
             String display = LastTargetExecuted.getProcessDisplayName();

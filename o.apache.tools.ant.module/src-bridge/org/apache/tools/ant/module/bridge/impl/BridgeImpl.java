@@ -26,11 +26,9 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
@@ -42,6 +40,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
+import org.apache.tools.ant.module.Generics;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.bridge.BridgeInterface;
@@ -73,7 +72,7 @@ public class BridgeImpl implements BridgeInterface {
      * Index of loggers by active thread.
      * @see #stop
      */
-    private static final Map/*<Thread,NbBuildLogger>*/ loggersByThread = new WeakHashMap();
+    private static final Map<Thread,NbBuildLogger> loggersByThread = new WeakHashMap<Thread,NbBuildLogger>();
     
     public BridgeImpl() {
     }
@@ -116,8 +115,8 @@ public class BridgeImpl implements BridgeInterface {
         return null;
     }
     
-    public boolean run(File buildFile, List targets, InputStream in, OutputWriter out, OutputWriter err,
-                       Properties properties, int verbosity, String displayName, Runnable interestingOutputCallback) {
+    public boolean run(File buildFile, List<String> targets, InputStream in, OutputWriter out, OutputWriter err,
+                       Map<String,String> properties, int verbosity, String displayName, Runnable interestingOutputCallback) {
         if (!classpathInitialized) {
             classpathInitialized = true;
             // #46171: Ant expects this path to have itself and whatever else you loaded with it,
@@ -147,7 +146,7 @@ public class BridgeImpl implements BridgeInterface {
         // first use the ProjectHelper to create the project object
         // from the given build file.
         final NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName, interestingOutputCallback);
-        Vector targs;
+        Vector<String> targs;
         try {
             project = new Project();
             project.addBuildListener(logger);
@@ -161,15 +160,13 @@ public class BridgeImpl implements BridgeInterface {
             // #14993:
             project.setUserProperty("ant.version", Main.getAntVersion()); // NOI18N
             project.setUserProperty("ant.home", AntSettings.getDefault().getAntHomeWithDefault().getAbsolutePath()); // NOI18N
-            Iterator it = properties.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry) it.next();
-                project.setUserProperty((String) entry.getKey(), (String) entry.getValue());
+            for (Map.Entry<String,String> entry : properties.entrySet()) {
+                project.setUserProperty(entry.getKey(), entry.getValue());
             }
             if (in != null && ant16) {
                 try {
-                    Method m = Project.class.getMethod("setDefaultInputStream", new Class[] {InputStream.class}); // NOI18N
-                    m.invoke(project, new Object[] {in});
+                    Method m = Project.class.getMethod("setDefaultInputStream", InputStream.class); // NOI18N
+                    m.invoke(project, in);
                 } catch (Exception e) {
                     AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
                 }
@@ -185,12 +182,12 @@ public class BridgeImpl implements BridgeInterface {
             project.setInputHandler(new NbInputHandler(interestingOutputCallback));
             
             if (targets != null) {
-                targs = new Vector(targets);
+                targs = new Vector<String>(targets);
             } else {
-                targs = new Vector(1);
+                targs = new Vector<String>(1);
                 targs.add(project.getDefaultTarget());
             }
-            logger.setActualTargets(targets != null ? (String[])targets.toArray(new String[targets.size()]) : null);
+            logger.setActualTargets(targets != null ? targets.toArray(new String[targets.size()]) : null);
         }
         catch (BuildException be) {
             logger.buildInitializationFailed(be);
@@ -213,9 +210,9 @@ public class BridgeImpl implements BridgeInterface {
         InputStream is = System.in;
         if (in != null && ant16) {
             try {
-                Class dis = Class.forName("org.apache.tools.ant.DemuxInputStream"); // NOI18N
-                Constructor c = dis.getConstructor(new Class[] {Project.class});
-                is = (InputStream)c.newInstance(new Object[] {project});
+                Class<? extends InputStream> dis = Class.forName("org.apache.tools.ant.DemuxInputStream").asSubclass(InputStream.class); // NOI18N
+                Constructor<? extends InputStream> c = dis.getConstructor(Project.class);
+                is = c.newInstance(project);
             } catch (Exception e) {
                 AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -261,16 +258,14 @@ public class BridgeImpl implements BridgeInterface {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 IntrospectedInfo custom = AntSettings.getDefault().getCustomDefs();
-                Map defs = new HashMap(); // Map<String,Map<String,Class>>
-                defs.put("task", p2.getTaskDefinitions());
-                defs.put("type", p2.getDataTypeDefinitions());
+                Map<String,Map<String,Class>> defs = new HashMap<String,Map<String,Class>>();
+                defs.put("task", Generics.checkedMapByCopy(p2.getTaskDefinitions(), String.class, Class.class));
+                defs.put("type", Generics.checkedMapByCopy(p2.getDataTypeDefinitions(), String.class, Class.class));
                 custom.scanProject(defs);
                 logger.shutdown();
                 // #8993: also try to refresh masterfs...this is hackish...
                 // cf. also RefreshAllFilesystemsAction
-                FileSystem[] allFileSystems = getFileSystems();
-                for (int i = 0; i < allFileSystems.length; i++) {
-                    FileSystem fs = allFileSystems[i];
+                for (FileSystem fs : getFileSystems()) {
                     fs.refresh(false);                    
                 }                                
                 gutProject(p2);
@@ -299,7 +294,7 @@ public class BridgeImpl implements BridgeInterface {
     public void stop(final Thread process) {
         NbBuildLogger logger;
         synchronized (loggersByThread) {
-            logger = (NbBuildLogger) loggersByThread.get(process);
+            logger = loggersByThread.get(process);
         }
         if (logger != null) {
             // Try stopping at a safe point.
@@ -345,11 +340,10 @@ public class BridgeImpl implements BridgeInterface {
             return fileSystems;
         }
         File[] roots = File.listRoots();
-        Set allRoots = new LinkedHashSet();
+        Set<FileSystem> allRoots = new LinkedHashSet<FileSystem>();
         assert roots != null && roots.length > 0 : "Could not list file roots"; // NOI18N
-        
-        for (int i = 0; i < roots.length; i++) {
-            File root = roots[i];
+
+        for (File root : roots) {
             FileObject random = FileUtil.toFileObject(root);
             if (random == null) continue;
             
@@ -370,22 +364,17 @@ public class BridgeImpl implements BridgeInterface {
                 throw new AssertionError(e);
             }
         }
-        FileSystem[] retVal = new FileSystem [allRoots.size()];
-        allRoots.toArray(retVal);
-        assert retVal.length > 0 : "Could not get any filesystem"; // NOI18N
-        
-        return fileSystems = retVal;
+        assert !allRoots.isEmpty() : "Could not get any filesystem"; // NOI18N
+        return fileSystems = allRoots.toArray(new FileSystem[allRoots.size()]);
     }
 
     private static void addCustomDefs(Project project) throws BuildException, IOException {
         long start = System.currentTimeMillis();
         if (AntBridge.getInterface().isAnt16()) {
-            Map/*<String,ClassLoader>*/ antlibLoaders = AntBridge.getCustomDefClassLoaders();
-            Iterator it = antlibLoaders.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                String cnb = (String)entry.getKey();
-                ClassLoader l = (ClassLoader)entry.getValue();
+            Map<String,ClassLoader> antlibLoaders = AntBridge.getCustomDefClassLoaders();
+            for (Map.Entry<String,ClassLoader> entry : antlibLoaders.entrySet()) {
+                String cnb = entry.getKey();
+                ClassLoader l = entry.getValue();
                 String resource = cnb.replace('.', '/') + "/antlib.xml"; // NOI18N
                 URL antlib = l.getResource(resource);
                 if (antlib == null) {
@@ -399,16 +388,12 @@ public class BridgeImpl implements BridgeInterface {
             }
         } else {
             // For Ant 1.5, just dump in old-style defs in the simplest manner.
-            Map customDefs = AntBridge.getCustomDefsNoNamespace();
-            Iterator defs = ((Map)customDefs.get("task")).entrySet().iterator(); // NOI18N
-            while (defs.hasNext()) {
-                Map.Entry entry = (Map.Entry)defs.next();
-                project.addTaskDefinition((String)entry.getKey(), (Class)entry.getValue());
+            Map<String,Map<String,Class>> customDefs = AntBridge.getCustomDefsNoNamespace();
+            for (Map.Entry<String,Class> entry : customDefs.get("task").entrySet()) { // NOI18N
+                project.addTaskDefinition(entry.getKey(), entry.getValue());
             }
-            defs = ((Map)customDefs.get("type")).entrySet().iterator(); // NOI18N
-            while (defs.hasNext()) {
-                Map.Entry entry = (Map.Entry)defs.next();
-                project.addDataTypeDefinition((String)entry.getKey(), (Class)entry.getValue());
+            for (Map.Entry<String,Class> entry : customDefs.get("type").entrySet()) { // NOI18N
+                project.addDataTypeDefinition(entry.getKey(), entry.getValue());
             }
         }
         if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -437,12 +422,11 @@ public class BridgeImpl implements BridgeInterface {
             Field lockF = shutdownC.getDeclaredField("lock"); // NOI18N
             lockF.setAccessible(true);
             Object lock = lockF.get(null);
-            Set toRemove = new HashSet(); // Set<Thread>
+            Set<Thread> toRemove = new HashSet<Thread>();
             synchronized (lock) {
-                Set hooks = (Set)hooksF.get(null);
-                Iterator it = hooks.iterator();
-                while (it.hasNext()) {
-                    Object wrappedHook = it.next();
+                @SuppressWarnings("unchecked")
+                Set<Object> hooks = (Set) hooksF.get(null);
+                for (Object wrappedHook : hooks) {
                     Thread hook = (Thread)hookF.get(wrappedHook);
                     if (hook.getClass().getName().equals("org.apache.tools.ant.taskdefs.ProcessDestroyer")) { // NOI18N
                         // Don't remove it now - will get ConcurrentModificationException.
@@ -450,9 +434,7 @@ public class BridgeImpl implements BridgeInterface {
                     }
                 }
             }
-            Iterator it = toRemove.iterator();
-            while (it.hasNext()) {
-                Thread hook = (Thread)it.next();
+            for (Thread hook : toRemove) {
                 if (!Runtime.getRuntime().removeShutdownHook(hook)) {
                     throw new IllegalStateException("Hook was not really registered!"); // NOI18N
                 }

@@ -7,12 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.api.support;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -101,7 +102,7 @@ public final class ActionUtils {
         if (suffix != null && suffix.indexOf('/') != -1) {
             throw new IllegalArgumentException("Cannot includes slashes in suffix: " + suffix); // NOI18N
         }
-        Collection/*<FileObject>*/ files = new LinkedHashSet(); // #50644: remove dupes
+        Collection<FileObject> files = new LinkedHashSet<FileObject>(); // #50644: remove dupes
         Iterator it = context.lookup(new Lookup.Template(DataObject.class)).allInstances().iterator();
         // XXX this should perhaps also check for FileObject's...
         while (it.hasNext()) {
@@ -126,7 +127,7 @@ public final class ActionUtils {
         if (files.isEmpty()) {
             return null;
         }
-        return (FileObject[])files.toArray(new FileObject[files.size()]);
+        return files.toArray(new FileObject[files.size()]);
     }
     
     /**
@@ -157,11 +158,11 @@ public final class ActionUtils {
      * @throws IllegalArgumentException in case some source file is not in the source directory
      */
     public static FileObject[] regexpMapFiles(FileObject[] fromFiles, FileObject fromDir, Pattern fromRx, FileObject toDir, String toSubst, boolean strict) throws IllegalArgumentException {
-        List/*<FileObject>*/ files = new ArrayList();
-        for (int i = 0; i < fromFiles.length; i++) {
-            String path = FileUtil.getRelativePath(fromDir, fromFiles[i]);
+        List<FileObject> files = new ArrayList<FileObject>();
+        for (FileObject fromFile : fromFiles) {
+            String path = FileUtil.getRelativePath(fromDir, fromFile);
             if (path == null) {
-                throw new IllegalArgumentException("The file " + fromFiles[i] + " is not in " + fromDir); // NOI18N
+                throw new IllegalArgumentException("The file " + fromFile + " is not in " + fromDir); // NOI18N
             }
             String toPath;
             if (fromRx != null) {
@@ -188,7 +189,7 @@ public final class ActionUtils {
             }
             files.add(target);
         }
-        return (FileObject[])files.toArray(new FileObject[files.size()]);
+        return files.toArray(new FileObject[files.size()]);
     }
     
     /**
@@ -231,7 +232,7 @@ public final class ActionUtils {
             }
             if (i > 0) {
                 b.append(',');
-            }            
+            }
             b.append(path);
             if (files[i].isFolder()) {
                 // files[i] == dir, cannot use "/".

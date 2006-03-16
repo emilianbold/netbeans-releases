@@ -54,6 +54,7 @@ public class AntLoggerTest extends NbTestCase {
     private File testdir;
     private FileObject testdirFO;
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         LOGGER.reset();
@@ -131,7 +132,7 @@ public class AntLoggerTest extends NbTestCase {
         LOGGER.interestingLogLevels = new int[] {AntEvent.LOG_DEBUG};
         run(testdirFO.getFileObject("property.xml"));
         //System.err.println("messages=" + LOGGER.messages);
-        List/*<String>*/ messages = LOGGER.getMessages();
+        List<String> messages = LOGGER.getMessages();
         assertTrue("have message with task ID in " + messages, messages.contains("property:4:Setting project property: propname -> propval"));
     }
     
@@ -142,15 +143,15 @@ public class AntLoggerTest extends NbTestCase {
         
         public boolean interestedInSessionFlag;
         public boolean interestedInAllScriptsFlag;
-        public Set/*<File>*/ interestingScripts;
+        public Set<File> interestingScripts;
         public String[] interestingTargets;
         public String[] interestingTasks;
         public int[] interestingLogLevels;
         public boolean collectLineNumbersForTargets;
         /** Format of each: "/path/to/file.xml:line#targetName" (line numbers only if collectLineNumbersForTargets) */
-        private List/*<String>*/ targetsStarted;
+        private List<String> targetsStarted;
         /** Format of each: "taskname:level:message" */
-        private List/*<String>*/ messages;
+        private List<String> messages;
         
         public TestLogger() {}
         
@@ -158,47 +159,54 @@ public class AntLoggerTest extends NbTestCase {
         public synchronized void reset() {
             interestedInSessionFlag = false;
             interestedInAllScriptsFlag = false;
-            interestingScripts = new HashSet();
+            interestingScripts = new HashSet<File>();
             interestingTargets = AntLogger.NO_TARGETS;
             interestingTasks = AntLogger.NO_TASKS;
             interestingLogLevels = new int[0];
             collectLineNumbersForTargets = false;
-            targetsStarted = new ArrayList();
-            messages = new ArrayList();
+            targetsStarted = new ArrayList<String>();
+            messages = new ArrayList<String>();
         }
         
-        public synchronized List/*<String>*/ getTargetsStarted() {
-            return new ArrayList(targetsStarted);
+        public synchronized List<String> getTargetsStarted() {
+            return new ArrayList<String>(targetsStarted);
         }
         
-        public synchronized List/*<String>*/ getMessages() {
-            return new ArrayList(messages);
+        public synchronized List<String> getMessages() {
+            return new ArrayList<String>(messages);
         }
 
+        @Override
         public boolean interestedInAllScripts(AntSession session) {
             return interestedInAllScriptsFlag;
         }
 
+        @Override
         public String[] interestedInTasks(AntSession session) {
             return interestingTasks;
         }
 
+        @Override
         public boolean interestedInScript(File script, AntSession session) {
             return interestingScripts.contains(script);
         }
 
+        @Override
         public String[] interestedInTargets(AntSession session) {
             return interestingTargets;
         }
 
+        @Override
         public boolean interestedInSession(AntSession session) {
             return interestedInSessionFlag;
         }
 
+        @Override
         public int[] interestedInLogLevels(AntSession session) {
             return interestingLogLevels;
         }
 
+        @Override
         public synchronized void targetStarted(AntEvent event) {
             int line = event.getLine();
             targetsStarted.add(event.getScriptLocation() +
@@ -206,6 +214,7 @@ public class AntLoggerTest extends NbTestCase {
                 '#' + event.getTargetName());
         }
         
+        @Override
         public synchronized void messageLogged(AntEvent event) {
             String toadd = "" + event.getLogLevel() + ":" + event.getMessage();
             String taskname = event.getTaskName();
@@ -215,6 +224,7 @@ public class AntLoggerTest extends NbTestCase {
             messages.add(toadd);
         }
 
+        @Override
         public synchronized void buildFinished(AntEvent event) {
             Throwable t = event.getException();
             if (t != null) {
@@ -242,6 +252,7 @@ public class AntLoggerTest extends NbTestCase {
 
     private static final class IFL extends InstalledFileLocator {
         public IFL() {}
+        @Override
         public File locate(String relativePath, String codeNameBase, boolean localized) {
             if (relativePath.equals("ant/nblib/bridge.jar")) {
                 String path = System.getProperty("test.bridge.jar");

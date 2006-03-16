@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -44,6 +44,7 @@ public class ActionUtilsTest extends NbTestCase {
     private DataObject d1, d2, d3, dx;
     private Node n1, n2, n3, nx;
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
@@ -96,7 +97,7 @@ public class ActionUtilsTest extends NbTestCase {
         return new ProxyLookup(delegates);
     }
     
-    private static List/*<FileObject>*/ filesFrom(Node[] sel, FileObject dir, String suffix, boolean strict) {
+    private static List<FileObject> filesFrom(Node[] sel, FileObject dir, String suffix, boolean strict) {
         return files2List(ActionUtils.findSelectedFiles(context(sel), dir, suffix, strict));
     }
     
@@ -128,7 +129,7 @@ public class ActionUtilsTest extends NbTestCase {
         // XXX test that files which match a regexp, but are substituted to be the same thing, still are OK
     }
     
-    private static List/*<FileObject>*/ files2List(FileObject[] files) {
+    private static List<FileObject> files2List(FileObject[] files) {
         return files != null ? Arrays.asList(files) : null;
     }
     

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -43,18 +43,16 @@ final class StopBuildingAlert extends JPanel {
      * @param processesWithDisplayNames a list of possible threads to kill, mapped to display names
      * @return the selection(s) (or empty if cancelled)
      */
-    public static Thread[] selectProcessToKill(final Map/*<Thread,String>*/ processesWithDisplayNames) {
+    public static Thread[] selectProcessToKill(final Map<Thread,String> processesWithDisplayNames) {
         StopBuildingAlert alert = new StopBuildingAlert(processesWithDisplayNames);
         final JList list = alert.buildsList;
         // Add all threads, sorted by display name.
         DefaultListModel model = new DefaultListModel();
-        Comparator/*<Thread>*/ comp = new Comparator() {
+        Comparator<Thread> comp = new Comparator<Thread>() {
             private final Collator coll = Collator.getInstance();
-            public int compare(Object o1, Object o2) {
-                Thread t1 = (Thread) o1;
-                Thread t2 = (Thread) o2;
-                String n1 = (String) processesWithDisplayNames.get(t1);
-                String n2 = (String) processesWithDisplayNames.get(t2);
+            public int compare(Thread t1, Thread t2) {
+                String n1 = processesWithDisplayNames.get(t1);
+                String n2 = processesWithDisplayNames.get(t2);
                 int r = coll.compare(n1, n2);
                 if (r != 0) {
                     return r;
@@ -66,11 +64,10 @@ final class StopBuildingAlert extends JPanel {
                 }
             }
         };
-        SortedSet threads = new TreeSet(comp);
+        SortedSet<Thread> threads = new TreeSet<Thread>(comp);
         threads.addAll(processesWithDisplayNames.keySet());
-        Iterator it = threads.iterator();
-        while (it.hasNext()) {
-            model.addElement((Thread) it.next());
+        for (Thread t : threads) {
+            model.addElement(t);
         }
         list.setModel(model);
         list.setSelectedIndex(0);
@@ -97,9 +94,9 @@ final class StopBuildingAlert extends JPanel {
         }
     }
     
-    private final Map/*<Thread,String>*/ processesWithDisplayNames;
+    private final Map<Thread,String> processesWithDisplayNames;
     
-    private StopBuildingAlert(Map/*<Thread,String>*/ processesWithDisplayNames) {
+    private StopBuildingAlert(Map<Thread,String> processesWithDisplayNames) {
         this.processesWithDisplayNames = processesWithDisplayNames;
         initComponents();
         buildsList.setCellRenderer(new ProcessCellRenderer());
@@ -163,9 +160,10 @@ final class StopBuildingAlert extends JPanel {
         
         public ProcessCellRenderer() {}
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Thread t = (Thread) value;
-            String displayName = (String) processesWithDisplayNames.get(t);
+            String displayName = processesWithDisplayNames.get(t);
             return super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
         }
         

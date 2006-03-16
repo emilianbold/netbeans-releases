@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -36,15 +36,18 @@ public class AntProjectDataLoader extends UniFileLoader {
         super ("org.apache.tools.ant.module.loader.AntProjectDataObject"); // NOI18N
     }
 
+    @Override
     protected String defaultDisplayName () {
         return NbBundle.getMessage (AntProjectDataLoader.class, "LBL_loader_name");
     }
 
+    @Override
     protected void initialize () {
         super.initialize ();
         getExtensions().addMimeType(REQUIRED_MIME);
     }
 
+    @Override
     protected FileObject findPrimaryFile(FileObject fo) {
         FileObject prim = super.findPrimaryFile(fo);
         if (prim == null && fo.getNameExt().equals(KNOWN_ANT_FILENAME)) {
@@ -56,10 +59,12 @@ public class AntProjectDataLoader extends UniFileLoader {
         return prim;
     }
 
+    @Override
     protected MultiDataObject createMultiObject (FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new AntProjectDataObject(primaryFile, this);
     }
 
+    @Override
     protected String actionsContext() {
         return "Loaders/" + REQUIRED_MIME + "/Actions"; // NOI18N
     }

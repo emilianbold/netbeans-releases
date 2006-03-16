@@ -7,23 +7,16 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.spi;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.StringBuffer;
-import java.net.MalformedURLException;
 import java.net.URL;
-import org.apache.tools.ant.module.AntModule;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.NbBundle;
 
 /** OutputStream for wrapping output of Ant task and capable of
  * parsing Ant output.
@@ -39,6 +32,7 @@ public abstract class AntOutputStream extends OutputStream {
     /** have we printed any lines yet? used to prevent initial blank line */
     private boolean hadFirst = false;
 
+    @Override
     final public void close() throws IOException {
         flush ();
         handleClose();
@@ -53,20 +47,24 @@ public abstract class AntOutputStream extends OutputStream {
     protected void handleClose() throws IOException {
     }
 
+    @Override
     final public void flush() throws IOException {
         flushLines (true);
     }
 
+    @Override
     final public void write(byte[] b) throws IOException {
         write (b, 0, b.length);
     }
 
+    @Override
     final public void write(byte[] b, int offset, int length) throws IOException {
         buffer.append (new String (b, offset, length));
         // Will usually contain at least one newline:
         flushLines (false);
     }
 
+    @Override
     final public void write(int b) throws IOException {
         buffer.append ((char) b);
         if ((char) b == '\n') {

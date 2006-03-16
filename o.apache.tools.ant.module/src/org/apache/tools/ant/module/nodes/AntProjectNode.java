@@ -30,6 +30,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
+import org.apache.tools.ant.module.api.AntProjectCookie.ParseStatus;
 
 public final class AntProjectNode extends DataNode implements ChangeListener {
     
@@ -42,6 +43,7 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
         cookie.addChangeListener(WeakListeners.change(this, cookie));
     }
     
+    @Override
     public Image getIcon(int type) {
         Image i = getBasicIcon();
         try {
@@ -71,10 +73,12 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
             return Utilities.loadImage("org/apache/tools/ant/module/resources/AntIcon.gif"); // NOI18N
         }
     }
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
     
+    @Override
     public String getShortDescription() {
         AntProjectCookie cookie = (AntProjectCookie) getCookie(AntProjectCookie.class);
         if (cookie.getFile() == null && cookie.getFileObject() == null) {
@@ -108,6 +112,7 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
         }
     }
 
+    @Override
     protected Sheet createSheet() {  
         Sheet sheet = super.createSheet();
 
@@ -125,6 +130,7 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
         public ProjectNameProperty(String name) {
             super(name);
         }
+        @Override
         protected Element getElement () {
             return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
         }
@@ -134,6 +140,7 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
         public ProjectTargetProperty(String name) {
             super(name);
         }
+        @Override
         protected Element getElement () {
             return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
         }

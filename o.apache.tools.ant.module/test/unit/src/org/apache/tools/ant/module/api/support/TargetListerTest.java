@@ -7,19 +7,16 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.api.support;
 
-import java.io.File;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.tools.ant.module.api.AntProjectCookie;
@@ -43,6 +40,7 @@ public class TargetListerTest extends NbTestCase {
     
     private FileObject testdir;
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         FileObject masterTestdir = FileUtil.toFileObject(getDataDir());
@@ -54,10 +52,10 @@ public class TargetListerTest extends NbTestCase {
     public void testSimpleUsage() throws Exception {
         FileObject simple = testdir.getFileObject("simple.xml");
         assertNotNull("simple.xml found", simple);
-        List/*<TargetLister.Target>*/ targets = getTargets(simple);
+        List<TargetLister.Target> targets = getTargets(simple);
         assertEquals("five targets", 5, targets.size());
         // -internal, -internal-described, described, main, undescribed
-        TargetLister.Target t = (TargetLister.Target) targets.get(0);
+        TargetLister.Target t = targets.get(0);
         assertEquals("correct name #1", "-internal", t.getName());
         assertEquals("correct qname #1", "simple.-internal", t.getQualifiedName());
         Element e = t.getElement();
@@ -70,25 +68,25 @@ public class TargetListerTest extends NbTestCase {
         assertTrue("internal #1", t.isInternal());
         assertFalse("not overridden #1", t.isOverridden());
         assertFalse("not default #1", t.isDefault());
-        t = (TargetLister.Target) targets.get(1);
+        t = targets.get(1);
         assertEquals("correct name #2", "-internal-described", t.getName());
         assertTrue("described #2", t.isDescribed());
         assertTrue("internal #2", t.isInternal());
         assertFalse("not overridden #2", t.isOverridden());
         assertFalse("not default #2", t.isDefault());
-        t = (TargetLister.Target) targets.get(2);
+        t = targets.get(2);
         assertEquals("correct name #3", "described", t.getName());
         assertTrue("described #3", t.isDescribed());
         assertFalse("not internal #3", t.isInternal());
         assertFalse("not overridden #3", t.isOverridden());
         assertFalse("not default #3", t.isDefault());
-        t = (TargetLister.Target) targets.get(3);
+        t = targets.get(3);
         assertEquals("correct name #4", "main", t.getName());
         assertFalse("not described #4", t.isDescribed());
         assertFalse("not internal #4", t.isInternal());
         assertFalse("not overridden #4", t.isOverridden());
         assertTrue("default #4", t.isDefault());
-        t = (TargetLister.Target) targets.get(4);
+        t = targets.get(4);
         assertEquals("correct name #5", "undescribed", t.getName());
         assertFalse("not described #5", t.isDescribed());
         assertFalse("not internal #5", t.isInternal());
@@ -99,47 +97,47 @@ public class TargetListerTest extends NbTestCase {
     public void testBasicImportAndOverrides() throws IOException {
         FileObject importing = testdir.getFileObject("importing.xml");
         assertNotNull("importing.xml found", importing);
-        List/*<TargetLister.Target>*/ targets = getTargets(importing);
+        List<TargetLister.Target> targets = getTargets(importing);
         assertEquals("seven targets", 7, targets.size());
         // dir1/dir3/subimported.subtarget3, dir1/dir3/subimported.whatever, dir1/imported.subtarget1,
         // dir1/imported.subtarget2, dir1/imported.whatever, importing.main, importing.subtarget1
-        TargetLister.Target t = (TargetLister.Target) targets.get(0);
+        TargetLister.Target t = targets.get(0);
         assertEquals("correct qname #1", "dir1/dir3/subimported.subtarget3", t.getQualifiedName());
         assertFalse("not described #1", t.isDescribed());
         assertFalse("not internal #1", t.isInternal());
         assertFalse("not overridden #1", t.isOverridden());
         assertFalse("not default #1", t.isDefault());
-        t = (TargetLister.Target) targets.get(1);
+        t = targets.get(1);
         assertEquals("correct qname #2", "dir1/dir3/subimported.whatever", t.getQualifiedName());
         assertFalse("not described #2", t.isDescribed());
         assertFalse("not internal #2", t.isInternal());
         assertTrue("overridden #2", t.isOverridden());
         assertFalse("not default #2", t.isDefault());
-        t = (TargetLister.Target) targets.get(2);
+        t = targets.get(2);
         assertEquals("correct qname #3", "dir1/imported.subtarget1", t.getQualifiedName());
         assertFalse("not described #3", t.isDescribed());
         assertFalse("not internal #3", t.isInternal());
         assertTrue("overridden #3", t.isOverridden());
         assertFalse("not default #3", t.isDefault());
-        t = (TargetLister.Target) targets.get(3);
+        t = targets.get(3);
         assertEquals("correct qname #4", "dir1/imported.subtarget2", t.getQualifiedName());
         assertFalse("not described #4", t.isDescribed());
         assertFalse("not internal #4", t.isInternal());
         assertFalse("not overridden #4", t.isOverridden());
         assertFalse("not default #4", t.isDefault());
-        t = (TargetLister.Target) targets.get(4);
+        t = targets.get(4);
         assertEquals("correct qname #5", "dir1/imported.whatever", t.getQualifiedName());
         assertFalse("not described #5", t.isDescribed());
         assertFalse("not internal #5", t.isInternal());
         assertFalse("not overridden #5", t.isOverridden());
         assertFalse("not default #5", t.isDefault());
-        t = (TargetLister.Target) targets.get(5);
+        t = targets.get(5);
         assertEquals("correct qname #6", "importing.main", t.getQualifiedName());
         assertFalse("not described #6", t.isDescribed());
         assertFalse("not internal #6", t.isInternal());
         assertFalse("not overridden #6", t.isOverridden());
         assertTrue("default #6", t.isDefault());
-        t = (TargetLister.Target) targets.get(6);
+        t = targets.get(6);
         assertEquals("correct qname #7", "importing.subtarget1", t.getQualifiedName());
         assertTrue("described #7", t.isDescribed());
         assertFalse("not internal #7", t.isInternal());
@@ -151,18 +149,18 @@ public class TargetListerTest extends NbTestCase {
         // #50087: Ant does *not* use the basedir when resolving an <import>!
         FileObject importing4 = testdir.getFileObject("importing4.xml");
         assertNotNull("importing4.xml found", importing4);
-        List/*<TargetLister.Target>*/ targets = getTargets(importing4);
+        List<TargetLister.Target> targets = getTargets(importing4);
         assertEquals("three targets", 3, targets.size());
         // dir2/imported2.subtarget4, dir2/imported2.whatever, importing4.subtarget4
-        TargetLister.Target t = (TargetLister.Target) targets.get(0);
+        TargetLister.Target t = targets.get(0);
         assertEquals("correct qname #1", "dir2/imported2.subtarget4", t.getQualifiedName());
         assertTrue("overridden #1", t.isOverridden());
         assertFalse("not default #1", t.isDefault());
-        t = (TargetLister.Target) targets.get(1);
+        t = targets.get(1);
         assertEquals("correct qname #2", "dir2/imported2.whatever", t.getQualifiedName());
         assertFalse("not overridden #2", t.isOverridden());
         assertTrue("default #2", t.isDefault());
-        t = (TargetLister.Target) targets.get(2);
+        t = targets.get(2);
         assertEquals("correct qname #3", "importing4.subtarget4", t.getQualifiedName());
         assertFalse("not overridden #3", t.isOverridden());
         assertFalse("not default #3", t.isDefault());
@@ -172,12 +170,12 @@ public class TargetListerTest extends NbTestCase {
     public void testRecursiveImport() throws Exception {
         FileObject rec1 = testdir.getFileObject("recursive1.xml");
         assertNotNull("recursive1.xml found", rec1);
-        List/*<TargetLister.Target>*/ targets = getTargets(rec1);
+        List<TargetLister.Target> targets = getTargets(rec1);
         assertEquals("two targets", 2, targets.size());
-        TargetLister.Target t = (TargetLister.Target) targets.get(0);
+        TargetLister.Target t = targets.get(0);
         assertEquals("correct qname #1", "recursive1.x", t.getQualifiedName());
         assertTrue("default #1", t.isDefault());
-        t = (TargetLister.Target) targets.get(1);
+        t = targets.get(1);
         assertEquals("correct qname #2", "recursive2.y", t.getQualifiedName());
         assertFalse("not default #2", t.isDefault());
     }
@@ -185,54 +183,52 @@ public class TargetListerTest extends NbTestCase {
     public void testComputedImports() throws Exception {
         FileObject importing = testdir.getFileObject("computedimports/importing.xml");
         assertNotNull("importing.xml found", importing);
-        List/*<TargetLister.Target>*/ targets = getTargets(importing);
+        List<TargetLister.Target> targets = getTargets(importing);
         assertEquals("three targets", 3, targets.size());
-        TargetLister.Target t = (TargetLister.Target) targets.get(0);
+        TargetLister.Target t = targets.get(0);
         assertEquals("correct qname #1", "importing.master", t.getQualifiedName());
-        t = (TargetLister.Target) targets.get(1);
+        t = targets.get(1);
         assertEquals("correct qname #2", "subdir/imported1.foundme", t.getQualifiedName());
-        t = (TargetLister.Target) targets.get(2);
+        t = targets.get(2);
         assertEquals("correct qname #3", "subdir/imported3.intermediate", t.getQualifiedName());
         FileObject importing2 = testdir.getFileObject("computedimports/subdir/importing2.xml");
         assertNotNull("importing2.xml found", importing2);
         targets = getTargets(importing2);
         assertEquals("three targets", 3, targets.size());
-        t = (TargetLister.Target) targets.get(0);
+        t = targets.get(0);
         assertEquals("correct qname #1", "subdir/imported1.foundme", t.getQualifiedName());
-        t = (TargetLister.Target) targets.get(1);
+        t = targets.get(1);
         assertEquals("correct qname #2", "subdir/imported3.intermediate", t.getQualifiedName());
-        t = (TargetLister.Target) targets.get(2);
+        t = targets.get(2);
         assertEquals("correct qname #3", "subdir/importing2.master", t.getQualifiedName());
     }
     
     public void testIndirectOverride() throws Exception {
         FileObject a = testdir.getFileObject("indirectoverride/a.xml");
         assertNotNull("a.xml found", a);
-        List/*<TargetLister.Target>*/ targets = getTargets(a);
+        List<TargetLister.Target> targets = getTargets(a);
         assertEquals("two targets", 2, targets.size());
-        TargetLister.Target t = (TargetLister.Target) targets.get(0);
+        TargetLister.Target t = targets.get(0);
         assertEquals("correct qname", "a.x", t.getQualifiedName());
         assertFalse("not overridden", t.isOverridden());
-        t = (TargetLister.Target) targets.get(1);
+        t = targets.get(1);
         assertEquals("correct qname", "c.x", t.getQualifiedName());
         assertTrue("#67694: imported version is overridden", t.isOverridden());
     }
     
-    private static List/*<TargetLister.Target>*/ getTargets(FileObject fo) throws IOException {
+    private static List<TargetLister.Target> getTargets(FileObject fo) throws IOException {
         AntProjectCookie apc = TargetLister.getAntProjectCookie(fo);
-        SortedSet/*<Target>*/ targets = new TreeSet(new TargetComparator());
+        SortedSet<TargetLister.Target> targets = new TreeSet<TargetLister.Target>(new TargetComparator());
         targets.addAll(TargetLister.getTargets(apc));
-        return new ArrayList(targets);
+        return new ArrayList<TargetLister.Target>(targets);
     }
     
     /** Sorts targets by FQN. */
-    private static final class TargetComparator implements Comparator/*<TargetLister.Target>*/ {
+    private static final class TargetComparator implements Comparator<TargetLister.Target> {
         
         public TargetComparator() {}
 
-        public int compare(Object o1, Object o2) {
-            TargetLister.Target t1 = (TargetLister.Target) o1;
-            TargetLister.Target t2 = (TargetLister.Target) o2;
+        public int compare(TargetLister.Target t1, TargetLister.Target t2) {
             int x = t1.getQualifiedName().compareTo(t2.getQualifiedName());
             if (x != 0) {
                 return x;

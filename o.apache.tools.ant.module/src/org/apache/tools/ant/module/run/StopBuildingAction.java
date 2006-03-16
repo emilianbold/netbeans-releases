@@ -7,16 +7,16 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.run;
 
+import java.awt.EventQueue;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
-import javax.swing.SwingUtilities;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -33,14 +33,14 @@ public final class StopBuildingAction extends CallableSystemAction {
     /**
      * Map from active processing threads to their process display names.
      */
-    private static final Map/*<Thread,String>*/ activeProcesses = new WeakHashMap();
+    private static final Map<Thread,String> activeProcesses = new WeakHashMap<Thread,String>();
     
     static void registerProcess(Thread t, String displayName) {
         synchronized (activeProcesses) {
             assert !activeProcesses.containsKey(t);
             activeProcesses.put(t, displayName);
         }
-        SwingUtilities.invokeLater(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
             public void run() {
                 SystemAction.get(StopBuildingAction.class).setEnabled(true);
             }
@@ -54,26 +54,27 @@ public final class StopBuildingAction extends CallableSystemAction {
             activeProcesses.remove(t);
             enable = !activeProcesses.isEmpty();
         }
-        SwingUtilities.invokeLater(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
             public void run() {
                 SystemAction.get(StopBuildingAction.class).setEnabled(enable);
             }
         });
     }
     
+    @Override
     public void performAction() {
         Thread[] toStop = null;
         synchronized (activeProcesses) {
             assert !activeProcesses.isEmpty();
             if (activeProcesses.size() == 1) {
-                toStop = (Thread[]) activeProcesses.keySet().toArray(new Thread[1]);
+                toStop = activeProcesses.keySet().toArray(new Thread[1]);
             }
         }
         if (toStop == null) {
             // More than one, need to select one.
-            Map/*<Thread,String>*/ activeProcessesClone;
+            Map<Thread,String> activeProcessesClone;
             synchronized (activeProcesses) {
-                activeProcessesClone = new HashMap(activeProcesses);
+                activeProcessesClone = new HashMap<Thread,String>(activeProcesses);
             }
             toStop = StopBuildingAlert.selectProcessToKill(activeProcessesClone);
             synchronized (activeProcesses) {
@@ -85,26 +86,30 @@ public final class StopBuildingAction extends CallableSystemAction {
                 }
             }
         }
-        for (int i = 0; i < toStop.length; i++) {
-            if (toStop[i] != null) {
-                TargetExecutor.stopProcess(toStop[i]);
+        for (Thread t : toStop) {
+            if (t != null) {
+                TargetExecutor.stopProcess(t);
             }
         }
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(StopBuildingAction.class, "LBL_stop_building");
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return null;
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         setEnabled(false); // no processes initially
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

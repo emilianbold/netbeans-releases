@@ -69,16 +69,29 @@ public final class AntBridge {
     private static final ErrorManager err = ErrorManager.getDefault().getInstance(AntBridge.class.getName());
     
     private AntBridge() {}
+
+    private static final class AntInstance {
+        public final String mainClassPath;
+        public final ClassLoader mainClassLoader;
+        public final ClassLoader bridgeClassLoader;
+        public final BridgeInterface bridge;
+        public final Map<String,Map<String,Class>> customDefs;
+        public final Map<String,ClassLoader> customDefClassLoaders;
+        public AntInstance(String mainClassPath, ClassLoader mainClassLoader,
+                ClassLoader bridgeClassLoader, BridgeInterface bridge,
+                Map<String,Map<String,Class>> customDefs,
+                Map<String,ClassLoader> customDefClassLoaders) {
+            this.mainClassPath = mainClassPath;
+            this.mainClassLoader = mainClassLoader;
+            this.bridgeClassLoader = bridgeClassLoader;
+            this.bridge = bridge;
+            this.customDefs = customDefs;
+            this.customDefClassLoaders = customDefClassLoaders;
+        }
+    }
+    private static Reference<AntInstance> antInstance = null;
     
-    private static final String KEY_MAIN_CLASS_PATH = "mainClassPath"; // NOI18N
-    private static final String KEY_MAIN_CLASS_LOADER = "mainClassLoader"; // NOI18N
-    private static final String KEY_BRIDGE_CLASS_LOADER = "bridgeClassLoader"; // NOI18N
-    private static final String KEY_BRIDGE = "bridge"; // NOI18N
-    private static final String KEY_CUSTOM_DEFS = "customDefs"; // NOI18N
-    private static final String KEY_CUSTOM_DEF_CLASS_LOADERS = "customDefClassLoaders"; // NOI18N
-    private static Reference stuff = null; // Reference<Map>
-    
-    private static List listeners = new ArrayList(); // List<ChangeListener>
+    private static List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     private static final class MiscListener implements PropertyChangeListener, LookupListener {
         MiscListener() {}
@@ -99,8 +112,8 @@ public final class AntBridge {
             err.log("AntModule got ModuleInfo change");
             synchronized (this) {
                 if (modules != null) {
-                    for (int i = 0; i < modules.length; i++) {
-                        modules[i].removePropertyChangeListener(this);
+                    for (ModuleInfo module : modules) {
+                        module.removePropertyChangeListener(this);
                     }
                     modules = null;
                 }
@@ -109,19 +122,19 @@ public final class AntBridge {
         }
         public synchronized ModuleInfo[] getEnabledModules() {
             if (modules == null) {
-                Collection c = modulesResult.allInstances();
-                modules = (ModuleInfo[])c.toArray(new ModuleInfo[c.size()]);
-                for (int i = 0; i < modules.length; i++) {
-                    modules[i].addPropertyChangeListener(this);
+                Collection<ModuleInfo> c = modulesResult.allInstances();
+                modules = c.toArray(new ModuleInfo[c.size()]);
+                for (ModuleInfo module : modules) {
+                    module.addPropertyChangeListener(this);
                 }
             }
-            List/*<ModuleInfo>*/ enabledModules = new ArrayList(modules.length);
-            for (int i = 0; i < modules.length; i++) {
-                if (modules[i].isEnabled()) {
-                    enabledModules.add(modules[i]);
+            List<ModuleInfo> enabledModules = new ArrayList<ModuleInfo>(modules.length);
+            for (ModuleInfo module : modules) {
+                if (module.isEnabled()) {
+                    enabledModules.add(module);
                 }
             }
-            return (ModuleInfo[])enabledModules.toArray(new ModuleInfo[enabledModules.size()]);
+            return enabledModules.toArray(new ModuleInfo[enabledModules.size()]);
         }
     }
     private static MiscListener miscListener = new MiscListener();
@@ -147,14 +160,14 @@ public final class AntBridge {
     }
     
     private static void fireChange() {
-        stuff = null;
+        antInstance = null;
         ChangeEvent ev = new ChangeEvent(AntBridge.class);
         ChangeListener[] ls;
         synchronized (AntBridge.class) {
-            ls = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+            ls = listeners.toArray(new ChangeListener[listeners.size()]);
         }
-        for (int i = 0; i < ls.length; i++) {
-            ls[i].stateChanged(ev);
+        for (ChangeListener l : ls) {
+            l.stateChanged(ev);
         }
     }
     
@@ -163,7 +176,7 @@ public final class AntBridge {
      * user-defined classpath.
      */
     public static ClassLoader getMainClassLoader() {
-        return (ClassLoader)getStuff().get(KEY_MAIN_CLASS_LOADER);
+        return getAntInstance().mainClassLoader;
     }
     
     /**
@@ -175,26 +188,22 @@ public final class AntBridge {
      * only <code>&lt;taskdef&gt;</code> and <code>&lt;typedef&gt;</code>,
      * and only the <code>name</code> and <code>classname</code> attributes.
      */
-    public static Map/*<String,Map<String,Class>>*/ getCustomDefsWithNamespace() {
-        return (Map)getStuff().get(KEY_CUSTOM_DEFS);
+    public static Map<String,Map<String,Class>> getCustomDefsWithNamespace() {
+        return getAntInstance().customDefs;
     }
     
     /**
      * Same as {@link #getCustomDefsWithNamespace} but without any namespace prefixes.
      */
-    public static Map/*<String,Map<String,Class>>*/ getCustomDefsNoNamespace() {
-        Map/*<String,Map<String,Class>>*/ m = new HashMap();
-        Iterator it = getCustomDefsWithNamespace().entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            String type = (String)entry.getKey();
-            Map defs = (Map)entry.getValue();
-            Map/*Map<String,Class>*/ m2 = new HashMap();
-            Iterator it2 = defs.entrySet().iterator();
-            while (it2.hasNext()) {
-                Map.Entry entry2 = (Map.Entry)it2.next();
-                String fqn = (String)entry2.getKey();
-                Class clazz = (Class)entry2.getValue();
+    public static Map<String,Map<String,Class>> getCustomDefsNoNamespace() {
+        Map<String,Map<String,Class>> m = new HashMap<String,Map<String,Class>>();
+        for (Map.Entry<String,Map<String,Class>> entry : getCustomDefsWithNamespace().entrySet()) {
+            String type = entry.getKey();
+            Map<String,Class> defs = entry.getValue();
+            Map<String,Class> m2 = new HashMap<String,Class>();
+            for (Map.Entry<String,Class> entry2 : defs.entrySet()) {
+                String fqn = entry2.getKey();
+                Class clazz = entry2.getValue();
                 String name;
                 int idx = fqn.lastIndexOf(':');
                 if (idx != -1) {
@@ -213,42 +222,41 @@ public final class AntBridge {
      * Get a map from enabled module code name bases to class loaders containing
      * JARs from ant/nblib/*.jar.
      */
-    public static Map/*<String,ClassLoader>*/ getCustomDefClassLoaders() throws IOException {
-        return (Map)getStuff().get(KEY_CUSTOM_DEF_CLASS_LOADERS);
+    public static Map<String,ClassLoader> getCustomDefClassLoaders() throws IOException {
+        return getAntInstance().customDefClassLoaders;
     }
     
     /**
      * Get the bridge interface.
      */
     public static BridgeInterface getInterface() {
-        return (BridgeInterface)getStuff().get(KEY_BRIDGE);
+        return getAntInstance().bridge;
     }
     
-    private synchronized static Map getStuff() {
-        Map m;
-        if (stuff != null) {
-            m = (Map)stuff.get();
+    private synchronized static AntInstance getAntInstance() {
+        AntInstance ai;
+        if (antInstance != null) {
+            ai = antInstance.get();
         } else {
-            m = null;
+            ai = null;
         }
-        if (m == null) {
-            m = createStuff();
-            stuff = new SoftReference(m);
+        if (ai == null) {
+            ai = createAntInstance();
+            // XXX would be more accurate to stuff this struct into by BridgeImpl
+            // so that it all lives or dies iff that class loader is still alive
+            // (current impl is just workaround for JDK #6389107)
+            antInstance = new SoftReference<AntInstance>(ai);
         }
-        return m;
+        return ai;
     }
     
-    private static Map createStuff() {
-        err.log("AntBridge.createStuff - loading Ant installation...");
-        Map m = new HashMap();
+    private static AntInstance createAntInstance() {
+        err.log("AntBridge.createAntInstance - loading Ant installation...");
         try {
-            List/*<File>*/ mainClassPath = createMainClassPath();
+            List<File> mainClassPath = createMainClassPath();
             err.log("mainClassPath=" + mainClassPath);
-            m.put(KEY_MAIN_CLASS_PATH, classPathToString(mainClassPath));
             ClassLoader main = createMainClassLoader(mainClassPath);
-            m.put(KEY_MAIN_CLASS_LOADER, main);
             ClassLoader bridgeLoader = createBridgeClassLoader(main);
-            m.put(KEY_BRIDGE_CLASS_LOADER, bridgeLoader);
             // Ensures that the loader is functional, and that it is at least 1.5.x
             // so that our classes can link against it successfully, and that
             // we are really loading Ant from the right place:
@@ -273,33 +281,25 @@ public final class AntBridge {
             } catch (ClassNotFoundException cnfe) {
                 // Fine, it was added in Ant 1.6.
             }
-            Class impl = bridgeLoader.loadClass("org.apache.tools.ant.module.bridge.impl.BridgeImpl"); // NOI18N
+            Class<? extends BridgeInterface> impl = bridgeLoader.loadClass("org.apache.tools.ant.module.bridge.impl.BridgeImpl").asSubclass(BridgeInterface.class); // NOI18N
             if (impl.getClassLoader() != bridgeLoader) {
                 throw new IllegalStateException("Wrong class loader is finding bridge impl: " + impl.getClassLoader()); // NOI18N
             }
-            m.put(KEY_BRIDGE, (BridgeInterface)impl.newInstance());
-            Map cDCLs = createCustomDefClassLoaders(main);
-            m.put(KEY_CUSTOM_DEF_CLASS_LOADERS, cDCLs);
-            m.put(KEY_CUSTOM_DEFS, createCustomDefs(cDCLs));
+            Map<String,ClassLoader> cDCLs = createCustomDefClassLoaders(main);
+            return new AntInstance(classPathToString(mainClassPath), main, bridgeLoader, impl.newInstance(), createCustomDefs(cDCLs), cDCLs);
         } catch (Exception e) {
-            fallback(m, e);
+            return fallback(e);
         } catch (LinkageError e) {
-            fallback(m, e);
+            return fallback(e);
         }
-        return m;
     }
     
-    private static void fallback(Map m, Throwable e) {
-        m.clear();
+    private static AntInstance fallback(Throwable e) {
         ClassLoader dummy = ClassLoader.getSystemClassLoader();
-        m.put(KEY_MAIN_CLASS_LOADER, dummy);
-        m.put(KEY_BRIDGE_CLASS_LOADER, dummy);
-        m.put(KEY_BRIDGE, new DummyBridgeImpl(e));
-        Map defs = new HashMap();
-        defs.put("task", new HashMap()); // NOI18N
-        defs.put("type", new HashMap()); // NOI18N
-        m.put(KEY_CUSTOM_DEFS, defs);
-        m.put(KEY_CUSTOM_DEF_CLASS_LOADERS, Collections.EMPTY_MAP);
+        Map<String,Map<String,Class>> defs = new HashMap<String,Map<String,Class>>();
+        defs.put("task", new HashMap<String,Class>()); // NOI18N
+        defs.put("type", new HashMap<String,Class>()); // NOI18N
+        return new AntInstance("", dummy, dummy, new DummyBridgeImpl(e), defs, Collections.<String,ClassLoader>emptyMap());
     }
     
     private static final class JarFilter implements FilenameFilter {
@@ -309,11 +309,11 @@ public final class AntBridge {
         }
     }
     
-    private static String classPathToString(List/*<File>*/ cp) {
+    private static String classPathToString(List<File> cp) {
         StringBuffer b = new StringBuffer();
-        Iterator it = cp.iterator();
+        Iterator<File> it = cp.iterator();
         while (it.hasNext()) {
-            b.append(((File) it.next()).getAbsolutePath());
+            b.append(it.next().getAbsolutePath());
             if (it.hasNext()) {
                 b.append(File.pathSeparator);
             }
@@ -328,28 +328,24 @@ public final class AntBridge {
      * plus the regular system class path (for tools.jar etc.).
      */
     public static String getMainClassPath() {
-        return (String) getStuff().get(KEY_MAIN_CLASS_PATH) + File.pathSeparatorChar + originalJavaClassPath;
+        return getAntInstance().mainClassPath + File.pathSeparatorChar + originalJavaClassPath;
     }
     
-    private static List/*<File>*/ createMainClassPath() throws Exception {
+    private static List<File> createMainClassPath() throws Exception {
         // Use LinkedHashSet to automatically suppress duplicates.
-        Collection/*<File>*/ cp = new LinkedHashSet();
+        Collection<File> cp = new LinkedHashSet<File>();
         File libdir = new File(AntSettings.getDefault().getAntHomeWithDefault(), "lib"); // NOI18N
         if (!libdir.isDirectory()) throw new IOException("No such Ant library dir: " + libdir); // NOI18N
         err.log("Creating main class loader from " + libdir);
         // First look for ${ant.home}/patches/*.jar, to support e.g. patching #47708:
         File[] patches = new File(libdir.getParentFile(), "patches").listFiles(new JarFilter()); // NOI18N
         if (patches != null) {
-            for (int i = 0; i < patches.length; i++) {
-                cp.add(patches[i]);
-            }
+            cp.addAll(Arrays.asList(patches));
         }
         // Now continue with regular classpath.
         File[] libs = libdir.listFiles(new JarFilter());
         if (libs == null) throw new IOException("Listing: " + libdir); // NOI18N
-        for (int i = 0; i < libs.length; i++) {
-            cp.add(libs[i]);
-        }
+        cp.addAll(Arrays.asList(libs));
         // XXX consider adding ${user.home}/.ant/lib/*.jar (org.apache.tools.ant.launch.Launcher.USER_LIBDIR)
         NbClassPath extra = AntSettings.getDefault().getExtraClasspath();
         String extrapath = extra.getClassPath();
@@ -378,19 +374,19 @@ public final class AntBridge {
         // with the versions used inside NB, which may cause inefficiencies or more memory usage.
         // On the other hand, if ant.jar is in ${java.class.path} (e.g. from a unit test), we
         // have to explicitly mask it out. What a mess...
-        return new ArrayList(cp);
+        return new ArrayList<File>(cp);
     }
     
-    private static ClassLoader createMainClassLoader(List/*<File>*/ mainClassPath) throws Exception {
+    private static ClassLoader createMainClassLoader(List<File> mainClassPath) throws Exception {
         URL[] cp = new URL[mainClassPath.size()];
-        Iterator it = mainClassPath.iterator();
+        Iterator<File> it = mainClassPath.iterator();
         int i = 0;
         while (it.hasNext()) {
-            cp[i++] = ((File) it.next()).toURI().toURL();
+            cp[i++] = it.next().toURI().toURL();
         }
         ClassLoader parent = ClassLoader.getSystemClassLoader();
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            List/*<URL>*/ parentURLs;
+            List<URL> parentURLs;
             if (parent instanceof URLClassLoader) {
                 parentURLs = Arrays.asList(((URLClassLoader) parent).getURLs());
             } else {
@@ -417,35 +413,33 @@ public final class AntBridge {
      * Get a map from enabled module code name bases to class loaders containing
      * JARs from ant/nblib/*.jar.
      */
-    private static Map/*<String,ClassLoader>*/ createCustomDefClassLoaders(ClassLoader main) throws IOException {
-        Map/*<String,ClassLoader>*/ m = new HashMap();
+    private static Map<String,ClassLoader> createCustomDefClassLoaders(ClassLoader main) throws IOException {
+        Map<String,ClassLoader> m = new HashMap<String,ClassLoader>();
         ModuleInfo[] modules = miscListener.getEnabledModules();
         InstalledFileLocator ifl = InstalledFileLocator.getDefault();
-        for (int i = 0; i < modules.length; i++) {
-            String cnb = modules[i].getCodeNameBase();
+        for (ModuleInfo module : modules) {
+            String cnb = module.getCodeNameBase();
             String cnbDashes = cnb.replace('.', '-');
             File lib = ifl.locate("ant/nblib/" + cnbDashes + ".jar", cnb, false); // NOI18N
             if (lib == null) {
                 continue;
             }
-            ClassLoader l = createAuxClassLoader(lib, main, modules[i].getClassLoader());
+            ClassLoader l = createAuxClassLoader(lib, main, module.getClassLoader());
             m.put(cnb, l);
         }
         return m;
     }
     
-    private static Map/*<String,Map<String,Class>>*/ createCustomDefs(Map cDCLs) throws IOException {
-        Map m = new HashMap();
-        Map tasks = new HashMap();
-        Map types = new HashMap();
+    private static Map<String,Map<String,Class>> createCustomDefs(Map<String,ClassLoader> cDCLs) throws IOException {
+        Map<String,Map<String,Class>> m = new HashMap<String,Map<String,Class>>();
+        Map<String,Class> tasks = new HashMap<String,Class>();
+        Map<String,Class> types = new HashMap<String,Class>();
         // XXX #36776: should eventually support <macrodef>s here
         m.put("task", tasks); // NOI18N
         m.put("type", types); // NOI18N
-        Iterator it = cDCLs.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            String cnb = (String)entry.getKey();
-            ClassLoader l = (ClassLoader)entry.getValue();
+        for (Map.Entry<String,ClassLoader> entry : cDCLs.entrySet()) {
+            String cnb = entry.getKey();
+            ClassLoader l = entry.getValue();
             String resource = cnb.replace('.', '/') + "/antlib.xml"; // NOI18N
             URL antlib = l.getResource(resource);
             if (antlib == null) {
@@ -462,8 +456,8 @@ public final class AntBridge {
                 throw new IOException("Bad root element for " + antlib + ": " + docEl); // NOI18N
             }
             NodeList nl = docEl.getChildNodes();
-            Properties newTaskDefs = new Properties();
-            Properties newTypeDefs = new Properties();
+            Map<String,String> newTaskDefs = new HashMap<String,String>();
+            Map<String,String> newTypeDefs = new HashMap<String,String>();
             for (int i = 0; i < nl.getLength(); i++) {
                 Node n = nl.item(i);
                 if (n.getNodeType() != Node.ELEMENT_NODE) {
@@ -492,7 +486,7 @@ public final class AntBridge {
                     throw new IOException("No 'classname' attr on def of " + name + " in " + antlib); // NOI18N
                 }
                 // XXX would be good to handle at least onerror attr too
-                (type ? newTypeDefs : newTaskDefs).setProperty(name, classname);
+                (type ? newTypeDefs : newTaskDefs).put(name, classname);
             }
             loadDefs(newTaskDefs, tasks, l);
             loadDefs(newTypeDefs, types, l);
@@ -500,13 +494,11 @@ public final class AntBridge {
         return m;
     }
     
-    private static void loadDefs(Properties p, Map defs, ClassLoader l) throws IOException {
+    private static void loadDefs(Map<String,String> p, Map<String,Class> defs, ClassLoader l) throws IOException {
         // Similar to IntrospectedInfo.load, after having parsed the properties.
-        Iterator it = p.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            String name = (String)entry.getKey();
-            String clazzname = (String)entry.getValue();
+        for (Map.Entry<String,String> entry : p.entrySet()) {
+            String name = entry.getKey();
+            String clazzname = entry.getValue();
             try {
                 Class clazz = l.loadClass(clazzname);
                 defs.put(name, clazz);
@@ -539,14 +531,17 @@ public final class AntBridge {
             super(urls, parent);
         }
         
+        @Override
         protected final PermissionCollection getPermissions(CodeSource cs) {
             return getAllPermissions();
         }
         
+        @Override
         public String toString() {
-            return super.toString() + "[parent=" + getParent() + ",urls=" + Arrays.asList((Object[])getURLs()) + "]";
+            return super.toString() + "[parent=" + getParent() + ",urls=" + Arrays.asList(getURLs()) + "]";
         }
 
+        @Override
         public URL getResource(String name) {
             URL u = super.getResource(name);
             if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -555,12 +550,13 @@ public final class AntBridge {
             return u;
         }
         
-        public Enumeration/*<URL>*/ findResources(String name) throws IOException {
+        @Override
+        public Enumeration<URL> findResources(String name) throws IOException {
             try {
-                Enumeration/*<URL>*/ us = super.findResources(name);
+                Enumeration<URL> us = super.findResources(name);
                 if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
                     // Make a copy so it can be logged:
-                    List/*<URL>*/ resources = Collections.list(us);
+                    List<URL> resources = Collections.list(us);
                     us = Collections.enumeration(resources);
                     err.log("APURLCL.fRs: " + name + " -> " + resources + " [" + this + "]");
                 }
@@ -603,6 +599,7 @@ public final class AntBridge {
             super(urls, parent);
         }
         
+        @Override
         protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
             if (masked(name)) {
                 Class c = findLoadedClass(name);
@@ -632,11 +629,11 @@ public final class AntBridge {
     private static int delegating = 0;
     private static InputStream origIn;
     private static PrintStream origOut, origErr;
-    private static Map/*<ThreadGroup,InputStream>*/ delegateIns = new HashMap();
-    private static Map/*<ThreadGroup,PrintStream>*/ delegateOuts = new HashMap();
-    private static Map/*<ThreadGroup,PrintStream>*/ delegateErrs = new HashMap();
+    private static Map<ThreadGroup,InputStream> delegateIns = new HashMap<ThreadGroup,InputStream>();
+    private static Map<ThreadGroup,PrintStream> delegateOuts = new HashMap<ThreadGroup,PrintStream>();
+    private static Map<ThreadGroup,PrintStream> delegateErrs = new HashMap<ThreadGroup,PrintStream>();
     /** list, not set, so can be reentrant - treated as a multiset */
-    private static List/*<Thread>*/ suspendedDelegationTasks = new ArrayList();
+    private static List<Thread> suspendedDelegationTasks = new ArrayList<Thread>();
     
     /**
      * Handle I/O scoping for overlapping project runs.
@@ -717,7 +714,7 @@ public final class AntBridge {
             while (tg != null && !delegateIns.containsKey(tg)) {
                 tg = tg.getParent();
             }
-            InputStream is = (InputStream)delegateIns.get(tg);
+            InputStream is = delegateIns.get(tg);
             if (is != null && !suspendedDelegationTasks.contains(t)) {
                 return is;
             } else if (delegating > 0) {
@@ -729,38 +726,47 @@ public final class AntBridge {
             }
         }
         
+        @Override
         public int read() throws IOException {
             return delegate().read();
         }        
         
+        @Override
         public int read(byte[] b) throws IOException {
             return delegate().read(b);
         }
         
+        @Override
         public int read(byte[] b, int off, int len) throws IOException {
             return delegate().read(b, off, len);
         }
         
+        @Override
         public int available() throws IOException {
             return delegate().available();
         }
         
+        @Override
         public boolean markSupported() {
             return delegate().markSupported();
         }        
         
+        @Override
         public void mark(int readlimit) {
             delegate().mark(readlimit);
         }
         
+        @Override
         public void close() throws IOException {
             delegate().close();
         }
         
+        @Override
         public long skip(long n) throws IOException {
             return delegate().skip(n);
         }
         
+        @Override
         public void reset() throws IOException {
             delegate().reset();
         }
@@ -784,11 +790,11 @@ public final class AntBridge {
         private PrintStream delegate() {
             Thread t = Thread.currentThread();
             ThreadGroup tg = t.getThreadGroup();
-            Map/*<ThreadGroup,PrintStream>*/ delegates = err ? delegateErrs : delegateOuts;
+            Map<ThreadGroup,PrintStream> delegates = err ? delegateErrs : delegateOuts;
             while (tg != null && !delegates.containsKey(tg)) {
                 tg = tg.getParent();
             }
-            PrintStream ps = (PrintStream)delegates.get(tg);
+            PrintStream ps = delegates.get(tg);
             if (ps != null && !suspendedDelegationTasks.contains(t)) {
                 return ps;
             } else if (delegating > 0) {
@@ -801,102 +807,127 @@ public final class AntBridge {
             }
         }
         
+        @Override
         public boolean checkError() {
             return delegate().checkError();
         }
         
+        @Override
         public void close() {
             delegate().close();
         }
         
+        @Override
         public void flush() {
             delegate().flush();
         }
         
+        @Override
         public void print(long l) {
             delegate().print(l);
         }
         
+        @Override
         public void print(char[] s) {
             delegate().print(s);
         }
         
+        @Override
         public void print(int i) {
             delegate().print(i);
         }
         
+        @Override
         public void print(boolean b) {
             delegate().print(b);
         }
         
+        @Override
         public void print(char c) {
             delegate().print(c);
         }
         
+        @Override
         public void print(float f) {
             delegate().print(f);
         }
         
+        @Override
         public void print(double d) {
             delegate().print(d);
         }
         
+        @Override
         public void print(Object obj) {
             delegate().print(obj);
         }
         
+        @Override
         public void print(String s) {
             delegate().print(s);
         }
         
+        @Override
         public void println(double x) {
             delegate().println(x);
         }
         
+        @Override
         public void println(Object x) {
             delegate().println(x);
         }
         
+        @Override
         public void println(float x) {
             delegate().println(x);
         }
         
+        @Override
         public void println(int x) {
             delegate().println(x);
         }
         
+        @Override
         public void println(char x) {
             delegate().println(x);
         }
         
+        @Override
         public void println(boolean x) {
             delegate().println(x);
         }
         
+        @Override
         public void println(String x) {
             delegate().println(x);
         }
         
+        @Override
         public void println(char[] x) {
             delegate().println(x);
         }
         
+        @Override
         public void println() {
             delegate().println();
         }
         
+        @Override
         public void println(long x) {
             delegate().println(x);
         }
         
+        @Override
         public void write(int b) {
             delegate().write(b);
         }
         
+        @Override
         public void write(byte[] b) throws IOException {
             delegate().write(b);
         }
         
+        @Override
         public void write(byte[] b, int off, int len) {
             delegate().write(b, off, len);
         }

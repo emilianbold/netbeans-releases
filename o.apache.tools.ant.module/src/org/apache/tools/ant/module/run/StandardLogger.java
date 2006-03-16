@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,15 +17,9 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
-
 import java.util.regex.Pattern;
-
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -78,22 +72,27 @@ public final class StandardLogger extends AntLogger {
         this.mockTotalTime = mockTotalTime;
     }
     
+    @Override
     public boolean interestedInSession(AntSession session) {
         return true;
     }
     
+    @Override
     public boolean interestedInAllScripts(AntSession session) {
         return true;
     }
     
+    @Override
     public String[] interestedInTargets(AntSession session) {
         return AntLogger.ALL_TARGETS;
     }
     
+    @Override
     public String[] interestedInTasks(AntSession session) {
         return AntLogger.ALL_TASKS;
     }
     
+    @Override
     public int[] interestedInLogLevels(AntSession session) {
         int verb = session.getVerbosity();
         assert verb >= AntEvent.LOG_ERR && verb <= AntEvent.LOG_DEBUG : verb;
@@ -113,6 +112,7 @@ public final class StandardLogger extends AntLogger {
         return data;
     }
     
+    @Override
     public void buildInitializationFailed(AntEvent event) {
         if (event.isConsumed()) {
             return;
@@ -145,6 +145,7 @@ public final class StandardLogger extends AntLogger {
         deliverBlockOfTextAsLines(sw.toString(), originalEvent, AntEvent.LOG_ERR);
     }
     
+    @Override
     public void buildStarted(AntEvent event) {
         if (event.isConsumed()) {
             return;
@@ -155,6 +156,7 @@ public final class StandardLogger extends AntLogger {
         event.consume();
     }
     
+    @Override
     public void buildFinished(AntEvent event) {
         if (event.isConsumed()) {
             return;
@@ -200,6 +202,7 @@ public final class StandardLogger extends AntLogger {
         return NbBundle.getMessage(StandardLogger.class, key, new Integer(minutes), new Integer(seconds));
     }
     
+    @Override
     public void targetStarted(AntEvent event) {
         if (event.isConsumed()) {
             return;
@@ -216,6 +219,7 @@ public final class StandardLogger extends AntLogger {
         event.consume();
     }
     
+    @Override
     public void messageLogged(AntEvent event) {
         if (event.isConsumed()) {
             return;
@@ -254,6 +258,7 @@ public final class StandardLogger extends AntLogger {
         event.getSession().println(line, event.getLogLevel() <= AntEvent.LOG_WARN, hyperlink);
     }
     
+    @Override
     public void taskFinished(AntEvent event) {
         // Do not consider hyperlinks from previous tasks.
         getSessionData(event.getSession()).lastHyperlink = null;

@@ -7,21 +7,30 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.nodes;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.Collator;
-import java.util.*;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.EditorKit;
 import org.apache.tools.ant.module.AntSettings;
+import org.apache.tools.ant.module.Generics;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.run.TargetExecutor;
@@ -60,10 +69,10 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
     };
     
     private final AntProjectCookie project;
-    private final Set/*<TargetLister.Target>*/ allTargets;
+    private final Set<TargetLister.Target> allTargets;
     private String defaultTarget = null;
     
-    public AdvancedActionPanel(AntProjectCookie project, Set/*<TargetLister.Target>*/ allTargets) {
+    public AdvancedActionPanel(AntProjectCookie project, Set<TargetLister.Target> allTargets) {
         this.project = project;
         this.allTargets = allTargets;
         initComponents();
@@ -88,10 +97,8 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         FileObject script = project.getFileObject();
         assert script != null : "No file found for " + project;
         String initialTargets = (String) script.getAttribute(ATTR_TARGETS);
-        SortedSet/*<String>*/ relevantTargets = new TreeSet(Collator.getInstance());
-        Iterator it = allTargets.iterator();
-        while (it.hasNext()) {
-            TargetLister.Target target = (TargetLister.Target) it.next();
+        SortedSet<String> relevantTargets = new TreeSet<String>(Collator.getInstance());
+        for (TargetLister.Target target : allTargets) {
             if (!target.isOverridden() && !target.isInternal()) {
                 relevantTargets.add(target.getName());
                 if (defaultTarget == null && target.isDefault()) {
@@ -123,11 +130,11 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         propertiesPane.setText(initialProperties);
         Integer verbosity = (Integer) script.getAttribute(ATTR_VERBOSITY);
         if (verbosity == null) {
-            verbosity = new Integer(AntSettings.getDefault().getVerbosity());
+            verbosity = AntSettings.getDefault().getVerbosity();
         }
         verbosityComboBox.setModel(new DefaultComboBoxModel(VERBOSITIES));
         for (int i = 0; i < VERBOSITY_LEVELS.length; i++) {
-            if (VERBOSITY_LEVELS[i] == verbosity.intValue()) {
+            if (VERBOSITY_LEVELS[i] == verbosity) {
                 verbosityComboBox.setSelectedItem(VERBOSITIES[i]);
                 break;
             }
@@ -241,13 +248,11 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
             selection = "";
         }
         StringTokenizer tok = new StringTokenizer(selection, " ,"); // NOI18N
-        List/*<String>*/ targetsL = Collections.list(tok);
+        List<String> targetsL = Collections.list((Enumeration<String>) tok);
         String description = "";
         if (targetsL.size() == 1) {
-            String targetName = (String) targetsL.get(0);
-            Iterator it = allTargets.iterator();
-            while (it.hasNext()) {
-                TargetLister.Target target = (TargetLister.Target) it.next();
+            String targetName = targetsL.get(0);
+            for (TargetLister.Target target : allTargets) {
                 if (!target.isOverridden() && target.getName().equals(targetName)) {
                     description = target.getElement().getAttribute("description"); // NOI18N
                     // may still be "" if not defined
@@ -277,13 +282,13 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
     public void run() throws IOException {
         // Read settings from the dialog.
         StringTokenizer tok = new StringTokenizer((String) targetComboBox.getSelectedItem(), " ,"); // NOI18N
-        List/*<String>*/ targetsL = Collections.list(tok);
+        List<String> targetsL = Collections.list((Enumeration<String>) tok);
         String[] targets;
         if (targetsL.isEmpty()) {
             // Run default target.
             targets = null;
         } else {
-            targets = (String[]) targetsL.toArray(new String[targetsL.size()]);
+            targets = targetsL.toArray(new String[targetsL.size()]);
         }
         Properties props = new Properties();
         ByteArrayInputStream bais = new ByteArrayInputStream(propertiesPane.getText().getBytes("ISO-8859-1"));
@@ -324,7 +329,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         }
         // Actually run the target(s).
         TargetExecutor exec = new TargetExecutor(project, targets);
-        exec.setProperties(props);
+        exec.setProperties(Generics.checkedMapByCopy(props, String.class, String.class));
         exec.setVerbosity(verbosity);
         exec.execute();
     }

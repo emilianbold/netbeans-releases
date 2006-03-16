@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -61,7 +61,7 @@ public class StandardLoggerTest extends NbTestCase {
         session.sendMessageLogged(makeAntEvent(realSession, "some message", AntEvent.LOG_WARN, null, null, null));
         session.sendTargetFinished(makeAntEvent(realSession, null, -1, null, "some-target", null));
         session.sendBuildFinished(makeAntEvent(realSession, null, -1, null, null, null));
-        List/*<Message>*/ expectedMessages = Arrays.asList(new Message[] {
+        List<Message> expectedMessages = Arrays.asList(new Message[] {
             new Message(NbBundle.getMessage(StandardLogger.class, "MSG_target_started_printed", "some-target"), false, null),
             new Message("some message", true, null),
             new Message(NbBundle.getMessage(StandardLogger.class, "FMT_finished_target_printed", new Integer(0), new Integer(15)), false, null),
@@ -85,7 +85,7 @@ public class StandardLoggerTest extends NbTestCase {
                                                             "...and an unrelated message",
             AntEvent.LOG_WARN, null, null, null));
         session.sendBuildFinished(makeAntEvent(realSession, null, -1, null, null, null));
-        List/*<Message>*/ expectedMessages = Arrays.asList(new Message[] {
+        List<Message> expectedMessages = Arrays.asList(new Message[] {
             new Message("Stack trace in separate lines:", false, null),
             new Message("\tat Foo.java:3", false, new MockHyperlink("file:/src/Foo.java", "stack trace", 3, -1, -1, -1)),
             new Message("\tat Bar.java:5", false, new MockHyperlink("file:/src/Bar.java", "stack trace", 5, -1, -1, -1)),
@@ -122,9 +122,9 @@ public class StandardLoggerTest extends NbTestCase {
         
         private final AntLogger[] loggers;
         private final int verbosity;
-        private final Map/*<AntLogger,Object>*/ customData = new WeakHashMap();
-        private final Set/*<Throwable>*/ consumedExceptions = new WeakSet();
-        public final List/*<Message>*/ messages = new ArrayList();
+        private final Map<AntLogger,Object> customData = new WeakHashMap<AntLogger,Object>();
+        private final Set<Throwable> consumedExceptions = new WeakSet();
+        public final List<Message> messages = new ArrayList<Message>();
         
         public MockAntSession(AntLogger[] loggers, int verbosity) {
             this.loggers = loggers;
@@ -132,54 +132,54 @@ public class StandardLoggerTest extends NbTestCase {
         }
         
         public void sendMessageLogged(AntEvent event) {
-            for (int i = 0; i < loggers.length; i++) {
-                int[] levels = loggers[i].interestedInLogLevels(event.getSession());
+            for (AntLogger logger : loggers) {
+                int[] levels = logger.interestedInLogLevels(event.getSession());
                 Arrays.sort(levels);
                 if (Arrays.binarySearch(levels, event.getLogLevel()) >= 0) {
-                    loggers[i].messageLogged(event);
+                    logger.messageLogged(event);
                 }
             }
         }
         
         public void sendBuildStarted(AntEvent event) {
-            for (int i = 0; i < loggers.length; i++) {
-                loggers[i].buildStarted(event);
+            for (AntLogger logger : loggers) {
+                logger.buildStarted(event);
             }
         }
         
         public void sendBuildFinished(AntEvent event) {
-            for (int i = 0; i < loggers.length; i++) {
-                loggers[i].buildFinished(event);
+            for (AntLogger logger : loggers) {
+                logger.buildFinished(event);
             }
         }
         
         public void sendBuildInitializationFailed(AntEvent event) {
-            for (int i = 0; i < loggers.length; i++) {
-                loggers[i].buildInitializationFailed(event);
+            for (AntLogger logger : loggers) {
+                logger.buildInitializationFailed(event);
             }
         }
         
         public void sendTargetStarted(AntEvent event) {
-            for (int i = 0; i < loggers.length; i++) {
-                loggers[i].targetStarted(event);
+            for (AntLogger logger : loggers) {
+                logger.targetStarted(event);
             }
         }
         
         public void sendTargetFinished(AntEvent event) {
-            for (int i = 0; i < loggers.length; i++) {
-                loggers[i].targetFinished(event);
+            for (AntLogger logger : loggers) {
+                logger.targetFinished(event);
             }
         }
         
         public void sendTaskStarted(AntEvent event) {
-            for (int i = 0; i < loggers.length; i++) {
-                loggers[i].taskStarted(event);
+            for (AntLogger logger : loggers) {
+                logger.taskStarted(event);
             }
         }
         
         public void sendTaskFinished(AntEvent event) {
-            for (int i = 0; i < loggers.length; i++) {
-                loggers[i].taskFinished(event);
+            for (AntLogger logger : loggers) {
+                logger.taskFinished(event);
             }
         }
         
@@ -300,8 +300,8 @@ public class StandardLoggerTest extends NbTestCase {
             return message;
         }
 
-        public Set/*<String>*/ getPropertyNames() {
-            return Collections.EMPTY_SET;
+        public Set<String> getPropertyNames() {
+            return Collections.emptySet();
         }
 
         public File getScriptLocation() {
@@ -345,6 +345,7 @@ public class StandardLoggerTest extends NbTestCase {
             }
         }
         
+        @Override
         public boolean equals(Object o) {
             if (o instanceof Message) {
                 Message m = (Message) o;
@@ -354,6 +355,7 @@ public class StandardLoggerTest extends NbTestCase {
             }
         }
         
+        @Override
         public String toString() {
             return "Message[" + message + "]" + (err ? "(err)" : "(out)") + (hyperlink != null ? "(" + hyperlink + ")" : "");
         }
@@ -381,6 +383,7 @@ public class StandardLoggerTest extends NbTestCase {
             this.column2 = column2;
         }
         
+        @Override
         public boolean equals(Object o) {
             if (o instanceof MockHyperlink) {
                 MockHyperlink h = (MockHyperlink) o;
@@ -391,6 +394,7 @@ public class StandardLoggerTest extends NbTestCase {
             }
         }
         
+        @Override
         public String toString() {
             return "MockHyperlink[" + url + ":" + line1 + ":" + column1 + ":" + line2 + ":" + column2 + ":" + message + "]";
         }
@@ -413,6 +417,7 @@ public class StandardLoggerTest extends NbTestCase {
         
         public MockStackTraceLogger() {}
 
+        @Override
         public void messageLogged(AntEvent event) {
             if (event.isConsumed()) {
                 return;
@@ -435,18 +440,22 @@ public class StandardLoggerTest extends NbTestCase {
             }
         }
 
+        @Override
         public String[] interestedInTasks(AntSession session) {
             return AntLogger.ALL_TASKS;
         }
 
+        @Override
         public String[] interestedInTargets(AntSession session) {
             return AntLogger.ALL_TARGETS;
         }
 
+        @Override
         public boolean interestedInSession(AntSession session) {
             return true;
         }
 
+        @Override
         public int[] interestedInLogLevels(AntSession session) {
             return new int[] {
                 AntEvent.LOG_INFO,
@@ -455,10 +464,12 @@ public class StandardLoggerTest extends NbTestCase {
             };
         }
 
+        @Override
         public boolean interestedInAllScripts(AntSession session) {
             return true;
         }
 
+        @Override
         public boolean interestedInScript(File script, AntSession session) {
             return true;
         }

@@ -7,24 +7,20 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.wizards.shortcut;
 
 import java.awt.Component;
-import java.net.URL;
-import java.net.MalformedURLException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.loaders.TemplateWizard;
 
 final class IntroPanel extends javax.swing.JPanel {
 
@@ -41,6 +37,7 @@ final class IntroPanel extends javax.swing.JPanel {
 
     // --- VISUAL DESIGN OF PANEL ---
     
+    @Override
     public void requestFocus () {
         super.requestFocus ();
         customizeCheck.requestFocus ();
@@ -188,7 +185,7 @@ final class IntroPanel extends javax.swing.JPanel {
                    getPanel().keyboardCheck.isSelected ();
         }
 
-        private final Set listeners = new HashSet (1); // Set<ChangeListener>
+        private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
         public final void addChangeListener (ChangeListener l) {
             synchronized (listeners) {
                 listeners.add (l);
@@ -204,13 +201,13 @@ final class IntroPanel extends javax.swing.JPanel {
             // because then it will be too late (iterator will already have progressed):
             // XXX workaround should no longer be necessary...
             storeSettings(wiz);
-            Iterator it;
+            ChangeListener[] ls;
             synchronized (listeners) {
-                it = new HashSet (listeners).iterator ();
+                ls = listeners.toArray(new ChangeListener[listeners.size()]);
             }
             ChangeEvent ev = new ChangeEvent (this);
-            while (it.hasNext ()) {
-                ((ChangeListener) it.next ()).stateChanged (ev);
+            for (ChangeListener l : ls) {
+                l.stateChanged (ev);
             }
         }
 

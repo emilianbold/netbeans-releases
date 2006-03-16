@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -189,7 +189,7 @@ public final class AntEvent {
      * Get a set of property names defined on the current Ant project.
      * @return a set of property names; may be empty but not null
      */
-    public Set/*<String>*/ getPropertyNames() {
+    public Set<String> getPropertyNames() {
         return impl.getPropertyNames();
     }
     
@@ -204,6 +204,7 @@ public final class AntEvent {
         return impl.evaluate(text);
     }
     
+    @Override
     public String toString() {
         return impl.toString();
     }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
 import org.apache.tools.ant.module.AntSettings;
-import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.apache.tools.ant.module.Generics;
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.openide.execution.ExecutorTask;
 
@@ -70,7 +70,7 @@ final public class AntTargetExecutor {
     public ExecutorTask execute(AntProjectCookie antProject, String[] targets) throws IOException {
         TargetExecutor te = new TargetExecutor(antProject, targets);
         te.setVerbosity(env.getVerbosity());
-        te.setProperties(env.getProperties());
+        te.setProperties(Generics.checkedMapByCopy(env.getProperties(), String.class, String.class));
         if (env.getLogger() == null) {
             return te.execute();
         } else {
@@ -134,6 +134,7 @@ final public class AntTargetExecutor {
          * @deprecated Usage of a custom output stream is not recommended, and prevents some
          *             Ant module features from working correctly.
          */
+        @Deprecated
         public void setLogger(OutputStream outputStream) {
             this.outputStream = outputStream;
         }

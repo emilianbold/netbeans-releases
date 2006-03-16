@@ -7,19 +7,15 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.spi.options.AdvancedOption;
-import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
-
 
 /**
  * Contains information about Abbreviations Panel, and creates a new 
@@ -34,14 +30,17 @@ public final class AntOption extends AdvancedOption {
     }
 
     
+    @Override
     public String getDisplayName () {
         return loc ("Ant");
     }
 
+    @Override
     public String getTooltip () {
         return loc ("Ant_Tooltip");
     }
 
+    @Override
     public OptionsPanelController create () {
         return new AntPanelController ();
     }

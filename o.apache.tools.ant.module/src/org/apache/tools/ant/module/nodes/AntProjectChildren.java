@@ -31,24 +31,26 @@ import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
-final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ implements ChangeListener, Comparator/*<TargetLister.Target>*/ {
+final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ implements ChangeListener, Comparator<TargetLister.Target> {
     
     private static Collator SORTER = Collator.getInstance();
     
     private final AntProjectCookie cookie;
-    private SortedSet/*<TargetLister.Target>*/ allTargets;
+    private SortedSet<TargetLister.Target> allTargets;
     
     public AntProjectChildren (AntProjectCookie cookie) {
         super ();
         this.cookie = cookie;
     }
     
+    @Override
     protected void addNotify () {
         super.addNotify ();
         refreshKeys(true);
         cookie.addChangeListener (this);
     }
 
+    @Override
     protected void removeNotify () {
         super.removeNotify ();
         setKeys(Collections.EMPTY_SET);
@@ -60,18 +62,18 @@ final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ im
 
     private void refreshKeys(boolean createKeys) {
         try {
-            Set/*<TargetLister.Target>*/ _allTargets = TargetLister.getTargets(cookie);
+            Set<TargetLister.Target> _allTargets = TargetLister.getTargets(cookie);
             Collection keys;
             synchronized (this) {
                 if (allTargets == null && !createKeys) {
                     // Aynch refresh after removeNotify; ignore. (#44428)
                     return;
                 }
-                allTargets = new TreeSet(this);
+                allTargets = new TreeSet<TargetLister.Target>(this);
                 allTargets.addAll(_allTargets);
-                Iterator it = allTargets.iterator();
+                Iterator<TargetLister.Target> it = allTargets.iterator();
                 while (it.hasNext()) {
-                    TargetLister.Target t = (TargetLister.Target) it.next();
+                    TargetLister.Target t = it.next();
                     if (t.isOverridden()) {
                         // Don't include these.
                         it.remove();
@@ -89,6 +91,7 @@ final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ im
         }
     }
     
+    @Override
     protected Node[] createNodes (Object key) {
         TargetLister.Target t = (TargetLister.Target) key;
         return new Node[] {new AntTargetNode(cookie, t)};
@@ -98,9 +101,7 @@ final class AntProjectChildren extends Children.Keys/*<TargetLister.Target>*/ im
         refreshKeys(false);
     }
     
-    public int compare(Object o1, Object o2) {
-        TargetLister.Target t1 = (TargetLister.Target) o1;
-        TargetLister.Target t2 = (TargetLister.Target) o2;
+    public int compare(TargetLister.Target t1, TargetLister.Target t2) {
         int x = SORTER.compare(t1.getName(), t2.getName());
         if (x != 0 || t1 == t2) {
             return x;

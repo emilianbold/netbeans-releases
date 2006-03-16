@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -77,12 +76,12 @@ public final class IntrospectedInfo implements Serializable {
     
     private static final long serialVersionUID = -2290064038236292995L;
     
-    private Map clazzes = Collections.synchronizedMap (new HashMap ()); // Map<String,IntrospectedClass>
+    private Map<String,IntrospectedClass> clazzes = Collections.synchronizedMap(new HashMap<String,IntrospectedClass>());
     /** definitions first by kind then by name to class name */
-    private Map namedefs = new HashMap(); // Map<String,Map<String,String>>
+    private Map<String,Map<String,String>> namedefs = new HashMap<String,Map<String,String>>();
     
-    private transient Set listeners = new HashSet(5); // Set<ChangeListener>
-    private transient Set tonotify = new HashSet(5); // Set<ChangeListener>
+    private transient Set<ChangeListener> listeners = new HashSet<ChangeListener>(5);
+    private transient Set<ChangeListener> tonotify = new HashSet<ChangeListener>(5);
     
     private transient ChangeListener antBridgeListener = new ChangeListener() {
         public void stateChanged(ChangeEvent ev) {
@@ -145,46 +144,28 @@ public final class IntrospectedInfo implements Serializable {
             AntModule.err.log("IntrospectedInfo.defaults=" + defaults);
         }
     }
-    
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getField(ObjectInputStream.GetField fields, String name) throws IOException {
+        return (T) fields.get(name, null);
+    }
     private void readObject(ObjectInputStream is) throws IOException, ClassNotFoundException {
-        listeners = new HashSet(5);
-        tonotify = new HashSet(5);
+        listeners = new HashSet<ChangeListener>(5);
+        tonotify = new HashSet<ChangeListener>(5);
         //is.defaultReadObject();
         ObjectInputStream.GetField fields = is.readFields();
-        clazzes = (Map)fields.get("clazzes", null); // NOI18N
-        namedefs = (Map)fields.get("namedefs", null); // NOI18n
+        clazzes = getField(fields, "clazzes"); // NOI18N
+        namedefs = getField(fields, "namedefs"); // NOI18n
         if (namedefs == null) {
             // Compatibility with older versions of this class.
             AntModule.err.log("#15739: reading old version of IntrospectedInfo");
-            namedefs = new HashMap();
-            Object tasks_ = fields.get("tasks", null); // NOI18N
-            if (tasks_ == null) throw new NullPointerException();
-            if (! (tasks_ instanceof Map)) throw new ClassCastException(tasks_.toString());
-            namedefs.put("task", tasks_); // NOI18N
-            Map types = (Map)fields.get("types", null); // NOI18N
+            namedefs = new HashMap<String,Map<String,String>>();
+            Map<String,String> tasks = getField(fields, "tasks"); // NOI18N
+            if (tasks == null) throw new NullPointerException();
+            namedefs.put("task", tasks); // NOI18N
+            Map<String,String> types = getField(fields, "types"); // NOI18N
             if (types == null) throw new NullPointerException();
             namedefs.put("type", types); // NOI18N
-        }
-        // #15739 sanity check:
-        Iterator it = namedefs.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            String key = (String)entry.getKey();
-            Map value = (Map)entry.getValue();
-            Iterator it2 = value.entrySet().iterator();
-            while (it2.hasNext()) {
-                Map.Entry entry2 = (Map.Entry)it2.next();
-                String key2 = (String)entry2.getKey();
-                String value2 = (String)entry2.getValue();
-                // that's all, just checking for ClassCastException's
-            }
-        }
-        Iterator it2 = clazzes.entrySet().iterator();
-        while (it2.hasNext()) {
-            Map.Entry entry2 = (Map.Entry)it2.next();
-            String key2 = (String)entry2.getKey();
-            IntrospectedClass value2 = (IntrospectedClass)entry2.getValue();
-            // again
         }
     }
     
@@ -213,12 +194,12 @@ public final class IntrospectedInfo implements Serializable {
             ChangeListener[] listeners2;
             synchronized (listeners) {
                 if (tonotify.isEmpty()) return;
-                listeners2 = (ChangeListener[])tonotify.toArray(new ChangeListener[tonotify.size()]);
+                listeners2 = tonotify.toArray(new ChangeListener[tonotify.size()]);
                 tonotify.clear();
             }
             ChangeEvent ev = new ChangeEvent(IntrospectedInfo.this);
-            for (int i = 0; i < listeners2.length; i++) {
-                listeners2[i].stateChanged(ev);
+            for (ChangeListener l : listeners2) {
+                l.stateChanged(ev);
             }
         }
     }
@@ -239,20 +220,20 @@ public final class IntrospectedInfo implements Serializable {
      * @param kind the kind of definition, e.g. <code>task</code>
      * @return an immutable map from definition names to class names
      */
-    public Map getDefs(String kind) {
+    public Map<String,String> getDefs(String kind) {
         init();
         synchronized (namedefs) {
-            Map m = (Map)namedefs.get(kind);
+            Map<String,String> m = namedefs.get(kind);
             if (m != null) {
                 return Collections.unmodifiableMap(m);
             } else {
-                return Collections.EMPTY_MAP;
+                return Collections.emptyMap();
             }
         }
     }
     
     private IntrospectedClass getData (String clazz) throws IllegalArgumentException {
-        IntrospectedClass data = (IntrospectedClass) clazzes.get (clazz);
+        IntrospectedClass data = clazzes.get(clazz);
         if (data == null) {
             throw new IllegalArgumentException("Unknown class: " + clazz); // NOI18N
         }
@@ -283,11 +264,11 @@ public final class IntrospectedInfo implements Serializable {
      * @return an immutable map from attribute name to type (class name)
      * @throws IllegalArgumentException if the class is unknown
      */
-    public Map getAttributes (String clazz) throws IllegalArgumentException {
+    public Map<String,String> getAttributes(String clazz) throws IllegalArgumentException {
         init();
-        Map map = getData (clazz).attrs;
+        Map<String,String> map = getData(clazz).attrs;
         if (map == null) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         } else {
             return Collections.unmodifiableMap (map);
         }
@@ -298,11 +279,11 @@ public final class IntrospectedInfo implements Serializable {
      * @return an immutable map from element name to type (class name)
      * @throws IllegalArgumentException if the class is unknown
      */
-    public Map getElements (String clazz) throws IllegalArgumentException {
+    public Map<String,String> getElements(String clazz) throws IllegalArgumentException {
         init();
-        Map map = getData (clazz).subs;
+        Map<String,String> map = getData(clazz).subs;
         if (map == null) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         } else {
             return Collections.unmodifiableMap (map);
         }
@@ -328,9 +309,7 @@ public final class IntrospectedInfo implements Serializable {
         } finally {
             is.close ();
         }
-        Iterator it = p.entrySet ().iterator ();
-        while (it.hasNext ()) {
-            Map.Entry entry = (Map.Entry) it.next ();
+        for (Map.Entry<Object,Object> entry : p.entrySet()) {
             String name = (String) entry.getKey ();
             if (kind.equals("type") && name.equals("description")) { // NOI18N
                 // Not a real data type; handled specially.
@@ -365,18 +344,10 @@ public final class IntrospectedInfo implements Serializable {
         }
     }
     
-    private void loadNetBeansSpecificDefinitions0(Map defsByKind) {
-        Iterator kindIt = defsByKind.entrySet().iterator();
-        while (kindIt.hasNext()) {
-            Map.Entry kindE = (Map.Entry)kindIt.next();
-            String kind = (String)kindE.getKey();
-            Map defs = (Map)kindE.getValue();
-            Iterator defsIt = defs.entrySet().iterator();
-            while (defsIt.hasNext()) {
-                Map.Entry defsE = (Map.Entry)defsIt.next();
-                String name = (String)defsE.getKey();
-                Class clazz = (Class)defsE.getValue();
-                register(name, clazz, kind);
+    private void loadNetBeansSpecificDefinitions0(Map<String,Map<String,Class>> defsByKind) {
+        for (Map.Entry<String,Map<String,Class>> kindE : defsByKind.entrySet()) {
+            for (Map.Entry<String,Class> defsE : kindE.getValue().entrySet()) {
+                register(defsE.getKey(), defsE.getValue(), kindE.getKey());
             }
         }
     }
@@ -399,9 +370,9 @@ public final class IntrospectedInfo implements Serializable {
     private void register(String name, Class clazz, String kind, boolean fire) {
         init();
         synchronized (namedefs) {
-            Map m = (Map)namedefs.get(kind);
+            Map<String,String> m = namedefs.get(kind);
             if (m == null) {
-                m = new HashMap(); // Map<String,String>
+                m = new HashMap<String,String>();
                 namedefs.put(kind, m);
             }
             m.put(name, clazz.getName());
@@ -424,7 +395,7 @@ public final class IntrospectedInfo implements Serializable {
     public synchronized void unregister(String name, String kind) {
         init();
         synchronized (namedefs) {
-            Map m = (Map)namedefs.get(kind);
+            Map<String,String> m = namedefs.get(kind);
             if (m != null) {
                 m.remove(name);
             }
@@ -448,7 +419,7 @@ public final class IntrospectedInfo implements Serializable {
      * @param isAttrType false for an element class, true for an attribute class
      * @return true if something changed
      */
-    private boolean analyze(Class clazz, Set/*<Class>*/ skipReanalysis, boolean isAttrType) {
+    private boolean analyze(Class clazz, Set<Class> skipReanalysis, boolean isAttrType) {
         String n = clazz.getName();
         /*
         if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -485,13 +456,13 @@ public final class IntrospectedInfo implements Serializable {
         }
         IntrospectionHelperProxy helper = AntBridge.getInterface().getIntrospectionHelper(clazz);
         info.supportsText = helper.supportsCharacters ();
-        Enumeration e = helper.getAttributes ();
-        Set/*<Class>*/ nueAttrTypeClazzes = new HashSet();
+        Enumeration<String> e = helper.getAttributes();
+        Set<Class> nueAttrTypeClazzes = new HashSet<Class>();
         //if (dbg) AntModule.err.log ("Analyzing <taskdef> attrs...");
         if (e.hasMoreElements ()) {
-            info.attrs = new HashMap ();
+            info.attrs = new HashMap<String,String>();
             while (e.hasMoreElements ()) {
-                String name = (String) e.nextElement ();
+                String name = e.nextElement();
                 //if (dbg) AntModule.err.log ("\tname=" + name);
                 try {
                     Class attrType = helper.getAttributeType(name);
@@ -518,13 +489,13 @@ public final class IntrospectedInfo implements Serializable {
         } else {
             info.attrs = null;
         }
-        Set nueClazzes = new HashSet (); // Set<Class>
+        Set<Class> nueClazzes = new HashSet<Class>();
         e = helper.getNestedElements ();
         //if (dbg) AntModule.err.log ("Analyzing <taskdef> subels...");
         if (e.hasMoreElements ()) {
-            info.subs = new HashMap ();
+            info.subs = new HashMap<String,String>();
             while (e.hasMoreElements ()) {
-                String name = (String) e.nextElement ();
+                String name = e.nextElement();
                 //if (dbg) AntModule.err.log ("\tname=" + name);
                 try {
                     Class subclazz = helper.getElementType (name);
@@ -541,13 +512,11 @@ public final class IntrospectedInfo implements Serializable {
         boolean changed = !info.equals(clazzes.put(clazz.getName(), info));
         // And recursively analyze reachable classes for subelements...
         // (usually these will already be known, and analyze will return at once)
-        Iterator it = nueClazzes.iterator ();
-        while (it.hasNext ()) {
-            changed |= analyze((Class)it.next(), skipReanalysis, false);
+        for (Class nueClazz : nueClazzes) {
+            changed |= analyze(nueClazz, skipReanalysis, false);
         }
-        it = nueAttrTypeClazzes.iterator();
-        while (it.hasNext()) {
-            changed |= analyze((Class)it.next(), skipReanalysis, true);
+        for (Class nueClazz : nueAttrTypeClazzes) {
+            changed |= analyze(nueClazz, skipReanalysis, true);
         }
         return changed;
     }
@@ -570,14 +539,12 @@ public final class IntrospectedInfo implements Serializable {
      * Will not try to define anything contained in the defaults list.
      * @param defs map from kinds to maps from names to classes
      */
-    public void scanProject (Map defs) {
+    public void scanProject(Map<String,Map<String,Class>> defs) {
         init();
-        Iterator it = defs.entrySet().iterator();
-        Set skipReanalysis = new HashSet();
+        Set<Class> skipReanalysis = new HashSet<Class>();
         boolean changed = false;
-        while (it.hasNext()) {
-            Map.Entry e = (Map.Entry)it.next();
-            changed |= scanMap((Map)e.getValue(), (String)e.getKey(), skipReanalysis);
+        for (Map.Entry<String,Map<String,Class>> e : defs.entrySet()) {
+            changed |= scanMap(e.getValue(), e.getKey(), skipReanalysis);
         }
         if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
             AntModule.err.log("IntrospectedInfo.scanProject: " + this);
@@ -587,26 +554,24 @@ public final class IntrospectedInfo implements Serializable {
         }
     }
     
-    private boolean scanMap(Map/*<String,Class>*/ m, String kind, Set/*<Class>*/ skipReanalysis) {
+    private boolean scanMap(Map<String,Class> m, String kind, Set<Class> skipReanalysis) {
         if (kind == null) throw new IllegalArgumentException();
         boolean changed = false;
-        Iterator it = m.entrySet ().iterator ();
-        while (it.hasNext ()) {
-            Map.Entry entry = (Map.Entry) it.next ();
-            String name = (String) entry.getKey ();
+        for (Map.Entry<String,Class> entry : m.entrySet()) {
+            String name = entry.getKey();
             if (kind.equals("type") && name.equals("description")) { // NOI18N
                 // Not a real data type; handled specially.
                 AntModule.err.log("Skipping pseudodef of <description>");
                 continue;
             }
-            Class clazz = (Class) entry.getValue ();
-            Map registry = (Map)namedefs.get(kind); // Map<String,String>
+            Class clazz = entry.getValue();
+            Map<String,String> registry = namedefs.get(kind);
             if (registry == null) {
-                registry = new HashMap();
+                registry = new HashMap<String,String>();
                 namedefs.put(kind, registry);
             }
             synchronized (this) {
-                Map defaults = getDefaults ().getDefs (kind); // Map<String,String>
+                Map<String,String> defaults = getDefaults().getDefs(kind);
                 if (defaults.get(name) == null) {
                     changed |= !clazz.getName().equals(registry.put(name, clazz.getName()));
                 }
@@ -629,6 +594,7 @@ public final class IntrospectedInfo implements Serializable {
         return changed;
     }
     
+    @Override
     public String toString () {
         return "IntrospectedInfo[namedefs=" + namedefs + ",clazzes=" + clazzes + "]"; // NOI18N
     }
@@ -639,25 +605,28 @@ public final class IntrospectedInfo implements Serializable {
         
         //public String clazz;
         public boolean supportsText;
-        public Map attrs; // null or name -> class; Map<String,String>
-        public Map subs; // null or name -> class; Map<String,String>
+        public Map<String,String> attrs; // null or name -> class
+        public Map<String,String> subs; // null or name -> class
         public String[] enumTags; // null or list of tags
         
+        @Override
         public String toString () {
             String tags;
             if (enumTags != null) {
-                tags = Arrays.asList((Object[])enumTags).toString();
+                tags = Arrays.asList(enumTags).toString();
             } else {
                 tags = "null"; // NOI18N
             }
             return "IntrospectedClass[text=" + supportsText + ",attrs=" + attrs + ",subs=" + subs + ",enumTags=" + tags + "]"; // NOI18N
         }
         
+        @Override
         public int hashCode() {
             // XXX
             return 0;
         }
         
+        @Override
         public boolean equals(Object o) {
             if (!(o instanceof IntrospectedClass)) {
                 return false;
@@ -687,24 +656,22 @@ public final class IntrospectedInfo implements Serializable {
                 IntrospectedInfo ii2 = (IntrospectedInfo)ev.getSource();
                 ii2.init();
                 ii.clazzes.putAll(ii2.clazzes);
-                Iterator it = ii2.namedefs.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry e = (Map.Entry)it.next();
-                    String kind = (String)e.getKey();
-                    Map entries = (Map)e.getValue();
+                for (Map.Entry<String,Map<String,String>> e : ii2.namedefs.entrySet()) {
+                    String kind = e.getKey();
+                    Map<String,String> entries = e.getValue();
                     if (ii.namedefs.containsKey(kind)) {
-                        ((Map)ii.namedefs.get(kind)).putAll(entries);
+                        ii.namedefs.get(kind).putAll(entries);
                     } else {
-                        ii.namedefs.put(kind, new HashMap(entries));
+                        ii.namedefs.put(kind, new HashMap<String,String>(entries));
                     }
                 }
                 ii.fireStateChanged();
             }
         };
         ii.holder = l;
-        for (int i = 0; i < proxied.length; i++) {
-            proxied[i].addChangeListener(WeakListeners.change(l, proxied[i]));
-            l.stateChanged(new ChangeEvent(proxied[i]));
+        for (IntrospectedInfo info : proxied) {
+            info.addChangeListener(WeakListeners.change(l, info));
+            l.stateChanged(new ChangeEvent(info));
         }
         return ii;
     }

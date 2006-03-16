@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -68,7 +68,7 @@ public final class TaskStructure {
      * Get a set of all defined attribute names.
      * @return a set of names suitable for {@link #getAttribute}; may be empty but not null
      */
-    public Set/*<String>*/ getAttributeNames() {
+    public Set<String> getAttributeNames() {
         return impl.getAttributeNames();
     }
     
@@ -91,6 +91,7 @@ public final class TaskStructure {
         return impl.getChildren();
     }
     
+    @Override
     public String toString() {
         return impl.toString();
     }

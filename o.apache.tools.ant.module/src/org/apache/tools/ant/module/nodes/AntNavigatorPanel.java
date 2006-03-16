@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -79,6 +79,7 @@ public final class AntNavigatorPanel implements NavigatorPanel {
                     return manager;
                 }
                 // Make sure list gets focus, with first node initially selected:
+                @Override
                 public boolean requestFocusInWindow() {
                     boolean b = view.requestFocusInWindow();
                     if (manager.getSelectedNodes().length == 0) {
@@ -117,10 +118,10 @@ public final class AntNavigatorPanel implements NavigatorPanel {
         return null;
     }
     
-    private void display(Collection/*<DataObject>*/ selectedFiles) {
+    private void display(Collection<DataObject> selectedFiles) {
         // Show list of targets for selected file:
         if (selectedFiles.size() == 1) {
-            DataObject d = (DataObject) selectedFiles.iterator().next();
+            DataObject d = selectedFiles.iterator().next();
             manager.setRootContext(d.getNodeDelegate());
             return;
         }

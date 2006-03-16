@@ -40,6 +40,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.RuntimeConfigurable;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.module.Generics;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.run.Hyperlink;
 import org.apache.tools.ant.module.run.LoggerTrampoline;
@@ -82,17 +83,17 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private final String displayName;
     private final Runnable interestingOutputCallback;
     
-    private final Map/*<AntLogger,Object>*/ customData = new HashMap();
+    private final Map<AntLogger,Object> customData = new HashMap<AntLogger,Object>();
     
-    private List/*<AntLogger>*/ interestedLoggers = null;
-    private Map/*<File|null,Collection<AntLogger>>*/ interestedLoggersByScript = new HashMap();
-    private Map/*<String|null,Collection<AntLogger>>*/ interestedLoggersByTarget = new HashMap();
-    private Map/*<String|null,Collection<AntLogger>>*/ interestedLoggersByTask = new HashMap();
-    private Map/*<int,Collection<AntLogger>>*/ interestedLoggersByLevel = new HashMap();
+    private List<AntLogger> interestedLoggers = null;
+    private Map<File/*|null*/,Collection<AntLogger>> interestedLoggersByScript = new HashMap<File,Collection<AntLogger>>();
+    private Map<String/*|null*/,Collection<AntLogger>> interestedLoggersByTarget = new HashMap<String,Collection<AntLogger>>();
+    private Map<String/*|null*/,Collection<AntLogger>> interestedLoggersByTask = new HashMap<String,Collection<AntLogger>>();
+    private Map<Integer,Collection<AntLogger>> interestedLoggersByLevel = new HashMap<Integer,Collection<AntLogger>>();
     
-    private final Set/*<Project>*/ projectsWithProperties = new WeakSet();
+    private final Set<Project> projectsWithProperties = new WeakSet();
     
-    private final Set/*<Throwable>*/ consumedExceptions = new WeakSet();
+    private final Set<Throwable> consumedExceptions = new WeakSet();
     
     /** whether this process should be halted at the next safe point */
     private boolean stop = false;
@@ -104,7 +105,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
      * Hack for lack of Target.getLocation() in Ant 1.6.2 and earlier.
      * Unused if targetGetLocation is not null.
      */
-    private final Map/*<String,Map<String,String>>*/ knownImportedTargets = new HashMap();
+    private final Map<String,Map<String,String>> knownImportedTargets = new HashMap<String,Map<String,String>>();
     /**
      * Main script known to be being parsed at the moment.
      * Unused if targetGetLocation is not null.
@@ -170,7 +171,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private void initInterestedLoggers() {
         assert Thread.holdsLock(this);
         if (interestedLoggers == null) {
-            interestedLoggers = new ArrayList();
+            interestedLoggers = new ArrayList<AntLogger>();
             Iterator it = Lookup.getDefault().lookup(new Lookup.Template(AntLogger.class)).allInstances().iterator();
             while (it.hasNext()) {
                 AntLogger l = (AntLogger)it.next();
@@ -184,11 +185,10 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
     }
 
-    private final Collection/*<AntLogger>*/[] interestedLoggersByVariousCriteria = new Collection[4];
-    private static final Comparator/*<Collection<AntLogger>>*/ INTERESTED_LOGGERS_SORTER = new Comparator() {
-        public int compare(Object o1, Object o2) {
-            Collection/*<AntLogger>*/ c1 = (Collection/*<AntLogger>*/) o1;
-            Collection/*<AntLogger>*/ c2 = (Collection/*<AntLogger>*/) o2;
+    @SuppressWarnings("unchecked") // could use List<Collection<AntLogger>> but too slow?
+    private final Collection<AntLogger>[] interestedLoggersByVariousCriteria = new Collection[4];
+    private static final Comparator<Collection<AntLogger>> INTERESTED_LOGGERS_SORTER = new Comparator<Collection<AntLogger>>() {
+        public int compare(Collection<AntLogger> c1, Collection<AntLogger> c2) {
             int x = c1.size() - c2.size(); // reverse sort by size
             if (x != 0) {
                 return x;
@@ -200,7 +200,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     /**
      * Get those loggers interested in a given event.
      */
-    private Iterator/*<AntLogger>*/ getInterestedLoggersByEvent(AntEvent e) {
+    private Collection<AntLogger> getInterestedLoggersByEvent(AntEvent e) {
         assert Thread.holdsLock(this);
         initInterestedLoggers();
         // Start with the smallest one and go down.
@@ -214,25 +214,23 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
         // XXX could probably be even a bit more efficient by iterating on the fly...
         // and by skipping the sorting which is probably overkill for a small number of a loggers (or hardcode the sort)
-        List/*<AntLogger>*/ loggers = new LinkedList(interestedLoggersByVariousCriteria[0]);
+        List<AntLogger> loggers = new LinkedList<AntLogger>(interestedLoggersByVariousCriteria[0]);
         for (int i = 1; i < 4; i++) {
             loggers.retainAll(interestedLoggersByVariousCriteria[i]);
         }
         if (LOGGABLE) {
             ERR.log(EM_LEVEL, "getInterestedLoggersByEvent: event=" + e + " loggers=" + loggers);
         }
-        return loggers.iterator();
+        return loggers;
     }
     
-    private Collection/*<AntLogger>*/ getInterestedLoggersByScript(File script) {
+    private Collection<AntLogger> getInterestedLoggersByScript(File script) {
         assert Thread.holdsLock(this);
-        Collection c = (Collection)interestedLoggersByScript.get(script);
+        Collection<AntLogger> c = interestedLoggersByScript.get(script);
         if (c == null) {
-            c = new LinkedHashSet(interestedLoggers.size());
+            c = new LinkedHashSet<AntLogger>(interestedLoggers.size());
             interestedLoggersByScript.put(script, c);
-            Iterator it = interestedLoggers.iterator();
-            while (it.hasNext()) {
-                AntLogger l = (AntLogger)it.next();
+            for (AntLogger l : interestedLoggers) {
                 if (l.interestedInAllScripts(thisSession) || (script != null && l.interestedInScript(script, thisSession))) {
                     c.add(l);
                 }
@@ -244,15 +242,13 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         return c;
     }
     
-    private Collection/*<AntLogger>*/ getInterestedLoggersByTarget(String target) {
+    private Collection<AntLogger> getInterestedLoggersByTarget(String target) {
         assert Thread.holdsLock(this);
-        Collection c = (Collection)interestedLoggersByTarget.get(target);
+        Collection<AntLogger> c = interestedLoggersByTarget.get(target);
         if (c == null) {
-            c = new LinkedHashSet(interestedLoggers.size());
+            c = new LinkedHashSet<AntLogger>(interestedLoggers.size());
             interestedLoggersByTarget.put(target, c);
-            Iterator it = interestedLoggers.iterator();
-            while (it.hasNext()) {
-                AntLogger l = (AntLogger)it.next();
+            for (AntLogger l : interestedLoggers) {
                 String[] targets = l.interestedInTargets(thisSession);
                 if (targets == AntLogger.ALL_TARGETS ||
                         (target != null && Arrays.asList(targets).contains(target)) ||
@@ -267,15 +263,13 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         return c;
     }
     
-    private Collection/*<AntLogger>*/ getInterestedLoggersByTask(String task) {
+    private Collection<AntLogger> getInterestedLoggersByTask(String task) {
         assert Thread.holdsLock(this);
-        Collection c = (Collection)interestedLoggersByTask.get(task);
+        Collection<AntLogger> c = interestedLoggersByTask.get(task);
         if (c == null) {
-            c = new LinkedHashSet(interestedLoggers.size());
+            c = new LinkedHashSet<AntLogger>(interestedLoggers.size());
             interestedLoggersByTask.put(task, c);
-            Iterator it = interestedLoggers.iterator();
-            while (it.hasNext()) {
-                AntLogger l = (AntLogger)it.next();
+            for (AntLogger l : interestedLoggers) {
                 String[] tasks = l.interestedInTasks(thisSession);
                 if (tasks == AntLogger.ALL_TASKS ||
                         (task != null && Arrays.asList(tasks).contains(task)) ||
@@ -290,22 +284,19 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         return c;
     }
     
-    private Collection/*<AntLogger>*/ getInterestedLoggersByLevel(int level) {
+    private Collection<AntLogger> getInterestedLoggersByLevel(int level) {
         assert Thread.holdsLock(this);
-        Integer i = new Integer(level);
-        Collection c = (Collection)interestedLoggersByLevel.get(i);
+        Collection<AntLogger> c = interestedLoggersByLevel.get(level);
         if (c == null) {
-            c = new LinkedHashSet(interestedLoggers.size());
-            interestedLoggersByLevel.put(i, c);
-            Iterator it = interestedLoggers.iterator();
-            while (it.hasNext()) {
-                AntLogger l = (AntLogger)it.next();
+            c = new LinkedHashSet<AntLogger>(interestedLoggers.size());
+            interestedLoggersByLevel.put(level, c);
+            for (AntLogger l : interestedLoggers) {
                 if (level == -1) {
                     c.add(l);
                 } else {
                     int[] levels = l.interestedInLogLevels(thisSession);
-                    for (int j = 0; j < levels.length; j++) {
-                        if (levels[j] == level) {
+                    for (int _level : levels)  {
+                        if (_level == level) {
                             c.add(l);
                             break;
                         }
@@ -329,9 +320,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         if (LOGGABLE) {
             ERR.log(EM_LEVEL, "buildInitializationFailed: " + ev);
         }
-        Iterator it = getInterestedLoggersByScript(null).iterator();
-        while (it.hasNext()) {
-            AntLogger l = (AntLogger)it.next();
+        for (AntLogger l : getInterestedLoggersByScript(null)) {
             l.buildInitializationFailed(ev);
         }
     }
@@ -345,9 +334,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "buildStarted: " + e);
             }
-            Iterator it = interestedLoggers.iterator();
-            while (it.hasNext()) {
-                AntLogger l = (AntLogger)it.next();
+            for (AntLogger l : interestedLoggers) {
                 try {
                     l.buildStarted(e);
                 } catch (RuntimeException x) {
@@ -372,9 +359,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                     ERR.notify(EM_LEVEL, e.getException());
                 }
             }
-            Iterator it = interestedLoggers.iterator();
-            while (it.hasNext()) {
-                AntLogger l = (AntLogger)it.next();
+            for (AntLogger l : interestedLoggers) {
                 try {
                     l.buildFinished(e);
                 } catch (RuntimeException x) {
@@ -395,9 +380,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "targetStarted: " + e);
             }
-            Iterator it = getInterestedLoggersByEvent(e);
-            while (it.hasNext()) {
-                AntLogger l = (AntLogger)it.next();
+            for (AntLogger l : getInterestedLoggersByEvent(e)) {
                 try {
                     l.targetStarted(e);
                 } catch (RuntimeException x) {
@@ -418,9 +401,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "targetFinished: " + e);
             }
-            Iterator it = getInterestedLoggersByEvent(e);
-            while (it.hasNext()) {
-                AntLogger l = (AntLogger)it.next();
+            for (AntLogger l : getInterestedLoggersByEvent(e)) {
                 try {
                     l.targetFinished(e);
                 } catch (RuntimeException x) {
@@ -441,9 +422,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "taskStarted: " + e);
             }
-            Iterator it = getInterestedLoggersByEvent(e);
-            while (it.hasNext()) {
-                AntLogger l = (AntLogger)it.next();
+            for (AntLogger l : getInterestedLoggersByEvent(e)) {
                 try {
                     l.taskStarted(e);
                 } catch (RuntimeException x) {
@@ -464,9 +443,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "taskFinished: " + e);
             }
-            Iterator it = getInterestedLoggersByEvent(e);
-            while (it.hasNext()) {
-                AntLogger l = (AntLogger)it.next();
+            for (AntLogger l : getInterestedLoggersByEvent(e)) {
                 try {
                     l.taskFinished(e);
                 } catch (RuntimeException x) {
@@ -519,9 +496,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             if (LOGGABLE) {
                 ERR.log(EM_LEVEL, "messageLogged: " + e);
             }
-            Iterator it = getInterestedLoggersByEvent(e);
-            while (it.hasNext()) {
-                AntLogger l = (AntLogger)it.next();
+            for (AntLogger l : getInterestedLoggersByEvent(e)) {
                 try {
                     l.messageLogged(e);
                 } catch (RuntimeException x) {
@@ -558,9 +533,9 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                     lastTask = null;
                 } else if ((matcher = PARSED_TARGET_MESSAGE.matcher(msg)).matches()) {
                     if (currentlyParsedMainScript != null && currentlyParsedImportedScript != null) {
-                        Map/*<String,String>*/ targetLocations = (Map) knownImportedTargets.get(currentlyParsedMainScript);
+                        Map<String,String> targetLocations = knownImportedTargets.get(currentlyParsedMainScript);
                         if (targetLocations == null) {
-                            targetLocations = new HashMap();
+                            targetLocations = new HashMap<String,String>();
                             knownImportedTargets.put(currentlyParsedMainScript, targetLocations);
                         }
                         targetLocations.put(matcher.group(1), currentlyParsedImportedScript);
@@ -639,9 +614,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             ERR.log(EM_LEVEL, "deliverMessageLogged: level=" + level + " message=" + message);
         }
         AntEvent newEvent = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new RepostedEvent(originalEvent, message, level));
-        Iterator it = getInterestedLoggersByEvent(newEvent);
-        while (it.hasNext()) {
-            AntLogger l = (AntLogger)it.next();
+        for (AntLogger l : getInterestedLoggersByEvent(newEvent)) {
             try {
                 l.messageLogged(newEvent);
             } catch (RuntimeException x) {
@@ -784,9 +757,9 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         if (project != null) {
             String file = project.getProperty("ant.file"); // NOI18N
             if (file != null) {
-                Map/*<String,String>*/ targetLocations = (Map) knownImportedTargets.get(file);
+                Map<String,String> targetLocations = knownImportedTargets.get(file);
                 if (targetLocations != null) {
-                    String importedFile = (String) targetLocations.get(target.getName());
+                    String importedFile = targetLocations.get(target.getName());
                     if (importedFile != null) {
                         // Have no line number, note.
                         return new Location(importedFile);
@@ -843,26 +816,28 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         return 0;
     }
     
-    private static Map/*<String,String>*/ getAttributeMapOfRuntimeConfigurable(RuntimeConfigurable rc) {
+    @SuppressWarnings("unchecked")
+    private static Map<String,String> getAttributeMapOfRuntimeConfigurable(RuntimeConfigurable rc) {
         if (runtimeConfigurableGetAttributeMap != null) {
             try {
-                return (Map) runtimeConfigurableGetAttributeMap.invoke(rc);
+                return (Map<String,String>) runtimeConfigurableGetAttributeMap.invoke(rc);
             } catch (Exception e) {
                 ERR.notify(EM_LEVEL, e);
             }
         }
-        return Collections.EMPTY_MAP;
+        return Collections.emptyMap();
     }
-    
-    private static Enumeration/*<RuntimeConfigurable>*/ getChildrenOfRuntimeConfigurable(RuntimeConfigurable rc) {
+
+    @SuppressWarnings("unchecked")
+    private static Enumeration<RuntimeConfigurable> getChildrenOfRuntimeConfigurable(RuntimeConfigurable rc) {
         if (runtimeConfigurableGetChildren != null) {
             try {
-                return (Enumeration) runtimeConfigurableGetChildren.invoke(rc);
+                return (Enumeration<RuntimeConfigurable>) runtimeConfigurableGetChildren.invoke(rc);
             } catch (Exception e) {
                 ERR.notify(EM_LEVEL, e);
             }
         }
-        return Collections.enumeration(Collections.EMPTY_SET);
+        return Collections.enumeration(Collections.<RuntimeConfigurable>emptySet());
     }
     
     private static String getTextOfRuntimeConfigurable(RuntimeConfigurable rc) {
@@ -1122,14 +1097,13 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             }
         }
 
-        public Set/*<String>*/ getPropertyNames() {
+        public Set<String> getPropertyNames() {
             verifyRunning();
             Project project = getProjectIfPropertiesDefined();
             if (project != null) {
-                // XXX could exclude those without String values
-                return project.getProperties().keySet();
+                return Generics.checkedSetByFilter(project.getProperties().keySet(), String.class);
             } else {
-                return Collections.EMPTY_SET;
+                return Collections.emptySet();
             }
         }
 
@@ -1143,6 +1117,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             }
         }
         
+        @Override
         public String toString() {
             return "Event[target=" + getTargetName() + ",task=" + getTaskName() + ",message=" + getMessage() + ",scriptLocation=" + getScriptLocation() + ",exception=" + exception + ",level=" + level + ",consumed=" + consumed + "]"; // NOI18N
         }
@@ -1222,7 +1197,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             return originalEvent.getProperty(name);
         }
         
-        public Set/*<String>*/ getPropertyNames() {
+        public Set<String> getPropertyNames() {
             return originalEvent.getPropertyNames();
         }
         
@@ -1230,6 +1205,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             return originalEvent.evaluate(text);
         }
         
+        @Override
         public String toString() {
             return "RepostedEvent[consumed=" + consumed + ",level=" + level + ",message=" + message + /*",orig=" + originalEvent +*/ "]"; // NOI18N
         }
@@ -1261,10 +1237,10 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         
         public String getAttribute(String name) {
             verifyRunning();
-            return (String) getAttributeMapOfRuntimeConfigurable(rc).get(name);
+            return getAttributeMapOfRuntimeConfigurable(rc).get(name);
         }
         
-        public Set/*<String>*/ getAttributeNames() {
+        public Set<String> getAttributeNames() {
             verifyRunning();
             return getAttributeMapOfRuntimeConfigurable(rc).keySet();
         }
@@ -1282,13 +1258,13 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         
         public TaskStructure[] getChildren() {
             verifyRunning();
-            List/*<TaskStructure>*/ structures = new ArrayList();
-            Enumeration/*<RuntimeConfigurable>*/ children = getChildrenOfRuntimeConfigurable(rc);
+            List<TaskStructure> structures = new ArrayList<TaskStructure>();
+            Enumeration<RuntimeConfigurable> children = getChildrenOfRuntimeConfigurable(rc);
             while (children.hasMoreElements()) {
-                RuntimeConfigurable subrc = (RuntimeConfigurable) children.nextElement();
+                RuntimeConfigurable subrc = children.nextElement();
                 structures.add(LoggerTrampoline.TASK_STRUCTURE_CREATOR.makeTaskStructure(new TaskStructureImpl(subrc)));
             }
-            return (TaskStructure[]) structures.toArray(new TaskStructure[structures.size()]);
+            return structures.toArray(new TaskStructure[structures.size()]);
         }
         
     }

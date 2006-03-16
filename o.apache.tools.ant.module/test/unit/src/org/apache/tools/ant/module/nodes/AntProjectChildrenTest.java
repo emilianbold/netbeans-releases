@@ -7,15 +7,15 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.nodes;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.tools.ant.module.nodes.AntProjectChildren;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -35,6 +35,7 @@ public class AntProjectChildrenTest extends NbTestCase {
     
     private FileObject testdir;
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         testdir = FileUtil.toFileObject(this.getDataDir());
@@ -58,13 +59,13 @@ public class AntProjectChildrenTest extends NbTestCase {
             displayNamesForChildrenOf(importing));
     }
     
-    private static List/*<String>*/ displayNamesForChildrenOf(FileObject fo) {
+    private static List<String> displayNamesForChildrenOf(FileObject fo) {
         Children ch = new AntProjectChildren(new AntProjectSupport(fo));
         Node[] nodes = ch.getNodes(true);
         return displayNamesFor(nodes);
     }
     
-    private static List/*<String>*/ displayNamesFor(Node[] nodes) {
+    private static List<String> displayNamesFor(Node[] nodes) {
         String[] names = new String[nodes.length];
         for (int i = 0; i < nodes.length; i++) {
             names[i] = nodes[i].getDisplayName();

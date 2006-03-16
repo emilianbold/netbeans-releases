@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,6 +20,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.loader.AntProjectDataLoader;
 import org.apache.tools.ant.module.loader.AntProjectDataObject;
+import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -63,6 +64,7 @@ public class AntProjectSupportTest extends NbTestCase {
     
     private FileObject scratch;
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();

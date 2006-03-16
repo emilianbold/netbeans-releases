@@ -13,6 +13,7 @@
 
 package org.apache.tools.ant.module.nodes;
 
+
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -96,6 +97,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
         return internalTargetColor;
     }
     
+    @Override
     public String getHtmlDisplayName() {
         // Use markup to indicate the default target, imported targets, and internal targets.
         boolean imported = target.getScript() != project;
@@ -124,18 +126,22 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
         firePropertyChange (null, null, null);
     }
 
+    @Override
     public boolean canDestroy () {
         return false;
     }
     
+    @Override
     public boolean canRename () {
         return false;
     }
     
+    @Override
     public boolean canCopy () {
         return true;
     }
     
+    @Override
     public boolean canCut () {
         return false;
     }
@@ -143,6 +149,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
     private final Action EXECUTE = new ExecuteAction();
     private final Action CREATE_SHORTCUT = new CreateShortcutAction();
 
+    @Override
     public Action[] getActions(boolean context) {
         if (!target.isInternal()) {
             return new Action[] {
@@ -162,6 +169,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
         }
     }
 
+    @Override
     public Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
     }
@@ -200,6 +208,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
         
     }
 
+    @Override
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet ();
         Sheet.Set props = sheet.get (Sheet.PROPERTIES);
@@ -208,10 +217,10 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
             sheet.put(props);
         }
         String[] attrs = new String[] {"name", "description", "depends"}; // NOI18N
-        for (int i = 0; i < attrs.length; i++) {
-            org.openide.nodes.Node.Property prop = new AntProperty(target.getElement(), attrs[i]);
-            prop.setDisplayName (NbBundle.getMessage (AntTargetNode.class, "PROP_target_" + attrs[i]));
-            prop.setShortDescription (NbBundle.getMessage (AntTargetNode.class, "HINT_target_" + attrs[i]));
+        for (String attr : attrs) {
+            org.openide.nodes.Node.Property prop = new AntProperty(target.getElement(), attr);
+            prop.setDisplayName (NbBundle.getMessage (AntTargetNode.class, "PROP_target_" + attr));
+            prop.setShortDescription (NbBundle.getMessage (AntTargetNode.class, "HINT_target_" + attr));
             props.put (prop);
         }
         /*XXX
@@ -329,6 +338,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
         }
         
         /** Returns the value of this property. */
+        @Override
         public Object getValue () {
             /*XXX
             return computeTargetDependencies(getTarget());
@@ -372,9 +382,11 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
                 final String name = target.getName();
                 class Handler extends DefaultHandler {
                     private Locator locator;
+                    @Override
                     public void setDocumentLocator(Locator l) {
                         locator = l;
                     }
+                    @Override
                     public void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
                         if (line[0] == 0) {
                             if (qname.equals("target") && name.equals(attr.getValue("name"))) { // NOI18N

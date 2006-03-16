@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -159,7 +159,7 @@ final class ShortcutIterator implements WizardDescriptor.Iterator {
         return panels[index];
     }
 
-    private transient Set listeners = new HashSet (1); // Set<ChangeListener>
+    private transient Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener (ChangeListener l) {
         synchronized (listeners) {
             listeners.add (l);
@@ -171,13 +171,13 @@ final class ShortcutIterator implements WizardDescriptor.Iterator {
         }
     }
     protected final void fireChangeEvent () {
-        Iterator it;
+        ChangeListener[] ls;
         synchronized (listeners) {
-            it = new HashSet (listeners).iterator ();
+            ls = listeners.toArray(new ChangeListener[listeners.size()]);
         }
         ChangeEvent ev = new ChangeEvent (this);
-        while (it.hasNext ()) {
-            ((ChangeListener) it.next ()).stateChanged (ev);
+        for (ChangeListener l : ls) {
+            l.stateChanged(ev);
         }
     }
 

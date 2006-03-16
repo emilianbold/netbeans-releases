@@ -55,6 +55,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
      */
     private static File defaultAntHome = null;
     
+    @Override
     protected void initialize () {
         super.initialize();
         setVerbosity(2 /*Project.MSG_INFO*/);
@@ -68,6 +69,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
         setAlwaysShowOutput(true); // XXX #63332: prefer false if have unobtrusive progress indication
     }
 
+    @Override
     public String displayName () {
         return AntSettings.class.getName(); // not dislayed
     }
@@ -84,6 +86,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
         putProperty (PROP_VERBOSITY, new Integer (v), true);
     }
 
+    @SuppressWarnings("unchecked")
     public Properties getProperties () {
         HashMap m = (HashMap)getProperty(PROP_PROPERTIES);
         Properties p = new Properties();
@@ -91,6 +94,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
         return p;
     }
     
+    @SuppressWarnings("unchecked")
     public void setProperties (Properties p) {
         HashMap m = new HashMap(p);
         putProperty (PROP_PROPERTIES, m, true);
@@ -213,13 +217,13 @@ public class AntSettings extends SystemOption implements ChangeListener {
             });
         }
         if (defAECP == null) {
-            List/*<File>*/ items = new ArrayList();
+            List<File> items = new ArrayList<File>();
             Iterator it = aecpResult.allInstances().iterator();
             while (it.hasNext()) {
                 AutomaticExtraClasspathProvider provider = (AutomaticExtraClasspathProvider)it.next();
-                items.addAll(Arrays.asList((Object[])provider.getClasspathItems()));
+                items.addAll(Arrays.asList(provider.getClasspathItems()));
             }
-            defAECP = new NbClassPath((File[])items.toArray(new File[items.size()]));
+            defAECP = new NbClassPath(items.toArray(new File[items.size()]));
         }
         return defAECP;
         }

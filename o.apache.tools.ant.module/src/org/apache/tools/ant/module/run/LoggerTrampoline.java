@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -81,14 +81,14 @@ public final class LoggerTrampoline {
         int getLogLevel();
         Throwable getException();
         String getProperty(String name);
-        Set/*<String>*/ getPropertyNames();
+        Set<String> getPropertyNames();
         String evaluate(String text);
     }
     
     public interface TaskStructureImpl {
         String getName();
         String getAttribute(String name);
-        Set/*<String>*/ getAttributeNames();
+        Set<String> getAttributeNames();
         String getText();
         TaskStructure[] getChildren();
     }

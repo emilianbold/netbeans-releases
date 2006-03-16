@@ -7,10 +7,8 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * Contributor(s): Jesse Glick.
  */
 
 package org.apache.tools.ant.module.loader;
@@ -46,6 +44,7 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
         setMIMEType(AntProjectDataLoader.REQUIRED_MIME);
     }
 
+    @Override
     protected boolean notifyModified () {
         if (!super.notifyModified ()) {
             return false;
@@ -56,17 +55,20 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
         }
     }
 
+    @Override
     protected void notifyUnmodified () {
         super.notifyUnmodified ();
         AntEnv e = (AntEnv) env;
         e.getAntProjectDataObject ().removeSaveCookie (e);
     }
     
+    @Override
     protected String messageName() {
         String name = super.messageName();
         return annotateWithProjectName(name);
     }
     
+    @Override
     protected String messageHtmlName () {
         String name = super.messageHtmlName();
         return name != null ? annotateWithProjectName(name) : null;
@@ -101,10 +103,12 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
      * Overridden to ensure that the displayName of the node in the editor has
      * the right annotation for build.xml files, so that the Navigator will display it.
      */
+    @Override
     protected void initializeCloneableEditor(CloneableEditor editor) {
         super.initializeCloneableEditor(editor);
         editor.setActivatedNodes(new Node[] {
             new FilterNode(getDataObject().getNodeDelegate()) {
+                @Override
                 public String getDisplayName() {
                     return messageName();
                 }
@@ -129,10 +133,12 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
             return (AntProjectDataObject) getDataObject ();
         }
 
+        @Override
         protected FileObject getFile () {
             return getDataObject ().getPrimaryFile ();
         }
 
+        @Override
         protected FileLock takeLock () throws IOException {
             return ((AntProjectDataObject) getDataObject ()).getPrimaryEntry ().takeLock ();
         }
@@ -142,6 +148,7 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
             getDataObject ().setModified (false);
         }
 
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport () {
             return (CloneableOpenSupport) getDataObject ().getCookie (EditCookie.class);
         }

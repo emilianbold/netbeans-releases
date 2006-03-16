@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -40,21 +40,22 @@ public class IntrospectedInfoTest extends NbTestCase {
     
     private IntrospectedInfo ii;
     
+    @Override
     protected void setUp() throws Exception {
         ii = IntrospectedInfo.getDefaults();
     }
     
     public void testBasicDefinitions() throws Exception {
-        Map/*<String,String>*/ tasks = ii.getDefs("task");
+        Map<String,String> tasks = ii.getDefs("task");
         assertEquals("binding for javac", "org.apache.tools.ant.taskdefs.Javac", tasks.get("javac"));
         assertEquals("binding for sql", "org.apache.tools.ant.taskdefs.SQLExec", tasks.get("sql"));
-        Map/*<String,String>*/ types = ii.getDefs("type");
+        Map<String,String> types = ii.getDefs("type");
         assertEquals("binding for path", "org.apache.tools.ant.types.FileSet", types.get("fileset"));
         assertEquals("binding for path", "org.apache.tools.ant.types.Path", types.get("path"));
     }
     
     public void testBasicAttributes() throws Exception {
-        Map/*<String,String>*/ attrs = ii.getAttributes("org.apache.tools.ant.taskdefs.Javac");
+        Map<String,String> attrs = ii.getAttributes("org.apache.tools.ant.taskdefs.Javac");
         assertEquals("right type for destdir", "java.io.File", attrs.get("destdir"));
         // XXX sometimes this line fails - when run from inside the IDE, but not on the command line!
         // Debugger shows that IntrospectionHelper.createAttributeSetter is calling
@@ -91,6 +92,7 @@ public class IntrospectedInfoTest extends NbTestCase {
         public IFL() {
             //System.err.println("ant.home=" + System.getProperty("test.ant.home"));
         }
+        @Override
         public File locate(String relativePath, String codeNameBase, boolean localized) {
             if (relativePath.equals("ant/nblib/bridge.jar")) {
                 String path = System.getProperty("test.bridge.jar");

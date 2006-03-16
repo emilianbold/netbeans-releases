@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -43,8 +42,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Submenu which permits the user to run various targets from the project.
@@ -53,14 +52,17 @@ import org.openide.util.actions.Presenter;
  */
 public final class RunTargetsAction extends SystemAction implements ContextAwareAction {
 
+    @Override
     public String getName () {
         return NbBundle.getMessage (RunTargetsAction.class, "LBL_run_targets_action");
     }
 
+    @Override
     public HelpCtx getHelpCtx () {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         assert false : "Action should never be called without a context";
     }
@@ -78,10 +80,10 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         
         public ContextAction(Lookup lkp) {
             super(SystemAction.get(RunTargetsAction.class).getName());
-            Collection/*<AntProjectCookie>*/ apcs = lkp.lookup(new Lookup.Template(AntProjectCookie.class)).allInstances();
+            Collection<AntProjectCookie> apcs = lkp.lookup(new Lookup.Template(AntProjectCookie.class)).allInstances();
             AntProjectCookie _project = null;
             if (apcs.size() == 1) {
-                _project = (AntProjectCookie) apcs.iterator().next();
+                _project = apcs.iterator().next();
                 if (_project.getParseException() != null) {
                     _project = null;
                 }
@@ -102,6 +104,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
             }
         }
 
+        @Override
         public void setEnabled(boolean b) {
             assert false : "No modifications to enablement status permitted";
         }
@@ -125,23 +128,22 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
             this.project = project;
         }
         
+        @Override
         public JPopupMenu getPopupMenu() {
             if (!initialized) {
                 initialized = true;
-                Set/*<TargetLister.Target>*/ allTargets;
+                Set<TargetLister.Target> allTargets;
                 try {
                     allTargets = TargetLister.getTargets(project);
                 } catch (IOException e) {
                     // XXX how to notify properly?
                     AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
-                    allTargets = Collections.EMPTY_SET;
+                    allTargets = Collections.emptySet();
                 }
                 String defaultTarget = null;
-                SortedSet/*<String>*/ describedTargets = new TreeSet(Collator.getInstance());
-                SortedSet/*<String>*/ otherTargets = new TreeSet(Collator.getInstance());
-                Iterator it = allTargets.iterator();
-                while (it.hasNext()) {
-                    TargetLister.Target t = (TargetLister.Target) it.next();
+                SortedSet<String> describedTargets = new TreeSet<String>(Collator.getInstance());
+                SortedSet<String> otherTargets = new TreeSet<String>(Collator.getInstance());
+                for (TargetLister.Target t : allTargets) {
                     if (t.isOverridden()) {
                         // Cannot be called.
                         continue;
@@ -172,9 +174,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                 }
                 if (!describedTargets.isEmpty()) {
                     needsep = true;
-                    it = describedTargets.iterator();
-                    while (it.hasNext()) {
-                        String target = (String) it.next();
+                    for (String target : describedTargets) {
                         JMenuItem menuitem = new JMenuItem(target);
                         menuitem.addActionListener(new TargetMenuItemHandler(project, target));
                         add(menuitem);
@@ -187,9 +187,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                 if (!otherTargets.isEmpty()) {
                     needsep = true;
                     JMenu submenu = new JMenu(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_other_targets"));
-                    it = otherTargets.iterator();
-                    while (it.hasNext()) {
-                        String target = (String) it.next();
+                    for (String target : otherTargets) {
                         JMenuItem menuitem = new JMenuItem(target);
                         menuitem.addActionListener(new TargetMenuItemHandler(project, target));
                         submenu.add(menuitem);
@@ -242,9 +240,9 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
     private static final class AdvancedAction extends AbstractAction {
         
         private final AntProjectCookie project;
-        private final Set/*<TargetLister.Target>*/ allTargets;
+        private final Set<TargetLister.Target> allTargets;
         
-        public AdvancedAction(AntProjectCookie project, Set/*<TargetLister.Target>*/ allTargets) {
+        public AdvancedAction(AntProjectCookie project, Set<TargetLister.Target> allTargets) {
             super(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_advanced"));
             this.project = project;
             this.allTargets = allTargets;

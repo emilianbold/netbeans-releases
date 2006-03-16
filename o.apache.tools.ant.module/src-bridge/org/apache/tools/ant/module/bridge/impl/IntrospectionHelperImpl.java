@@ -7,16 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.bridge.impl;
 
 import java.util.Enumeration;
-
 import org.apache.tools.ant.IntrospectionHelper;
-
 import org.apache.tools.ant.module.bridge.IntrospectionHelperProxy;
 
 /**
@@ -34,7 +32,8 @@ final class IntrospectionHelperImpl implements IntrospectionHelperProxy {
         return helper.getAttributeType(name);
     }
     
-    public Enumeration getAttributes() {
+    @SuppressWarnings("unchecked") // XXX better to make Generics.checkedEnumeration?
+    public Enumeration<String> getAttributes() {
         return helper.getAttributes();
     }
     
@@ -42,7 +41,8 @@ final class IntrospectionHelperImpl implements IntrospectionHelperProxy {
         return helper.getElementType(name);
     }
     
-    public Enumeration getNestedElements() {
+    @SuppressWarnings("unchecked")
+    public Enumeration<String> getNestedElements() {
         return helper.getNestedElements();
     }
     

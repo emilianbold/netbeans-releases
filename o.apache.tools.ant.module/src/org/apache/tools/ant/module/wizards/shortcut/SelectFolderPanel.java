@@ -7,20 +7,15 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.wizards.shortcut;
 
 import java.awt.Component;
-import java.beans.PropertyVetoException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
@@ -32,14 +27,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.apache.tools.ant.module.AntModule;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  * Wizard panel that lets you select a menu or toolbar folder and a display name
@@ -112,14 +103,14 @@ final class SelectFolderPanel extends JPanel implements DocumentListener {
     }
     
     private static DataFolder[] findFolders(DataFolder top) {
-        List/*<DataFolder>*/ folders = new ArrayList();
+        List<DataFolder> folders = new ArrayList<DataFolder>();
         // Needs to be DFS, so children(true) is no good
         visit(folders, top);
         folders.remove(0);
-        return (DataFolder[])folders.toArray(new DataFolder[folders.size()]);
+        return folders.toArray(new DataFolder[folders.size()]);
     }
     
-    private static void visit(List/*<DataFolder>*/ folders, DataFolder f) {
+    private static void visit(List<DataFolder> folders, DataFolder f) {
         folders.add(f);
         DataObject[] kids = f.getChildren();
         for (int i = 0; i < kids.length; i++) {
@@ -133,6 +124,7 @@ final class SelectFolderPanel extends JPanel implements DocumentListener {
         
         public CellRenderer() {}
         
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             DataFolder f = (DataFolder)value;
             String display = getNestedDisplayName(f);
@@ -143,6 +135,7 @@ final class SelectFolderPanel extends JPanel implements DocumentListener {
     
     // --- VISUAL DESIGN OF PANEL ---
     
+    @Override
     public void requestFocus() {
         super.requestFocus();
         folderList.requestFocus();
@@ -271,7 +264,7 @@ final class SelectFolderPanel extends JPanel implements DocumentListener {
                 getPanel().displayNameField.getText().length() > 0;
         }
 
-        private final Set listeners = new HashSet (1); // Set<ChangeListener>
+        private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
         public final void addChangeListener (ChangeListener l) {
             synchronized (listeners) {
                 listeners.add (l);
@@ -283,13 +276,13 @@ final class SelectFolderPanel extends JPanel implements DocumentListener {
             }
         }
         protected final void fireChangeEvent () {
-            Iterator it;
+            ChangeListener[] ls;
             synchronized (listeners) {
-                it = new HashSet (listeners).iterator ();
+                ls = listeners.toArray(new ChangeListener[listeners.size()]);
             }
             ChangeEvent ev = new ChangeEvent (this);
-            while (it.hasNext ()) {
-                ((ChangeListener) it.next ()).stateChanged (ev);
+            for (ChangeListener l : ls) {
+                l.stateChanged(ev);
             }
         }
 

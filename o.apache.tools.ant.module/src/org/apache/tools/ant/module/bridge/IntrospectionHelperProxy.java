@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,11 +24,11 @@ public interface IntrospectionHelperProxy {
     
     boolean supportsCharacters();
     
-    Enumeration/*<String>*/ getAttributes();
+    Enumeration<String> getAttributes();
     
     Class getAttributeType(String name);
     
-    Enumeration/*<String>*/ getNestedElements();
+    Enumeration<String> getNestedElements();
     
     Class getElementType(String name);
     

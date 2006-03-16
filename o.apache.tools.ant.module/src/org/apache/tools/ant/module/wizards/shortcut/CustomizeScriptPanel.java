@@ -7,22 +7,16 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.wizards.shortcut;
 
 import java.awt.Component;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
+import javax.swing.JEditorPane;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.EditorKit;
-import javax.swing.JEditorPane;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -48,6 +42,7 @@ final class CustomizeScriptPanel extends javax.swing.JPanel {
 
     // --- VISUAL DESIGN OF PANEL ---
     
+    @Override
     public void requestFocus () {
         super.requestFocus ();
         scriptPane.requestFocus ();

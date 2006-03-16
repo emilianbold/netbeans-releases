@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,6 +31,7 @@ public final class SelectFolderPanelTest extends ShortcutWizardTestBase {
     private SelectFolderPanel.SelectFolderWizardPanel toolbarsPanel;
     private ListModel menuListModel;
     private ListModel toolbarsListModel;
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         wiz.putProperty(ShortcutWizard.PROP_SHOW_MENU, Boolean.TRUE);

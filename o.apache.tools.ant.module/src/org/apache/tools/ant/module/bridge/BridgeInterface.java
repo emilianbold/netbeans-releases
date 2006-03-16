@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,6 +16,7 @@ package org.apache.tools.ant.module.bridge;
 import java.io.File;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.openide.windows.OutputWriter;
 
@@ -38,7 +39,7 @@ public interface BridgeInterface {
      * @param interestingOutputCallback will be called if and when some interesting output appears, or input is requested
      * @return true if the build succeeded, false if it failed for any reason
      */
-    boolean run(File buildFile, List targets, InputStream in, OutputWriter out, OutputWriter err, Properties properties, int verbosity, String displayName, Runnable interestingOutputCallback);
+    boolean run(File buildFile, List<String> targets, InputStream in, OutputWriter out, OutputWriter err, Map<String,String> properties, int verbosity, String displayName, Runnable interestingOutputCallback);
     
     /**
      * Try to stop a running build.

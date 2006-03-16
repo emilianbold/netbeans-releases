@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.apache.tools.ant.module.AntModule;
 import org.openide.ErrorManager;
@@ -53,7 +54,7 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
         throw new IllegalStateException();
     }
     
-    public Enumeration getAttributes() {
+    public Enumeration<String> getAttributes() {
         return Enumerations.empty();
     }
     
@@ -61,7 +62,7 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
         throw new IllegalStateException();
     }
     
-    public Enumeration getNestedElements() {
+    public Enumeration<String> getNestedElements() {
         return Enumerations.empty();
     }
     
@@ -77,7 +78,7 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
         return null;
     }
     
-    public boolean run(File buildFile, List targets, InputStream in, OutputWriter out, OutputWriter err, Properties properties, int verbosity, String displayName, Runnable interestingOutputCallback) {
+    public boolean run(File buildFile, List<String> targets, InputStream in, OutputWriter out, OutputWriter err, Map<String,String> properties, int verbosity, String displayName, Runnable interestingOutputCallback) {
         err.println(NbBundle.getMessage(DummyBridgeImpl.class, "ERR_cannot_run_target"));
         problem.printStackTrace(err);
         return false;

@@ -37,6 +37,7 @@ class AntProperty extends Node.Property {
         return el;
     }
     
+    @Override
     public Object getValue() {
         Element el = getElement();
         if (el == null) { // #9675
@@ -45,14 +46,17 @@ class AntProperty extends Node.Property {
         return el.getAttribute(name);
     }
     
+    @Override
     public boolean canRead() {
         return true;
     }
     
+    @Override
     public boolean canWrite() {
         return false;
     }
     
+    @Override
     public void setValue(Object val) throws IllegalArgumentException{
         throw new IllegalArgumentException();
     }

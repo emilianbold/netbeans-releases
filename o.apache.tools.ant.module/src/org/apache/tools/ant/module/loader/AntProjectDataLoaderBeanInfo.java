@@ -7,20 +7,25 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.loader;
 
 import java.awt.Image;
-import java.beans.*;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.beans.SimpleBeanInfo;
 import org.apache.tools.ant.module.AntModule;
 import org.openide.loaders.DataLoader;
 import org.openide.util.NbBundle;
 
 public class AntProjectDataLoaderBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
@@ -30,6 +35,7 @@ public class AntProjectDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
     
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         // Make extensions into a r/o property.
         // It will only contain the Ant MIME type.
@@ -50,6 +56,7 @@ public class AntProjectDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
 
+    @Override
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
             return org.openide.util.Utilities.loadImage ("org/apache/tools/ant/module/resources/AntIcon.gif");

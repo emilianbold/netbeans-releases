@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -44,12 +44,11 @@ import org.openide.windows.OutputListener;
 public final class Hyperlink extends Annotation implements OutputListener, PropertyChangeListener {
     
     // #14804: detach everything before uninstalling module.
-    private static final Set hyperlinks = new WeakSet(); // Set<Hyperlink>
+    private static final Set<Hyperlink> hyperlinks = new WeakSet();
     public static void detachAllAnnotations() {
         synchronized (hyperlinks) {
-            Iterator it = hyperlinks.iterator();
-            while (it.hasNext()) {
-                ((Hyperlink)it.next()).destroy();
+            for (Hyperlink link : hyperlinks) {
+                link.destroy();
             }
         }
     }
@@ -202,9 +201,7 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
             attach(ann);
             // #17625: detach others however
             synchronized (hyperlinks) {
-                Iterator it = hyperlinks.iterator();
-                while (it.hasNext()) {
-                    Hyperlink h = (Hyperlink)it.next();
+                for (Hyperlink h : hyperlinks) {
                     if (h != this) {
                         h.doDetach();
                     }
@@ -263,10 +260,12 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
         }
     }
     
+    @Override
     public String getAnnotationType() {
         return "org-apache-tools-ant-module-error"; // NOI18N
     }
     
+    @Override
     public String getShortDescription() {
         if (message != null) {
             return message;
@@ -275,6 +274,7 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
         }
     }
     
+    @Override
     public String toString() {
         return "Hyperlink[" + url + ":" + line1 + ":" + col1 + ":" + line2 + ":" + col2 + "]"; // NOI18N
     }

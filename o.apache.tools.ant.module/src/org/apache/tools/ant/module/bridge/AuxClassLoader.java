@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -43,6 +43,7 @@ final class AuxClassLoader extends AntBridge.AllPermissionURLClassLoader {
         this.nbLoader = nbLoader;
     }
     
+    @Override
     protected Class findClass(String name) throws ClassNotFoundException {
         if (!masked(name)) {
             try {
@@ -54,6 +55,7 @@ final class AuxClassLoader extends AntBridge.AllPermissionURLClassLoader {
         return super.findClass(name);
     }
     
+    @Override
     public URL findResource(String name) {
         if (!masked(name)) {
             URL u = nbLoader.getResource(name);
@@ -64,7 +66,8 @@ final class AuxClassLoader extends AntBridge.AllPermissionURLClassLoader {
         return super.findResource(name);
     }
     
-    public Enumeration findResources(String name) throws IOException {
+    @Override
+    public Enumeration<URL> findResources(String name) throws IOException {
         // XXX probably wrong now... try to fix somehow
         return Enumerations.removeDuplicates (
             Enumerations.concat (

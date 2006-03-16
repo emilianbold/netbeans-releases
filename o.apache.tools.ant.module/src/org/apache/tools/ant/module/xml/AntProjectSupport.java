@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -62,10 +62,10 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     private Document projDoc = null; // [PENDING] SoftReference
     private Throwable exception = null;
     private boolean parsed = false;
-    private Reference/*<StyledDocument>*/ styledDocRef = null;
+    private Reference<StyledDocument> styledDocRef = null;
     private Object parseLock; // see init()
 
-    private Set listeners; // see init(); Set<ChangeListener>
+    private Set<ChangeListener> listeners; // see init()
     private EditorCookie.Observable editor = null;
     
     private DocumentBuilder documentBuilder;
@@ -77,7 +77,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     public AntProjectSupport (FileObject fo) {
         this.fo = fo;
         parseLock = new Object ();
-        listeners = new HashSet ();
+        listeners = new HashSet<ChangeListener>();
         rp = new RequestProcessor("AntProjectSupport[" + fo + "]"); // NOI18N
     }
   
@@ -240,7 +240,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
                 // add only one Listener (listeners for doc are hold in a List!)
                 if ((styledDocRef != null && styledDocRef.get () != document) || styledDocRef == null) {
                     document.addDocumentListener(this);
-                    styledDocRef = new WeakReference(document);
+                    styledDocRef = new WeakReference<StyledDocument>(document);
                 }
                 InputSource in = createInputSource(fo, document);
                 doc = documentBuilder.parse(in);
@@ -284,6 +284,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         }
     }
     
+    @Override
     public boolean equals (Object o) {
         if (! (o instanceof AntProjectSupport)) return false;
         AntProjectSupport other = (AntProjectSupport) o;
@@ -294,10 +295,12 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         }
     }
     
+    @Override
     public int hashCode () {
         return 27825 ^ (fo != null ? fo.hashCode() : 0);
     }
     
+    @Override
     public String toString () {
         FileObject fo = getFileObject ();
         if (fo != null) {
@@ -324,9 +327,9 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     
     protected void fireChangeEvent(boolean delay) {
         AntModule.err.log ("AntProjectSupport.fireChangeEvent: fo=" + fo);
-        Iterator it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet (listeners).iterator ();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent (this);
         ChangeFirer f = new ChangeFirer(it, ev);
@@ -339,9 +342,9 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         }
     }
     private final class ChangeFirer implements Runnable {
-        private final Iterator it; // Iterator<ChangeListener>
+        private final Iterator<ChangeListener> it;
         private final ChangeEvent ev;
-        public ChangeFirer (Iterator it, ChangeEvent ev) {
+        public ChangeFirer(Iterator<ChangeListener> it, ChangeEvent ev) {
             this.it = it;
             this.ev = ev;
         }
@@ -354,9 +357,8 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
                 task = null;
             }
             while (it.hasNext ()) {
-                ChangeListener l = (ChangeListener) it.next ();
                 try {
-                    l.stateChanged (ev);
+                    it.next().stateChanged(ev);
                 } catch (RuntimeException re) {
                     AntModule.err.notify (re);
                 }

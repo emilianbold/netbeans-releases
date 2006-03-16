@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
+import static org.apache.tools.ant.module.Generics.*;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.openide.filesystems.FileObject;
@@ -81,12 +82,12 @@ public class TargetLister {
      * @return an immutable, unchanging set of {@link Target}s; may be empty
      * @throws IOException in case there is a problem reading the script (or a subscript)
      */
-    public static Set/*<Target>*/ getTargets(AntProjectCookie script) throws IOException {
-        Set/*<File>*/ alreadyImported = new HashSet();
-        Map/*<String,String>*/ properties = new HashMap(System.getProperties());
-        Script main = new Script(null, script, alreadyImported, properties, Collections.EMPTY_MAP);
-        Set/*<Target>*/ targets = new HashSet();
-        Set/*<AntProjectCookie>*/ visitedScripts = new HashSet();
+    public static Set<Target> getTargets(AntProjectCookie script) throws IOException {
+        Set<File> alreadyImported = new HashSet<File>();
+        Map<String,String> properties = new HashMap<String,String>((Map<String,String>) System.getProperties());
+        Script main = new Script(null, script, alreadyImported, properties, Collections.<String,Element>emptyMap());
+        Set<Target> targets = new HashSet<Target>();
+        Set<AntProjectCookie> visitedScripts = new HashSet<AntProjectCookie>();
         traverseScripts(main, targets, visitedScripts);
         return targets;
     }
@@ -96,14 +97,12 @@ public class TargetLister {
      * At each node, collect the targets.
      * Skip over nodes representing scripts which were already imported via a different path.
      */
-    private static void traverseScripts(Script script, Set/*<Target>*/ targets, Set/*<AntProjectCookie>*/ visitedScripts) throws IOException {
+    private static void traverseScripts(Script script, Set<Target> targets, Set<AntProjectCookie> visitedScripts) throws IOException {
         if (!visitedScripts.add(script.getScript())) {
             return;
         }
         targets.addAll(script.getTargets());
-        Iterator it = script.getImports().iterator();
-        while (it.hasNext()) {
-            Script imported = (Script) it.next();
+        for (Script imported : script.getImports()) {
             traverseScripts(imported, targets, visitedScripts);
         }
     }
@@ -224,6 +223,7 @@ public class TargetLister {
             return !isOverridden() && getName().equals(script.getMainScript().getDefaultTargetName());
         }
         
+        @Override
         public String toString() {
             return "Target " + getName() + " in " + getScript(); // NOI18N
         }
@@ -237,19 +237,19 @@ public class TargetLister {
         
         private final AntProjectCookie apc;
         private final Script importingScript;
-        private final Map/*<String,Target>*/ targets;
+        private final Map<String,Target> targets;
         private final String defaultTarget;
-        private final List/*<Script>*/ imports;
+        private final List<Script> imports;
         private final String name;
         
-        private static final Set/*<String>*/ TRUE_VALS = new HashSet(5);
+        private static final Set<String> TRUE_VALS = new HashSet<String>(5);
         static {
             TRUE_VALS.add("true"); // NOI18N
             TRUE_VALS.add("yes"); // NOI18N
             TRUE_VALS.add("on"); // NOI18N
         }
         
-        public Script(Script importingScript, AntProjectCookie apc, Set/*<File>*/ alreadyImported, Map/*<String,String>*/ inheritedPropertyDefs, Map/*<String,Element>*/ inheritedMacroDefs) throws IOException {
+        public Script(Script importingScript, AntProjectCookie apc, Set<File> alreadyImported, Map<String,String> inheritedPropertyDefs, Map<String,Element> inheritedMacroDefs) throws IOException {
             this.importingScript = importingScript;
             this.apc = apc;
             Element prj = apc.getProjectElement();
@@ -285,20 +285,20 @@ public class TargetLister {
                 }
             }
             // Go through top-level elements and look for <target> and <import>.
-            targets = new HashMap();
-            Map/*<String,String>*/ propertyDefs = new HashMap(inheritedPropertyDefs);
+            targets = new HashMap<String,Target>();
+            Map<String,String> propertyDefs = new HashMap<String,String>(inheritedPropertyDefs);
             if (basedir != null && !propertyDefs.containsKey("basedir")) { // NOI18N
                 propertyDefs.put("basedir", basedir.getAbsolutePath()); // NOI18N
             }
-            Map/*<String,Element>*/ macroDefs = new HashMap(inheritedMacroDefs);
+            Map<String,Element> macroDefs = new HashMap<String,Element>(inheritedMacroDefs);
             // Keep imported scripts in definition order so result is deterministic
             // if a subsubscript is imported via two different paths: first one (DFS)
             // takes precedence.
-            imports = new ArrayList();
+            imports = new ArrayList<Script>();
             interpretTasks(alreadyImported, prj, basedir, propertyDefs, macroDefs, null);
         }
         
-        private void interpretTasks(Set alreadyImported, Element container, File basedir, Map/*<String,String>*/ propertyDefs, Map/*<String,Element>*/ macroDefs, Map/*<String,String>*/ macroParams) throws IOException {
+        private void interpretTasks(Set<File> alreadyImported, Element container, File basedir, Map<String,String> propertyDefs, Map<String,Element> macroDefs, Map<String,String> macroParams) throws IOException {
             //System.err.println("interpretTasks: propertyDefs=" + propertyDefs + " macroParams=" + macroParams + " macroDefs=" + macroDefs.keySet());
             NodeList nl = container.getChildNodes();
             int len = nl.getLength();
@@ -316,9 +316,9 @@ public class TargetLister {
                 if (uri != null) {
                     fullname = uri + '#' + fullname;
                 }
-                Element macro = (Element) macroDefs.get(fullname);
+                Element macro = macroDefs.get(fullname);
                 if (macro != null) {
-                    Map/*<String,String>*/ newMacroParams = new HashMap();
+                    Map<String,String> newMacroParams = new HashMap<String,String>();
                     NodeList macroKids = macro.getChildNodes();
                     for (int j = 0; j < macroKids.getLength(); j++) {
                         if (macroKids.item(j).getNodeType() != Node.ELEMENT_NODE) {
@@ -412,7 +412,7 @@ public class TargetLister {
                         } finally {
                             is.close();
                         }
-                        Map/*<String,String>*/ evaluatedProperties = evaluateAll(propertyDefs, Collections.singletonList(p));
+                        Map<String,String> evaluatedProperties = evaluateAll(propertyDefs, Collections.singletonList((Map<String,String>) p));
                         //System.err.println("loaded properties: " + evaluatedProperties);
                         if (evaluatedProperties == null) {
                             continue;
@@ -442,7 +442,7 @@ public class TargetLister {
             }
         }
         
-        private static String replaceMacroParams(String rawval, Map/*<String,String>*/ defs) {
+        private static String replaceMacroParams(String rawval, Map<String,String> defs) {
             if (rawval.indexOf('@') == -1) {
                 // Shortcut:
                 return rawval;
@@ -462,7 +462,7 @@ public class TargetLister {
                         String otherprop = rawval.substring(monkey + 2, end);
                         if (defs.containsKey(otherprop)) {
                             val.append(rawval.substring(idx, monkey));
-                            val.append((String) defs.get(otherprop));
+                            val.append(defs.get(otherprop));
                         } else {
                             val.append(rawval.substring(idx, end + 1));
                         }
@@ -478,39 +478,34 @@ public class TargetLister {
             }
         }
         
-        private static String replaceAntProperties(String rawval, Map/*<String,String>*/ defs) {
-            return (String) subst(rawval, defs, Collections.EMPTY_SET);
+        private static String replaceAntProperties(String rawval, Map<String,String> defs) {
+            return subst(rawval, defs, Collections.<String>emptySet()).first();
         }
         
         // Copied from org.netbeans.spi.project.support.ant.PropertyUtils.
-        private static Map/*<String,String>*/ evaluateAll(Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
-            Map/*<String,String>*/ m = new HashMap(predefs);
-            Iterator it = defs.iterator();
-            while (it.hasNext()) {
-                Map/*<String,String>*/ curr = (Map/*<String,String>*/)it.next();
+        private static Map<String,String> evaluateAll(Map<String,String> predefs, List<Map<String,String>> defs) {
+            Map<String,String> m = new HashMap<String,String>(predefs);
+            for (Map<String,String> curr : defs) {
                 // Set of properties which we are deferring because they subst sibling properties:
-                Map/*<String,Set<String>>*/ dependOnSiblings = new HashMap();
-                Iterator it2 = curr.entrySet().iterator();
-                while (it2.hasNext()) {
-                    Map.Entry entry = (Map.Entry)it2.next();
-                    String prop = (String)entry.getKey();
+                Map<String,Set<String>> dependOnSiblings = new HashMap<String,Set<String>>();
+                for (Map.Entry<String,String> entry : curr.entrySet()) {
+                    String prop = entry.getKey();
                     if (!m.containsKey(prop)) {
-                        String rawval = (String)entry.getValue();
+                        String rawval = entry.getValue();
                         //System.err.println("subst " + prop + "=" + rawval + " with " + m);
-                        Object o = subst(rawval, m, curr.keySet());
-                        if (o instanceof String) {
-                            m.put(prop, (String)o);
+                        Union2<String,Set<String>> r = subst(rawval, m, curr.keySet());
+                        if (r.hasFirst()) {
+                            m.put(prop, r.first());
                         } else {
-                            dependOnSiblings.put(prop, (Set)o);
+                            dependOnSiblings.put(prop, r.second());
                         }
                     }
                 }
-                Set/*<String>*/ toSort = new HashSet(dependOnSiblings.keySet());
-                it2 = dependOnSiblings.values().iterator();
-                while (it2.hasNext()) {
-                    toSort.addAll((Set)it2.next());
+                Set<String> toSort = new HashSet<String>(dependOnSiblings.keySet());
+                for (Set<String> sibs : dependOnSiblings.values()) {
+                    toSort.addAll(sibs);
                 }
-                List/*<String>*/ sorted;
+                List<String> sorted;
                 try {
                     sorted = Utilities.topologicalSort(toSort, dependOnSiblings);
                 } catch (TopologicalSortException e) {
@@ -518,30 +513,28 @@ public class TargetLister {
                     return null;
                 }
                 Collections.reverse(sorted);
-                it2 = sorted.iterator();
-                while (it2.hasNext()) {
-                    String prop = (String)it2.next();
+                for (String prop : sorted) {
                     if (!m.containsKey(prop)) {
-                        String rawval = (String)curr.get(prop);
-                        m.put(prop, (String)subst(rawval, m, /*Collections.EMPTY_SET*/curr.keySet()));
+                        String rawval = curr.get(prop);
+                        m.put(prop, subst(rawval, m, /*Collections.EMPTY_SET*/curr.keySet()).first());
                     }
                 }
             }
             return m;
         }
-        private static Object subst(String rawval, Map/*<String,String>*/ predefs, Set/*<String>*/ siblingProperties) {
+        private static Union2<String,Set<String>> subst(String rawval, Map<String,String> predefs, Set<String> siblingProperties) {
             assert rawval != null : "null rawval passed in";
             if (rawval.indexOf('$') == -1) {
                 // Shortcut:
                 //System.err.println("shortcut");
-                return rawval;
+                return union2First(rawval);
             }
             // May need to subst something.
             int idx = 0;
             // Result in progress, if it is to be a String:
             StringBuffer val = new StringBuffer();
             // Or, result in progress, if it is to be a Set<String>:
-            Set/*<String>*/ needed = new HashSet();
+            Set<String> needed = new HashSet<String>();
             while (true) {
                 int shell = rawval.indexOf('$', idx);
                 if (shell == -1 || shell == rawval.length() - 1) {
@@ -549,9 +542,9 @@ public class TargetLister {
                     //System.err.println("no more $");
                     if (needed.isEmpty()) {
                         val.append(rawval.substring(idx));
-                        return val.toString();
+                        return union2First(val.toString());
                     } else {
-                        return needed;
+                        return union2Second(needed);
                     }
                 }
                 char c = rawval.charAt(shell + 1);
@@ -573,7 +566,7 @@ public class TargetLister {
                             // Well-defined.
                             if (needed.isEmpty()) {
                                 val.append(rawval.substring(idx, shell));
-                                val.append((String)predefs.get(otherprop));
+                                val.append(predefs.get(otherprop));
                             }
                             idx = end + 1;
                         } else if (siblingProperties.contains(otherprop)) {
@@ -591,9 +584,9 @@ public class TargetLister {
                         // Unclosed ${ sequence, leave as is.
                         if (needed.isEmpty()) {
                             val.append(rawval.substring(idx));
-                            return val.toString();
+                            return union2First(val.toString());
                         } else {
-                            return needed;
+                            return union2Second(needed);
                         }
                     }
                 } else {
@@ -618,7 +611,7 @@ public class TargetLister {
         }
         
         /** Get targets defined in this script. */
-        public Collection/*<Target>*/ getTargets() {
+        public Collection<Target> getTargets() {
             return targets.values();
         }
         
@@ -628,7 +621,7 @@ public class TargetLister {
         }
         
         /** Get imported scripts. */
-        public Collection/*<Script>*/ getImports() {
+        public Collection<Script> getImports() {
             return imports;
         }
         
@@ -676,7 +669,7 @@ public class TargetLister {
         }
         // AntProjectDataLoader probably not installed, e.g. from a unit test.
         synchronized (antProjectCookies) {
-            AntProjectCookie apc = (AntProjectCookie) antProjectCookies.get(fo);
+            AntProjectCookie apc = antProjectCookies.get(fo);
             if (apc == null) {
                 apc = new AntProjectSupport(fo);
                 antProjectCookies.put(fo, apc);
@@ -684,6 +677,6 @@ public class TargetLister {
             return apc;
         }
     }
-    private static final Map/*<FileObject,AntProjectCookie>*/ antProjectCookies = new WeakHashMap();
+    private static final Map<FileObject,AntProjectCookie> antProjectCookies = new WeakHashMap<FileObject,AntProjectCookie>();
     
 }

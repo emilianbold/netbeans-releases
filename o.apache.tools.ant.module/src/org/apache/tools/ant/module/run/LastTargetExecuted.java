@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -40,10 +41,10 @@ public class LastTargetExecuted {
     private static File buildScript;
     private static int verbosity;
     private static String[] targets;
-    private static Properties properties;
+    private static Map<String,String> properties;
     
     /** Called from {@link TargetExecutor}. */
-    static void record(File buildScript, int verbosity, String[] targets, Properties properties) {
+    static void record(File buildScript, int verbosity, String[] targets, Map<String,String> properties) {
         LastTargetExecuted.buildScript = buildScript;
         LastTargetExecuted.verbosity = verbosity;
         LastTargetExecuted.targets = targets;
@@ -103,7 +104,7 @@ public class LastTargetExecuted {
         return t.execute();
     }
     
-    private static final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private static final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     public static void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
@@ -119,12 +120,12 @@ public class LastTargetExecuted {
     
     private static void fireChange() {
         ChangeEvent ev = new ChangeEvent(LastTargetExecuted.class);
-        Iterator/*<ChangeListener>*/ it;
+        ChangeListener[] ls;
         synchronized (listeners) {
-            it = new ArrayList(listeners).iterator();
+            ls = listeners.toArray(new ChangeListener[listeners.size()]);
         }
-        while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
+        for (ChangeListener l : ls) {
+            l.stateChanged(ev);
         }
     }
     
