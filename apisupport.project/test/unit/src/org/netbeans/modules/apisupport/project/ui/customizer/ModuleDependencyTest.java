@@ -105,7 +105,6 @@ public class ModuleDependencyTest extends TestBase {
 //                (int) Math.signum(locNameResult), (int) Math.signum(realResult));
             }
         }
-        
     }
     
     public void testSpecVersionBaseSourceEntries() throws Exception { // #72463
@@ -132,6 +131,13 @@ public class ModuleDependencyTest extends TestBase {
         assertEquals("right modified spec.version.base", "1.2", dep.getSpecificationVersion());
         dep = new ModuleDependency(e, null, "1.0", true, false);
         assertEquals("right explicit spec vers", "1.0", dep.getSpecificationVersion());
+    }
+    
+    public void testAppropriateDefaultCompileDependency() throws Exception { // #73666
+        NbModuleProject p = generateStandaloneModule("module");
+        ModuleList ml = ModuleList.getModuleList(FileUtil.toFile(p.getProjectDirectory()));
+        ModuleDependency d = new ModuleDependency(ml.getEntry("org.example.module"));
+        assertFalse("no public packages -> no compile dependency by default", d.hasCompileDependency());
     }
     
 }

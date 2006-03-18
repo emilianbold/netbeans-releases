@@ -80,7 +80,7 @@ public final class ModuleDependency implements Comparable {
      * false.
      */
     public ModuleDependency(ModuleEntry me) {
-        this(me, me.getReleaseVersion(), SPEC_VERSION_LAZY, true, false);
+        this(me, me.getReleaseVersion(), SPEC_VERSION_LAZY, me.getPublicPackages().length > 0, false);
     }
     
     public ModuleDependency(ModuleEntry me, String releaseVersion,

@@ -37,11 +37,14 @@ public final class EditDependencyPanel extends JPanel {
     private final ModuleDependency origDep;
     private final URL javadoc;
     
+    private final ManifestManager.PackageExport[] pp;
+    
     /** Creates new form EditDependencyPanel */
     public EditDependencyPanel(final ModuleDependency dep, final NbPlatform platform) {
         this.origDep = dep;
+        this.pp = origDep.getModuleEntry().getPublicPackages();
         initComponents();
-        readFromEntry();
+        initDependency();
         if (platform == null) { // NetBeans.org module
             javadoc = Util.findJavadocForNetBeansOrgModules(origDep);
         } else {
@@ -50,7 +53,20 @@ public final class EditDependencyPanel extends JPanel {
         showJavadocButton.setEnabled(javadoc != null);
     }
     
-    private void readFromEntry() {
+    private void refresh() {
+        specVerValue.setEnabled(specVer.isSelected());
+        includeInCP.setEnabled(implVer.isSelected() || hasAvailablePackages());
+        if (!includeInCP.isEnabled()) {
+            includeInCP.setSelected(false);
+        } // else leave the user's selection
+    }
+    
+    private boolean hasAvailablePackages() {
+        return pp.length > 0;
+    }
+    
+    /** Called first time dialog is opened. */
+    private void initDependency() {
         UIUtil.setText(codeNameBaseValue, origDep.getModuleEntry().getCodeNameBase());
         UIUtil.setText(jarLocationValue, origDep.getModuleEntry().getJarLocation().getAbsolutePath());
         UIUtil.setText(releaseVersionValue, origDep.getReleaseVersion());
@@ -58,13 +74,9 @@ public final class EditDependencyPanel extends JPanel {
             origDep.getModuleEntry().getSpecificationVersion() :
             origDep.getSpecificationVersion());
         implVer.setSelected(origDep.hasImplementationDepedendency());
-        ManifestManager.PackageExport[] pp = origDep.getModuleEntry().getPublicPackages();
-        boolean anyAvailablePkg = pp != null && pp.length != 0;
-        includeInCP.setEnabled(anyAvailablePkg);
-        includeInCP.setSelected(origDep.hasCompileDependency());
-        availablePkg.setEnabled(anyAvailablePkg);
+        availablePkg.setEnabled(hasAvailablePackages());
         DefaultListModel model = new DefaultListModel();
-        if (anyAvailablePkg) {
+        if (hasAvailablePackages()) {
             // XXX should show all subpackages in the case of recursion is set
             // to true instead of e.g. org/**
             SortedSet/*<String>*/ packages = new TreeSet();
@@ -79,7 +91,8 @@ public final class EditDependencyPanel extends JPanel {
             model.addElement(NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel_empty"));
         }
         availablePkg.setModel(model);
-        versionChanged(null);
+        includeInCP.setSelected(origDep.hasCompileDependency());
+        refresh();
     }
     
     public ModuleDependency getEditedDependency() {
@@ -117,7 +130,7 @@ public final class EditDependencyPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(6, 6, 6, 6)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 6, 6, 6));
         setPreferredSize(new java.awt.Dimension(400, 300));
         codeNameBase.setLabelFor(codeNameBaseValue);
         org.openide.awt.Mnemonics.setLocalizedText(codeNameBase, org.openide.util.NbBundle.getMessage(EditDependencyPanel.class, "LBL_CNB"));
@@ -243,17 +256,15 @@ public final class EditDependencyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(showJavadocButton, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void showJavadoc(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showJavadoc
         HtmlBrowser.URLDisplayer.getDefault().showURL(javadoc);
     }//GEN-LAST:event_showJavadoc
     
     private void versionChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionChanged
-        specVerValue.setEnabled(specVer.isSelected());
+        refresh();
     }//GEN-LAST:event_versionChanged
-    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList availablePkg;
