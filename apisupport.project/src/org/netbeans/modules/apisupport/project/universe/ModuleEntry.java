@@ -117,6 +117,7 @@ public interface ModuleEntry extends Comparable {
     
     /**
      * Get array of public packages exported by this module entry.
+     * @return array of public packages. May be empty but not <code>null</code>.
      */
     ManifestManager.PackageExport[] getPublicPackages();
     

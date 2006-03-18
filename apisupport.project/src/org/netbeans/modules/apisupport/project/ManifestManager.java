@@ -92,7 +92,8 @@ public final class ManifestManager {
         this.localizingBundle = locBundle;
         this.layer = layer;
         this.classPath = classPath;
-        this.publicPackages = publicPackages;
+        this.publicPackages = (publicPackages == null)
+                ? EMPTY_EXPORTED_PACKAGES : publicPackages;
         this.friendNames = friendNames;
         this.deprecated = deprecated;
         this.moduleDependencies = moduleDependencies;
@@ -305,6 +306,9 @@ public final class ManifestManager {
         return classPath;
     }
     
+    /**
+     * @return an array of public packages. May be empty but not <code>null</code>.
+     */
     public PackageExport[] getPublicPackages() {
         return publicPackages;
     }
@@ -324,7 +328,7 @@ public final class ManifestManager {
             return Collections.EMPTY_SET;
         }
     }
-
+    
     /**
      * Struct representing a package exported from a module.
      */

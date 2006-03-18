@@ -262,10 +262,8 @@ public final class CustomizerComponentFactory {
                 renderer.setHtml(true);
             } else {
                 ModuleDependency md = (ModuleDependency) value;
-                boolean bold = boldfaceApiModules && (
-                        // XXX the following is wrong; spec requires additional logic:
-                        md.getModuleEntry().getPublicPackages() != null &&
-                        md.getModuleEntry().getPublicPackages().length > 0);
+                // XXX the following is wrong; spec requires additional logic:
+                boolean bold = boldfaceApiModules && md.getModuleEntry().getPublicPackages().length > 0;
                 boolean deprecated = md.getModuleEntry().isDeprecated();
                 renderer.setHtml(bold || deprecated);
                 String locName = md.getModuleEntry().getLocalizedName();

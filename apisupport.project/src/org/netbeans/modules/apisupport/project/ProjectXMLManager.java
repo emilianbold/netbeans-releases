@@ -441,6 +441,9 @@ public final class ProjectXMLManager {
      * exposed public packages. Method considers both <em>package</em> and
      * <em>subpackages</em> elements with the recursivity flag set
      * appropriately for returned entries.
+     *
+     * @return array of {@link ManifestManager.PackageExport}. May be empty but
+     *         not <code>null</code>.
      */
     public ManifestManager.PackageExport[] getPublicPackages() {
         if (publicPackages == null) {
@@ -600,6 +603,9 @@ public final class ProjectXMLManager {
      * Utility method for finding public packages. Method considers both
      * <em>package</em> and <em>subpackages</em> elements with the recursivity
      * flag set appropriately for returned entries.
+     *
+     * @return array of {@link ManifestManager.PackageExport}. May be empty but
+     *         not <code>null</code>.
      */
     public static ManifestManager.PackageExport[] findPublicPackages(final Element confData) {
         Element ppEl = findPublicPackagesElement(confData);
