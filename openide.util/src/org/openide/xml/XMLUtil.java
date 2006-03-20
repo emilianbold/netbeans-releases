@@ -131,8 +131,6 @@ import org.xml.sax.XMLReader;
  * @author  Petr Kuzel
  * @since release 3.2 */
 public final class XMLUtil extends Object {
-    /** Use fast SAX parser factory until someone asks for validating parser. */
-    private static boolean useFastSAXParserFactory = true;
 
     /*
         public static String toCDATA(String val) throws IOException {
@@ -183,19 +181,7 @@ public final class XMLUtil extends Object {
     public static XMLReader createXMLReader(boolean validate, boolean namespaceAware)
     throws SAXException {
         SAXParserFactory factory;
-
-        if (!validate && useFastSAXParserFactory) {
-            try {
-                factory = createFastSAXParserFactory();
-            } catch (ParserConfigurationException ex) {
-                factory = SAXParserFactory.newInstance();
-            } catch (SAXException ex) {
-                factory = SAXParserFactory.newInstance();
-            }
-        } else {
-            useFastSAXParserFactory = false;
-            factory = SAXParserFactory.newInstance();
-        }
+        factory = SAXParserFactory.newInstance();
 
         factory.setValidating(validate);
         factory.setNamespaceAware(namespaceAware);
@@ -363,18 +349,6 @@ public final class XMLUtil extends Object {
             throw new NullPointerException("You must set an encoding; use \"UTF-8\" unless you have a good reason not to!"); // NOI18N
         }
         Document doc2 = normalize(doc);
-        if (System.getProperty("java.specification.version").startsWith("1.4")) { // NOI18N
-            // Hack for JDK 1.4. Using JAXP won't work; e.g. JDK bug #6308026.
-            // Try using Xerces instead - let's hope it's loadable...
-            try {
-                writeXerces(doc2, out, enc);
-                return;
-            } catch (ClassNotFoundException e) {
-                throw (IOException) new IOException("You need to have xerces.jar available to use XMLUtil.write under JDK 1.4: " + e).initCause(e); // NOI18N
-            } catch (Exception e) {
-                throw (IOException) new IOException(e.toString()).initCause(e);
-            }
-        }
         // XXX should try to use org.w3c.dom.ls.LSSerializer if it exists...
         // XXX #66563 workaround
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
@@ -412,38 +386,6 @@ public final class XMLUtil extends Object {
         } finally {
             Thread.currentThread().setContextClassLoader(orig);
         }
-    }
-    /**
-     * Serialize a document using Xerces' library.
-     * This library is available in the JDK starting with version 1.5 (where we do not need it anyway),
-     * but in 1.4 you need to have Xerces loaded in the system somewhere.
-     */
-    private static void writeXerces(Document doc, OutputStream out, String encoding) throws ClassNotFoundException, Exception {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        Class xmlSerializerClazz = Class.forName("org.apache.xml.serialize.XMLSerializer", true, cl); // NOI18N
-        Class outputFormatClazz = Class.forName("org.apache.xml.serialize.OutputFormat", true, cl); // NOI18N
-        Object xmlSerializer = xmlSerializerClazz.newInstance();
-        Object outputFormat = outputFormatClazz.newInstance();
-        Method setMethod = outputFormatClazz.getMethod("setMethod", new Class[] {String.class}); // NOI18N
-        setMethod.invoke(outputFormat, new Object[] {"xml"}); // NOI18N
-        Method setIndenting = outputFormatClazz.getMethod("setIndenting", new Class[] {Boolean.TYPE}); // NOI18N
-        setIndenting.invoke(outputFormat, new Object[] {Boolean.TRUE}); // NOI18N
-        Method setLineWidth = outputFormatClazz.getMethod("setLineWidth", new Class[] {Integer.TYPE}); // NOI18N
-        setLineWidth.invoke(outputFormat, new Object[] {new Integer(0)});
-        Method setLineSeparator = outputFormatClazz.getMethod("setLineSeparator", new Class[] {String.class}); // NOI18N
-        setLineSeparator.invoke(outputFormat, new String[] {System.getProperty("line.separator")}); // NOI18N
-        Method setOutputByteStream = xmlSerializerClazz.getMethod("setOutputByteStream", new Class[] {OutputStream.class}); // NOI18N
-        setOutputByteStream.invoke(xmlSerializer, new Object[] {out});
-        Method setEncoding = outputFormatClazz.getMethod("setEncoding", new Class[] {String.class}); // NOI18N
-        setEncoding.invoke(outputFormat, new Object[] {encoding});
-        Method setOutputFormat = xmlSerializerClazz.getMethod("setOutputFormat", new Class[] {outputFormatClazz}); // NOI18N
-        setOutputFormat.invoke(xmlSerializer, new Object[] {outputFormat});
-        Method setNamespaces = xmlSerializerClazz.getMethod("setNamespaces", new Class[] {Boolean.TYPE}); // NOI18N
-        setNamespaces.invoke(xmlSerializer, new Object[] {Boolean.TRUE});
-        Method asDOMSerializer = xmlSerializerClazz.getMethod("asDOMSerializer", new Class[0]); // NOI18N
-        Object impl = asDOMSerializer.invoke(xmlSerializer, null);
-        Method serialize = impl.getClass().getMethod("serialize", new Class[] {Document.class}); // NOI18N
-        serialize.invoke(impl, new Object[] {doc});
     }
 
     /**
@@ -517,7 +459,7 @@ public final class XMLUtil extends Object {
             return val;
         }
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < val.length(); i++) {
             char ch = val.charAt(i);
@@ -690,34 +632,6 @@ public final class XMLUtil extends Object {
         }
 
         return escape == false;
-    }
-
-    private static SAXParserFactory createFastSAXParserFactory()
-    throws ParserConfigurationException, SAXException {
-        if (fastParserFactoryClass == null) {
-            try {
-                fastParserFactoryClass = Class.forName("org.apache.crimson.jaxp.SAXParserFactoryImpl"); // NOI18N
-            } catch (Exception ex) {
-                useFastSAXParserFactory = false;
-
-                if (System.getProperty("java.version").startsWith("1.4")) { // NOI18N
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                }
-            }
-        }
-
-        if (fastParserFactoryClass != null) {
-            try {
-                SAXParserFactory factory = (SAXParserFactory) fastParserFactoryClass.newInstance();
-
-                return factory;
-            } catch (Exception ex) {
-                useFastSAXParserFactory = false;
-                throw new ParserConfigurationException(ex.getMessage());
-            }
-        }
-
-        return SAXParserFactory.newInstance();
     }
 
     /**
