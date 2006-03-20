@@ -51,6 +51,7 @@ public class Subversion {
     private FilesystemHandler   filesystemHandler;
     private Annotator           annotator;
     private HashMap             clientsToUrl;
+    private HashMap             clientsToProxyDescriptor;
     private HashMap             urlToClients;
     private RequestProcessor rp = new RequestProcessor("Subversion", 1, true); // NOI18N
 
@@ -138,7 +139,14 @@ public class Subversion {
         }
         return null;
     }
-            
+
+    public ProxyDescriptor getProxyDescriptor(SvnClient client) {
+        if(clientsToProxyDescriptor!=null) {
+            return (ProxyDescriptor) clientsToProxyDescriptor.get(client);
+        }
+        return null;
+    }
+    
     public SvnClient getClient(SVNUrl repositoryUrl,
                                ProxyDescriptor pd, 
                                String username, 
@@ -149,7 +157,7 @@ public class Subversion {
         if(client == null) {
             client = SvnClientFactory.getInstance().createSvnClient(pd, username, password);            
             attachListeners(client);
-            clientAndURl(client, repositoryUrl);
+            clientAndURl(client, repositoryUrl, pd);
         } else {
             // XXX - some kind of check if it's still the same configuration (proxy, psswd, user)            
         }               
@@ -185,7 +193,7 @@ public class Subversion {
         if(client == null) {        
             client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl);        
             attachListeners(client);
-            clientAndURl(client, repositoryUrl);
+            clientAndURl(client, repositoryUrl, null);
         }
         return client;
     }
@@ -222,9 +230,19 @@ public class Subversion {
         return urlToClients;
     }
 
-    private void clientAndURl(SvnClient client, SVNUrl repositoryUrl) {
+    private HashMap getClientsToProxyDescriptor() {
+        if(clientsToProxyDescriptor == null) {
+            clientsToProxyDescriptor = new HashMap();
+        }
+        return clientsToProxyDescriptor;
+    }        
+
+    private void clientAndURl(SvnClient client, SVNUrl repositoryUrl, ProxyDescriptor pd) {
         getClientsToUrl().put(repositoryUrl, client);
         getUrlToClients().put(client, repositoryUrl);
+        if(pd!=null) {
+            getClientsToProxyDescriptor().put(client, pd);   
+        }        
     }    
     
     public ISVNStatus getLocalStatus(File file) throws SVNClientException {
