@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -20,6 +20,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="storage.builder" location="../../java/storagebuilder/dist/storagebuilder.jar"/>
   <property name="preparse.files" location="../../java/storagebuilder/preparse-files.txt"/>
   <property name="nb.dir" location="../../nbbuild/netbeans" />
+  <property name="nb.dir.tmp" location="build/netbeans" />
 
 <!-- this dependency is for localised installers only 
   <target name="init" depends="set-buildnumber, set-installer.basename, copy-localized-data" unless="inited">
@@ -38,6 +39,19 @@ Microsystems, Inc. All Rights Reserved.
     <copy todir="." failonerror="false">
       <fileset dir="../../translatedfiles/src/installer/coreide"/>
     </copy>
+  </target>
+
+  <!-- Copy NetBeans files to temporary dir where jars will be packed. Use native cp to preserve file attributes. -->
+  <target name="copy-netbeans">
+    <mkdir dir="build/netbeans"/>
+    <exec os="Linux SunOS" executable="./copy-nbdir">
+      <arg line="${nb.dir}/* ${nb.dir.tmp}"/>
+    </exec>
+  </target>
+
+  <!-- Delete temporary netbeans directory used to pak jars -->
+  <target name="delete-netbeans-tmp">
+    <delete dir="${nb.dir.tmp}"/>
   </target>
  
   <target name="set-ismp.cp" unless="ismp.cp-set">
@@ -113,7 +127,7 @@ Microsystems, Inc. All Rights Reserved.
         <arg value="-alias"/>
         <arg value="basedir=${basedir}"/>
         <arg value="-alias"/>
-        <arg value="nb.dir=${nb.dir}"/>
+        <arg value="nb.dir=${nb.dir.tmp}"/>
         <arg value="-alias"/>
         <arg value="ismp.home=${ismp.home}"/>
         <arg value="-alias"/>
@@ -128,7 +142,7 @@ Microsystems, Inc. All Rights Reserved.
     </sequential>
   </macrodef>
 
-  <target name="build-win32" depends="init, compile, xsl-win32">
+  <target name="build-win32-part" depends="init, compile, xsl-win32">
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="${ismp.project}-win32"/>
@@ -137,7 +151,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
   </target>
 
-  <target name="build-win32-ml" depends="init-ml, compile, xsl-win32, xsl-win32-ml">
+  <target name="build-win32-part-ml" depends="init-ml, compile, xsl-win32, xsl-win32-ml">
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="${ismp.project}-win32-ml"/>
@@ -147,7 +161,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
   </target>
 
-  <target name="build-unix" depends="init, compile, xsl-unix">
+  <target name="build-unix-part" depends="init, compile, xsl-unix">
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="${ismp.project}-unix"/>
@@ -158,7 +172,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setupsolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
 
-  <target name="build-unix-ml" depends="init-ml, compile, xsl-unix, xsl-unix-ml">
+  <target name="build-unix-part-ml" depends="init-ml, compile, xsl-unix, xsl-unix-ml">
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="${ismp.project}-unix-ml"/>
@@ -170,18 +184,45 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setupsolarisX86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>
   </target>
   
-  <target name="build" depends="init, build-win32, build-unix" description="build the installers">
+  <target name="build" 
+          depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part, build-unix-part" 
+          description="build the installers">
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
   </target>
 
-  <target name="build-ml" depends="init, build-win32-ml, build-unix-ml" description="build the multilanguage installers">
+  <target name="build-ml" 
+          depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part-ml, build-unix-part-ml" 
+          description="build the multilanguage installers">
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-ml.jar"/>
+  </target>
+
+  <target name="build-win32"
+          depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part"
+          description="build the installers">
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
+  </target>
+
+  <target name="build-win32-ml"
+          depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-win32-part-ml"
+          description="build the multilanguage installers">
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-ml.jar"/>
+  </target>
+
+  <target name="build-unix"
+          depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-unix-part"
+          description="build the installers">
+    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
+  </target>
+
+  <target name="build-unix-ml"
+          depends="init, delete-netbeans-tmp, copy-netbeans, run-pack, build-unix-part-ml"
+          description="build the multilanguage installers">
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-ml.jar"/>
   </target>
 
   <target name="compile" depends="init, build-library" description="compile custom beans and panels">
     <mkdir dir="build/classes"/>
-    
-    <javac destdir="build/classes" srcdir="src" source="1.4" target="1.4" debug="true" deprecation="true">
+    <javac destdir="build/classes" srcdir="src" source="1.5" target="1.5" debug="true" deprecation="true">
       <classpath>
         <path refid="ismp.cp"/>
       </classpath>
@@ -218,7 +259,7 @@ Microsystems, Inc. All Rights Reserved.
     </java>
   </target>
   
-  <target name="clean" depends="init, clean-library" description="Clean all build products and temp/backup files.">
+  <target name="clean" depends="init, clean-library, clean-pack" description="Clean all build products and temp/backup files.">
     <delete>
       <fileset dir=".">
         <include name="**/*~"/>
@@ -232,5 +273,26 @@ Microsystems, Inc. All Rights Reserved.
   <target name="ismp" depends="init, compile" description="launch ISMP IDE">
     <exec os="Linux" command="sh -c &quot;${ismp.home}/ismp &amp;&quot;" />
   </target>
-  
+ 
+  <target name="compile-pack" description="Compile class for compressing jars">
+    <mkdir dir="../lib/packjars/classes"/>
+    <javac destdir="../lib/packjars/classes" srcdir="../lib/packjars/src" source="1.5" target="1.5" debug="true" deprecation="true">
+    </javac>
+  </target>
+
+  <target name="run-pack" depends="compile-pack" description="Run class for compressing jars">
+     <java classname="org.netbeans.installer.PackJars" fork="true">
+        <jvmarg value="-Xmx256m" />
+        <arg value="${nb.dir.tmp}" />
+        <arg value="${basedir}/build/netbeans/_uninst/packedjars.xml" />
+        <classpath>
+          <pathelement path="../lib/packjars/classes"/>
+        </classpath>
+      </java>
+  </target>
+
+  <target name="clean-pack" description="Clean class for compressing jars">
+    <delete dir="../lib/packjars/classes"/>
+  </target>
+
 </project>
