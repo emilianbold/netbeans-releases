@@ -68,4 +68,14 @@ public abstract class FontColorSettingsFactory {
         Collection /*<AttributeSet>*/ fontColors
     );
     
+    /**
+     * Sets default values for all token font and colors for given scheme. 
+     * 
+     * @param profile the name of profile
+     * @param fontColors new colorings
+     */
+    public abstract void setAllFontColorsDefaults (
+        String profile,
+        Collection /*<AttributeSet>*/ fontColors
+    );
 }
