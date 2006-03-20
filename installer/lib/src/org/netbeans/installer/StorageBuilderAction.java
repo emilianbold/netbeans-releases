@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -431,7 +431,7 @@ public class StorageBuilderAction extends ProductAction {
         }
         
         public void run() {
-            int sleepTime = 1000;
+            long sleepTime = 1000L;
             percentageStart = mos.getProgress().getPercentComplete();
             logEvent(this, Log.DBG,"Starting percentageStart: " + percentageStart);
             while (loop) {
@@ -439,10 +439,10 @@ public class StorageBuilderAction extends ProductAction {
                 try {
                     //logEvent(this, Log.DBG,"going 2 updateProgressBar");
                     updateProgressBar();
-
-                    sleepTime = 2000;
                     Thread.currentThread().sleep(sleepTime);
-                    if (isCanceled()) return;
+                    if (isCanceled()) {
+                        return;
+                    }
                 } catch (InterruptedException ex) {
                     //ex.printStackTrace();
                     loop = false;
