@@ -30,7 +30,9 @@ public class InterceptionListenerTest extends NbTestCase  {
     private InterceptionListenerImpl iListener;
     protected void setUp() throws Exception {
         super.setUp();
-        iListener = (InterceptionListenerImpl)Lookups.metaInfServices(Thread.currentThread().getContextClassLoader()).lookup(InterceptionListener.class);
+        AnnotationProvider ap = (AnnotationProvider)Lookups.metaInfServices(Thread.currentThread().getContextClassLoader()).lookup(AnnotationProvider.class);
+        assertNotNull(ap);
+        iListener = (InterceptionListenerImpl)ap.getInterceptionListener();
         assertNotNull(iListener);
         iListener.clear();
         clearWorkDir();
