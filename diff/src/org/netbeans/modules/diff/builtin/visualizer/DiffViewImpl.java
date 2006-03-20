@@ -14,12 +14,14 @@
 package org.netbeans.modules.diff.builtin.visualizer;
 
 import java.awt.Point;
+import java.awt.event.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.Dimension;
 import java.awt.Component;
 import java.awt.Color;
+import java.beans.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
@@ -550,13 +552,67 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
 
     // NestableDiffView implementation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    public void joinScrollPane(JScrollPane pane) {
+    public void joinScrollPane(final JScrollPane pane) {
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setWheelScrollingEnabled(false);
         jScrollPane2.setWheelScrollingEnabled(false);
+        jEditorPane1.getCaret().setVisible(false);
+        jEditorPane2.getCaret().setVisible(false);
+
+        // map JEditorPane keystroke to JScrollPane action registered for even keystroke
+        KeyStroke[] keyStrokes = new KeyStroke[] {
+            KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0),
+            KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0),
+
+            KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0),
+            KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0),
+
+            KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0),
+            KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_MASK),
+
+            KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_MASK),
+            KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_MASK),
+            
+            KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
+            KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_MASK),
+
+            KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_MASK),
+            KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_MASK),
+
+            KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
+            KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
+
+            KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
+            KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
+
+            KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
+            KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
+
+            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
+            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
+
+            KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0),
+            KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0),
+        };
+
+        for (int i = 0; i<keyStrokes.length; i+=2) {
+            KeyStroke stroke = keyStrokes[i];
+            KeyStroke stroke2 = keyStrokes[i+1];
+            Object pane1Key = jEditorPane1.getInputMap().get(stroke);
+            Object pane2Key = jEditorPane2.getInputMap().get(stroke);
+            Object scrollKey = pane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(stroke2);
+            if (scrollKey != null) {
+                final Action scrollAction = pane.getActionMap().get(scrollKey);
+                jEditorPane1.getActionMap().put(pane1Key, new SourceTranslatorAction(scrollAction, pane));
+                jEditorPane2.getActionMap().put(pane2Key, new SourceTranslatorAction(scrollAction, pane));
+            } else {
+                // System.err.println("No JScrollPane binding for " + stroke);  // HOME, END
+            }
+        }
+
     }
 
     public int getInnerWidth() {
