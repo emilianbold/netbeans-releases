@@ -34,6 +34,8 @@ public class OpenProjectListSettings extends SystemOption {
     private static final String OPEN_AS_MAIN = "OpenAsMain"; //NOI18N
     private static final String MAIN_PROJECT_URL = "MainProjectURL"; //NOI18N
     private static final String RECENT_PROJECTS_URLS = "RecentProjectsURLs"; //NOI18N
+    private static final String RECENT_PROJECTS_DISPLAY_NAMES = "RecentProjectsDisplayNames"; //NOI18N
+    private static final String RECENT_PROJECTS_DISPLAY_ICONS = "RecentProjectsIcons"; //NOI18N
     private static final String PROP_PROJECTS_FOLDER = "projectsFolder"; //NOI18N
     private static final String RECENT_TEMPLATES = "recentlyUsedTemplates"; // NOI18N
     private static final String PROP_PROJECT_CATEGORY = "lastSelectedProjectCategory"; //NOI18N
@@ -97,16 +99,34 @@ public class OpenProjectListSettings extends SystemOption {
     public void setLastOpenProjectDir( String path ) {
         putProperty( LAST_OPEN_PROJECT_DIR, path, true  );
     }
-
+    
     public List/*<URL>*/ getRecentProjectsURLs() {
         List list = (List)getProperty( RECENT_PROJECTS_URLS );
         return list == null ? new ArrayList( 5 ) : list;
     }
-
+    
+    public List/*<String>*/ getRecentProjectsDisplayNames() {
+        List list = (List) getProperty(RECENT_PROJECTS_DISPLAY_NAMES);
+        return list == null ? new ArrayList(5) : list;
+    }
+    
+    public List/*<ExtIcon>*/ getRecentProjectsIcons() {
+        List list = (List) getProperty(RECENT_PROJECTS_DISPLAY_ICONS);
+        return list == null ? new ArrayList(5) : list;
+    }
+    
     public void setRecentProjectsURLs( List/*<URL>*/ list ) {
         putProperty( RECENT_PROJECTS_URLS, list, true  );
     }
-
+    
+    public void setRecentProjectsDisplayNames(List/*<String>*/ list) {
+        putProperty(RECENT_PROJECTS_DISPLAY_NAMES, list, true);
+    }
+    
+    public void setRecentProjectsIcons(List/*<ExtIcon>*/ list) {
+        putProperty(RECENT_PROJECTS_DISPLAY_ICONS, list, true);
+    }
+    
     public File getProjectsFolder () {
         String result = (String) this.getProperty (PROP_PROJECTS_FOLDER);
         if (result == null) {            

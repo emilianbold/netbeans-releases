@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
@@ -43,6 +44,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -419,7 +421,11 @@ public final class OpenProjectList {
     public synchronized boolean isRecentProjectsEmpty() {
         return recentProjects.isEmpty();
     }
-        
+    
+    public synchronized List/*<UnloadedProjectInformation>*/ getRecentProjectsInformation() {
+        return recentProjects.getRecentProjectsInfo();
+    }
+    
     /** As this class is singletnon, which is not GCed it is good idea to 
      *add WeakListeners or remove the listeners properly.
      */
@@ -728,14 +734,15 @@ public final class OpenProjectList {
         }
         return categories;
     }
-
+    
     // Private innerclasses ----------------------------------------------------
     
     /** Maintains recent project list
      */    
     private static class RecentProjectList {
        
-        private List /*<ProjectReference>*/ recentProjects;
+        private List/*<ProjectReference>*/ recentProjects;
+        private List/*<UnloadedProjectInformation>*/ recentProjectsInfos;
         
         private int size;
         
@@ -745,6 +752,7 @@ public final class OpenProjectList {
         public RecentProjectList( int size ) {
             this.size = size;
             recentProjects = new ArrayList( size );
+            recentProjectsInfos = new ArrayList(size);
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log("created a RecentProjectList: size=" + size);
             }
@@ -760,9 +768,18 @@ public final class OpenProjectList {
                 }
                 if ( recentProjects.size() == size ) {
                     // Need some space for the newly added project
-                    recentProjects.remove( size - 1 ); 
+                    recentProjects.remove( size - 1 );
+                    recentProjectsInfos.remove(size - 1);
                 }
                 recentProjects.add( 0, new ProjectReference( p ) );
+                try {
+                    recentProjectsInfos.add(0, ProjectInfoAccessor.DEFAULT.getProjectInfo(
+                        ProjectUtils.getInformation(p).getDisplayName(),
+                        ProjectUtils.getInformation(p).getIcon(),
+                        p.getProjectDirectory().getURL()));
+                } catch(FileStateInvalidException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
             }
             else {
                 if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -771,6 +788,15 @@ public final class OpenProjectList {
                 // Project is in list => just move it to first place
                 recentProjects.remove( index );
                 recentProjects.add( 0, new ProjectReference( p ) );
+                recentProjectsInfos.remove(index);
+                try {
+                    recentProjectsInfos.add(0, ProjectInfoAccessor.DEFAULT.getProjectInfo(
+                        ProjectUtils.getInformation(p).getDisplayName(),
+                        ProjectUtils.getInformation(p).getIcon(),
+                        p.getProjectDirectory().getURL()));
+                } catch(FileStateInvalidException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
             }
         }
         
@@ -781,6 +807,7 @@ public final class OpenProjectList {
                     ERR.log("remove recent project: " + p);
                 }
                 recentProjects.remove( index );
+                recentProjectsInfos.remove(index);
                 return true;
             }
             return false;
@@ -821,12 +848,22 @@ public final class OpenProjectList {
         
         public void load() {
             List/*<URL>*/ URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
+            List/*<String>*/ names = OpenProjectListSettings.getInstance().getRecentProjectsDisplayNames();
+            List/*<ExtIcon>*/ icons = OpenProjectListSettings.getInstance().getRecentProjectsIcons();
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log("recent project list load: " + URLs);
             }
-            recentProjects.clear(); 
+            recentProjects.clear();
             for ( Iterator it = URLs.iterator(); it.hasNext(); ) {
                 recentProjects.add( new ProjectReference( (URL)it.next() ) );
+            }
+            recentProjectsInfos.clear();
+            for (Iterator iterNames = names.iterator(), iterURLs = URLs.iterator(), iterIcons = icons.iterator(); 
+                    (iterNames.hasNext() && iterURLs.hasNext() && iterIcons.hasNext()); ) {
+                String name = (String) iterNames.next();
+                URL url = (URL) iterURLs.next();
+                Icon icon = ((ExtIcon) iterIcons.next()).getIcon();
+                recentProjectsInfos.add(ProjectInfoAccessor.DEFAULT.getProjectInfo(name, icon, url));
             }
         }
         
@@ -843,6 +880,18 @@ public final class OpenProjectList {
                 ERR.log("recent project list save: " + URLs);
             }
             OpenProjectListSettings.getInstance().setRecentProjectsURLs( URLs );
+            int listSize = recentProjectsInfos.size();
+            List/*<String>*/ names = new ArrayList(listSize);
+            List/*<ExtIcons>*/ icons = new ArrayList(listSize);
+            for (Iterator it = recentProjectsInfos.iterator(); it.hasNext(); ) {
+                UnloadedProjectInformation prjInfo = (UnloadedProjectInformation) it.next();
+                names.add(prjInfo.getDisplayName());
+                ExtIcon extIcon = new ExtIcon();
+                extIcon.setIcon(prjInfo.getIcon());
+                icons.add(extIcon);
+            }
+            OpenProjectListSettings.getInstance().setRecentProjectsDisplayNames(names);
+            OpenProjectListSettings.getInstance().setRecentProjectsIcons(icons);
         }
         
         private int getIndex( Project p ) {
@@ -868,7 +917,11 @@ public final class OpenProjectList {
             }
             
             return -1;
-        }        
+        }
+        
+        private List/*<UnloadedProjectInformation>*/ getRecentProjectsInfo() {
+            return recentProjectsInfos;
+        }
         
         private static class ProjectReference {
             

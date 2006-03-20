@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<?xml-stylesheet type="text/xml" href="../../nbbuild/javadoctools/apichanges.xsl"?>
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+<apichanges>
+
+    <!-- First, a list of API names you may use: -->
+    <apidefs>
+        <apidef name="recent">Project UI</apidef>
+    </apidefs>
+
+    <changes>
+        <change id="RecentProjects">
+            <api name="recent"/>
+            <summary>Provide a way to get list of information about recent projects.</summary>
+            <version major="1" minor="9"/>
+            <date day="20" month="3" year="2006"/>
+            <author login="mkubec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>RecentProjects</code> class that provides access to list of
+                    recently used projects (<code>UnloadedProjectInformation</code> class). 
+                    Listener can be registered to be notified about change in the 
+                    list of recent projects. The API is only for friend access.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.project.ui.api" name="RecentProjects"/>
+            <issue number="57073"/>
+        </change>
+    </changes>
+
+    <!-- Now the surrounding HTML text and document structure: -->
+
+    <htmlcontents>
+        <!-- Generated from apichanges.xml -->
+        <head>
+            <title>Change History for the Project UI</title>
+            <link rel="stylesheet" href="prose.css" type="text/css"/>
+        </head>
+        <body>
+
+            <p class="overviewlink"><a href="@org-netbeans-modules-projectui@/overview-summary.html">Overview</a></p>
+
+            <h1>Introduction</h1>
+            <p>This document lists changes made to the <a href="@org-netbeans-modules-projectui@/overview-summary.html">Project UI</a>.</p>
+
+            <!-- The actual lists of changes, as summaries and details: -->
+            <hr/>
+            <standard-changelists module-code-name="org.netbeans.modules.projectui/1"/>
+            <hr/>
+            <p>@FOOTER@</p>
+
+        </body>
+    </htmlcontents>
+
+</apichanges>
