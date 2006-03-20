@@ -382,16 +382,6 @@ public class AntDebugger extends ActionsProviderSupport {
         getCallStackModel ().fireChanges ();
     }
     
-    private TargetLister.Target getNextTarget () {
-        if (originatingIndex > 0) {
-            Object topFrame = callStackList.get(originatingIndex);
-            if (topFrame instanceof TargetOriginating) {
-                return ((TargetOriginating) topFrame).getDependentTarget();
-            }
-        }
-        return null;
-    }
-    
     private void updateOutputWindow (Object currentLine) {
         Object topFrame = getTopFrame();
         if (topFrame instanceof Task) {
@@ -507,7 +497,6 @@ public class AntDebugger extends ActionsProviderSupport {
     // stepping hell ...........................................................
     
     private Object      lastAction;
-    private Set         finishedTasks = new HashSet ();
     
     private String      targetEndToStopAt = null;
     private String      taskEndToStopAt = null;
@@ -780,7 +769,7 @@ public class AntDebugger extends ActionsProviderSupport {
      *
      * @author  Martin Entlicher
      */
-    private class TargetOriginating {
+    private static class TargetOriginating {
 
         private TargetLister.Target target;
         private TargetLister.Target dependent;

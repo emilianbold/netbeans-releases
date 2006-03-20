@@ -159,7 +159,7 @@ NodeActionsProvider, TableModel {
         if (node instanceof Task) 
             return ((Task) node).getTaskStructure ().getName ();
         if (node == ROOT) {
-            return ROOT.toString();
+            return ROOT;
         }
         throw new UnknownTypeException (node);
     }
