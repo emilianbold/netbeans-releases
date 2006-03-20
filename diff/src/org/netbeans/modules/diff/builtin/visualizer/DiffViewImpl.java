@@ -555,7 +555,8 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
         jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane2.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         jScrollPane2.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
+        jScrollPane1.setWheelScrollingEnabled(false);
+        jScrollPane2.setWheelScrollingEnabled(false);
     }
 
     public int getInnerWidth() {
