@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,14 +22,21 @@ import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.service.ServiceException;
 
+import java.util.Locale;
+
 /** This class is used to initialize some system properties at beginning
  * of installation.
  */
 public class SetSystemPropertiesAction extends WizardAction {
     
     public void build(WizardBuilderSupport support) {
+        Locale [] locales = new Locale[3];
+        locales[0] = new Locale("zh","HK");
+        locales[1] = new Locale("zh","TW");
+        locales[2] = new Locale("zh","CN");
         try {
             support.putClass(Util.class.getName());
+            support.putResourceBundles("org.netbeans.installer.Bundle",locales);
         } catch (Exception ex) {
             System.out.println(ex.getLocalizedMessage());
             ex.printStackTrace();

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,10 +23,12 @@ import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.platform.win32.Win32RegistryService;
 import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.security.SecurityService;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 /** This class is used to initialize some system properties at begining
@@ -37,11 +39,16 @@ public class SetSystemPropertiesAction extends WizardAction {
     String installedJre = null;
     
     public void build(WizardBuilderSupport support) {
+        Locale [] locales = new Locale[3];
+        locales[0] = new Locale("zh","HK");
+        locales[1] = new Locale("zh","TW");
+        locales[2] = new Locale("zh","CN");
         try {
             support.putClass(Util.class.getName());
             support.putClass(RunCommand.class.getName());
             support.putRequiredService(SecurityService.NAME);
             support.putRequiredService(Win32RegistryService.NAME);
+            support.putResourceBundles("org.netbeans.installer.Bundle",locales);
         } catch (Exception ex) {
             System.out.println(ex.getLocalizedMessage());
             ex.printStackTrace();
