@@ -64,6 +64,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
     private RequestProcessor.Task       refreshViewTask;
     private Thread                      refreshViewThread;
 
+    private RequestProcessor.Task       onRefreshTask;
     private static final RequestProcessor   rp = new RequestProcessor("SubversionView", 1);  // NOI18N
 
     private final NoContentPanel noContentComponent = new NoContentPanel();
@@ -321,8 +322,14 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
      */ 
     private void onRefreshAction() {
         LifecycleManager.getDefault().saveAll();
-        // XXX call in async manner
-        refreshStatuses();
+        if (onRefreshTask != null) {
+            onRefreshTask.cancel();
+        }
+        onRefreshTask = Subversion.getInstance().postRequest(new Runnable() {
+            public void run() {
+                refreshStatuses();
+            }
+        });
     }
 
     /**
