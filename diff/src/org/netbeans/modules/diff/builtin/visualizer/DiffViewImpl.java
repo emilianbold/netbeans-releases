@@ -14,6 +14,7 @@
 package org.netbeans.modules.diff.builtin.visualizer;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
@@ -625,6 +626,14 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
 
     }
 
+    public int getInnerScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return jEditorPane1.getScrollableUnitIncrement(visibleRect, orientation, direction);
+    }
+
+    public int getInnerScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return jEditorPane1.getScrollableBlockIncrement(visibleRect, orientation, direction);
+    }
+    
     public int getInnerWidth() {
         Dimension d1 = jScrollPane1.getViewport().getView().getPreferredSize();
         Dimension d2 = jScrollPane2.getViewport().getView().getPreferredSize();
