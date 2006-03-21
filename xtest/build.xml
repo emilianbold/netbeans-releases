@@ -53,7 +53,8 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="src" destdir="${build.classes.dir}"
             deprecation="${build.compiler.deprecation}"
             debug="${build.compiler.debug}" source="1.4">
-            <classpath path="${basecp}"/> 
+            <classpath path="${basecp}"/>
+            <classpath path="${java.class.path}"/> 
         </javac>
     </target>
   
