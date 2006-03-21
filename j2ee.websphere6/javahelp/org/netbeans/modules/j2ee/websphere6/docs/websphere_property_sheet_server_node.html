@@ -14,16 +14,17 @@
 <p>You access this property sheet by right-clicking an IBM WebSphere application server instance node in the Runtime window and choosing Properties.</p>
 <h3>Properties</h3>
 <ul>
-<li><b>Display Name.</b> Specifies the name of your application server for display purposes in the Runtime window. This property is set when you register your application server in the IDE using the Add Server Instance wizard.</li>
-<li><b>URL.</b> Shows the full URL address that will be used when you deploy to this server instance. This property is read-only.</li>
-<li><b>SOAP Port.</b> Specifies the number of the port for the server SOAP connector. This property is read-only.</li>
-<li><b>HTTP Admin Port.</b> Specifies the number of the port to access the administration server. This property is read-only.</li>
-<li><b>HTTP Port.</b> Specifies the number of the TCP/IP port that the server listens on.  This property is read-only.</li>
+<li><b>Server Name.</b> Shows the name of your application server for display purposes in the Runtime window. This property is set when you register your application server in the IDE using the Add Server Instance wizard.</li>
+<li><b>Server Type.</b> Shows the type of application server. This property is set when you register your application server in the IDE using the Add Server Instance wizard.</li>
+<li><b>Connection tab.</b> Shows the connection and configuration information about the server instance. This information is set when you register your application server in the IDE using the Add Server Instance wizard.
+<ul>
+<li><b>Local/Remote.</b> Shows whether this is a local or remote server instance.</li>
+<li><b>Local Instances.</b> Lists the local server instances.</li>
+<li><b>Profile Path.</b> Shows the path to the root directory of the profile of the server instance. This property is read-only.</li>
+<li><b>Host.</b> </li>
+<li><b>Port.</b> Specifies the number of the TCP/IP port that the server listens on.  This property is read-only for a local server instance.</li>
 <li><b>Username.</b> Specifies the username the IDE will use when starting the server. The value you supplied when you registered the server instance is the default value for this field.</li>
-<li><b>Password.</b> Specifies the password required for the user specified in Username. The value you supplied when you registered the server instance is the default value for this field.</li>
-<li><b>Server Root.</b> Shows the root directory for the local server instance. This directory is the server's domain root. This property is read-only.</li>
-<li><b>Profile Root.</b> Shows the root directory of the profile of the server instance. This property is read-only.</li>
-<li><b>Debugger Port.</b> Specifies the number of the TCP/IP port that the IDE connects to when the server is started in debug mode.</li>
+</ul></li>
 </ul>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
