@@ -186,7 +186,9 @@ Microsystems, Inc. All Rights Reserved.
       
       <pathconvert property="modules.foreach" dirsep="/" pathsep=",">
           <path path="${modules.sorted}" />
-          <mapper type="glob" from="${nb_all}/*" to="*" />
+          <mapper>
+              <globmapper handledirsep="true" from="${nb_all}/*" to="*" />
+          </mapper>
       </pathconvert>
       
       <for-each startdir=".." target="conditional-nbm" locations="${modules.foreach}"/>
@@ -231,7 +233,9 @@ Microsystems, Inc. All Rights Reserved.
       
       <pathconvert property="modules.foreach" dirsep="/" pathsep=",">
           <path path="${modules.sorted}" />
-          <mapper type="glob" from="${nb_all}/*" to="*" />
+          <mapper>
+              <globmapper handledirsep="true" from="${nb_all}/*" to="*" />
+          </mapper>
       </pathconvert>
       
       <property name="export.interfaces" location="build/ModulesExportedInterfaces" />
