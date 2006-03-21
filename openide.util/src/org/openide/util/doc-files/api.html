@@ -591,7 +591,7 @@ full state of the instance itself, which must be stored.
 }
 <font class="comment">// later...
 </font><font class="type">String</font> <font class="variable-name">storedID</font> = someSettings.getChosenService();
-<font class="type">Lookup.Template</font> <font class="variable-name">templ</font> = <font class="keyword">new</font> <font class="type"><a href="../Lookup.Template.html#Lookup.Template(java.lang.Class,%20java.lang.String,%20java.lang.Object)">Lookup.Template</a></font>(MyService.<font class="keyword">class</font>, storedID, <font class="constant">null</font>);
+<font class="type">Lookup.Template</font> <font class="variable-name">templ</font> = <font class="keyword">new</font> <font class="type"><a href="../Lookup.Template.html#Lookup.Template(java.lang.Class,java.lang.String,java.lang.Object)">Lookup.Template</a></font>(MyService.<font class="keyword">class</font>, storedID, <font class="constant">null</font>);
 <font class="type">Iterator</font> <font class="variable-name">it</font> = Lookup.getDefault().lookup(templ).allInstances().iterator();
 <font class="keyword">if</font> (! it.hasNext()) <font class="comment">/* failed to find it... */</font>
 <font class="type">MyService</font> <font class="variable-name">instance</font> = (<font class="type">MyService</font>)it.next();
