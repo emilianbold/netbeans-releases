@@ -34,7 +34,7 @@ import java.util.Iterator;
 *
 * @author Ales Novak
 */
-public class WeakSet extends AbstractSet implements Cloneable, Serializable {
+public class WeakSet<E> extends AbstractSet<E> implements Cloneable, Serializable {
     static final long serialVersionUID = 3062376055928236721L;
 
     /** load factor */
@@ -47,14 +47,14 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
     private long modcount;
 
     /** Reference queue of collected weak refs */
-    private transient ReferenceQueue refq;
+    private transient ReferenceQueue<E> refq;
 
     /** Count of <tt>null</tt> in this set */
     long nullCount;
 
     /** An array of Entries */
-    private transient Entry[] entries;
-    transient Entry iterChain;
+    private transient Entry<E>[] entries;
+    transient Entry<E> iterChain;
 
     /** Constructs a new set. */
     public WeakSet() {
@@ -64,7 +64,7 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
     /** Constructs a new set containing the elements in the specified collection.
     * @param c a collection to add
     */
-    public WeakSet(Collection c) {
+    public WeakSet(Collection<? extends E> c) {
         this();
         addAll(c);
     }
@@ -90,8 +90,8 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
         modcount = 0;
         this.loadFactor = loadFactor;
         nullCount = 0;
-        refq = new ReferenceQueue();
-        entries = new Entry[initialCapacity];
+        refq = new ReferenceQueue<E>();
+        entries = Entry.createArray(initialCapacity);
         iterChain = null;
     }
 
@@ -99,7 +99,7 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
     *
     * @param o an Object to add
     */
-    public boolean add(Object o) {
+    public boolean add(E o) {
         if (o == null) {
             size++;
             nullCount++;
@@ -118,8 +118,8 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
         size++;
 
         int hash = hashIt(o);
-        Entry next = entries[hash];
-        iterChain = entries[hash] = new Entry(o, refq, next, iterChain);
+        Entry<E> next = entries[hash];
+        iterChain = entries[hash] = new Entry<E>(this, o, refq, next, iterChain);
         rehash();
 
         return true;
@@ -139,11 +139,11 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
 
     /** Returns a shallow copy of this WeakSet instance: the elements themselves are not cloned. */
     public Object clone() {
-        WeakSet nws = new WeakSet(1, loadFactor);
+        WeakSet<E> nws = new WeakSet<E>(1, loadFactor);
         nws.size = size;
         nws.nullCount = nullCount;
 
-        Entry[] cloned = new Entry[entries.length];
+        Entry<E>[] cloned = Entry.createArray(entries.length);
         nws.entries = cloned;
 
         for (int i = 0; i < cloned.length; i++) {
@@ -157,7 +157,7 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
             }
 
             // chains into nws iterator chain
-            Entry entry = cloned[i];
+            Entry<E> entry = cloned[i];
 
             while (entry != null) {
                 entry.chainIntoIter(nws.iterChain);
@@ -188,7 +188,7 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
     }
 
     /** Returns an iterator over the elements in this set. */
-    public Iterator iterator() {
+    public Iterator<E> iterator() {
         return new WeakSetIterator();
     }
 
@@ -229,9 +229,9 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
         return size;
     }
 
-    public Object[] toArray(Object[] array) {
-        ArrayList list = new ArrayList(array.length);
-        Iterator it = iterator();
+    public <T> T[] toArray(T[] array) {
+        ArrayList<E> list = new ArrayList<E>(array.length);
+        Iterator<E> it = iterator();
 
         while (it.hasNext()) {
             list.add(it.next());
@@ -241,8 +241,8 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
     }
 
     public Object[] toArray() {
-        ArrayList list = new ArrayList();
-        Iterator it = iterator();
+        ArrayList<E> list = new ArrayList<E>();
+        Iterator<E> it = iterator();
 
         while (it.hasNext()) {
             list.add(it.next());
@@ -273,7 +273,7 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
     /** Checks if the queue is empty if not pending weak refs are removed. */
     void checkRefQueue() {
         for (;;) {
-            Entry entry = (Entry) refq.poll();
+            Entry entry = Entry.class.cast(refq.poll());
 
             if (entry == null) {
                 break;
@@ -328,23 +328,24 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
         obtos.writeObject(toArray());
     }
 
+    @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream obtis) throws IOException, ClassNotFoundException {
         obtis.defaultReadObject();
 
         Object[] arr = (Object[]) obtis.readObject();
         entries = new Entry[(int) (size * 1.5)];
-        refq = new ReferenceQueue();
+        refq = new ReferenceQueue<E>();
 
         for (int i = 0; i < arr.length; i++) {
-            add(arr[i]);
+            add((E)arr[i]);
         }
     }
 
-    class WeakSetIterator implements Iterator {
-        Entry current;
-        Entry next;
-        Object currentObj;
-        Object nextObj;
+    class WeakSetIterator implements Iterator<E> {
+        Entry<E> current;
+        Entry<E> next;
+        E currentObj;
+        E nextObj;
         final long myModcount;
         long myNullCount;
 
@@ -354,13 +355,13 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
             current = null;
             next = null;
 
-            Entry ee = iterChain;
+            Entry<E> ee = iterChain;
 
             if (ee == null) {
                 return;
             }
 
-            Object o = ee.get();
+            E o = ee.get();
 
             while (ee.isEnqueued()) {
                 ee = ee.iterChainNext;
@@ -382,7 +383,7 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
             return ((myNullCount > 0) || (next != null));
         }
 
-        public Object next() {
+        public E next() {
             checkModcount();
             checkRefQueue();
 
@@ -432,16 +433,21 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
     }
 
     /** Entries of this set */
-    class Entry extends WeakReference {
-        // double linked list
-        Entry prev;
-        Entry next;
-        private final int hashcode;
-        Entry iterChainNext;
-        Entry iterChainPrev;
+    static class Entry<E> extends WeakReference<E> {
+        /** reference to outer WeakSet */
+        private WeakSet<E> set;
 
-        Entry(Object referenced, ReferenceQueue q, Entry next, Entry nextInIter) {
+        // double linked list
+        Entry<E> prev;
+        Entry<E> next;
+        private final int hashcode;
+        Entry<E> iterChainNext;
+        Entry<E> iterChainPrev;
+
+        Entry(WeakSet<E> set, E referenced, ReferenceQueue<E> q, Entry<E> next, Entry<E> nextInIter) {
             super(referenced, q);
+            this.set = set;
+
             this.next = next;
             this.prev = null;
 
@@ -450,7 +456,7 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
             }
 
             if (referenced != null) {
-                hashcode = hashIt(referenced);
+                hashcode = set.hashIt(referenced);
             } else {
                 hashcode = 0;
             }
@@ -458,7 +464,12 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
             chainIntoIter(nextInIter);
         }
 
-        void chainIntoIter(Entry nextInIter) {
+        @SuppressWarnings("unchecked")
+        static final <E> Entry<E>[] createArray(int size) {
+            return new Entry[size];
+        }
+
+        void chainIntoIter(Entry<E> nextInIter) {
             iterChainNext = nextInIter;
 
             if (nextInIter != null) {
@@ -489,11 +500,11 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
             if (iterChainPrev != null) {
                 iterChainPrev.iterChainNext = iterChainNext;
             } else { // root
-                iterChain = iterChainNext;
+                set.iterChain = iterChainNext;
             }
 
-            if (entries[hashcode] == this) {
-                entries[hashcode] = next;
+            if (set.entries[hashcode] == this) {
+                set.entries[hashcode] = next;
             }
 
             prev = null;
@@ -516,8 +527,8 @@ public class WeakSet extends AbstractSet implements Cloneable, Serializable {
             }
         }
 
-        public Entry clone(ReferenceQueue q) {
-            return new Entry(get(), q, ((next != null) ? (Entry) next.clone(q) : null), null);
+        public Entry<E> clone(ReferenceQueue<E> q) {
+            return new Entry<E>(set, get(), q, next != null ? next.clone(q) : null, null);
         }
     }
 }

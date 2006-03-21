@@ -83,7 +83,7 @@ public class Lookups {
      * @since 2.21
      *
      */
-    public static Lookup fixed(Object[] keys, InstanceContent.Convertor convertor) {
+    public static <T,R> Lookup fixed(T[] keys, InstanceContent.Convertor<? super T,R> convertor) {
         if (keys == null) {
             throw new NullPointerException();
         }

@@ -29,6 +29,8 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -49,7 +51,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
     Class listenerClass;
 
     /** weak reference to source */
-    private Reference source;
+    private Reference<Object> source;
 
     /**
      * @param listenerClass class/interface of the listener
@@ -81,7 +83,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         if (source == null) {
             this.source = null;
         } else {
-            this.source = new WeakReference(source);
+            this.source = new WeakReference<Object>(source);
         }
     }
 
@@ -116,11 +118,11 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         return getClass().getName() + "[" + ((listener == null) ? "null" : (listener.getClass().getName() + "]"));
     }
 
-    public static EventListener create(Class lType, Class apiType, EventListener l, Object source) {
+    public static <T extends EventListener> T create(Class<T> lType, Class<? super T> apiType, T l, Object source) {
         ProxyListener pl = new ProxyListener(lType, apiType, l);
         pl.setSource(source);
 
-        return (EventListener) pl.proxy;
+        return lType.cast(pl.proxy);
     }
 
     /** Weak property change listener
@@ -343,7 +345,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         private static Method equalsMth;
 
         /** Class -> Reference(Constructor) */
-        private static final java.util.WeakHashMap constructors = new java.util.WeakHashMap();
+        private static final Map<Class, Reference<Constructor>> constructors = new WeakHashMap<Class, Reference<Constructor>>();
 
         /** proxy generated for this listener */
         public final Object proxy;
@@ -360,7 +362,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
                 if (proxyConstructor == null) {
                     Class proxyClass = Proxy.getProxyClass(c.getClassLoader(), new Class[] { c });
                     proxyConstructor = proxyClass.getConstructor(new Class[] { InvocationHandler.class });
-                    constructors.put(c, new SoftReference(proxyConstructor));
+                    constructors.put(c, new SoftReference<Constructor>(proxyConstructor));
                 }
 
                 Object p;
@@ -457,7 +459,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
 
     /** Reference that also holds ref to WeakListenerImpl.
     */
-    private static final class ListenerReference extends WeakReference implements Runnable {
+    private static final class ListenerReference extends WeakReference<Object> implements Runnable {
         private static Class lastClass;
         private static String lastMethodName;
         private static Method lastRemove;
@@ -481,7 +483,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
             if (weakListener.source != source) {
                 // plan new cleanup into the activeReferenceQueue with this listener and 
                 // provided source
-                weakListener.source = new WeakReference(source) {
+                weakListener.source = new WeakReference<Object> (source) {
                             ListenerReference doNotGCRef = new ListenerReference(new Object(), weakListener);
                         };
             }

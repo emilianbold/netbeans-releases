@@ -12,7 +12,9 @@
  */
 package org.openide.util.lookup;
 
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup.Pair;
 import org.openide.util.lookup.AbstractLookup.ReferenceIterator;
 import org.openide.util.lookup.AbstractLookup.ReferenceToResult;
 
@@ -87,7 +89,8 @@ import java.util.*;
  *
  * @author  Jaroslav Tulach
  */
-final class InheritanceTree extends Object implements Serializable, AbstractLookup.Storage {
+final class InheritanceTree extends Object
+implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
     private static final long serialVersionUID = 1L;
 
     /** the root item (represents Object) */
@@ -96,12 +99,12 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
     /** Map of queried interfaces.
      * <p>Type: <code>Map&lt;Class, (Collection&lt;AbstractLookup.Pair&gt; | AbstractLookup.Pair)&gt;</code>
      */
-    private transient Map interfaces;
+    private transient Map<Class,Object> interfaces;
 
     /** Map (Class, ReferenceToResult) of all listeners that are waiting in
      * changes in class Class
      */
-    private transient Map reg;
+    private transient Map<Class,ReferenceToResult> reg;
 
     /** Constructor
      */
@@ -135,7 +138,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
 
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         object = (Node) ois.readObject();
-        interfaces = new WeakHashMap();
+        interfaces = new WeakHashMap<Class,Object>();
 
         String clazz;
         ClassLoader l = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
@@ -157,9 +160,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
     * @return true if the Item has been added for the first time or false if some other
     *    item equal to this one already existed in the lookup
     */
-    public boolean add(AbstractLookup.Pair item, Object transaction) {
-        ArrayList affected = (ArrayList) transaction;
-
+    public boolean add(AbstractLookup.Pair<?> item, ArrayList<Class> affected) {
         Node node = registerClass(object, item);
 
         affected.add(node.getType());
@@ -179,9 +180,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
 
     /** Removes an item.
     */
-    public void remove(AbstractLookup.Pair item, Object transaction) {
-        ArrayList affected = (ArrayList) transaction;
-
+    public void remove(AbstractLookup.Pair item, ArrayList<Class> affected) {
         Node n = removeClass(object, item);
 
         if (n != null) {
@@ -195,9 +194,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
     * @param retain collection of Pairs to keep them in
     * @param notify set of Classes that has possibly changed
     */
-    public void retainAll(Map retain, Object transaction) {
-        ArrayList notify = (ArrayList) transaction;
-
+    public void retainAll(Map retain, ArrayList<Class> notify) {
         retainAllInterface(retain, notify);
         retainAllClasses(object, retain, notify);
     }
@@ -207,11 +204,12 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
     * @return enumeration of Item
     * @see #unsorted
     */
-    public Enumeration lookup(Class clazz) {
+    @SuppressWarnings("unchecked")
+    public <T> Enumeration<Pair<T>> lookup(Class<T> clazz) {
         if ((clazz != null) && clazz.isInterface()) {
-            return searchInterface(clazz);
+            return (Enumeration)searchInterface(clazz);
         } else {
-            return searchClass(object, clazz);
+            return (Enumeration)searchClass(object, clazz);
         }
     }
 
@@ -317,7 +315,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
     * @return node that represents clazz in the tree or null if the clazz is not
     *    represented under the node n
     */
-    private Node classToNode(final Node n, final Class clazz) {
+    private Node classToNode(final Node n, final Class<?> clazz) {
         if (!n.accepts(clazz)) {
             // nothing from us
             return null;
@@ -343,12 +341,12 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
 
                 if ((found != null) && ch.deserialized()) {
                     class VerifyJob implements AbstractLookup.ISE.Job {
-                        private AbstractLookup.Pair[] pairs;
+                        private AbstractLookup.Pair<?>[] pairs;
                         private boolean[] answers;
 
-                        public VerifyJob(Collection items) {
+                        public VerifyJob(Collection<Pair> items) {
                             if (items != null) {
-                                pairs = (AbstractLookup.Pair[]) items.toArray(new AbstractLookup.Pair[0]);
+                                pairs = items.toArray(new AbstractLookup.Pair[0]);
                             }
                         }
 
@@ -377,13 +375,13 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
 
                             if (n.children != null) {
                                 // consolidate all nodes that represent the same class
-                                HashMap nodes = new HashMap(n.children.size() * 3);
+                                HashMap<Class,Node> nodes = new HashMap<Class,Node>(n.children.size() * 3);
 
                                 Iterator child = n.children.iterator();
 
                                 while (child.hasNext()) {
                                     Node node = extractNode(child);
-                                    Node prev = (Node) nodes.put(node.getType(), node);
+                                    Node prev = nodes.put(node.getType(), node);
 
                                     if (prev != null) {
                                         child.remove();
@@ -455,10 +453,10 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
                     boolArr = new boolean[n.items.size()];
 
                     int i = 0;
-                    Iterator it = n.items.iterator();
+                    Iterator<Pair> it = n.items.iterator();
 
                     while (it.hasNext()) {
-                        AbstractLookup.Pair item = (AbstractLookup.Pair) it.next();
+                        AbstractLookup.Pair<?> item = it.next();
                         arr[i] = item;
                         boolArr[i] = item.instanceOf(clazz);
                         i++;
@@ -482,10 +480,10 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
             }
 
             public void internal() {
-                ArrayList reparent = null;
+                ArrayList<Node> reparent = null;
 
                 if (n.children == null) {
-                    n.children = new ArrayList();
+                    n.children = new ArrayList<Node>();
                 } else {
                     // scan thru all my nodes if some of them are not a subclass
                     // of clazz => then they would need to become child of newNode
@@ -500,7 +498,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
 
                         if (clazz.isAssignableFrom(r.getType())) {
                             if (reparent == null) {
-                                reparent = new ArrayList();
+                                reparent = new ArrayList<Node>();
                             }
 
                             reparent.add(r);
@@ -558,7 +556,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
     /** Search for a requested class.
     * @return enumeration of Pair
     */
-    private Enumeration searchClass(Node n, Class clazz) {
+    private Enumeration<Pair> searchClass(Node n, Class<?> clazz) {
         if (clazz != null) {
             n = classToNode(n, clazz);
         }
@@ -579,14 +577,14 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
      * @param notify collection of classes will be changed
      * @return <code>true<code> if some items were changed and node items and children are emptied,
      * those nodes, excluding root, will be removed from tree */
-    private boolean retainAllClasses(Node node, Map retain, Collection notify) {
+    private boolean retainAllClasses(Node node, Map retain, Collection<Class> notify) {
         boolean retained = false;
 
         if ((node.items != null) && (retain != null)) {
-            Iterator it = node.items.iterator();
+            Iterator<Pair> it = node.items.iterator();
 
             while (it.hasNext()) {
-                AbstractLookup.Pair item = (AbstractLookup.Pair) it.next();
+                AbstractLookup.Pair<?> item = it.next();
                 AbstractLookup.Info n = (AbstractLookup.Info) retain.remove(item);
 
                 if (n == null) {
@@ -634,38 +632,41 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
      * @param n node to create enumeration for
      * @return enumeration of Pairs
      */
-    private static Enumeration nodeToEnum(Node n) {
+    private static Enumeration<Pair> nodeToEnum(Node n) {
         if (n.children == null) {
             // create a simple enumeration because we do not have children
-            return (n.items == null) ? org.openide.util.Enumerations.empty() : Collections.enumeration(n.items);
+            Enumeration<Pair> e;
+            if (n.items == null) {
+                e = Enumerations.empty();
+            } else {
+                e = Collections.enumeration(n.items);
+            }
+            return e;
         }
 
         // we have found what we need
         // now we have to just build the enumeration
-        class DeepAndItems implements org.openide.util.Enumerations.Processor {
-            public Object process(Object obj, Collection toAdd) {
-                Node n2 = (Node) obj;
-
+        class DeepAndItems implements Enumerations.Processor<Node,Enumeration<Pair>> {
+            public Enumeration<Pair> process(Node n2, Collection<Node> toAdd) {
                 if (n2.children != null) {
                     toAdd.addAll(n2.children);
                 }
 
                 if ((n2.items == null) || n2.items.isEmpty()) {
-                    return org.openide.util.Enumerations.empty();
+                    return Enumerations.empty();
                 } else {
                     return Collections.enumeration(n2.items);
                 }
             }
         }
 
-        Enumeration en = org.openide.util.Enumerations.queue(
-                
+        Enumeration<Enumeration<Pair>> en = Enumerations.queue(
             // initial node is our current one
-            org.openide.util.Enumerations.singleton(n), new DeepAndItems()
-            );
-
+            Enumerations.singleton(n), new DeepAndItems()
+        );
+        Enumeration<Pair> all = Enumerations.concat(en);
         // create enumeration of Items
-        return new NeedsSortEnum(org.openide.util.Enumerations.concat(en));
+        return new NeedsSortEnum<Pair>(all);
     }
 
     //
@@ -677,22 +678,23 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
     * @param affected list of classes that were affected
     * @return false if similar item has already been registered
     */
-    private boolean registerInterface(AbstractLookup.Pair item, Collection affected) {
+    @SuppressWarnings("unchecked")
+    private boolean registerInterface(AbstractLookup.Pair<?> item, Collection<Class> affected) {
         if (interfaces == null) {
             return true;
         }
 
-        Iterator it = interfaces.entrySet().iterator();
+        Iterator<Map.Entry<Class,Object>> it = interfaces.entrySet().iterator();
 
         while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry) it.next();
-            Class iface = (Class) entry.getKey();
+            Map.Entry<Class,Object> entry = it.next();
+            Class<?> iface = entry.getKey();
 
             if (item.instanceOf(iface)) {
                 Object value = entry.getValue();
 
                 if (value instanceof Collection) {
-                    Collection set = (Collection) value;
+                    Collection<Object> set = (Collection<Object>) value;
 
                     if (!set.add(item)) {
                         // item is already there, probably (if everything is correct) is registered in 
@@ -707,7 +709,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
                     }
 
                     // otherwise replace the single item with ArrayList
-                    ArrayList ll = new ArrayList(3);
+                    ArrayList<Object> ll = new ArrayList<Object>(3);
                     ll.add(value);
                     ll.add(item);
                     entry.setValue(ll);
@@ -724,6 +726,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
     * @param item item to register
     * @param affected list of classes that were affected
     */
+    @SuppressWarnings("unchecked")
     private void removeInterface(AbstractLookup.Pair item, Collection affected) {
         if (interfaces == null) {
             return;
@@ -764,6 +767,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
     *    (AbstractLookup.Pair -> AbstractLookup.Info)
     * @param affected list of classes that were affected
     */
+    @SuppressWarnings("unchecked")
     private void retainAllInterface(Map retainItems, Collection affected) {
         if (interfaces == null) {
             return;
@@ -775,7 +779,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
             Map.Entry entry = (Map.Entry) it.next();
             Object value = entry.getValue();
 
-            HashMap retain = new HashMap(retainItems);
+            HashMap<?,?> retain = new HashMap(retainItems);
 
             Iterator elems;
             boolean multi = value instanceof Collection;
@@ -843,7 +847,8 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
     * @param clazz class to search for
     * @return enumeration of Items
     */
-    private Enumeration searchInterface(final Class clazz) {
+    @SuppressWarnings("unchecked")
+    private Enumeration<Pair> searchInterface(final Class<?> clazz) {
         if (interfaces == null) {
             // first call for interface, only initialize
             interfaces = new WeakHashMap();
@@ -895,7 +900,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
                 return Collections.enumeration((Collection) obj);
             } else {
                 // single item mode
-                return org.openide.util.Enumerations.singleton(obj);
+                return org.openide.util.Enumerations.singleton((Pair)obj);
             }
         }
     }
@@ -933,7 +938,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
 
         if (n.items != null) {
             i = 0;
-            it = new ArrayList(n.items).iterator();
+            it = new ArrayList<Pair>(n.items).iterator();
 
             while (it.hasNext()) {
                 AbstractLookup.Pair p = (AbstractLookup.Pair) it.next();
@@ -963,12 +968,12 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
         }
     }
 
-    public ReferenceToResult registerReferenceToResult(ReferenceToResult newRef) {
+    public ReferenceToResult registerReferenceToResult(ReferenceToResult<?> newRef) {
         if (reg == null) {
-            reg = new HashMap();
+            reg = new HashMap<Class,ReferenceToResult>();
         }
 
-        Class clazz = newRef.template.getType();
+        Class<? extends Object> clazz = newRef.template.getType();
 
         // initialize the data structures if not yet
         lookup(clazz);
@@ -983,13 +988,11 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
         return (reg == null) ? null : (ReferenceToResult) reg.get(templ.getType());
     }
 
-    public Object beginTransaction(int ensure) {
-        return new ArrayList();
+    public ArrayList<Class> beginTransaction(int ensure) {
+        return new ArrayList<Class>();
     }
 
-    public void endTransaction(Object transaction, Set allAffectedResults) {
-        ArrayList list = (ArrayList) transaction;
-
+    public void endTransaction(ArrayList<Class> list, Set<AbstractLookup.R> allAffectedResults) {
         if (list.size() == 1) {
             // probably the most common case
             collectListeners(allAffectedResults, (Class) list.get(0));
@@ -1007,7 +1010,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
      * @param allAffectedResults adds Results into this set
      * @param c the class that has changed
      */
-    private void collectListeners(Set allAffectedResults, Class c) {
+    private void collectListeners(Set<AbstractLookup.R> allAffectedResults, Class c) {
         if (reg == null) {
             return;
         }
@@ -1017,7 +1020,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
             ReferenceIterator it = new ReferenceIterator(first);
 
             while (it.next()) {
-                Object result = it.current().getResult();
+                AbstractLookup.R result = it.current().getResult();
 
                 if (allAffectedResults != null) {
                     // add result
@@ -1046,14 +1049,14 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
 
     /** Node in the tree.
     */
-    static final class Node extends WeakReference implements Serializable {
+    static final class Node extends WeakReference<Class> implements Serializable {
         static final long serialVersionUID = 3L;
 
         /** children nodes */
-        public ArrayList children; // List<Node>
+        public ArrayList<Node> children;
 
         /** list of items assigned to this node (suspect to be subclasses) */
-        public List items; // List<AbstractLookup.Pair>
+        public List<Pair> items;
 
         /** Constructor.
         */
@@ -1072,7 +1075,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
             if (items.isEmpty()) {
                 items = null;
             } else {
-                items = new ArrayList(items);
+                items = new ArrayList<Pair>(items);
             }
 
             return true;
@@ -1082,7 +1085,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
          */
         public void markDeserialized() {
             if (items == null || items == Collections.EMPTY_LIST) {
-                items = Collections.EMPTY_LIST;
+                items = Collections.emptyList();
             } else {
                 items = Collections.synchronizedList(items);
             }
@@ -1090,8 +1093,8 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
 
         /** Getter for the type associated with this node.
          */
-        public Class getType() {
-            Class c = (Class) get();
+        public Class<?> getType() {
+            Class<?> c = get();
 
             // if  garbage collected, then return a garbage
             return (c == null) ? Void.TYPE : c;
@@ -1099,7 +1102,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
 
         /** Checks whether a node can represent an class.
         */
-        public boolean accepts(Class clazz) {
+        public boolean accepts(Class<?> clazz) {
             if (getType() == Object.class) {
                 return true;
             }
@@ -1109,7 +1112,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
 
         /** Checks whether item is instance of this node.
         */
-        public boolean accepts(AbstractLookup.Pair item) {
+        public boolean accepts(AbstractLookup.Pair<?> item) {
             if (getType() == Object.class) {
                 // Object.class
                 return true;
@@ -1122,9 +1125,9 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
         * @param item the item
         * @return true if item has been added as new
         */
-        public boolean assignItem(InheritanceTree tree, AbstractLookup.Pair item) {
+        public boolean assignItem(InheritanceTree tree, AbstractLookup.Pair<?> item) {
             if ((items == null) || (items == Collections.EMPTY_LIST)) {
-                items = new ArrayList();
+                items = new ArrayList<Pair>();
                 items.add(item);
 
                 return true;
@@ -1164,18 +1167,18 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
         static final long serialVersionUID = 1L;
         private static ClassLoader l;
         private String clazzName;
-        private transient Class clazz;
-        private ArrayList children;
-        private ArrayList items;
+        private transient Class<?> clazz;
+        private ArrayList<Node> children;
+        private ArrayList<Pair> items;
 
         public R(Node n) {
             this.clazzName = n.getType().getName();
             this.children = n.children;
 
             if (n.items instanceof ArrayList || (n.items == null)) {
-                this.items = (ArrayList) n.items;
+                this.items = (ArrayList<Pair>) n.items;
             } else {
-                this.items = new ArrayList(n.items);
+                this.items = new ArrayList<Pair>(n.items);
             }
         }
 
@@ -1204,10 +1207,10 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
     /** Just a marker class to be able to do instanceof and find out
      * that this enumeration is not sorted
      */
-    private static final class NeedsSortEnum implements Enumeration {
-        private Enumeration en;
+    private static final class NeedsSortEnum<T> implements Enumeration<T> {
+        private Enumeration<T> en;
 
-        public NeedsSortEnum(Enumeration en) {
+        public NeedsSortEnum(Enumeration<T> en) {
             this.en = en;
         }
 
@@ -1215,7 +1218,7 @@ final class InheritanceTree extends Object implements Serializable, AbstractLook
             return en.hasMoreElements();
         }
 
-        public Object nextElement() {
+        public T nextElement() {
             return en.nextElement();
         }
     }

@@ -116,7 +116,7 @@ ALL:
 
     /** Data structure to needed to store the */
     public void init(String[] original, String[] newversion) {
-        ArrayList root = new ArrayList();
+        ArrayList<Object> root = new ArrayList<Object>();
 
         for (int i = 0; i < original.length; i++) {
             placeString(root, original[i], i);
@@ -131,7 +131,7 @@ ALL:
      * @param s string to place there
      * @param indx index to put at the end node
      */
-    private static void placeString(List item, String s, int indx) {
+    private static void placeString(List<Object> item, String s, int indx) {
         if (s.length() == 0) {
             item.add(new Integer(indx));
 
@@ -140,7 +140,7 @@ ALL:
 
         char f = s.charAt(0);
 
-        ListIterator it = item.listIterator();
+        ListIterator<Object> it = item.listIterator();
 
         while (it.hasNext()) {
             Object o = it.next();
@@ -159,7 +159,7 @@ ALL:
                             // next is the list or null
                             List listForPref = (List) it.next();
 
-                            ArrayList switchList = new ArrayList();
+                            ArrayList<Object> switchList = new ArrayList<Object>();
                             it.set(switchList);
 
                             switchList.add(pref.substring(i));
@@ -168,7 +168,7 @@ ALL:
                             if (i >= s.length()) {
                                 switchList.add(new Integer(indx));
                             } else {
-                                ArrayList terminalList = new ArrayList();
+                                ArrayList<Object> terminalList = new ArrayList<Object>();
                                 terminalList.add(new Integer(indx));
 
                                 switchList.add(s.substring(i));
@@ -182,7 +182,7 @@ ALL:
                     //
                     // the new string is longer than the existing recursive add
                     //
-                    List switchList = (List) it.next();
+                    List<Object> switchList = nextList(it);
                     placeString(switchList, s.substring(pref.length()), indx);
 
                     return;
@@ -193,11 +193,17 @@ ALL:
         //
         // ok new prefix in this item
         //
-        ArrayList id = new ArrayList();
+        ArrayList<Object> id = new ArrayList<Object>();
         id.add(new Integer(indx));
 
         item.add(s);
         item.add(id);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Object> nextList(final ListIterator<Object> it) {
+        List<Object> switchList = (List<Object>) it.next();
+        return switchList;
     }
 
     /** Compress tree of Lists into tree of Objects.

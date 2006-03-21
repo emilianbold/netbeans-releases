@@ -134,7 +134,7 @@ public abstract class Lookup {
      * @return an object implementing the given class or <code>null</code> if no such
      *         implementation is found
      */
-    public abstract Object lookup(Class clazz);
+    public abstract <T> T lookup(Class<T> clazz);
 
     /** The general lookup method. Callers can get list of all instances and classes
      * that match the given <code>template</code>, request more info about
@@ -147,7 +147,7 @@ public abstract class Lookup {
      * @param template a template describing the services to look for
      * @return an object containing the results
      */
-    public abstract Result lookup(Template template);
+    public abstract <T> Result<T> lookup(Template<T> template);
 
     /** Look up the first item matching a given template.
      * Includes not only the instance but other associated information.
@@ -156,11 +156,10 @@ public abstract class Lookup {
      *
      * @since 1.8
      */
-    public Item lookupItem(Template template) {
-        Result res = lookup(template);
-        Iterator it = res.allItems().iterator();
-
-        return it.hasNext() ? (Item) it.next() : null;
+    public <T> Item<T> lookupItem(Template<T> template) {
+        Result<T> res = lookup(template);
+        Iterator<? extends Item<T>> it = res.allItems().iterator();
+        return it.hasNext() ? it.next() : null;
     }
 
     /**
@@ -183,18 +182,18 @@ public abstract class Lookup {
 
     /** Template defining a pattern to filter instances by.
      */
-    public static final class Template extends Object {
+    public static final class Template<T> extends Object {
         /** cached hash code */
         private int hashCode;
 
         /** type of the service */
-        private Class type;
+        private Class<T> type;
 
         /** identity to search for */
         private String id;
 
         /** instance to search for */
-        private Object instance;
+        private T instance;
 
         /** General template to find all possible instances.
          * @deprecated Use <code>new Template (Object.class)</code> which
@@ -208,7 +207,7 @@ public abstract class Lookup {
         /** Create a simple template matching by class.
          * @param type the class of service we are looking for (subclasses will match)
          */
-        public Template(Class type) {
+        public Template(Class<T> type) {
             this(type, null, null);
         }
 
@@ -217,10 +216,15 @@ public abstract class Lookup {
          * @param id the ID of the item/service we are looking for or <code>null</code> to leave unspecified
          * @param instance a specific known instance to look for or <code>null</code> to leave unspecified
          */
-        public Template(Class type, String id, Object instance) {
-            this.type = (type == null) ? Object.class : type;
+        public Template(Class<T> type, String id, T instance) {
+            this.type = extractType(type);
             this.id = id;
             this.instance = instance;
+        }
+
+        @SuppressWarnings("unchecked")
+        private Class<T> extractType(Class<T> type) {
+            return (type == null) ? (Class<T>)Object.class : type;
         }
 
         /** Get the class (or superclass or interface) to search for.
@@ -228,7 +232,7 @@ public abstract class Lookup {
          * this will match any instance.
          * @return the class to search for
          */
-        public Class getType() {
+        public Class<T> getType() {
             return type;
         }
 
@@ -250,7 +254,7 @@ public abstract class Lookup {
          *
          * @since 1.8
          */
-        public Object getInstance() {
+        public T getInstance() {
             return instance;
         }
 
@@ -317,7 +321,7 @@ public abstract class Lookup {
      * Also permits listening to changes in the result.
      * Result can contain duplicate items.
      */
-    public static abstract class Result extends Object {
+    public static abstract class Result<T> extends Object {
         /** Registers a listener that is invoked when there is a possible
          * change in this result.
          *
@@ -334,7 +338,7 @@ public abstract class Lookup {
          * should be List instead of Collection, but it is too late to change it.
          * @return unmodifiable collection of all instances that will never change its content
          */
-        public abstract java.util.Collection allInstances();
+        public abstract java.util.Collection<? extends T> allInstances();
 
         /** Get all classes represented in the result.
          * That is, the set of concrete classes
@@ -344,8 +348,8 @@ public abstract class Lookup {
          *
          * @since 1.8
          */
-        public java.util.Set allClasses() {
-            return java.util.Collections.EMPTY_SET;
+        public java.util.Set<Class<? extends T>> allClasses() {
+            return java.util.Collections.emptySet();
         }
 
         /** Get all registered items.
@@ -356,8 +360,8 @@ public abstract class Lookup {
          *
          * @since 1.8
          */
-        public java.util.Collection allItems() {
-            return java.util.Collections.EMPTY_SET;
+        public java.util.Collection<? extends Item<T>> allItems() {
+            return java.util.Collections.emptyList();
         }
     }
 
@@ -367,16 +371,16 @@ public abstract class Lookup {
      *
      * @since 1.25
      */
-    public static abstract class Item extends Object {
+    public static abstract class Item<T> extends Object {
         /** Get the instance itself.
          * @return the instance or null if the instance cannot be created
          */
-        public abstract Object getInstance();
+        public abstract T getInstance();
 
         /** Get the implementing class of the instance.
          * @return the class of the item
          */
-        public abstract Class getType();
+        public abstract Class<? extends T> getType();
 
         // XXX can it be null??
 
@@ -425,11 +429,12 @@ public abstract class Lookup {
         Empty() {
         }
 
-        public Object lookup(Class clazz) {
+        public <T> T lookup(Class<T> clazz) {
             return null;
         }
 
-        public Result lookup(Template template) {
+        @SuppressWarnings("unchecked")
+        public <T> Result<T> lookup(Template<T> template) {
             return NO_RESULT;
         }
     }

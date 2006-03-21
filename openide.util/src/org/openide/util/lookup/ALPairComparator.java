@@ -13,14 +13,15 @@
 package org.openide.util.lookup;
 
 import java.util.Comparator;
+import org.openide.util.lookup.AbstractLookup.Pair;
 
 
 /** Implementation of comparator for AbstractLookup.Pair
  *
  * @author  Jaroslav Tulach
  */
-final class ALPairComparator implements Comparator {
-    public static final Comparator DEFAULT = new ALPairComparator();
+final class ALPairComparator implements Comparator<Pair<?>> {
+    public static final Comparator<Pair<?>> DEFAULT = new ALPairComparator();
 
     /** Creates a new instance of ALPairComparator */
     private ALPairComparator() {
@@ -28,10 +29,7 @@ final class ALPairComparator implements Comparator {
 
     /** Compares two items.
     */
-    public int compare(Object obj, Object obj1) {
-        AbstractLookup.Pair i1 = (AbstractLookup.Pair) obj;
-        AbstractLookup.Pair i2 = (AbstractLookup.Pair) obj1;
-
+    public int compare(Pair<?> i1, Pair<?> i2) {
         int result = i1.getIndex() - i2.getIndex();
 
         if (result == 0) {

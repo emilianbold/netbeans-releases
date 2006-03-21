@@ -52,7 +52,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
     /** Name of property for the action's display icon, if textual. */
     private static final String PROP_ICON_TEXTUAL = "iconTextual"; // NOI18N
     private static ImageIcon BLANK_ICON = null;
-    private static final Set relativeIconResourceClasses = new HashSet(200); // Set<String>
+    private static final Set<String> relativeIconResourceClasses = new HashSet<String>(200);
 
     // Matches NB 3.4 w/ openide-compat.jar; see #26491
     private static final long serialVersionUID = -8361232596876856810L;
@@ -74,8 +74,8 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
     * @exception ClassCastException if the class is not <code>SystemAction</code>
     * @exception IllegalArgumentException if the instance cannot be created
     */
-    public static SystemAction get(Class actionClass) {
-        return (SystemAction) findObject(actionClass, true);
+    public static <T extends SystemAction> T get(Class<T> actionClass) {
+        return findObject(actionClass, true);
     }
 
     /** Get a human presentable name of the action.
@@ -332,7 +332,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
     * @return an array of both sets of actions in the same order
     */
     public static SystemAction[] linkActions(SystemAction[] actions1, SystemAction[] actions2) {
-        List l = new Vector(Arrays.asList(actions1));
+        List<SystemAction> l = new Vector<SystemAction>(Arrays.asList(actions1));
         l.addAll(Arrays.asList(actions2));
 
         return (SystemAction[]) l.toArray(actions1);

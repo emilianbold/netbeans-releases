@@ -37,11 +37,11 @@ import java.util.Map;
  * </ol>
  * @author Jesse Glick
  */
-final class TimedSoftReference extends SoftReference implements Runnable {
+final class TimedSoftReference<T> extends SoftReference<T> implements Runnable {
     private static final int TIMEOUT = 30000;
     private static final RequestProcessor RP = new RequestProcessor("TimedSoftReference"); // NOI18N
     private RequestProcessor.Task task;
-    private Object o;
+    private T o;
     private final Map m;
     private final Object k;
 
@@ -56,7 +56,7 @@ final class TimedSoftReference extends SoftReference implements Runnable {
      * @param m a map in which this reference may serve as a value
      * @param k the key whose value in <code>m</code> may be this reference
      */
-    public TimedSoftReference(Object o, Map m, Object k) {
+    public TimedSoftReference(T o, Map m, Object k) {
         super(o, Utilities.activeReferenceQueue());
         this.o = o;
         this.m = m;
@@ -86,7 +86,7 @@ final class TimedSoftReference extends SoftReference implements Runnable {
         }
     }
 
-    public Object get() {
+    public T get() {
         synchronized (m) {
             if (o == null) {
                 o = super.get();

@@ -76,7 +76,7 @@ final class UtilitiesCompositeActionMap extends ActionMap {
     }
 
     private Object[] keys(boolean all) {
-        java.util.HashSet keys = new java.util.HashSet();
+        java.util.HashSet<Object> keys = new java.util.HashSet<Object>();
 
         Component c = component;
 
@@ -85,7 +85,7 @@ final class UtilitiesCompositeActionMap extends ActionMap {
                 javax.swing.ActionMap m = ((JComponent) c).getActionMap();
 
                 if (m != null) {
-                    java.util.List l;
+                    java.util.List<Object> l;
 
                     if (all) {
                         l = java.util.Arrays.asList(m.allKeys());

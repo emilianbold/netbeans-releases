@@ -83,10 +83,10 @@ public class AbstractLookupMemoryTest extends NbTestCase {
         c.addPair ((EmptyPair)ignore[1]);
         assertSize ("Is bigger I guess (not counting the pair sizes)", Collections.singleton (l), 56, ignore);
         
-        c.setPairs(Arrays.asList (ignore).subList (0, 3));
+        c.setPairs((Collection)Arrays.asList (ignore).subList (0, 3));
         assertSize ("Even bigger (not counting the pair sizes)", Collections.singleton (l), 64, ignore);
         
-        c.setPairs(Arrays.asList (ignore).subList (0, 4));
+        c.setPairs((Collection)Arrays.asList (ignore).subList (0, 4));
         assertSize ("Now not that much(not counting the pair sizes)", Collections.singleton (l), 64, ignore);
         
         Lookup.Result res = l.lookup (t);

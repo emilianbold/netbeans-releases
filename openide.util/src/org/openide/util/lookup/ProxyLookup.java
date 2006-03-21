@@ -37,7 +37,7 @@ public class ProxyLookup extends Lookup {
     private Object lookups;
 
     /** map of templates to currently active results */
-    private HashMap results;
+    private HashMap<Template<?>,Reference<R>> results;
 
     /** Create a proxy to some other lookups.
      * @param lookups the initial delegates
@@ -106,15 +106,15 @@ public class ProxyLookup extends Lookup {
      * @since 1.19 protected
      */
     protected final void setLookups(Lookup[] lookups) {
-        Reference[] arr;
-        HashSet newL;
-        HashSet current;
+        Collection<Reference<R>> arr;
+        HashSet<Lookup> newL;
+        HashSet<Lookup> current;
         Lookup[] old;
 
         synchronized (this) {
             old = getLookups(false);
-            current = new HashSet(Arrays.asList(old));
-            newL = new HashSet(Arrays.asList(lookups));
+            current = new HashSet<Lookup>(Arrays.asList(old));
+            newL = new HashSet<Lookup>(Arrays.asList(lookups));
 
             setLookupsNoFire(lookups);
             
@@ -123,9 +123,9 @@ public class ProxyLookup extends Lookup {
                 return;
             }
 
-            arr = (Reference[]) results.values().toArray(new Reference[0]);
+            arr = new ArrayList<Reference<R>>(results.values());
 
-            HashSet removed = new HashSet(current);
+            HashSet<Lookup> removed = new HashSet<Lookup>(current);
             removed.removeAll(newL); // current contains just those lookups that have disappeared
             newL.removeAll(current); // really new lookups
 
@@ -134,9 +134,8 @@ public class ProxyLookup extends Lookup {
                 return;
             }
 
-            for (int i = 0; i < arr.length; i++) {
-                R r = (R) arr[i].get();
-
+            for (Reference<R> ref : arr) {
+                R r = ref.get();
                 if (r != null) {
                     r.lookupChange(newL, removed, old, lookups);
                 }
@@ -144,10 +143,9 @@ public class ProxyLookup extends Lookup {
         }
 
         // this cannot be done from the synchronized block
-        ArrayList evAndListeners = new ArrayList();
-        for (int i = 0; i < arr.length; i++) {
-            R r = (R) arr[i].get();
-
+        ArrayList<Object> evAndListeners = new ArrayList<Object>();
+        for (Reference<R> ref : arr) {
+            R<?> r = ref.get();
             if (r != null) {
                 r.collectFires(evAndListeners);
             }
@@ -171,16 +169,16 @@ public class ProxyLookup extends Lookup {
      * @param template the template of the query
      * @since 1.31
      */
-    protected void beforeLookup(Template template) {
+    protected void beforeLookup(Template<?> template) {
     }
 
-    public final Object lookup(Class clazz) {
-        beforeLookup(new Template(clazz));
+    public final <T> T lookup(Class<T> clazz) {
+        beforeLookup(new Template<T>(clazz));
 
         Lookup[] lookups = this.getLookups(false);
 
         for (int i = 0; i < lookups.length; i++) {
-            Object o = lookups[i].lookup(clazz);
+            T o = lookups[i].lookup(clazz);
 
             if (o != null) {
                 return o;
@@ -190,13 +188,13 @@ public class ProxyLookup extends Lookup {
         return null;
     }
 
-    public final Item lookupItem(Template template) {
+    public final <T> Item<T> lookupItem(Template<T> template) {
         beforeLookup(template);
 
         Lookup[] lookups = this.getLookups(false);
 
         for (int i = 0; i < lookups.length; i++) {
-            Item o = lookups[i].lookupItem(template);
+            Item<T> o = lookups[i].lookupItem(template);
 
             if (o != null) {
                 return o;
@@ -206,34 +204,37 @@ public class ProxyLookup extends Lookup {
         return null;
     }
 
-    public final synchronized Result lookup(Lookup.Template template) {
-        R r;
+    @SuppressWarnings("unchecked")
+    private static <T> R<T> convertResult(R r) {
+        return (R<T>)r;
+    }
 
+    public final synchronized <T> Result<T> lookup(Lookup.Template<T> template) {
         if (results != null) {
-            Reference ref = (Reference) results.get(template);
-            r = (ref == null) ? null : (R) ref.get();
+            Reference<R> ref = results.get(template);
+            R r = (ref == null) ? null : ref.get();
 
             if (r != null) {
-                return r;
+                return convertResult(r);
             }
         } else {
-            results = new HashMap();
+            results = new HashMap<Template<?>,Reference<R>>();
         }
 
-        r = new R(template);
-        results.put(template, new java.lang.ref.SoftReference(r));
+        R<T> newR = new R<T>(template);
+        results.put(template, new java.lang.ref.SoftReference<R>(newR));
 
-        return r;
+        return newR;
     }
 
     /** Unregisters a template from the has map.
      */
-    private final synchronized void unregisterTemplate(Template template) {
+    private final synchronized void unregisterTemplate(Template<?> template) {
         if (results == null) {
             return;
         }
 
-        Reference ref = (Reference) results.remove(template);
+        Reference<R> ref = results.remove(template);
 
         if ((ref != null) && (ref.get() != null)) {
             // seems like there is a reference to a result for this template
@@ -246,24 +247,24 @@ public class ProxyLookup extends Lookup {
      * that was found (not too useful) and also to all objects found
      * (more useful).
      */
-    private final class R extends WaitableResult {
+    private final class R<T> extends WaitableResult<T> {
         /** list of listeners added */
         private javax.swing.event.EventListenerList listeners;
 
         /** template for this result */
-        private Lookup.Template template;
+        private Lookup.Template<T> template;
 
         /** collection of Objects */
         private Collection[] cache;
 
         /** weak listener & result */
-        private WeakResult weakL;
+        private WeakResult<T> weakL;
 
         /** Constructor.
          */
-        public R(Lookup.Template t) {
+        public R(Lookup.Template<T> t) {
             template = t;
-            weakL = new WeakResult(this);
+            weakL = new WeakResult<T>(this);
         }
 
         /** When garbage collected, remove the template from the has map.
@@ -272,9 +273,14 @@ public class ProxyLookup extends Lookup {
             unregisterTemplate(template);
         }
 
+        @SuppressWarnings("unchecked")
+        private Result<T>[] newResults(int len) {
+            return new Result[len];
+        }
+
         /** initializes the results
          */
-        private Result[] initResults() {
+        private Result<T>[] initResults() {
             synchronized (this) {
                 if (weakL.results != null) {
                     return weakL.results;
@@ -282,7 +288,7 @@ public class ProxyLookup extends Lookup {
             }
 
             Lookup[] myLkps = getLookups(false);
-            Result[] arr = new Result[myLkps.length];
+            Result<T>[] arr = newResults(myLkps.length);
 
             for (int i = 0; i < arr.length; i++) {
                 arr[i] = myLkps[i].lookup(template);
@@ -318,7 +324,7 @@ public class ProxyLookup extends Lookup {
                 }
 
                 // map (Lookup, Lookup.Result)
-                HashMap map = new HashMap(old.length * 2);
+                HashMap<Lookup,Result<T>> map = new HashMap<Lookup,Result<T>>(old.length * 2);
 
                 for (int i = 0; i < old.length; i++) {
                     if (removed.contains(old[i])) {
@@ -330,7 +336,7 @@ public class ProxyLookup extends Lookup {
                     }
                 }
 
-                Lookup.Result[] arr = new Lookup.Result[current.length];
+                Lookup.Result<T>[] arr = newResults(current.length);
 
                 for (int i = 0; i < current.length; i++) {
                     if (added.contains(current[i])) {
@@ -339,7 +345,7 @@ public class ProxyLookup extends Lookup {
                         arr[i].addLookupListener(weakL);
                     } else {
                         // old lookup
-                        arr[i] = (Lookup.Result) map.get(current[i]);
+                        arr[i] = map.get(current[i]);
 
                         if (arr[i] == null) {
                             // assert
@@ -378,7 +384,8 @@ public class ProxyLookup extends Lookup {
         /** Access to all instances in the result.
          * @return collection of all instances
          */
-        public java.util.Collection allInstances() {
+        @SuppressWarnings("unchecked")
+        public java.util.Collection<T> allInstances() {
             return computeResult(0);
         }
 
@@ -386,15 +393,17 @@ public class ProxyLookup extends Lookup {
          * that are registered in the system.
          * @return set of Class objects
          */
-        public java.util.Set allClasses() {
-            return (java.util.Set) computeResult(1);
+        @SuppressWarnings("unchecked")
+        public java.util.Set<Class<? extends T>> allClasses() {
+            return (java.util.Set<Class<? extends T>>) computeResult(1);
         }
 
         /** All registered items. The collection of all pairs of
          * ii and their classes.
          * @return collection of Lookup.Item
          */
-        public java.util.Collection allItems() {
+        @SuppressWarnings("unchecked")
+        public java.util.Collection<? extends Item<T>> allItems() {
             return computeResult(2);
         }
 
@@ -404,7 +413,7 @@ public class ProxyLookup extends Lookup {
          */
         private java.util.Collection computeResult(int indexToCache) {
             // results to use
-            Lookup.Result[] arr = myBeforeLookup();
+            Lookup.Result<T>[] arr = myBeforeLookup();
 
             // if the call to beforeLookup resulted in deletion of caches
             synchronized (this) {
@@ -417,15 +426,17 @@ public class ProxyLookup extends Lookup {
             }
 
             // initialize the collection to hold result
-            Collection compute;
-            Collection ret;
+            Collection<Object> compute;
+            Collection<Object> ret;
 
             if (indexToCache == 1) {
-                compute = new HashSet();
-                ret = Collections.unmodifiableSet((Set)compute);
+                HashSet<Object> s = new HashSet<Object>();
+                compute = s;
+                ret = Collections.unmodifiableSet(s);
             } else {
-                compute = new ArrayList(arr.length * 2);
-                ret = Collections.unmodifiableList((List)compute);
+                List<Object> l = new ArrayList<Object>(arr.length * 2);
+                compute = l;
+                ret = Collections.unmodifiableList(l);
             }
 
             // fill the collection
@@ -469,7 +480,7 @@ public class ProxyLookup extends Lookup {
             collectFires(null);
         }
         
-        protected void collectFires(Collection evAndListeners) {
+        protected void collectFires(Collection<Object> evAndListeners) {
             // clear cached instances
             Collection oldItems;
             Collection oldInstances;
@@ -528,10 +539,10 @@ public class ProxyLookup extends Lookup {
         /** Implementation of my before lookup.
          * @return results to work on.
          */
-        private Lookup.Result[] myBeforeLookup() {
+        private Lookup.Result<T>[] myBeforeLookup() {
             ProxyLookup.this.beforeLookup(template);
 
-            Lookup.Result[] arr = initResults();
+            Lookup.Result<T>[] arr = initResults();
 
             // invoke update on the results
             for (int i = 0; i < arr.length; i++) {
@@ -552,18 +563,18 @@ public class ProxyLookup extends Lookup {
             }
         }
     }
-    private static final class WeakResult extends WaitableResult implements LookupListener {
+    private static final class WeakResult<T> extends WaitableResult<T> implements LookupListener {
         /** all results */
-        private Lookup.Result[] results;
+        private Lookup.Result<T>[] results;
 
-        private Reference result;
+        private Reference<R> result;
         
         public WeakResult(R r) {
-            this.result = new WeakReference(r);
+            this.result = new WeakReference<R>(r);
         }
         
         protected void beforeLookup(Lookup.Template t) {
-            R r = (R)result.get();
+            R r = result.get();
             if (r != null) {
                 r.beforeLookup(t);
             } else {
@@ -572,7 +583,7 @@ public class ProxyLookup extends Lookup {
         }
 
         private void removeListeners() {
-            Lookup.Result[] arr = this.results;
+            Lookup.Result<T>[] arr = this.results;
             if (arr == null) {
                 return;
             }
@@ -582,8 +593,8 @@ public class ProxyLookup extends Lookup {
             }
         }
 
-        protected void collectFires(Collection evAndListeners) {
-            R r = (R)result.get();
+        protected void collectFires(Collection<Object> evAndListeners) {
+            R<?> r = result.get();
             if (r != null) {
                 r.collectFires(evAndListeners);
             } else {
@@ -599,13 +610,13 @@ public class ProxyLookup extends Lookup {
             assert false;
         }
 
-        public Collection allInstances() {
+        public Collection<T> allInstances() {
             assert false;
             return null;
         }
 
         public void resultChanged(LookupEvent ev) {
-            R r = (R)result.get();
+            R r = result.get();
             if (r != null) {
                 r.resultChanged(ev);
             } else {
@@ -613,12 +624,12 @@ public class ProxyLookup extends Lookup {
             }
         }
 
-        public Collection allItems() {
+        public Collection<? extends Item<T>> allItems() {
             assert false;
             return null;
         }
 
-        public Set allClasses() {
+        public Set<Class<? extends T>> allClasses() {
             assert false;
             return null;
         }

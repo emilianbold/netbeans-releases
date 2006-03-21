@@ -185,7 +185,7 @@ public final class WeakListeners {
      * @return an instance of <CODE>lType</CODE> delegating all the interface
      * calls to <CODE>l</CODE>.
      */
-    public static EventListener create(Class lType, EventListener l, Object source) {
+    public static <T extends EventListener> T create(Class<T> lType, T l, Object source) {
         if (!lType.isInterface()) {
             throw new IllegalArgumentException("Not interface: " + lType);
         }
@@ -228,7 +228,7 @@ public final class WeakListeners {
      * calls to <CODE>l</CODE>.
      * @since 4.12
      */
-    public static EventListener create(Class lType, Class apiType, EventListener l, Object source) {
+    public static <T extends EventListener> T create(Class<T> lType, Class<? super T> apiType, T l, Object source) {
         if (!lType.isInterface()) {
             throw new IllegalArgumentException("Not interface: " + lType);
         }

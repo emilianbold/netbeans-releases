@@ -47,7 +47,7 @@ public final class InstanceContent extends AbstractLookup.Content {
      * @param inst instance
      */
     public final void add(Object inst) {
-        addPair(new SimpleItem(inst));
+        addPair(new SimpleItem<Object>(inst));
     }
 
     /** The method to add instance to the lookup with.
@@ -55,15 +55,15 @@ public final class InstanceContent extends AbstractLookup.Content {
      * @param conv convertor which postponing an instantiation,
      * if <code>conv==null</code> then the instance is registered directly.
      */
-    public final void add(Object inst, Convertor conv) {
-        addPair(new ConvertingItem(inst, conv));
+    public final <T,R> void add(T inst, Convertor<T,R> conv) {
+        addPair(new ConvertingItem<T,R>(inst, conv));
     }
 
     /** Remove instance.
      * @param inst instance
      */
     public final void remove(Object inst) {
-        removePair(new SimpleItem(inst));
+        removePair(new SimpleItem<Object>(inst));
     }
 
     /** Remove instance added with a convertor.
@@ -71,8 +71,8 @@ public final class InstanceContent extends AbstractLookup.Content {
      * @param conv convertor, if <code>conv==null</code> it is same like
      * remove(Object)
      */
-    public final void remove(Object inst, Convertor conv) {
-        removePair(new ConvertingItem(inst, conv));
+    public final <T,R> void remove(T inst, Convertor<T,R> conv) {
+        removePair(new ConvertingItem<T,R>(inst, conv));
     }
 
     /** Changes all pairs in the lookup to new values. Converts collection of
@@ -80,17 +80,17 @@ public final class InstanceContent extends AbstractLookup.Content {
      * @param col the collection of (Item) objects
      * @param conv the convertor to use or null
      */
-    public final void set(Collection col, Convertor conv) {
-        ArrayList l = new ArrayList(col.size());
-        Iterator it = col.iterator();
+    public final <T,R> void set(Collection<T> col, Convertor<T,R> conv) {
+        ArrayList<Pair<?>> l = new ArrayList<Pair<?>>(col.size());
+        Iterator<T> it = col.iterator();
 
         if (conv == null) {
             while (it.hasNext()) {
-                l.add(new SimpleItem(it.next()));
+                l.add(new SimpleItem<T>(it.next()));
             }
         } else {
             while (it.hasNext()) {
-                l.add(new ConvertingItem(it.next(), conv));
+                l.add(new ConvertingItem<T,R>(it.next(), conv));
             }
         }
 
@@ -100,7 +100,7 @@ public final class InstanceContent extends AbstractLookup.Content {
     /** Convertor postpones an instantiation of an object.
      * @since 1.25
      */
-    public static interface Convertor {
+    public static interface Convertor<T,R> {
         /** Convert obj to other object. There is no need to implement
          * cache mechanism. It is provided by InstanceLookup.Item.getInstance().
          * Method should be called more than once because Lookup holds
@@ -109,48 +109,47 @@ public final class InstanceContent extends AbstractLookup.Content {
          * @param obj the registered object
          * @return the object converted from this object
          */
-        public Object convert(Object obj);
+        public R convert(T obj);
 
         /** Return type of converted object.
          * @param obj the registered object
          * @return the class that will be produced from this object (class or
          *      superclass of convert (obj))
          */
-        public Class type(Object obj);
+        public Class<? extends R> type(T obj);
 
         /** Computes the ID of the resulted object.
          * @param obj the registered object
          * @return the ID for the object
          */
-        public String id(Object obj);
+        public String id(T obj);
 
         /** The human presentable name for the object.
          * @param obj the registered object
          * @return the name representing the object for the user
          */
-        public String displayName(Object obj);
+        public String displayName(T obj);
     }
 
     /** Instance of one item representing an object.
      */
-    final static class SimpleItem extends Pair {
-        private Object obj;
+    final static class SimpleItem<T> extends Pair<T> {
+        private T obj;
 
         /** Create an item.
          * @obj object to register
          */
-        public SimpleItem(Object obj) {
+        public SimpleItem(T obj) {
             if (obj == null) {
                 throw new NullPointerException();
             }
-
             this.obj = obj;
         }
 
         /** Tests whether this item can produce object
          * of class c.
          */
-        public boolean instanceOf(Class c) {
+        public boolean instanceOf(Class<?> c) {
             return c.isInstance(obj);
         }
 
@@ -159,7 +158,7 @@ public final class InstanceContent extends AbstractLookup.Content {
          * to converted object is saved.
          * @return the instance of the object.
          */
-        public Object getInstance() {
+        public T getInstance() {
             return obj;
         }
 
@@ -203,29 +202,30 @@ public final class InstanceContent extends AbstractLookup.Content {
         /** The class of this item.
          * @return the correct class
          */
-        public Class getType() {
-            return obj.getClass();
+        @SuppressWarnings("unchecked")
+        public Class<? extends T> getType() {
+            return (Class<? extends T>)obj.getClass();
         }
     }
      // end of SimpleItem
 
     /** Instance of one item registered in the map.
      */
-    final static class ConvertingItem extends Pair {
+    final static class ConvertingItem<T,R> extends Pair<R> {
         /** registered object */
-        private Object obj;
+        private T obj;
 
         /** Reference to converted object. */
-        private WeakReference ref;
+        private WeakReference<R> ref;
 
         /** convertor to use */
-        private Convertor conv;
+        private Convertor<? super T,R> conv;
 
         /** Create an item.
          * @obj object to register
          * @conv a convertor, can be <code>null</code>.
          */
-        public ConvertingItem(Object obj, Convertor conv) {
+        public ConvertingItem(T obj, Convertor<? super T,R> conv) {
             this.obj = obj;
             this.conv = conv;
         }
@@ -233,14 +233,14 @@ public final class InstanceContent extends AbstractLookup.Content {
         /** Tests whether this item can produce object
          * of class c.
          */
-        public boolean instanceOf(Class c) {
+        public boolean instanceOf(Class<?> c) {
             return c.isAssignableFrom(getType());
         }
 
         /** Returns converted object or null if obj has not been converted yet
          * or reference was cleared by garbage collector.
          */
-        private Object getConverted() {
+        private R getConverted() {
             if (ref == null) {
                 return null;
             }
@@ -253,12 +253,12 @@ public final class InstanceContent extends AbstractLookup.Content {
          * to converted object is saved.
          * @return the instance of the object.
          */
-        public synchronized Object getInstance() {
-            Object converted = getConverted();
+        public synchronized R getInstance() {
+            R converted = getConverted();
 
             if (converted == null) {
                 converted = conv.convert(obj);
-                ref = new WeakReference(converted);
+                ref = new WeakReference<R>(converted);
             }
 
             return converted;
@@ -308,18 +308,15 @@ public final class InstanceContent extends AbstractLookup.Content {
         /** The class of this item.
          * @return the correct class
          */
-        public Class getType() {
-            if (conv == null) {
-                return obj.getClass();
-            }
-
-            Object converted = getConverted();
+        @SuppressWarnings("unchecked")
+        public Class<? extends R> getType() {
+            R converted = getConverted();
 
             if (converted == null) {
                 return conv.type(obj);
             }
 
-            return converted.getClass();
+            return (Class<? extends R>)converted.getClass();
         }
     }
      // end of ConvertingItem

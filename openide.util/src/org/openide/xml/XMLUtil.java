@@ -261,10 +261,11 @@ public final class XMLUtil extends Object {
      * Cache of DocumentBuilder instances per thread.
      * They are relatively expensive to create, so don't do it more than necessary.
      */
-    private static final ThreadLocal/*<DocumentBuilder>*/[] builderTL = new ThreadLocal[4];
+    @SuppressWarnings("unchecked")
+    private static final ThreadLocal<DocumentBuilder>[] builderTL = new ThreadLocal[4];
     static {
         for (int i = 0; i < 4; i++) {
-            builderTL[i] = new ThreadLocal();
+            builderTL[i] = new ThreadLocal<DocumentBuilder>();
         }
     }
     /**

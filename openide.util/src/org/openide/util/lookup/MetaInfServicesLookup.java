@@ -21,7 +21,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,7 +48,7 @@ import org.openide.util.WeakSet;
 final class MetaInfServicesLookup extends AbstractLookup {
     // Better not to use ErrorManager here - EM.gD will use this class, might cause cycles etc.
     private static final boolean DEBUG = Boolean.getBoolean("org.openide.util.lookup.MetaInfServicesLookup.DEBUG"); // NOI18N
-    private static final Map knownInstances = new WeakHashMap(); // Map<Class,Object>
+    private static final Map<Class,Object> knownInstances = new WeakHashMap<Class,Object>();
 
     /** A set of all requested classes.
      * Note that classes that we actually succeeded on can never be removed
@@ -54,7 +56,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
      * However we also hold classes which are definitely not loadable by
      * our loader.
      */
-    private final Set classes = new WeakSet(); // Set<Class>
+    private final Set<Class> classes = new WeakSet<Class>(); // Set<Class>
 
     /** class loader to use */
     private final ClassLoader loader;
@@ -85,12 +87,12 @@ final class MetaInfServicesLookup extends AbstractLookup {
     protected final void beforeLookup(Lookup.Template t) {
         Class c = t.getType();
 
-        Object listeners;
+        HashSet<AbstractLookup.R> listeners;
 
         synchronized (this) {
             if (classes.add(c)) {
                 // Added new class, search for it.
-                Collection arr = getPairsAsLHS();
+                LinkedHashSet<Pair<?>> arr = getPairsAsLHS();
                 search(c, arr);
 
                 // listeners are notified under while holding lock on class c, 
@@ -110,7 +112,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
      * @param clazz class to find
      * @param result collection to add Pair to
      */
-    private void search(Class clazz, Collection result) {
+    private void search(Class<?> clazz, Collection<Pair<?>> result) {
         if (DEBUG) {
             System.err.println("Searching for " + clazz.getName() + " in " + clazz.getClassLoader() + " from " + this); // NOI18N
         }
@@ -132,8 +134,8 @@ final class MetaInfServicesLookup extends AbstractLookup {
         // has the same entry in it (and they load to the same class).
         // Probably would not happen, assuming JARs only list classes
         // they own, but just in case...
-        List /*<Item>*/ foundClasses = new ArrayList();
-        Collection removeClasses = new ArrayList(); // Collection<Class>
+        List<Item> foundClasses = new ArrayList<Item>();
+        Collection<Class> removeClasses = new ArrayList<Class>();
 
         boolean foundOne = false;
 
@@ -310,7 +312,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
     /**
      * Insert item to the list according to item.position value.
      */
-    private void insertItem(Item item, List list) {
+    private void insertItem(Item item, List<Item> list) {
         // no position? -> add it to the end
         if (item.position == -1) {
             list.add(item);
@@ -349,7 +351,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
     /** Pair that holds name of a class and maybe the instance.
      */
-    private static final class P extends AbstractLookup.Pair {
+    private static final class P extends AbstractLookup.Pair<Object> {
         /** May be one of three things:
          * 1. The implementation class which was named in the services file.
          * 2. An instance of it.
@@ -357,17 +359,17 @@ final class MetaInfServicesLookup extends AbstractLookup {
          */
         private Object object;
 
-        public P(Class clazz) {
+        public P(Class<?> clazz) {
             this.object = clazz;
         }
 
         /** Finds the class.
          */
-        private Class clazz() {
+        private Class<? extends Object> clazz() {
             Object o = object;
 
             if (o instanceof Class) {
-                return (Class) o;
+                return (Class<? extends Object>) o;
             } else if (o != null) {
                 return o.getClass();
             } else {
@@ -388,11 +390,11 @@ final class MetaInfServicesLookup extends AbstractLookup {
             return clazz().hashCode();
         }
 
-        protected boolean instanceOf(Class c) {
+        protected boolean instanceOf(Class<?> c) {
             return c.isAssignableFrom(clazz());
         }
 
-        public Class getType() {
+        public Class<? extends Object> getType() {
             return clazz();
         }
 
@@ -405,7 +407,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                                    // 2 instances of the same class
 
                     try {
-                        Class c = ((Class) o);
+                        Class<?> c = ((Class) o);
 
                         synchronized (knownInstances) { // guards only the static cache
                             o = knownInstances.get(c);
@@ -413,7 +415,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
                         if (o == null) {
                             if (SharedClassObject.class.isAssignableFrom(c)) {
-                                o = SharedClassObject.findObject(c, true);
+                                o = SharedClassObject.findObject(c.asSubclass(SharedClassObject.class), true);
                             } else {
                                 o = c.newInstance();
                             }

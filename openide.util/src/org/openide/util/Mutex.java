@@ -138,7 +138,7 @@ public final class Mutex extends Object {
     private /*final*/ Object LOCK;
 
     /** threads that - owns or waits for this mutex */
-    private /*final*/ Map registeredThreads;
+    private /*final*/ Map<Thread,ThreadInfo> registeredThreads;
 
     /** number of threads that holds S mode (readersNo == "count of threads in registeredThreads that holds S") */
 
@@ -146,7 +146,7 @@ public final class Mutex extends Object {
     private int readersNo = 0;
 
     /** a queue of waiting threads for this mutex */
-    private List waiters;
+    private List<QueueCell> waiters;
 
     /** Enhanced constructor that permits specifying an object to use as a lock.
     * The lock is used on entry and exit to {@link #readAccess} and during the
@@ -190,8 +190,8 @@ public final class Mutex extends Object {
     /** Initiates this Mutex */
     private void init(Object lock) {
         this.LOCK = lock;
-        this.registeredThreads = new HashMap(7);
-        this.waiters = new LinkedList();
+        this.registeredThreads = new HashMap<Thread,ThreadInfo>(7);
+        this.waiters = new LinkedList<QueueCell>();
     }
 
     /** Run an action only with read access.
@@ -1307,7 +1307,7 @@ public final class Mutex extends Object {
         /** queue of runnable rquests that are to be executed (in X mode) right after S mode is left
         * deadlock avoidance technique
         */
-        List[] queues;
+        List<Runnable>[] queues;
 
         /** value of counts[S] when the mode was upgraded
         * rsnapshot works as follows:
@@ -1323,11 +1323,12 @@ public final class Mutex extends Object {
         */
         int rsnapshot;
 
+        @SuppressWarnings("unchecked")
         public ThreadInfo(Thread t, int mode) {
             this.t = t;
             this.mode = mode;
             this.counts = new int[MODE_COUNT];
-            this.queues = new List[MODE_COUNT];
+            this.queues = (List<Runnable>[])new List[MODE_COUNT];
             counts[mode] = 1;
         }
 
@@ -1338,7 +1339,7 @@ public final class Mutex extends Object {
         /** Adds the Runnable into the queue of waiting requests */
         public void enqueue(int mode, Runnable run) {
             if (queues[mode] == null) {
-                queues[mode] = new ArrayList(13);
+                queues[mode] = new ArrayList<Runnable>(13);
             }
 
             queues[mode].add(run);

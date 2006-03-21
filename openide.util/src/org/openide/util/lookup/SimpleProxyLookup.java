@@ -35,7 +35,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
     private Lookup delegate;
 
     /** map of all templates to Reference (results) associated to this lookup */
-    private WeakHashMap results;
+    private WeakHashMap<Template<?>,Reference<ProxyResult<?>>> results;
 
     /**
      * @param provider provider to delegate to
@@ -49,24 +49,24 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
         Lookup l = provider.getLookup();
 
         // iterator over Reference (ProxyResult)
-        Iterator toCheck = null;
+        Iterator<Reference<ProxyResult<?>>> toCheck = null;
 
         synchronized (this) {
             if (l != delegate) {
                 this.delegate = l;
 
                 if (results != null) {
-                    toCheck = Arrays.asList(results.values().toArray()).iterator();
+                    toCheck = new ArrayList<Reference<ProxyResult<?>>>(results.values()).iterator();
                 }
             }
         }
 
         if (toCheck != null) {
             // update
-            ArrayList evAndListeners = new ArrayList();
-            for (Iterator it = toCheck; it.hasNext(); ) {
-                java.lang.ref.Reference ref = (java.lang.ref.Reference) it.next();
-                ProxyResult p = (ProxyResult) ref.get();
+            ArrayList<Object> evAndListeners = new ArrayList<Object>();
+            for (Iterator<Reference<ProxyResult<?>>> it = toCheck; it.hasNext(); ) {
+                java.lang.ref.Reference<ProxyResult<?>> ref = it.next();
+                ProxyResult<?> p = ref.get();
 
                 if (p != null && p.updateLookup(l)) {
                     p.collectFires(evAndListeners);
@@ -83,30 +83,36 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
         return delegate;
     }
 
-    public Result lookup(Template template) {
+    @SuppressWarnings("unchecked")
+    private static <T> ProxyResult<T> cast(ProxyResult<?> p) {
+        return (ProxyResult<T>)p;
+    }
+
+    public <T> Result<T> lookup(Template<T> template) {
         synchronized (this) {
             if (results == null) {
-                results = new WeakHashMap();
+                results = new WeakHashMap<Template<?>,Reference<ProxyResult<?>>>();
             } else {
-                java.lang.ref.Reference ref = (java.lang.ref.Reference) results.get(template);
+                Reference<ProxyResult<?>> ref = results.get(template);
 
                 if (ref != null) {
-                    ProxyResult p = (ProxyResult) ref.get();
+                    ProxyResult<?> p = ref.get();
 
                     if (p != null) {
-                        return p;
+                        return cast(p);
                     }
                 }
             }
 
-            ProxyResult p = new ProxyResult(template);
-            results.put(template, new java.lang.ref.WeakReference(p));
+            ProxyResult<T> p = new ProxyResult<T>(template);
+            Reference<ProxyResult<?>> ref = new WeakReference<ProxyResult<?>>(p);
+            results.put(template, ref);
 
             return p;
         }
     }
 
-    public Object lookup(Class clazz) {
+    public <T> T lookup(Class<T> clazz) {
         if (clazz == null) {
             checkLookup();
             return null;
@@ -114,7 +120,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
         return checkLookup().lookup(clazz);
     }
 
-    public Item lookupItem(Template template) {
+    public <T> Item<T> lookupItem(Template<T> template) {
         return checkLookup().lookupItem(template);
     }
 
@@ -123,25 +129,25 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
      * passed in constructor. As the contents of this lookup result never
      * changes the addLookupListener and removeLookupListener are empty.
      */
-    private final class ProxyResult extends WaitableResult implements LookupListener {
+    private final class ProxyResult<T> extends WaitableResult<T> implements LookupListener {
         /** Template used for this result. It is never null.*/
-        private Template template;
+        private Template<T> template;
 
         /** result to delegate to */
-        private Lookup.Result delegate;
+        private Lookup.Result<T> delegate;
 
         /** listeners set */
         private javax.swing.event.EventListenerList listeners;
         private LookupListener lastListener;
 
         /** Just remembers the supplied argument in variable template.*/
-        ProxyResult(Template template) {
+        ProxyResult(Template<T> template) {
             this.template = template;
         }
 
         /** Checks state of the result
          */
-        private Result checkResult() {
+        private Result<T> checkResult() {
             updateLookup(checkLookup());
 
             return this.delegate;
@@ -151,7 +157,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
          * @return true if the lookup really changed
          */
         public boolean updateLookup(Lookup l) {
-            Collection oldPairs = (delegate != null) ? delegate.allItems() : null;
+            Collection<? extends Item<T>> oldPairs = (delegate != null) ? delegate.allItems() : null;
 
             LookupListener removedListener;
 
@@ -165,12 +171,12 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
             }
 
             // cannot call to foreign code 
-            Lookup.Result res = l.lookup(template);
+            Lookup.Result<T> res = l.lookup(template);
 
             synchronized (this) {
                 if (removedListener == lastListener) {
                     delegate = res;
-                    lastListener = new WeakResult(this, delegate);
+                    lastListener = new WeakResult<T>(this, delegate);
                     delegate.addLookupListener(lastListener);
                 }
             }
@@ -180,20 +186,20 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
                 return false;
             }
 
-            Collection newPairs = delegate.allItems();
+            Collection<? extends Item<T>> newPairs = delegate.allItems();
 
             // See #34961 for explanation.
             if (!(oldPairs instanceof List)) {
                 if (oldPairs == Collections.EMPTY_SET) {
                     // avoid allocation
-                    oldPairs = Collections.EMPTY_LIST;
+                    oldPairs = Collections.emptyList();
                 } else {
-                    oldPairs = new ArrayList(oldPairs);
+                    oldPairs = new ArrayList<Item<T>>(oldPairs);
                 }
             }
 
             if (!(newPairs instanceof List)) {
-                newPairs = new ArrayList(newPairs);
+                newPairs = new ArrayList<Item<T>>(newPairs);
             }
 
             return !oldPairs.equals(newPairs);
@@ -213,15 +219,15 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
             }
         }
 
-        public java.util.Collection allInstances() {
+        public java.util.Collection<? extends T> allInstances() {
             return checkResult().allInstances();
         }
 
-        public Set allClasses() {
+        public Set<Class<? extends T>> allClasses() {
             return checkResult().allClasses();
         }
 
-        public Collection allItems() {
+        public Collection<? extends Item<T>> allItems() {
             return checkResult().allItems();
         }
 
@@ -241,7 +247,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
             collectFires(null);
         } 
         
-        protected void collectFires(Collection evAndListeners) {
+        protected void collectFires(Collection<Object> evAndListeners) {
             javax.swing.event.EventListenerList l = this.listeners;
 
             if (l == null) {
@@ -259,12 +265,12 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
         }
     }
      // end of ProxyResult
-    private final class WeakResult extends WaitableResult implements LookupListener {
+    private final class WeakResult<T> extends WaitableResult<T> implements LookupListener {
         private Lookup.Result source;
-        private Reference result;
+        private Reference<ProxyResult<T>> result;
         
-        public WeakResult(ProxyResult r, Lookup.Result s) {
-            this.result = new WeakReference(r);
+        public WeakResult(ProxyResult<T> r, Lookup.Result<T> s) {
+            this.result = new WeakReference<ProxyResult<T>>(r);
             this.source = s;
         }
         
@@ -277,8 +283,8 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
             }
         }
 
-        protected void collectFires(Collection evAndListeners) {
-            ProxyResult r = (ProxyResult)result.get();
+        protected void collectFires(Collection<Object> evAndListeners) {
+            ProxyResult<T> r = result.get();
             if (r != null) {
                 r.collectFires(evAndListeners);
             } else {
@@ -294,7 +300,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
             assert false;
         }
 
-        public Collection allInstances() {
+        public Collection<T> allInstances() {
             assert false;
             return null;
         }
@@ -308,12 +314,12 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
             }
         }
 
-        public Collection allItems() {
+        public Collection<? extends Item<T>> allItems() {
             assert false;
             return null;
         }
 
-        public Set allClasses() {
+        public Set<Class<? extends T>> allClasses() {
             assert false;
             return null;
         }

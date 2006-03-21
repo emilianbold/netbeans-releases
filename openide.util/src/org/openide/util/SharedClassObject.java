@@ -50,7 +50,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
     private static final Object PROP_SUPPORT = new Object();
 
     /** Map (Class, DataEntry) that maps Classes to maps of any objects */
-    private static final Map values = new WeakHashMap(4);
+    private static final Map<Class,DataEntry> values = new WeakHashMap<Class,DataEntry>(37);
 
     /** A set of all classes for which we are currently inside createInstancePrivileged.
      * If a SCO constructor is called when an instance of that class already exists, normally
@@ -60,12 +60,12 @@ public abstract class SharedClassObject extends Object implements Externalizable
      * second instance (because it is nobody's fault and it will be handled OK).
      * Map from class name to nesting count.
      */
-    private static final Map instancesBeingCreated = new HashMap(3); // Map<String,int>
+    private static final Map<String,Integer> instancesBeingCreated = new HashMap<String,Integer>(7);
 
     /** Set of classes to not warn about any more.
      * Names only.
      */
-    private static final Set alreadyWarnedAboutDupes = new HashSet(); // Set<String>
+    private static final Set<String> alreadyWarnedAboutDupes = new HashSet<String>(); //
     private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.openide.util.SharedClassObject"); // NOI18N
 
     /** data entry for this class */
@@ -456,7 +456,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
     * @param clazz the shared class to look for
     * @return the instance, or <code>null</code> if such does not exists
     */
-    public static SharedClassObject findObject(Class clazz) {
+    public static <T extends SharedClassObject> T findObject(Class<T> clazz) {
         return findObject(clazz, false);
     }
 
@@ -469,7 +469,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
     * @return an instance, or <code>null</code> if there was none and <code>create</code> was <code>false</code>
     * @exception IllegalArgumentException if a new instance could not be created for some reason
     */
-    public static SharedClassObject findObject(Class clazz, boolean create) {
+    public static <T extends SharedClassObject> T findObject(Class<T> clazz, boolean create) {
         // synchronizing on the same object as returned from getLock()
         synchronized (clazz.getName().intern()) {
             DataEntry de = (DataEntry) values.get(clazz);
@@ -480,10 +480,10 @@ public abstract class SharedClassObject extends Object implements Externalizable
 
             if ((obj == null) && create) {
                 // try to create new instance
-                PrivilegedExceptionAction action = new SetAccessibleAction(clazz);
+                SetAccessibleAction action = new SetAccessibleAction(clazz);
 
                 try {
-                    obj = (SharedClassObject) AccessController.doPrivileged(action);
+                    obj = AccessController.doPrivileged(action);
                 } catch (PrivilegedActionException e) {
                     Exception ex = e.getException();
                     IllegalArgumentException newEx = new IllegalArgumentException(ex.toString());
@@ -509,7 +509,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
                         throw new IllegalStateException("Inconsistent state: " + clazz); // NOI18N
                     }
 
-                    return obj2;
+                    return clazz.cast(obj2);
                 }
             }
 
@@ -523,7 +523,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
                 // if such state exists it is deserialized before the object is returned from lookup.
                 if (obj.isSystemOption()) {
                     // Lookup will find serialized version of searched object and deserialize it
-                    final Lookup.Result r = Lookup.getDefault().lookup(new Lookup.Template(clazz));
+                    final Lookup.Result<T> r = Lookup.getDefault().lookup(new Lookup.Template<T>(clazz));
 
                     if (r.allInstances().isEmpty()) {
                         // #17711: folder lookup not yet initialized. Try to load the option later.
@@ -570,7 +570,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
                 throw new IllegalStateException("Inconsistent state: " + clazz); // NOI18N
             }
 
-            return obj;
+            return clazz.cast(obj);
         }
     }
 
@@ -595,9 +595,9 @@ public abstract class SharedClassObject extends Object implements Externalizable
         err.notify(ErrorManager.INFORMATIONAL, t);
     }
 
-    static Object createInstancePrivileged(Class clazz)
+    static SharedClassObject createInstancePrivileged(Class<? extends SharedClassObject> clazz)
     throws Exception {
-        java.lang.reflect.Constructor c = clazz.getDeclaredConstructor(new Class[0]);
+        java.lang.reflect.Constructor<? extends SharedClassObject> c = clazz.getDeclaredConstructor(new Class[0]);
         c.setAccessible(true);
 
         String name = clazz.getName();
@@ -646,7 +646,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
         static final long serialVersionUID = 1327893248974327640L;
 
         /** the class  */
-        private Class clazz;
+        private Class<? extends SharedClassObject> clazz;
 
         /** class name, in case clazz could not be reloaded */
         private String name;
@@ -714,7 +714,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
                     // make readResolve accessible (it can have any access modifier)
                     resolveMethod.setAccessible(true);
 
-                    return resolveMethod.invoke(object, null);
+                    return resolveMethod.invoke(object);
                 } catch (Exception ex) {
                     // checked or runtime does not matter - we must survive
                     String banner = "Skipping " + object.getClass() + " resolution:"; //NOI18N
@@ -777,13 +777,13 @@ public abstract class SharedClassObject extends Object implements Externalizable
     */
     static final class DataEntry extends Object {
         /** The data */
-        private HashMap map;
+        private HashMap<Object,Object> map;
 
         /** The reference counter */
         private int count = 0;
 
         /** weak reference to an object of this class */
-        private WeakReference ref = new WeakReference(null);
+        private WeakReference<SharedClassObject> ref = new WeakReference<SharedClassObject>(null);
 
         /** inited? */
         private boolean initialized = false;
@@ -807,12 +807,12 @@ public abstract class SharedClassObject extends Object implements Externalizable
         * @param obj the requestor object
         * @return the data
         */
-        Map getMap(SharedClassObject obj) {
+        Map<Object,Object> getMap(SharedClassObject obj) {
             ensureValid(obj);
 
             if (map == null) {
                 // to signal invalid state
-                map = new HashMap();
+                map = new HashMap<Object,Object>();
             }
 
             if (!initialized) {
@@ -836,7 +836,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
 
             if (map == null) {
                 // to signal invalid state
-                map = new HashMap();
+                map = new HashMap<Object,Object>();
                 ret = null;
             } else {
                 ret = map.get(key);
@@ -865,7 +865,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
 
             if (map == null) {
                 // to signal invalid state
-                map = new HashMap();
+                map = new HashMap<Object,Object>();
             }
 
             return map;
@@ -932,7 +932,7 @@ public abstract class SharedClassObject extends Object implements Externalizable
             SharedClassObject s = (SharedClassObject) ref.get();
 
             if (s == null) {
-                ref = new WeakReference(obj);
+                ref = new WeakReference<SharedClassObject>(obj);
 
                 return obj;
             } else {
@@ -962,14 +962,14 @@ public abstract class SharedClassObject extends Object implements Externalizable
         }
     }
 
-    static final class SetAccessibleAction implements PrivilegedExceptionAction {
-        Class klass;
+    static final class SetAccessibleAction implements PrivilegedExceptionAction<SharedClassObject> {
+        Class<? extends SharedClassObject> klass;
 
-        SetAccessibleAction(Class klass) {
+        SetAccessibleAction(Class<? extends SharedClassObject> klass) {
             this.klass = klass;
         }
 
-        public Object run() throws Exception {
+        public SharedClassObject run() throws Exception {
             return createInstancePrivileged(klass);
         }
     }

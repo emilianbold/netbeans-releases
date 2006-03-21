@@ -20,7 +20,7 @@ import org.openide.util.Lookup;
  *
  * @author  Jaroslav Tulach
  */
-abstract class WaitableResult extends Lookup.Result {
+abstract class WaitableResult<T> extends Lookup.Result<T> {
     /** Used by proxy results to synchronize before lookup.
      */
     protected abstract void beforeLookup(Lookup.Template t);
@@ -29,6 +29,6 @@ abstract class WaitableResult extends Lookup.Result {
      * after all AbstractLookup and ProxyLookups have been updated.
      * @param evAndListeners LookupEvent, LookupListener, LookupEvent, LookupListener, etc.
      */
-    protected abstract void collectFires(Collection evAndListeners);
+    protected abstract void collectFires(Collection<Object> evAndListeners);
      
 }

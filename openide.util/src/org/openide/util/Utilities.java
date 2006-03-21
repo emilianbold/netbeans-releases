@@ -154,11 +154,11 @@ public final class Utilities {
     private static final int TYPICAL_MACOSX_MENU_HEIGHT = 24;
 
     /** variable holding the activeReferenceQueue */
-    private static ReferenceQueue activeReferenceQueue;
+    private static ReferenceQueue<Object> activeReferenceQueue;
 
     /** reference to map that maps allowed key names to their values (String, Integer)
     and reference to map for mapping of values to their names */
-    private static Reference namesAndValues;
+    private static Reference<Object> namesAndValues;
 
     /** The operating system on which NetBeans runs*/
     private static int operatingSystem = -1;
@@ -242,7 +242,7 @@ public final class Utilities {
      *
      * @since 3.11
      */
-    public static synchronized ReferenceQueue activeReferenceQueue() {
+    public static synchronized ReferenceQueue<Object> activeReferenceQueue() {
         if (activeReferenceQueue == null) {
             activeReferenceQueue = new ActiveQueue(false);
         }
@@ -492,7 +492,7 @@ widthcheck:  {
             return workingSet;
         }
 
-        java.util.ArrayList lines = new java.util.ArrayList();
+        java.util.ArrayList<String> lines = new java.util.ArrayList<String>();
 
         int lineStart = 0; // the position of start of currently processed line in the original string
 
@@ -616,7 +616,7 @@ widthcheck:  {
             return original;
         }
 
-        java.util.Vector lines = new java.util.Vector();
+        java.util.Vector<String> lines = new java.util.Vector<String>();
         int lineStart = 0; // the position of start of currently processed line in the original string
         int lastSpacePos = -1;
 
@@ -1323,7 +1323,7 @@ widthcheck:  {
         int INPARAMPENDING = 0x2; // INPARAM + \
         int STICK = 0x4; // INPARAM + " or STICK + non_" // NOI18N
         int STICKPENDING = 0x8; // STICK + \
-        Vector params = new Vector(5, 5);
+        Vector<String> params = new Vector<String>(5, 5);
         char c;
 
         int state = NULL;
@@ -1532,8 +1532,8 @@ widthcheck:  {
 
         Field[] fields = KeyEvent.class.getDeclaredFields();
 
-        HashMap names = new HashMap(((fields.length * 4) / 3) + 5, 0.75f);
-        HashMap values = new HashMap(((fields.length * 4) / 3) + 5, 0.75f);
+        HashMap<String,Integer> names = new HashMap<String,Integer>(((fields.length * 4) / 3) + 5, 0.75f);
+        HashMap<Integer,String> values = new HashMap<Integer,String>(((fields.length * 4) / 3) + 5, 0.75f);
 
         for (int i = 0; i < fields.length; i++) {
             if (Modifier.isStatic(fields[i].getModifiers())) {
@@ -1569,7 +1569,7 @@ widthcheck:  {
 
         HashMap[] arr = { names, values };
 
-        namesAndValues = new SoftReference(arr);
+        namesAndValues = new SoftReference<Object>(arr);
 
         return arr;
     }
@@ -1741,7 +1741,7 @@ widthcheck:  {
     */
     public static KeyStroke[] stringToKeys(String s) {
         StringTokenizer st = new StringTokenizer(s.toUpperCase(Locale.ENGLISH), " "); // NOI18N
-        ArrayList arr = new ArrayList();
+        ArrayList<KeyStroke> arr = new ArrayList<KeyStroke>();
 
         while (st.hasMoreElements()) {
             s = st.nextToken();
@@ -1755,7 +1755,7 @@ widthcheck:  {
             arr.add(k);
         }
 
-        return (KeyStroke[]) arr.toArray(new KeyStroke[arr.size()]);
+        return arr.toArray(new KeyStroke[arr.size()]);
     }
 
     /** Adds characters for modifiers to the buffer.
@@ -2079,6 +2079,7 @@ widthcheck:  {
     * @throws UnorderableException if the specified partial order is inconsistent on this list
     * @deprecated Deprecated in favor of the potentially much faster (and possibly more correct) {@link #topologicalSort}.
     */
+    @SuppressWarnings("unchecked") // do not bother, it is deprecated anyway
     public static List partialSort(List l, Comparator c, boolean stable)
     throws UnorderableException {
         // map from objects in the list to null or sets of objects they are greater than
@@ -2200,17 +2201,17 @@ widthcheck:  {
      * @since 3.30
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=27286">Issue #27286</a>
      */
-    public static List topologicalSort(Collection c, Map edges)
+    public static <T> List<T> topologicalSort(Collection<T> c, Map<? super T, ? extends Collection<? extends T>> edges)
     throws TopologicalSortException {
-        Map finished = new HashMap();
-        List r = new ArrayList(Math.max(c.size(), 1));
-        List cRev = new ArrayList(c);
+        Map<T,Boolean> finished = new HashMap<T,Boolean>();
+        List<T> r = new ArrayList<T>(Math.max(c.size(), 1));
+        List<T> cRev = new ArrayList<T>(c);
         Collections.reverse(cRev);
 
-        Iterator it = cRev.iterator();
+        Iterator<T> it = cRev.iterator();
 
         while (it.hasNext()) {
-            List cycle = visit(it.next(), edges, finished, r);
+            List<T> cycle = visit(it.next(), edges, finished, r);
 
             if (cycle != null) {
                 throw new TopologicalSortException(cRev, edges);
@@ -2232,7 +2233,12 @@ widthcheck:  {
      * @param r the order in progress
      * @return list with detected cycle
      */
-    static List visit(Object node, Map edges, Map finished, List r) {
+    static <T> List<T> visit(
+        T node,
+        Map<? super T, ? extends Collection<? extends T>> edges,
+        Map<T,Boolean> finished,
+        List<T> r
+    ) {
         Boolean b = (Boolean) finished.get(node);
 
         //System.err.println("node=" + node + " color=" + b);
@@ -2241,22 +2247,22 @@ widthcheck:  {
                 return null;
             }
 
-            ArrayList cycle = new ArrayList();
+            ArrayList<T> cycle = new ArrayList<T>();
             cycle.add(node);
             finished.put(node, null);
 
             return cycle;
         }
 
-        Collection e = (Collection) edges.get(node);
+        Collection<? extends T> e = edges.get(node);
 
         if (e != null) {
             finished.put(node, Boolean.FALSE);
 
-            Iterator it = e.iterator();
+            Iterator<? extends T> it = e.iterator();
 
             while (it.hasNext()) {
-                List cycle = visit(it.next(), edges, finished, r);
+                List<T> cycle = visit(it.next(), edges, finished, r);
 
                 if (cycle != null) {
                     if (cycle instanceof ArrayList) {
@@ -2430,11 +2436,11 @@ widthcheck:  {
         re = new RE13();
 
         //        }
-        TreeSet list = new TreeSet(
-                new Comparator() {
-                    public int compare(Object o1, Object o2) {
-                        String s1 = ((String[]) o1)[0];
-                        String s2 = ((String[]) o2)[0];
+        TreeSet<String[]> list = new TreeSet<String[]>(
+                new Comparator<String[]>() {
+                    public int compare(String[] o1, String[] o2) {
+                        String s1 = o1[0];
+                        String s2 = o2[0];
 
                         int i1 = s1.length();
                         int i2 = s2.length();
@@ -2500,7 +2506,7 @@ widthcheck:  {
      * @param resource URL identifiing transaction table
      * @param results will be filled with String[2]
      */
-    private static void loadTranslationFile(RE re, BufferedReader reader, Set results)
+    private static void loadTranslationFile(RE re, BufferedReader reader, Set<String[]> results)
     throws IOException {
         for (;;) {
             String line = reader.readLine();
@@ -2575,7 +2581,7 @@ widthcheck:  {
         JPopupMenu menu = org.netbeans.modules.openide.util.AWTBridge.getDefault().createEmptyPopup();
 
         // keeps actions for which was menu item created already
-        HashSet counted = new HashSet();
+        HashSet<Action> counted = new HashSet<Action>();
         boolean haveHadNonSep = false;
         boolean needSep = false;
 
@@ -2957,7 +2963,7 @@ widthcheck:  {
 
     /** Implementation of the active queue.
      */
-    private static final class ActiveQueue extends ReferenceQueue implements Runnable {
+    private static final class ActiveQueue extends ReferenceQueue<Object> implements Runnable {
         private boolean running;
         private boolean deprecated;
 
@@ -2970,15 +2976,15 @@ widthcheck:  {
             t.start();
         }
 
-        public Reference poll() {
+        public Reference<Object> poll() {
             throw new java.lang.UnsupportedOperationException();
         }
 
-        public Reference remove(long timeout) throws IllegalArgumentException, InterruptedException {
+        public Reference<Object> remove(long timeout) throws IllegalArgumentException, InterruptedException {
             throw new java.lang.InterruptedException();
         }
 
-        public Reference remove() throws InterruptedException {
+        public Reference<Object> remove() throws InterruptedException {
             throw new java.lang.InterruptedException();
         }
 

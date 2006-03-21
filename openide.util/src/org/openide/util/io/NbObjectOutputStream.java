@@ -37,7 +37,7 @@ import org.openide.util.WeakSet;
 */
 public class NbObjectOutputStream extends ObjectOutputStream {
     private static final String SVUID = "serialVersionUID"; // NOI18N
-    private static final Set alreadyReported = new WeakSet(); // Set<String>
+    private static final Set<String> alreadyReported = new WeakSet<String>();
 
     static {
         // See below.
@@ -47,8 +47,8 @@ public class NbObjectOutputStream extends ObjectOutputStream {
         alreadyReported.add("java.awt.geom.AffineTransform"); // NOI18N
     }
 
-    private static Map examinedClasses = new WeakHashMap(250); // Map<String,Boolean>
-    private final List serializing = new ArrayList(50); // List<Class>
+    private static Map<String,Boolean> examinedClasses = new WeakHashMap<String,Boolean>(250);
+    private final List<Class> serializing = new ArrayList<Class>(50);
 
     /** Create a new object output.
     * @param os the underlying output stream
@@ -134,7 +134,7 @@ public class NbObjectOutputStream extends ObjectOutputStream {
         String classname = cl.getName();
 
         if (alreadyReported.add(classname)) {
-            Set serializingUniq = new HashSet(); // Set<Class>
+            Set<Class> serializingUniq = new HashSet<Class>();
             StringBuffer b = new StringBuffer("Serializable class "); // NOI18N
             b.append(classname);
             b.append(" does not declare serialVersionUID field. Encountered while storing: ["); // NOI18N

@@ -28,50 +28,50 @@ import java.util.*;
 class SimpleLookup extends org.openide.util.Lookup {
     /** This variable is initialized in constructor and thus null
      * value is not allowed as its value. */
-    private Collection allItems;
+    private Collection<Item<?>> allItems;
 
     /**
      * Creates new Result object with supplied instances parameter.
      * @param instances to be used to return from the lookup
      */
-    SimpleLookup(Collection instances) {
-        allItems = new ArrayList(instances.size());
+    SimpleLookup(Collection<Object> instances) {
+        allItems = new ArrayList<Item<?>>(instances.size());
 
         for (Iterator i = instances.iterator(); i.hasNext();) {
-            allItems.add(new InstanceContent.SimpleItem(i.next()));
+            allItems.add(new InstanceContent.SimpleItem<Object>(i.next()));
         }
     }
 
-    SimpleLookup(Collection keys, InstanceContent.Convertor conv) {
-        allItems = new ArrayList(keys.size());
+    <T,R> SimpleLookup(Collection<T> keys, InstanceContent.Convertor<? super T,R> conv) {
+        allItems = new ArrayList<Item<?>>(keys.size());
 
-        for (Iterator i = keys.iterator(); i.hasNext();) {
-            allItems.add(new InstanceContent.ConvertingItem(i.next(), conv));
+        for (T item : keys) {
+            allItems.add(new InstanceContent.ConvertingItem<T,R>(item, conv));
         }
     }
 
     public String toString() {
-        return "SimpleLookup" + lookup(new Template(Object.class)).allInstances();
+        return "SimpleLookup" + lookup(new Template<Object>(Object.class)).allInstances();
     }
 
-    public Result lookup(Template template) {
+    public <T> Result<T> lookup(Template<T> template) {
         if (template == null) {
             throw new NullPointerException();
         }
 
-        return new SimpleResult(template);
+        return new SimpleResult<T>(template);
     }
 
-    public Object lookup(Class clazz) {
+    public <T> T lookup(Class<T> clazz) {
         for (Iterator i = allItems.iterator(); i.hasNext();) {
             Object o = i.next();
 
             if (o instanceof AbstractLookup.Pair) {
-                AbstractLookup.Pair p = (AbstractLookup.Pair)o;
+                AbstractLookup.Pair<?> p = (AbstractLookup.Pair<?>)o;
                 if (p.instanceOf(clazz)) {
                     Object ret = p.getInstance();
                     if (clazz.isInstance(ret)) {
-                        return ret;
+                        return clazz.cast(ret);
                     }
                 }
             }
@@ -83,12 +83,12 @@ class SimpleLookup extends org.openide.util.Lookup {
      * @param item the item to match
      * @return true if item matches the template requirements, false if not
      */
-    private static boolean matches(Template t, AbstractLookup.Pair item) {
+    private static boolean matches(Template<?> t, AbstractLookup.Pair<?> item) {
         if (!AbstractLookup.matches(t, item, true)) {
             return false;
         }
 
-        Class type = t.getType();
+        Class<?> type = t.getType();
 
         if ((type != null) && !type.isAssignableFrom(item.getType())) {
             return false;
@@ -102,21 +102,21 @@ class SimpleLookup extends org.openide.util.Lookup {
      * passed in constructor. As the contents of this lookup result never
      * changes the addLookupListener and removeLookupListener are empty.
      */
-    private class SimpleResult extends Lookup.Result {
+    private class SimpleResult<T> extends Lookup.Result<T> {
         /** can be null and is initialized lazily */
-        private Set classes;
+        private Set<Class<? extends T>> classes;
 
         /** can be null and is initialized lazily */
-        private Collection items;
+        private Collection<? extends Item<T>> items;
 
         /** Template used for this result. It is never null.*/
-        private Template template;
+        private Template<T> template;
 
         /** can be null and is initialized lazily */
-        private Collection results;
+        private Collection<T> results;
 
         /** Just remembers the supplied argument in variable template.*/
-        SimpleResult(Template template) {
+        SimpleResult(Template<T> template) {
             this.template = template;
         }
 
@@ -138,17 +138,18 @@ class SimpleLookup extends org.openide.util.Lookup {
          * Lazy initializes the results collection. Uses a call to allItems
          * to obtain the instances.
          */
-        public java.util.Collection allInstances() {
+        public java.util.Collection<? extends T> allInstances() {
             synchronized (this) {
                 if (results != null) {
                     return results;
                 }
             }
 
-            Collection res = new ArrayList(allItems.size());
 
-            for (Iterator i = allItems().iterator(); i.hasNext();) {
-                res.add(((Lookup.Item) i.next()).getInstance());
+            Collection<T> res = new ArrayList<T>(allItems.size());
+
+            for (Item<T> item : allItems()) {
+                res.add(item.getInstance());
             }
 
             synchronized (this) {
@@ -162,17 +163,17 @@ class SimpleLookup extends org.openide.util.Lookup {
          * Lazy initializes variable classes. Uses a call to allItems to
          * compute the result.
          */
-        public Set allClasses() {
+        public Set<Class<? extends T>> allClasses() {
             synchronized (this) {
                 if (classes != null) {
                     return classes;
                 }
             }
 
-            Set res = new HashSet();
+            Set<Class<? extends T>> res = new HashSet<Class<? extends T>>();
 
-            for (Iterator i = allItems().iterator(); i.hasNext();) {
-                res.add(((Lookup.Item) i.next()).getType());
+            for (Item<T> item : allItems()) {
+                res.add(item.getType());
             }
 
             synchronized (this) {
@@ -187,21 +188,21 @@ class SimpleLookup extends org.openide.util.Lookup {
          * element in the instances collection. It puts either SimpleItem
          * or ConvertingItem to the collection.
          */
-        public Collection allItems() {
+        public Collection<? extends Item<T>> allItems() {
             synchronized (this) {
                 if (items != null) {
                     return items;
                 }
             }
 
-            Collection res = new ArrayList(allItems.size());
+            Collection<Item<T>> res = new ArrayList<Item<T>>(allItems.size());
 
-            for (Iterator i = allItems.iterator(); i.hasNext();) {
-                Object o = i.next();
+            for (Iterator<Item<?>> i = allItems.iterator(); i.hasNext();) {
+                Item<?> o = i.next();
 
                 if (o instanceof AbstractLookup.Pair) {
                     if (matches(template, (AbstractLookup.Pair) o)) {
-                        res.add(o);
+                        res.add(cast(o));
                     }
                 }
             }
@@ -211,6 +212,11 @@ class SimpleLookup extends org.openide.util.Lookup {
             }
 
             return items;
+        }
+
+        @SuppressWarnings("unchecked")
+        private Item<T> cast(Item<?> i) {
+            return (Item<T>)i;
         }
     }
 }

@@ -24,6 +24,7 @@ import java.lang.ref.*;
 import java.lang.ref.ReferenceQueue;
 
 import java.util.*;
+import org.openide.util.Utilities;
 
 
 /** Implementation of the lookup from OpenAPIs that is based on the
@@ -39,13 +40,6 @@ public class AbstractLookup extends Lookup implements Serializable {
 
     /** lock for initialization of the maps of lookups */
     private static Object treeLock = new Object();
-
-    /** This is a workaround for bug 35366 that probably has to be here until
-     * we end producing separate openide-lookup.jar. The activeReferenceQueue
-     * has to be obtained using reflection to prevent the openide-lookup.jar
-     * to be as large as openide-util.jar.
-     */
-    private static Object activeQueue;
 
     /** the tree that registers all items (or Integer as a treshold size) */
     private Object tree;
@@ -68,7 +62,7 @@ public class AbstractLookup extends Lookup implements Serializable {
     /** Constructor for testing purposes that allows specification of storage
      * as mechanism as well.
      */
-    AbstractLookup(Content content, Storage storage) {
+    AbstractLookup(Content content, Storage<?> storage) {
         this(content);
         this.tree = storage;
         initialize();
@@ -90,7 +84,7 @@ public class AbstractLookup extends Lookup implements Serializable {
 
     public String toString() {
         if (tree instanceof Storage) {
-            return "AbstractLookup" + lookup(new Lookup.Template(Object.class)).allItems(); // NOI18N
+            return "AbstractLookup" + lookup(new Lookup.Template<Object>(Object.class)).allItems(); // NOI18N
         } else {
             return super.toString();
         }
@@ -98,7 +92,8 @@ public class AbstractLookup extends Lookup implements Serializable {
 
     /** Entres the storage management system.
      */
-    private AbstractLookup.Storage enterStorage() {
+    @SuppressWarnings("unchecked")
+    private <T> AbstractLookup.Storage<T> enterStorage() {
         for (;;) {
             synchronized (treeLock) {
                 if (tree instanceof AbstractLookup.Storage) {
@@ -119,9 +114,9 @@ public class AbstractLookup extends Lookup implements Serializable {
                         continue;
                     } else {
                         // ok, tree is initialized and nobody is using it yet
-                        tree = new DelegatingStorage((Storage) tree);
+                        tree = new DelegatingStorage((Storage<T>) tree);
 
-                        return (Storage) tree;
+                        return (Storage<T>) tree;
                     }
                 }
 
@@ -158,17 +153,21 @@ public class AbstractLookup extends Lookup implements Serializable {
     /** Notifies subclasses that a query is about to be processed.
      * @param template the template
      */
-    protected void beforeLookup(Template template) {
+    protected void beforeLookup(Template<?> template) {
     }
 
     /** The method to add instance to the lookup with.
      * @param pair class/instance pair
      */
-    protected final void addPair(Pair pair) {
-        HashSet toNotify = new HashSet();
+    protected final void addPair(Pair<?> pair) {
+        addPairImpl(pair);
+    }
 
-        Object transaction = null;
-        AbstractLookup.Storage t = enterStorage();
+    private final <Transaction> void addPairImpl(Pair<?> pair) {
+        HashSet<R> toNotify = new HashSet<R>();
+
+        AbstractLookup.Storage<Transaction> t = enterStorage();
+        Transaction transaction = null;
 
         try {
             transaction = t.beginTransaction(-2);
@@ -188,7 +187,7 @@ public class AbstractLookup extends Lookup implements Serializable {
                 t.endTransaction(transaction, toNotify);
             } else {
                 // just finish the process by calling endTransaction
-                t.endTransaction(transaction, new HashSet());
+                t.endTransaction(transaction, new HashSet<R>());
             }
         } finally {
             exitStorage();
@@ -200,11 +199,15 @@ public class AbstractLookup extends Lookup implements Serializable {
     /** Remove instance.
      * @param pair class/instance pair
      */
-    protected final void removePair(Pair pair) {
-        HashSet toNotify = new HashSet();
+    protected final void removePair(Pair<?> pair) {
+        removePairImpl(pair);
+    }
 
-        Object transaction = null;
-        AbstractLookup.Storage t = enterStorage();
+    private <Transaction> void removePairImpl(Pair<?> pair) {
+        HashSet<R> toNotify = new HashSet<R>();
+
+        AbstractLookup.Storage<Transaction> t = enterStorage();
+        Transaction transaction = null;
 
         try {
             transaction = t.beginTransaction(-1);
@@ -220,24 +223,24 @@ public class AbstractLookup extends Lookup implements Serializable {
     /** Changes all pairs in the lookup to new values.
      * @param collection the collection of (Pair) objects
      */
-    protected final void setPairs(Collection collection) {
+    protected final void setPairs(Collection<? extends Pair> collection) {
         notifyCollectedListeners(setPairsAndCollectListeners(collection));
     }
     
     /** Getter for set of pairs. Package private contract with MetaInfServicesLookup.
      * @return a LinkedHashSet that can be modified
      */
-    final LinkedHashSet getPairsAsLHS() {
-        AbstractLookup.Storage t = enterStorage();
+    final LinkedHashSet<Pair<?>> getPairsAsLHS() {
+        AbstractLookup.Storage<?> t = enterStorage();
 
         try {
-            Enumeration en = t.lookup(Object.class);
-			LinkedHashSet arr = new LinkedHashSet();
+            Enumeration<Pair<Object>> en = t.lookup(Object.class);
+            LinkedHashSet<Pair<?>> arr = new LinkedHashSet<Pair<?>>();
             while (en.hasMoreElements()) {
-                Pair item = (Pair) en.nextElement();
-				arr.add(item);
+                Pair<Object> item = en.nextElement();
+                arr.add(item);
             }
-			return arr;
+            return arr;
         } finally {
             exitStorage();
         }
@@ -246,15 +249,15 @@ public class AbstractLookup extends Lookup implements Serializable {
     /** Collects listeners without notification. Needed in MetaInfServicesLookup
      * right now, but maybe will become an API later.
      */
-    final HashSet setPairsAndCollectListeners(Collection collection) {
-        HashSet toNotify = new HashSet(27);
+    final <Transaction> HashSet<R> setPairsAndCollectListeners(Collection<? extends Pair> collection) {
+        HashSet<R> toNotify = new HashSet<R>(27);
 
-        Object transaction = null;
-        AbstractLookup.Storage t = enterStorage();
+        AbstractLookup.Storage<Transaction> t = enterStorage();
+        Transaction transaction = null;
 
         try {
             // map between the Items and their indexes (Integer)
-            HashMap shouldBeThere = new HashMap(collection.size() * 2);
+            HashMap<Item<?>,Info> shouldBeThere = new HashMap<Item<?>,Info>(collection.size() * 2);
 
             count = 0;
 
@@ -311,8 +314,8 @@ public class AbstractLookup extends Lookup implements Serializable {
     /** Notifies all collected listeners. Needed by MetaInfServicesLookup,
      * maybe it will be an API later.
      */
-    final void notifyCollectedListeners(Object listeners) {
-        notifyListeners((HashSet) listeners);
+    final void notifyCollectedListeners(Set<R> listeners) {
+        notifyListeners(listeners);
     }
 
     private final void writeObject(ObjectOutputStream oos)
@@ -330,20 +333,19 @@ public class AbstractLookup extends Lookup implements Serializable {
         }
     }
 
-    public final Object lookup(Class clazz) {
-        Lookup.Item item = lookupItem(new Lookup.Template(clazz));
-
+    public final <T> T lookup(Class<T> clazz) {
+        Lookup.Item<T> item = lookupItem(new Lookup.Template<T>(clazz));
         return (item == null) ? null : item.getInstance();
     }
 
-    public final Lookup.Item lookupItem(Lookup.Template template) {
+    public final <T> Lookup.Item<T> lookupItem(Lookup.Template<T> template) {
         AbstractLookup.this.beforeLookup(template);
 
-        ArrayList list = null;
-        AbstractLookup.Storage t = enterStorage();
+        ArrayList<Pair<T>> list = null;
+        AbstractLookup.Storage<?> t = enterStorage();
 
         try {
-            Enumeration en;
+            Enumeration<Pair<T>> en;
 
             try {
                 en = t.lookup(template.getType());
@@ -352,7 +354,7 @@ public class AbstractLookup extends Lookup implements Serializable {
             } catch (AbstractLookup.ISE ex) {
                 // not possible to enumerate the exception, ok, copy it 
                 // to create new
-                list = new ArrayList();
+                list = new ArrayList<Pair<T>>();
                 en = t.lookup(null); // this should get all the items without any checks
 
                 // the checks will be done out side of the storage
@@ -367,12 +369,12 @@ public class AbstractLookup extends Lookup implements Serializable {
         return findSmallest(Collections.enumeration(list), template, true);
     }
 
-    private static Pair findSmallest(Enumeration en, Lookup.Template template, boolean deepCheck) {
+    private static <T> Pair<T> findSmallest(Enumeration<Pair<T>> en, Lookup.Template<T> template, boolean deepCheck) {
         int smallest = InheritanceTree.unsorted(en) ? Integer.MAX_VALUE : Integer.MIN_VALUE;
-        Pair res = null;
+        Pair<T> res = null;
 
         while (en.hasMoreElements()) {
-            Pair item = (Pair) en.nextElement();
+            Pair<T> item = en.nextElement();
 
             if (matches(template, item, deepCheck)) {
                 if (smallest == Integer.MIN_VALUE) {
@@ -391,15 +393,15 @@ public class AbstractLookup extends Lookup implements Serializable {
         return res;
     }
 
-    public final Lookup.Result lookup(Lookup.Template template) {
+    public final <T> Lookup.Result<T> lookup(Lookup.Template<T> template) {
         for (;;) {
             AbstractLookup.ISE toRun = null;
 
-            AbstractLookup.Storage t = enterStorage();
+            AbstractLookup.Storage<?> t = enterStorage();
 
             try {
-                R r = new R();
-                ReferenceToResult newRef = new ReferenceToResult(r, this, template);
+                R<T> r = new R<T>();
+                ReferenceToResult<T> newRef = new ReferenceToResult<T>(r, this, template);
                 newRef.next = t.registerReferenceToResult(newRef);
 
                 return r;
@@ -418,16 +420,14 @@ public class AbstractLookup extends Lookup implements Serializable {
     /** Notifies listeners.
      * @param allAffectedResults set of R
      */
-    private static void notifyListeners(Set allAffectedResults) {
+    private static void notifyListeners(Set<R> allAffectedResults) {
         if (allAffectedResults.isEmpty()) {
             return;
         }
 
-        ArrayList evAndListeners = new ArrayList();
+        ArrayList<Object> evAndListeners = new ArrayList<Object>();
         {
-            Iterator it = allAffectedResults.iterator();
-            while(it.hasNext()) {
-                AbstractLookup.R result = (AbstractLookup.R) it.next();
+            for (R<?> result : allAffectedResults) {
                 result.collectFires(evAndListeners);
             }
         }
@@ -449,14 +449,14 @@ public class AbstractLookup extends Lookup implements Serializable {
      *        objects on even positions and the listeners on odd positions
      * @param ev the event to fire
      */
-    static void notifyListeners(Object[] listeners, LookupEvent ev, Collection evAndListeners) {
+    static void notifyListeners(Object[] listeners, LookupEvent ev, Collection<Object> evAndListeners) {
         for (int i = listeners.length - 1; i >= 0; i -= 2) {
             LookupListener ll = (LookupListener) listeners[i];
 
             try {
                 if (evAndListeners != null) {
                     if (ll instanceof WaitableResult) {
-                        WaitableResult wr = (WaitableResult)ll;
+                        WaitableResult<?> wr = (WaitableResult<?>)ll;
                         wr.collectFires(evAndListeners);
                     } else {
                         evAndListeners.add(ev);
@@ -478,7 +478,7 @@ public class AbstractLookup extends Lookup implements Serializable {
      * @param deepCheck true if type of the pair should be tested, false if it is already has been tested
      * @return true if item matches the template requirements, false if not
      */
-    static boolean matches(Template t, Pair item, boolean deepCheck) {
+    static boolean matches(Template<?> t, Pair<?> item, boolean deepCheck) {
         String id = t.getId();
 
         if ((id != null) && !item.getId().equals(id)) {
@@ -546,8 +546,8 @@ public class AbstractLookup extends Lookup implements Serializable {
      * @param template the template the result was for
      * @return true if the hash map with all items has been cleared
      */
-    boolean cleanUpResult(Lookup.Template template) {
-        AbstractLookup.Storage t = enterStorage();
+    <T> boolean cleanUpResult(Lookup.Template<T> template) {
+        AbstractLookup.Storage<?> t = enterStorage();
 
         try {
             return t.cleanUpResult(template) == null;
@@ -563,6 +563,7 @@ public class AbstractLookup extends Lookup implements Serializable {
      * @param ref the value of the reference to listener or listener list
      * @return new value to the reference to listener or list
      */
+    @SuppressWarnings("unchecked")
     static Object modifyListenerList(boolean add, LookupListener l, Object ref) {
         if (add) {
             if (ref == null) {
@@ -599,25 +600,14 @@ public class AbstractLookup extends Lookup implements Serializable {
         }
     }
 
-    private static ReferenceQueue activeQueue() {
-        if (activeQueue == null) {
-            try {
-                Class c = Class.forName("org.openide.util.Utilities"); // NOI18N
-                Class[] noArgs = new Class[0];
-                java.lang.reflect.Method m = c.getDeclaredMethod("activeReferenceQueue", noArgs); // NOI18N
-                activeQueue = m.invoke(null, noArgs);
-            } catch (Exception ex) {
-                activeQueue = ex;
-            }
-        }
-
-        return (activeQueue instanceof ReferenceQueue) ? (ReferenceQueue) activeQueue : null;
+    private static ReferenceQueue<Object> activeQueue() {
+        return Utilities.activeReferenceQueue();
     }
 
     /** Storage to keep the internal structure of Pairs and to answer
      * different queries.
      */
-    interface Storage {
+    interface Storage<Transaction> {
         /** Initializes a modification operation by creating an object
          * that will be passsed to all add, remove, retainAll methods
          * and should collect enough information about the change to
@@ -628,7 +618,7 @@ public class AbstractLookup extends Lookup implements Serializable {
          *   the amount of objects at the end
          * @return a token to identify the transaction
          */
-        public Object beginTransaction(int ensure);
+        public Transaction beginTransaction(int ensure);
 
         /** Collects all affected results R that were modified in the
          * given transaction.
@@ -636,7 +626,7 @@ public class AbstractLookup extends Lookup implements Serializable {
          * @param modified place to add results R to
          * @param transaction the transaction indentification
          */
-        public void endTransaction(Object transaction, Set modifiedResults);
+        public void endTransaction(Transaction transaction, Set<R> modifiedResults);
 
         /** Adds an item into the storage.
         * @param item to add
@@ -644,24 +634,24 @@ public class AbstractLookup extends Lookup implements Serializable {
         * @return true if the Item has been added for the first time or false if some other
         *    item equal to this one already existed in the lookup
         */
-        public boolean add(AbstractLookup.Pair item, Object transaction);
+        public boolean add(AbstractLookup.Pair<?> item, Transaction transaction);
 
         /** Removes an item.
         */
-        public void remove(AbstractLookup.Pair item, Object transaction);
+        public void remove(AbstractLookup.Pair item, Transaction transaction);
 
         /** Removes all items that are not present in the provided collection.
         * @param retain collection of Pairs to keep them in
         * @param transaction the transaction context
         */
-        public void retainAll(Map retain, Object transaction);
+        public void retainAll(Map retain, Transaction transaction);
 
         /** Queries for instances of given class.
         * @param clazz the class to check
         * @return enumeration of Item
         * @see #unsorted
         */
-        public Enumeration lookup(Class clazz);
+        public <T> Enumeration<Pair<T>> lookup(Class<T> clazz);
 
         /** Registers another reference to a result with the storage. This method
          * has also a special meaning.
@@ -671,19 +661,19 @@ public class AbstractLookup extends Lookup implements Serializable {
          *    the applications is expected to link from newRef to this returned
          *    value to form a linked list
          */
-        public ReferenceToResult registerReferenceToResult(ReferenceToResult newRef);
+        public ReferenceToResult<?> registerReferenceToResult(ReferenceToResult<?> newRef);
 
         /** Given the provided template, Do cleanup the results.
          * @param templ template of a result(s) that should be checked
          * @return null if all references for this template were cleared or one of them
          */
-        public ReferenceToResult cleanUpResult(Lookup.Template templ);
+        public ReferenceToResult<?> cleanUpResult(Lookup.Template<?> templ);
     }
 
     /** Extension to the default lookup item that offers additional information
      * for the data structures use in AbstractLookup
      */
-    public static abstract class Pair extends Lookup.Item implements Serializable {
+    public static abstract class Pair<T> extends Lookup.Item<T> implements Serializable {
         private static final long serialVersionUID = 1L;
 
         /** possition of this item in the lookup, manipulated in addPair, removePair, setPairs methods */
@@ -697,7 +687,7 @@ public class AbstractLookup extends Lookup implements Serializable {
             return index;
         }
 
-        final void setIndex(AbstractLookup.Storage tree, int x) {
+        final void setIndex(AbstractLookup.Storage<?> tree, int x) {
             if (tree == null) {
                 this.index = x;
 
@@ -714,7 +704,7 @@ public class AbstractLookup extends Lookup implements Serializable {
         /** Tests whether this item can produce object
         * of class c.
         */
-        protected abstract boolean instanceOf(Class c);
+        protected abstract boolean instanceOf(Class<?> c);
 
         /** Method that can test whether an instance of a class has been created
          * by this item.
@@ -728,9 +718,9 @@ public class AbstractLookup extends Lookup implements Serializable {
 
     /** Result based on one instance returned.
      */
-    static final class R extends WaitableResult {
+    static final class R<T> extends WaitableResult<T> {
         /** reference our result is attached to (do not modify) */
-        public ReferenceToResult reference;
+        public ReferenceToResult<T> reference;
 
         /** listeners on the results or pointer to one listener */
         private Object listeners;
@@ -766,8 +756,9 @@ public class AbstractLookup extends Lookup implements Serializable {
             return null;
         }
 
-        private Set getClassesCache() {
-            return (Set) getFromCache(0);
+        @SuppressWarnings("unchecked")
+        private Set<Class<? extends T>> getClassesCache() {
+            return (Set<Class<? extends T>>) getFromCache(0);
         }
 
         private void setClassesCache(Set s) {
@@ -785,8 +776,9 @@ public class AbstractLookup extends Lookup implements Serializable {
             ((Object[]) reference.caches)[0] = s;
         }
 
-        private Collection getInstancesCache() {
-            return (Collection) getFromCache(1);
+        @SuppressWarnings("unchecked")
+        private Collection<T> getInstancesCache() {
+            return (Collection<T>) getFromCache(1);
         }
 
         private void setInstancesCache(Collection c) {
@@ -804,11 +796,12 @@ public class AbstractLookup extends Lookup implements Serializable {
             ((Object[]) reference.caches)[1] = c;
         }
 
-        private Object[] getItemsCache() {
-            return (Object[]) getFromCache(2);
+        @SuppressWarnings("unchecked")
+        private Pair<T>[] getItemsCache() {
+            return (Pair<T>[]) getFromCache(2);
         }
 
-        private void setItemsCache(Collection c) {
+        private void setItemsCache(Collection<?> c) {
             if (isSimple()) {
                 // mark it as being used
                 reference.caches = reference;
@@ -820,7 +813,7 @@ public class AbstractLookup extends Lookup implements Serializable {
                 reference.caches = new Object[3];
             }
 
-            ((Object[]) reference.caches)[2] = c.toArray();
+            ((Object[]) reference.caches)[2] = c.toArray(new Pair[0]);
         }
 
         private void clearCaches() {
@@ -843,7 +836,7 @@ public class AbstractLookup extends Lookup implements Serializable {
 
         /** Delete all cached values, the template changed.
          */
-        protected  void collectFires(Collection evAndListeners) {
+        protected  void collectFires(Collection<Object> evAndListeners) {
             Object[] previousItems = getItemsCache();
             clearCaches();
             
@@ -866,8 +859,8 @@ public class AbstractLookup extends Lookup implements Serializable {
                 if (listeners instanceof LookupListener) {
                     arr = new LookupListener[] { (LookupListener) listeners };
                 } else {
-                    ArrayList l = (ArrayList) listeners;
-                    arr = (LookupListener[]) l.toArray(new LookupListener[l.size()]);
+                    ArrayList<?> l = (ArrayList<?>) listeners;
+                    arr = l.toArray(new LookupListener[l.size()]);
                 }
             }
 
@@ -876,30 +869,30 @@ public class AbstractLookup extends Lookup implements Serializable {
             notifyListeners(ll, ev, evAndListeners);
         }
 
-        public Collection allInstances() {
+        public Collection<T> allInstances() {
             reference.lookup.beforeLookup(reference.template);
 
-            Collection s = getInstancesCache();
+            Collection<T> s = getInstancesCache();
 
             if (s != null) {
                 return s;
             }
 
-            Collection items = allItemsWithoutBeforeLookup();
-            s = new ArrayList(items.size());
+            Collection<Pair<T>> items = allItemsWithoutBeforeLookup();
+            ArrayList<T> list = new ArrayList<T>(items.size());
 
-            Iterator it = items.iterator();
+            Iterator<Pair<T>> it = items.iterator();
 
             while (it.hasNext()) {
-                Pair item = (Pair) it.next();
-                Object obj = item.getInstance();
+                Pair<T> item = it.next();
+                T obj = item.getInstance();
 
                 if (reference.template.getType().isInstance(obj)) {
-                    s.add(obj);
+                    list.add(obj);
                 }
             }
             
-            s = Collections.unmodifiableList((ArrayList)s);
+            s = Collections.unmodifiableList(list);
             setInstancesCache(s);
 
             return s;
@@ -908,22 +901,19 @@ public class AbstractLookup extends Lookup implements Serializable {
         /** Set of all classes.
          *
          */
-        public Set allClasses() {
+        public Set<Class<? extends T>> allClasses() {
             reference.lookup.beforeLookup(reference.template);
 
-            Set s = getClassesCache();
+            Set<Class<? extends T>> s = getClassesCache();
 
             if (s != null) {
                 return s;
             }
 
-            s = new HashSet();
+            s = new HashSet<Class<? extends T>>();
 
-            Iterator it = allItemsWithoutBeforeLookup().iterator();
-
-            while (it.hasNext()) {
-                Item item = (Item) it.next();
-                Class clazz = item.getType();
+            for (Pair<T> item : allItemsWithoutBeforeLookup()) {
+                Class<? extends T> clazz = item.getType();
 
                 if (clazz != null) {
                     s.add(clazz);
@@ -938,22 +928,22 @@ public class AbstractLookup extends Lookup implements Serializable {
 
         /** Items are stored directly in the allItems.
          */
-        public Collection allItems() {
+        public Collection<? extends Item<T>> allItems() {
             reference.lookup.beforeLookup(reference.template);
 
             return allItemsWithoutBeforeLookup();
         }
 
         /** Implements the search for allItems, but without asking for before lookup */
-        private Collection allItemsWithoutBeforeLookup() {
-            Object[] c = getItemsCache();
+        private Collection<Pair<T>> allItemsWithoutBeforeLookup() {
+            Pair<T>[] c = getItemsCache();
 
             if (c != null) {
                 return Collections.unmodifiableList(Arrays.asList(c));
             }
 
-            ArrayList saferCheck = null;
-            AbstractLookup.Storage t = reference.lookup.enterStorage();
+            ArrayList<Pair<Object>> saferCheck = null;
+            AbstractLookup.Storage<?> t = reference.lookup.enterStorage();
 
             try {
                 try {
@@ -961,47 +951,43 @@ public class AbstractLookup extends Lookup implements Serializable {
                 } catch (AbstractLookup.ISE ex) {
                     // do less effective evaluation of items outside of the 
                     // locked storage
-                    saferCheck = new ArrayList();
+                    saferCheck = new ArrayList<Pair<Object>>();
 
-                    Enumeration en = t.lookup(null); // get all Pairs
+                    Enumeration<Pair<Object>> en = t.lookup(null); // get all Pairs
 
                     while (en.hasMoreElements()) {
-                        Pair i = (Pair) en.nextElement();
-                        ;
+                        Pair<Object> i = en.nextElement();
                         saferCheck.add(i);
                     }
                 }
             } finally {
                 reference.lookup.exitStorage();
             }
+            return extractPairs(saferCheck);
+        }
 
-            Iterator it = saferCheck.iterator();
-
-            // InheritanceTree is comparator for AbstractLookup.Pairs
-            TreeSet items = new TreeSet(ALPairComparator.DEFAULT);
-
-            while (it.hasNext()) {
-                Pair i = (Pair) it.next();
-
+        @SuppressWarnings("unchecked")
+        private Collection<Pair<T>> extractPairs(final ArrayList<Pair<Object>> saferCheck) {
+            TreeSet<Pair<T>> items = new TreeSet<Pair<T>>(ALPairComparator.DEFAULT);
+            for (Pair<Object> i : saferCheck) {
                 if (matches(reference.template, i, false)) {
-                    items.add(i);
+                    items.add((Pair<T>)i);
                 }
             }
-
             return Collections.unmodifiableCollection(items);
         }
 
         /** Initializes items.
          */
-        private Collection initItems(Storage t) {
+        private Collection<Pair<T>> initItems(Storage<?> t) {
             // manipulation with the tree must be synchronized
-            Enumeration en = t.lookup(reference.template.getType());
+            Enumeration<Pair<T>> en = t.lookup(reference.template.getType());
 
             // InheritanceTree is comparator for AbstractLookup.Pairs
-            TreeSet items = new TreeSet(ALPairComparator.DEFAULT);
+            TreeSet<Pair<T>> items = new TreeSet<Pair<T>>(ALPairComparator.DEFAULT);
 
             while (en.hasMoreElements()) {
-                Pair i = (Pair) en.nextElement();
+                Pair<T> i = en.nextElement();
 
                 if (matches(reference.template, i, false)) {
                     items.add(i);
@@ -1046,7 +1032,7 @@ public class AbstractLookup extends Lookup implements Serializable {
 
         /** abstract lookup we are connected to */
         private AbstractLookup al = null;
-        private transient ArrayList earlyPairs;
+        private transient ArrayList<Pair> earlyPairs;
 
         /** A lookup attaches to this object.
          */
@@ -1056,10 +1042,8 @@ public class AbstractLookup extends Lookup implements Serializable {
 
                 if (earlyPairs != null) {
                     // we must just add no override!
-                    Pair[] p = (Pair[]) earlyPairs.toArray(new Pair[earlyPairs.size()]);
-
-                    for (int i = 0; i < p.length; i++) {
-                        addPair(p[i]);
+                    for (Pair<?> p : earlyPairs) {
+                        addPair(p);
                     }
                 }
 
@@ -1074,14 +1058,14 @@ public class AbstractLookup extends Lookup implements Serializable {
         /** The method to add instance to the lookup with.
          * @param pair class/instance pair
          */
-        public final void addPair(Pair pair) {
+        public final void addPair(Pair<?> pair) {
             AbstractLookup a = al;
 
             if (a != null) {
                 a.addPair(pair);
             } else {
                 if (earlyPairs == null) {
-                    earlyPairs = new ArrayList(3);
+                    earlyPairs = new ArrayList<Pair>(3);
                 }
 
                 earlyPairs.add(pair);
@@ -1091,14 +1075,14 @@ public class AbstractLookup extends Lookup implements Serializable {
         /** Remove instance.
          * @param pair class/instance pair
          */
-        public final void removePair(Pair pair) {
+        public final void removePair(Pair<?> pair) {
             AbstractLookup a = al;
 
             if (a != null) {
                 a.removePair(pair);
             } else {
                 if (earlyPairs == null) {
-                    earlyPairs = new ArrayList(3);
+                    earlyPairs = new ArrayList<Pair>(3);
                 }
 
                 earlyPairs.remove(pair);
@@ -1108,13 +1092,13 @@ public class AbstractLookup extends Lookup implements Serializable {
         /** Changes all pairs in the lookup to new values.
          * @param c the collection of (Pair) objects
          */
-        public final void setPairs(Collection c) {
+        public final void setPairs(Collection<? extends Pair> c) {
             AbstractLookup a = al;
 
             if (a != null) {
                 a.setPairs(c);
             } else {
-                earlyPairs = new ArrayList(c);
+                earlyPairs = new ArrayList<Pair>(c);
             }
         }
     }
@@ -1134,12 +1118,12 @@ public class AbstractLookup extends Lookup implements Serializable {
 
     /** Reference to a result R
      */
-    static final class ReferenceToResult extends WeakReference implements Runnable {
+    static final class ReferenceToResult<T> extends WeakReference<R<T>> implements Runnable {
         /** next refernece in chain, modified only from AbstractLookup or this */
-        private ReferenceToResult next;
+        private ReferenceToResult<?> next;
 
         /** the template for the result */
-        public final Template template;
+        public final Template<T> template;
 
         /** the lookup we are attached to */
         public final AbstractLookup lookup;
@@ -1150,7 +1134,7 @@ public class AbstractLookup extends Lookup implements Serializable {
         /** Creates a weak refernece to a new result R in context of lookup
          * for given template
          */
-        private ReferenceToResult(R result, AbstractLookup lookup, Template template) {
+        private ReferenceToResult(R<T> result, AbstractLookup lookup, Template<T> template) {
             super(result, activeQueue());
             this.template = template;
             this.lookup = lookup;
@@ -1159,8 +1143,8 @@ public class AbstractLookup extends Lookup implements Serializable {
 
         /** Returns the result or null
          */
-        R getResult() {
-            return (R) get();
+        R<T> getResult() {
+            return get();
         }
 
         /** Cleans the reference. Implements Runnable interface, do not call
@@ -1173,12 +1157,12 @@ public class AbstractLookup extends Lookup implements Serializable {
         /** Clones the reference list to given Storage.
          * @param storage storage to clone to
          */
-        public void cloneList(AbstractLookup.Storage storage) {
+        public void cloneList(AbstractLookup.Storage<?> storage) {
             ReferenceIterator it = new ReferenceIterator(this);
 
             while (it.next()) {
-                ReferenceToResult current = it.current();
-                ReferenceToResult newRef = new ReferenceToResult(current.getResult(), current.lookup, current.template);
+                ReferenceToResult<?> current = it.current();
+                ReferenceToResult<?> newRef = current.cloneRef();
                 newRef.next = storage.registerReferenceToResult(newRef);
                 newRef.caches = current.caches;
 
@@ -1186,6 +1170,10 @@ public class AbstractLookup extends Lookup implements Serializable {
                     current.getResult().initItems(storage);
                 }
             }
+        }
+
+        private ReferenceToResult<T> cloneRef() {
+            return new ReferenceToResult<T>(getResult(), lookup, template);
         }
     }
      // end of ReferenceToResult
@@ -1200,22 +1188,22 @@ public class AbstractLookup extends Lookup implements Serializable {
      *  this.ref = it.first (); // remember the first one
      */
     static final class ReferenceIterator extends Object {
-        private ReferenceToResult first;
-        private ReferenceToResult current;
+        private ReferenceToResult<?> first;
+        private ReferenceToResult<?> current;
 
         /** hard reference to current result, so it is not GCed meanwhile */
-        private R currentResult;
+        private R<?> currentResult;
 
         /** Initializes the iterator with first reference.
          */
-        public ReferenceIterator(ReferenceToResult first) {
+        public ReferenceIterator(ReferenceToResult<?> first) {
             this.first = first;
         }
 
         /** Moves the current to next possition */
         public boolean next() {
-            ReferenceToResult prev;
-            ReferenceToResult ref;
+            ReferenceToResult<?> prev;
+            ReferenceToResult<?> ref;
 
             if (current == null) {
                 ref = first;
@@ -1226,7 +1214,7 @@ public class AbstractLookup extends Lookup implements Serializable {
             }
 
             while (ref != null) {
-                R result = (R) ref.get();
+                R<?> result = ref.get();
 
                 if (result == null) {
                     if (prev == null) {
@@ -1256,13 +1244,13 @@ public class AbstractLookup extends Lookup implements Serializable {
 
         /** Access to current reference.
          */
-        public ReferenceToResult current() {
+        public ReferenceToResult<?> current() {
             return current;
         }
 
         /** Access to reference that is supposed to be the first one.
          */
-        public ReferenceToResult first() {
+        public ReferenceToResult<?> first() {
             return first;
         }
     }
@@ -1273,7 +1261,7 @@ public class AbstractLookup extends Lookup implements Serializable {
      */
     static final class ISE extends IllegalStateException {
         /** list of jobs to execute. */
-        private java.util.List jobs;
+        private java.util.List<Job> jobs;
 
         /** @param msg message
          */
@@ -1286,7 +1274,7 @@ public class AbstractLookup extends Lookup implements Serializable {
          */
         public void registerJob(Job job) {
             if (jobs == null) {
-                jobs = new java.util.ArrayList();
+                jobs = new java.util.ArrayList<Job>();
             }
 
             jobs.add(job);
@@ -1300,16 +1288,14 @@ public class AbstractLookup extends Lookup implements Serializable {
                 throw this;
             }
 
-            for (java.util.Iterator it = jobs.iterator(); it.hasNext();) {
-                Job j = (Job) it.next();
+            for (Job j : jobs) {
                 j.before();
             }
 
             AbstractLookup.Storage s = lookup.enterStorage();
 
             try {
-                for (java.util.Iterator it = jobs.iterator(); it.hasNext();) {
-                    Job j = (Job) it.next();
+                for (Job j : jobs) {
                     j.inside();
                 }
             } finally {

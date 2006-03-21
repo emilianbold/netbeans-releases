@@ -119,12 +119,12 @@ public final class RequestProcessor {
     private Object processorLock = new Object();
 
     /** The set holding all the Processors assigned to this RequestProcessor */
-    private HashSet processors = new HashSet();
+    private HashSet<Processor> processors = new HashSet<Processor>();
 
     /** Actualy the first item is pending to be processed.
      * Can be accessed/trusted only under the above processorLock lock.
      * If null, nothing is scheduled and the processor is not running. */
-    private List queue = new LinkedList();
+    private List<Item> queue = new LinkedList<Item>();
 
     /** Number of currently running processors. If there is a new request
      * and this number is lower that the throughput, new Processor is asked
@@ -442,7 +442,7 @@ public final class RequestProcessor {
             queue.add(item);
             item.enqueued = true;
         } else {
-            for (ListIterator it = queue.listIterator(); it.hasNext();) {
+            for (ListIterator<Item> it = queue.listIterator(); it.hasNext();) {
                 Item next = (Item) it.next();
 
                 if (iprio > next.getPriority()) {
@@ -805,7 +805,7 @@ public final class RequestProcessor {
      */
     private static class Processor extends Thread {
         /** A stack containing all the inactive Processors */
-        private static Stack pool = new Stack();
+        private static Stack<Processor> pool = new Stack<Processor>();
 
         /* One minute of inactivity and the Thread will die if not assigned */
         private static final int INACTIVE_TIMEOUT = 60000;
@@ -1033,8 +1033,8 @@ public final class RequestProcessor {
          * end of the task.
          */
         static ThreadGroup getTopLevelThreadGroup() {
-            java.security.PrivilegedAction run = new java.security.PrivilegedAction() {
-                    public Object run() {
+            java.security.PrivilegedAction<ThreadGroup> run = new java.security.PrivilegedAction<ThreadGroup>() {
+                    public ThreadGroup run() {
                         ThreadGroup current = Thread.currentThread().getThreadGroup();
 
                         while (current.getParent() != null) {
@@ -1045,7 +1045,7 @@ public final class RequestProcessor {
                     }
                 };
 
-            return (ThreadGroup) java.security.AccessController.doPrivileged(run);
+            return java.security.AccessController.doPrivileged(run);
         }
     }
 }

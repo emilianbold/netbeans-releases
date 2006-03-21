@@ -35,15 +35,15 @@ final class IconManager extends Object {
     private static final Object NO_ICON = new Object();
 
     /** map of resource name to loaded icon (String, SoftRefrence (Image)) or (String, NO_ICON) */
-    private static final HashMap map = new HashMap(128);
-    private static final HashMap localizedMap = new HashMap(128);
+    private static final HashMap<Object,Object> map = new HashMap<Object,Object>(128);
+    private static final HashMap<String,Object> localizedMap = new HashMap<String,Object>(128);
 
     /** Resource paths for which we have had to strip initial slash.
      * @see "#20072"
      */
-    private static final Set extraInitialSlashes = new HashSet(); // Set<String>
+    private static final Set<String> extraInitialSlashes = new HashSet<String>(); // Set<String>
     private static volatile Object currentLoader;
-    private static Lookup.Result loaderQuery = null;
+    private static Lookup.Result<ClassLoader> loaderQuery = null;
     private static boolean noLoaderWarned = false;
     private static final Component component = new Component() {
         };
@@ -67,7 +67,7 @@ final class IconManager extends Object {
         currentLoader = Thread.currentThread();
             
         if (loaderQuery == null) {
-            loaderQuery = Lookup.getDefault().lookup(new Lookup.Template(ClassLoader.class));
+            loaderQuery = Lookup.getDefault().lookup(new Lookup.Template<ClassLoader>(ClassLoader.class));
             loaderQuery.addLookupListener(
                 new LookupListener() {
                     public void resultChanged(LookupEvent ev) {
@@ -424,11 +424,11 @@ final class IconManager extends Object {
     }
 
     /** Cleaning reference. */
-    private static final class ActiveRef extends SoftReference implements Runnable {
+    private static final class ActiveRef extends SoftReference<Image> implements Runnable {
         private Map holder;
         private Object key;
 
-        public ActiveRef(Object o, Map holder, Object key) {
+        public ActiveRef(Image o, Map holder, Object key) {
             super(o, Utilities.activeReferenceQueue());
             this.holder = holder;
             this.key = key;

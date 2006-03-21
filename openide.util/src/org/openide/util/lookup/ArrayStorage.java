@@ -19,12 +19,14 @@ import java.io.*;
 import java.lang.ref.WeakReference;
 
 import java.util.*;
+import org.openide.util.lookup.AbstractLookup.Pair;
 
 
 /** ArrayStorage of Pairs from AbstractLookup.
  * @author  Jaroslav Tulach
  */
-final class ArrayStorage extends Object implements AbstractLookup.Storage {
+final class ArrayStorage extends Object
+implements AbstractLookup.Storage<ArrayStorage.Transaction> {
     /** default trashold */
     static final Integer DEFAULT_TRASH = new Integer(11);
 
@@ -32,7 +34,7 @@ final class ArrayStorage extends Object implements AbstractLookup.Storage {
     private Object content;
 
     /** linked list of refernces to results */
-    private transient AbstractLookup.ReferenceToResult results;
+    private transient AbstractLookup.ReferenceToResult<?> results;
 
     /** Constructor
      */
@@ -50,8 +52,7 @@ final class ArrayStorage extends Object implements AbstractLookup.Storage {
     * @return true if the Item has been added for the first time or false if some other
     *    item equal to this one already existed in the lookup
     */
-    public boolean add(AbstractLookup.Pair item, Object transaction) {
-        Transaction changed = (Transaction) transaction;
+    public boolean add(AbstractLookup.Pair<?> item, Transaction changed) {
         Object[] arr = changed.current;
 
         if (changed.arr == null) {
@@ -112,8 +113,7 @@ final class ArrayStorage extends Object implements AbstractLookup.Storage {
 
     /** Removes an item.
     */
-    public void remove(AbstractLookup.Pair item, Object transaction) {
-        Transaction changed = (Transaction) transaction;
+    public void remove(AbstractLookup.Pair item, Transaction changed) {
         Object[] arr = changed.current;
 
         int found = -1;
@@ -126,8 +126,9 @@ final class ArrayStorage extends Object implements AbstractLookup.Storage {
 
             if ((found == -1) && arr[i].equals(item)) {
                 // already there
-                ((AbstractLookup.Pair) arr[i]).setIndex(null, -1);
-                changed.add(arr[i]);
+                Pair<?> p = (Pair<?>)arr[i];
+                p.setIndex(null, -1);
+                changed.add(p);
                 found = i;
             }
 
@@ -148,8 +149,7 @@ final class ArrayStorage extends Object implements AbstractLookup.Storage {
     * @param retain Pair -> AbstractLookup.Info map
     * @param notify set of Classes that has possibly changed
     */
-    public void retainAll(Map retain, Object transaction) {
-        Transaction changed = (Transaction) transaction;
+    public void retainAll(Map retain, Transaction changed) {
         Object[] arr = changed.current;
 
         for (int from = 0; from < arr.length; from++) {
@@ -188,9 +188,10 @@ final class ArrayStorage extends Object implements AbstractLookup.Storage {
     * @return enumeration of Item
     * @see #unsorted
     */
-    public Enumeration lookup(final Class clazz) {
-        class CheckEn implements org.openide.util.Enumerations.Processor {
-            public Object process(Object o, Collection ignore) {
+    public <T> Enumeration<Pair<T>> lookup(final Class<T> clazz) {
+        class CheckEn implements org.openide.util.Enumerations.Processor<Object,Pair<T>> {
+            @SuppressWarnings("unchecked")
+            public Pair<T> process(Object o, Collection ignore) {
                 boolean ok;
 
                 if (o instanceof AbstractLookup.Pair) {
@@ -199,13 +200,12 @@ final class ArrayStorage extends Object implements AbstractLookup.Storage {
                     ok = false;
                 }
 
-                return ok ? o : null;
+                return ok ? (Pair<T>)o : null;
             }
         }
 
         if (content instanceof Object[]) {
-            Enumeration all = org.openide.util.Enumerations.array((Object[]) content);
-
+            Enumeration<Object> all = org.openide.util.Enumerations.array((Object[]) content);
             return org.openide.util.Enumerations.filter(all, new CheckEn());
         } else {
             return org.openide.util.Enumerations.empty();
@@ -214,7 +214,7 @@ final class ArrayStorage extends Object implements AbstractLookup.Storage {
 
     /** Associates another result with this storage.
      */
-    public AbstractLookup.ReferenceToResult registerReferenceToResult(AbstractLookup.ReferenceToResult newRef) {
+    public AbstractLookup.ReferenceToResult registerReferenceToResult(AbstractLookup.ReferenceToResult<?> newRef) {
         AbstractLookup.ReferenceToResult prev = this.results;
         this.results = newRef;
 
@@ -223,7 +223,7 @@ final class ArrayStorage extends Object implements AbstractLookup.Storage {
 
     /** Cleanup the references
      */
-    public AbstractLookup.ReferenceToResult cleanUpResult(Lookup.Template templ) {
+    public AbstractLookup.ReferenceToResult cleanUpResult(Lookup.Template<?> templ) {
         AbstractLookup.ReferenceIterator it = new AbstractLookup.ReferenceIterator(this.results);
 
         while (it.next())
@@ -233,22 +233,20 @@ final class ArrayStorage extends Object implements AbstractLookup.Storage {
     }
 
     /** We use a hash set of all modified Pair to handle the transaction */
-    public Object beginTransaction(int ensure) {
+    public Transaction beginTransaction(int ensure) {
         return new Transaction(ensure, content);
     }
 
     /** Extract all results.
      */
-    public void endTransaction(Object transaction, Set modified) {
-        Transaction changed = (Transaction) transaction;
-
+    public void endTransaction(Transaction changed, Set<AbstractLookup.R> modified) {
         AbstractLookup.ReferenceIterator it = new AbstractLookup.ReferenceIterator(this.results);
 
         if (changed.arr == null) {
             // either add or remove, only check the content of check HashSet
             while (it.next()) {
                 AbstractLookup.ReferenceToResult ref = it.current();
-                Iterator pairs = changed.iterator();
+                Iterator<Pair<?>> pairs = changed.iterator();
 
                 while (pairs.hasNext()) {
                     AbstractLookup.Pair p = (AbstractLookup.Pair) pairs.next();
@@ -305,7 +303,7 @@ final class ArrayStorage extends Object implements AbstractLookup.Storage {
     /** HashSet with additional field for new array which is callocated
      * in case we are doing replace to hold all new items.
      */
-    private static final class Transaction extends HashSet {
+    static final class Transaction extends HashSet<Pair<?>> {
         /** array with current objects */
         public final Object[] current;
 
@@ -404,7 +402,7 @@ final class ArrayStorage extends Object implements AbstractLookup.Storage {
             }
         }
 
-        public int addPair(AbstractLookup.Pair p) {
+        public int addPair(AbstractLookup.Pair<?> p) {
             p.setIndex(null, cnt);
             arr[cnt++] = p;
 

@@ -21,7 +21,7 @@ package org.openide.util;
 */
 public class Queue extends Object {
     /** Queue enumeration */
-    private java.util.LinkedList queue = new java.util.LinkedList();
+    private java.util.LinkedList<Object> queue = new java.util.LinkedList<Object>();
 
     /** Adds new item.
     * @param o object to add

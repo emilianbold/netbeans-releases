@@ -62,12 +62,12 @@ public class NbBundle extends Object {
      * Keeps only weak references to the class loaders.
      * @see "#9275"
      */
-    private static final Map localizedFileCache = new WeakHashMap(); // Map<ClassLoader,Map<String,URL>>
+    private static final Map<ClassLoader,Map<String,URL>> localizedFileCache = new WeakHashMap<ClassLoader,Map<String,URL>>();
 
     /**
      * Cache of resource bundles.
      */
-    private static final Map bundleCache = new WeakHashMap(); // Map<ClassLoader,Map<String,Reference<ResourceBundle>>>
+    private static final Map<ClassLoader,Map<String,Reference<ResourceBundle>>> bundleCache = new WeakHashMap<ClassLoader,Map<String,Reference<ResourceBundle>>>();
 
     /**
      * Do not call.
@@ -154,14 +154,14 @@ public class NbBundle extends Object {
         // [PENDING] in the future, could maybe do something neat if
         // USE_DEBUG_LOADER and ext is "html" or "txt" etc...
         URL lookup = null;
-        Iterator it = new LocaleIterator(locale);
+        Iterator<String> it = new LocaleIterator(locale);
         String cachePrefix = "[" + Integer.toString(loader.hashCode()) + "]"; // NOI18N
-        List cacheCandidates = new ArrayList(10); // List<String>
+        List<String> cacheCandidates = new ArrayList<String>(10);
         String baseNameSlashes = baseName.replace('.', '/');
-        Map perLoaderCache = (Map) localizedFileCache.get(loader);
+        Map<String,URL> perLoaderCache = localizedFileCache.get(loader);
 
         if (perLoaderCache == null) {
-            localizedFileCache.put(loader, perLoaderCache = new HashMap());
+            localizedFileCache.put(loader, perLoaderCache = new HashMap<String,URL>());
         }
 
         // #31008: better use of domain cache priming.
@@ -441,13 +441,13 @@ public class NbBundle extends Object {
      * @return a resource bundle (locale- and branding-merged), or null if not found
      */
     private static ResourceBundle getBundleFast(String name, Locale locale, ClassLoader loader) {
-        Map m;
+        Map<String,Reference<ResourceBundle>> m;
 
         synchronized (bundleCache) {
-            m = (Map) bundleCache.get(loader); // Map<String,Reference<ResourceBundle>>
+            m = bundleCache.get(loader); 
 
             if (m == null) {
-                bundleCache.put(loader, m = new HashMap());
+                bundleCache.put(loader, m = new HashMap<String,Reference<ResourceBundle>>());
             }
         }
 
@@ -480,8 +480,8 @@ public class NbBundle extends Object {
         String key = name + '/' + (brandingToken != null ? brandingToken : "-") + '/' + locale; // NOI18N
          */
         synchronized (m) {
-            Object o = m.get(key);
-            ResourceBundle b = (o != null) ? (ResourceBundle) ((Reference) o).get() : null;
+            Reference<ResourceBundle> o = m.get(key);
+            ResourceBundle b = o != null ? o.get() : null;
 
             if (b != null) {
                 return b;
@@ -489,7 +489,7 @@ public class NbBundle extends Object {
                 b = loadBundle(name, locale, loader);
 
                 if (b != null) {
-                    m.put(key, new TimedSoftReference(b, m, key));
+                    m.put(key, new TimedSoftReference<ResourceBundle>(b, m, key));
                 } else {
                     // Used to cache misses as well, to make the negative test faster.
                     // However this caused problems: see #31578.
@@ -509,8 +509,8 @@ public class NbBundle extends Object {
      */
     private static ResourceBundle loadBundle(String name, Locale locale, ClassLoader loader) {
         String sname = name.replace('.', '/');
-        Iterator it = new LocaleIterator(locale);
-        LinkedList l = new LinkedList();
+        Iterator<String> it = new LocaleIterator(locale);
+        LinkedList<String> l = new LinkedList<String>();
 
         while (it.hasNext()) {
             l.addFirst(it.next());
@@ -555,7 +555,15 @@ public class NbBundle extends Object {
             first = false;
         }
 
-        return new PBundle(p, locale);
+        return new PBundle(propsToStringMap(p), locale);
+    }
+
+    /** Just converts the Properties to Map<String,String> assuming the
+     * content is correct.
+     */
+    @SuppressWarnings("unchecked")
+    private static Map<String,String> propsToStringMap(Properties p) {
+        return (Map<String,String>)p;
     }
 
     /**
@@ -769,7 +777,7 @@ public class NbBundle extends Object {
      * A resource bundle based on <samp>.properties</samp> files (or any map).
      */
     private static final class PBundle extends ResourceBundle {
-        private final Map m; // Map<String,String>
+        private final Map<String,String> m;
         private final Locale locale;
 
         /**
@@ -777,12 +785,12 @@ public class NbBundle extends Object {
          * @param m a map from resources keys to values (typically both strings)
          * @param locale the locale it represents <em>(informational)</em>
          */
-        public PBundle(Map m, Locale locale) {
+        public PBundle(Map<String,String> m, Locale locale) {
             this.m = m;
             this.locale = locale;
         }
 
-        public Enumeration getKeys() {
+        public Enumeration<String> getKeys() {
             return Collections.enumeration(m.keySet());
         }
 
@@ -819,7 +827,7 @@ public class NbBundle extends Object {
             return loc;
         }
 
-        public Enumeration getKeys() {
+        public Enumeration<String> getKeys() {
             return Enumerations.removeDuplicates(Enumerations.concat(sub1.getKeys(), sub2.getKeys()));
         }
 
@@ -853,7 +861,7 @@ public class NbBundle extends Object {
     * Branding tokens with underscores are broken apart naturally: so e.g.
     * branding "f4j_ce" looks first for "f4j_ce" branding, then "f4j" branding, then none.
     */
-    private static class LocaleIterator extends Object implements Iterator {
+    private static class LocaleIterator extends Object implements Iterator<String> {
         /** this flag means, if default locale is in progress */
         private boolean defaultInProgress = false;
 
@@ -896,7 +904,7 @@ public class NbBundle extends Object {
         /** @return next sufix.
         * @exception NoSuchElementException if there is no more locale sufix.
         */
-        public Object next() throws NoSuchElementException {
+        public String next() throws NoSuchElementException {
             if (current == null) {
                 throw new NoSuchElementException();
             }
@@ -981,10 +989,10 @@ public class NbBundle extends Object {
         /** indices of known bundles; needed since DebugLoader's can be collected
          * when softly reachable, but this should be transparent to the user
          */
-        private static final Map knownIDs = new HashMap(); // Map<String,int>
+        private static final Map<String,Integer> knownIDs = new HashMap<String,Integer>();
 
         /** cache of existing debug loaders for regular loaders */
-        private static final Map existing = new WeakHashMap(); // Map<ClassLoader,Reference<DebugLoader>>
+        private static final Map<ClassLoader,Reference<ClassLoader>> existing = new WeakHashMap<ClassLoader,Reference<ClassLoader>>();
 
         private DebugLoader(ClassLoader cl) {
             super(cl);
@@ -1025,7 +1033,7 @@ public class NbBundle extends Object {
                 }
 
                 ClassLoader dl = new DebugLoader(normal);
-                existing.put(normal, new WeakReference(dl));
+                existing.put(normal, new WeakReference<ClassLoader>(dl));
 
                 return dl;
             }

@@ -44,9 +44,8 @@ public class Task extends Object implements Runnable {
     }
 
     /** map of subclasses to booleans whether they override waitFinished() or not
-     * <Class, Boolean>
      */
-    private static java.util.WeakHashMap overrides;
+    private static java.util.WeakHashMap<Class, Boolean> overrides;
 
     /** request processor for workarounding compatibility problem with
      * classes that do not override waitFinished (long)
@@ -60,7 +59,7 @@ public class Task extends Object implements Runnable {
     private boolean finished;
 
     /** listeners for the finish of task (TaskListener) */
-    private HashSet list;
+    private HashSet<TaskListener> list;
 
     /** Create a new task.
     * The runnable should provide its own error-handling, as
@@ -225,7 +224,7 @@ public class Task extends Object implements Runnable {
     */
     public synchronized void addTaskListener(TaskListener l) {
         if (list == null) {
-            list = new HashSet();
+            list = new HashSet<TaskListener>();
         }
 
         list.add(l);
@@ -263,18 +262,18 @@ public class Task extends Object implements Runnable {
             return true;
         }
 
-        java.util.WeakHashMap m;
+        java.util.WeakHashMap<Class,Boolean> m;
         Boolean does;
 
         synchronized (Task.class) {
             if (overrides == null) {
-                overrides = new java.util.WeakHashMap();
+                overrides = new java.util.WeakHashMap<Class, Boolean>();
                 RP = new RequestProcessor("Timeout waitFinished compatibility processor", 255); // NOI18N
             }
 
             m = overrides;
 
-            does = (Boolean) m.get(getClass());
+            does = m.get(getClass());
 
             if (does != null) {
                 return does.booleanValue();

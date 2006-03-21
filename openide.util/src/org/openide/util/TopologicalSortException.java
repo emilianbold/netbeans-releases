@@ -37,7 +37,7 @@ public final class TopologicalSortException extends Exception {
     private int counter;
 
     /** vertexes sorted by increasing value of y */
-    private Stack dualGraph = new Stack();
+    private Stack<Vertex> dualGraph = new Stack<Vertex>();
 
     TopologicalSortException(Collection vertexes, Map edges) {
         this.vertexes = vertexes;
@@ -52,10 +52,12 @@ public final class TopologicalSortException extends Exception {
     public final List partialSort() {
         Set[] all = topologicalSets();
 
-        ArrayList res = new ArrayList(vertexes.size());
+        ArrayList<Object> res = new ArrayList<Object>(vertexes.size());
 
         for (int i = 0; i < all.length; i++) {
-            res.addAll(all[i]);
+            for (Object e : all[i]) {
+                res.add(e);
+            }
         }
 
         return res;
@@ -75,7 +77,7 @@ public final class TopologicalSortException extends Exception {
     public final Set[] unsortableSets() {
         Set[] all = topologicalSets();
 
-        ArrayList unsort = new ArrayList();
+        ArrayList<Set> unsort = new ArrayList<Set>();
 
         for (int i = 0; i < all.length; i++) {
             if ((all[i].size() > 1) || !(all[i] instanceof HashSet)) {
@@ -83,7 +85,7 @@ public final class TopologicalSortException extends Exception {
             }
         }
 
-        return (Set[]) unsort.toArray(new Set[0]);
+        return unsort.toArray(new Set[0]);
     }
 
     /** Adds description why the graph cannot be sorted.
@@ -137,7 +139,7 @@ public final class TopologicalSortException extends Exception {
             return result;
         }
 
-        HashMap vertexInfo = new HashMap();
+        HashMap<Object,Vertex> vertexInfo = new HashMap<Object,Vertex>();
 
         // computes value X and Y for each vertex
         counter = 0;
@@ -151,15 +153,15 @@ public final class TopologicalSortException extends Exception {
         // now connect vertexes that cannot be sorted into own
         // sets
         // map from the original objects to 
-        Map objectsToSets = new HashMap();
+        Map<Object,Set> objectsToSets = new HashMap<Object,Set>();
 
-        ArrayList sets = new ArrayList();
+        ArrayList<Set> sets = new ArrayList<Set>();
 
         while (!dualGraph.isEmpty()) {
             Vertex v = (Vertex) dualGraph.pop();
 
             if (!v.visited) {
-                Set set = new HashSet();
+                Set<Object> set = new HashSet<Object>();
                 visitDualGraph(v, set);
 
                 if ((set.size() == 1) && v.edgesFrom.contains(v)) {
@@ -185,7 +187,7 @@ public final class TopologicalSortException extends Exception {
 
         // now topologically sort the sets
         // 1. prepare the map
-        HashMap edgesBetweenSets = new HashMap();
+        HashMap<Set,Collection<Set>> edgesBetweenSets = new HashMap<Set,Collection<Set>>();
         it = edges.entrySet().iterator();
 
         while (it.hasNext()) {
@@ -196,19 +198,19 @@ public final class TopologicalSortException extends Exception {
                 continue;
             }
 
-            Set from = (Set) objectsToSets.get(entry.getKey());
+            Set from = objectsToSets.get(entry.getKey());
 
-            Collection setsTo = (Collection) edgesBetweenSets.get(from);
+            Collection<Set> setsTo = edgesBetweenSets.get(from);
 
             if (setsTo == null) {
-                setsTo = new ArrayList();
+                setsTo = new ArrayList<Set>();
                 edgesBetweenSets.put(from, setsTo);
             }
 
             Iterator convert = leadsTo.iterator();
 
             while (convert.hasNext()) {
-                Set to = (Set) objectsToSets.get(convert.next());
+                Set to = objectsToSets.get(convert.next());
 
                 if (from != to) {
                     // avoid self cycles
@@ -219,7 +221,8 @@ public final class TopologicalSortException extends Exception {
 
         // 2. do the sort
         try {
-            result = (Set[]) Utilities.topologicalSort(sets, edgesBetweenSets).toArray(new Set[0]);
+            List<Set> listResult = Utilities.topologicalSort(sets, edgesBetweenSets);
+            result = listResult.toArray(new Set[0]);
         } catch (TopologicalSortException ex) {
             throw new IllegalStateException("Cannot happen"); // NOI18N
         }
@@ -232,7 +235,7 @@ public final class TopologicalSortException extends Exception {
      * @param vertex current vertex
      * @param vertexInfo the info
      */
-    private Vertex constructDualGraph(int counter, Object vertex, HashMap vertexInfo) {
+    private Vertex constructDualGraph(int counter, Object vertex, HashMap<Object,Vertex> vertexInfo) {
         Vertex info = (Vertex) vertexInfo.get(vertex);
 
         if (info == null) {
@@ -269,7 +272,7 @@ public final class TopologicalSortException extends Exception {
      * @param vertex vertex to start from
      * @param visited list of all objects that we've been to
      */
-    private void visitDualGraph(Vertex vertex, Collection visited) {
+    private void visitDualGraph(Vertex vertex, Collection<Object> visited) {
         if (vertex.visited) {
             return;
         }
@@ -289,12 +292,12 @@ public final class TopologicalSortException extends Exception {
      * comparable by the value of Y, but only after the value is set,
      * so the sort has to be done latelly.
      */
-    private static final class Vertex implements Comparable {
+    private static final class Vertex implements Comparable<Vertex> {
         /** the found object */
         public Object object;
 
         /** list of vertexes that point to this one */
-        public List edgesFrom = new ArrayList();
+        public List<Vertex> edgesFrom = new ArrayList<Vertex>();
 
         /** the counter state when we entered the vertex */
         public final int x;
@@ -331,10 +334,8 @@ public final class TopologicalSortException extends Exception {
          * @return  a negative integer, zero, or a positive integer as this object
          *                 is less than, equal to, or greater than the specified object.
          */
-        public int compareTo(Object o) {
-            Vertex v = (Vertex) o;
-
-            return v.y - y;
+        public int compareTo(Vertex o) {
+            return o.y - y;
         }
     }
 }

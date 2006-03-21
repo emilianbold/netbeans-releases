@@ -42,7 +42,7 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
      * Set of action classes for which we have already issued a warning that
      * {@link #asynchronous} was not overridden to return false.
      */
-    private static final Set warnedAsynchronousActions = new WeakSet(); // Set<Class>
+    private static final Set<Class> warnedAsynchronousActions = new WeakSet<Class>(); 
     private static final boolean DEFAULT_ASYNCH = !Boolean.getBoolean(
             "org.openide.util.actions.CallableSystemAction.synchronousByDefault"
         );

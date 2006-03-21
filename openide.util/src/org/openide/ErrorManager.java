@@ -502,15 +502,14 @@ public abstract class ErrorManager extends Object {
         /**
          * A set that has to be updated when the list of delegates
          * changes. All instances created by getInstance are held here.
-         * It is a set of DelagatingErrorManager.
          */
-        private WeakSet createdByMe = new WeakSet();
+        private WeakSet<DelegatingErrorManager> createdByMe = new WeakSet<DelegatingErrorManager>();
 
         /** If we are the "central" delagate this is not null and
          * we listen on the result. On newly created delegates this
          * is null.
          */
-        Lookup.Result r;
+        Lookup.Result<ErrorManager> r;
 
         public DelegatingErrorManager(String name) {
             this.name = name;
@@ -674,8 +673,9 @@ public abstract class ErrorManager extends Object {
          * Updates the list of delegates. Also updates all instances created
          * by ourselves.
          */
-        public synchronized void setDelegates(Collection newDelegates) {
-            java.util.LinkedHashSet d = new java.util.LinkedHashSet(newDelegates);
+        public synchronized void setDelegates(Collection<? extends ErrorManager> newDelegates) {
+            java.util.LinkedHashSet<ErrorManager> d;
+            d = new java.util.LinkedHashSet<ErrorManager>(newDelegates);
             delegates = d;
 
             for (Iterator i = createdByMe.iterator(); i.hasNext();) {
@@ -695,7 +695,7 @@ public abstract class ErrorManager extends Object {
          * @param DelagatingErrorManager d the instance to which we will attach
          */
         private void attachNewDelegates(DelegatingErrorManager dem, String name) {
-            Set newDelegatesForDem = new HashSet();
+            Set<ErrorManager> newDelegatesForDem = new HashSet<ErrorManager>();
 
             for (Iterator j = delegates.iterator(); j.hasNext();) {
                 ErrorManager e = (ErrorManager) j.next();
@@ -709,17 +709,14 @@ public abstract class ErrorManager extends Object {
          * delegates and adds a listener.
          */
         public void initialize() {
-            r = Lookup.getDefault().lookup(new Lookup.Template(ErrorManager.class));
-
-            Collection instances = r.allInstances();
-            setDelegates(instances);
+            r = Lookup.getDefault().lookup(new Lookup.Template<ErrorManager>(ErrorManager.class));
+            setDelegates(r.allInstances());
         }
 
         /** Updates the delegates.*/
         public void resultChanged(LookupEvent ev) {
             if (r != null) {
-                Collection instances = r.allInstances();
-                setDelegates(instances);
+                setDelegates(r.allInstances());
             }
         }
     }

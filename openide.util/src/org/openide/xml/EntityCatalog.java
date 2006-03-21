@@ -68,7 +68,7 @@ public abstract class EntityCatalog implements EntityResolver {
      * This catalog is forwarding implementation.
      */
     private static class Forwarder extends EntityCatalog {
-        private Lookup.Result result;
+        private Lookup.Result<EntityCatalog> result;
 
         Forwarder() {
         }
@@ -76,15 +76,12 @@ public abstract class EntityCatalog implements EntityResolver {
         public InputSource resolveEntity(String publicID, String systemID)
         throws IOException, SAXException {
             if (result == null) {
-                Lookup.Template temp = new Lookup.Template(EntityCatalog.class);
+                Lookup.Template<EntityCatalog> temp = new Lookup.Template<EntityCatalog>(EntityCatalog.class);
                 result = Lookup.getDefault().lookup(temp);
             }
 
-            Iterator it = result.allInstances().iterator();
-
-            while (it.hasNext()) {
+            for (EntityCatalog res : result.allInstances()) {
                 // using resolver's method because EntityCatalog extends EntityResolver
-                EntityCatalog res = (EntityCatalog) it.next();
                 InputSource is = res.resolveEntity(publicID, systemID);
 
                 if (is != null) {

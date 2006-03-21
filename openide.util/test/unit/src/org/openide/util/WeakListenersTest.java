@@ -265,21 +265,21 @@ public class WeakListenersTest extends NbTestCase {
     public void testExceptionIllegalState () {
         Listener l = new Listener ();
         try {
-            WeakListeners.create (PropertyChangeListener.class, javax.naming.event.NamingListener.class, l, null);
+            WeakListeners.create ((Class)PropertyChangeListener.class, (Class)javax.naming.event.NamingListener.class, l, null);
             fail ("This shall not be allowed as NamingListener is not superclass of PropertyChangeListener");
         } catch (IllegalArgumentException ex) {
             // ok
         }
         
         try {
-            WeakListeners.create (Object.class, l, null);
+            WeakListeners.create ((Class)Object.class, l, null);
             fail ("Not interface, it should fail");
         } catch (IllegalArgumentException ex) {
             // ok
         }
         
         try {
-            WeakListeners.create (Object.class, Object.class, l, null);
+            WeakListeners.create ((Class)Object.class, (Class)Object.class, l, null);
             fail ("Not interface, it should fail");
         } catch (IllegalArgumentException ex) {
             // ok
@@ -361,8 +361,8 @@ public class WeakListenersTest extends NbTestCase {
         }
     }
     
-    private static final class Listener 
-    implements java.beans.PropertyChangeListener, javax.naming.event.ObjectChangeListener {
+    private static final class Listener
+    implements PCL, java.beans.PropertyChangeListener, javax.naming.event.ObjectChangeListener {
         public int cnt;
         
         public void propertyChange (java.beans.PropertyChangeEvent ev) {

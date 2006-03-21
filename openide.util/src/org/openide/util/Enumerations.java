@@ -37,8 +37,9 @@ public final class Enumerations extends Object {
      * from <code>empty().nextElement()</code>.
      * @return the enumeration
      */
-    public static final Enumeration empty() {
-        return Collections.enumeration(Collections.EMPTY_LIST);
+    public static final <T> Enumeration<T> empty() {
+        Collection<T> emptyL = Collections.emptyList();
+        return Collections.enumeration(emptyL);
     }
 
     /**
@@ -46,7 +47,7 @@ public final class Enumerations extends Object {
      * @param obj the element to be present in the enumeration.
      * @return enumeration
      */
-    public static Enumeration singleton(Object obj) {
+    public static <T> Enumeration<T> singleton(T obj) {
         return Collections.enumeration(Collections.singleton(obj));
     }
 
@@ -61,8 +62,11 @@ public final class Enumerations extends Object {
      * @param en2 second enumeration
      * @return enumeration
      */
-    public static Enumeration concat(Enumeration en1, Enumeration en2) {
-        return new SeqEn(en1, en2);
+    public static <T> Enumeration<T> concat(Enumeration<? extends T> en1, Enumeration<? extends T> en2) {
+        ArrayList<Enumeration<? extends T>> two = new ArrayList<Enumeration<? extends T>>();
+        two.add(en1);
+        two.add(en2);
+        return new SeqEn<T>(Collections.enumeration(two));
     }
 
     /**
@@ -76,8 +80,8 @@ public final class Enumerations extends Object {
      * @param enumOfEnums Enumeration of Enumeration elements
      * @return enumeration
      */
-    public static Enumeration concat(Enumeration enumOfEnums) {
-        return new SeqEn(enumOfEnums);
+    public static <T> Enumeration<T> concat(Enumeration<? extends Enumeration<? extends T>> enumOfEnums) {
+        return new SeqEn<T>(enumOfEnums);
     }
 
     /**
@@ -89,11 +93,11 @@ public final class Enumerations extends Object {
      * @param en enumeration to filter
      * @return enumeration without duplicated items
      */
-    public static Enumeration removeDuplicates(Enumeration en) {
-        class RDupls implements Processor {
-            private Set set = new HashSet();
+    public static <T> Enumeration<T> removeDuplicates(Enumeration<T> en) {
+        class RDupls implements Processor<T,T> {
+            private Set<T> set = new HashSet<T>();
 
-            public Object process(Object o, Collection nothing) {
+            public T process(T o, Collection<T> nothing) {
                 return set.add(o) ? o : null;
             }
         }
@@ -106,7 +110,7 @@ public final class Enumerations extends Object {
      * @param arr the array of object
      * @return enumeration of those objects
      */
-    public static Enumeration array(Object[] arr) {
+    public static <T> Enumeration<T> array(T... arr) {
         return Collections.enumeration(Arrays.asList(arr));
     }
 
@@ -115,8 +119,8 @@ public final class Enumerations extends Object {
      * @param en enumeration that can contain nulls
      * @return new enumeration without null values
      */
-    public static Enumeration removeNulls(Enumeration en) {
-        return filter(en, new RNulls());
+    public static <T> Enumeration<T> removeNulls(Enumeration<T> en) {
+        return filter(en, new RNulls<T>());
     }
 
     /**
@@ -138,8 +142,8 @@ public final class Enumerations extends Object {
      * @param processor a callback processor for the elements (its toAdd arguments is always null)
      * @return new enumeration where all elements has been processed
      */
-    public static Enumeration convert(Enumeration en, Processor processor) {
-        return new AltEn(en, processor);
+    public static <T,R> Enumeration<R> convert(Enumeration<T> en, Processor<T,R> processor) {
+        return new AltEn<T,R>(en, processor);
     }
 
     /**
@@ -166,8 +170,8 @@ public final class Enumerations extends Object {
      * @param filter a callback processor for the elements (its toAdd arguments is always null)
      * @return new enumeration which does not include non-processed (returned null from processor) elements
      */
-    public static Enumeration filter(Enumeration en, Processor filter) {
-        return new FilEn(en, filter);
+    public static <T,R> Enumeration<R> filter(Enumeration<T> en, Processor<T,R> filter) {
+        return new FilEn<T,R>(en, filter);
     }
 
     /**
@@ -199,8 +203,8 @@ public final class Enumerations extends Object {
      *       <code>null</code> if the filter returned <code>null</code> from its
      *       {@link Processor#process} method.
      */
-    public static Enumeration queue(Enumeration en, Processor filter) {
-        QEn q = new QEn(filter);
+    public static <T,R> Enumeration<R> queue(Enumeration<T> en, Processor<T,R> filter) {
+        QEn<T,R> q = new QEn<T,R>(filter);
 
         while (en.hasMoreElements()) {
             q.put(en.nextElement());
@@ -213,26 +217,26 @@ public final class Enumerations extends Object {
      * Processor interface that can filter out objects from the enumeration,
      * change them or add aditional objects to the end of the current enumeration.
      */
-    public static interface Processor {
+    public static interface Processor<T,R> {
         /** @param original the object that is going to be returned from the enumeration right now
          * @return a replacement for this object
          * @param toAdd can be non-null if one can add new objects at the end of the enumeration
          */
-        public Object process(Object original, Collection toAdd);
+        public R process(T original, Collection<T> toAdd);
     }
 
     /** Altering enumeration implementation */
-    private static final class AltEn extends Object implements Enumeration {
+    private static final class AltEn<T,R> extends Object implements Enumeration<R> {
         /** enumeration to filter */
-        private Enumeration en;
+        private Enumeration<T> en;
 
         /** map to alter */
-        private Processor process;
+        private Processor<T,R> process;
 
         /**
         * @param en enumeration to filter
         */
-        public AltEn(Enumeration en, Processor process) {
+        public AltEn(Enumeration<T> en, Processor<T,R> process) {
             this.en = en;
             this.process = process;
         }
@@ -247,19 +251,19 @@ public final class Enumerations extends Object {
         * @exception NoSuchElementException can be thrown if there is no next object
         *   in the enumeration
         */
-        public Object nextElement() {
+        public R nextElement() {
             return process.process(en.nextElement(), null);
         }
     }
      // end of AltEn
 
     /** Sequence of enumerations */
-    private static final class SeqEn extends Object implements Enumeration {
+    private static final class SeqEn<T> extends Object implements Enumeration<T> {
         /** enumeration of Enumerations */
-        private Enumeration en;
+        private Enumeration<? extends Enumeration<? extends T>> en;
 
         /** current enumeration */
-        private Enumeration current;
+        private Enumeration<? extends T> current;
 
         /** is {@link #current} up-to-date and has more elements?
         * The combination <CODE>current == null</CODE> and
@@ -274,16 +278,8 @@ public final class Enumerations extends Object {
         *
         * @param en enumeration of Enumerations that should be sequenced
         */
-        public SeqEn(Enumeration en) {
+        public SeqEn(Enumeration<? extends Enumeration <? extends T>> en) {
             this.en = en;
-        }
-
-        /** Composes two enumerations into one.
-        * @param first first enumeration
-        * @param second second enumeration
-        */
-        public SeqEn(Enumeration first, Enumeration second) {
-            this(array(new Enumeration[] { first, second }));
         }
 
         /** Ensures that current enumeration is set. If there aren't more
@@ -292,7 +288,7 @@ public final class Enumerations extends Object {
         private void ensureCurrent() {
             while ((current == null) || !current.hasMoreElements()) {
                 if (en.hasMoreElements()) {
-                    current = (Enumeration) en.nextElement();
+                    current = en.nextElement();
                 } else {
                     // no next valid enumeration
                     current = null;
@@ -315,7 +311,7 @@ public final class Enumerations extends Object {
         /** @return next element
         * @exception NoSuchElementException if there is no next element
         */
-        public Object nextElement() {
+        public T nextElement() {
             if (!checked) {
                 ensureCurrent();
             }
@@ -334,39 +330,39 @@ public final class Enumerations extends Object {
 
     /** QueueEnumeration
      */
-    private static class QEn extends Object implements Enumeration {
+    private static class QEn<T,R> extends Object implements Enumeration<R> {
         /** next object to be returned */
-        private ListItem next = null;
+        private ListItem<T> next = null;
 
         /** last object in the queue */
-        private ListItem last = null;
+        private ListItem<T> last = null;
 
         /** processor to use */
-        private Processor processor;
+        private Processor<T,R> processor;
 
-        public QEn(Processor p) {
+        public QEn(Processor<T,R> p) {
             this.processor = p;
         }
 
         /** Put adds new object to the end of queue.
         * @param o the object to add
         */
-        public void put(Object o) {
+        public void put(T o) {
             if (last != null) {
-                ListItem li = new ListItem(o);
+                ListItem<T> li = new ListItem<T>(o);
                 last.next = li;
                 last = li;
             } else {
-                next = last = new ListItem(o);
+                next = last = new ListItem<T>(o);
             }
         }
 
         /** Adds array of objects into the queue.
         * @param arr array of objects to put into the queue
         */
-        public void put(Object[] arr) {
-            for (int i = 0; i < arr.length; i++) {
-                put(arr[i]);
+        public void put(Collection<? extends T> arr) {
+            for (T e : arr) {
+                put(e);
             }
         }
 
@@ -380,12 +376,12 @@ public final class Enumerations extends Object {
         /** @return next object in enumeration
         * @exception NoSuchElementException if there is no next object
         */
-        public Object nextElement() {
+        public R nextElement() {
             if (next == null) {
                 throw new NoSuchElementException();
             }
 
-            Object res = next.object;
+            T res = next.object;
 
             if ((next = next.next) == null) {
                 last = null;
@@ -393,29 +389,29 @@ public final class Enumerations extends Object {
 
             ;
 
-            ToAdd toAdd = new ToAdd(this);
-            res = processor.process(res, toAdd);
+            ToAdd<T,R> toAdd = new ToAdd<T,R>(this);
+            R out = processor.process(res, toAdd);
             toAdd.finish();
 
-            return res;
+            return out;
         }
 
         /** item in linked list of Objects */
-        private static final class ListItem {
-            Object object;
-            ListItem next;
+        private static final class ListItem<T> {
+            T object;
+            ListItem<T> next;
 
             /** @param o the object for this item */
-            ListItem(Object o) {
+            ListItem(T o) {
                 object = o;
             }
         }
 
         /** Temporary collection that supports only add and addAll operations*/
-        private static final class ToAdd extends Object implements Collection {
-            private QEn q;
+        private static final class ToAdd<T,R> extends Object implements Collection<T> {
+            private QEn<T,R> q;
 
-            public ToAdd(QEn q) {
+            public ToAdd(QEn<T,R> q) {
                 this.q = q;
             }
 
@@ -423,14 +419,14 @@ public final class Enumerations extends Object {
                 this.q = null;
             }
 
-            public boolean add(Object o) {
+            public boolean add(T o) {
                 q.put(o);
 
                 return true;
             }
 
-            public boolean addAll(Collection c) {
-                q.put(c.toArray());
+            public boolean addAll(Collection<? extends T> c) {
+                q.put(c);
 
                 return true;
             }
@@ -455,7 +451,7 @@ public final class Enumerations extends Object {
                 throw new UnsupportedOperationException(msg());
             }
 
-            public Iterator iterator() {
+            public Iterator<T> iterator() {
                 throw new UnsupportedOperationException(msg());
             }
 
@@ -479,7 +475,7 @@ public final class Enumerations extends Object {
                 throw new UnsupportedOperationException(msg());
             }
 
-            public Object[] toArray(Object[] a) {
+            public<X> X[] toArray(X[] a) {
                 throw new UnsupportedOperationException(msg());
             }
         }
@@ -488,24 +484,24 @@ public final class Enumerations extends Object {
      // end of QEn
 
     /** Filtering enumeration */
-    private static final class FilEn extends Object implements Enumeration {
+    private static final class FilEn<T,R> extends Object implements Enumeration<R> {
         /** marker object stating there is no nexte element prepared */
         private static final Object EMPTY = new Object();
 
         /** enumeration to filter */
-        private Enumeration en;
+        private Enumeration<T> en;
 
         /** element to be returned next time or {@link #EMPTY} if there is
         * no such element prepared */
-        private Object next = EMPTY;
+        private R next = empty();
 
         /** the set to use as filter */
-        private Processor filter;
+        private Processor<T,R> filter;
 
         /**
         * @param en enumeration to filter
         */
-        public FilEn(Enumeration en, Processor filter) {
+        public FilEn(Enumeration<T> en, Processor<T,R> filter) {
             this.en = en;
             this.filter = filter;
         }
@@ -513,7 +509,7 @@ public final class Enumerations extends Object {
         /** @return true if there is more elements in the enumeration
         */
         public boolean hasMoreElements() {
-            if (next != EMPTY) {
+            if (next != empty()) {
                 // there is a object already prepared
                 return true;
             }
@@ -530,7 +526,7 @@ public final class Enumerations extends Object {
                 ;
             }
 
-            next = EMPTY;
+            next = empty();
 
             return false;
         }
@@ -539,22 +535,27 @@ public final class Enumerations extends Object {
         * @exception NoSuchElementException can be thrown if there is no next object
         *   in the enumeration
         */
-        public Object nextElement() {
+        public R nextElement() {
             if ((next == EMPTY) && !hasMoreElements()) {
                 throw new NoSuchElementException();
             }
 
-            Object res = next;
-            next = EMPTY;
+            R res = next;
+            next = empty();
 
             return res;
+        }
+
+        @SuppressWarnings("unchecked")
+        private R empty() {
+            return (R)EMPTY;
         }
     }
      // end of FilEn
 
     /** Returns true from contains if object is not null */
-    private static class RNulls implements Processor {
-        public Object process(Object original, Collection toAdd) {
+    private static class RNulls<T> implements Processor<T,T> {
+        public T process(T original, Collection<T> toAdd) {
             return original;
         }
     }

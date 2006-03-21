@@ -19,19 +19,21 @@ import java.io.*;
 import java.lang.ref.WeakReference;
 
 import java.util.*;
+import org.openide.util.lookup.AbstractLookup.Pair;
 
 
 /** Storages that can switch between another storages.
  * @author  Jaroslav Tulach
  */
-final class DelegatingStorage extends Object implements Serializable, AbstractLookup.Storage {
+final class DelegatingStorage<Transaction> extends Object
+implements Serializable, AbstractLookup.Storage<Transaction> {
     /** object to delegate to */
-    private AbstractLookup.Storage delegate;
+    private AbstractLookup.Storage<Transaction> delegate;
 
     /** thread just accessing the storage */
     private Thread owner;
 
-    public DelegatingStorage(AbstractLookup.Storage d) {
+    public DelegatingStorage(AbstractLookup.Storage<Transaction> d) {
         this.delegate = d;
         this.owner = Thread.currentThread();
     }
@@ -61,44 +63,55 @@ final class DelegatingStorage extends Object implements Serializable, AbstractLo
 
     /** Exits from the owners ship of the storage.
      */
-    public AbstractLookup.Storage exitDelegate() {
+    public AbstractLookup.Storage<Transaction> exitDelegate() {
         if (Thread.currentThread() != owner) {
             throw new IllegalStateException("Onwer: " + owner + " caller: " + Thread.currentThread()); // NOI18N
         }
 
-        AbstractLookup.Storage d = delegate;
+        AbstractLookup.Storage<Transaction> d = delegate;
         delegate = null;
 
         return d;
     }
 
-    public boolean add(org.openide.util.lookup.AbstractLookup.Pair item, Object transaction) {
+    public boolean add(AbstractLookup.Pair<?> item, Transaction transaction) {
         return delegate.add(item, transaction);
     }
 
-    public void remove(org.openide.util.lookup.AbstractLookup.Pair item, Object transaction) {
+    public void remove(org.openide.util.lookup.AbstractLookup.Pair item, Transaction transaction) {
         delegate.remove(item, transaction);
     }
 
-    public void retainAll(Map retain, Object transaction) {
+    public void retainAll(Map retain, Transaction transaction) {
         delegate.retainAll(retain, transaction);
     }
 
-    public Object beginTransaction(int ensure) {
+    /** A special method to change the backing storage.
+     * In fact it is not much typesafe as it changes the
+     * type of Transaction but we know that nobody is currently
+     * holding a transaction object, so there cannot be inconsitencies.
+     */
+    @SuppressWarnings("unchecked")
+    private void changeDelegate(InheritanceTree st) {
+        delegate = (AbstractLookup.Storage<Transaction>)st;
+    }
+
+    public Transaction beginTransaction(int ensure) {
         try {
             return delegate.beginTransaction(ensure);
         } catch (UnsupportedOperationException ex) {
             // let's convert to InheritanceTree
             ArrayStorage arr = (ArrayStorage) delegate;
-            delegate = new InheritanceTree();
+            InheritanceTree inh = new InheritanceTree();
+            changeDelegate(inh);
 
             //
             // Copy content
             //
-            Enumeration en = arr.lookup(Object.class);
+            Enumeration<Pair<Object>> en = arr.lookup(Object.class);
 
             while (en.hasMoreElements()) {
-                if (!delegate.add((AbstractLookup.Pair) en.nextElement(), new ArrayList())) {
+                if (!inh.add(en.nextElement(), new ArrayList<Class>())) {
                     throw new IllegalStateException("All objects have to be accepted"); // NOI18N
                 }
             }
@@ -106,10 +119,10 @@ final class DelegatingStorage extends Object implements Serializable, AbstractLo
             //
             // Copy listeners
             //
-            AbstractLookup.ReferenceToResult ref = arr.cleanUpResult(null);
+            AbstractLookup.ReferenceToResult<?> ref = arr.cleanUpResult(null);
 
             if (ref != null) {
-                ref.cloneList(delegate);
+                ref.cloneList(inh);
             }
 
             // we have added the current content and now we can start transaction
@@ -123,11 +136,11 @@ final class DelegatingStorage extends Object implements Serializable, AbstractLo
         return delegate.cleanUpResult(templ);
     }
 
-    public void endTransaction(Object transaction, Set modified) {
+    public void endTransaction(Transaction transaction, Set<AbstractLookup.R> modified) {
         delegate.endTransaction(transaction, modified);
     }
 
-    public Enumeration lookup(Class clazz) {
+    public <T> Enumeration<Pair<T>> lookup(Class<T> clazz) {
         return delegate.lookup(clazz);
     }
 

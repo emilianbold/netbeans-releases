@@ -44,10 +44,10 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
     private static final String PROP_ACTION_PERFORMER = "actionPerformer"; // NOI18N
 
     /** a list of all actions that has survive focus change set to false */
-    private static final WeakSet notSurviving = new WeakSet(37);
+    private static final WeakSet<Class<? extends SystemAction>> notSurviving = new WeakSet<Class<? extends SystemAction>>(37);
 
     /** a list of CallableSystemAction actions surviving focus change */
-    private static final WeakSet surviving = new WeakSet(37);
+    private static final WeakSet<Class<? extends SystemAction>> surviving = new WeakSet<Class<? extends SystemAction>>(37);
 
     /** key to access listener */
     private static final Object LISTENER = new Object();
@@ -254,18 +254,18 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
     /** Array of actions from a set of classes.
      */
-    private static ArrayList toInstances(java.util.Set s) {
-        ArrayList actions;
+    private static ArrayList<SystemAction> toInstances(java.util.Set<Class<? extends SystemAction>> s) {
+        ArrayList<SystemAction> actions;
 
         synchronized (notSurviving) {
-            actions = new ArrayList(s.size());
+            actions = new ArrayList<SystemAction>(s.size());
 
-            Iterator it = s.iterator();
+            Iterator<Class<? extends SystemAction>> it = s.iterator();
 
             while (it.hasNext()) {
-                Class c = (Class) it.next();
+                Class<? extends SystemAction> c = it.next();
 
-                Object a = SystemAction.findObject(c, false);
+                SystemAction a = SystemAction.findObject(c, false);
 
                 if (a != null) {
                     actions.add(a);
@@ -310,12 +310,12 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
      */
     private static final class GlobalManager implements LookupListener {
         private static GlobalManager instance;
-        private Lookup.Result result;
-        private Reference actionMap = new WeakReference(null);
+        private Lookup.Result<ActionMap> result;
+        private Reference<ActionMap> actionMap = new WeakReference<ActionMap>(null);
         private final ActionMap survive = new ActionMap();
 
         private GlobalManager() {
-            result = Utilities.actionsGlobalContext().lookup(new Lookup.Template(ActionMap.class));
+            result = Utilities.actionsGlobalContext().lookup(new Lookup.Template<ActionMap>(ActionMap.class));
             result.addLookupListener(this);
             resultChanged(null);
         }
@@ -331,7 +331,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         }
 
         public Action findGlobalAction(Object key, boolean surviveFocusChange) {
-            ActionMap map = (ActionMap) actionMap.get();
+            ActionMap map = actionMap.get();
             Action a = (map == null) ? null : map.get(key);
 
             if (surviveFocusChange) {
@@ -363,7 +363,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
         /** Change all that do not survive ActionMap change */
         public void resultChanged(org.openide.util.LookupEvent ev) {
-            ActionMap a = (ActionMap) Utilities.actionsGlobalContext().lookup(ActionMap.class);
+            ActionMap a = Utilities.actionsGlobalContext().lookup(ActionMap.class);
 
             if (errLog) {
                 err.log("changed map : " + a); // NOI18N
@@ -374,7 +374,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
                 return;
             }
 
-            actionMap = new WeakReference(a);
+            actionMap = new WeakReference<ActionMap>(a);
 
             if (errLog) {
                 err.log("clearActionPerformers"); // NOI18N
@@ -387,7 +387,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
     /** An action that holds a weak reference to other action.
      */
-    private static final class WeakAction extends WeakReference implements Action {
+    private static final class WeakAction extends WeakReference<Action> implements Action {
         public WeakAction(Action delegate) {
             super(delegate);
         }
@@ -428,12 +428,12 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
     /** A class that listens on changes in enabled state of an action
      * and updates the state of the action according to it.
      */
-    private static final class ActionDelegateListener extends WeakReference implements PropertyChangeListener {
+    private static final class ActionDelegateListener extends WeakReference<CallbackSystemAction> implements PropertyChangeListener {
         private WeakReference delegate;
 
-        public ActionDelegateListener(CallbackSystemAction c, javax.swing.Action delegate) {
+        public ActionDelegateListener(CallbackSystemAction c, Action delegate) {
             super(c);
-            this.delegate = new WeakReference(delegate);
+            this.delegate = new WeakReference<Action>(delegate);
             delegate.addPropertyChangeListener(this);
         }
 
@@ -466,7 +466,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
                 prev.removePropertyChangeListener(this);
             }
 
-            this.delegate = new WeakReference(action);
+            this.delegate = new WeakReference<Action>(action);
             action.addPropertyChangeListener(this);
         }
 
@@ -497,7 +497,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         private CallbackSystemAction delegate;
 
         /** lookup we are associated with (or null) */
-        private org.openide.util.Lookup.Result result;
+        private Lookup.Result<ActionMap> result;
 
         /** previous state of enabled */
         private boolean enabled;
@@ -516,7 +516,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
             this.weakL = org.openide.util.WeakListeners.propertyChange(this, null);
             this.enabled = a.getActionPerformer() != null;
 
-            this.result = actionContext.lookup(new org.openide.util.Lookup.Template(javax.swing.ActionMap.class));
+            this.result = actionContext.lookup(new Lookup.Template<ActionMap>(ActionMap.class));
             this.result.addLookupListener(
                 (LookupListener) org.openide.util.WeakListeners.create(LookupListener.class, this, this.result)
             );
@@ -579,7 +579,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
                     last.removePropertyChangeListener(weakL);
                 }
 
-                lastRef = new WeakReference(a);
+                lastRef = new WeakReference<Action>(a);
                 a.addPropertyChangeListener(weakL);
             }
 

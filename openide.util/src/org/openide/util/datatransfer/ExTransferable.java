@@ -46,7 +46,7 @@ public class ExTransferable extends Object implements Transferable {
     }
 
     /** hash map that assigns objects to dataflavors (DataFlavor, Single) */
-    private LinkedHashMap map;
+    private LinkedHashMap<DataFlavor,Single> map;
 
     /** listeners */
     private EventListenerList listeners;
@@ -56,7 +56,7 @@ public class ExTransferable extends Object implements Transferable {
     * @param o clipobard owner (or null)
     */
     private ExTransferable(final Transferable t) {
-        map = new LinkedHashMap();
+        map = new LinkedHashMap<DataFlavor,Single>();
 
         final DataFlavor[] df = t.getTransferDataFlavors();
 
@@ -356,7 +356,7 @@ public class ExTransferable extends Object implements Transferable {
             * @param array array of flavors
             */
             public boolean areDataFlavorsSupported(DataFlavor[] array) {
-                HashSet flav = new HashSet();
+                HashSet<DataFlavor> flav = new HashSet<DataFlavor>();
 
                 for (int i = 0; i < array.length; i++) {
                     flav.add(array[i]);

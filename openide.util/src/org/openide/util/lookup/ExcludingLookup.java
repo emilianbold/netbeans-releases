@@ -47,7 +47,7 @@ final class ExcludingLookup extends org.openide.util.Lookup {
         return "ExcludingLookup: " + delegate + " excludes: " + Arrays.asList(classes()); // NOI18N
     }
 
-    public Result lookup(Template template) {
+    public <T> Result<T> lookup(Template<T> template) {
         if (template == null) {
             throw new NullPointerException();
         }
@@ -57,15 +57,15 @@ final class ExcludingLookup extends org.openide.util.Lookup {
             return Lookup.EMPTY.lookup(template);
         }
 
-        return new R(template.getType(), delegate.lookup(template));
+        return new R<T>(template.getType(), delegate.lookup(template));
     }
 
-    public Object lookup(Class clazz) {
+    public <T> T lookup(Class<T> clazz) {
         if (areSubclassesOfThisClassAlwaysExcluded(clazz)) {
             return null;
         }
 
-        Object res = delegate.lookup(clazz);
+        T res = delegate.lookup(clazz);
 
         if (isObjectAccessible(clazz, res, 0)) {
             return res;
@@ -74,12 +74,12 @@ final class ExcludingLookup extends org.openide.util.Lookup {
         }
     }
 
-    public org.openide.util.Lookup.Item lookupItem(org.openide.util.Lookup.Template template) {
+    public <T> Lookup.Item<T> lookupItem(Lookup.Template<T> template) {
         if (areSubclassesOfThisClassAlwaysExcluded(template.getType())) {
             return null;
         }
 
-        org.openide.util.Lookup.Item retValue = delegate.lookupItem(template);
+        Lookup.Item<T> retValue = delegate.lookupItem(template);
 
         if (isObjectAccessible(template.getType(), retValue, 2)) {
             return retValue;
@@ -90,8 +90,8 @@ final class ExcludingLookup extends org.openide.util.Lookup {
 
     /** @return true if the instance of class c shall never be returned from this lookup
      */
-    private boolean areSubclassesOfThisClassAlwaysExcluded(Class c) {
-        Class[] arr = classes();
+    private boolean areSubclassesOfThisClassAlwaysExcluded(Class<?> c) {
+        Class<?>[] arr = classes();
 
         for (int i = 0; i < arr.length; i++) {
             if (arr[i].isAssignableFrom(c)) {
@@ -104,7 +104,7 @@ final class ExcludingLookup extends org.openide.util.Lookup {
 
     /** Returns the array of classes this lookup filters.
      */
-    final Class[] classes() {
+    final Class<?>[] classes() {
         if (classes instanceof Class[]) {
             return (Class[]) classes;
         } else {
@@ -116,7 +116,7 @@ final class ExcludingLookup extends org.openide.util.Lookup {
      * releation ship without walking thru any of the classes mentioned in the
      * barrier.
      */
-    private static boolean isAccessible(Class[] barriers, Class from, Class to) {
+    private static boolean isAccessible(Class<?>[] barriers, Class<?> from, Class<?> to) {
         if ((to == null) || !from.isAssignableFrom(to)) {
             // no way to reach each other by walking up
             return false;
@@ -196,28 +196,25 @@ final class ExcludingLookup extends org.openide.util.Lookup {
 
     /** Filters collection accroding to set of given filters.
      */
-    final java.util.Collection filter(Class[] arr, Class from, java.util.Collection c, int type) {
-        java.util.Collection ret = null;
+    final <E, T extends Collection<E>> T filter(
+        Class<?>[] arr, Class<?> from, T c, int type, T prototype
+    ) {
+        T ret = null;
 
 
 // optimistic strategy expecting we will not need to filter
 TWICE: 
         for (;;) {
-            Iterator it = c.iterator();
+            Iterator<E> it = c.iterator();
 BIG: 
             while (it.hasNext()) {
-                Object res = it.next();
+                E res = it.next();
 
                 if (!isObjectAccessible(arr, from, res, type)) {
                     if (ret == null) {
                         // we need to restart the scanning again 
                         // as there is an active filter
-                        if (type == 1) {
-                            ret = new java.util.HashSet();
-                        } else {
-                            ret = new ArrayList(c.size());
-                        }
-
+                        ret = prototype;
                         continue TWICE;
                     }
 
@@ -239,12 +236,12 @@ BIG:
 
     /** Delegating result that filters unwanted items and instances.
      */
-    private final class R extends WaitableResult implements LookupListener {
-        private Result result;
+    private final class R<T> extends WaitableResult<T> implements LookupListener {
+        private Result<T> result;
         private Object listeners;
-        private Class from;
+        private Class<?> from;
 
-        R(Class from, Result delegate) {
+        R(Class<?> from, Result<T> delegate) {
             this.from = from;
             this.result = delegate;
         }
@@ -281,16 +278,20 @@ BIG:
             }
         }
 
-        public java.util.Collection allInstances() {
-            return filter(classes(), from, result.allInstances(), 0);
+        public Collection<? extends T> allInstances() {
+            return openCol(result.allInstances(), 0);
         }
 
-        public Set allClasses() {
-            return (Set) filter(classes(), from, result.allClasses(), 1);
+        private <S> Collection<S> openCol(Collection<S> c, int type) {
+            return filter(classes(), from, c, type, new ArrayList<S>(c.size()));
         }
 
-        public Collection allItems() {
-            return filter(classes(), from, result.allItems(), 2);
+        public Set<Class<? extends T>> allClasses() {
+            return filter(classes(), from, result.allClasses(), 1, new HashSet<Class<? extends T>>());
+        }
+
+        public Collection<? extends Item<T>> allItems() {
+            return openCol(result.allItems(), 2);
         }
 
         public void resultChanged(org.openide.util.LookupEvent ev) {
@@ -299,7 +300,7 @@ BIG:
             }
         }
 
-        protected void collectFires(Collection evAndListeners) {
+        protected void collectFires(Collection<Object> evAndListeners) {
             LookupListener[] arr;
 
             synchronized (this) {
@@ -310,8 +311,8 @@ BIG:
                 if (listeners instanceof LookupListener) {
                     arr = new LookupListener[] { (LookupListener) listeners };
                 } else {
-                    ArrayList l = (ArrayList) listeners;
-                    arr = (LookupListener[]) l.toArray(new LookupListener[l.size()]);
+                    ArrayList<?> l = (ArrayList<?>) listeners;
+                    arr = l.toArray(new LookupListener[l.size()]);
                 }
             }
 

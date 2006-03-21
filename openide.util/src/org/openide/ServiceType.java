@@ -197,16 +197,16 @@ public abstract class ServiceType extends Object implements java.io.Serializable
         /** Get all available services managed by the engine.
         * @return an enumeration of {@link ServiceType}s
         */
-        public abstract Enumeration services();
+        public abstract Enumeration<ServiceType> services();
 
         /** Get all available services that are assignable to the given superclass.
         * @param clazz the class that all services should be subclass of
         * @return an enumeration of all matching {@link ServiceType}s
         */
-        public Enumeration services(final Class clazz) {
-            class IsInstance implements org.openide.util.Enumerations.Processor {
-                public Object process(Object obj, java.util.Collection ignore) {
-                    return clazz.isInstance(obj) ? obj : null;
+        public <T extends ServiceType> Enumeration<T> services(final Class<T> clazz) {
+            class IsInstance implements org.openide.util.Enumerations.Processor<ServiceType,T> {
+                public T process(ServiceType obj, java.util.Collection ignore) {
+                    return clazz.isInstance(obj) ? clazz.cast(obj) : null;
                 }
             }
 
@@ -311,16 +311,15 @@ public abstract class ServiceType extends Object implements java.io.Serializable
         public ServiceType getServiceType() {
             if (serviceType == null) {
                 // the class to search for
-                Class clazz;
+                Class<? extends ServiceType> clazz;
 
                 // the first subclass of ServiceType to search for
-                Class serviceTypeClass;
+                Class<?> serviceTypeClass;
 
                 // try to find it by class
                 try {
-                    clazz = Class.forName(className, true, (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class));
-
-                    serviceTypeClass = clazz;
+                    serviceTypeClass = Class.forName(className, true, (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class));
+                    clazz = serviceTypeClass.asSubclass(ServiceType.class);
 
                     while (serviceTypeClass.getSuperclass() != ServiceType.class) {
                         serviceTypeClass = serviceTypeClass.getSuperclass();
