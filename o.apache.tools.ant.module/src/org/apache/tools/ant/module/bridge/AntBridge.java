@@ -39,7 +39,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 import java.util.StringTokenizer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -122,7 +121,7 @@ public final class AntBridge {
         }
         public synchronized ModuleInfo[] getEnabledModules() {
             if (modules == null) {
-                Collection<ModuleInfo> c = modulesResult.allInstances();
+                Collection<? extends ModuleInfo> c = modulesResult.allInstances();
                 modules = c.toArray(new ModuleInfo[c.size()]);
                 for (ModuleInfo module : modules) {
                     module.addPropertyChangeListener(this);
@@ -138,7 +137,7 @@ public final class AntBridge {
         }
     }
     private static MiscListener miscListener = new MiscListener();
-    private static Lookup.Result modulesResult = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class));
+    private static Lookup.Result<ModuleInfo> modulesResult = Lookup.getDefault().lookup(new Lookup.Template<ModuleInfo>(ModuleInfo.class));
     static {
         AntSettings.getDefault().addPropertyChangeListener(miscListener);
         modulesResult.addLookupListener(miscListener);
@@ -222,6 +221,7 @@ public final class AntBridge {
      * Get a map from enabled module code name bases to class loaders containing
      * JARs from ant/nblib/*.jar.
      */
+    // XXX does not have to be here, used only by BridgeImpl
     public static Map<String,ClassLoader> getCustomDefClassLoaders() throws IOException {
         return getAntInstance().customDefClassLoaders;
     }

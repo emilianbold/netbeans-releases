@@ -38,7 +38,7 @@ import org.openide.util.NbBundle;
  */
 public final class AntNavigatorPanel implements NavigatorPanel {
     
-    private Lookup.Result selection;
+    private Lookup.Result<DataObject> selection;
     private final LookupListener selectionListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
             Mutex.EVENT.readAccess(new Runnable() { // #69355: safest to run in EQ
@@ -104,7 +104,7 @@ public final class AntNavigatorPanel implements NavigatorPanel {
     }
     
     public void panelActivated(Lookup context) {
-        selection = context.lookup(new Lookup.Template(DataObject.class));
+        selection = context.lookup(new Lookup.Template<DataObject>(DataObject.class));
         selection.addLookupListener(selectionListener);
         selectionListener.resultChanged(null);
     }
@@ -118,7 +118,7 @@ public final class AntNavigatorPanel implements NavigatorPanel {
         return null;
     }
     
-    private void display(Collection<DataObject> selectedFiles) {
+    private void display(Collection<? extends DataObject> selectedFiles) {
         // Show list of targets for selected file:
         if (selectedFiles.size() == 1) {
             DataObject d = selectedFiles.iterator().next();

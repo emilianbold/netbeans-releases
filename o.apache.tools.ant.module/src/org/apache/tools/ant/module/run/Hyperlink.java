@@ -18,7 +18,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Set;
 import org.apache.tools.ant.module.AntModule;
 import org.openide.ErrorManager;
@@ -44,7 +43,7 @@ import org.openide.windows.OutputListener;
 public final class Hyperlink extends Annotation implements OutputListener, PropertyChangeListener {
     
     // #14804: detach everything before uninstalling module.
-    private static final Set<Hyperlink> hyperlinks = new WeakSet();
+    private static final Set<Hyperlink> hyperlinks = new WeakSet<Hyperlink>();
     public static void detachAllAnnotations() {
         synchronized (hyperlinks) {
             for (Hyperlink link : hyperlinks) {

@@ -17,7 +17,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.event.ChangeEvent;
@@ -203,12 +202,12 @@ public class AntSettings extends SystemOption implements ChangeListener {
     }
     
     private NbClassPath defAECP = null;
-    private Lookup.Result aecpResult = null;
+    private Lookup.Result<AutomaticExtraClasspathProvider> aecpResult = null;
     
     public NbClassPath getAutomaticExtraClasspath() {
         synchronized (/* #66463 */getLock()) {
         if (aecpResult == null) {
-            aecpResult = Lookup.getDefault().lookup(new Lookup.Template(AutomaticExtraClasspathProvider.class));
+            aecpResult = Lookup.getDefault().lookup(new Lookup.Template<AutomaticExtraClasspathProvider>(AutomaticExtraClasspathProvider.class));
             aecpResult.addLookupListener(new LookupListener() {
                 public void resultChanged(LookupEvent ev) {
                     defAECP = null;
@@ -218,9 +217,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
         }
         if (defAECP == null) {
             List<File> items = new ArrayList<File>();
-            Iterator it = aecpResult.allInstances().iterator();
-            while (it.hasNext()) {
-                AutomaticExtraClasspathProvider provider = (AutomaticExtraClasspathProvider)it.next();
+            for (AutomaticExtraClasspathProvider provider : aecpResult.allInstances()) {
                 items.addAll(Arrays.asList(provider.getClasspathItems()));
             }
             defAECP = new NbClassPath(items.toArray(new File[items.size()]));

@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -91,9 +90,9 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private Map<String/*|null*/,Collection<AntLogger>> interestedLoggersByTask = new HashMap<String,Collection<AntLogger>>();
     private Map<Integer,Collection<AntLogger>> interestedLoggersByLevel = new HashMap<Integer,Collection<AntLogger>>();
     
-    private final Set<Project> projectsWithProperties = new WeakSet();
+    private final Set<Project> projectsWithProperties = new WeakSet<Project>();
     
-    private final Set<Throwable> consumedExceptions = new WeakSet();
+    private final Set<Throwable> consumedExceptions = new WeakSet<Throwable>();
     
     /** whether this process should be halted at the next safe point */
     private boolean stop = false;
@@ -172,9 +171,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         assert Thread.holdsLock(this);
         if (interestedLoggers == null) {
             interestedLoggers = new ArrayList<AntLogger>();
-            Iterator it = Lookup.getDefault().lookup(new Lookup.Template(AntLogger.class)).allInstances().iterator();
-            while (it.hasNext()) {
-                AntLogger l = (AntLogger)it.next();
+            for (AntLogger l : Lookup.getDefault().lookup(new Lookup.Template<AntLogger>(AntLogger.class)).allInstances()) {
                 if (l.interestedInSession(thisSession)) {
                     interestedLoggers.add(l);
                 }

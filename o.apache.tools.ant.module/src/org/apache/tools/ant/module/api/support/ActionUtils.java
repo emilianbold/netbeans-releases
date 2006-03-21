@@ -13,11 +13,9 @@
 
 package org.apache.tools.ant.module.api.support;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
@@ -103,10 +101,8 @@ public final class ActionUtils {
             throw new IllegalArgumentException("Cannot includes slashes in suffix: " + suffix); // NOI18N
         }
         Collection<FileObject> files = new LinkedHashSet<FileObject>(); // #50644: remove dupes
-        Iterator it = context.lookup(new Lookup.Template(DataObject.class)).allInstances().iterator();
         // XXX this should perhaps also check for FileObject's...
-        while (it.hasNext()) {
-            DataObject d = (DataObject)it.next();
+        for (DataObject d : context.lookup(new Lookup.Template<DataObject>(DataObject.class)).allInstances()) {
             FileObject f = d.getPrimaryFile();
             boolean matches = FileUtil.toFile(f) != null;
             if (dir != null) {
