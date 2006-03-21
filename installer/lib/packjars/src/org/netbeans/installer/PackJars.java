@@ -110,12 +110,12 @@ public class PackJars {
 
         Map<String, String> properties = packer.properties();
 
-        properties.put(Packer.SEGMENT_LIMIT, "-1");
+        /*properties.put(Packer.SEGMENT_LIMIT, "-1");
         properties.put(Packer.EFFORT, "5");
         properties.put(Packer.KEEP_FILE_ORDER, Packer.TRUE);
         properties.put(Packer.DEFLATE_HINT, Packer.KEEP);
         properties.put(Packer.MODIFICATION_TIME, Packer.KEEP);
-        properties.put(Packer.UNKNOWN_ATTRIBUTE, Packer.PASS);
+        properties.put(Packer.UNKNOWN_ATTRIBUTE, Packer.PASS);*/
     }
 
     /** Recursive method. */
