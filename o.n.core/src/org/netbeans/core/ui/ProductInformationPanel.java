@@ -17,6 +17,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.FocusEvent;
 import java.io.File;
 import java.text.MessageFormat;
@@ -25,20 +28,30 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Enumerations;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.datatransfer.ExClipboard;
 
 public class ProductInformationPanel extends JPanel {
 
     private static final int FONT_SIZE_PLUS = 5;
 
     private static final Color COLOR = Color.black;
+
+    /** holds system clipboard */
+    private static Clipboard clipboard;
+    /** holds instance of action to copy product info into clipboard */
+    private static Action copyAction;
 
     public ProductInformationPanel() {
         initComponents();
@@ -95,17 +108,18 @@ public class ProductInformationPanel extends JPanel {
         userDirLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         productInformationLabel = new FocusableLabel();
-        productVersionValueLabel = new FocusableLabel();
-        operatingSystemValueLabel = new FocusableLabel();
-        javaValueLabel = new FocusableLabel();
-        vmValueLabel = new FocusableLabel();
-        vendorValueLabel = new FocusableLabel();
-        javaHomeValueLabel = new FocusableLabel();
-        systemLocaleValueLabel = new FocusableLabel();
-        homeDirValueLabel = new FocusableLabel();
-        currentDirValueLabel = new FocusableLabel();
         ideInstallValueField = new javax.swing.JTextArea();
-        userDirValueLabel = new FocusableLabel();
+        copyButton = new javax.swing.JButton();
+        productVersionValueLabel = new javax.swing.JTextArea();
+        operatingSystemValueLabel = new javax.swing.JTextArea();
+        javaValueLabel = new javax.swing.JTextArea();
+        vmValueLabel = new javax.swing.JTextArea();
+        vendorValueLabel = new javax.swing.JTextArea();
+        javaHomeValueLabel = new javax.swing.JTextArea();
+        systemLocaleValueLabel = new javax.swing.JTextArea();
+        homeDirValueLabel = new javax.swing.JTextArea();
+        currentDirValueLabel = new javax.swing.JTextArea();
+        userDirValueLabel = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -131,7 +145,7 @@ public class ProductInformationPanel extends JPanel {
         operatingSystemLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_OperationgSystem"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(operatingSystemLabel, gridBagConstraints);
@@ -140,7 +154,7 @@ public class ProductInformationPanel extends JPanel {
         javaLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_Java"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(javaLabel, gridBagConstraints);
@@ -149,7 +163,7 @@ public class ProductInformationPanel extends JPanel {
         vmLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_VM"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(vmLabel, gridBagConstraints);
@@ -158,7 +172,7 @@ public class ProductInformationPanel extends JPanel {
         vendorLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_Vendor"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(vendorLabel, gridBagConstraints);
@@ -167,7 +181,7 @@ public class ProductInformationPanel extends JPanel {
         javaHomeLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_JavaHome"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(javaHomeLabel, gridBagConstraints);
@@ -176,7 +190,7 @@ public class ProductInformationPanel extends JPanel {
         systemLocaleLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_SystemLocale"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(systemLocaleLabel, gridBagConstraints);
@@ -185,7 +199,7 @@ public class ProductInformationPanel extends JPanel {
         homeDirLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_HomeDir"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(homeDirLabel, gridBagConstraints);
@@ -194,7 +208,7 @@ public class ProductInformationPanel extends JPanel {
         currentDirLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_CurrentDir"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(currentDirLabel, gridBagConstraints);
@@ -203,26 +217,26 @@ public class ProductInformationPanel extends JPanel {
         ideInstallLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_IDEInstall"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 11, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 5, 0);
         add(ideInstallLabel, gridBagConstraints);
 
         userDirLabel.setLabelFor(userDirValueLabel);
         userDirLabel.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, "LBL_UserDir"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(userDirLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 16;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -235,128 +249,164 @@ public class ProductInformationPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(productInformationLabel, gridBagConstraints);
 
+        ideInstallValueField.setEditable(false);
+        ideInstallValueField.setText(getIDEInstallValue ());
+        ideInstallValueField.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 5, 11);
+        add(ideInstallValueField, gridBagConstraints);
+
+        copyButton.setAction(getCopyAction());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
+        add(copyButton, gridBagConstraints);
+
+        productVersionValueLabel.setEditable(false);
         productVersionValueLabel.setText(getProductVersionValue());
+        productVersionValueLabel.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 11);
         add(productVersionValueLabel, gridBagConstraints);
 
+        operatingSystemValueLabel.setEditable(false);
         operatingSystemValueLabel.setText(getOperatingSystemValue());
+        operatingSystemValueLabel.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
         add(operatingSystemValueLabel, gridBagConstraints);
 
+        javaValueLabel.setEditable(false);
         javaValueLabel.setText(getJavaValue());
+        javaValueLabel.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
         add(javaValueLabel, gridBagConstraints);
 
+        vmValueLabel.setEditable(false);
         vmValueLabel.setText(getVMValue());
+        vmValueLabel.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
         add(vmValueLabel, gridBagConstraints);
 
+        vendorValueLabel.setEditable(false);
         vendorValueLabel.setText(getVendorValue());
+        vendorValueLabel.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
         add(vendorValueLabel, gridBagConstraints);
 
+        javaHomeValueLabel.setEditable(false);
         javaHomeValueLabel.setText(getJavaHomeValue());
+        javaHomeValueLabel.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
         add(javaHomeValueLabel, gridBagConstraints);
 
+        systemLocaleValueLabel.setEditable(false);
         systemLocaleValueLabel.setText(getSystemLocaleValue());
+        systemLocaleValueLabel.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
         add(systemLocaleValueLabel, gridBagConstraints);
 
+        homeDirValueLabel.setEditable(false);
         homeDirValueLabel.setText(getHomeDirValue());
+        homeDirValueLabel.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
         add(homeDirValueLabel, gridBagConstraints);
 
+        currentDirValueLabel.setEditable(false);
         currentDirValueLabel.setText(getCurrentDirValue());
+        currentDirValueLabel.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
         add(currentDirValueLabel, gridBagConstraints);
 
-        ideInstallValueField.setEditable(false);
-        ideInstallValueField.setText(getIDEInstallValue ()
-
-        );
-        ideInstallValueField.setOpaque(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 12;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 11, 11);
-        add(ideInstallValueField, gridBagConstraints);
-
+        userDirValueLabel.setEditable(false);
         userDirValueLabel.setText(getUserDirValue());
+        userDirValueLabel.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 11);
         add(userDirValueLabel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton copyButton;
     private javax.swing.JLabel currentDirLabel;
-    private javax.swing.JLabel currentDirValueLabel;
+    private javax.swing.JTextArea currentDirValueLabel;
     private javax.swing.JLabel homeDirLabel;
-    private javax.swing.JLabel homeDirValueLabel;
+    private javax.swing.JTextArea homeDirValueLabel;
     private javax.swing.JLabel ideImageLabel;
     private javax.swing.JLabel ideInstallLabel;
     private javax.swing.JTextArea ideInstallValueField;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel javaHomeLabel;
-    private javax.swing.JLabel javaHomeValueLabel;
+    private javax.swing.JTextArea javaHomeValueLabel;
     private javax.swing.JLabel javaLabel;
-    private javax.swing.JLabel javaValueLabel;
+    private javax.swing.JTextArea javaValueLabel;
     private javax.swing.JLabel operatingSystemLabel;
-    private javax.swing.JLabel operatingSystemValueLabel;
+    private javax.swing.JTextArea operatingSystemValueLabel;
     private javax.swing.JLabel productInformationLabel;
     private javax.swing.JLabel productVersionLabel;
-    private javax.swing.JLabel productVersionValueLabel;
+    private javax.swing.JTextArea productVersionValueLabel;
     private javax.swing.JLabel systemLocaleLabel;
-    private javax.swing.JLabel systemLocaleValueLabel;
+    private javax.swing.JTextArea systemLocaleValueLabel;
     private javax.swing.JLabel userDirLabel;
-    private javax.swing.JLabel userDirValueLabel;
+    private javax.swing.JTextArea userDirValueLabel;
     private javax.swing.JLabel vendorLabel;
-    private javax.swing.JLabel vendorValueLabel;
+    private javax.swing.JTextArea vendorValueLabel;
     private javax.swing.JLabel vmLabel;
-    private javax.swing.JLabel vmValueLabel;
+    private javax.swing.JTextArea vmValueLabel;
     // End of variables declaration//GEN-END:variables
     
     private void updateLabelFont (javax.swing.JComponent label, Color color) {
@@ -396,24 +446,24 @@ public class ProductInformationPanel extends JPanel {
         return NbBundle.getMessage(ProductInformationPanel.class, "LBL_ProductInformation");
     }
 
-    private String getProductVersionValue () {
+    private static String getProductVersionValue () {
         return MessageFormat.format(
             NbBundle.getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"),
             new Object[] {System.getProperty("netbeans.buildnumber")});
     }
 
-    private String getOperatingSystemValue () {
+    private static String getOperatingSystemValue () {
         return NbBundle.getMessage(ProductInformationPanel.class, "Format_OperatingSystem_Value",
             System.getProperty("os.name", "unknown"),
             System.getProperty("os.version", "unknown"),
             System.getProperty("os.arch", "unknown"));
     }
 
-    private String getJavaValue () {
+    private static String getJavaValue () {
         return System.getProperty("java.version", "unknown");
     }
 
-    private String getVMValue () {
+    private static String getVMValue () {
         return System.getProperty("java.vm.name", "unknown") + " " + System.getProperty("java.vm.version", "");
     }
 
@@ -425,7 +475,7 @@ public class ProductInformationPanel extends JPanel {
         return System.getProperty("java.home", "unknown");
     }
 
-    private String getSystemLocaleValue () {
+    private static String getSystemLocaleValue () {
         String branding;
         return Locale.getDefault().toString() + ((branding = NbBundle.getBranding()) == null ? "" : (" (" + branding + ")")); // NOI18N
     }
@@ -474,6 +524,77 @@ public class ProductInformationPanel extends JPanel {
     private String getUserDirValue () {
         return System.getProperty("netbeans.user");
     }
+
+    private static String getEncodingValue() {
+        return System.getProperty("file.encoding", "unknown");
+    }
+     
+    private static Clipboard getExClipboard() {
+       if (clipboard == null) {
+            clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
+            if (clipboard == null) {
+                clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            }
+        }
+        return clipboard;
+    }
+
+    private static Action getCopyAction () {
+        if (copyAction == null) {
+            copyAction = new CopyProductInfoAction();
+        }
+        return copyAction;
+    }
+
+    /** Copies product information into clipboard */
+    private static class CopyProductInfoAction extends CallableSystemAction {
+
+        public void performAction() {
+            StringBuffer sb = new StringBuffer();
+            sb.append(getProductVersionValue());
+            sb.append("\n");
+            sb.append(getJavaValue());
+            sb.append("; ");
+            sb.append(getVMValue());
+            sb.append("\n");
+            sb.append(getOperatingSystemValue());
+            sb.append("\n");
+            sb.append(getSystemLocaleValue());
+            sb.append("; ");
+            sb.append(getEncodingValue());
+            StringSelection stringSel = new StringSelection(sb.toString());
+            Clipboard cb = getExClipboard();
+            if (cb != null) {
+                cb.setContents(stringSel, null);
+            }
+        }
+        
+        public String getName() {
+            return NbBundle.getMessage(ProductInformationPanel.class, 
+                "CTL_CopyButton"); // NOI18N;
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+        
+        protected String iconResource() {
+            return "org/netbeans/core/resources/copy.gif"; // NOI18N
+        }
+        
+        protected void initialize() {
+            super.initialize();
+            String tooltip = NbBundle.getMessage(ProductInformationPanel.class, 
+                "CTL_CopyButton_tooltip"); // NOI18N
+            putValue(javax.swing.Action.SHORT_DESCRIPTION, tooltip);
+        }
+
+        protected boolean asynchronous() {
+            return false;
+        }
+        
+    }
+    
     
     /**
      */
@@ -498,7 +619,7 @@ public class ProductInformationPanel extends JPanel {
             getAccessibleContext().setAccessibleName(getText());
         }
         
-        public boolean isFocusTraversable() {
+        public boolean isFocusable() {
             return (true);
         }
         
@@ -529,16 +650,37 @@ public class ProductInformationPanel extends JPanel {
         //java.util.ResourceBundle bundle;
         //bundle = org.openide.util.NbBundle.getBundle(this.getClass());
 
-        productVersionValueLabel.getAccessibleContext().setAccessibleName(productVersionLabel.getText() + productVersionValueLabel.getText()); 
-        operatingSystemValueLabel.getAccessibleContext().setAccessibleName(operatingSystemLabel.getText() + operatingSystemValueLabel.getText());
-        javaValueLabel.getAccessibleContext().setAccessibleName(javaLabel.getText() + vmValueLabel.getText());
-        vmValueLabel.getAccessibleContext().setAccessibleName(vmLabel.getText() + vmValueLabel.getText());
-        vendorValueLabel.getAccessibleContext().setAccessibleName(vendorLabel.getText() + vendorValueLabel.getText());
-        javaHomeValueLabel.getAccessibleContext().setAccessibleName(javaHomeLabel.getText() + javaHomeValueLabel.getText());
-        systemLocaleValueLabel.getAccessibleContext().setAccessibleName(systemLocaleLabel.getText() + systemLocaleValueLabel.getText());
-        homeDirValueLabel.getAccessibleContext().setAccessibleName(homeDirLabel.getText() + homeDirValueLabel.getText());
-        currentDirValueLabel.getAccessibleContext().setAccessibleName(currentDirLabel.getText() + currentDirValueLabel.getText());
-        ideInstallValueField.getAccessibleContext().setAccessibleName(ideInstallLabel.getText() + ideInstallValueField.getText());
-        userDirValueLabel.getAccessibleContext().setAccessibleName(userDirLabel.getText() + userDirValueLabel.getText());
+        productVersionValueLabel.getAccessibleContext().setAccessibleName(productVersionLabel.getText() + " " + productVersionValueLabel.getText());
+        productVersionValueLabel.getAccessibleContext().setAccessibleDescription(productVersionValueLabel.getText());
+        
+        operatingSystemValueLabel.getAccessibleContext().setAccessibleName(operatingSystemLabel.getText() + " " + operatingSystemValueLabel.getText());
+        operatingSystemValueLabel.getAccessibleContext().setAccessibleDescription(operatingSystemValueLabel.getText());
+        
+        javaValueLabel.getAccessibleContext().setAccessibleName(javaLabel.getText() + " " + javaValueLabel.getText());
+        javaValueLabel.getAccessibleContext().setAccessibleDescription(javaValueLabel.getText());
+        
+        vmValueLabel.getAccessibleContext().setAccessibleName(vmLabel.getText() + " " + vmValueLabel.getText());
+        vmValueLabel.getAccessibleContext().setAccessibleDescription(vmValueLabel.getText());
+        
+        vendorValueLabel.getAccessibleContext().setAccessibleName(vendorLabel.getText() + " " + vendorValueLabel.getText());
+        vendorValueLabel.getAccessibleContext().setAccessibleDescription(vendorValueLabel.getText());
+        
+        javaHomeValueLabel.getAccessibleContext().setAccessibleName(javaHomeLabel.getText() + " " + javaHomeValueLabel.getText());
+        javaHomeValueLabel.getAccessibleContext().setAccessibleDescription(javaHomeValueLabel.getText());
+        
+        systemLocaleValueLabel.getAccessibleContext().setAccessibleName(systemLocaleLabel.getText() + " " + systemLocaleValueLabel.getText());
+        systemLocaleValueLabel.getAccessibleContext().setAccessibleDescription(systemLocaleValueLabel.getText());
+        
+        homeDirValueLabel.getAccessibleContext().setAccessibleName(homeDirLabel.getText() + " " + homeDirValueLabel.getText());
+        homeDirValueLabel.getAccessibleContext().setAccessibleDescription(homeDirValueLabel.getText());
+        
+        currentDirValueLabel.getAccessibleContext().setAccessibleName(currentDirLabel.getText() + " " + currentDirValueLabel.getText());
+        currentDirValueLabel.getAccessibleContext().setAccessibleDescription(currentDirValueLabel.getText());
+        
+        ideInstallValueField.getAccessibleContext().setAccessibleName(ideInstallLabel.getText() + " " + ideInstallValueField.getText());
+        ideInstallValueField.getAccessibleContext().setAccessibleDescription(ideInstallValueField.getText());
+        
+        userDirValueLabel.getAccessibleContext().setAccessibleName(userDirLabel.getText() + " " + userDirValueLabel.getText());
+        userDirValueLabel.getAccessibleContext().setAccessibleDescription(userDirValueLabel.getText());
     }
 }
