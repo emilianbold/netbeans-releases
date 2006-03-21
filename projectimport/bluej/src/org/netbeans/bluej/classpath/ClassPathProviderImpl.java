@@ -13,11 +13,13 @@
 
 package org.netbeans.bluej.classpath;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.bluej.BluejProject;
+import org.netbeans.bluej.options.BlueJSettings;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -97,6 +99,23 @@ public class ClassPathProviderImpl implements ClassPathProvider {
                 }
                 if (libJars.size() > 0) {
                     paths.add(ClassPathSupport.createClassPath((FileObject[])libJars.toArray(new FileObject[libJars.size()])));
+                }
+            }
+            File home = BlueJSettings.getDefault().getHome();
+            if (home != null) {
+                File userLibs = new File(new File(home, "lib"), "userlib");
+                FileObject fo = FileUtil.toFileObject(userLibs);
+                if (fo != null) {
+                    Collection libJars = new ArrayList();
+                    FileObject[] fos = fo.getChildren();
+                    for (int i = 0; i < fos.length; i++) {
+                        if (FileUtil.isArchiveFile(fos[i])) {
+                            libJars.add(FileUtil.getArchiveRoot(fos[i]));
+                        }
+                    }
+                    if (libJars.size() > 0) {
+                        paths.add(ClassPathSupport.createClassPath((FileObject[])libJars.toArray(new FileObject[libJars.size()])));
+                    }
                 }
             }
             compile = ClassPathSupport.createProxyClassPath((ClassPath[])paths.toArray(new ClassPath[paths.size()]));
