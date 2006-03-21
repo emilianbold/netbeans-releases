@@ -75,21 +75,7 @@ public class ColorComboBox extends JComboBox {
         combo.setEditable (true);
         combo.setEditor (new ColorComboBoxRenderer (combo));
 	combo.setSelectedItem (new ColorValue (null, null));
-        combo.addActionListener (new ActionListener () {
-            public void actionPerformed (ActionEvent ev) {
-                if (combo.getSelectedItem () == ColorValue.CUSTOM_COLOR) {
-                    Color c = JColorChooser.showDialog (
-                        SwingUtilities.getAncestorOfClass 
-                            (Dialog.class, combo),
-                        loc ("SelectColor"),
-                        null
-                    );
-                    if (c != null)
-                        setColor (combo, c);
-                }
-                //combo.firePropertyChange (PROP_COLOR, null, null);
-            }
-        });
+        combo.addActionListener (new ComboBoxListener (combo));
     }
     
     static void setInheritedColor (JComboBox combo, Color color) {
@@ -122,4 +108,35 @@ public class ColorComboBox extends JComboBox {
     private static String loc (String key) {
         return NbBundle.getMessage (ColorComboBox.class, key);
     }
+    
+    // ..........................................................................
+    private static class ComboBoxListener implements ActionListener {
+        
+        private JComboBox combo;
+        private Object lastSelection;
+        
+        ComboBoxListener(JComboBox combo) {
+            this.combo = combo;
+            lastSelection = combo.getSelectedItem();
+        }
+        
+        public void actionPerformed(ActionEvent ev) {
+            if (combo.getSelectedItem() == ColorValue.CUSTOM_COLOR) {
+                Color c = JColorChooser.showDialog(
+                        SwingUtilities.getAncestorOfClass
+                        (Dialog.class, combo),
+                        loc("SelectColor"),
+                        null
+                        );
+                if (c != null) {
+                    setColor (combo, c);
+                } else if (lastSelection != null) {
+                    combo.setSelectedItem(lastSelection);
+                }
+            }
+            lastSelection = combo.getSelectedItem();
+        }
+        
+    } // ComboListener
+    
 }
