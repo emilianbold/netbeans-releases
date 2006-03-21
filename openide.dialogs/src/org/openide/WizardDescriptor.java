@@ -2107,7 +2107,7 @@ public class WizardDescriptor extends DialogDescriptor {
             
             JPanel errorPanel = new JPanel(new BorderLayout());
             errorPanel.setBorder(BorderFactory.createEmptyBorder(0, 12, 12, 11));
-            m_lblMessage = new FixedHeightLabel("  "); //NOI18N
+            m_lblMessage = new FixedHeightLabel ();
             m_lblMessage.setForeground (nbErrorForeground);
             errorPanel.add(m_lblMessage, BorderLayout.CENTER);
 
@@ -2442,22 +2442,16 @@ public class WizardDescriptor extends DialogDescriptor {
     
     private static final class FixedHeightLabel extends JLabel {
         
-        private static final int HEIGHT;
-        
-        static {
-            Image icon = Utilities.loadImage("org/openide/resources/error.gif");
-            HEIGHT = icon.getHeight(null);
-        }
-        
-        public FixedHeightLabel(String text) {
-            super(text);
+        private static final int ESTIMATED_HEIGHT = 16;
+
+        public FixedHeightLabel () {
+            super ();
         }
         
         public Dimension getPreferredSize() {
             Dimension preferredSize = super.getPreferredSize();
-            if (getIcon() == null) {
-                preferredSize.height = HEIGHT;
-            }
+            assert ESTIMATED_HEIGHT == Utilities.loadImage ("org/openide/resources/warning.gif").getHeight (null) : "Use only 16px icon.";
+            preferredSize.height = Math.max (ESTIMATED_HEIGHT, preferredSize.height);
             return preferredSize;
         }
     }
