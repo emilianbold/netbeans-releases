@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
         <property file="../nbproject/private/private.properties"/>
         <property file="../nbproject/project.properties"/>
         <property name="build.compiler.debug" value="true"/>
-        <property name="build.compiler.source" value="1.4"/>
+        <property name="build.compiler.source" value="${ant.java.version}"/>
         <property name="build.compiler.deprecation" value="true"/>
         <property name="build.sysclasspath" value="ignore"/>
     </target>
