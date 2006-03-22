@@ -15,6 +15,7 @@ package org.netbeans.modules.j2ee.websphere6.ui;
 import java.util.Vector;
 import java.awt.event.*;
 import javax.swing.*;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.websphere6.ui.InstancesModel;
 import org.netbeans.modules.j2ee.websphere6.WSURIManager;
@@ -40,7 +41,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                 JComboBox localInstancesCombobox,
                 JTextField domainPathField,
                 JTextField hostField,
-                JSpinner portField) {
+                JTextField portField) {
             super(serverCombobox,
                     localInstancesCombobox,
                     domainPathField,
@@ -106,13 +107,14 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         
         //domainField.setText(targetData.getDomainName());
         profilePathField.setText(targetData.getDomainRoot());
-        portField.setModel(new SpinnerNumberModel(0,0,65535,1));
-        portField.setValue(new Integer(targetData.getPort()));
-        
+        portField.setText(targetData.getPort());
+        //portField.setModel(new SpinnerNumberModel(0,0,65535,1));
+        //portField.setValue(new Integer(targetData.getPort()));
+        /*
         portField.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent e) {
                 String port = portField.getValue().toString();
-                
+         
                 if(!port.trim().matches("[0-9]+")){
                     portField.setValue(new Integer(targetData.getPort()));
                 } else {
@@ -120,26 +122,35 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                 }
             }
         });
-        
+         */
+        /*
         portField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
-                String port = portField.getValue().toString();
+                //String port = portField.getValue().toString();
+                String port = portField.getText();
                 if(!port.trim().matches("[0-9]+")){
-                    portField.setValue(new Integer(targetData.getPort()));
+                    //portField.setValue(new Integer(targetData.getPort()));
+                    portField.setText(targetData.getPort());
+                } else if((new java.lang.Integer(port)).intValue() > 65535) {
+                    portField.setText(targetData.getPort());
                 } else {
                     targetData.setPort(port);
                 }
             }
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                String port = portField.getValue().toString();
+                //String port = portField.getValue().toString();
+                String port = portField.getText();
                 if(!port.trim().matches("[0-9]+")){
-                    portField.setValue(new Integer(targetData.getPort()));
+                    //portField.setValue(new Integer(targetData.getPort()));
+                    portField.setText(targetData.getPort());
+                } else if((new java.lang.Integer(port)).intValue() > 65535) {
+                    portField.setText(targetData.getPort());
                 } else {
                     targetData.setPort(port);
                 }
             }
         });
-        
+        */
         
         /*serverTypeCombo.addItem(NbBundle.getMessage(ConnectionTabVisualPanel.class, "TXT_serverTypeLocal"));
         serverTypeCombo.addItem(NbBundle.getMessage(ConnectionTabVisualPanel.class,"TXT_serverTypeRemote"));
@@ -160,7 +171,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                     targetData.setIsLocal(targetData.getIsLocal().equals("true")?"false":"true");
                 }
             }
-            
+         
         }
         );*/
         
@@ -205,7 +216,8 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         
         // check the port field (not empty and a positive integer)
         //if (!portField.getText().trim().matches("[0-9]+")) {
-        if (!portField.getValue().toString().trim().matches("[0-9]+")) {
+        //if (!portField.getValue().toString().trim().matches("[0-9]+")) {
+        if (!portField.getText().trim().matches("[0-9]+")) {
             JOptionPane.showMessageDialog(null,
                     NbBundle.getMessage(ConnectionTabVisualPanel.class,
                     "ERR_INVALID_PORT"));                              // NOI18N
@@ -218,7 +230,8 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         
         targetData.setDomainRoot(profilePathField.getText());
         targetData.setHost(hostField.getText());
-        targetData.setPort(portField.getValue().toString());
+        //targetData.setPort(portField.getValue().toString());
+        targetData.setPort(portField.getText());
         targetData.setUserName(userNameField.getText());
         targetData.setPassword(new String(
                 passwordField.getPassword()));
@@ -259,7 +272,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         passwordField = new javax.swing.JPasswordField();
         profilePathField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        portField = new javax.swing.JSpinner();
+        portField = new javax.swing.JTextField();
 
         jLabel2.setText("Local/Remote:");
 
@@ -290,7 +303,12 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
 
         jLabel1.setText("Profile Path:");
 
-        portField.setFont(new java.awt.Font("Tahoma", 0, 11));
+        portField.setEditable(false);
+        portField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                portFieldFocusLost(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -317,7 +335,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                             .add(jLabel5))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(portField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(portField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                                 .add(passwordField)
                                 .add(userNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 117, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
@@ -363,6 +381,17 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     
+    private void portFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_portFieldFocusLost
+        String port = portField.getText();
+        if(!port.trim().matches("[0-9]+")){
+            JOptionPane.showMessageDialog(portField,NbBundle.getMessage(ConnectionTabVisualPanel.class,"ERR_INVALID_PORT"));                                    
+        } else if((new java.lang.Integer(port)).intValue() > 65535) {
+            JOptionPane.showMessageDialog(portField,NbBundle.getMessage(ConnectionTabVisualPanel.class,"ERR_INVALID_PORT"));
+        } else {
+            targetData.setPort(port);
+        }
+    }//GEN-LAST:event_portFieldFocusLost
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField hostField;
@@ -375,7 +404,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JComboBox localInstancesCombo;
     private javax.swing.JPasswordField passwordField;
-    private javax.swing.JSpinner portField;
+    private javax.swing.JTextField portField;
     private javax.swing.JTextField profilePathField;
     private javax.swing.JComboBox serverTypeCombo;
     private javax.swing.JTextField userNameField;
@@ -427,7 +456,8 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                 //portField.setEditable(false);
                 //portField.setText(instance.getPort());
                 portField.setEnabled(false);
-                portField.setValue(new Integer(instance.getPort()));
+                //portField.setValue(new Integer(instance.getPort()));
+                portField.setText(instance.getPort());
                 
             } else {
                 // disable the local instances combo
@@ -472,7 +502,8 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         // set the fields' values
         profilePathField.setText(instance.getDomainPath());
         hostField.setText(instance.getHost());
-        portField.setValue(new Integer(instance.getPort()));
+        //portField.setValue(new Integer(instance.getPort()));
+        portField.setText(instance.getPort());
     }
     /**
      * A simple listeners that reacts to user's selectin a local instance. It

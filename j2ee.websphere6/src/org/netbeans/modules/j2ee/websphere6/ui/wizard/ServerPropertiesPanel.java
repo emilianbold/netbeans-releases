@@ -62,7 +62,7 @@ public class ServerPropertiesPanel extends JPanel
                 JComboBox localInstancesCombobox,
                 JTextField domainPathField,
                 JTextField hostField,
-                JSpinner portField) {
+                JTextField portField) {
             super(serverCombobox,localInstancesCombobox,domainPathField,hostField,portField);
         } 
         public WizardServerProperties() {
@@ -171,7 +171,14 @@ public class ServerPropertiesPanel extends JPanel
         }
         
         // check the port field (not empty and a positive integer)
-        if (!portField.getValue().toString().trim().matches("[0-9]+")) {
+        //if (!portField.getValue().toString().trim().matches("[0-9]+")) {
+        if (!portField.getText().trim().matches("[0-9]+")) {
+            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(ServerPropertiesPanel.class,
+                    "ERR_INVALID_PORT"));                              // NOI18N
+        }
+        if (portField.getText().trim().matches("[0-9]+") && 
+                new java.lang.Integer(portField.getText().trim()).intValue()>65535) {
             wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(ServerPropertiesPanel.class,
                     "ERR_INVALID_PORT"));                              // NOI18N
@@ -182,7 +189,8 @@ public class ServerPropertiesPanel extends JPanel
         // save the data to the parent instantiating iterator
         instantiatingIterator.setDomainRoot(domainPathField.getText());
         instantiatingIterator.setHost(hostField.getText());
-        instantiatingIterator.setPort(portField.getValue().toString());
+        //instantiatingIterator.setPort(portField.getValue().toString());
+        instantiatingIterator.setPort(portField.getText());
         instantiatingIterator.setUsername(usernameField.getText());
         instantiatingIterator.setPassword(new String(
                 passwordField.getPassword()));
@@ -212,7 +220,7 @@ public class ServerPropertiesPanel extends JPanel
     private JPasswordField passwordField;
     private JTextField domainPathField;
     private JTextField hostField;
-    private JSpinner portField;
+    private JTextField portField;
     private JTextField usernameField;
     private JPanel formattingPanel;
     private JComboBox serverTypeCombo;
@@ -236,7 +244,7 @@ public class ServerPropertiesPanel extends JPanel
         hostLabel = new JLabel();
         hostField = new JTextField();
         portLabel = new JLabel();
-        portField = new JSpinner();
+        portField = new JTextField();
         userNameLabel = new JLabel();
         usernameField = new JTextField();
         passwordLabel = new JLabel();
@@ -351,8 +359,9 @@ public class ServerPropertiesPanel extends JPanel
         
         // add port field
         
-        portField.setModel(new SpinnerNumberModel(0,0,65535,1));
-        portField.setValue(new Integer(8880)); // NOI18N
+        //portField.setModel(new SpinnerNumberModel(0,0,65535,1));
+        //portField.setValue(new Integer(8880)); // NOI18N
+        portField.setText("8880");// NOI18N
         portField.addKeyListener(new KeyListener());
         portField.setPreferredSize(new Dimension(50, 20));
         portField.setFont(hostField.getFont());
@@ -362,7 +371,7 @@ public class ServerPropertiesPanel extends JPanel
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
         add(portField, gridBagConstraints);
-        portField.setEnabled(false);
+        portField.setEditable(false);
         
         // add username field label
         userNameLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class,

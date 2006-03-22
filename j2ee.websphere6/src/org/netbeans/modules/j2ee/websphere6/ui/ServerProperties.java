@@ -35,7 +35,7 @@ public class ServerProperties {
     private JComboBox localInstancesCombo;
     private JTextField domainPathField;
     private JTextField hostField;
-    private JSpinner portField;
+    private JTextField portField;
     ServerTypeActionListener serverTypeActionListener=null;
     InstanceSelectionListener instanceSelectionListener=null;
     
@@ -53,7 +53,7 @@ public class ServerProperties {
             JComboBox localInstancesCombobox,
             JTextField domainPathField,
             JTextField hostField,
-            JSpinner portField) {
+            JTextField portField) {
         
         
         this.serverTypeCombo=serverCombobox;
@@ -67,7 +67,7 @@ public class ServerProperties {
             JComboBox localInstancesCombobox,
             JTextField domainPathField,
             JTextField hostField,
-            JSpinner portField) {
+            JTextField portField) {
         
         
         if(this.serverTypeCombo==null)      this.serverTypeCombo=serverCombobox;
@@ -592,8 +592,10 @@ public class ServerProperties {
                 
                 // enable and set as read-only the port field
                 //portField.setEnabled(true);
-                portField.setEnabled(false);
-                portField.setValue(new Integer(instance.getPort()));
+                portField.setEnabled(true);
+                portField.setEditable(false);
+                //portField.setValue(new Integer(instance.getPort()));
+                portField.setText(instance.getPort());
             } else {
                 // disable the local instances combo
                 localInstancesCombo.setEnabled(false);
@@ -608,7 +610,7 @@ public class ServerProperties {
                 
                 // enable and set as read-write the port field
                 portField.setEnabled(true);
-                //portField.setEditable(true);
+                portField.setEditable(true);
             }
         }
     }
@@ -724,7 +726,8 @@ public class ServerProperties {
         // set the fields' values
         domainPathField.setText(instance.getDomainPath());
         hostField.setText(instance.getHost());
-        portField.setValue(new Integer(instance.getPort()));
+        //portField.setValue(new Integer(instance.getPort()));
+        portField.setText(instance.getPort());
     }
     /**
      * A simple listeners that reacts to user's selectin a local instance. It
