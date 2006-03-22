@@ -11,7 +11,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="CDC Cluster Installer Kit" basedir=".">
+<project name="NetBeans Mobility Pack for CDC 5.0 Cluster Installer Kit" basedir=".">
 
   <property file="nbproject/private/private.properties"/>
   <property file="build.properties" />
@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="set-installer.basename" unless="installer.basename" depends="set-buildnumber">
-    <property name="installer.basename" value="CDC1.0_dev-${buildnumber}"/>
+    <property name="installer.basename" value="netbeans-mobility-cdc-1.0_dev-${buildnumber}"/>
   </target>
 
   <target name="set-ismp.cp" unless="ismp.cp-set">
@@ -135,7 +135,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile" depends="init, build-library" description="compile custom beans and panels">
     <mkdir dir="build/classes"/>
 
-    <javac destdir="build/classes" srcdir="src" source="1.4" target="1.4" debug="true" deprecation="true">
+    <javac destdir="build/classes" srcdir="src" source="1.5" target="1.5" debug="true" deprecation="true">
       <classpath>
         <path refid="ismp.cp"/>
       </classpath>
