@@ -22,6 +22,7 @@ import java.util.HashMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.UIManager;
 
 
 /**
@@ -147,6 +148,8 @@ final class DropGlassPane extends JPanel {
             int x1 = (int) line.getX1();
             int x2 = (int) line.getX2();
             int y1 = (int) line.getY1();
+
+            g.setColor( UIManager.getColor( "Tree.selectionBackground" ) );
 
             // int y2 = (int)line.getY2 (); actually not used
             // LINE
