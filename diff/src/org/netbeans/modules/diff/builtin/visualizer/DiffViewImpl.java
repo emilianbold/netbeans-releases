@@ -125,7 +125,7 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
         String mimeType1 = ss1.getMIMEType();
         String mimeType2 = ss2.getMIMEType();
         if (mimeType1 == null) mimeType1 = mimeType2;
-        if (mimeType2 == null) mimeType2 = mimeType1;
+        if (mimeType2 == null) mimeType2 = mimeType1;        
         
         saveSources(r1, r2);
         initComponents ();
@@ -413,9 +413,13 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
     public void addNotify() {
         super.addNotify();
         EditorUI ui1 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane1);
-        ui1.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        if (ui1 != null) {  // null happens fpr unregistered MIME types
+            ui1.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        }
         EditorUI ui2 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane2);
-        ui2.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        if (ui2 != null) {  // null happens fpr unregistered MIME types
+            ui2.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        }
 
         List actions = new ArrayList(2);
         actions.add(getActionMap().get("jumpNext"));  // NOI18N

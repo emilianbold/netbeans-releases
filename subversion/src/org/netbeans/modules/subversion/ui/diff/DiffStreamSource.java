@@ -75,15 +75,24 @@ public class DiffStreamSource extends StreamSource {
     }
 
     public String getMIMEType() {
+        if (baseFile.isDirectory()) {
+            // http://www.rfc-editor.org/rfc/rfc2425.txt
+            return "content/unknown"; // "text/directory";  //XXX no editor for directory MIME type => NPE // NOI18N
+        }
+
         try {
             init();
         } catch (IOException e) {
-            return null;
+            return null; // XXX potentionally kills DiffViewImpl
         }
         return mimeType;
     }
 
     public Reader createReader() throws IOException {
+        if (baseFile.isDirectory()) {
+            // XXX return directory listing?
+            return new StringReader("[No Content, This is Folder]");
+        }
         init();
         if (revision == null || remoteFile == null) return null;
         if (binary) {
@@ -102,6 +111,9 @@ public class DiffStreamSource extends StreamSource {
      * Loads data over network.
      */
     synchronized void init() throws IOException {
+        if (baseFile.isDirectory()) {
+            return;
+        }
         if (remoteFile != null || revision == null) return;
 //        binary = !CvsVersioningSystem.getInstance().isText(baseFile);
         try {

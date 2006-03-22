@@ -48,6 +48,8 @@ public class VersionsCache {
      *
      * <p>It's may connect over network I/O do not
      * call from the GUI thread.
+     *
+     * @return null if the file does not exit in given revision
      */
     public File getFileRevision(File base, String revision) throws IOException {
         if (Setup.REVISION_BASE.equals(revision)) {
@@ -58,7 +60,11 @@ public class VersionsCache {
             if (svnDir.isDirectory()) {
                 File text_base = new File(svnDir, "text-base"); // NOI18N
                 File pristine = new File(text_base, name + ".svn-base"); // NOI18N
-                return pristine;
+                if (pristine.isFile()) {
+                    return pristine;
+                } else {
+                    return null;
+                }
             }
         } else if (Setup.REVISION_CURRENT.equals(revision)) {
             return base;
