@@ -173,12 +173,12 @@ public final class Dependency {
     * @return a set of dependencies
     * @throws IllegalArgumentException if they are malformed or inconsistent
     */
-    public static Set create(int type, String body) throws IllegalArgumentException {
+    public static Set<Dependency> create(int type, String body) throws IllegalArgumentException {
         if (body == null) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
-        Set deps = new HashSet(5); // Set<Dependency>
+        Set<Dependency> deps = new HashSet<Dependency>(5);
 
         // First split on commas.
         StringTokenizer tok = new StringTokenizer(body, ","); // NOI18N
@@ -187,7 +187,7 @@ public final class Dependency {
             throw new IllegalArgumentException("No deps given: \"" + body + "\""); // NOI18N
         }
 
-        Map depsByKey = new HashMap(10); // Map<DependencyKey,Dependency>
+        Map<DependencyKey, Dependency> depsByKey = new HashMap<DependencyKey, Dependency>(11);
 
         while (tok.hasMoreTokens()) {
             String onedep = tok.nextToken();

@@ -28,7 +28,7 @@ public final class SpecificationVersion implements Comparable {
     // startup, so best to not have to reparse them each time!
     // In fact sharing the int arrays might save a bit of memory overall,
     // since it is unusual for a module to be deleted.
-    private static final Map parseCache = new HashMap(200); // Map<String,int[]>
+    private static final Map<String,int[]> parseCache = new HashMap<String,int[]>(200);
     private final int[] digits;
 
     /** Parse from string. Must be Dewey-decimal. */

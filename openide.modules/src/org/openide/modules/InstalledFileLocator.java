@@ -45,7 +45,7 @@ public abstract class InstalledFileLocator {
     };
     
     private static InstalledFileLocator[] instances = null;
-    private static Lookup.Result result = null;
+    private static Lookup.Result<InstalledFileLocator> result = null;
     /**
      * Used just for guarding direct access to {@link #instances} and {@link #result}.
      * Should not call foreign code while holding this.
@@ -176,12 +176,12 @@ public abstract class InstalledFileLocator {
             }
         }
         
-        Lookup.Result _result;
+        Lookup.Result<InstalledFileLocator> _result;
         synchronized (LOCK) {
             _result = result;
         }
         if (_result == null) {
-            _result = Lookup.getDefault().lookup(new Lookup.Template(InstalledFileLocator.class));
+            _result = Lookup.getDefault().lookup(new Lookup.Template<InstalledFileLocator>(InstalledFileLocator.class));
             _result.addLookupListener(new LookupListener() {
                 public void resultChanged(LookupEvent e) {
                     synchronized (LOCK) {
@@ -194,9 +194,9 @@ public abstract class InstalledFileLocator {
             }
         }
         
-        Collection/*<InstalledFileLocator>*/ c = _result.allInstances();
+        Collection<? extends InstalledFileLocator> c = _result.allInstances();
         synchronized (LOCK) {
-            return instances = (InstalledFileLocator[]) c.toArray(new InstalledFileLocator[c.size()]);
+            return instances = c.toArray(new InstalledFileLocator[c.size()]);
         }
     }
     

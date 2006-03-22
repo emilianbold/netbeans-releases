@@ -18,6 +18,19 @@ Microsystems, Inc. All Rights Reserved.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="generified">
+        <api name="modules"/>
+        <summary>Generified Interfaces</summary>
+        <version major="7" minor="0"/>
+        <date day="22" month="3" year="2006"/>
+        <author login="jtulach"/>
+        <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="no" deletion="no" modification="no"/>
+        <description>
+            Rewritten to use Java5 features, especially generics.
+            Affects internal code and <a href="@TOP@org/openide/modules/Dependency.html#create(int,%20java.lang.String)">one public signature</a>.
+        </description>
+        <class package="org.openide.modules" name="Dependency"/>
+    </change>
     <change id="enhanced-support-for-os-specific-modules-iz-50943">
         <api name="modules"/>
         <summary>Enhanced support for OS specific modules</summary>
