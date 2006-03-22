@@ -53,7 +53,7 @@ public final class PropertiesClient {
 
     /**
      * Loads BASE properties for given file.
-     * @return property map&lt;String, String> never null
+     * @return property map&lt;String, byte[]> never null
      */
     public Map getBaseProperties() throws IOException {
         File store;
@@ -71,7 +71,7 @@ public final class PropertiesClient {
 
     /**
      * Loads (locally modified) properties for given file.
-     * @return property map&lt;String, String> never null
+     * @return property map&lt;String, byte[]> never null
      */
     public Map getProperties() throws IOException {
         File store;

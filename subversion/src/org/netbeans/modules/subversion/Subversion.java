@@ -113,6 +113,17 @@ public class Subversion {
         return nodes;
     }
 
+    public boolean isBinary(byte[] buffer) {
+        for (int i = 0; i<buffer.length; i++) {
+            int ch = buffer[i];
+            if (ch < 32 && ch != '\t' && ch != '\n' && ch != '\r') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     /**
      * Tests <tt>.svn</tt> directory itself.  
      */
