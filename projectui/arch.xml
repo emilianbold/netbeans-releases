@@ -336,6 +336,7 @@ Microsystems, Inc. All Rights Reserved.
     </api>
    </li>
   </ul>
+  <defaultanswer generate="none"/>
  </answer>
 
 
@@ -1033,6 +1034,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="resources-layer">
+
   <p>
    Installs a whole lot of UI through the layer. Menus, templates, etc.
    Also is using 
