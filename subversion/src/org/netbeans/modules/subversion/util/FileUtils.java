@@ -31,23 +31,7 @@ public class FileUtils {
 
         InputStream inputStream = null;
         try {
-            int retry = 0;
-            while (true) {
-                try {
-                    inputStream = new BufferedInputStream(new FileInputStream(sourceFile));
-                    break;
-                } catch (IOException ex) {
-                    retry++;
-                    if (retry > 7) {
-                        throw ex;
-                    }
-                    try {
-                        Thread.sleep(retry * 34);
-                    } catch (InterruptedException iex) {
-                        throw ex;
-                    }
-                }
-            }
+            inputStream = createInputStream(sourceFile);            
             copyStreamToFile(inputStream, targetFile);
         } finally {
             if (inputStream != null) {
@@ -78,24 +62,7 @@ public class FileUtils {
 
         OutputStream outputStream = null;
         try {            
-            int retry = 0;
-            while (true) {
-                try {
-                    outputStream = new BufferedOutputStream(new FileOutputStream(targetFile));
-                    break;
-                } catch (IOException ex) {
-                    retry++;
-                    if (retry > 7) {
-                        throw ex;
-                    }
-                    try {
-                        Thread.sleep(retry * 34);
-                    } catch (InterruptedException iex) {
-                        throw ex;
-                    }
-                }
-            }
-
+            outputStream = createOutputStream(targetFile);
             try {
                 byte[] buffer = new byte[32768];
                 for (int readBytes = inputStream.read(buffer);
@@ -181,6 +148,44 @@ public class FileUtils {
      * This utility class needs not to be instantiated anywhere.
      */
     private FileUtils() {
+    }
+    
+    public static InputStream createInputStream(File file) throws IOException {             
+        while (true) {
+            int retry = 0;
+            try {
+                return new BufferedInputStream(new FileInputStream(file));                
+            } catch (IOException ex) {
+                retry++;
+                if (retry > 7) {
+                    throw ex;
+                }
+                try {
+                    Thread.sleep(retry * 34);
+                } catch (InterruptedException iex) {
+                    throw ex;
+                }
+            }
+        }       
+    }
+    
+    public static OutputStream createOutputStream(File file) throws IOException {        
+        while (true) {
+            int retry = 0;
+            try {
+                return new BufferedOutputStream(new FileOutputStream(file));                
+            } catch (IOException ex) {
+                retry++;
+                if (retry > 7) {
+                    throw ex;
+                }
+                try {
+                    Thread.sleep(retry * 34);
+                } catch (InterruptedException iex) {
+                    throw ex;
+                }
+            }
+        }       
     }
     
 }

@@ -141,7 +141,11 @@ public class RepositoryStep
                     } catch (MalformedURLException ex) {
                         ex.printStackTrace(); // should not happen
                     }
-                }                
+                } else {
+                    if(invalidMsg[0] == null) {
+                        invalidMsg[0] = "No information available for :" + selectedRepository.getUrl();
+                    }
+                }
             }
         };
 
