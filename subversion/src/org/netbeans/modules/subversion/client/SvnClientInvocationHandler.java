@@ -101,8 +101,12 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     // XXX some action canceled by user message ... wrap the exception ???
                     throw new SVNClientException("Action canceled by user"); // XXX wrap me
                 }
-            } catch (Exception ex) {
-                throw ex;
+            } catch (InvocationTargetException ite) {
+                Throwable t = ite.getTargetException();
+                if(t instanceof SVNClientException) {
+                    throw t;
+                }
+                throw ite;
             }
         }
     }
@@ -147,7 +151,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             return handleNoCertificateError(client);
         }
 
-        // no handling for this exception -> throw it, so the caller may decide what to do...
+        // don't know what to do with this exception -> throw it, so the caller may decide ...
         throw t;
     }
 
@@ -243,7 +247,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             for (int i = 0; i < str.length; i++) {
                 encodedCert+=str[i];
             }
-            cf.setCert(encodedCert);
+            cf.setCert(encodedCert.getBytes());
             cf.setFailures("10"); // XXX what is this !!??            
             if(dialogDescriptor.getValue() == temporarilyButton) {
                 cf.deleteOnExit();
