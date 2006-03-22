@@ -14,9 +14,14 @@
 package org.netbeans.bluej.options;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * 
@@ -52,5 +57,52 @@ public class BlueJSettings extends SystemOption {
         putProperty(PROP_HOME, home, true);
     }    
     
+    /**
+     * There is a bluej.properties file in the user directory. It countains a row of properties 
+     * named bluej.userlibrary.*.location, it's value is the path to the library, * is the number starting from
+     * 1. The cycle stops when there is one number missing.
+     * the user directory is in various places on each OS. Windows is "bluej" under user.home, on macosx it's "Library/Preferences/org.bluej" under user.home
+     * any other platform is ".bluej" under user.home.
+     * @return as ant classpath entry.
+     */
+    public String getUserLibrariesAsClassPath() {
+        File userDir = new File(System.getProperty("user.home"));
+        File bluejHome = null;
+        if (Utilities.isWindows()) {
+            bluejHome = new File(userDir, "bluej");
+        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            bluejHome = new File(userDir, "Library/Preferences/org.bluej");
+        } else {
+            bluejHome = new File(userDir, ".bluej");
+        }
+        File prop = new File(bluejHome, "bluej.properties");
+        String path = "";
+        if (prop.exists()) {
+            FileInputStream str = null;
+            try {
+                str = new FileInputStream(prop);
+                Properties properties = new Properties();
+                properties.load(str);
+                int index = 1;
+                while (true) {
+                    String propKey = "bluej.userlibrary." + index + ".location";
+                    String value = properties.getProperty(propKey);
+                    if (value != null) {
+                        path = path + (path.length() == 0 ? "" : ":") + value;
+                    } else {
+                        //we're done.
+                        break;
+                    }
+                    index = index + 1;
+                }
+            } catch (FileNotFoundException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+                    
+        }
+        return path;
+    }
     
 }

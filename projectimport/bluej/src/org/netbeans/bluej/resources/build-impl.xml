@@ -46,10 +46,10 @@ is divided into following sections:
     
     <target name="-init-bluej" depends="-do-init" if="bluej.home.available">
             <fileset dir="${bluej.home}" id="bluej.home.libraries">
-                <include>lib/userlib/*.jar</include>
-                <include>lib/userlib/*.zip</include>
+                <include name="lib/userlib/*.jar"/>
+                <include name="lib/userlib/*.zip"/>
             </fileset>
-        <pathconvert property="bluej.libraries" refid="bhm"/>
+        <pathconvert property="bluej.libraries" refid="bluej.home.libraries"/>
     </target>
     
     <target name="-do-init" depends="-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property">
@@ -147,6 +147,7 @@ is divided into following sections:
                             <include name="+libs/*.zip"/>
                         </fileset>
                         <path path="${bluej.libraries}"/>
+                        <path path="${bluej.config.libraries}"/>
                     </classpath>
                     <compilerarg line="${javac.compilerargs}"/>
                     <customize/>
@@ -169,6 +170,7 @@ is divided into following sections:
                             <include name="+libs/*.zip"/>
                         </fileset>
                         <path path="${bluej.libraries}"/>
+                        <path path="${bluej.config.libraries}"/>
 
                         <!--path path="${run.test.classpath}"/-->
                     </classpath>
@@ -197,6 +199,7 @@ is divided into following sections:
                             <include name="+libs/*.zip"/>
                         </fileset>
                         <path path="${bluej.libraries}"/>
+                        <path path="${bluej.config.libraries}"/>
                     </classpath>
                 </nbjpdastart>
             </sequential>
@@ -229,6 +232,7 @@ is divided into following sections:
                             <include name="+libs/*.zip"/>
                         </fileset>
                         <path path="${bluej.libraries}"/>
+                        <path path="${bluej.config.libraries}"/>
                     </classpath>
                     <syspropertyset>
                         <propertyref prefix="run-sys-prop."/>
@@ -253,6 +257,7 @@ is divided into following sections:
                             <include name="+libs/*.zip"/>
                         </fileset>
                         <path path="${bluej.libraries}"/>
+                        <path path="${bluej.config.libraries}"/>
                     </classpath>
                     <syspropertyset>
                         <propertyref prefix="run-sys-prop."/>
@@ -347,6 +352,7 @@ is divided into following sections:
                 <include name="+libs/*.zip"/>
             </fileset>
             <path path="${bluej.libraries}"/>
+            <path path="${bluej.config.libraries}"/>
             <map from="${build.classes.dir.resolved}" to="${dist.jar.resolved}"/>
         </pathconvert>
         <echo>java -cp "${run.classpath.with.dist.jar}" ${main.class}</echo>
@@ -360,6 +366,7 @@ is divided into following sections:
                 <include name="+libs/*.zip"/>
             </fileset>
             <path path="${bluej.libraries}"/>
+            <path path="${bluej.config.libraries}"/>
             <map from="${build.classes.dir.resolved}" to=""/>
         </pathconvert>
         <pathconvert property="jar.classpath" pathsep=" ">
@@ -450,6 +457,7 @@ is divided into following sections:
                     <include name="+libs/*.zip"/>
                 </fileset>
                 <path path="${bluej.libraries}"/>
+                <path path="${bluej.config.libraries}"/>
             </classpath>
             <sourcepath>
                 <pathelement location="${src.dir}"/>

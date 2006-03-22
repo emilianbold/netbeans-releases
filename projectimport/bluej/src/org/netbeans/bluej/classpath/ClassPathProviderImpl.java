@@ -16,6 +16,7 @@ package org.netbeans.bluej.classpath;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.StringTokenizer;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.bluej.BluejProject;
@@ -116,6 +117,21 @@ public class ClassPathProviderImpl implements ClassPathProvider {
                     if (libJars.size() > 0) {
                         paths.add(ClassPathSupport.createClassPath((FileObject[])libJars.toArray(new FileObject[libJars.size()])));
                     }
+                }
+            }
+            String userPath = BlueJSettings.getDefault().getUserLibrariesAsClassPath();
+            if (userPath.length() > 0) {
+                StringTokenizer tokens = new StringTokenizer(userPath, ":", false);
+                Collection userLibJars = new ArrayList();
+                while (tokens.hasMoreTokens()) {
+                    File fil = new File(tokens.nextToken());
+                    FileObject fo = FileUtil.toFileObject(fil);
+                    if (fo != null && FileUtil.isArchiveFile(fo)) {
+                        userLibJars.add(FileUtil.getArchiveRoot(fo));
+                    }
+                }
+                if (userLibJars.size() > 0) {
+                    paths.add(ClassPathSupport.createClassPath((FileObject[])userLibJars.toArray(new FileObject[userLibJars.size()])));
                 }
             }
             compile = ClassPathSupport.createProxyClassPath((ClassPath[])paths.toArray(new ClassPath[paths.size()]));

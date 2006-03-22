@@ -366,9 +366,19 @@ public final class BluejProject implements Project, AntProjectListener {
                     File bjHome = BlueJSettings.getDefault().getHome();
                     if (bjHome != null) {
                         ep.setProperty("bluej.home", bjHome.getAbsolutePath());
+                        ep.setComment("bluej.home", new String[] {
+                            "## the bluej.home property is reset everytime the project is opened in netbeans according to the",
+                            "## setting in the IDE that point to the location of the bluej installation.",
+                            "## It is required to find and use the libraries located in BLUEJ_HOME/lib/userdir when building the project" 
+                        }, true);
                     } else {
                         ep.remove("bluej.home");
                     }
+                    ep.setProperty("bluej.config.libraries", BlueJSettings.getDefault().getUserLibrariesAsClassPath());
+                    ep.setComment("bluej.config.libraries", new String[] {
+                        "## classpath entry that is composed from content of bluej.userlib.*.location properties in the user home's bluej.properties file..",
+                        "## rebuilt on every opening of the project in netbeans"
+                    }, true);
                     updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     try {
                         ProjectManager.getDefault().saveProject(BluejProject.this);
