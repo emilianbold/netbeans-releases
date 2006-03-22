@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.lib.editor.bookmarks.actions.ClearDocumentBookmarksAction;
 import org.netbeans.lib.editor.bookmarks.actions.GotoBookmarkAction;
 import org.netbeans.lib.editor.bookmarks.actions.ToggleBookmarkAction;
 import org.openide.cookies.EditorCookie;
@@ -100,6 +101,14 @@ public class WrapperBookmarkAction extends NodeAction {
         
         public Toggle() {
             super(new ToggleBookmarkAction());
+        }
+
+    }
+
+    public static final class ClearDocumentBookmarks extends WrapperBookmarkAction {
+        
+        public ClearDocumentBookmarks() {
+            super(new ClearDocumentBookmarksAction());
         }
 
     }

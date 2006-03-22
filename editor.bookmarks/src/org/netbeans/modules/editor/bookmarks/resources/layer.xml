@@ -26,6 +26,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="bookmark-toggle.instance">
                 <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$Toggle"/>
             </file>
+            <file name="clear-document-bookmarks.instance">
+                <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$ClearDocumentBookmarks"/>
+            </file>
         </folder>
     </folder>
 
