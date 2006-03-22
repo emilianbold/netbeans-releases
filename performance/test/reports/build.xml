@@ -1,64 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-                Sun Public License Notice
-
-The contents of this file are subject to the Sun Public License
-Version 1.0 (the "License"). You may not use this file except in
-compliance with the License. A copy of the License is available at
-http://www.sun.com/
-
-The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-Microsystems, Inc. All Rights Reserved.
--->
-<project basedir="." default="all" name="Performance reports">
-    <property name="nbroot" location="../../.."/>
-
-    <target name="init">
-         <available property="already-converted" file="all_features-subst.xml"/>
-         <property name="http.proxyPort" value="-1" />
-         <property name="http.proxyHost" value="" />
-         <property name="http.proxyPool" value="" />
-    </target>
-    
-    <target name="all" depends="init">
-        <taskdef name="compare" classname="org.netbeans.performance.results.AnalyzeResultsTask" classpath="perfresults.jar"/>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<project name="reports" default="default" basedir=".">
+    <description>Builds, tests, and runs the project reports.</description>
+    <import file="nbproject/build-impl.xml"/>
     <!--
-	<style destdir="." 
-               in="${nbroot}/core/test/results/xmlresults/testreport-performance.xml" 
-               out="testresults-performance.html" 
-               style="style-html.xsl"/>
-               -->
-<!--        <compare refFile="${nbroot}/core/test/results/xmlresults/testreport-performance.xml"-->
-        <compare refFile="/home/radim/tmp/tiger_mustang/LinRHEL3_jdk150_03_testreport-performance.xml"
-                 destFile="output.xml">
-           <fileset dir="/home/radim/tmp/tiger_mustang">
-               <include name="LinRHEL3_jdk160_b38_testreport-performance.xml"/>
-               <!--<exclude name="testrun_040222-155643/xmlresults/testrun-performance.xml"/>-->
-           </fileset>
-        </compare>
-    </target>
-    
-    <target name="compile" depends="init">
-        <mkdir dir="classes"/>
-        <javac srcdir="src" destdir="classes"
-               deprecation="${build.compiler.deprecation}" 
-               debug="${build.compiler.debug}">
-<!--
-           <classpath>
-             <pathelement location="${nbroot}/"/>
-           </classpath>
--->
-        </javac>
-    </target>
-    
-    <target name="jar" depends="compile">
-      <jar jarfile="perfresults.jar">
-      </jar>
-        <jar basedir="classes" compress="false" jarfile="perfresults.jar">
-<!--          <include name="testUtilities/**"/>
-          <patternset refid="standard-jar-excludes"/>
-          -->
-        </jar>
-    </target>
+
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
+
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
+      -pre-jar:                  called before JAR building
+      -post-jar:                 called after JAR building
+      -post-clean:               called after cleaning build products
+
+    (Targets beginning with '-' are not intended to be called on their own.)
+
+    Example of inserting an obfuscator after compilation could look like this:
+
+        <target name="-post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
+
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
+
+
+    Another way to customize the build is by overriding existing main targets.
+    The targets of interest are: 
+
+      -init-macrodef-javac:     defines macro for javac compilation
+      -init-macrodef-junit:     defines macro for junit execution
+      -init-macrodef-debug:     defines macro for class debugging
+      -init-macrodef-java:      defines macro for class execution
+      -do-jar-with-manifest:    JAR building (if you are using a manifest)
+      -do-jar-without-manifest: JAR building (if you are not using a manifest)
+      run:                      execution of project 
+      -javadoc-build:           Javadoc generation
+      test-report:              JUnit report generation
+
+    An example of overriding the target for project execution could look like this:
+
+        <target name="run" depends="reports-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that the overridden target depends on the jar target and not only on 
+    the compile target as the regular run target does. Again, for a list of available 
+    properties which you can use, check the target you are overriding in the
+    nbproject/build-impl.xml file. 
+
+    -->
 </project>
