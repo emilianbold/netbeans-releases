@@ -406,7 +406,7 @@ public class SvnUtils {
                 }
             }
 
-            if (info != null) {
+            if (info != null && info.getUrl() != null) {
                 SVNUrl fileURL = info.getUrl();
                 repositoryURL = info.getRepository();
                 int status = Subversion.getInstance().getStatusCache().getStatus(file).getStatus();
@@ -474,7 +474,7 @@ public class SvnUtils {
                 }
             }
 
-            if (info != null) {
+            if (info != null && info.getUrl() != null) {
                 SVNUrl fileURL = info.getUrl();
                 repositoryURL = info.getRepository();
                 int status = Subversion.getInstance().getStatusCache().getStatus(file).getStatus();

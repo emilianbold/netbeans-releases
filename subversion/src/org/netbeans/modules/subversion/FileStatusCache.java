@@ -124,8 +124,9 @@ public class FileStatusCache implements ISVNNotifyListener {
 
     /**
      * Lists <b>interesting files</b> that are known to be inside given folders.
-     * These are locally and remotely modified and ignored files. This method
-     * returns no folders.
+     * These are locally and remotely modified and ignored files.
+     *
+     * <p>Comapring to CVS this method returns both folders and files.
      *
      * @param context context to examine
      * @param includeStatus limit returned files to those having one of supplied statuses
@@ -137,7 +138,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) allFiles.get(file);
-            if (info.isDirectory() || (info.getStatus() & includeStatus) == 0) continue;
+            if ((info.getStatus() & includeStatus) == 0) continue;
             File [] roots = context.getRootFiles();
             for (int j = 0; j < roots.length; j++) {
                 File root = roots[j];
