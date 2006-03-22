@@ -125,7 +125,7 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
         String mimeType1 = ss1.getMIMEType();
         String mimeType2 = ss2.getMIMEType();
         if (mimeType1 == null) mimeType1 = mimeType2;
-        if (mimeType2 == null) mimeType2 = mimeType1;        
+        if (mimeType2 == null) mimeType2 = mimeType1;
         
         saveSources(r1, r2);
         initComponents ();
@@ -653,6 +653,8 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
         dim = jScrollPane2.getViewport().getViewSize();
         dim.width = width/2;
         jScrollPane2.getViewport().setViewSize(dim);
+
+        jSplitPane1.setDividerLocation(0.5);
     }
 
     public void setHorizontalPosition(int pos) {
