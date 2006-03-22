@@ -23,8 +23,10 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -102,7 +104,7 @@ public class VerifyClassLinkage extends Task {
             // Map from class name (foo/Bar format) to true (found), false (not found), null (as yet unknown):
             Map/*<String,Boolean>*/ loadable = new HashMap();
             Map/*<String,byte[]>*/ classfiles = new HashMap();
-            read(jar, classfiles);
+            read(jar, classfiles, new HashSet());
             Iterator it = classfiles.keySet().iterator();
             while (it.hasNext()) {
                 // All classes we define are obviously loadable:
@@ -125,7 +127,11 @@ public class VerifyClassLinkage extends Task {
         }
     }
 
-    private void read(File jar, Map/*<String,byte[]>*/ classfiles) throws IOException {
+    private void read(File jar, Map/*<String,byte[]>*/ classfiles, Set/*<File>*/ alreadyRead) throws IOException {
+        if (!alreadyRead.add(jar)) {
+            log("Already read " + jar, Project.MSG_VERBOSE);
+            return;
+        }
         log("Reading " + jar, Project.MSG_VERBOSE);
         JarFile jf = new JarFile(jar);
         try {
@@ -158,7 +164,7 @@ public class VerifyClassLinkage extends Task {
                     for (int i = 0; i < uris.length; i++) {
                         File otherJar = new File(jar.toURI().resolve(uris[i]));
                         if (otherJar.isFile()) {
-                            read(otherJar, classfiles);
+                            read(otherJar, classfiles, alreadyRead);
                         }
                     }
                 }
