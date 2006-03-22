@@ -113,6 +113,11 @@ public class Subversion {
         return nodes;
     }
 
+    /**
+     * @return true if the buffer is almost certainly binary.
+     * Note: Non-ASCII based encoding encoded text is binary,
+     * newlines cannot be reliably detected.
+     */
     public boolean isBinary(byte[] buffer) {
         for (int i = 0; i<buffer.length; i++) {
             int ch = buffer[i];
