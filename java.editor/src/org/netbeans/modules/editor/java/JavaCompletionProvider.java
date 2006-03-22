@@ -39,6 +39,7 @@ import org.netbeans.jmi.javamodel.Feature;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -235,9 +236,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                 this.javaDoc.docItem = this;
                 this.javaDoc.setItem(item);
                 this.url = getURL(item);
-                Resource res = (item instanceof Element && ((Element)item).isValid()) ? ((Element)item).getResource() : null;
-                if (res != null && res.getName().endsWith(".java")) //NOI18N
-                    this.item = item;
+                JavaModel.getJavaRepository().beginTrans(false);
+                try {
+                    Resource res = (item instanceof Element && ((Element)item).isValid()) ? ((Element)item).getResource() : null;
+                    if (res != null && res.getName().endsWith(".java")) //NOI18N
+                        this.item = item;
+                } finally {
+                    JavaModel.getJavaRepository().endTrans();
+                }
             }
             
             public CompletionDocumentation resolveLink(String link) {
