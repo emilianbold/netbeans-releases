@@ -583,6 +583,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 imports.addAll (Arrays.asList (EditorContextBridge.getImports (
                     getEngineContext ().getURL (frame, "Java")
                 )));
+                final ThreadReference tr = frame.thread();
                 final List[] disabledBreakpoints = new List[] { null };
                 final JPDAThreadImpl[] resumedThread = new JPDAThreadImpl[] { null };
                 EvaluationContext context;
@@ -597,7 +598,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                 public void run() {
                                     if (disabledBreakpoints[0] == null) {
                                         disabledBreakpoints[0] = disableAllBreakpoints ();
-                                        ThreadReference tr = frame.thread();
                                         resumedThread[0] = (JPDAThreadImpl) getThread(tr);
                                         resumedThread[0].notifyToBeRunning();
                                     }

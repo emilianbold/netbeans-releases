@@ -948,7 +948,7 @@ public class Evaluator implements JavaParserVisitor {
             Assert.error(currentNode, "methodCallOnNull", ctx.identifier);
         }
 
-        List methods = type.methodsByName(ctx.identifier);
+        List methods = getMethodsByName(type, ctx.identifier);
         
         //Try outer classes
         ReferenceType origType = type;
@@ -964,7 +964,7 @@ public class Evaluator implements JavaParserVisitor {
             }
             object = (ObjectReference) object.getValue(outerRef);
             type = object.referenceType();
-            methods = type.methodsByName(ctx.identifier);
+            methods = getMethodsByName(type, ctx.identifier);
                 
         }
        
@@ -974,7 +974,7 @@ public class Evaluator implements JavaParserVisitor {
                 String typeName = (String) i.next();
                 try {
                     ReferenceType importedType = resolveType(typeName);
-                    methods = importedType.methodsByName(ctx.identifier);
+                    methods = getMethodsByName(importedType, ctx.identifier);
                     if (methods.size() > 0) {
                         type = importedType;
                         object = null;
@@ -1016,6 +1016,18 @@ public class Evaluator implements JavaParserVisitor {
         MethodCall call = mostSpecific(possibleMethods, args);
         Assert.assertNotNull(call, currentNode, "ambigousMethod", ctx);
         return call;
+    }
+    
+    private static List getMethodsByName(ReferenceType type, String name) {
+        if (type instanceof ArrayType) { // There are no methods by JDI definition ?!?
+            type = type.classObject().referenceType();
+            if ("toString".equals(name)) { // NOI18N
+                // We have to get the super class' toString() method for some strange reason...
+                type = ((ClassType) type).superclass();
+            }
+        }
+        List methods = type.methodsByName(name);
+        return methods;
     }
 
     private MethodCall mostSpecific(List possibleMethods, Value [] args) {
