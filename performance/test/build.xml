@@ -24,5 +24,26 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="measure_ide"/>
     
+    <target name="compare" description="Compares test results from various testruns">
+        <taskdef name="compare" classname="org.netbeans.performance.results.AnalyzeResultsTask" classpath="reports/dist/reports.jar"/>
+    <!--
+	<style destdir="." 
+               in="${nbroot}/core/test/results/xmlresults/testreport-performance.xml" 
+               out="testresults-performance.html" 
+               style="style-html.xsl"/>
+               -->
+<!--        <compare refFile="${nbroot}/core/test/results/xmlresults/testreport-performance.xml"-->
+        <!-- Optionally specify refFile attr with testreport-performance.xml file containing reference results
+             Also it is possible to add a fileset of reports to be compared against reference -->
+        <compare>
+            <!--
+           <fileset dir="results">
+               <include name="testrun-*/xmlresults/testreport-performance.xml"/>
+               <exclude name="testrun_YYMMDD-HHMMSS/xmlresults/testrun-performance.xml"/>
+           </fileset>
+           -->
+        </compare>
+    </target>
+    
 </project>
 
