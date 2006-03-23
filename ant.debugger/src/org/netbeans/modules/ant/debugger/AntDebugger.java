@@ -213,7 +213,9 @@ public class AntDebugger extends ActionsProviderSupport {
     }
     
     private void stopHere(AntEvent event) {
-        lastEvent = event;
+        synchronized (this) {
+            lastEvent = event;
+        }
         updateUI();
         currentFile = event.getScriptLocation();
         // update variable values
@@ -236,6 +238,9 @@ public class AntDebugger extends ActionsProviderSupport {
             } catch (InterruptedException ex) {
                 ex.printStackTrace ();
             }
+        }
+        synchronized (this) {
+            lastEvent = null;
         }
     }
     
@@ -766,8 +771,10 @@ public class AntDebugger extends ActionsProviderSupport {
     String evaluate (String expression) {
         String value = getVariableValue (expression);
         if (value != null) return value;
-        if (lastEvent == null) return null;
-        return lastEvent.evaluate (expression);
+        synchronized (this) {
+            if (lastEvent == null) return null;
+            return lastEvent.evaluate (expression);
+        }
     }
 
     private String[] variables = new String [0];
@@ -777,8 +784,10 @@ public class AntDebugger extends ActionsProviderSupport {
     }
     
     String getVariableValue (String variableName) {
-        if (lastEvent == null) return null;
-        return lastEvent.getProperty (variableName);
+        synchronized (this) {
+            if (lastEvent == null) return null;
+            return lastEvent.getProperty (variableName);
+        }
     }
 
     /**
