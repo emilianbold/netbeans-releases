@@ -9,7 +9,9 @@
             <source-roots>
                 <root id="src.dir"/>
             </source-roots>
-            <test-roots/>
+            <test-roots>
+                <root id="test.src.dir" name="/opt/devel/nb/nb_all/performance/test/reports/test/src"/>
+            </test-roots>
         </data>
     </configuration>
 </project>
