@@ -105,4 +105,3 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-modules-nbjunit-ide@" value="${javadoc.docs.org-netbeans-modules-nbjunit-ide}"/>
 <replacefilter token="@org-netbeans-libs-javacapi@" value="${javadoc.docs.org-netbeans-libs-javacapi}"/>
 <replacefilter token="@org-netbeans-jackpot@" value="${javadoc.docs.org-netbeans-jackpot}"/>
-<replacefilter token="@org-netbeans-modules-projectui@" value="${javadoc.docs.org-netbeans-modules-projectui}"/>
