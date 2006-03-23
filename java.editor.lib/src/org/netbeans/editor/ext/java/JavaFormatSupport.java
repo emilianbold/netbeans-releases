@@ -860,7 +860,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                     }
 
                 } else if (!isMultiLineComment(firstNWS)) { // line-comment
-                    indent = firstNWS.equals(findLineStart(firstNWS)) ? getLineIndent(firstNWS, true) : findIndent(firstNWS.getToken());
+                    indent = findIndent(firstNWS.getToken());
                 } else { // multi-line comment
                     if (isJavaDocComment(firstNWS.getToken()))
                     {
