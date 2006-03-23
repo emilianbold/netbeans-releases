@@ -234,6 +234,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                     (env);
                 ExecutorTask executorTask = executor.execute 
                     (project, new String[] {target});
+                DebuggerAntLogger.getDefault().fileExecutor(project.getFile(), executorTask);
             } catch (IOException ioe) {
                 AntModule.err.notify(ioe);
             }

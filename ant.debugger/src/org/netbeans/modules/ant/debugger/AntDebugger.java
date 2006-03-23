@@ -53,6 +53,7 @@ import org.openide.text.Annotatable;
 import org.openide.text.Line;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.TaskListener;
 import org.w3c.dom.Element;
 
 /**
@@ -69,6 +70,7 @@ public class AntDebugger extends ActionsProviderSupport {
     private AntProjectCookie            antCookie;
     private AntDebuggerEngineProvider   engineProvider;
     private ContextProvider             contextProvider;
+    private ExecutorTask                execTask;
     private Object                      LOCK = new Object ();
     private Object                      LOCK_ACTIONS = new Object();
     private boolean                     actionRunning = false;
@@ -101,6 +103,18 @@ public class AntDebugger extends ActionsProviderSupport {
         }
                 
         ioManager = new IOManager (antCookie.getFile ().getName ());
+    }
+    
+    void setExecutor(ExecutorTask execTask) {
+        this.execTask = execTask;
+        if (execTask != null) {
+            execTask.addTaskListener(new TaskListener() {
+                public void taskFinished(org.openide.util.Task task) {
+                    // The ANT task was finished
+                    finish();
+                }
+            });
+        }
     }
     
     
@@ -589,6 +603,9 @@ public class AntDebugger extends ActionsProviderSupport {
     }
     
     private void finish () {
+        if (execTask != null) {
+            execTask.stop();
+        }
         Utils.unmarkCurrent ();
         doStop = false;
         taskEndToStopAt = null;
@@ -597,6 +614,7 @@ public class AntDebugger extends ActionsProviderSupport {
         synchronized (LOCK) {
             LOCK.notify ();
         }
+        buildFinished(null);
     }
     
     

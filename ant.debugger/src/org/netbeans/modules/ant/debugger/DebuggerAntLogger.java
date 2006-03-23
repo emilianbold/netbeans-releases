@@ -15,6 +15,8 @@ package org.netbeans.modules.ant.debugger;
 
 import java.io.File;
 import java.lang.StringBuffer;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,6 +30,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.SessionProvider;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -260,9 +263,15 @@ public class DebuggerAntLogger extends AntLogger {
     /** AntDebugger => AntSession */
     private Map runningDebuggers2 = new HashMap ();
     private Set filesToDebug = new HashSet ();
+    /** File => WeakReference -> ExecutorTask */
+    private Map fileExecutors = new HashMap();
     
     void debugFile (File f) {
         filesToDebug.add (f);
+    }
+    
+    void fileExecutor(File f, ExecutorTask execTask) {
+        fileExecutors.put(f, new WeakReference(execTask));
     }
     
     private void finishDebugging (
@@ -279,6 +288,11 @@ public class DebuggerAntLogger extends AntLogger {
         if (!filesToDebug.contains (s.getOriginatingScript ())) 
             return null;
         filesToDebug.remove (s.getOriginatingScript ());
+        Reference execRef = (Reference) fileExecutors.remove(s.getOriginatingScript());
+        ExecutorTask execTask = null;
+        if (execRef != null) {
+            execTask = (ExecutorTask) execRef.get();
+        }
         
         // start debugging othervise
         try {
@@ -288,7 +302,7 @@ public class DebuggerAntLogger extends AntLogger {
                 (AntProjectCookie.class);
             if (antCookie == null)
                 throw new NullPointerException ();
-            d = startDebugging (antCookie, antEvent);
+            d = startDebugging (antCookie, antEvent, execTask);
             runningDebuggers.put (s, d);
             runningDebuggers2.put (d, s);
             return d;
@@ -300,7 +314,8 @@ public class DebuggerAntLogger extends AntLogger {
 
     private static AntDebugger startDebugging (
         final AntProjectCookie antCookie,
-        final AntEvent         antEvent
+        final AntEvent         antEvent,
+        final ExecutorTask     execTask
     ) {
         DebuggerInfo di = DebuggerInfo.create (
             "AntDebuggerInfo",
@@ -327,6 +342,8 @@ public class DebuggerAntLogger extends AntLogger {
         );
         DebuggerEngine[] es = DebuggerManager.getDebuggerManager ().
             startDebugging (di);
-        return (AntDebugger) es [0].lookupFirst (null, AntDebugger.class);
+        AntDebugger debugger = (AntDebugger) es [0].lookupFirst (null, AntDebugger.class);
+        debugger.setExecutor(execTask);
+        return debugger;
     }
 }
