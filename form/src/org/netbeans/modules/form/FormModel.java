@@ -75,7 +75,7 @@ public class FormModel
     private Object codeStructureMark2;
 //    private CodeGenerator codeGenerator; // [this reference should be removed]
     
-    private FormSettings settings = new FormSettings();
+    private FormSettings settings = new FormSettings(this);
     
     private boolean freeDesignDefaultLayout = false;
 
@@ -957,11 +957,14 @@ public class FormModel
     }
 
     /** Fires an event informing about general form change. */
-    public FormModelEvent fireFormChanged() {
+    public FormModelEvent fireFormChanged(boolean immediately) {
         t("firing form change"); // NOI18N
 
         FormModelEvent ev = new FormModelEvent(this, FormModelEvent.OTHER_CHANGE);
-        sendEvent(ev);
+        if (immediately)
+            sendEventImmediately(ev);
+        else
+            sendEvent(ev);
 
         return ev;
     }

@@ -93,6 +93,11 @@ class JavaCodeGenerator extends CodeGenerator {
     static final int CEDL_INNERCLASS = 1;
     static final int CEDL_MAINCLASS = 2;
 
+    // types of code generation of layout code
+    static final int LAYOUT_CODE_AUTO = 0;
+    static final int LAYOUT_CODE_JDK6 = 1;
+    static final int LAYOUT_CODE_LIBRARY = 2;
+
     private static final String EVT_SECTION_PREFIX = "event_"; // NOI18N
 
     private static final String DEFAULT_LISTENER_CLASS_NAME = "FormListener"; // NOI18N
@@ -190,6 +195,7 @@ class JavaCodeGenerator extends CodeGenerator {
             propList.add(new LocalVariablesProperty());
             propList.add(new GenerateMnemonicsCodeProperty());
             propList.add(new ListenerGenerationStyleProperty());
+            propList.add(new LayoutCodeTargetProperty());
         } else if (component != formModel.getTopRADComponent()) {
             
             propList.add(createBeanClassNameProperty(component));
@@ -1147,7 +1153,8 @@ class JavaCodeGenerator extends CodeGenerator {
                             layoutCont,
                             contExprStr,
                             contVarName,
-                            infos);
+                            infos,
+                            formModel.getSettings().getLayoutCodeTarget() == LAYOUT_CODE_LIBRARY);
                     }
                 }
 //                generateVisualCode((RADVisualContainer)comp, initCodeWriter);
@@ -3263,4 +3270,53 @@ class JavaCodeGenerator extends CodeGenerator {
         
     }
 
+    // analogical to ListenerGenerationStyleProperty ...
+    private class LayoutCodeTargetProperty extends PropertySupport.ReadWrite {
+        
+        private LayoutCodeTargetProperty() {
+            super(FormLoaderSettings.PROP_LAYOUT_CODE_TARGET,
+                Integer.class,
+                FormUtils.getBundleString("PROP_LAYOUT_CODE_TARGET"), // NOI18N
+                FormUtils.getBundleString("HINT_LAYOUT_CODE_TARGET")); // NOI18N
+        }
+            
+        public void setValue(Object value) {
+            if (!(value instanceof Integer))
+                throw new IllegalArgumentException();
+            
+            Integer oldValue = (Integer)getValue();
+            Integer newValue = (Integer)value;
+            formModel.getSettings().setLayoutCodeTarget(newValue.intValue());
+            formModel.fireSyntheticPropertyChanged(null, FormLoaderSettings.PROP_LAYOUT_CODE_TARGET, oldValue, newValue);
+            FormRootNode formRootNode = (FormRootNode)FormEditor.getFormEditor(formModel).getFormRootNode();
+            formRootNode.firePropertyChangeHelper(
+                FormLoaderSettings.PROP_LAYOUT_CODE_TARGET, oldValue, newValue);
+        }
+
+        public Object getValue() {
+            return new Integer(formModel.getSettings().getLayoutCodeTarget());
+        }
+
+        public boolean supportsDefaultValue() {
+            return true;
+        }
+
+        public void restoreDefaultValue() {
+            setValue(new Integer(FormLoaderSettings.getInstance().getLayoutCodeTarget()));
+        }
+
+        public boolean isDefaultValue() {
+            return (formModel.getSettings().getLayoutCodeTarget() ==
+                    FormLoaderSettings.getInstance().getLayoutCodeTarget());
+        }
+
+        public boolean canWrite() {
+            return JavaCodeGenerator.this.canGenerate && !JavaCodeGenerator.this.formModel.isReadOnly();
+        }
+
+        public PropertyEditor getPropertyEditor() {
+            return new FormLoaderSettingsBeanInfo.LayoutCodeTargetEditor(true);
+        }
+
+    }
 }

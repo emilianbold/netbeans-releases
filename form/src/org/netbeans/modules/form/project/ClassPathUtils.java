@@ -238,6 +238,14 @@ public class ClassPathUtils {
         return new ClassSource(classname, types, outputs);
     }
 
+    public static boolean isJava6ProjectPlatform(FileObject fileInProject) {
+        ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.BOOT);
+        if (classPath == null)
+            return false;
+
+        return classPath.findResource("javax/swing/GroupLayout.class") != null; // NOI18N
+    }
+
     /** Updates project'c classpath with entries from ClassSource object.
      */
     public static boolean updateProject(FileObject fileInProject,

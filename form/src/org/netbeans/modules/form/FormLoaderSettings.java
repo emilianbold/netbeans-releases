@@ -86,6 +86,9 @@ public class FormLoaderSettings extends SystemOption {
     /** Property name of the assistantShown property. */
     public static final String PROP_ASSISTANT_SHOWN = "assistantShown"; // NOI18N
 
+    /** Property name of the layout code target property. */
+    public static final String PROP_LAYOUT_CODE_TARGET = "layoutCodeTarget"; // NOI18N
+
 //    public static final String PROP_CONTAINER_BEANS = "containerBeans"; // NOI18N
 
     // ------------------------------------------
@@ -163,6 +166,9 @@ public class FormLoaderSettings extends SystemOption {
 
     private static final int MIN_GRID_X = 2;
     private static final int MIN_GRID_Y = 2;
+
+    /** The style of generating layout code (GroupLayout etc). */
+    private static int layoutCodeTarget;
 
 //    private static Map containerBeans;
 
@@ -550,6 +556,17 @@ public class FormLoaderSettings extends SystemOption {
         firePropertyChange(PROP_ASSISTANT_SHOWN,
                            oldValue, 
                            value ? Boolean.TRUE : Boolean.FALSE);
+    }
+
+    public int getLayoutCodeTarget() {
+        return layoutCodeTarget;
+    }
+
+    public void setLayoutCodeTarget(int target) {
+        int oldValue = layoutCodeTarget;
+        layoutCodeTarget = target;
+        firePropertyChange(PROP_LAYOUT_CODE_TARGET,
+                           new Integer(oldValue), new Integer(target));
     }
 
 //    public Map getContainerBeans() {

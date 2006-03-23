@@ -43,22 +43,25 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
     private transient boolean superclassPanelCurrent;
     private transient WizardDescriptor.InstantiatingIterator delegateIterator;
 
-    private static TemplateWizardIterator instance;
+    private boolean specifySuperclass;
 
-    public static synchronized TemplateWizardIterator singleton() {
-        if (instance == null)
-            instance = new TemplateWizardIterator();
-        return instance;
+    public static TemplateWizardIterator createForSuperclass() {
+        return new TemplateWizardIterator(true);
     }
-    
-    public TemplateWizardIterator() {
+
+    public static TemplateWizardIterator create() {
+        return new TemplateWizardIterator(false);
+    }
+
+    public TemplateWizardIterator(boolean specifySuperclass) {
         delegateIterator = JavaTemplates.createJavaTemplateIterator();
+        this.specifySuperclass = specifySuperclass;
     }
 
     public void initialize(WizardDescriptor wizard) {
         delegateIterator.initialize(wizard);
         superclassPanelCurrent = false;
-        if (superclassPanel == null) {
+        if (superclassPanel == null && specifySuperclass) {
             superclassPanel = new SuperclassWizardPanel();
             
             ResourceBundle bundle = NbBundle.getBundle(TemplateWizardIterator.class);
@@ -82,20 +85,23 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
         try {
             FileObject template = (FileObject) set.iterator().next();
             DataObject dobj = DataObject.find(template);
-            SourceCookie src = (SourceCookie) dobj.getCookie(SourceCookie.class);
-            if (src != null) {
-                ClassElement[] classes = src.getSource().getClasses();
-                if (classes != null && classes.length > 0) {
-                    ClassElement formClass = classes[0];
-                    String superclassName =
-                        ((SuperclassWizardPanel)superclassPanel).getSuperclassName();
-                    formClass.setSuperclass(Identifier.create(superclassName));
-                    SaveCookie savec = (SaveCookie) dobj.getCookie(SaveCookie.class);
-                    if (savec != null) {
-                        savec.save();
+            if (specifySuperclass) {
+                SourceCookie src = (SourceCookie) dobj.getCookie(SourceCookie.class);
+                if (src != null) {
+                    ClassElement[] classes = src.getSource().getClasses();
+                    if (classes != null && classes.length > 0) {
+                        ClassElement formClass = classes[0];
+                        String superclassName =
+                            ((SuperclassWizardPanel)superclassPanel).getSuperclassName();
+                        formClass.setSuperclass(Identifier.create(superclassName));
+                        SaveCookie savec = (SaveCookie) dobj.getCookie(SaveCookie.class);
+                        if (savec != null) {
+                            savec.save();
+                        }
                     }
                 }
             }
+            dobj.getPrimaryFile().setAttribute("justCreatedByNewWizard", Boolean.TRUE); // NOI18N
         }
         catch (Exception ex) {}
         
@@ -107,7 +113,7 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
     }
 
     public boolean hasNext() {
-        return !superclassPanelCurrent;
+        return !superclassPanelCurrent && superclassPanel != null;
     }
     
     public boolean hasPrevious() {
@@ -118,7 +124,7 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
         if (delegateIterator.hasNext()) {
             delegateIterator.nextPanel();
         } else {
-            if (superclassPanelCurrent) {
+            if (superclassPanelCurrent || superclassPanel == null) {
                 throw new NoSuchElementException();
             } else {
                 superclassPanelCurrent = true;
@@ -244,11 +250,4 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
         private JLabel label1;
         private JTextField superclassTextField;
     }
-
-    // -----
-
-    private Object readResolve() {
-        return singleton();
-    }
-    
 }

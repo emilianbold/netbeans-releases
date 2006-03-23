@@ -14,6 +14,7 @@
 package org.netbeans.modules.form;
 
 import java.util.*;
+import org.netbeans.modules.form.project.ClassPathUtils;
 
 /**
  * Settings for one form.
@@ -21,9 +22,12 @@ import java.util.*;
  * @author Jan Stola
  */
 public class FormSettings {
+    private FormModel formModel;
     private Map settings = new TreeMap();
     
-    FormSettings() {
+    FormSettings(FormModel formModel) {
+        this.formModel = formModel;
+
         // Variables Modifier
         int variablesModifier = FormLoaderSettings.getInstance().getVariablesModifier();
         settings.put(FormLoaderSettings.PROP_VARIABLES_MODIFIER, new Integer(variablesModifier));
@@ -76,7 +80,43 @@ public class FormSettings {
     public void setListenerGenerationStyle(int value) {
         settings.put(FormLoaderSettings.PROP_LISTENER_GENERATION_STYLE, new Integer(value));
     }
-    
+
+    public int getLayoutCodeTarget() {
+        return checkLayoutCodeTarget();
+    }
+
+    public void setLayoutCodeTarget(int value) {
+        settings.put(FormLoaderSettings.PROP_LAYOUT_CODE_TARGET, new Integer(value));
+    }
+
+    private int checkLayoutCodeTarget() {
+        Integer lctSetting = (Integer)settings.get(FormLoaderSettings.PROP_LAYOUT_CODE_TARGET);
+        int layoutCodeTarget;
+        if (lctSetting != null) {
+            layoutCodeTarget = lctSetting.intValue();
+        }
+        else { // no setting
+            layoutCodeTarget = FormEditor.getFormEditor(formModel).needPostCreationUpdate() ?
+                JavaCodeGenerator.LAYOUT_CODE_AUTO : // newly created form - detect
+                JavaCodeGenerator.LAYOUT_CODE_LIBRARY; // old form - use library
+        }
+        if (layoutCodeTarget == JavaCodeGenerator.LAYOUT_CODE_AUTO) {
+            int globalLCT = FormLoaderSettings.getInstance().getLayoutCodeTarget();
+            if (globalLCT == JavaCodeGenerator.LAYOUT_CODE_AUTO) {
+                layoutCodeTarget = ClassPathUtils.isJava6ProjectPlatform(
+                        FormEditor.getFormDataObject(formModel).getPrimaryFile()) ?
+                    JavaCodeGenerator.LAYOUT_CODE_JDK6 : JavaCodeGenerator.LAYOUT_CODE_LIBRARY;
+            }
+            else layoutCodeTarget = globalLCT;
+            setLayoutCodeTarget(layoutCodeTarget);
+        }
+        else if (lctSetting == null) {
+            setLayoutCodeTarget(layoutCodeTarget);
+        }
+
+        return layoutCodeTarget;
+    }
+
     void set(String name, Object value) {
         settings.put(name, value);
     }

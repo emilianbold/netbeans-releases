@@ -50,6 +50,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        FormLoaderSettings.class,
                                        "getListenerGenerationStyle", // NOI18N
                                        "setListenerGenerationStyle"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_LAYOUT_CODE_TARGET,
+                                       FormLoaderSettings.class,
+                                       "getLayoutCodeTarget", // NOI18N
+                                       "setLayoutCodeTarget"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_SELECTION_BORDER_SIZE,
                                        FormLoaderSettings.class,
                                        "getSelectionBorderSize", // NOI18N
@@ -149,6 +153,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[++i].setDisplayName(bundle.getString("PROP_LISTENER_GENERATION_STYLE")); // NOI18N
             desc[i].setShortDescription(bundle.getString("HINT_LISTENER_GENERATION_STYLE")); // NOI18N
             desc[i].setPropertyEditorClass(ListenerGenerationStyleEditor.class);
+            desc[i].setExpert(true);
+
+            desc[++i].setDisplayName(bundle.getString("PROP_LAYOUT_CODE_TARGET")); // NOI18N
+            desc[i].setShortDescription(bundle.getString("HINT_LAYOUT_CODE_TARGET")); // NOI18N
+            desc[i].setPropertyEditorClass(LayoutCodeTargetEditor.class);
             desc[i].setExpert(true);
 
             desc[++i].setDisplayName(bundle.getString("PROP_SELECTION_BORDER_SIZE")); // NOI18N
@@ -272,4 +281,34 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
         }
     }
 
+    public final static class LayoutCodeTargetEditor
+                      extends org.netbeans.modules.form.editors.EnumEditor
+    {
+        public LayoutCodeTargetEditor() {
+            this(false);
+        }
+        public LayoutCodeTargetEditor(boolean specific) {
+            super(specific ?
+                new Object[] {
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_JDK6"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_JDK6),
+                    "", // NOI18N
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_LIBRARY"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_LIBRARY),
+                    "" // NOI18N
+                }
+                :
+                new Object[] {
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_AUTO"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_AUTO),
+                    "", // NOI18N
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_JDK6"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_JDK6),
+                    "", // NOI18N
+                    FormUtils.getBundleString("CTL_LAYOUT_CODE_LIBRARY"), // NOI18N
+                    new Integer(JavaCodeGenerator.LAYOUT_CODE_LIBRARY),
+                    "" // NOI18N
+                });
+        }
+    }
 }

@@ -233,6 +233,9 @@ public class FormEditorSupport extends JavaEditor
             throw ioEx;
     }
 
+    void saveSourceOnly() throws IOException {
+        super.saveDocument();
+    }
 
     // ------------
     // other interface methods

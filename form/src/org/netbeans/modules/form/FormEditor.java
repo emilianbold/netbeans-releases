@@ -152,9 +152,12 @@ public class FormEditor {
         mainWin.getGlassPane().setCursor(null);
 
         // report errors during loading
-        reportErrors(LOADING);              
+        reportErrors(LOADING);
+
+        // may do additional setup for just created form
+        checkPostCreationUpdate();
     }
-    
+
     boolean loadForm() {
         if (formLoaded)
             return true;
@@ -500,7 +503,37 @@ public class FormEditor {
         detachFormListener();
         getFormDataObject().getFormEditorSupport().updateMVTCDisplayName();                                
     }
-    
+
+    boolean needPostCreationUpdate() {
+        return Boolean.TRUE.equals(formDataObject.getPrimaryFile().getAttribute("justCreatedByNewWizard")); // NOI18N
+        // see o.n.m.f.w.TemplateWizardIterator.instantiate()
+    }
+
+    /**
+     * Form just created by the user via the New wizard may need some additional
+     * setup that can't be ensured by the static template. For example the type
+     * of layout code generation needs to be honored.
+     */
+    private void checkPostCreationUpdate() {
+        if (formLoaded && formModel != null && !formModel.isReadOnly()
+            && needPostCreationUpdate()) // just created via New wizard
+        {   // regenerate code according to actual settings and save
+            formModel.getSettings().getLayoutCodeTarget(); // make sure layout gen. target is detected
+            formModel.fireFormChanged(true); // hack: regenerate code immediately
+            FormEditorSupport fes = formDataObject.getFormEditorSupport();
+            try { // save the form if changed
+                if (fes.isModified()) {
+                    saveFormData();
+                    fes.saveSourceOnly();
+                }
+                formDataObject.getPrimaryFile().setAttribute("justCreatedByNewWizard", null); // NOI18N
+            }
+            catch (Exception ex) { // no problem should happen for just created form
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+    }
+
     /** @return the last activated FormDesigner for this form */
     FormDesigner getFormDesigner() {
         if (!formLoaded)
@@ -899,6 +932,8 @@ public class FormEditor {
      * Updates project classpath with the layout extensions library.
      */
     public boolean updateProjectForNaturalLayout() {
+        if (formModel.getSettings().getLayoutCodeTarget() == JavaCodeGenerator.LAYOUT_CODE_JDK6)
+            return false;
         try {
             // [TODO maybe we should check if the library isn't there already]
             ClassSource cs = new ClassSource("org.jdesktop.layout.*", // class name actually not needed // NOI18N
