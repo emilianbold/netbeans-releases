@@ -281,7 +281,17 @@ public class FileStatusCache implements ISVNNotifyListener {
      * @return true if supplied entries contain equivalent information
      */ 
     private static boolean equal(ISVNStatus e1, ISVNStatus e2) {
-        if (e1.getRevision().getNumber() != e2.getRevision().getNumber()) {
+        long r1 = -1;
+        if (e1 != null) {
+            r1 = e1.getRevision().getNumber();
+        }
+
+        long r2 = -2;
+        if (e2 != null) {
+            r2 = e2.getRevision().getNumber();
+        }
+        
+        if ( r1 != r2 ) {
             return false;
         }
         return e1.getUrl() == e2.getUrl() || 

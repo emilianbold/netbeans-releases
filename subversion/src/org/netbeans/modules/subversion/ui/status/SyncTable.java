@@ -21,6 +21,7 @@ import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
+import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
 import org.netbeans.modules.subversion.ui.update.UpdateAction;
 import org.netbeans.modules.subversion.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.util.*;
@@ -318,7 +319,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         boolean allLocallyDeleted = true;
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File [] files = SvnUtils.getCurrentContext(null).getFiles();
-/*        
+        
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             FileInformation info = cache.getStatus(file);
@@ -333,16 +334,16 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             SystemAction systemAction = SystemAction.get(DeleteLocalAction.class);
             revertAction = new SystemActionBridge(systemAction, actionString("CTL_PopupMenuItem_Delete")); // NOI18N
         } else if (allLocallyDeleted) {
-            revertAction = new SystemActionBridge(SystemAction.get(GetCleanAction.class), actionString("CTL_PopupMenuItem_RevertDelete")); // NOI18N
+            revertAction = new SystemActionBridge(SystemAction.get(RevertModificationsAction.class), actionString("CTL_PopupMenuItem_RevertDelete")); // NOI18N
         } else {
-            revertAction = new SystemActionBridge(SystemAction.get(GetCleanAction.class), actionString("CTL_PopupMenuItem_GetClean")); // NOI18N
+            revertAction = new SystemActionBridge(SystemAction.get(RevertModificationsAction.class), actionString("CTL_PopupMenuItem_GetClean")); // NOI18N
         }
         item = menu.add(revertAction);
         Mnemonics.setLocalizedText(item, item.getText());
 
-        item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), actionString("CTL_PopupMenuItem_ResolveConflicts"))); // NOI18N
-        Mnemonics.setLocalizedText(item, item.getText());
-*/        
+//        item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), actionString("CTL_PopupMenuItem_ResolveConflicts"))); // NOI18N
+//        Mnemonics.setLocalizedText(item, item.getText());
+        
         Action ignoreAction = new SystemActionBridge(SystemAction.get(IgnoreAction.class),
            ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(files) == IgnoreAction.UNIGNORING ?
            actionString("CTL_PopupMenuItem_Unignore") : // NOI18N
