@@ -65,7 +65,10 @@ public class AntLoggerTest extends NbTestCase {
     }
 
     private static void run(FileObject script) throws Exception {
-        int res = AntTargetExecutor.createTargetExecutor(new AntTargetExecutor.Env()).execute(new AntProjectSupport(script), null).result();
+        run(script, null);
+    }
+    private static void run(FileObject script, String[] targets) throws Exception {
+        int res = AntTargetExecutor.createTargetExecutor(new AntTargetExecutor.Env()).execute(new AntProjectSupport(script), targets).result();
         if (res != 0) {
             throw new IOException("Nonzero exit code: " + res + "; messages: " + LOGGER.getMessages());
         }
@@ -135,6 +138,19 @@ public class AntLoggerTest extends NbTestCase {
         List<String> messages = LOGGER.getMessages();
         assertTrue("have message with task ID in " + messages, messages.contains("property:4:Setting project property: propname -> propval"));
     }
+
+    public void testAntEventDetails() throws Exception {
+        LOGGER.interestedInSessionFlag = true;
+        LOGGER.interestedInAllScriptsFlag = true;
+        LOGGER.interestingTargets = AntLogger.ALL_TARGETS;
+        LOGGER.interestingTasks = new String[] {"echo"};
+        LOGGER.interestingLogLevels = new int[] {AntEvent.LOG_INFO};
+        run(testdirFO.getFileObject("property.xml"));
+        assertTrue(LOGGER.antEventDetailsOK);
+        LOGGER.antEventDetailsOK = false;
+        run(testdirFO.getFileObject("property.xml"), new String[] {"run2"});
+        assertTrue("#71816: works even inside <antcall>", LOGGER.antEventDetailsOK);
+    }
     
     /**
      * Sample logger which collects results.
@@ -152,6 +168,7 @@ public class AntLoggerTest extends NbTestCase {
         private List<String> targetsStarted;
         /** Format of each: "taskname:level:message" */
         private List<String> messages;
+        private boolean antEventDetailsOK;
         
         public TestLogger() {}
         
@@ -166,6 +183,7 @@ public class AntLoggerTest extends NbTestCase {
             collectLineNumbersForTargets = false;
             targetsStarted = new ArrayList<String>();
             messages = new ArrayList<String>();
+            antEventDetailsOK = false;
         }
         
         public synchronized List<String> getTargetsStarted() {
@@ -230,6 +248,16 @@ public class AntLoggerTest extends NbTestCase {
             if (t != null) {
                 messages.add("EXC:" + t);
             }
+        }
+
+        @Override
+        public void taskStarted(AntEvent event) {
+            antEventDetailsOK |=
+                    "echo".equals(event.getTaskName()) &&
+                    "meaningless".equals(event.getTaskStructure().getText()) &&
+                    "info".equals(event.getTaskStructure().getAttribute("level")) &&
+                    event.getPropertyNames().contains("propname") &&
+                    "propval".equals(event.getProperty("propname"));
         }
         
     }

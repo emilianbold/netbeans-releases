@@ -502,7 +502,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             }
             // Let the hacks begin!
             String msg = ev.getMessage();
-            if (msg.indexOf("ant.PropertyHelper") != -1) { // NOI18N
+            if (msg.contains("ant.PropertyHelper") || /* #71816 */ msg.contains("ant.projectHelper")) { // NOI18N
                 // Only after this has been defined can we get any properties.
                 // Even trying earlier will give a recursion error since this pseudoprop
                 // is set lazily, which produces a new message logged event.
