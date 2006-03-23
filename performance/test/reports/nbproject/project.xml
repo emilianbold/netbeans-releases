@@ -7,10 +7,10 @@
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <explicit-platform explicit-source-supported="true"/>
             <source-roots>
-                <root id="src.dir"/>
+                <root id="src.src.dir" name="Source packages"/>
             </source-roots>
             <test-roots>
-                <root id="test.src.dir" name="/opt/devel/nb/nb_all/performance/test/reports/test/src"/>
+                <root id="test.src.dir" name="test/src"/>
             </test-roots>
         </data>
     </configuration>
