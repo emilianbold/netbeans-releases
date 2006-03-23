@@ -804,6 +804,10 @@ public class JavaFormatSupport extends ExtFormatSupport {
         // Find stmt start and add continuation indent
         TokenItem stmtStart = findStatementStart(t);
         indent = getTokenIndent(stmtStart);
+        int tindent = getTokenIndent(t);
+        if (tindent > indent)
+            return tindent;
+        
         if (stmtStart != null) {
             // Check whether there is a comma on the previous line end
             // and if so then also check whether the present
