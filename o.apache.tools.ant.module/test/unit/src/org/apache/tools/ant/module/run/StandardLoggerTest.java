@@ -123,7 +123,7 @@ public class StandardLoggerTest extends NbTestCase {
         private final AntLogger[] loggers;
         private final int verbosity;
         private final Map<AntLogger,Object> customData = new WeakHashMap<AntLogger,Object>();
-        private final Set<Throwable> consumedExceptions = new WeakSet();
+        private final Set<Throwable> consumedExceptions = new WeakSet<Throwable>();
         public final List<Message> messages = new ArrayList<Message>();
         
         public MockAntSession(AntLogger[] loggers, int verbosity) {

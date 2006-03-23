@@ -51,9 +51,9 @@ public abstract class ShortcutWizardTestBase extends NbTestCase {
                 Lookups.singleton(Lkp.class.getClassLoader()),
             });
         }
-        private static final class Conv implements InstanceContent.Convertor {
+        private static final class Conv implements InstanceContent.Convertor<Object,Repository> {
             public Conv() {}
-            public Object convert(Object obj) {
+            public Repository convert(Object obj) {
                 assert obj == "repo";
                 try {
                     return new Repo();
@@ -68,7 +68,7 @@ public abstract class ShortcutWizardTestBase extends NbTestCase {
             public String id(Object obj) {
                 return obj.toString();
             }
-            public Class type(Object obj) {
+            public Class<Repository> type(Object obj) {
                 assert obj == "repo";
                 return Repository.class;
             }
