@@ -22,6 +22,4 @@ import org.netbeans.api.project.Project;
 public interface BluejOpenCloseCallback {
     void projectOpened(Project project);
     void projectClosed(Project project);
-    Project getCurrentOpenedProject();
-    
 }
