@@ -563,7 +563,7 @@ public class NbBundle extends Object {
      */
     @SuppressWarnings("unchecked")
     private static Map<String,String> propsToStringMap(Properties p) {
-        return (Map<String,String>)p;
+        return (Map<String,String>)(Map<?,?>)p;
     }
 
     /**
