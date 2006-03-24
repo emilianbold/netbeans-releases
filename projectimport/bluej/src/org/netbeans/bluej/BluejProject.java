@@ -507,8 +507,8 @@ public final class BluejProject implements Project, AntProjectListener {
             "XML",                  // NOI18N
             "ant-script",           // NOI18N
             "ant-task",             // NOI18N
-            "web-service-clients",  // NOI18N
-            "wsdl",                 // NOI18N
+//            "web-service-clients",  // NOI18N
+//            "wsdl",                 // NOI18N
             // "servlet-types",     // NOI18N
             // "web-types",         // NOI18N
             "junit",                // NOI18N
