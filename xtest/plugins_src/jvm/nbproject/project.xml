@@ -38,6 +38,10 @@
                     <source-file>
                         <location>build.properties</location>
                     </source-file>
+                    <source-file>
+                        <location>lib/jvm_execution_targets.xml</location>
+                    </source-file>
+
                 </items>
                 <context-menu>
                     <ide-action name="build"/>
