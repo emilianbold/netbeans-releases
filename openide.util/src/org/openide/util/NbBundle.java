@@ -563,6 +563,7 @@ public class NbBundle extends Object {
      */
     @SuppressWarnings("unchecked")
     private static Map<String,String> propsToStringMap(Properties p) {
+        // XXX this is not so nice; use #73637?
         return (Map<String,String>)(Map<?,?>)p;
     }
 
