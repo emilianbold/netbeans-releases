@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -88,7 +88,7 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
                 } else {
                     assert e.getLocalName().equals("property-file") : e;
                     String fname = Util.findText(e);
-                    if (fname.indexOf("${") != -1) { // NOI18N
+                    if (fname.contains("${")) { // NOI18N
                         // Tricky (#48230): need to listen to changes in the location of the file as well as its contents.
                         PropertyEvaluator intermediate = PropertyUtils.sequentialPropertyEvaluator(preprovider, (PropertyProvider[]) defs.toArray(new PropertyProvider[defs.size()]));
                         fname = intermediate.evaluate(fname);
