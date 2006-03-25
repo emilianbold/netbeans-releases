@@ -66,7 +66,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
         properties = settings.getProperties ();
         originalAntHome = settings.getAntHomeWithDefault ();
             
-        tfAntHome.setText (originalAntHome.toString ());
+        tfAntHome.setText(originalAntHome != null ? originalAntHome.toString() : null);
         cbSaveFiles.setSelected (settings.getSaveAll ());
         cbReuseOutput.setSelected (settings.getAutoCloseTabs ());
         cbAlwaysShowOutput.setSelected (settings.getAlwaysShowOutput ());
@@ -360,7 +360,12 @@ public class AntCustomizer extends JPanel implements ActionListener {
 
     private void bAntHomeDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bAntHomeDefaultActionPerformed
         AntSettings.getDefault().setAntHome(null);
-        tfAntHome.setText(AntSettings.getDefault().getAntHomeWithDefault().getAbsolutePath());
+        File antHome = AntSettings.getDefault().getAntHomeWithDefault();
+        if (antHome != null) {
+            tfAntHome.setText(antHome.getAbsolutePath());
+        } else {
+            tfAntHome.setText(null);
+        }
         lAntVersion.setText("(" + AntSettings.getDefault().getAntVersion() + ")");
         changed = true;
     }//GEN-LAST:event_bAntHomeDefaultActionPerformed

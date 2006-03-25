@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AllPermission;
@@ -261,30 +262,32 @@ public final class AntBridge {
             // so that our classes can link against it successfully, and that
             // we are really loading Ant from the right place:
             Class ihClazz = Class.forName("org.apache.tools.ant.input.InputHandler", false, bridgeLoader); // NOI18N
-            ClassLoader loaderUsedForAnt = ihClazz.getClassLoader();
-            if (loaderUsedForAnt != main) {
-                throw new IllegalStateException("Wrong class loader is finding Ant: " + loaderUsedForAnt); // NOI18N
-            }
-            Class ihClazz2 = Class.forName("org.apache.tools.ant.input.InputHandler", false, main); // NOI18N
-            if (ihClazz2 != ihClazz) {
-                throw new IllegalStateException("Main and bridge class loaders do not agree on version of Ant: " + ihClazz2.getClassLoader()); // NOI18N
-            }
-            try {
-                Class alClazz = Class.forName("org.apache.tools.ant.taskdefs.Antlib", false, bridgeLoader); // NOI18N
-                if (alClazz.getClassLoader() != main) {
-                    throw new IllegalStateException("Bridge loader is loading stuff from elsewhere: " + alClazz.getClassLoader()); // NOI18N
-                }
-                Class alClazz2 = Class.forName("org.apache.tools.ant.taskdefs.Antlib", false, main); // NOI18N
-                if (alClazz2 != alClazz) {
-                    throw new IllegalStateException("Main and bridge class loaders do not agree on version of Ant: " + alClazz2.getClassLoader()); // NOI18N
-                }
-            } catch (ClassNotFoundException cnfe) {
-                // Fine, it was added in Ant 1.6.
-            }
             Class<? extends BridgeInterface> impl = bridgeLoader.loadClass("org.apache.tools.ant.module.bridge.impl.BridgeImpl").asSubclass(BridgeInterface.class); // NOI18N
-            if (impl.getClassLoader() != bridgeLoader) {
-                throw new IllegalStateException("Wrong class loader is finding bridge impl: " + impl.getClassLoader()); // NOI18N
-            }
+            if (AntSettings.getDefault().getAntHomeWithDefault() != null) {
+                ClassLoader loaderUsedForAnt = ihClazz.getClassLoader();
+                if (loaderUsedForAnt != main) {
+                    throw new IllegalStateException("Wrong class loader is finding Ant: " + loaderUsedForAnt); // NOI18N
+                }
+                Class ihClazz2 = Class.forName("org.apache.tools.ant.input.InputHandler", false, main); // NOI18N
+                if (ihClazz2 != ihClazz) {
+                    throw new IllegalStateException("Main and bridge class loaders do not agree on version of Ant: " + ihClazz2.getClassLoader()); // NOI18N
+                }
+                try {
+                    Class alClazz = Class.forName("org.apache.tools.ant.taskdefs.Antlib", false, bridgeLoader); // NOI18N
+                    if (alClazz.getClassLoader() != main) {
+                        throw new IllegalStateException("Bridge loader is loading stuff from elsewhere: " + alClazz.getClassLoader()); // NOI18N
+                    }
+                    Class alClazz2 = Class.forName("org.apache.tools.ant.taskdefs.Antlib", false, main); // NOI18N
+                    if (alClazz2 != alClazz) {
+                        throw new IllegalStateException("Main and bridge class loaders do not agree on version of Ant: " + alClazz2.getClassLoader()); // NOI18N
+                    }
+                } catch (ClassNotFoundException cnfe) {
+                    // Fine, it was added in Ant 1.6.
+                }
+                if (impl.getClassLoader() != bridgeLoader) {
+                    throw new IllegalStateException("Wrong class loader is finding bridge impl: " + impl.getClassLoader()); // NOI18N
+                }
+            } // in classpath mode, these checks do not apply
             Map<String,ClassLoader> cDCLs = createCustomDefClassLoaders(main);
             return new AntInstance(classPathToString(mainClassPath), main, bridgeLoader, impl.newInstance(), createCustomDefs(cDCLs), cDCLs);
         } catch (Exception e) {
@@ -334,18 +337,31 @@ public final class AntBridge {
     private static List<File> createMainClassPath() throws Exception {
         // Use LinkedHashSet to automatically suppress duplicates.
         Collection<File> cp = new LinkedHashSet<File>();
-        File libdir = new File(AntSettings.getDefault().getAntHomeWithDefault(), "lib"); // NOI18N
-        if (!libdir.isDirectory()) throw new IOException("No such Ant library dir: " + libdir); // NOI18N
-        err.log("Creating main class loader from " + libdir);
-        // First look for ${ant.home}/patches/*.jar, to support e.g. patching #47708:
-        File[] patches = new File(libdir.getParentFile(), "patches").listFiles(new JarFilter()); // NOI18N
-        if (patches != null) {
-            cp.addAll(Arrays.asList(patches));
+        File antHome = AntSettings.getDefault().getAntHomeWithDefault();
+        if (antHome != null) {
+            File libdir = new File(antHome, "lib"); // NOI18N
+            if (!libdir.isDirectory()) {
+                throw new IOException("No such Ant library dir: " + libdir); // NOI18N
+            }
+            err.log("Creating main class loader from " + libdir);
+            // First look for ${ant.home}/patches/*.jar, to support e.g. patching #47708:
+            File[] patches = new File(libdir.getParentFile(), "patches").listFiles(new JarFilter()); // NOI18N
+            if (patches != null) {
+                cp.addAll(Arrays.asList(patches));
+            }
+            // Now continue with regular classpath.
+            File[] libs = libdir.listFiles(new JarFilter());
+            if (libs == null) {
+                throw new IOException("Listing: " + libdir); // NOI18N
+            }
+            cp.addAll(Arrays.asList(libs));
+        } else {
+            // Classpath mode. Try to add in tools.jar if we can find it somewhere.
+            File toolsJar = new File(new File(new File(System.getProperty("java.home")).getParentFile(), "lib"), "tools.jar");
+            if (toolsJar.isFile()) {
+                cp.add(toolsJar);
+            }
         }
-        // Now continue with regular classpath.
-        File[] libs = libdir.listFiles(new JarFilter());
-        if (libs == null) throw new IOException("Listing: " + libdir); // NOI18N
-        cp.addAll(Arrays.asList(libs));
         // XXX consider adding ${user.home}/.ant/lib/*.jar (org.apache.tools.ant.launch.Launcher.USER_LIBDIR)
         NbClassPath extra = AntSettings.getDefault().getExtraClasspath();
         String extrapath = extra.getClassPath();
@@ -374,6 +390,7 @@ public final class AntBridge {
         // with the versions used inside NB, which may cause inefficiencies or more memory usage.
         // On the other hand, if ant.jar is in ${java.class.path} (e.g. from a unit test), we
         // have to explicitly mask it out. What a mess...
+        //org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message("cp=" + cp));
         return new ArrayList<File>(cp);
     }
     
@@ -384,23 +401,48 @@ public final class AntBridge {
         while (it.hasNext()) {
             cp[i++] = it.next().toURI().toURL();
         }
-        ClassLoader parent = ClassLoader.getSystemClassLoader();
-        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            List<URL> parentURLs;
-            if (parent instanceof URLClassLoader) {
-                parentURLs = Arrays.asList(((URLClassLoader) parent).getURLs());
-            } else {
-                parentURLs = null;
+        if (AntSettings.getDefault().getAntHomeWithDefault() != null) {
+            ClassLoader parent = ClassLoader.getSystemClassLoader();
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                List<URL> parentURLs;
+                if (parent instanceof URLClassLoader) {
+                    parentURLs = Arrays.asList(((URLClassLoader) parent).getURLs());
+                } else {
+                    parentURLs = null;
+                }
+                err.log("AntBridge.createMainClassLoader: cp=" + Arrays.asList(cp) + " parent.urls=" + parentURLs);
             }
-            err.log("AntBridge.createMainClassLoader: cp=" + Arrays.asList(cp) + " parent.urls=" + parentURLs);
+            return new MaskedClassLoader(cp, parent);
+        } else {
+            // Run-in-classpath mode.
+            ClassLoader existing = AntBridge.class.getClassLoader();
+            if (existing instanceof URLClassLoader) {
+                try {
+                    // Need to insert resources into it.
+                    // We could also try making a fresh loader which masks the parent
+                    // yet delegates findResource to it, so as to be initiating loader
+                    // for everything Ant. Might be safer.
+                    Method addURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+                    addURL.setAccessible(true);
+                    for (URL u : cp) {
+                        addURL.invoke(existing, u);
+                    }
+                    return existing;
+                } catch (Exception e) {
+                    // Problem. Don't do it, I guess.
+                    err.notify(ErrorManager.WARNING, e);
+                }
+            }
+            // Probably won't work as desired, but just in case:
+            return new AllPermissionURLClassLoader(cp, existing);
         }
-        return new MaskedClassLoader(cp, parent);
     }
     
     private static ClassLoader createBridgeClassLoader(ClassLoader main) throws Exception {
         File bridgeJar = InstalledFileLocator.getDefault().locate("ant/nblib/bridge.jar", "org.apache.tools.ant.module", false); // NOI18N
         if (bridgeJar == null) {
-            throw new IllegalStateException("no ant/nblib/bridge.jar found"); // NOI18N
+            // Run-in-classpath mode.
+            return main;
         }
         return createAuxClassLoader(bridgeJar, main, AntBridge.class.getClassLoader());
     }
@@ -422,6 +464,10 @@ public final class AntBridge {
             String cnbDashes = cnb.replace('.', '-');
             File lib = ifl.locate("ant/nblib/" + cnbDashes + ".jar", cnb, false); // NOI18N
             if (lib == null) {
+                if (main.getResource(cnb.replace('.', '/') + "/antlib.xml") != null) { // NOI18N
+                    // Run-in-classpath mode.
+                    m.put(cnb, main);
+                }
                 continue;
             }
             ClassLoader l = createAuxClassLoader(lib, main, module.getClassLoader());

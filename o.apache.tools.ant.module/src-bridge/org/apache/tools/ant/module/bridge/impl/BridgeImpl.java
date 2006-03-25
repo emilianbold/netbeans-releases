@@ -159,7 +159,10 @@ public class BridgeImpl implements BridgeInterface {
             project.setUserProperty("ant.file", buildFile.getAbsolutePath()); // NOI18N
             // #14993:
             project.setUserProperty("ant.version", Main.getAntVersion()); // NOI18N
-            project.setUserProperty("ant.home", AntSettings.getDefault().getAntHomeWithDefault().getAbsolutePath()); // NOI18N
+            File antHome = AntSettings.getDefault().getAntHomeWithDefault();
+            if (antHome != null) {
+                project.setUserProperty("ant.home", antHome.getAbsolutePath()); // NOI18N
+            }
             for (Map.Entry<String,String> entry : properties.entrySet()) {
                 project.setUserProperty(entry.getKey(), entry.getValue());
             }

@@ -78,6 +78,49 @@ Microsystems, Inc. All Rights Reserved.
         </makenbm>
     </target>
 
+    <target name="jnlp" depends="netbeans">
+        <mkdir dir="${jnlp.dest.dir}"/>
+        <copy todir="${jnlp.dest.dir}" flatten="true">
+            <fileset dir="${cluster}">
+                <include name="${module.jar}"/>
+                <include name="ant/nblib/bridge.jar"/> <!-- XXX consider renaming -->
+                <include name="ant/lib/*.jar"/>
+                <include name="ant/patches/*.jar"/>
+            </fileset>
+        </copy>
+        <signjar alias="${jnlp.signjar.alias}" storepass="${jnlp.signjar.password}" keystore="${jnlp.signjar.keystore}">
+            <fileset dir="${jnlp.dest.dir}">
+                <include name="org-apache-tools-ant-module.jar"/>
+                <include name="bridge.jar"/>
+                <include name="ant.jar"/>
+                <include name="ant-launcher.jar"/>
+                <!-- XXX others too -->
+            </fileset>
+        </signjar>
+        <echo file="${jnlp.dest.dir}/org-apache-tools-ant-module.jnlp">
+            <![CDATA[
+<?xml version='1.0' encoding='UTF-8'?>
+<jnlp spec='1.0+' codebase='${jnlp.codebase}'>
+  <information>
+   <title>Apache Ant Integration</title>
+   <vendor>NetBeans</vendor>
+   <description kind='one-line'>Bundles Apache Ant.</description>
+   <description kind='short'>This module bundles the Apache Ant build tool.</description>
+  </information>
+  <security><all-permissions/></security>
+  <resources>
+    <jar href='org-apache-tools-ant-module.jar'/>
+    <jar href='bridge.jar'/>
+    <jar href='ant.jar'/>
+    <jar href='ant-launcher.jar'/>
+    <!-- XXX include all matching JARs -->
+  </resources>
+  <component-desc/>
+</jnlp>
+            ]]>
+        </echo>
+    </target>
+
     <!-- For use when making new releases: -->
     <target name="release-helper" depends="clean" description="Help do some things useful when bundling a new Ant release.">
         <ant dir="external" target="clean"/>

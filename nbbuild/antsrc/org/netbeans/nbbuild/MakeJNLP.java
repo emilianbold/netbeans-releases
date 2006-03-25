@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -306,6 +306,8 @@ public class MakeJNLP extends Task {
                 removeWithLocales(fileToOwningModule, r, clusterRoot, localizedFiles);
             }
         }
+
+        fileToOwningModule.remove("ant/nblib/" + dashcnb + ".jar");
         
         if (verifyExcludes != null) {
             StringTokenizer tok = new StringTokenizer(verifyExcludes, ", ");
@@ -354,6 +356,17 @@ public class MakeJNLP extends Task {
     }
 
     private void processExtensions(File f, Manifest mf, Writer fileWriter, String dashcnb, String codebase) throws IOException, BuildException {
+
+        File nblibJar = new File(new File(new File(f.getParentFile().getParentFile(), "ant"), "nblib"), dashcnb + ".jar");
+        //System.err.println(nblibJar + ".isFile=" + nblibJar.isFile());
+        if (nblibJar.isFile()) {
+            File ext = new File(target, "ant-nblib-" + nblibJar.getName());
+            fileWriter.write("    <jar href='" + ext.getName() + "'/>\n");
+            getSignTask().setJar(nblibJar);
+            getSignTask().setSignedjar(ext);
+            getSignTask().execute();
+        }
+
         String path = mf.getMainAttributes().getValue("Class-Path");
         if (path == null) {
             return;
