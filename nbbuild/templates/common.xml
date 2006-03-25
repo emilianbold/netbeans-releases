@@ -14,7 +14,6 @@ Microsystems, Inc. All Rights Reserved.
 <project name="projectized-common" basedir=".">
 
     <!-- XXX supply descriptions for the appropriate targets -->
-    <!-- XXX prefix internal targets with '-' (and grep all module scripts which override or use these targets and update them to match) -->
     <!-- XXX should use namespaces for NB in-VM tasks from ant/browsetask and debuggerjpda/ant and apisupport/ant -->
     <!-- XXX move more things here from projectized.xml when possible and desirable -->
 
