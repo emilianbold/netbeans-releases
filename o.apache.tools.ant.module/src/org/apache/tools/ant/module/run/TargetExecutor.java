@@ -174,6 +174,7 @@ public final class TargetExecutor implements Runnable {
         }
         @Override
         public void stop () {
+            // XXX this should call stopProcess instead (if it can find the Thread somewhere)
             task.stop ();
         }
         @Override
