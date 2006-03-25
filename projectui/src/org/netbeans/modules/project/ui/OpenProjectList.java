@@ -414,7 +414,7 @@ public final class OpenProjectList {
         pchSupport.firePropertyChange( PROPERTY_MAIN_PROJECT, null, null );
     }
     
-    public synchronized List getRecentProjects() {
+    public synchronized List/*<Project>*/ getRecentProjects() {
         return recentProjects.getProjects();
     }
     
