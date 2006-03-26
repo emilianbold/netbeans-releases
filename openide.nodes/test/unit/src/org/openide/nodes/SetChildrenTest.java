@@ -111,6 +111,66 @@ public class SetChildrenTest extends NbTestCase {
         root.setChildren(ch);
     }
     
+
+    public void testNotThatMuchChangesWhenSettingToLeaf () throws Exception {
+        
+        Node[][] testNodes = createTestNodes();
+        
+        Children.Array chOld = new Children.Array ();        
+        chOld.add( testNodes[0] );
+        chOld.getNodes(); // To get events from the children
+        
+        Node root = new TestNodeHid( chOld, "rootNode" );
+        TestListenerHid nlRoot = new TestListenerHid();
+        root.addNodeListener( nlRoot );
+        
+        TestListenerHid nlOld = new TestListenerHid();
+        testNodes[0][0].addNodeListener( nlOld );
+        testNodes[0][1].addNodeListener( nlOld );
+        
+        TestListenerHid nlNew = new TestListenerHid();
+        testNodes[1][0].addNodeListener( nlNew );
+        testNodes[1][1].addNodeListener( nlNew );
+
+        root.setChildren(Children.LEAF);
+     
+        if (root.getChildren() != Children.LEAF) {
+            fail( "Change to new children did not succeed" );
+        }
+        
+        // Test events on old nodes
+        
+        // System.out.println("OldNodes");
+        // GoldenEvent.printEvents( nlOld.getEvents() );
+        
+        GoldenEvent[] oldGoldenEvents = new GoldenEvent[] {
+            new GoldenEvent( testNodes[0][0], Node.PROP_PARENT_NODE, root, null ),
+            new GoldenEvent( testNodes[0][1], Node.PROP_PARENT_NODE, root, null )
+        };
+        
+        GoldenEvent.assertEvents ( nlOld.getEvents(), oldGoldenEvents, null );
+        
+        // Test events on new nodes
+        
+        //System.out.println("NewNodes");
+        //printEvents( nlNew.getEvents() );
+        
+        GoldenEvent[] newGoldenEvents = new GoldenEvent[0];
+        
+        GoldenEvent.assertEvents( nlNew.getEvents(), newGoldenEvents, null );
+        
+        // TestEvents on rootNode
+        
+        // System.out.println("RootNode");
+        // printEvents( nlRoot.getEvents() );
+        
+        GoldenEvent[] rootGoldenEvents = new GoldenEvent[] {
+            new GoldenEvent(root, Node.PROP_LEAF, Boolean.FALSE, Boolean.TRUE),
+            new GoldenEvent(root, false, testNodes[0], new int[] { 0, 1 }),
+        };
+        
+        GoldenEvent.assertEvents ( nlRoot.getEvents(), rootGoldenEvents, null );
+    }
     
     /** Tests whether PROP_LEAF is properly changed
      */

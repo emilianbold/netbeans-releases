@@ -434,7 +434,10 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
 
             if ((oldNodes != null) && !wasLeaf) {
                 fireSubNodesChange(false, oldNodes, oldNodes);
-                fireSubNodesChange(true, hierarchy.getNodes(), null);
+                Node[] arr = hierarchy.getNodes();
+                if (arr.length > 0) {
+                    fireSubNodesChange(true, arr, null);
+                }
             }
         } finally {
             Children.PR.exitWriteAccess();
