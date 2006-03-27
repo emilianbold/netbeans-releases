@@ -257,10 +257,14 @@ public class NbEditorKit extends ExtKit {
         }
 
         protected JPopupMenu buildPopupMenu(JTextComponent component) {        
+            List l;
+            EditorUI ui = Utilities.getEditorUI(component);
+            if (!ui.hasExtComponent()) {
+                return null;
+            }
             JPopupMenu pm = createPopupMenu(component);
             Map notAddedFolders = new HashMap();
-            List l;
-            EditorUI ui = Utilities.getEditorUI(component);            
+            
             Object mimeTypeObj = component.getDocument().getProperty("mimeType");  //NOI18N
             String mimeType;
             mimeType = (mimeTypeObj instanceof String) ? 
