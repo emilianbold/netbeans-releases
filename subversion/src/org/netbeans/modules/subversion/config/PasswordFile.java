@@ -54,25 +54,29 @@ public class PasswordFile extends SVNCredentialFile {
         
         if(!nbPasswordFile.getFile().exists()) {
 
-            if(Utilities.isUnix()) {
-                File configDir = new File(SvnConfigFiles.getUserConfigPath() + "/auth/svn.simple");
-                File[] files = configDir.listFiles();
-                if(files==null) {
-                    return null;
-                }
-                for (int i = 0; i < files.length; i++) {
-                    PasswordFile passwordFile = new PasswordFile(files[i]);
-                    if(passwordFile.acceptSvnUrl(svnUrl) &&
-                       passwordFile.getPasstype().equals(PASSTYPE_SIMPLE)) // windows likes to use wincryp, but we can accept only plain text
-                    {
-                        // XXX overwrites the value given by svn with our own -> could potentialy cause a conflict
-                        passwordFile.setRealmString(realmString); 
-                        return passwordFile;
-                    }
+            File configDir = new File(SvnConfigFiles.getUserConfigPath() + "/auth/svn.simple");
+            File[] files = configDir.listFiles();
+            if(files==null) {
+                return null;
+            }
+            for (int i = 0; i < files.length; i++) {
+                PasswordFile passwordFile = new PasswordFile(files[i]);
+                if(passwordFile.acceptSvnUrl(svnUrl) &&
+                   passwordFile.getPasstype().equals(PASSTYPE_SIMPLE)) // windows likes to use wincryp, but we can accept only plain text
+                {
+                    // XXX overwrites the value given by svn with our own -> could potentialy cause a conflict
+                    passwordFile.setRealmString(realmString); 
+                    return passwordFile;
                 }
             }
+            
+            // no password file nothing - let's create an empty one
+            nbPasswordFile.setRealmString(realmString);
             nbPasswordFile.setPasstype(PASSTYPE_SIMPLE);
+            nbPasswordFile.setPassword("");
+            nbPasswordFile.setUsername("");            
             return nbPasswordFile;
+            
         } else {
             return nbPasswordFile;
         }        
