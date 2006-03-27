@@ -17,6 +17,10 @@ import java.awt.EventQueue;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -112,6 +116,37 @@ public final class StopBuildingAction extends CallableSystemAction {
     @Override
     protected boolean asynchronous() {
         return false;
+    }
+    
+    @Override
+    public JMenuItem getMenuPresenter() {
+        class SpecialMenuItem extends JMenuItem implements DynamicMenuContent {
+            public SpecialMenuItem() {
+                super(StopBuildingAction.this);
+            }
+            public JComponent[] getMenuPresenters() {
+                String label;
+                synchronized (activeProcesses) {
+                    switch (activeProcesses.size()) {
+                        case 0:
+                            label = NbBundle.getMessage(StopBuildingAction.class, "LBL_stop_building");
+                            break;
+                        case 1:
+                            label = NbBundle.getMessage(StopBuildingAction.class, "LBL_stop_building_one",
+                                    activeProcesses.values().iterator().next());
+                            break;
+                        default:
+                            label = NbBundle.getMessage(StopBuildingAction.class, "LBL_stop_building_many");
+                    }
+                }
+                Mnemonics.setLocalizedText(this, label);
+                return new JComponent[] {this};
+            }
+            public JComponent[] synchMenuPresenters(JComponent[] items) {
+                return getMenuPresenters();
+            }
+        }
+        return new SpecialMenuItem();
     }
     
 }
