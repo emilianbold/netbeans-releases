@@ -48,6 +48,11 @@ public class AnalyzeResultsTask extends Task {
     
     /** File containing reference results. */
     private File refFile;
+
+    /** Use last testrun result as a reference.
+     *  If set to false then the oldest run will be used.
+     */
+    private boolean refLast = false;
     
     public void setrefFile(File f) {
         refFile = f;
@@ -115,6 +120,7 @@ public class AnalyzeResultsTask extends Task {
                     ow.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testresults>\n");
                     printCases(ow, newCases, refCases);
                     ow.write("</testresults>\n");
+                    ow.close();
                 }
                 // process them...
             }
@@ -192,8 +198,14 @@ public class AnalyzeResultsTask extends Task {
             if (reference != null) {
                 Collection<Integer> refValues = reference.get(oneCase);
                 if (refValues != null) {
+                    TestResult.Statistics refStat = TestResult.computeStatistics(refValues);
                     ow.write("<difference value=\""+
-                            f.format(stat.getAverage()/TestResult.computeStatistics(refValues).getAverage()*100-100)+
+                            f.format(stat.getAverage()/refStat.getAverage()*100-100)+
+                            " origaverage=\""+
+                            refStat.getAverage()+
+                            " origstddev=\""+
+                            refStat.getStdDev()+
+
                             "\"/>\n");
                     
 		    /*
@@ -222,11 +234,15 @@ public class AnalyzeResultsTask extends Task {
                     }
                 });
                 Arrays.sort(testrunDirs);
+                int refIdx = refLast? testrunDirs.length-1: 0;
                 if (testrunDirs.length > 0) {
-                    refFile = new File(testrunDirs[testrunDirs.length-1], "xmlresults"+File.separator+"testrun-performance.xml");
+                    refFile = new File(testrunDirs[refIdx], "xmlresults"+File.separator+"testrun-performance.xml");
                     log("Using default reference file "+refFile, Project.MSG_VERBOSE);
                 }
-                for (int i = 0; i < testrunDirs.length - 1; i++) {
+                for (int i = 0; i < testrunDirs.length; i++) {
+                    if (i == refIdx) {
+                        continue;
+                    }
                     File runFile = new File(testrunDirs[i], "xmlresults"+File.separator+"testrun-performance.xml");
                     log("Adding files for comparision: "+runFile, Project.MSG_VERBOSE);
                     FileSet fs = new FileSet();
