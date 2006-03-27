@@ -20,6 +20,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -36,9 +37,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.settings.HistorySettings;
-import org.netbeans.modules.subversion.settings.PasswordFile;
-import org.netbeans.modules.subversion.settings.SvnRootSettings;
-import org.netbeans.modules.subversion.ui.repository.ProxySelector;
+import org.netbeans.modules.subversion.config.PasswordFile;
+import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -120,7 +120,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                         return;
                     }                    
                     PasswordFile passwordFile = PasswordFile.findFileForUrl(repository.getUrl());
-                    if (passwordFile !=null && passwordFile.getPassword() != null && passwordExpected) {                                                
+                    if (passwordFile != null && passwordFile.getPassword() != null && passwordExpected) {
                         internalDocumentChange = true;
                         repositoryPanel.userPasswordField.setText(passwordFile.getPassword());
                         repositoryPanel.userTextField.setText(passwordFile.getUsername());
@@ -155,8 +155,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             SVNUrl url = null;
             if(repository!=null) {
                 url = repository.getUrl();
-            }
-            proxyDescriptor = SvnRootSettings.getProxyFor(url);
+            }            
+            proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(url);
             schedulePasswordUpdate();
         }
         textEditor.selectAll();
@@ -184,28 +184,25 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             return; // uups 
         }
         
-        boolean storeProxySettings = false;
-        if (repository.getUrl().getProtocol().equals("http")  || // NOI18N          
-            repository.getUrl().getProtocol().equals("https") || // NOI18N        
-            repository.getUrl().getProtocol().equals("svn")   || // NOI18N        
-            repository.getUrl().getProtocol().equals("svn+ssh") )  // NOI18N
-        { 
-            storeProxySettings = true;
-            
-            if(repository != null) {
-                PasswordFile passwordFile = PasswordFile.findFileForUrl(repository.getUrl());                    
-                if(passwordFile != null ) {
-                    passwordFile.setPassword(new String(repositoryPanel.userPasswordField.getPassword()));
-                    passwordFile.setUsername(repositoryPanel.userTextField.getText());
+        if (repository.getUrl().getProtocol().equals("http")  ||    // NOI18N
+            repository.getUrl().getProtocol().equals("https") ||    // NOI18N
+            repository.getUrl().getProtocol().equals("svn")   ||    // NOI18N
+            repository.getUrl().getProtocol().equals("svn+ssh") )   // NOI18N
+        {                                
+            PasswordFile passwordFile = PasswordFile.findFileForUrl(repository.getUrl());                    
+            if(passwordFile != null ) {
+                passwordFile.setPassword(new String(repositoryPanel.userPasswordField.getPassword()));
+                passwordFile.setUsername(repositoryPanel.userTextField.getText());
+                try {
                     passwordFile.store();   
-                } else {
-                    // XXX should be stored in some way ...
-                }               
-            }                                
-        }
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }   
+            } else {
+                // XXX should be stored in some way ...
+            }               
 
-        if (storeProxySettings) {
-            SvnRootSettings.setProxyFor(repository.getUrl(), getProxyDescriptor());
+            // SvnRootSettings.setProxyFor(repository.getUrl(), getProxyDescriptor()); XXX let's see if we still need this ...
         }
 
         HistorySettings.addRecent(HistorySettings.PROP_SVN_URLS, repository.getUrl().toString());
@@ -295,7 +292,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             if (repository.getUrl()!=null) {                   
                 if (userVisitedProxySettings == false) {
                     // load  proxy from history
-                    proxyDescriptor = SvnRootSettings.getProxyFor(repository.getUrl());
+                    proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(repository.getUrl());
                 }
                 schedulePasswordUpdate();
             }

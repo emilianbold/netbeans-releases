@@ -1,0 +1,367 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.subversion.config;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import org.ini4j.Ini;
+import org.netbeans.modules.subversion.client.ProxyDescriptor;
+import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
+
+/**
+ *
+ * @author Tomas Stupka
+ */
+public class SvnConfigFiles {
+    
+    private static SvnConfigFiles instance;
+
+    private Ini servers = null;
+
+    private static final String UNIX_CONFIG_DIR = ".subversion";
+    private static final String WINDOWS_CONFIG_DIR = "Application Data/Subversion/";
+
+    private final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"};   
+
+    private SvnConfigFiles() {
+        // copy config file        
+        copyToIDEConfigDir();        
+        // get the nb servers file merged with the systems servers files
+        servers = loadNetbeansIniFile("servers");
+    }
+
+    public static SvnConfigFiles getInstance() {
+        if(instance==null) {
+            instance = new SvnConfigFiles();                    
+        }        
+        return instance;
+    }
+
+    public ProxyDescriptor getProxyDescriptor(SVNUrl url) {
+        Ini.Section group = getGroup(url);
+        if(group==null) {
+            return null;
+        }
+        String host = (String) group.get("http-proxy-host");
+        String portString = (String) group.get("http-proxy-port");
+        int port = Integer.getInteger(portString).intValue(); // XXX what if null ?
+        String username = (String) group.get("http-proxy-username");
+        String password = (String) group.get("http-proxy-password");
+        return  new ProxyDescriptor(ProxyDescriptor.TYPE_HTTP, host, port, username, password);    
+    }
+
+    public void setProxy(ProxyDescriptor pd, SVNUrl url) {
+        Ini.Section group = getGroup(url);
+        if(group==null) {
+            group = addGroup(url);
+        }
+        group.put("http-proxy-host", pd.getHost());
+        group.put("http-proxy-port", String.valueOf(pd.getPort()));
+        if(pd.getUserName()!=null) {
+            group.put("http-proxy-username", pd.getUserName());
+        }
+        if(pd.getPassword()!=null) {
+            group.put("http-proxy-password", pd.getPassword());
+        }        
+
+        try {
+            File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/servers"));
+            file.delete();
+            servers.store(FileUtils.createOutputStream(file));
+        } catch (IOException ex) {
+            ex.printStackTrace(); //  XXX
+        }
+    }
+
+    private Ini.Section addGroup(SVNUrl url) {
+        Ini.Section groups = getGroups();
+        int idx = 0;
+        String name = "group0";
+        while(groups.get(name)!=null) {
+            name = "group" + ++idx;
+        }
+        
+        Ini.Section group = servers.add(name);
+        groups.put(name, url.getHost());
+        return group;
+    }
+
+    private Ini.Section getGroups() {
+        Ini.Section groups = (Ini.Section) servers.get("groups");
+        if(groups==null) {
+            groups = servers.add("groups");
+        }
+        return groups;
+    }
+
+    private Ini.Section getGroup(SVNUrl url) {
+        Ini.Section groups = getGroups();
+        for (Iterator it = groups.keySet().iterator(); it.hasNext();) {
+            String key = (String) it.next();
+            String value = (String) groups.get(key);
+
+            InetAddress hostAddress = null;
+            try {
+                hostAddress = InetAddress.getByName(url.getHost().trim());
+            } catch (UnknownHostException ex) {
+                ErrorManager.getDefault().notify(ex);
+                return null; // XXX carefull - will create a new section :(
+            }
+            if(match(value.trim(), hostAddress)) {
+                return (Ini.Section) servers.get(key);
+            }            
+        }
+        return null;
+    }
+
+    // XXX test me
+    private boolean match(String value, InetAddress hostAddress) {
+        String[] values = value.split(",");
+        for (int i = 0; i < values.length; i++) {
+            value = values[i].trim();
+
+            if(value.equals("*") ||
+               value.equals(hostAddress.getHostName()) ||
+               value.equals(hostAddress.getHostAddress()) )
+            {
+                return true;
+            }
+
+            int idx = value.indexOf("*");
+            if(idx < 0) {
+                InetAddress valueAddress;
+                try {
+                    valueAddress = InetAddress.getByName(value);
+                } catch (UnknownHostException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                    return false;
+                }
+                if(valueAddress.getHostAddress().equals(hostAddress.getHostAddress())) {
+                    return true;
+                }
+            } else {
+                if(matchSegments(value, hostAddress.getHostName()) ||
+                   matchSegments(value, hostAddress.getHostAddress()))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean matchSegments(String value, String host) {
+        String[] valueSegments = value.split(".");
+        String[] hostSegments = host.split(".");
+
+        int idx = 0;
+        for (int i = 0; i < hostSegments.length; i++) {
+            if( !valueSegments[idx].equals("*") &&
+                !valueSegments[idx].equals(hostSegments[i]) )
+            {
+                return false;
+            }
+            if( !valueSegments[idx].equals("*") ) {
+                idx++;
+            }
+        }
+        return false;
+    }
+
+    private void copyToIDEConfigDir () {
+        File file = FileUtil.normalizeFile(new File(getUserConfigPath() + "/config"));
+        File targetConfigFile = new File(getNBConfigDir() + "/" + "config");
+        targetConfigFile = FileUtil.normalizeFile(targetConfigFile);
+        try {
+            SvnUtils.copyFile (file, targetConfigFile);
+        } catch (IOException ex) {
+            ex.printStackTrace(); // should not happen
+        }
+    }
+
+    private Ini loadNetbeansIniFile(String fileName) {
+        File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/" + fileName));
+        Ini nbIni = null;
+        try {            
+            nbIni = new Ini(FileUtils.createInputStream(file));
+        } catch (FileNotFoundException ex) {
+            // do nothing
+        } catch (IOException ex) {
+            ex.printStackTrace(); // XXX
+        }
+
+        Ini system = loadSystemIniFile(fileName);
+        if(nbIni==null) {
+            nbIni = system;
+        } else {
+            mergeWithoutProxyConfigurations(system, nbIni);
+        }            
+
+        return nbIni;
+    }
+
+    private Ini loadSystemIniFile(String fileName) {
+        // config files from userdir
+        File file = FileUtil.normalizeFile(new File(getUserConfigPath() + "/config"));
+        Ini system = null;
+        try {            
+            system = new Ini(new FileReader(file));
+        } catch (FileNotFoundException ex) {
+            // XXX create from registry?
+        } catch (IOException ex) {
+            ex.printStackTrace(); // XXX
+        }
+
+        // XXX merge from user registry
+
+        Ini global = null;        
+        try {
+            global = new Ini(new FileReader(getGlobalConfigPath() + "/" + fileName));
+        } catch (FileNotFoundException ex) {
+            // just doesn't exist - ignore
+        } catch (IOException ex) {
+            ex.printStackTrace();// XXX 
+        }
+
+        // XXX merge from system wide registry settings
+
+        if(global != null) {
+            merge(global, system);
+        }
+        return system;
+    }
+
+    /**
+     *
+     * Merge only sections/keys/values from source which are not present into target
+     *
+     */
+    private void merge(Ini source, Ini target) {
+        for (Iterator itSections = source.keySet().iterator(); itSections.hasNext();) {
+            String sectionName = (String) itSections.next();
+            Ini.Section sourceSection = (Ini.Section) source.get( sectionName );
+            Ini.Section targetSection = (Ini.Section) target.get( sectionName );
+
+            if(targetSection == null) {
+                targetSection = target.add(sectionName);
+            }
+
+            for (Iterator itVariables = sourceSection.keySet().iterator(); itVariables.hasNext();) {
+                String key = (String) itVariables.next();
+
+                if(!targetSection.containsKey(key)) {
+                    targetSection.put(key, sourceSection.get(key));
+                }
+            }            
+        }
+    }
+
+    /**
+     *
+     * Merge all sections/keys/values from source into target as long
+     * as they are no proxy configuration values.
+     *
+     */
+    private void mergeWithoutProxyConfigurations(Ini source, Ini target) {
+        // add changes from source
+        for (Iterator itSections = source.keySet().iterator(); itSections.hasNext();) {
+            String sectionName = (String) itSections.next();
+            Ini.Section sourceSection = (Ini.Section) source.get( sectionName );
+            Ini.Section targetSection = (Ini.Section) target.get( sectionName );
+            
+            for (Iterator itVariables = sourceSection.keySet().iterator(); itVariables.hasNext();) {
+                String key = (String) itVariables.next();
+
+                if(!isProxyConfiguration(key)) {                    
+                    if(targetSection == null) {
+                        targetSection = target.add(sectionName);
+                    }                    
+                    targetSection.put(key, sourceSection.get(key));
+                }
+            }
+        }
+
+        // delete from target what's missing in source
+        List toRemove = new ArrayList();
+        for (Iterator itSections = target.keySet().iterator(); itSections.hasNext();) {
+            String sectionName = (String) itSections.next();
+            Ini.Section sourceSection = (Ini.Section) source.get( sectionName );
+            Ini.Section targetSection = (Ini.Section) target.get( sectionName );
+
+            if(sourceSection == null) {
+                // the whole section is missing -> drop it
+                toRemove.add( sectionName );
+                continue;
+            }                    
+
+            for (Iterator itVariables = targetSection.keySet().iterator(); itVariables.hasNext();) {
+                String key = (String) itVariables.next();
+                if(!isProxyConfiguration(key)) {
+                    // a variable is missing -> drop it
+                    targetSection.remove(key);
+                }
+            }
+        }
+        for (Iterator it = toRemove.iterator(); it.hasNext();) {
+            target.remove(it.next());
+        }
+    }
+
+    private boolean isProxyConfiguration(String key) {
+        return key.equals("http-proxy-host")     ||
+               key.equals("http-proxy-port")     ||
+               key.equals("http-proxy-username") ||
+               key.equals("http-proxy-password");
+    }
+
+    public static String getUserConfigPath() {
+        String path = System.getProperty("user.home") ;
+        if(Utilities.isUnix()) {
+            return path + "/" + UNIX_CONFIG_DIR;
+        } else if (Utilities.isWindows()){
+            return path + "/" + WINDOWS_CONFIG_DIR;
+        } else {
+            // XXX
+        }
+        return "";
+    }
+
+    public static String getGlobalConfigPath () {
+        if(Utilities.isUnix()) {
+            return "/etc/subversion";
+        } else if (Utilities.isWindows()){
+            // XXX
+        } else {
+            // XXX
+        }
+        return "";
+    }
+
+    public static String getNBConfigDir() {
+        String nbHome = System.getProperty("netbeans.user");       
+        return nbHome + "/config/svn/config/";
+    }
+    
+}

@@ -686,11 +686,6 @@ public class SvnUtils {
         }
     }    
 
-    public static String getConfigDir() {
-        String nbHome = System.getProperty("netbeans.user");       
-        return nbHome + "/config/svn/config/";
-    }
-
     public static void copyDirFiles(File sourceDir, File targetDir) {
         copyDirFiles(sourceDir, targetDir, false);
     }

@@ -15,7 +15,7 @@ package org.netbeans.modules.subversion.client;
 
 import java.io.*;
 import java.util.*;
-import org.netbeans.modules.subversion.settings.KVParser;
+import org.netbeans.modules.subversion.config.KVFile;
 
 /**
  * Implements properties access that is not supported
@@ -63,7 +63,8 @@ public final class PropertiesClient {
             store = new File(file.getParentFile(), ".svn/prop-base/" + file.getName() + ".svn-base");  // NOI18N
         }
         if (store.isFile()) {
-            return normalize(KVParser.parse(store));
+            KVFile kv = new KVFile(store);
+            return normalize(kv.getMap());
         } else {
             return new HashMap();
         }
@@ -81,7 +82,8 @@ public final class PropertiesClient {
             store = new File(file.getParentFile(), ".svn/props/" + file.getName() + ".svn-work");  // NOI18N
         }
         if (store.isFile()) {
-            return normalize(KVParser.parse(store));
+            KVFile kv = new KVFile(store);
+            return normalize(kv.getMap());
         } else {
             return new HashMap();
         }

@@ -25,7 +25,7 @@ import java.util.*;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.settings.SVNCredentialFile;
+import org.netbeans.modules.subversion.config.SVNCredentialFile;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

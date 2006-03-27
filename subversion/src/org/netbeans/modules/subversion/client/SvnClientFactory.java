@@ -13,16 +13,11 @@
 package org.netbeans.modules.subversion.client;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-import org.netbeans.modules.subversion.settings.SvnConfigFiles;
-import org.netbeans.modules.subversion.settings.SvnRootSettings;
-import org.netbeans.modules.subversion.settings.PasswordFile;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.config.SvnConfigFiles;
+import org.netbeans.modules.subversion.config.PasswordFile;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientAdapterFactory;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -57,7 +52,7 @@ public class SvnClientFactory {
     public SvnClient createSvnClient(SVNUrl repositoryUrl) 
     throws SVNClientException 
     {                                
-        ProxyDescriptor pd = SvnRootSettings.getProxyFor(repositoryUrl);       
+        //ProxyDescriptor pd = SvnRootSettings.getProxyFor(repositoryUrl);
                 
         String username = "";
         String password = "";
@@ -66,15 +61,16 @@ public class SvnClientFactory {
             username = passwordFile.getUsername();
             password = passwordFile.getPassword();            
         }        
-        ISVNClientAdapter adapter = createSvnClientAdapter(pd, username, password);
+        ISVNClientAdapter adapter = createSvnClientAdapter(repositoryUrl, null, username, password);
         return createSvnClient(adapter);             
     }    
 
-    public SvnClient createSvnClient(ProxyDescriptor pd, 
+    public SvnClient createSvnClient(SVNUrl repositoryUrl,
+                                     ProxyDescriptor pd,
                                      String username, 
                                      String password) 
     {                                                                                   
-        ISVNClientAdapter adapter = createSvnClientAdapter(pd, username, password);
+        ISVNClientAdapter adapter = createSvnClientAdapter(repositoryUrl, pd, username, password);
         return createSvnClient(adapter);                     
     }
     
@@ -89,14 +85,19 @@ public class SvnClientFactory {
         return null;
     }    
 
-    private ISVNClientAdapter createSvnClientAdapter(ProxyDescriptor pd, 
-                                                 String username, 
-                                                 String password) 
+    private ISVNClientAdapter createSvnClientAdapter(SVNUrl repositoryUrl,
+                                                     ProxyDescriptor pd,
+                                                     String username,
+                                                     String password)
     {        
         ISVNClientAdapter adapter = createSvnClientAdapter();
-        File configDir = SvnConfigFiles.getInstance().getConfigFile(pd);
+        File configDir = null;
+        if(pd!=null && pd.getType() == ProxyDescriptor.TYPE_HTTP) {
+            SvnConfigFiles.getInstance().setProxy(pd, repositoryUrl);
+        }        
         try {
-            adapter.setConfigDirectory(configDir);
+            File file = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigDir()));
+            adapter.setConfigDirectory(file);
             adapter.setUsername(username);
             adapter.setPassword(password);
         } catch (SVNClientException ex) {

@@ -171,7 +171,7 @@ public class Subversion {
     {
         SvnClient client = (SvnClient) getClientsToUrl().get(repositoryUrl);
         if(client == null) {
-            client = SvnClientFactory.getInstance().createSvnClient(pd, username, password);            
+            client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, pd, username, password);            
             attachListeners(client);
             clientAndURl(client, repositoryUrl, pd);
         } else {
