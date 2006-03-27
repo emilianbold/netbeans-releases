@@ -152,7 +152,7 @@ public class CommittingCvs11Test extends JellyTestCase {
     }
 
     public void testCommitModified() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);   
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);   
         PseudoCvsServer cvss, cvss2, cvss3;
         InputStream in, in2, in3;
         CommitOperator co;
@@ -185,14 +185,13 @@ public class CommittingCvs11Test extends JellyTestCase {
         
         oo = OutputOperator.invoke();
         oto = oo.getOutputTab(sessionCVSroot);
-        //oto.clear();
+        oto.clear();
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "commit_invoke.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         allCVSRoots = cvss.getCvsRoot() + ",";
 
-        in2 = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "commit_invoke_add_4.in");
-        
+        in2 = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "commit_invoke_add_4.in");     
         cvss2 = new PseudoCvsServer(in2);
         new Thread(cvss2).start();
         allCVSRoots = allCVSRoots + cvss2.getCvsRoot() + ",";

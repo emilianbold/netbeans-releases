@@ -152,7 +152,7 @@ public class CommittingCvs12Test extends JellyTestCase {
     }
 
     public void testCommitModifiedCvs12() throws Exception {
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);   
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
         PseudoCvsServer cvss, cvss2, cvss3;
         InputStream in, in2, in3;
         CommitOperator co;
@@ -174,10 +174,13 @@ public class CommittingCvs12Test extends JellyTestCase {
         table = co.tabFiles();
         TableModel model = table.getModel();
         
-        expected = new String[] {"NewClass.java", "NewClass2.java", "NewClass3.java", "NewClass4.java"};   
+        expected = new String[] {"NewClass.java", "NewClass2.java", "NewClass.java", "NewClass2.java"};
+        table = co.tabFiles();
+        model = table.getModel();
         actual = new String[model.getRowCount()];
         for (int i = 0; i < actual.length; i++) {
             actual[i] = model.getValueAt(i, 0).toString();
+            System.out.println("ttt: " + model.getValueAt(i, 0));
         }
         int result = TestKit.compareThem(expected, actual, false);
         assertEquals("Wrong records displayed in dialog", 4, result);
@@ -185,7 +188,7 @@ public class CommittingCvs12Test extends JellyTestCase {
         
         oo = OutputOperator.invoke();
         oto = oo.getOutputTab(sessionCVSroot);
-        //oto.clear();
+        oto.clear();
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "commit_invoke.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();

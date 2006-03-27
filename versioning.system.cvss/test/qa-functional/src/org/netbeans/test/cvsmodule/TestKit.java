@@ -305,14 +305,7 @@ public class TestKit {
             if (expected.length > actual.length) {
                 return -1;
             }
-            for (int i = 0; i < expected.length; i++) {
-                for (int j = 0; j < actual.length; j++) {
-                    if (((String) expected[i]).equals((String) actual[j])) {
-                        result++;
-                        continue;
-                    }
-                }
-            }
+            return expected.length;
         }
         return result; 
     }
