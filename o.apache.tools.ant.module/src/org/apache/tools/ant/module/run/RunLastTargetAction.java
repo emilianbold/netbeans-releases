@@ -18,7 +18,6 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
@@ -30,7 +29,6 @@ import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
@@ -41,8 +39,8 @@ import org.openide.util.actions.Presenter;
 public final class RunLastTargetAction extends AbstractAction implements ChangeListener, Presenter.Menu, Presenter.Toolbar {
     
     public RunLastTargetAction() {
-        super(NbBundle.getMessage(RunLastTargetAction.class, "LBL_RunLastTargetAction_general"),
-                new ImageIcon(Utilities.loadImage("org/apache/tools/ant/module/resources/AntIcon.gif", true)));
+        super(NbBundle.getMessage(RunLastTargetAction.class, "LBL_RunLastTargetAction_general")/*,
+                new ImageIcon(Utilities.loadImage("org/apache/tools/ant/module/resources/AntIcon.gif", true))*/);
         LastTargetExecuted.addChangeListener(WeakListeners.change(this, LastTargetExecuted.class));
     }
     
@@ -88,7 +86,6 @@ public final class RunLastTargetAction extends AbstractAction implements ChangeL
                 super(RunLastTargetAction.this);
             }
             public JComponent[] getMenuPresenters() {
-                JMenuItem menu = new JMenuItem(RunLastTargetAction.this);
                 String label;
                 String display = LastTargetExecuted.getProcessDisplayName();
                 if (display != null) {
@@ -96,8 +93,8 @@ public final class RunLastTargetAction extends AbstractAction implements ChangeL
                 } else {
                     label = (String) getValue(Action.NAME);
                 }
-                Mnemonics.setLocalizedText(menu, label);
-                return new JComponent[] {menu};
+                Mnemonics.setLocalizedText(this, label);
+                return new JComponent[] {this};
             }
             public JComponent[] synchMenuPresenters(JComponent[] items) {
                 return getMenuPresenters();
