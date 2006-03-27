@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.subversion;
 
+import org.netbeans.modules.masterfs.providers.InterceptionListener2;
+import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.openide.filesystems.*;
@@ -29,7 +31,7 @@ import org.tigris.subversion.svnclientadapter.*;
  * 
  * @author Maros Sandor
  */
-class FilesystemHandler implements FileChangeListener, InterceptionListener {
+class FilesystemHandler implements FileChangeListener, InterceptionListener, InterceptionListener2 {
         
     private static final RequestProcessor  eventProcessor = new RequestProcessor("CVS-Event", 1); // NOI18N
 
@@ -98,9 +100,8 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     }
 
     public void fileRenamed(FileRenameEvent fe) {
-        if (Thread.currentThread() == ignoredThread) return;
-//        new RuntimeException("move: " +  fe.getFile().getPath()).printStackTrace();
-        eventProcessor.post(new FileRenamedTask(fe));
+        // do not care
+        // moveImpl()
     }
 
     public void fileAttributeChanged(FileAttributeEvent fe) {
@@ -305,13 +306,16 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     private void fileDeletedImpl(File file) {
         if (file == null) return;
 
-        try {
-            ISVNClientAdapter client = Subversion.getInstance().getClient();
-            client.remove(new File [] { file }, true);
-        } catch (SVNClientException e) {
-            // ignore; we do not know what to do here; does no harm
+        FileInformation info = cache.getStatus(file);
+        if ((info.getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
+            try {
+                ISVNClientAdapter client = Subversion.getInstance().getClient();
+                client.remove(new File [] { file }, true);
+            } catch (SVNClientException e) {
+                // ignore; we do not know what to do here; does no harm
+            }
+            cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         }
-        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
 //        if (properties_changed) cache.directoryContentChanged(file.getParentFile());
     }
     
@@ -334,6 +338,56 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
         }
 */
     }
+
+    // BEGIN #73042 InterceptionListener2 ~~~~~~~~~~~~~~~~~~~~
+
+    public boolean implsMove(FileObject src, FileObject destFolder, String name, String ext) {
+        File srcFile = FileUtil.toFile(src);
+        File destDir = FileUtil.toFile(destFolder);
+        if (srcFile != null && destDir != null) {
+            FileInformation info = cache.getStatus(srcFile);
+            if ((info.getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void moveImpl(FileObject src, FileObject destFolder, String name, String ext) throws IOException {
+        File srcFile = FileUtil.toFile(src);
+        File destDir = FileUtil.toFile(destFolder);
+        if (ext == null) {
+            ext = ""; // NOI18N
+        }
+        if (ext.length() > 0) {
+            ext = "." + ext; // NOI18N
+        }
+        File dstFile = new File(destDir, name + ext);
+
+        try {                        
+//            boolean force = true; // file with local changes must be forced
+//            ISVNClientAdapter client = Subversion.getInstance().getClient();
+//            client.move(srcFile, dstFile, force);
+            FileUtils.renameFile(srcFile, dstFile);  // XXX replace with above code
+        } catch (IOException e) {            
+            IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath());
+            ex.initCause(e);
+            throw ex;
+        }
+        cache.refresh(srcFile, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        cache.refresh(dstFile, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+    }
+
+    public boolean implsRename(FileObject src, String name, String ext) {
+        return implsMove(src, src.getParent(), name, ext);
+    }
+
+    public void renameImpl(FileObject src, String name, String ext) throws IOException {
+        moveImpl(src, src.getParent(), name, ext);
+    }
+
+    // END #73042 InterceptionListener2 ~~~~~~~~~~~~~~~~~~~~
 
     /**
      * Handles the File Created event.
@@ -384,50 +438,4 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
         }
     }
 
-    /**
-     * Handles the File Rename event.
-     */ 
-    private final class FileRenamedTask implements Runnable {
-        
-        private final FileRenameEvent event;
-
-        public FileRenamedTask(FileRenameEvent event) {
-            this.event = event;
-        }
-
-        public void run() {
-            FileObject newFile = event.getFile();
-            String oldName = event.getName();
-            String oldExtension = event.getExt();
-            if (oldExtension.length() > 0) oldExtension = "." + oldExtension; // NOI18N
-        
-            File copied = FileUtil.toFile(newFile);
-            File parent = FileUtil.toFile(newFile.getParent());
-            File removed = new File(parent, oldName + oldExtension);
-
-            if (removed == null) return;
-
-            try {
-                // #73042
-                // TODO replace by InterceptionListener beforeMove, moveSuccess, moveFailure
-                try {
-                    Thread.sleep(2376);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-                // XXX this is event handler files are already gone
-                // but svn requires them to exist
-                copied.renameTo(removed);                
-                boolean force = true; // file with local chanegs must be forced
-                ISVNClientAdapter client = Subversion.getInstance().getClient();
-                client.move(removed, copied, force);
-            } catch (SVNClientException e) {
-                // ignore; we do not know what to do here; does no harm
-                e.printStackTrace();
-            }
-            cache.refresh(removed, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            cache.refresh(copied, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-
-        }
-    }
 }
