@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Actions">
         <folder name="Build">
-            <!-- XXX currently not registered anywhere: -->
             <file name="org-apache-tools-ant-module-run-RunLastTargetAction.instance"/>
             <file name="org-apache-tools-ant-module-run-StopBuildingAction.instance"/>
         </folder>
@@ -24,13 +23,12 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Menu">
         <folder name="BuildProject">
-            <attr name="SeparatorCompileSingle.instance/org-apache-tools-ant-module-run-StopBuildingAction.instance" boolvalue="true"/>
-            <file name="org-apache-tools-ant-module-run-StopBuildingAction.instance"/>
-            <attr name="org-apache-tools-ant-module-run-StopBuildingAction.instance/SeparatorStopBuilding.instance" boolvalue="true"/>
-            <file name="SeparatorStopBuilding.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            <attr name="SeparatorCompileSingle.instance/org-apache-tools-ant-module-run-RunLastTargetAction.shadow" boolvalue="true"/>
+            <file name="org-apache-tools-ant-module-run-RunLastTargetAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Build/org-apache-tools-ant-module-run-RunLastTargetAction.instance"/>
             </file>
-            <attr name="SeparatorStopBuilding.instance/org-netbeans-core-actions-JumpNextAction.shadow" boolvalue="true"/>
+            <attr name="org-apache-tools-ant-module-run-RunLastTargetAction.shadow/org-apache-tools-ant-module-run-StopBuildingAction.instance" boolvalue="true"/>
+            <file name="org-apache-tools-ant-module-run-StopBuildingAction.instance"/>
         </folder>
     </folder>
 
