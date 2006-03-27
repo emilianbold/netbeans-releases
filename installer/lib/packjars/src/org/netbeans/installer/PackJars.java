@@ -13,20 +13,16 @@
 
 package org.netbeans.installer;
 
-import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Pack200;
-import java.util.jar.Pack200.Packer;
-import java.util.jar.Pack200.Unpacker;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -61,14 +57,9 @@ public class PackJars {
     }
     
     public static void main(String[] args) {
-        /*System.out.println("args.length:" + args.length);
-        for (int i = 0; i < args.length; i++) {
-            System.out.println("args[" + i + "]: " + args[i]);
-        }*/
-
         if (args.length < 2) {
             System.out.println("Error: 2 input parameters are required.");
-            return;
+            System.exit(1);
         }
 
         inputDir = new File(args[0]);
@@ -100,8 +91,10 @@ public class PackJars {
             w.close();
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
+            System.exit(1);
         } catch (IOException ex) {
             ex.printStackTrace();
+            System.exit(1);
         }
     }
     
@@ -164,6 +157,7 @@ public class PackJars {
             }
         } catch (IOException exc) {
             exc.printStackTrace();
+            System.exit(1);
         }
         return false;
     }
@@ -182,6 +176,7 @@ public class PackJars {
             file.deleteOnExit();
         } catch (IOException exc) {
             exc.printStackTrace();
+            System.exit(1);
         }
         return f;
     }

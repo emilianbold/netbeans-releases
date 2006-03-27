@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="preparse.files" location="../../java/storagebuilder/preparse-files.txt"/>
   <property name="nb.dir" location="../../nbbuild/netbeans" />
   <property name="nb.dir.tmp" location="build/netbeans" />
+  <property name="nb.dir.test" location="build/netbeans-test" />
 
 <!-- this dependency is for localised installers only 
   <target name="init" depends="set-buildnumber, set-installer.basename, copy-localized-data" unless="inited">
@@ -43,9 +44,17 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- Copy NetBeans files to temporary dir where jars will be packed. Use native cp to preserve file attributes. -->
   <target name="copy-netbeans">
-    <mkdir dir="build/netbeans"/>
+    <mkdir dir="${nb.dir.tmp}"/>
     <exec os="Linux SunOS" executable="./copy-nbdir">
       <arg line="${nb.dir}/* ${nb.dir.tmp}"/>
+    </exec>
+  </target>
+
+  <!-- Copy NetBeans files to test dir where jars will be unpacked and veryfied. Use native cp to preserve file attributes. -->
+  <target name="copy-netbeans-test">
+    <mkdir dir="${nb.dir.test}"/>
+    <exec os="Linux SunOS" executable="./copy-nbdir">
+      <arg line="${nb.dir.tmp}/* ${nb.dir.test}"/>
     </exec>
   </target>
 
@@ -280,11 +289,42 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
   </target>
 
-  <target name="run-pack" depends="compile-pack" description="Run class for compressing jars">
-     <java classname="org.netbeans.installer.PackJars" fork="true">
+    <target name="run-pack" depends="compile-pack" description="Pack jars">
+        <java classname="org.netbeans.installer.PackJars" fork="true" failonerror="true">
+            <jvmarg value="-Xmx256m" />
+            <arg value="${nb.dir.tmp}" />
+            <arg value="${basedir}/build/netbeans/_uninst/packedjars.xml" />
+            <classpath>
+                <pathelement path="../lib/packjars/classes"/>
+            </classpath>
+        </java>
+    </target>
+
+  <target name="run-unpack" depends="compile-pack" description="Unpack jars">
+      <java classname="org.netbeans.installer.UnpackJars" fork="true" failonerror="true">
         <jvmarg value="-Xmx256m" />
-        <arg value="${nb.dir.tmp}" />
-        <arg value="${basedir}/build/netbeans/_uninst/packedjars.xml" />
+        <arg value="${nb.dir.test}" />
+        <classpath>
+          <pathelement path="../lib/packjars/classes"/>
+        </classpath>
+      </java>
+  </target>
+
+  <target name="run-verify" depends="compile-pack" description="Verify jars">
+      <java classname="org.netbeans.installer.VerifyJars" fork="true" failonerror="true">
+        <jvmarg value="-Xmx256m" />
+        <jvmarg value="-XX:PermSize=128m" />
+        <arg value="${nb.dir.test}" />
+        <arg value="0" />
+        <classpath>
+          <pathelement path="../lib/packjars/classes"/>
+        </classpath>
+      </java>
+      <java classname="org.netbeans.installer.VerifyJars" fork="true" failonerror="true">
+        <jvmarg value="-Xmx256m" />
+        <jvmarg value="-XX:PermSize=128m" />
+        <arg value="${nb.dir.test}" />
+        <arg value="1" />
         <classpath>
           <pathelement path="../lib/packjars/classes"/>
         </classpath>
