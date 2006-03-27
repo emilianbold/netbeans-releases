@@ -50,6 +50,12 @@ public class VerifyJars {
 
     private static int inputDirLength;
 
+    /** Constants for special test handling. It must be updated according
+     *  to cluster and jar names. */
+    private static String JAR_NAME    = "ide8/modules/ext/jaxws20/jaxb-xjc.jar";
+    private static String JAR_VERSION = "1.0";
+    private static String TOMCAT_PATH = "enterprise4/jakarta-tomcat";
+
     public VerifyJars () {
     }
 
@@ -91,7 +97,7 @@ public class VerifyJars {
                 scanDir(arr[i]);
             } else {
                 if (arr[i].getName().endsWith(".jar")) {
-                    int pos = arr[i].getAbsolutePath().indexOf("enterprise4/jakarta-tomcat");
+                    int pos = arr[i].getAbsolutePath().indexOf(TOMCAT_PATH);
                     if (testType == TEST_IDE_JARS) {
                         //Test IDE jars only, exclude Tomcat jars
                         if (pos == -1) {
@@ -125,8 +131,8 @@ public class VerifyJars {
                     if (je.getName().endsWith(".class")) {
                         String name = je.getName().substring(0,je.getName().length() - ".class".length());
                         //Hack for unusual jar structure in NB 5.5
-                        if (jarList.get(i).getAbsolutePath().endsWith("ide7/modules/ext/jaxws20/jaxb-xjc.jar") &&
-                            je.getName().startsWith("1.0")) {
+                        if (jarList.get(i).getAbsolutePath().endsWith(JAR_NAME) &&
+                            je.getName().startsWith(JAR_VERSION)) {
                             System.out.println("++");
                             System.out.println("++ Skip entry: " + je.getName());
                             continue;
