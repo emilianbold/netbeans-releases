@@ -319,7 +319,10 @@ public class PatchAction extends NodeAction {
     }
 
     private boolean applyDiffsTo(Difference[] diffs, FileObject fo) {
-        //System.out.println("applyDiffsTo("+fo.getPackageNameExt('/', '.')+")");
+//        System.err.println("applyDiffsTo("+fo.getPath() + " " + diffs.length);
+//        for (int i= 0; i<diffs.length; i++) {
+//            System.err.println("\t" + diffs[i]);
+//        }
         File tmp;
         try {
             tmp = FileUtil.normalizeFile(File.createTempFile("patch", "tmp"));
@@ -329,10 +332,14 @@ public class PatchAction extends NodeAction {
         }
         tmp.deleteOnExit();
         InputStream in = null;
+        Reader r = null;
         OutputStream out = null;
         try {
-            Reader patched = Patch.apply(diffs, new InputStreamReader(fo.getInputStream(), PATCHING_IO_ENCODING));
-            FileUtil.copy(in = new ReaderInputStream(patched, PATCHING_IO_ENCODING), out = new FileOutputStream(tmp));
+            r = new InputStreamReader(fo.getInputStream(), PATCHING_IO_ENCODING);
+            Reader patched = Patch.apply(diffs, r);
+            in = new ReaderInputStream(patched, PATCHING_IO_ENCODING);
+            out = new FileOutputStream(tmp);
+            FileUtil.copy(in, out);
         } catch (IOException ioex) {
 //            ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
 //                NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed", ioex.getLocalizedMessage(), fo.getNameExt())));
@@ -344,9 +351,21 @@ public class PatchAction extends NodeAction {
             return false;
         } finally {
             try {
+                if (r != null) r.close();
+            } catch (IOException ioex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
+            }
+            try {
                 if (in != null) in.close();
+            } catch (IOException ioex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
+            }
+            try {
                 if (out != null) out.close();
-            } catch (IOException ioex) {}
+            } catch (IOException ioex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
+            }
+
         }
         FileLock lock = null;
         try {
@@ -362,8 +381,15 @@ public class PatchAction extends NodeAction {
             }
             try {
                 if (in != null) in.close();
+            } catch (IOException ioex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
+            }
+            try {
                 if (out != null) out.close();
-            } catch (IOException ioex) {}
+            } catch (IOException ioex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
+            }
+
         }
         tmp.delete();
         return true;

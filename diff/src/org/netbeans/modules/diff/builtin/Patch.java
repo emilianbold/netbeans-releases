@@ -116,6 +116,9 @@ public class Patch extends Reader {
     }
     
     public void close() throws java.io.IOException {
+        if (currDiff < diffs.length) {
+            throw new IOException("There are " + (diffs.length - currDiff) + " pending hunks!");
+        }
         source.close();
     }
     
