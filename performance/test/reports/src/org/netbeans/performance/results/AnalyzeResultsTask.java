@@ -201,9 +201,9 @@ public class AnalyzeResultsTask extends Task {
                     TestResult.Statistics refStat = TestResult.computeStatistics(refValues);
                     ow.write("<difference value=\""+
                             f.format(stat.getAverage()/refStat.getAverage()*100-100)+
-                            " origaverage=\""+
+                            "\" origaverage=\""+
                             refStat.getAverage()+
-                            " origstddev=\""+
+                            "\" origstddev=\""+
                             refStat.getStdDev()+
 
                             "\"/>\n");
