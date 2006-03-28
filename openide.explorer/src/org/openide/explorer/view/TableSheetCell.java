@@ -654,6 +654,10 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
             this.focused = focused;
         }
 
+        public String getToolTipText() {
+            return getProperty().getShortDescription();
+        }
+        
         public void addComponentListener(java.awt.event.ComponentListener l) {
             //do nothing
         }
