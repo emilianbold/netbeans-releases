@@ -1,4 +1,4 @@
-<isjeProject name="Profiler Cluster Installer Kit" class="com.installshield.isje.product.MixTypicalProject" framework="com.installshield.isje.product.ProductWizardFramework" savedIn="11" compatibility="9">
+<isjeProject name="Profiler Cluster Installer Kit For Mac OS X" class="com.installshield.isje.product.MixTypicalProject" framework="com.installshield.isje.product.ProductWizardFramework" savedIn="11" compatibility="9">
 <section name="projectProperties" class="com.installshield.isje.project.ProjectPropertiesSection">
     <property name="authorName" displayName="Author Name" category="Author Info"></property>
     <property name="authorEmail" displayName="Author Email" category="Author Info"></property>
@@ -80,22 +80,11 @@
         <property name="beanId">bean149</property>
         <extendedProperty name="genericunixppk" type="com.installshield.wizard.platform.genericunix.extras.GenericUnixJVMResolutionExtra">
             <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+            <property array="True" length="1" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk15macosx.jvm</property>
                     <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_blackdown.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_ibm.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
-                    <property name="fullSearch">False</property>
+                    <property name="key">genericunix</property>
                 </arrayItem>
             </property>
             <property name="JVMResolution">1</property>
@@ -105,85 +94,16 @@
             <property name="timeout">120</property>
             <property name="useCurrentJVM">True</property>
         </extendedProperty>
-        <extendedProperty name="linux.jvm.resolution" type="com.ibm.wizard.platform.linux.LinuxJVMResolutionExtra">
+        <extendedProperty name="macosxppk" type="com.installshield.wizard.platform.macosx.extras.MacOSXJVMResolutionExtra">
             <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+            <property array="True" length="1" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_blackdown.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_ibm.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk15macosx.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
             </property>
             <property name="JVMResolution">1</property>
-            <property name="bundledJVMArguments">-qq -o</property>
-            <property name="bundledJVMResource"/>
-            <property name="bundledJVMSource"/>
-            <property name="timeout">120</property>
-            <property name="useCurrentJVM">True</property>
-        </extendedProperty>
-        <extendedProperty name="solaris.jvm.resolution.extra.sparc" type="com.installshield.wizard.platform.solaris.extra.SolarisJVMResolutionExtra">
-            <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-            </property>
-            <property name="JVMResolution">1</property>
-            <property name="bundledJVMArguments">-qq -o</property>
-            <property name="bundledJVMResource"/>
-            <property name="bundledJVMSource"/>
-            <property name="timeout">120</property>
-            <property name="useCurrentJVM">True</property>
-        </extendedProperty>
-        <extendedProperty name="solaris.jvm.resolution.extra.x86" type="com.installshield.wizard.platform.solaris.extra.SolarisJVMResolutionExtraX86">
-            <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-            </property>
-            <property name="JVMResolution">1</property>
-            <property name="bundledJVMArguments">-qq -o</property>
-            <property name="bundledJVMResource"/>
-            <property name="bundledJVMSource"/>
-            <property name="timeout">120</property>
-            <property name="useCurrentJVM">True</property>
-        </extendedProperty>
-        <extendedProperty name="win32ppk" type="com.installshield.wizard.platform.win32.Win32JVMResolutionExtra">
-            <property array="True" length="0" name="JVMFileResources" type="string"/>
-            <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15win32_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk16win32_sun.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-            </property>
-            <property name="JVMResolution">1</property>
-            <property name="bundledJVMArguments">-qq -o</property>
+            <property name="bundledJVMArguments"/>
             <property name="bundledJVMResource"/>
             <property name="bundledJVMSource"/>
             <property name="timeout">120</property>
@@ -323,7 +243,7 @@
         <property name="frameResizable">True</property>
         <property name="wizardImageSource">$A(basedir)/../lib/resources/wizard-bg.png</property>
         <property name="backgroundInsets">0, 140, 0, 0</property>
-        <property name="useSystemLookAndFeel">False</property>
+        <property name="useSystemLookAndFeel">True</property>
     </interface>
     <log>
         <property name="allEventsLogged">True</property>
@@ -507,10 +427,10 @@
             <property name="contentType">2</property>
             <property name="description"/>
             <property name="textSource">1</property>
-            <property name="navigationOptions">0</property>
             <property name="text">$L(com.installshield.wizardx.i18n.WizardXResources, TextDisplayPanel.text)</property>
-            <property name="fileEncoding"/>
+            <property name="navigationOptions">0</property>
             <property name="busyMessage"/>
+            <property name="fileEncoding"/>
             <property name="resolveFileContents">False</property>
         </wizardBean>
         <wizardBean class="com.installshield.product.wizardbeans.InstallAction" id="install">
@@ -546,10 +466,10 @@
             <property name="contentType">2</property>
             <property name="description"/>
             <property name="textSource">1</property>
-            <property name="navigationOptions">0</property>
             <property name="text">$L(com.installshield.wizardx.i18n.WizardXResources, TextDisplayPanel.text)</property>
-            <property name="fileEncoding"/>
+            <property name="navigationOptions">0</property>
             <property name="busyMessage"/>
+            <property name="fileEncoding"/>
             <property name="resolveFileContents">False</property>
         </wizardBean>
     </wizardRoot>
@@ -585,7 +505,7 @@
         <property name="frameResizable">True</property>
         <property name="wizardImageSource">$A(basedir)/../lib/resources/wizard-bg.png</property>
         <property name="backgroundInsets">0, 140, 0, 0</property>
-        <property name="useSystemLookAndFeel">False</property>
+        <property name="useSystemLookAndFeel">True</property>
     </interface>
     <log>
         <property name="allEventsLogged">True</property>
@@ -665,10 +585,10 @@
             <property name="contentType">2</property>
             <property name="description"/>
             <property name="textSource">1</property>
-            <property name="navigationOptions">0</property>
             <property name="text">$L(com.installshield.wizardx.i18n.WizardXResources, TextDisplayPanel.text)</property>
-            <property name="fileEncoding"/>
+            <property name="navigationOptions">0</property>
             <property name="busyMessage"/>
+            <property name="fileEncoding"/>
             <property name="resolveFileContents">False</property>
         </wizardBean>
         <wizardBean class="com.installshield.product.wizardbeans.UninstallAction" id="uninstall">
@@ -697,10 +617,10 @@
             <property name="contentType">2</property>
             <property name="description"/>
             <property name="textSource">1</property>
-            <property name="navigationOptions">0</property>
             <property name="text">$L(com.installshield.wizardx.i18n.WizardXResources, TextDisplayPanel.text)</property>
-            <property name="fileEncoding"/>
+            <property name="navigationOptions">0</property>
             <property name="busyMessage"/>
+            <property name="fileEncoding"/>
             <property name="resolveFileContents">False</property>
         </wizardBean>
     </wizardRoot>
@@ -713,15 +633,9 @@
     <property name="outputDirectory">build</property>
     <property array="True" length="3" name="support" type="com.installshield.isje.build.BuildConfigurationSupport">
         <arrayItem type="com.installshield.isje.wizard.PlatformSupport">
-            <property array="True" length="4" name="builders" type="com.installshield.isje.build.ExtendedWizardBuilder">
-                <arrayItem type="com.ibm.wizard.platform.linux.LinuxBuilder">
-                    <property name="rpmIntegrationEnabled">False</property>
-                </arrayItem>
+            <property array="True" length="2" name="builders" type="com.installshield.isje.build.ExtendedWizardBuilder">
+                <arrayItem type="com.installshield.wizard.platform.macosx.MacOSXPlatformPackBuilder"/>
                 <arrayItem type="com.installshield.wizard.platform.genericunix.GenericunixPlatformPackBuilder"/>
-                <arrayItem type="com.installshield.wizard.platform.solaris.SolarisBuilder">
-                    <property name="pkgIntegrationEnabled">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.wizard.platform.win32.Win32Builder"/>
             </property>
         </arrayItem>
         <arrayItem type="com.installshield.isje.build.LanguageSupport">
@@ -735,18 +649,14 @@
             </property>
         </arrayItem>
         <arrayItem type="com.installshield.isje.build.DistributionSupport">
-            <property array="True" length="4" name="distributions" type="com.installshield.isje.build.Distribution">
-                <arrayItem type="com.installshield.wizard.platform.win32.Win32LauncherDistribution">
+            <property array="True" length="1" name="distributions" type="com.installshield.isje.build.Distribution">
+                <arrayItem type="com.installshield.wizard.platform.macosx.extras.MacOSXLauncherDistribution">
                     <property name="comments"/>
                     <property name="enabled">True</property>
-                    <property name="fileName">setupwin32.exe</property>
-                    <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
+                    <property name="fileName">setupMac.command</property>
+                    <property array="True" length="1" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk15win32_sun.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk16win32_sun.jvm</property>
+                            <property name="fileName">$A(basedir)/../lib/resources/jdk15macosx.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                     </property>
@@ -756,95 +666,10 @@
                     <property name="embedArchive">True</property>
                     <property name="launcherUIDisplayTime">0</property>
                     <property name="javaArguments">%IF_EXISTS%(&quot;INIT_JAVA_HEAP&quot;, &quot;@INIT_JAVA_HEAP@20m&quot;) %IF_EXISTS%(&quot;MAX_JAVA_HEAP&quot;, &quot;@MAX_JAVA_HEAP@60m&quot;)</property>
-                    <property name="wizardArguments"/>
-                    <property array="True" length="1" name="systemProperties" type="string">
-                        <arrayItem>sun.java2d.d3d=false</arrayItem>
-                    </property>
-                    <property name="showConsole">False</property>
-                    <property name="JVMNotFoundMessage">No Java Development Kit(JDK) was found on this system.</property>
-                </arrayItem>
-                <arrayItem type="com.ibm.wizard.platform.linux.LinuxLauncherDistribution">
-                    <property name="comments"/>
-                    <property name="enabled">True</property>
-                    <property name="fileName">setuplinux.bin</property>
-                    <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_blackdown.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_ibm.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                    </property>
-                    <property name="bundledJVMSource"/>
-                    <property array="True" length="0" name="embeddedJARs" type="string"/>
-                    <property array="True" length="0" name="additionalClassPaths" type="string"/>
-                    <property name="embedArchive">True</property>
-                    <property name="launcherUIDisplayTime">0</property>
                     <property name="wizardArguments"/>
                     <property array="True" length="0" name="systemProperties" type="string"/>
                     <property name="showConsole">False</property>
                     <property name="JVMNotFoundMessage">No Java Development Kit(JDK) was found on this system.</property>
-                    <property name="javaArguments">%IF_EXISTS%(&quot;INIT_JAVA_HEAP&quot;, &quot;@INIT_JAVA_HEAP@20m&quot;) %IF_EXISTS%(&quot;MAX_JAVA_HEAP&quot;, &quot;@MAX_JAVA_HEAP@60m&quot;)</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.wizard.platform.solaris.distribution.SolarisLauncherDistributionSparc">
-                    <property name="comments"/>
-                    <property name="enabled">True</property>
-                    <property name="fileName">setupSolarisSparc.bin</property>
-                    <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                    </property>
-                    <property name="bundledJVMSource"/>
-                    <property array="True" length="0" name="embeddedJARs" type="string"/>
-                    <property array="True" length="0" name="additionalClassPaths" type="string"/>
-                    <property name="embedArchive">True</property>
-                    <property name="launcherUIDisplayTime">0</property>
-                    <property name="wizardArguments"/>
-                    <property array="True" length="0" name="systemProperties" type="string"/>
-                    <property name="showConsole">False</property>
-                    <property name="JVMNotFoundMessage">No Java Development Kit(JDK) was found on this system.</property>
-                    <property name="javaArguments">%IF_EXISTS%(&quot;INIT_JAVA_HEAP&quot;, &quot;@INIT_JAVA_HEAP@20m&quot;) %IF_EXISTS%(&quot;MAX_JAVA_HEAP&quot;, &quot;@MAX_JAVA_HEAP@60m&quot;)</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.wizard.platform.solaris.distribution.SolarisLauncherDistributionX86">
-                    <property name="comments"/>
-                    <property name="enabled">True</property>
-                    <property name="fileName">setupSolarisx86.bin</property>
-                    <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                    </property>
-                    <property name="bundledJVMSource"/>
-                    <property array="True" length="0" name="embeddedJARs" type="string"/>
-                    <property array="True" length="0" name="additionalClassPaths" type="string"/>
-                    <property name="embedArchive">True</property>
-                    <property name="launcherUIDisplayTime">0</property>
-                    <property name="wizardArguments"/>
-                    <property array="True" length="0" name="systemProperties" type="string"/>
-                    <property name="showConsole">False</property>
-                    <property name="JVMNotFoundMessage">No Java Development Kit(JDK) was found on this system.</property>
-                    <property name="javaArguments">%IF_EXISTS%(&quot;INIT_JAVA_HEAP&quot;, &quot;@INIT_JAVA_HEAP@20m&quot;) %IF_EXISTS%(&quot;MAX_JAVA_HEAP&quot;, &quot;@MAX_JAVA_HEAP@60m&quot;)</property>
                 </arrayItem>
             </property>
         </arrayItem>

@@ -68,6 +68,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="xsl-win32-ml" depends="init">
     <transform-ml input.ismp.project="${ismp.project}-win32"/>
   </target>
+
+  <target name="xsl-macosx-ml" depends="init">
+    <transform-ml input.ismp.project="${ismp.project}-macosx"/>
+  </target>
  
   <macrodef name="transform-platform">
     <attribute name="ismp.project.suffix"/>
@@ -107,16 +111,25 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-win32" depends="init, compile, xsl-win32">
     <build-installer input.ismp.project="${ismp.project}-win32"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-mac.jar"/>
     <delete file="${ismp.project}-win32.uip"/>
   </target>
 
   <target name="build-win32-ml" depends="init, compile, xsl-win32, xsl-win32-ml">
     <build-installer input.ismp.project="${ismp.project}-win32-ml"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-mac-ml.jar"/>
     <delete file="${ismp.project}-win32.uip"/>
     <delete file="${ismp.project}-win32-ml.uip"/>
+  </target>
+
+  <target name="build-macosx" depends="init, compile">
+    <build-installer input.ismp.project="${ismp.project}-macosx"/>
+    <copy file="build/disk1/setup.jar" tofile="dist/${installer.basename}-mac.jar"/>
+  </target>
+
+  <target name="build-macosx-ml" depends="init, compile, xsl-macosx-ml">
+    <build-installer input.ismp.project="${ismp.project}-macosx-ml"/>
+    <copy file="build/disk1/setup.jar" tofile="dist/${installer.basename}-mac-ml.jar"/>
+    <delete file="${ismp.project}-macosx-ml.uip"/>
   </target>
 
   <target name="build-unix" depends="init, compile, xsl-unix">
@@ -136,11 +149,11 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="${ismp.project}-unix-ml.uip"/>
   </target>
   
-  <target name="build" depends="init, build-win32, build-unix" description="build the installers">
+  <target name="build" depends="init, build-win32, build-unix, build-macosx" description="build the installers">
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
   </target>
 
-  <target name="build-ml" depends="init, build-win32-ml, build-unix-ml" description="build the multilanguage installers">
+  <target name="build-ml" depends="init, build-win32-ml, build-unix-ml, build-macosx-ml" description="build the multilanguage installers">
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-ml.jar"/>
   </target>
  
