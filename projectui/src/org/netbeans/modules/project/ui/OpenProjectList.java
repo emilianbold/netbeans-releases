@@ -865,6 +865,13 @@ public final class OpenProjectList {
                 Icon icon = ((ExtIcon) iterIcons.next()).getIcon();
                 recentProjectsInfos.add(ProjectInfoAccessor.DEFAULT.getProjectInfo(name, icon, url));
             }
+            // if following is true then there was either some problem with serialization
+            // or user started new IDE on userdir with only partial information saved - only URLs
+            // then both list should be cleared - recent project information will be lost
+            if (recentProjects.size() != recentProjectsInfos.size()) {
+                recentProjects.clear();
+                recentProjectsInfos.clear();
+            }
         }
         
         public void save() {
