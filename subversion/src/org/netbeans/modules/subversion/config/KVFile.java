@@ -13,6 +13,7 @@
 package org.netbeans.modules.subversion.config;
 
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -81,6 +82,8 @@ public class KVFile {
                is.read(); // skip '\n'
                keyIdx++;
             }
+        } catch (EOFException eofe) {
+            throw new EOFException(file.getAbsolutePath());
         } finally {
             try {                 
                 if (is != null) {        
@@ -98,17 +101,17 @@ public class KVFile {
         is.read(end);
         is.reset();
         if(end[0] == -1 || end[1] == -1 || end[2] == -1) {
-            throw new IOException("Unexpected end of file");
+            throw new EOFException();
         }
         return end[0] == 'E' && end[1] == 'N' && end[2] == 'D';
     }
     
-    private int readEntryLength(InputStream is) throws IOException {        
+    private int readEntryLength(InputStream is) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte b = (byte) is.read();
         while ( b != '\n')  {
             if(b == -1) {
-                throw new IOException("Unexpected end of file");
+                throw new EOFException();
             }
             baos.write(b);
             b = (byte) is.read();
