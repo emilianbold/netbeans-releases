@@ -25,6 +25,7 @@ import java.util.*;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SVNCredentialFile;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.openide.DialogDescriptor;
@@ -179,7 +180,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     }        
     
     // XXX refactor, move, clean up ...
-    private boolean handleNoCertificateError(SvnClient client) throws Exception {        
+    private boolean handleNoCertificateError(SvnClient client) throws Exception {
+        // XXX copy the certificate if it already exists
         try {
             TrustManager[] trust = new TrustManager[] {
                 new X509TrustManager() {
@@ -241,12 +243,12 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             
             SVNCredentialFile.CertificateFile cf = new SVNCredentialFile.CertificateFile(url.getProtocol() + "://" + url.getHost() + ":" + url.getPort());
             String encodedCert = new sun.misc.BASE64Encoder().encode(cert.getEncoded());                
-            encodedCert.replaceAll("\\n", ""); // XXX where does this come from ????!!!
-            String[] str = encodedCert.split("\n"); // XXX whats wrong with replace ???
-            encodedCert = "";
-            for (int i = 0; i < str.length; i++) {
-                encodedCert+=str[i];
-            }
+            encodedCert = encodedCert.replaceAll("\n", ""); // XXX where does this come from ????!!!
+//            String[] str = encodedCert.split("\n"); // XXX whats wrong with replace ???
+//            encodedCert = "";
+//            for (int i = 0; i < str.length; i++) {
+//                encodedCert+=str[i];
+//            }
             cf.setCert(encodedCert.getBytes());
             cf.setFailures("10"); // XXX what is this !!??            
             if(dialogDescriptor.getValue() == temporarilyButton) {
@@ -360,10 +362,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             for (int i = 0; i < strA.length; i++) {
                 str+=strA[i];
             }
-            MessageDigest md5;           
-            md5 = MessageDigest.getInstance(alg);
-            byte[] url;
-            url = new sun.misc.BASE64Decoder().decodeBuffer(str);            
+            MessageDigest md5 = MessageDigest.getInstance(alg);
+            byte[] url = new sun.misc.BASE64Decoder().decodeBuffer(str);            
             md5.update(url);
             byte[] md5digest = md5.digest();            
             String ret = "";

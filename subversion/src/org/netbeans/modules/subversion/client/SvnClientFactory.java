@@ -15,6 +15,7 @@ package org.netbeans.modules.subversion.client;
 import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
+import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.config.PasswordFile;
 import org.openide.filesystems.FileUtil;

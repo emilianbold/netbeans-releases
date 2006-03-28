@@ -36,6 +36,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.client.*;
+import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.config.PasswordFile;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
