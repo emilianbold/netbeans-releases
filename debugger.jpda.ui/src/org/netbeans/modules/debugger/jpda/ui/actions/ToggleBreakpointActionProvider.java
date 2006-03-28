@@ -15,6 +15,8 @@ package org.netbeans.modules.debugger.jpda.ui.actions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
@@ -28,6 +30,8 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.BreakpointAnnotationListener;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 
 import org.openide.util.NbBundle;
 
@@ -59,10 +63,18 @@ implements PropertyChangeListener {
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
+        String url = EditorContextBridge.getCurrentURL();
+        FileObject fo;
+        try {
+            fo = URLMapper.findFileObject(new URL(url));
+        } catch (MalformedURLException muex) {
+            fo = null;
+        }
         setEnabled (
             ActionsManager.ACTION_TOGGLE_BREAKPOINT,
             (EditorContextBridge.getCurrentLineNumber () >= 0) && 
-            (EditorContextBridge.getCurrentURL ().endsWith (".java"))
+            (fo != null && "text/x-java".equals(fo.getMIMEType()))  // NOI18N
+            //(EditorContextBridge.getCurrentURL ().endsWith (".java"))
         );
         if ( debugger != null && 
              debugger.getState () == debugger.STATE_DISCONNECTED
