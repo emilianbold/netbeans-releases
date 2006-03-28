@@ -150,7 +150,7 @@ public class FileUtils {
     private FileUtils() {
     }
     
-    public static InputStream createInputStream(File file) throws IOException {             
+    public static BufferedInputStream createInputStream(File file) throws IOException {             
         while (true) {
             int retry = 0;
             try {
@@ -169,7 +169,7 @@ public class FileUtils {
         }       
     }
     
-    public static OutputStream createOutputStream(File file) throws IOException {        
+    public static BufferedOutputStream createOutputStream(File file) throws IOException {        
         while (true) {
             int retry = 0;
             try {

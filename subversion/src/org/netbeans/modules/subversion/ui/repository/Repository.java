@@ -291,7 +291,6 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         if(repository != null) {            
             if (repository.getUrl()!=null) {                   
                 if (userVisitedProxySettings == false) {
-                    // load  proxy from history
                     proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(repository.getUrl());
                 }
                 schedulePasswordUpdate();

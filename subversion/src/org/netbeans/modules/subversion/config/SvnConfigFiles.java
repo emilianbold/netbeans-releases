@@ -12,10 +12,13 @@
  */
 package org.netbeans.modules.subversion.config;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -49,7 +52,7 @@ public class SvnConfigFiles {
         // copy config file        
         copyToIDEConfigDir();        
         // get the nb servers file merged with the systems servers files
-        servers = loadNetbeansIniFile("servers");
+        servers = loadNetbeansIniFile("servers"); // XXX this could be expensive - don't run in awt !!!
     }
 
     public static SvnConfigFiles getInstance() {
@@ -233,8 +236,10 @@ public class SvnConfigFiles {
         } catch (IOException ex) {
             ex.printStackTrace(); // XXX
         }
-
-        // XXX merge from user registry
+        
+        if(Utilities.isWindows()) {            
+            mergeFromRegistry("HKEY_LOCAL_MACHINE", "Servers", system);
+        }
 
         Ini global = null;        
         try {
@@ -244,12 +249,15 @@ public class SvnConfigFiles {
         } catch (IOException ex) {
             ex.printStackTrace();// XXX 
         }
-
-        // XXX merge from system wide registry settings
-
+                
         if(global != null) {
             merge(global, system);
         }
+        
+        if(Utilities.isWindows()) {
+            mergeFromRegistry("HKEY_CURRENT_USER", "Servers", system);
+        }
+        
         return system;
     }
 
@@ -362,6 +370,78 @@ public class SvnConfigFiles {
     public static String getNBConfigDir() {
         String nbHome = System.getProperty("netbeans.user");       
         return nbHome + "/config/svn/config/";
+    }
+
+    private void mergeFromRegistry(String keyPrefix, String svnFile, Ini iniFile) {
+        String key = keyPrefix + "\\Software\\Tigris.org\\Subversion\\" + svnFile;
+        String tmpDirPath = System.getProperty("netbeans.user") + "/config/svn/tmp";                
+        File tmpDir = FileUtil.normalizeFile(new File(tmpDirPath));
+        tmpDir.mkdirs();        
+        String tmpFilePath = System.getProperty("netbeans.user") + "/config/svn/tmp/out.reg";                
+        File tmpFile = FileUtil.normalizeFile(new File(tmpFilePath));
+        
+        String[] cmdLine = new String[] {
+            "regedit.exe", "/e" , tmpFile.getAbsolutePath(), key       
+        };
+        
+        Process p = null;
+        try {
+            p = Runtime.getRuntime().exec(cmdLine);
+            p.waitFor(); // XXX
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);     
+            return;
+        } catch (InterruptedException ex) {
+            ErrorManager.getDefault().notify(ex);     
+            return;
+        }                 
+            
+        key = "[" + key + "\\";     // for parsing purposes
+        BufferedInputStream is = null;        
+        BufferedReader br = null;
+        try {            
+            is = FileUtils.createInputStream(tmpFile);                                    
+            br = new BufferedReader(new InputStreamReader(is, "Unicode"));    // XXX hm, unicode...        
+            String line = "";            
+            Ini.Section section = null;
+            while( (line = br.readLine()) != null ) {
+                line = line.trim();            
+                if(line.startsWith(key)) {
+                    String sectionName = line.substring(key.length(), line.length()-1).trim(); 
+                    if(sectionName.length() != 0) {                        
+                        section = (Ini.Section) iniFile.get(sectionName);
+                        if(section == null) {
+                            section = iniFile.add(sectionName);
+                        }                            
+                    }                    
+                } else {
+                    if( line.startsWith("\"#") && section != null )  
+                    {
+                        String[] elements = line.split("\"=\""); 
+                        String variable = elements[0].substring(2);
+                        String value = elements[1].substring(0, elements[1].length()-1);
+                        if(!section.containsKey(variable)) {
+                            section.put(variable, value);
+                        }                        
+                    }                    
+                }
+            }            
+            
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);     
+        } finally {
+            try {
+                if (br != null) {        
+                    br.close();
+                }                                
+                if (is != null) {        
+                    is.close();
+                }                
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(e);     
+            }                              
+        }
+        
     }
     
 }
