@@ -142,7 +142,7 @@ public final class Enumerations extends Object {
      * @param processor a callback processor for the elements (its toAdd arguments is always null)
      * @return new enumeration where all elements has been processed
      */
-    public static <T,R> Enumeration<R> convert(Enumeration<T> en, Processor<T,R> processor) {
+    public static <T,R> Enumeration<R> convert(Enumeration<? extends T> en, Processor<T,R> processor) {
         return new AltEn<T,R>(en, processor);
     }
 
@@ -170,7 +170,7 @@ public final class Enumerations extends Object {
      * @param filter a callback processor for the elements (its toAdd arguments is always null)
      * @return new enumeration which does not include non-processed (returned null from processor) elements
      */
-    public static <T,R> Enumeration<R> filter(Enumeration<T> en, Processor<T,R> filter) {
+    public static <T,R> Enumeration<R> filter(Enumeration<? extends T> en, Processor<T,R> filter) {
         return new FilEn<T,R>(en, filter);
     }
 
@@ -203,7 +203,7 @@ public final class Enumerations extends Object {
      *       <code>null</code> if the filter returned <code>null</code> from its
      *       {@link Processor#process} method.
      */
-    public static <T,R> Enumeration<R> queue(Enumeration<T> en, Processor<T,R> filter) {
+    public static <T,R> Enumeration<R> queue(Enumeration<? extends T> en, Processor<T,R> filter) {
         QEn<T,R> q = new QEn<T,R>(filter);
 
         while (en.hasMoreElements()) {
@@ -228,7 +228,7 @@ public final class Enumerations extends Object {
     /** Altering enumeration implementation */
     private static final class AltEn<T,R> extends Object implements Enumeration<R> {
         /** enumeration to filter */
-        private Enumeration<T> en;
+        private Enumeration<? extends T> en;
 
         /** map to alter */
         private Processor<T,R> process;
@@ -236,7 +236,7 @@ public final class Enumerations extends Object {
         /**
         * @param en enumeration to filter
         */
-        public AltEn(Enumeration<T> en, Processor<T,R> process) {
+        public AltEn(Enumeration<? extends T> en, Processor<T,R> process) {
             this.en = en;
             this.process = process;
         }
@@ -489,7 +489,7 @@ public final class Enumerations extends Object {
         private static final Object EMPTY = new Object();
 
         /** enumeration to filter */
-        private Enumeration<T> en;
+        private Enumeration<? extends T> en;
 
         /** element to be returned next time or {@link #EMPTY} if there is
         * no such element prepared */
@@ -501,7 +501,7 @@ public final class Enumerations extends Object {
         /**
         * @param en enumeration to filter
         */
-        public FilEn(Enumeration<T> en, Processor<T,R> filter) {
+        public FilEn(Enumeration<? extends T> en, Processor<T,R> filter) {
             this.en = en;
             this.filter = filter;
         }
