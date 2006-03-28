@@ -69,6 +69,12 @@ public class VariablesTableModel implements TableModel, Constants {
         ) {
             if (row instanceof Variable)
                 return getShort (((Variable) row).getType ());
+            if (row instanceof javax.swing.JToolTip) {
+                row = ((javax.swing.JToolTip) row).getClientProperty("getShortDescription");
+                if (row instanceof Variable) {
+                    return ((Variable) row).getType();
+                }
+            }
         } else
         if ( columnID.equals (LOCALS_VALUE_COLUMN_ID) ||
              columnID.equals (WATCH_VALUE_COLUMN_ID)

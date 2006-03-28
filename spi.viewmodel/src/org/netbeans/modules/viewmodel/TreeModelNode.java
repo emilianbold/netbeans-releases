@@ -808,6 +808,27 @@ public class TreeModelNode extends AbstractNode {
             }
             return super.getValue (attributeName);
         }
+
+        public String getShortDescription() {
+            synchronized (properties) {
+                if (!properties.containsKey(id)) {
+                    return null; // The same as value => EVALUATING_STR
+                }
+            }
+            try {
+                javax.swing.JToolTip tooltip = new javax.swing.JToolTip();
+                tooltip.putClientProperty("getShortDescription", object); // NOI18N
+                Object tooltipObj = model.getValueAt(tooltip, id);
+                if (tooltipObj == null) {
+                    return null;
+                } else {
+                    return tooltipObj.toString();
+                }
+            } catch (UnknownTypeException e) {
+                // Ignore models that do not define tooltips for values.
+                return null;
+            }
+        }
         
         public void setValue (Object v) throws IllegalAccessException, 
         IllegalArgumentException, java.lang.reflect.InvocationTargetException {
