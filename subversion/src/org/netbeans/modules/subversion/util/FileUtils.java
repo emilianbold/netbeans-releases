@@ -150,9 +150,9 @@ public class FileUtils {
     private FileUtils() {
     }
     
-    public static BufferedInputStream createInputStream(File file) throws IOException {             
-        while (true) {
-            int retry = 0;
+    public static BufferedInputStream createInputStream(File file) throws IOException {
+        int retry = 0;
+        while (true) {   
             try {
                 return new BufferedInputStream(new FileInputStream(file));                
             } catch (IOException ex) {
