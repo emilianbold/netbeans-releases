@@ -655,7 +655,13 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
         }
 
         public String getToolTipText() {
-            return getProperty().getShortDescription();
+            String superTooltip = super.getToolTipText();
+            String propertyTooltip = getProperty().getShortDescription();
+            if (propertyTooltip != null) {
+                return propertyTooltip;
+            } else {
+                return superTooltip;
+            }
         }
         
         public void addComponentListener(java.awt.event.ComponentListener l) {
