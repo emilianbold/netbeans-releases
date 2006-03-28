@@ -84,7 +84,8 @@ public class KVFile {
             }
         } catch (EOFException eofe) {
             if(getMap().size() > 0) {
-                // there are already some key-value pair -> something in the file structure seems to be wrong
+                // there are already some key-value pairs ->
+                // something in the file structure seems to be wrong
                 throw new EOFException(file.getAbsolutePath());
             }
             // otherwise skip the exception, could be just an empty file
