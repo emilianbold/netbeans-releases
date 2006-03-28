@@ -192,7 +192,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-ReplaceAction.instance"/>
                 </file>
                 <file name="Redo.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RedoAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-RedoAction.instance"/>
                 </file>
                 <file name="Undo.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
@@ -351,7 +351,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RenameAction.instance"/>
                 </file>
                 <file name="Redo.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-RedoAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RedoAction.instance"/>
                 </file>
                 <file name="Undo.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-UndoAction.instance"/>
