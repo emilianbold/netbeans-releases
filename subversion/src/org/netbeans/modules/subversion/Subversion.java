@@ -336,9 +336,16 @@ public class Subversion {
         if (sharability == SharabilityQuery.NOT_SHARABLE) {
             try {
                 // propagate IDE opinion to Subversion svn:ignore
-                List patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
-                patterns.remove(file.getName());
-                Subversion.getInstance().getClient().setIgnoredPatterns(parent, patterns);
+                FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                if ((cache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
+                    List patterns = Subversion.getInstance().getClient().getIgnoredPatterns(parent);
+                    if (patterns.contains(file.getName()) == false) {
+                        patterns.add(file.getName());
+                        Subversion.getInstance().getClient().setIgnoredPatterns(parent, patterns);
+                    } else {
+                        assert false : "Matcher failed for: " + parent.getAbsolutePath() + " file: " + file.getName();
+                    }
+                }
             } catch (SVNClientException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
