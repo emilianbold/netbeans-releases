@@ -215,16 +215,20 @@ public class FileStatusCache implements ISVNNotifyListener {
         ISVNStatus status = null;
         try {
             ISVNClientAdapter client = Subversion.getInstance().getClient();
+            client.removeNotifyListener(Subversion.getInstance().getLogger()); //avoid (Not versioned resource) in OW
             status = client.getSingleStatus(file);
             if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
                 status = null;
             }
         } catch (SVNClientException e) {
-            ExceptionInformation ei = new ExceptionInformation(e);            
-            if (ei.isUnversionedResource()) {  
-                // no or damaged entries
+            ExceptionInformation ei = new ExceptionInformation(e);
+            // unversioned resource is expected getSingleStatus()
+            // does not return SVNStatusKind.UNVERSIONED but throws exception instead
+            // XXX why it does not return SVNStatusKind.UNVERSIONED
+            if (ei.isUnversionedResource() == false) {
+                // missing or damaged entries
                 // or ignored file
-                e.printStackTrace();
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
         FileInformation fi = createFileInformation(file, status, repositoryStatus);

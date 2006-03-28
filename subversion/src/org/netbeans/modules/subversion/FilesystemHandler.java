@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.subversion;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.masterfs.providers.InterceptionListener2;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -354,7 +355,51 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
         return false;
     }
 
-    public void moveImpl(FileObject src, FileObject destFolder, String name, String ext) throws IOException {
+    public void moveImpl(final FileObject src, final FileObject destFolder, final String name, final String ext) throws IOException {
+
+        if (SwingUtilities.isEventDispatchThread()) {
+
+            // Openide implemetation mistakenly calls FS from AWT
+            // relax our asserts by reposting to non-AWT thread and wait
+            // and print out warning so original gets fixed
+
+            Exception ex = new IllegalThreadStateException("WARNING: above code access filesystem from AWT.\nImagine that Subversion's filesystem handler can connect to server over (slow) network.\nWorkarounding... (it may deadlocks however).");
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+            final Throwable innerT[] = new Throwable[1];
+            Runnable outOfAwt = new Runnable() {
+                public void run() {
+                    try {
+                        moveImplementation(src, destFolder, name, ext);
+                    } catch (Throwable t) {
+                        innerT[0] = t;
+                    }
+                }
+            };
+
+            Subversion.getInstance().postRequest(outOfAwt).waitFinished();
+            if (innerT[0] != null) {
+                if (innerT[0] instanceof IOException) {
+                    throw (IOException) innerT[0];
+                } else if (innerT[0] instanceof RuntimeException) {
+                    throw (RuntimeException) innerT[0];
+                } else if (innerT[0] instanceof Error) {
+                    throw (Error) innerT[0];
+                } else {
+                    throw new IllegalStateException("Unexpected exception class: " + innerT[0]);  // NOI18N
+                }
+            }
+
+            // end of hack
+
+        } else {
+            moveImplementation(src, destFolder, name, ext);
+        }
+
+
+    }
+
+    public void moveImplementation(FileObject src, FileObject destFolder, String name, String ext) throws IOException {
+
         File srcFile = FileUtil.toFile(src);
         File destDir = FileUtil.toFile(destFolder);
         if (ext == null) {
@@ -366,11 +411,11 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
         File dstFile = new File(destDir, name + ext);
 
         try {                        
-//            boolean force = true; // file with local changes must be forced
-//            ISVNClientAdapter client = Subversion.getInstance().getClient();
-//            client.move(srcFile, dstFile, force);
-            FileUtils.renameFile(srcFile, dstFile);  // XXX replace with above code
-        } catch (IOException e) {            
+            boolean force = true; // file with local changes must be forced
+            ISVNClientAdapter client = Subversion.getInstance().getClient();
+            client.move(srcFile, dstFile, force);
+//            FileUtils.renameFile(srcFile, dstFile);  // XXX replace with above code
+        } catch (SVNClientException e) {
             IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath());
             ex.initCause(e);
             throw ex;

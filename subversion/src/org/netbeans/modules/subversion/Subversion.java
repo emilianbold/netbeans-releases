@@ -293,7 +293,7 @@ public class Subversion {
         client.addNotifyListener(fileStatusCache); 
     }
 
-    private OutputLogger getLogger() {
+    public OutputLogger getLogger() {
         if(outputLogger==null) {
            outputLogger = new OutputLogger();
         }
