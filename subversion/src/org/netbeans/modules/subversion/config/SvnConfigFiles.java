@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.ini4j.Ini;
-import org.netbeans.modules.subversion.client.ProxyDescriptor;
+import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
@@ -35,6 +35,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
+ * XXX test for robustness
  * @author Tomas Stupka
  */
 public class SvnConfigFiles {
@@ -52,7 +53,9 @@ public class SvnConfigFiles {
         // copy config file        
         copyToIDEConfigDir();        
         // get the nb servers file merged with the systems servers files
-        servers = loadNetbeansIniFile("servers"); // XXX this could be expensive - don't run in awt !!!
+
+        // XXX this could be expensive - don't run in awt !!!
+        servers = loadNetbeansIniFile("servers"); 
     }
 
     public static SvnConfigFiles getInstance() {
@@ -205,9 +208,10 @@ public class SvnConfigFiles {
     }
 
     private Ini loadNetbeansIniFile(String fileName) {
-        File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/" + fileName));
+        File file = FileUtil.normalizeFile(new File(getNBConfigDir() + "/" + fileName));        
         Ini nbIni = null;
-        try {            
+        try {
+            file.createNewFile();
             nbIni = new Ini(FileUtils.createInputStream(file));
         } catch (FileNotFoundException ex) {
             // do nothing
@@ -221,7 +225,6 @@ public class SvnConfigFiles {
         } else {
             mergeWithoutProxyConfigurations(system, nbIni);
         }            
-
         return nbIni;
     }
 
@@ -263,7 +266,7 @@ public class SvnConfigFiles {
 
     /**
      *
-     * Merge only sections/keys/values from source which are not present into target
+     * Merge only sections/keys/values into target which are not present in source
      *
      */
     private void merge(Ini source, Ini target) {
@@ -374,7 +377,7 @@ public class SvnConfigFiles {
 
     private void mergeFromRegistry(String keyPrefix, String svnFile, Ini iniFile) {
         String key = keyPrefix + "\\Software\\Tigris.org\\Subversion\\" + svnFile;
-        String tmpDirPath = System.getProperty("netbeans.user") + "/config/svn/tmp";                
+        String tmpDirPath = System.getProperty("netbeans.user") + "/config/svn/tmp";  // XXX maybe an another location... XXX create temp file
         File tmpDir = FileUtil.normalizeFile(new File(tmpDirPath));
         tmpDir.mkdirs();        
         String tmpFilePath = System.getProperty("netbeans.user") + "/config/svn/tmp/out.reg";                
@@ -431,6 +434,9 @@ public class SvnConfigFiles {
             ErrorManager.getDefault().notify(e);     
         } finally {
             try {
+                if(tmpFile !=null) {
+                    tmpFile.delete();
+                }
                 if (br != null) {        
                     br.close();
                 }                                
