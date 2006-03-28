@@ -71,11 +71,11 @@ public class KVFile {
             is = FileUtils.createInputStream(file);                                    
             int keyIdx = 0;
             while(!checkEOF(is)) {                      
-               int keyLength = readEntryLength(is);    // key length               
+               int keyLength = readEntryLength(is);     // key length
                byte[] keyName = new byte[keyLength];
                is.read(keyName);
                is.read(); // skip '\n'
-               int valueLength = readEntryLength(is);    // value length                                             
+               int valueLength = readEntryLength(is);   // value length
                byte[] value = new byte[valueLength];
                is.read(value);               
                getMap().put(new Key(keyIdx, new String(keyName)), value);
@@ -83,7 +83,11 @@ public class KVFile {
                keyIdx++;
             }
         } catch (EOFException eofe) {
-            throw new EOFException(file.getAbsolutePath());
+            if(getMap().size() > 0) {
+                // there are already some key-value pair -> something in the file structure seems to be wrong
+                throw new EOFException(file.getAbsolutePath());
+            }
+            // otherwise skip the exception, could be just an empty file
         } finally {
             try {                 
                 if (is != null) {        
