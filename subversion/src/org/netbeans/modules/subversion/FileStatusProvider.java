@@ -42,7 +42,9 @@ import java.beans.PropertyChangeEvent;
 public class FileStatusProvider extends AnnotationProvider implements VersioningListener, PropertyChangeListener {
 
     private static final int STATUS_BADGEABLE = FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
-    
+
+    private static final Action[] EMPTY_ACTIONS = new Action[0];
+
     private static FileStatusProvider instance;
     private boolean shutdown; 
 
@@ -55,17 +57,25 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     }
 
     public String annotateNameHtml(String name, Set files) {
-        return Subversion.getInstance().getAnnotator().annotateNameHtml(
-                name,
-                files,
-                FileInformation.STATUS_VERSIONED_UPTODATE
-                | FileInformation.STATUS_LOCAL_CHANGE
-                | FileInformation.STATUS_NOTVERSIONED_EXCLUDED
-        );
+        if (isManaged(files)) {
+            return Subversion.getInstance().getAnnotator().annotateNameHtml(
+                    name,
+                    files,
+                    FileInformation.STATUS_VERSIONED_UPTODATE
+                    | FileInformation.STATUS_LOCAL_CHANGE
+                    | FileInformation.STATUS_NOTVERSIONED_EXCLUDED
+            );
+        } else {
+            return null;
+        }
     }
     
     public String annotateName(String name, Set files) {
-        return Subversion.getInstance().getAnnotator().annotateName(name, files);
+        if (isManaged(files)) {
+            return Subversion.getInstance().getAnnotator().annotateName(name, files);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -118,10 +128,37 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     }
 
     public Action[] actions(Set files) {
-        // XXX cover by isManaged?
-        return new Action[] {
-            SystemAction.get(SvnCommandsMenuItem.class)
-        };
+
+        if (isManaged(files)) {
+            return new Action[] {
+                SystemAction.get(SvnCommandsMenuItem.class)
+            };
+        } else {
+            return EMPTY_ACTIONS;
+        }
+    }
+
+    /**
+     * @return true if at least one file is managed (any parent
+     * has <tt>.svn/entries</tt> and it is not explicitly marked
+     * as unmanaged (future user action feature))
+     */
+    private static boolean isManaged(Set fileObjects) {
+        boolean managed  = false;
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        Iterator it = fileObjects.iterator();
+        while (it.hasNext()) {
+            FileObject fo = (FileObject) it.next();
+            File file = FileUtil.toFile(fo);
+            if (file == null) {
+                continue;
+            }
+        
+            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public InterceptionListener getInterceptionListener() {
