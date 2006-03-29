@@ -14,6 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html"/>
     <xsl:param name="date" />
+    <xsl:param name="download" select="'true'"/>
 
     <!-- unique key over all groups of apis -->
     <xsl:key match="//api[@type='export']" name="apiGroups" use="@group" />
@@ -169,7 +170,7 @@ Microsystems, Inc. All Rights Reserved.
                     </xsl:attribute>
                     <xsl:text>javadoc</xsl:text>
                 </a>
-                | <a>
+                <xsl:if test="$download = 'true'"> | <a>
                     <xsl:attribute name="href">
                         <xsl:call-template name="filedirapi" >
                             <xsl:with-param name="arch.target" select="$arch.target" />
@@ -177,7 +178,7 @@ Microsystems, Inc. All Rights Reserved.
                         <xsl:text>.zip</xsl:text>
                     </xsl:attribute>
                     <xsl:text>download</xsl:text>
-                </a>
+                </a></xsl:if>
                 | <a>
                     <xsl:attribute name="href">
                         <xsl:value-of select="$arch.target" />
@@ -319,17 +320,13 @@ Microsystems, Inc. All Rights Reserved.
         </b>
     </xsl:template>
 
-    <!-- extracts first part before slash from LoadersAPI/bleble.html or
-     and prints it or prints OpenAPIs as a fallback -->
+    <!-- extracts first part before slash from LoadersAPI/bleble.html -->
 
     <xsl:template name="filedirapi" >
         <xsl:param name="arch.target" />
     
         <xsl:if test="substring-before($arch.target,'/')">
             <xsl:value-of select="substring-before($arch.target,'/')" />
-        </xsl:if>
-        <xsl:if test="not (substring-before($arch.target,'/'))">
-            <xsl:text>OpenAPIs</xsl:text>
         </xsl:if>
     </xsl:template>
 

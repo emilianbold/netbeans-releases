@@ -248,7 +248,31 @@ Microsystems, Inc. All Rights Reserved.
       <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-xml" />
       <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-html" />
       <antcall inheritall="true" inheritrefs="true" target="javadoc-check-broken-links" />
-  </target>  
+
+
+      <antcall inheritall="true" inheritrefs="true" target="javadoc-build-zip-web"/>
+      <antcall inheritall="true" inheritrefs="true" target="javadoc-build-zip-lite"/>
+  </target>
+
+  <target name="javadoc-build-zip-web" depends="init">
+    <zip destfile="NetBeans-${buildnum}-javadoc-web.zip" update="true" duplicate="preserve" compress="true">
+      <zipfileset dir="build/javadoc" filemode="644" prefix="">
+        <include name="**/*"/>
+      </zipfileset>
+    </zip>
+  </target>
+  <target name="javadoc-build-zip-lite" depends="init">
+    <zip destfile="NetBeans-${buildnum}-javadoc.zip" update="true" duplicate="preserve" compress="true">
+      <zipfileset dir="build/tmp" filemode="644" prefix="">
+        <include name="overview-summary.html"/>
+      </zipfileset>
+      <zipfileset dir="build/javadoc" filemode="644" prefix="">
+        <include name="**/*"/>
+        <exclude name="*.zip"/>
+        <exclude name="overview-summary.html"/>
+      </zipfileset>
+    </zip>
+  </target>
       
   <target name="javadoc-generate-xml" depends="init" >
       <echo file="${export.apichanges}/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
@@ -360,8 +384,17 @@ Microsystems, Inc. All Rights Reserved.
         style="javadoctools/export2html.xsl"
       >
         <param name="date" expression="${modules-javadoc-date}"/>
+        <param name="download" expression="true"/>
       </style>
       
+      <style 
+        in="${netbeans.javadoc.dir}/modules.xml" 
+        out="build/tmp/overview-summary.html"
+        style="javadoctools/export2html.xsl"
+      >
+        <param name="date" expression="${modules-javadoc-date}"/>
+        <param name="download" expression="false"/>
+      </style>
       
     <!-- at the end geneate the index.html so people know where to start -->      
     <echo file="${netbeans.javadoc.dir}/index.html" ><![CDATA[
@@ -474,6 +507,8 @@ Tag:
           description="Create a complete build including a ZIP distribution (but do not try it).">
     <delete file="NetBeans-${buildnum}.zip"/>
     <delete file="NetBeans-${buildnum}-build-extra-data.zip"/>
+    <delete file="NetBeans-${buildnum}-javadoc-web.zip"/>
+    <delete file="NetBeans-${buildnum}-javadoc.zip"/>
 
     <property name="nb-extra-files" value="*.built,test/**,extra/**"/>
 
