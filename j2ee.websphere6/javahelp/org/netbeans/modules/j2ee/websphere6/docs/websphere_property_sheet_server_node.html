@@ -12,6 +12,9 @@
 <h2>IBM WebSphere Application Server Properties</h2> 
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>You access this property sheet by right-clicking an IBM WebSphere application server instance node in the Runtime window and choosing Properties.</p>
+<ul class="note">
+<li>The Username and Password fields are the only properties you can modify. All the other properties are read-only.</li>
+</ul>
 <h3>Properties</h3>
 <ul>
 <li><b>Server Name.</b> Shows the name of your application server for display purposes in the Runtime window. This property is set when you register your application server in the IDE using the Add Server Instance wizard.</li>
@@ -19,11 +22,11 @@
 <li><b>Connection tab.</b> Shows the connection and configuration information about the server instance. This information is set when you register your application server in the IDE using the Add Server Instance wizard.
 <ul>
 <li><b>Local/Remote.</b> Shows whether this is a local or remote server instance.</li>
-<li><b>Local Instances.</b> Lists the local server instances.</li>
-<li><b>Profile Path.</b> Shows the path to the root directory of the profile of the server instance. This property is read-only.</li>
+<li><b>Local Instances.</b> Shows the local server instances.</li>
+<li><b>Profile Path.</b> Shows the path to the root directory of the profile of the server instance.</li>
 <li><b>Host.</b> Shows the host name for the application server.</li>
-<li><b>Port.</b> Specifies the number of the TCP/IP port that the server listens on.  This property is read-only for a local server instance.</li>
-<li><b>Username.</b> Specifies the username the IDE will use when starting the server. The value you supplied when you registered the server instance is the default value for this field.</li>
+<li><b>Port.</b> Specifies the number of the TCP/IP port that the server listens on. </li>
+<li><b>Username</b> and <b>Password.</b> Specify the username and password the IDE will use when starting the server. The value you supplied when you registered the server instance is the default value for this field.</li>
 </ul></li>
 </ul>
 <dl>
