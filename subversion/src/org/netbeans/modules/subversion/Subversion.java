@@ -172,11 +172,14 @@ public class Subversion {
         SvnClient client = (SvnClient) getClientsToUrl().get(repositoryUrl);
         if(client == null) {
             client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, pd, username, password);            
-            attachListeners(client);
-            clientAndURl(client, repositoryUrl, pd);
+            attachListeners(client);            
         } else {
             // XXX - some kind of check if it's still the same configuration (proxy, psswd, user)            
-        }               
+        }
+
+        // associate the client with the proxy descriptor and url
+        clientAndURl(client, repositoryUrl, pd);
+
         return client;
     }
 
