@@ -398,7 +398,12 @@ public class SvnConfigFiles {
             ErrorManager.getDefault().notify(ex);     
             return;
         }                 
-            
+
+        if(!tmpFile.exists()) {
+            // no keys - no file
+            return;
+        }
+
         key = "[" + key + "\\";     // for parsing purposes
         BufferedInputStream is = null;        
         BufferedReader br = null;
