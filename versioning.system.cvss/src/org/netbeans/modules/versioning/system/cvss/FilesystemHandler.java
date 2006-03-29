@@ -78,27 +78,32 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     
     public void fileFolderCreated(FileEvent fe) {
         if (Thread.currentThread() == ignoredThread) return;
+        if (notManaged(fe)) return;
         eventProcessor.post(new FileCreatedTask(FileUtil.toFile(fe.getFile())));
     }
 
     public void fileDataCreated(FileEvent fe) {
         if (Thread.currentThread() == ignoredThread) return;
+        if (notManaged(fe)) return;
         eventProcessor.post(new FileCreatedTask(FileUtil.toFile(fe.getFile())));
     }
     
     public void fileChanged(FileEvent fe) {
         if (Thread.currentThread() == ignoredThread) return;
+        if (notManaged(fe)) return;
         eventProcessor.post(new FileChangedTask(FileUtil.toFile(fe.getFile())));
     }
 
     public void fileDeleted(FileEvent fe) {
         // needed for external deletes; othewise, beforeDelete is quicker
         if (Thread.currentThread() == ignoredThread) return;
+        if (notManaged(fe)) return;
         eventProcessor.post(new FileDeletedTask(FileUtil.toFile(fe.getFile())));
     }
 
     public void fileRenamed(FileRenameEvent fe) {
         if (Thread.currentThread() == ignoredThread) return;
+        if (notManaged(fe)) return;
         eventProcessor.post(new FileRenamedTask(fe));
     }
 
@@ -110,6 +115,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     
     public void createSuccess(FileObject fo) {
         if (ignoringEvents()) return;
+        if (notManaged(fo)) return;
         if (fo.isFolder() && fo.getNameExt().equals(CvsVersioningSystem.FILENAME_CVS)) {
             File f = new File(FileUtil.toFile(fo), CvsLiteAdminHandler.INVALID_METADATA_MARKER);
             try {
@@ -136,6 +142,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
      */ 
     public void beforeDelete(FileObject fo) {
         if (ignoringEvents()) return;
+        if (notManaged(fo)) return;
         if (fo.isFolder()) {
             saveRecursively(FileUtil.toFile(fo));
         } else {
@@ -165,6 +172,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
 
     public void deleteSuccess(FileObject fo) {
         if (ignoringEvents()) return;
+        if (notManaged(fo)) return;
         File deleted = FileUtil.toFile(fo);
         if (fo.isFolder()) {
             for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
@@ -198,6 +206,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
 
     public void deleteFailure(FileObject fo) {
         if (ignoringEvents()) return;
+        if (notManaged(fo)) return;
         if (fo.isFolder()) {
             File notDeleted = FileUtil.toFile(fo);
             for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
@@ -255,7 +264,17 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     }
     
     // private methods ---------------------------
-    
+
+    private boolean notManaged(FileEvent fe) {
+        return notManaged(fe.getFile());
+    }
+
+    private boolean notManaged(FileObject fo) {
+        File file = FileUtil.toFile(fo);
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        return (cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) == 0;
+    }
+
     private void fileCreatedImpl(File file) {
         if (file == null) return;
         int status = cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
