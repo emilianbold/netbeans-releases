@@ -816,6 +816,7 @@ abstract class AbstractLines implements Lines, Runnable {
                     return null;
                 }
                 matcher = m;
+                matcher.reset();
                 lastSearchString = s;
                 return matcher;
             }

@@ -242,13 +242,6 @@ final class OutputTab extends AbstractOutputTab {
                     e.getSource()).getClientProperty("panel"); //NOI18N
             }
 
-/*          //XXX the code below may actually be correct - pending discussion
-            int pos = tab.getOutputPane().getCaretPos();
-            if (pos >= tab.getOutputPane().getLength() || pos < 0) {
-                pos = 0;
-            }
-            */
-            int pos = 0;
             String s = panel.getPattern();
             if (s == null || s.length() == 0) {
                 Toolkit.getDefaultToolkit().beep();
@@ -258,7 +251,7 @@ final class OutputTab extends AbstractOutputTab {
             OutWriter out = tab.getIO().out();
             if (out != null && !out.isDisposed()) {
                 Matcher matcher = out.getLines().find(s);
-                if (matcher != null && matcher.find(pos)) {
+                if (matcher != null && matcher.find()) {
                     int start = matcher.start();
                     int end = matcher.end();
                     tab.getOutputPane().setSelection(start, end);
