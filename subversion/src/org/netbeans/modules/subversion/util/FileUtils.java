@@ -169,9 +169,9 @@ public class FileUtils {
         }       
     }
     
-    public static BufferedOutputStream createOutputStream(File file) throws IOException {        
-        while (true) {
-            int retry = 0;
+    public static BufferedOutputStream createOutputStream(File file) throws IOException {
+        int retry = 0;
+        while (true) {            
             try {
                 return new BufferedOutputStream(new FileOutputStream(file));                
             } catch (IOException ex) {
