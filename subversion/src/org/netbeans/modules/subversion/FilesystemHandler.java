@@ -128,15 +128,19 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
     
     public void createSuccess(FileObject fo) {
         if (ignoringEvents()) return;
-        if (fo.isFolder() && svn.isAdministrative(fo.getNameExt())) {
-            // TODO: we need to delete all files created inside administrative folders
-            File f = new File(FileUtil.toFile(fo), Subversion.INVALID_METADATA_MARKER);
-            try {
-                f.createNewFile();
-            } catch (IOException e) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "Unable to create marker: " + f.getAbsolutePath()); // NOI18N
+        File file = FileUtil.toFile(fo);
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+            if (fo.isFolder() && svn.isAdministrative(fo.getNameExt())) {
+                // TODO: we need to delete all files created inside administrative folders
+                File f = new File(file, Subversion.INVALID_METADATA_MARKER);
+                try {
+                    f.createNewFile();
+                } catch (IOException e) {
+                    ErrorManager.getDefault().log(ErrorManager.ERROR, "Unable to create marker: " + f.getAbsolutePath()); // NOI18N
+                }
             }
-        }        
+        }
     }
 
     public void beforeCreate(FileObject parent, String name, boolean isFolder) {
