@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -31,9 +31,6 @@ Microsystems, Inc. All Rights Reserved.
   <!-- Turn off generation of Win32 and Mac installer -->
   <xsl:template match="section/buildConfiguration/property/arrayItem/property/arrayItem[@type='com.installshield.wizard.platform.win32.Win32LauncherDistribution']/property[@name='enabled']">
     <property name="enabled">False</property>  
-  </xsl:template>
-  <xsl:template match="section/buildConfiguration/property/arrayItem/property/arrayItem[@type='com.installshield.wizard.platform.macosx.extras.MacOSXLauncherDistribution']/property[@name='enabled']">
-    <property name="enabled">False</property>
   </xsl:template>
  
 </xsl:stylesheet>
