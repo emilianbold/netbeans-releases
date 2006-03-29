@@ -15,11 +15,13 @@ package org.netbeans.modules.subversion.ui.copy;
 
 import java.io.File;
 import org.netbeans.modules.subversion.FileInformation;
+import org.netbeans.modules.subversion.FileStatusProvider;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -82,11 +84,9 @@ public class SwitchToAction extends ContextAction {
                         }
                         // ... and switch
                         client.switchToUrl(root, repository.getFileUrl(), repository.getRevision(), true);
-
-                        // XXX refire FS.Status events, "branch" annotation could change
-                        // foreach: FileStatusProvider.fireFileStatusEvent(file);
+                        FileStatusProvider.getInstance().refreshAllAnnotations(false, true);
                     } catch (SVNClientException ex) {
-                        ex.printStackTrace(); // should not hapen
+                        ErrorManager.getDefault().notify(ex);
                         return;
                     } finally {
                         finished(pair);
