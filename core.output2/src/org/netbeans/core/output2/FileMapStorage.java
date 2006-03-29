@@ -264,17 +264,19 @@ class FileMapStorage implements Storage {
             if (cont == null || start + byteCount > mappedRange || start < mappedStart) {
                 FileChannel ch = readChannel();
                 long offset = start + byteCount;
-                mappedStart = Math.max(0, start - MAX_MAP_RANGE);
+                mappedStart = Math.max((long)0, (long)(start - (MAX_MAP_RANGE /2)));
                 long prevMappedRange = mappedRange;
-                mappedRange = ch.size();
+                mappedRange = Math.min(ch.size(), start + (MAX_MAP_RANGE / 2));
                 try {
                     try {
-                        cont = ch.position(mappedStart).map(FileChannel.MapMode.READ_ONLY,
+                        cont = ch.map(FileChannel.MapMode.READ_ONLY,
                             mappedStart, mappedRange - mappedStart);
                         this.contents = cont;
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().log("Failed to memory map output file for " + //NOI18N
                                 "reading.  Trying to read it normally."); //NOI18N
+                        ErrorManager.getDefault().notify(ioe);
+
                         //If a lot of processes have crashed with mapped files (generally when testing),
                         //this exception may simply be that the memory cannot be allocated for mapping.
                         //Try to do it non-mapped
