@@ -80,24 +80,39 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
     
     public void fileFolderCreated(FileEvent fe) {
         if (Thread.currentThread() == ignoredThread) return;
-        eventProcessor.post(new FileCreatedTask(FileUtil.toFile(fe.getFile())));
+        File file = FileUtil.toFile(fe.getFile());
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+            eventProcessor.post(new FileCreatedTask(file));
+        }
     }
 
     public void fileDataCreated(FileEvent fe) {
         if (Thread.currentThread() == ignoredThread) return;
-//        new RuntimeException("new: " + fe.getFile().getPath()).printStackTrace();
-        eventProcessor.post(new FileCreatedTask(FileUtil.toFile(fe.getFile())));
+        File file = FileUtil.toFile(fe.getFile());
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+            eventProcessor.post(new FileCreatedTask(file));
+        }
     }
     
     public void fileChanged(FileEvent fe) {
         if (Thread.currentThread() == ignoredThread) return;
-        eventProcessor.post(new FileChangedTask(FileUtil.toFile(fe.getFile())));
+        File file = FileUtil.toFile(fe.getFile());
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+            eventProcessor.post(new FileChangedTask(file));
+        }
     }
 
     public void fileDeleted(FileEvent fe) {
         // needed for external deletes; othewise, beforeDelete is quicker
         if (Thread.currentThread() == ignoredThread) return;
-        eventProcessor.post(new FileDeletedTask(FileUtil.toFile(fe.getFile())));
+        File file = FileUtil.toFile(fe.getFile());
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+            eventProcessor.post(new FileDeletedTask(file));
+        }
     }
 
     public void fileRenamed(FileRenameEvent fe) {
@@ -141,7 +156,11 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
     public void beforeDelete(FileObject fo) {
         if (ignoringEvents()) return;
         if (fo.isFolder()) {
-            saveRecursively(FileUtil.toFile(fo));
+            File file = FileUtil.toFile(fo);
+            FileStatusCache cache = Subversion.getInstance().getStatusCache();
+            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                saveRecursively(file);
+            }
         } else {
             FileObject parent = fo.getParent();
             if (svn.isAdministrative(parent.getName())) {
@@ -169,19 +188,22 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
 
     public void deleteSuccess(FileObject fo) {
         if (ignoringEvents()) return;
-        File deleted = FileUtil.toFile(fo);
-        if (fo.isFolder()) {
-            for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
-                File dir = (File) i.next();
-                if (SvnUtils.isParentOrEqual(deleted, dir)) {
-//                    CvsMetadata metadata = (CvsMetadata) savedMetadata.get(dir);
-//                    MetadataAttic.setMetadata(dir, metadata);
-                    i.remove();
+        File file = FileUtil.toFile(fo);
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+            if (fo.isFolder()) {
+                for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
+                    File dir = (File) i.next();
+                    if (SvnUtils.isParentOrEqual(file, dir)) {
+    //                    CvsMetadata metadata = (CvsMetadata) savedMetadata.get(dir);
+    //                    MetadataAttic.setMetadata(dir, metadata);
+                        i.remove();
+                    }
                 }
+                refreshRecursively(file);
             }
-            refreshRecursively(deleted);
+            fileDeletedImpl(file);
         }
-        fileDeletedImpl(deleted);
     }
 
     private void refreshRecursively(File file) {
@@ -203,19 +225,22 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener, Int
 
     public void deleteFailure(FileObject fo) {
         if (ignoringEvents()) return;
-        if (fo.isFolder()) {
-            File notDeleted = FileUtil.toFile(fo);
-            for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
-                File dir = (File) i.next();
-                if (SvnUtils.isParentOrEqual(notDeleted, dir)) {
-                    if (!dir.exists()) {
-//                        CvsMetadata metadata = (CvsMetadata) savedMetadata.get(dir);
-//                        MetadataAttic.setMetadata(dir, metadata);
+        File file = FileUtil.toFile(fo);
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+            if (fo.isFolder()) {
+                for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
+                    File dir = (File) i.next();
+                    if (SvnUtils.isParentOrEqual(file, dir)) {
+                        if (!dir.exists()) {
+    //                        CvsMetadata metadata = (CvsMetadata) savedMetadata.get(dir);
+    //                        MetadataAttic.setMetadata(dir, metadata);
+                        }
+                        i.remove();
                     }
-                    i.remove();
                 }
+                refreshRecursively(file);
             }
-            refreshRecursively(notDeleted);
         }
     }
 
