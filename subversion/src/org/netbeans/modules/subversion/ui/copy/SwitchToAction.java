@@ -81,7 +81,10 @@ public class SwitchToAction extends ContextAction {
                             client.revert(root, true);
                         }
                         // ... and switch
-                        client.switchToUrl(root, repository.getFileUrl(), repository.getRevision(), true);                                
+                        client.switchToUrl(root, repository.getFileUrl(), repository.getRevision(), true);
+
+                        // XXX refire FS.Status events, "branch" annotation could change
+                        // foreach: FileStatusProvider.fireFileStatusEvent(file);
                     } catch (SVNClientException ex) {
                         ex.printStackTrace(); // should not hapen
                         return;
