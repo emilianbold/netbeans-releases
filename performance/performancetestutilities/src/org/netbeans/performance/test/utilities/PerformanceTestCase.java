@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -540,7 +540,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         
     }
     
-    public void reportDetailMemoryUsage(int runOrder) {
+    public void reportDetailMemoryUsage(String prefix, int runOrder) {
 
         log ("----------------------------------------------");
         // what platform are we running on?
@@ -571,14 +571,14 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             String[] heap = outputarray[1].split("/");
             String[] permgen = outputarray[2].split("/");
             String[] classes = outputarray[3].split("/");
-            reportPerformance ("Footprint-RSS", Long.valueOf(rssvsz[0]).longValue(), "kB", runOrder);
-            reportPerformance ("Footprint-VSZ", Long.valueOf(rssvsz[1]).longValue(), "kB", runOrder);
-            reportPerformance ("Heap-Used", Long.valueOf(heap[0]).longValue(), "kB", runOrder);
-            reportPerformance ("Heap-Commited", Long.valueOf(heap[1]).longValue(), "kB", runOrder);
-            reportPerformance ("PermGen-Used", Long.valueOf(permgen[0]).longValue(), "kB", runOrder);
-            reportPerformance ("PermGen-Commited", Long.valueOf(permgen[1]).longValue(), "kB", runOrder);
-            reportPerformance ("Classes-Loaded", Long.valueOf(classes[0]).longValue(), "", runOrder);
-            reportPerformance ("Classes-Unloaded", Long.valueOf(classes[1]).longValue(), "", runOrder);
+            reportPerformance (prefix + " Footprint-RSS", Long.valueOf(rssvsz[0]).longValue(), "kB", runOrder);
+            reportPerformance (prefix + " Footprint-VSZ", Long.valueOf(rssvsz[1]).longValue(), "kB", runOrder);
+            reportPerformance (prefix + " Heap-Used", Long.valueOf(heap[0]).longValue(), "kB", runOrder);
+            reportPerformance (prefix + " Heap-Commited", Long.valueOf(heap[1]).longValue(), "kB", runOrder);
+            reportPerformance (prefix + " PermGen-Used", Long.valueOf(permgen[0]).longValue(), "kB", runOrder);
+            reportPerformance (prefix + " PermGen-Commited", Long.valueOf(permgen[1]).longValue(), "kB", runOrder);
+            reportPerformance (prefix + " Classes-Loaded", Long.valueOf(classes[0]).longValue(), "", runOrder);
+            reportPerformance (prefix + " Classes-Unloaded", Long.valueOf(classes[1]).longValue(), "", runOrder);
         }
 
         log ("----------------------------------------------");
