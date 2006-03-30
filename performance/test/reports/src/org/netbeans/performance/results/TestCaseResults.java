@@ -180,7 +180,7 @@ public class TestCaseResults implements Comparable {
     
     private String suite;
     
-    Collection values;
+    Collection<Integer> values;
 
     /** flag whether computed values are valid */
     private transient boolean upToDate = false;
@@ -210,7 +210,7 @@ public class TestCaseResults implements Comparable {
         this.threshold = threshold;
         this.order = order;
         this.suite = suite;
-        values = new ArrayList ();
+        values = new ArrayList<Integer> ();
     }
     
     /** Adds new value to set of measured results. */
@@ -323,7 +323,7 @@ public class TestCaseResults implements Comparable {
      * Getter for property values.
      * @return Value of property values.
      */
-    public java.util.Collection getValues() {
+    public java.util.Collection<Integer> getValues() {
         return values;
     }
     
