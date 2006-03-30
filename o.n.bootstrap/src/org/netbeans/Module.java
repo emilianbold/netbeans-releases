@@ -195,8 +195,8 @@ public abstract class Module extends ModuleInfo {
         return false;
     }
     
-    public Set getDependencies() {
-        return new HashSet(Arrays.asList(dependenciesA));
+    public Set<Dependency> getDependencies() {
+        return new HashSet<Dependency>(Arrays.asList(dependenciesA));
     }
     // Faster to loop over:
     // @since JST-PENDING called from NbInstaller
@@ -288,7 +288,7 @@ public abstract class Module extends ModuleInfo {
                     if (provide.lastIndexOf('/') != -1) throw new IllegalArgumentException("Illegal OpenIDE-Module-Provides: " + provide); // NOI18N
                     provides[i] = provide;
                 }
-                if (new HashSet(Arrays.asList(provides)).size() < provides.length) {
+                if (new HashSet<String>(Arrays.asList(provides)).size() < provides.length) {
                     throw new IllegalArgumentException("Duplicate entries in OpenIDE-Module-Provides: " + providesS); // NOI18N
                 }
             }
@@ -297,10 +297,10 @@ public abstract class Module extends ModuleInfo {
                 if (provides == null) {
                     provides = additionalProvides;
                 } else {
-                    ArrayList l = new ArrayList ();
+                    ArrayList<String> l = new ArrayList<String> ();
                     l.addAll (Arrays.asList (provides));
                     l.addAll (Arrays.asList (additionalProvides));
-                    provides = (String[])l.toArray (provides);
+                    provides = l.toArray (provides);
                 }
             }
             
@@ -311,7 +311,7 @@ public abstract class Module extends ModuleInfo {
                     publicPackages = new PackageExport[0];
                 } else {
                     StringTokenizer tok = new StringTokenizer(exportsS, ", "); // NOI18N
-                    List exports = new ArrayList(Math.max(tok.countTokens(), 1)); // List<PackageExport>
+                    List<PackageExport> exports = new ArrayList<PackageExport>(Math.max(tok.countTokens(), 1));
                     while (tok.hasMoreTokens()) {
                         String piece = tok.nextToken();
                         if (piece.endsWith(".*")) { // NOI18N
@@ -329,7 +329,7 @@ public abstract class Module extends ModuleInfo {
                         }
                     }
                     if (exports.isEmpty()) throw new IllegalArgumentException("Illegal OpenIDE-Module-Public-Packages: " + exportsS); // NOI18N
-                    publicPackages = (PackageExport[])exports.toArray(new PackageExport[exports.size()]);
+                    publicPackages = exports.toArray(new PackageExport[exports.size()]);
                 }
             } else {
                 // XXX new link?
@@ -342,7 +342,7 @@ public abstract class Module extends ModuleInfo {
                 String friends = attr.getValue("OpenIDE-Module-Friends"); // NOI18N
                 if (friends != null) {
                     StringTokenizer tok = new StringTokenizer(friends, ", "); // NOI18N
-                    HashSet set = new HashSet ();
+                    HashSet<String> set = new HashSet<String> ();
                     while (tok.hasMoreTokens()) {
                         String piece = tok.nextToken();
                         if (piece.indexOf('/') != -1) {
@@ -365,7 +365,7 @@ public abstract class Module extends ModuleInfo {
             
             
             // Dependencies
-            Set dependencies = new HashSet(20); // Set<Dependency>
+            Set<Dependency> dependencies = new HashSet<Dependency>(20);
             // First convert IDE/1 -> org.openide/1, so we never have to deal with
             // "IDE deps" internally:
             Set openideDeps = Dependency.create(Dependency.TYPE_IDE, attr.getValue("OpenIDE-Module-IDE-Dependencies")); // NOI18N
@@ -389,7 +389,7 @@ public abstract class Module extends ModuleInfo {
             dependencies.addAll(Dependency.create(Dependency.TYPE_REQUIRES, attr.getValue("OpenIDE-Module-Requires"))); // NOI18N
             // Permit the concrete installer to make some changes:
             mgr.refineDependencies(this, dependencies);
-            dependenciesA = (Dependency[])dependencies.toArray(new Dependency[dependencies.size()]);
+            dependenciesA = dependencies.toArray(new Dependency[dependencies.size()]);
         } catch (IllegalArgumentException iae) {
             throw (InvalidException) new InvalidException("While parsing a dependency attribute: " + iae.toString()).initCause(iae); // NOI18N
         }
@@ -447,7 +447,7 @@ public abstract class Module extends ModuleInfo {
     /** Turn on the classloader. Passed a list of parent modules to use.
      * The parents should already have had their classloaders initialized.
      */
-    protected abstract void classLoaderUp(Set parents) throws IOException;
+    protected abstract void classLoaderUp(Set<Module> parents) throws IOException;
 
     /** Turn off the classloader and release all resources. */
     protected abstract void classLoaderDown();

@@ -43,12 +43,12 @@ public class TopSecurityManager extends SecurityManager {
     /* JVMPI sometimes deadlocks sync getForeignClassLoader
         and Class.forName
     */
-    private static final Class classLoaderClass = ClassLoader.class;
+    private static final Class<?> classLoaderClass = ClassLoader.class;
     private static final Class URLClass = URL.class;
     private static final Class runtimePermissionClass = RuntimePermission.class;
     private static final Class accessControllerClass = AccessController.class;
 
-    private static List delegates = new ArrayList(); // List<SecurityManager>
+    private static List<SecurityManager> delegates = new ArrayList<SecurityManager>();
     /** Register a delegate security manager that can handle some checks for us.
      * Currently only checkExit and checkTopLevelWindow are supported.
      * @param sm the delegate to register
@@ -217,8 +217,8 @@ public class TopSecurityManager extends SecurityManager {
         
         return;
     }
-    private final Set warnedClassesNDE = new HashSet(25); // Set<String>
-    private static final Set warnedClassesNH = new HashSet(25); // Set<String>
+    private final Set<String> warnedClassesNDE = new HashSet<String>(25);
+    private static final Set<String> warnedClassesNH = new HashSet<String>(25);
     static {
         warnedClassesNH.add ("org.netbeans.core.LookupCache"); // NOI18N
         warnedClassesNH.add ("org.netbeans.updater.UpdateTracking"); // NOI18N
@@ -314,7 +314,7 @@ public class TopSecurityManager extends SecurityManager {
         //
         if (perm instanceof java.awt.AWTPermission) {
             if ("accessClipboard".equals (perm.getName ())) { // NOI18N
-                ThreadLocal t;
+                ThreadLocal<Object> t;
                 synchronized (TopSecurityManager.class) {
                     t = CLIPBOARD_FORBIDDEN;
                 }
@@ -456,7 +456,7 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
     // the thread will wait for the system clipboard forever but not the whole
     // IDE.  See also NbClipboard
     
-    private static ThreadLocal CLIPBOARD_FORBIDDEN;
+    private static ThreadLocal<Object> CLIPBOARD_FORBIDDEN;
     
     /** Convinces Swing components that they should use special clipboard
      * and not Toolkit.getSystemClipboard.
@@ -470,7 +470,7 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
                 if (CLIPBOARD_FORBIDDEN != null) {
                     return;
                 }
-                CLIPBOARD_FORBIDDEN = new ThreadLocal();
+                CLIPBOARD_FORBIDDEN = new ThreadLocal<Object>();
                 CLIPBOARD_FORBIDDEN.set (clip);
             }
             
@@ -533,7 +533,7 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
     }
 
 
-    private static final class PrivilegedCheck implements PrivilegedExceptionAction {
+    private static final class PrivilegedCheck implements PrivilegedExceptionAction<Object> {
         int action;
         TopSecurityManager tsm;
         

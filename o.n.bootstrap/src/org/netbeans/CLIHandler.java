@@ -318,7 +318,7 @@ public abstract class CLIHandler extends Object {
      * What to do later when {@link #finishInitialization} is called.
      * May remain null, otherwise contains list of Execute
      */
-    private static List doLater = new ArrayList ();
+    private static List<Execute> doLater = new ArrayList<Execute> ();
     static interface Execute {
         /** @return returns exit code */
         public int exec ();
@@ -355,7 +355,7 @@ public abstract class CLIHandler extends Object {
         List toRun;
         synchronized (CLIHandler.class) {
             toRun = doLater;
-            doLater = recreate ? new ArrayList () : null;
+            doLater = recreate ? new ArrayList<Execute> () : null;
             if (!recreate) {
                 CLIHandler.class.notifyAll ();
             }
@@ -781,7 +781,7 @@ public abstract class CLIHandler extends Object {
                 if (a == null) {
                     a = argsBackup;
                 }
-                List l = new ArrayList(Arrays.asList(a));
+                List<String> l = new ArrayList<String>(Arrays.asList(a));
                 l.removeAll(Collections.singleton(null));
                 args = (String[])l.toArray(new String[l.size()]);
             } else {

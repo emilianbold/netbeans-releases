@@ -68,9 +68,9 @@ public abstract class Util {
      * a list of pairs of file and suffixes (as a two-element
      * Object array).
      */
-    static List findLocaleVariantsOf(File f, boolean includeSuffixes) {
+    static List<Object> findLocaleVariantsOf(File f, boolean includeSuffixes) {
         if (! f.isFile()) {
-            return Collections.EMPTY_LIST;
+            return Collections.<Object>emptyList();
         }
         File dir = new File(f.getParentFile(), "locale"); // NOI18N
         String logicalDir = null;
@@ -88,7 +88,7 @@ public abstract class Util {
                 }
             }
         }
-        List l = new ArrayList(7); // List<File>
+        List<Object> l = new ArrayList<Object>(7); // List<File|Object[]>
         String nameExt = f.getName();
         int idx = nameExt.lastIndexOf('.'); // NOI18N
         String name, ext;
@@ -135,12 +135,12 @@ public abstract class Util {
         if (suffixes == null ||
                 Locale.getDefault() != lastLocale ||
                 NbBundle.getBranding() != lastBranding) {
-            List/*<String>*/ _suffixes = new ArrayList();
+            List<String> _suffixes = new ArrayList<String>();
             Iterator it = NbBundle.getLocalizingSuffixes();
             while (it.hasNext()) {
                 _suffixes.add((String)it.next());
             }
-            suffixes = (String[])_suffixes.toArray(new String[_suffixes.size()]);
+            suffixes = _suffixes.toArray(new String[_suffixes.size()]);
             lastLocale = Locale.getDefault();
             lastBranding = NbBundle.getBranding();
         }
@@ -336,34 +336,30 @@ public abstract class Util {
      * @see Utilities#topologicalSort
      * JST-PENDING needed from tests
      */
-    public static Map moduleDependencies(Collection modules, Map modulesByName, Map _providersOf) {
-        Set modulesSet = (modules instanceof Set) ? (Set)modules : new HashSet(modules);
-        Map providersOf = new HashMap(_providersOf.size() * 2 + 1);
-        Iterator it = _providersOf.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            Set providers = (Set)entry.getValue();
+    public static Map<Module,List<Module>> moduleDependencies(Collection<Module> modules, Map<String,Module> modulesByName, Map<String,Set<Module>> _providersOf) {
+        Set<Module> modulesSet = (modules instanceof Set) ? (Set<Module>)modules : new HashSet<Module>(modules);
+        Map<String,List<Module>> providersOf = new HashMap<String,List<Module>>(_providersOf.size() * 2 + 1);
+        for (Map.Entry<String, Set<Module>> entry: _providersOf.entrySet()) {
+            Set<Module> providers = entry.getValue();
             if (providers != null) {
-                List availableProviders = new LinkedList(providers);
+                List<Module> availableProviders = new LinkedList<Module>(providers);
                 availableProviders.retainAll(modulesSet);
                 if (!availableProviders.isEmpty()) {
                     providersOf.put(entry.getKey(), availableProviders);
                 }
             }
         }
-        Map m = new HashMap();
-        it = modules.iterator();
-        while (it.hasNext()) {
-            Module m1 = (Module)it.next();
-            List l = null;
+        Map<Module,List<Module>> m = new HashMap<Module,List<Module>>();
+	for (Module m1: modules) {
+            List<Module> l = null;
             Dependency[] dependencies = m1.getDependenciesArray();
             for (int i = 0; i < dependencies.length; i++) {
                 Dependency dep = dependencies[i];
                 if (dep.getType() == Dependency.TYPE_REQUIRES) {
-                    List providers = (List)providersOf.get(dep.getName());
+                    List<Module> providers = providersOf.get(dep.getName());
                     if (providers != null) {
                         if (l == null) {
-                            l = new LinkedList();
+                            l = new LinkedList<Module>();
                         }
                         l.addAll(providers);
                     }
@@ -372,7 +368,7 @@ public abstract class Util {
                     Module m2 = (Module)modulesByName.get(cnb);
                     if (m2 != null && modulesSet.contains(m2)) {
                         if (l == null) {
-                            l = new LinkedList();
+                            l = new LinkedList<Module>();
                         }
                         l.add(m2);
                     }
@@ -390,15 +386,13 @@ public abstract class Util {
      * @see #moduleDependencies
      * @see ModuleManager#getModuleInterdependencies
      */
-    static Set moduleInterdependencies(Module m, boolean reverse, boolean transitive,
-                                       Set modules, Map modulesByName, Map providersOf) {
+    static Set<Module> moduleInterdependencies(Module m, boolean reverse, boolean transitive,
+                                       Set<Module> modules, Map<String,Module> modulesByName, Map<String,Set<Module>> providersOf) {
         // XXX these algorithms could surely be made faster using standard techniques
         // for now the speed is not critical however
         if (reverse) {
-            Set s = new HashSet(); // Set<Module>
-            Iterator it = modules.iterator();
-            while (it.hasNext()) {
-                Module m2 = (Module)it.next();
+            Set<Module> s = new HashSet<Module>();
+            for (Module m2: modules) {
                 if (m2 == m) {
                     continue;
                 }
@@ -408,18 +402,18 @@ public abstract class Util {
             }
             return s;
         } else {
-            Set s = new HashSet();
+            Set<Module> s = new HashSet<Module>();
             Dependency[] dependencies = m.getDependenciesArray();
             for (int i = 0; i < dependencies.length; i++) {
                 Dependency dep = dependencies[i];
                 if (dep.getType() == Dependency.TYPE_REQUIRES) {
-                    Set providers = (Set)providersOf.get(dep.getName());
+                    Set<Module> providers = providersOf.get(dep.getName());
                     if (providers != null) {
                         s.addAll(providers);
                     }
                 } else if (dep.getType() == Dependency.TYPE_MODULE) {
                     String cnb = (String)parseCodeName(dep.getName())[0];
-                    Module m2 = (Module)modulesByName.get(cnb);
+                    Module m2 = modulesByName.get(cnb);
                     if (m2 != null) {
                         s.add(m2);
                     }
@@ -427,13 +421,11 @@ public abstract class Util {
             }
             s.remove(m);
             if (transitive) {
-                Set toAdd;
+                Set<Module> toAdd;
                 do {
-                    toAdd = new HashSet();
-                    Iterator it = s.iterator();
-                    while (it.hasNext()) {
-                        Module m2 = (Module)it.next();
-                        Set s2 = moduleInterdependencies(m2, false, false, modules, modulesByName, providersOf);
+                    toAdd = new HashSet<Module>();
+                    for (Module m2: s) {
+                        Set<Module> s2 = moduleInterdependencies(m2, false, false, modules, modulesByName, providersOf);
                         s2.remove(m);
                         s2.removeAll(s);
                         toAdd.addAll(s2);
@@ -537,8 +529,8 @@ public abstract class Util {
      */
     static final class ModuleLookup extends Lookup {
         ModuleLookup() {}
-        private final HashSet modules = new HashSet(100); // Set<Module>
-        private final Set results = new WeakSet(10); // Set<ModuleResult>
+        private final HashSet<Module> modules = new HashSet<Module>(100);
+        private final Set<ModuleResult> results = new WeakSet<ModuleResult>(10);
         /** Add a module to the set. */
         public void add(Module m) {
             synchronized (modules) {
@@ -560,20 +552,21 @@ public abstract class Util {
                 }
             }
         }
-        public Object lookup(Class clazz) {
+        public <T> T lookup(Class<T> clazz) {
             if ((clazz == Module.class || clazz == ModuleInfo.class || clazz == Object.class || clazz == null)
                     && ! modules.isEmpty()) {
                 synchronized (modules) {
-                    return modules.iterator().next();
+                    return clazz.cast(modules.iterator().next());
                 }
             } else {
                 return null;
             }
         }
-        public Lookup.Result lookup(Lookup.Template t) {
-            Class clazz = t.getType();
+	@SuppressWarnings("unchecked")
+        public <T> Lookup.Result<T> lookup(Lookup.Template<T> t) {
+            Class<T> clazz = t.getType();
             if (clazz == Module.class || clazz == ModuleInfo.class || clazz == Object.class || clazz == null) {
-                return new ModuleResult(t);
+                return (Lookup.Result<T>)(Object)new ModuleResult((Lookup.Template<Module>)t);
             } else {
                 return Lookup.EMPTY.lookup(t);
             }
@@ -583,10 +576,10 @@ public abstract class Util {
                 return "ModuleLookup" + modules; // NOI18N
             }
         }
-        private final class ModuleResult extends Lookup.Result {
-            private final Lookup.Template t;
-            private final Set listeners = new HashSet(10); // Set<LookupListener>
-            public ModuleResult(Lookup.Template t) {
+        private final class ModuleResult extends Lookup.Result<Module> {
+            private final Lookup.Template<? super Module> t;
+            private final Set<LookupListener> listeners = new HashSet<LookupListener>(10);
+            public ModuleResult(Lookup.Template<? super Module> t) {
                 this.t = t;
                 synchronized (results) {
                     results.add(this);
@@ -608,45 +601,44 @@ public abstract class Util {
                     if (listeners.isEmpty()) {
                         return;
                     }
-                    _listeners = (LookupListener[])listeners.toArray(new LookupListener[listeners.size()]);
+                    _listeners = listeners.toArray(new LookupListener[listeners.size()]);
                 }
                 LookupEvent ev = new LookupEvent(this);
                 for (int i = 0; i < _listeners.length; i++) {
                     _listeners[i].resultChanged(ev);
                 }
             }
-            public Collection allInstances() {
+            public Collection<Module> allInstances() {
                 synchronized (modules) {
                     String id = t.getId();
                     Object inst = t.getInstance();
                     if (id != null) {
-                        Iterator it = modules.iterator();
+                        Iterator<Module> it = modules.iterator();
                         while (it.hasNext()) {
-                            Module m = (Module)it.next();
+                            Module m = it.next();
                             if (id.equals(ModuleItem.PREFIX + m.getCodeNameBase())) {
                                 if (inst == null || inst == m) {
-                                    return Collections.singleton(m);
+                                    return Collections.<Module>singleton(m);
                                 }
                             }
                         }
-                        return Collections.EMPTY_SET;
+                        return Collections.<Module>emptySet();
                     } else if (inst != null) {
-                        return modules.contains(inst) ? Collections.singleton(inst) : Collections.EMPTY_SET;
+                        return modules.contains(inst) ? Collections.<Module>singleton(Module.class.cast(inst)) : Collections.<Module>emptySet();
                     } else {
                         // Regular lookup based on type.
-                        return (Set)modules.clone();
+                        return (Set<Module>)modules.clone();
                     }
                 }
             }
-            public Set allClasses() {
-                return Collections.singleton(Module.class);
+            public Set<Class<? extends Module>> allClasses() {
+                return Collections.<Class<? extends Module>>singleton(Module.class);
             }
-            public Collection allItems() {
-                Collection insts = allInstances();
-                ArrayList list = new ArrayList(Math.max(1, insts.size())); // List<ModuleItem>
-                Iterator it = insts.iterator();
-                while (it.hasNext()) {
-                    list.add(new ModuleItem((Module)it.next()));
+            public Collection<? extends Lookup.Item<Module>> allItems() {
+                Collection<Module> insts = allInstances();
+                ArrayList<ModuleItem> list = new ArrayList<ModuleItem>(Math.max(1, insts.size()));
+                for (Module m: insts) {
+                    list.add(new ModuleItem(m));
                 }
                 return list;
             }
@@ -654,16 +646,16 @@ public abstract class Util {
                 return "ModuleResult:" + t; // NOI18N
             }
         }
-        private static final class ModuleItem extends Lookup.Item {
+        private static final class ModuleItem extends Lookup.Item<Module> {
             public static final String PREFIX = "Module["; // NOI18N
             private final Module item;
             public ModuleItem(Module item) {
                 this.item = item;
             }
-            public Object getInstance() {
+            public Module getInstance() {
                 return item;
             }
-            public Class getType() {
+            public Class<? extends Module> getType() {
                 return Module.class;
             }
             public String getId() {
@@ -676,7 +668,7 @@ public abstract class Util {
     }
     
     // OK to not release this memory; module deletion is rare: holds 45kB for 173 modules (June 2005)
-    private static final Map codeNameParseCache = new HashMap(200); // Map<String,[String,int]>
+    private static final Map<String,Object[]> codeNameParseCache = new HashMap<String,Object[]>(200); // Map<String,[String,int]>
     /** Find the code name base and major release version from a code name.
      * Caches these parses. Thread-safe (i.e. OK from read mutex).
      * @return an array consisting of the code name base (String) followed by the release version (Integer or null)
@@ -686,7 +678,7 @@ public abstract class Util {
      */
     public static Object[] parseCodeName(String cn) throws NumberFormatException {
         synchronized (codeNameParseCache) {
-            Object[] r = (Object[])codeNameParseCache.get(cn);
+            Object[] r = codeNameParseCache.get(cn);
             if (r == null) {
                 r = new Object[3];
                 int i = cn.lastIndexOf('/');
@@ -746,13 +738,11 @@ public abstract class Util {
      * @param modules a mutable set of modules
      * @since JST-PENDING: used from NbInstaller
      */
-    public static void transitiveClosureModuleDependencies(ModuleManager mgr, Set modules) {
-        Set nue = null; // Set<Module> of newly appended modules
+    public static void transitiveClosureModuleDependencies(ModuleManager mgr, Set<Module> modules) {
+        Set<Module> nue = null; // Set of newly appended modules
         while (nue == null || !nue.isEmpty()) {
-            nue = new HashSet();
-            Iterator it = modules.iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            nue = new HashSet<Module>();
+            for (Module m: modules) {
                 Dependency[] deps = m.getDependenciesArray();
                 for (int i = 0; i < deps.length; i++) {
                     if (deps[i].getType() != Dependency.TYPE_MODULE) {

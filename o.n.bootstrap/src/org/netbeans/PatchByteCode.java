@@ -136,13 +136,13 @@ public final class PatchByteCode {
     private int renameNameIndex = -1;
     
     /** map that maps names of fields to their position in constant pool (String, int[1]) */
-    private HashMap nameIndexes;
+    private HashMap<String,int[]> nameIndexes;
     
     /** Creates a new instance of PatchByteCode 
      *
      * @param nameIndexes hashmap from (String -> int[1]) 
      */
-    private PatchByteCode(byte[] arr, HashMap nameIndexes) {
+    private PatchByteCode(byte[] arr, HashMap<String,int[]> nameIndexes) {
         this.arr = arr;
         this.nameIndexes = nameIndexes;
         
@@ -160,7 +160,8 @@ public final class PatchByteCode {
      * @return new version of the bytecode if changed, otherwise null to signal that
      * no change has been made
      */
-    public static byte[] enhanceClass(byte[] arr, java.util.Map args) {
+    @SuppressWarnings("unchecked")
+    public static byte[] enhanceClass(byte[] arr, java.util.Map<String,Object> args) {
         if (isPatched (arr)) {
             // already patched
             return null;
@@ -168,25 +169,23 @@ public final class PatchByteCode {
         
         String superClass = (String)args.get ("netbeans.superclass");
         String interfaces = (String)args.get ("netbeans.interfaces");
-        List methods = (List)args.get ("netbeans.public"); // List<String>
-        List rename = (List)args.get ("netbeans.rename"); // List<String>
+        List<String> methods = (List<String>)args.get ("netbeans.public");
+        List<String> rename = (List<String>)args.get ("netbeans.rename");
         
 
-        HashMap m;
+        HashMap<String,int[]> m;
         if (methods != null || rename != null) {
-            m = new HashMap ();
+            m = new HashMap<String,int[]> ();
             
             if (methods != null) {
-                Iterator it = methods.iterator();
-                while (it.hasNext()) {
-                    m.put((String)it.next(), new int[1]);
+		for (String s: methods) {
+                    m.put(s, new int[1]);
                 }
             } 
             
             if (rename != null) {
-                Iterator it = rename.iterator();
-                while (it.hasNext()) {
-                    m.put((String)it.next(), new int[1]);
+		for (String s: rename) {
+                    m.put(s, new int[1]);
                 }
             }
         } else {
@@ -208,12 +207,12 @@ public final class PatchByteCode {
         }
         
         if (interfaces != null) {
-            java.util.ArrayList tokens = new java.util.ArrayList ();
+            java.util.ArrayList<String> tokens = new java.util.ArrayList<String> ();
             java.util.StringTokenizer tok = new java.util.StringTokenizer (interfaces, ",");
-            while (tok.hasMoreElements()) {
-                tokens.add (tok.nextElement());
+            while (tok.hasMoreTokens()) {
+                tokens.add (tok.nextToken());
             }
-            String[] ifaces = (String[])tokens.toArray (new String[0]);
+            String[] ifaces = tokens.toArray (new String[0]);
             byte[] sup = new byte[2 + ifaces.length * 2];
             writeU2 (sup, 0, ifaces.length);
             
@@ -541,7 +540,7 @@ public final class PatchByteCode {
      * @return true if really changed, false if it already was renamed
      */
     private boolean renameMember (String name, String rename) {
-        int constantPoolIndex = ((int[])nameIndexes.get (name))[0];
+        int constantPoolIndex = nameIndexes.get (name)[0];
         int newPoolIndex;
         { 
             int[] arr = (int[])nameIndexes.get (rename);

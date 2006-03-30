@@ -49,14 +49,14 @@ import java.util.zip.ZipEntry;
 public class JarClassLoader extends ProxyClassLoader {
     private Source[] sources;
     /** temp copy JARs which ought to be deleted */
-    private Set deadJars = null; // Set<JarFile>
+    private Set<JarFile> deadJars = null;
     private static final boolean VERBOSE =
         Boolean.getBoolean("netbeans.classloader.verbose"); // NOI18N
     
     /** Creates new JarClassLoader.
      * Gives transitive flag as true.
      */
-    public JarClassLoader (List files, ClassLoader[] parents) {
+    public JarClassLoader (List<Object> files, ClassLoader[] parents) {
         this(files, parents, true);
     }
     
@@ -64,7 +64,7 @@ public class JarClassLoader extends ProxyClassLoader {
      * @since org.netbeans.core/1 > 1.6
      * @see ProxyClassLoader#ProxyClassLoader(ClassLoader[],boolean)
      */
-    public JarClassLoader(List files, ClassLoader[] parents, boolean transitive) {
+    public JarClassLoader(List<Object> files, ClassLoader[] parents, boolean transitive) {
         super(parents, transitive);
 
         sources = new Source[files.size()];
@@ -86,12 +86,11 @@ public class JarClassLoader extends ProxyClassLoader {
     
     /** Boot classloader needs to add entries for netbeans.user later.
      */
-    final void addSources (List newSources) {
-        ArrayList l = new ArrayList (sources.length + newSources.size ());
+    final void addSources (List<Object> newSources) {
+        ArrayList<Source> l = new ArrayList<Source> (sources.length + newSources.size ());
         l.addAll (Arrays.asList (sources));
         try {
-            for (Iterator it = newSources.iterator(); it.hasNext();) {
-                Object act = it.next();
+            for (Object act: newSources) {
                 if (act instanceof File) {
                     l.add (new DirSource((File)act, this));
                 } else {
@@ -101,7 +100,7 @@ public class JarClassLoader extends ProxyClassLoader {
         } catch (MalformedURLException exc) {
             throw new IllegalArgumentException(exc.getMessage());
         }
-        sources = (Source[])l.toArray (sources);
+        sources = l.toArray (sources);
     }
 
     /** Allows to specify the right permissions, OneModuleClassLoader does it differently.
@@ -183,8 +182,8 @@ public class JarClassLoader extends ProxyClassLoader {
 	return null;
     }
 
-    protected Enumeration simpleFindResources(String name) {
-        Vector v = new Vector(3);
+    protected Enumeration<URL> simpleFindResources(String name) {
+        Vector<URL> v = new Vector<URL>(3);
         // look up the jars and return a resource based on a content of jars
 
         for( int i=0; i<sources.length; i++ ) {
@@ -199,7 +198,7 @@ public class JarClassLoader extends ProxyClassLoader {
         
         // #21114 : try to release any JAR locks held by this classloader
         assert deadJars == null : "Already had dead JARs: " + deadJars;
-        deadJars = new HashSet(); // Set<JarFile>
+        deadJars = new HashSet<JarFile>();
         try {
             for (int i = 0; i < sources.length; i++) {
                 if (sources[i] instanceof JarSource) {

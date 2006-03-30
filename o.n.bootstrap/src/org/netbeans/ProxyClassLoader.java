@@ -38,11 +38,10 @@ public class ProxyClassLoader extends ClassLoader {
     /**
      * All known package owners.
      * Packages are given in format <samp>org/netbeans/modules/foo/</samp>.
-     * Of type <code>Map&lt;String,ClassLoader&gt;</code>.
      */
-    private final Map domainsByPackage = new HashMap(); 
-    /** All known packages, of type <code>Map&lt;String,Package&gt;</code> */
-    private final Map packages = new HashMap();
+    private final Map<String, ClassLoader> domainsByPackage = new HashMap<String, ClassLoader>();
+    /** All known packages */
+    private final Map<String, Package> packages = new HashMap<String, Package>();
 
     /** All parents of this classloader, including their parents recursively */
     private ClassLoader[] parents;
@@ -77,7 +76,7 @@ public class ProxyClassLoader extends ClassLoader {
         
         this.transitive = transitive;
         
-        Set check = new HashSet(Arrays.asList(parents)); // Set<ClassLoader>
+        Set<ClassLoader> check = new HashSet<ClassLoader>(Arrays.asList(parents));
         if (check.size() < parents.length) throw new IllegalArgumentException("duplicate parents"); // NOI18N
         if (check.contains(null)) throw new IllegalArgumentException("null parent in " + check); // NOI18N
 
@@ -280,7 +279,7 @@ public class ProxyClassLoader extends ClassLoader {
      * @return an Enumeration of URLs for the resources
      * @throws IOException if I/O errors occur
      */    
-    protected final synchronized Enumeration findResources(String name) throws IOException {
+    protected final synchronized Enumeration<URL> findResources(String name) throws IOException {
         zombieCheck(name);
         final int slashIdx = name.lastIndexOf('/');
         if (slashIdx == -1) {
@@ -290,7 +289,7 @@ public class ProxyClassLoader extends ClassLoader {
 
         // Don't bother optimizing this call by domains.
         // It is mostly used for resources for which isSpecialResource would be true anyway.
-        Enumeration[] es = new Enumeration[parents.length + 1];
+        Enumeration<URL>[] es = new Enumeration[parents.length + 1];
         for (int i = 0; i < parents.length; i++) {
             if (!shouldDelegateResource(pkg, parents[i])) {
                 es[i] = org.openide.util.Enumerations.empty ();
@@ -307,7 +306,7 @@ public class ProxyClassLoader extends ClassLoader {
         // from one another and do not overlap in JAR usage, which they ought not.
         // Anyway MetaInfServicesLookup, the most important client of this method, does
         // its own duplicate filtering already.
-        return new AAEnum (es);
+        return new AAEnum<URL> (es);
     }
 
     /** This ClassLoader can't load anything itself. Subclasses
@@ -319,7 +318,7 @@ public class ProxyClassLoader extends ClassLoader {
      * @return an Enumeration of URLs for the resources
      * @throws IOException if I/O errors occur
      */
-    protected Enumeration simpleFindResources(String name) throws IOException {
+    protected Enumeration<URL> simpleFindResources(String name) throws IOException {
         return super.findResources(name);
     }
 
@@ -397,7 +396,7 @@ public class ProxyClassLoader extends ClassLoader {
      * <code>ClassLoader</code>
      */
     protected synchronized Package[] getPackages() {
-        return getPackages(new HashSet());
+        return getPackages(new HashSet<ClassLoader>());
     }
     
     /**
@@ -407,9 +406,9 @@ public class ProxyClassLoader extends ClassLoader {
      * @return the array of <code>Package</code> objects defined by this
      * <code>ClassLoader</code>
      */
-    private synchronized Package[] getPackages(Set addedParents) {
+    private synchronized Package[] getPackages(Set<ClassLoader> addedParents) {
         zombieCheck(null);
-        Map all = new HashMap(); // Map<String,Package>
+        Map<String,Package> all = new HashMap<String, Package>();
         // XXX call shouldDelegateResource on each?
         addPackages(all, super.getPackages());
         for (int i = 0; i < parents.length; i++) {
@@ -455,12 +454,12 @@ public class ProxyClassLoader extends ClassLoader {
      */
     private ClassLoader[] coalesceParents(ClassLoader[] loaders) throws IllegalArgumentException {
         int likelySize = loaders.length * 5 + 10;
-        Set resultingUnique = new HashSet(likelySize); // Set<ClassLoader>
-        List resulting = new ArrayList(likelySize); // List<ClassLoader>
+        Set<ClassLoader> resultingUnique = new HashSet<ClassLoader>(likelySize);
+        List<ClassLoader> resulting = new ArrayList<ClassLoader>(likelySize);
         for (int i = 0; i < loaders.length; i++) {
             addRec(resultingUnique, resulting, loaders[i]);
         }
-        ClassLoader[] ret = (ClassLoader[])resulting.toArray(new ClassLoader[resulting.size()]);
+        ClassLoader[] ret = resulting.toArray(new ClassLoader[resulting.size()]);
         return ret;
     }
     
@@ -468,23 +467,23 @@ public class ProxyClassLoader extends ClassLoader {
      */
     private ClassLoader[] coalesceAppend(ClassLoader[] existing, ClassLoader[] appended) throws IllegalArgumentException {
         int likelySize = existing.length + 3;
-        Set resultingUnique = new HashSet(likelySize);
-        List existingL = Arrays.asList(existing);
+        Set<ClassLoader> resultingUnique = new HashSet<ClassLoader>(likelySize);
+        List<ClassLoader> existingL = Arrays.asList(existing);
         resultingUnique.addAll(existingL);
         if (resultingUnique.containsAll(Arrays.asList(appended))) {
             // No change required.
             return existing;
         }
-        List resulting = new ArrayList(likelySize);
+        List<ClassLoader> resulting = new ArrayList<ClassLoader>(likelySize);
         resulting.addAll(existingL);
         for (int i = 0; i < appended.length; i++) {
             addRec(resultingUnique, resulting, appended[i]);
         }
-        ClassLoader[] ret = (ClassLoader[])resulting.toArray(new ClassLoader[resulting.size()]);
+        ClassLoader[] ret = resulting.toArray(new ClassLoader[resulting.size()]);
         return ret;
     }
     
-    private void addRec(Set resultingUnique, List resulting, ClassLoader loader) throws IllegalArgumentException {
+    private void addRec(Set<ClassLoader> resultingUnique, List<ClassLoader> resulting, ClassLoader loader) throws IllegalArgumentException {
         if (loader == this) throw new IllegalArgumentException("cycle in parents"); // NOI18N
         if (resultingUnique.contains(loader)) return;
         if (loader instanceof ProxyClassLoader && ((ProxyClassLoader)loader).transitive) {
@@ -538,8 +537,8 @@ public class ProxyClassLoader extends ClassLoader {
     // #29844 run as privileged as it may get called by loadClassInternal() used
     // during class resolving by JVM with arbitrary ProtectionDomain context stack
     private static ClassLoader getClassClassLoader(final Class c) {
-        return (ClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
-            public Object run() {
+        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            public ClassLoader run() {
                 return c.getClassLoader();
             }
         });
@@ -602,7 +601,7 @@ public class ProxyClassLoader extends ClassLoader {
 	return c;
     }    
 
-    private void addPackages(Map all, Package[] pkgs) {
+    private void addPackages(Map<String,Package> all, Package[] pkgs) {
         // Would be easier if Package.equals() was just defined sensibly...
         for (int i = 0; i < pkgs.length; i++) {
             all.put(pkgs[i].getName(), pkgs[i]);
@@ -658,14 +657,14 @@ public class ProxyClassLoader extends ClassLoader {
         return true;
     }
     
-    private static final class AAEnum implements Enumeration {
+    private static final class AAEnum<T> implements Enumeration<T> {
         /** The array */
-        private Enumeration[] array;
+        private Enumeration<T>[] array;
         /** Current index in the array */
         private int index = 0;
 
         /** Constructs a new ArrayEnumeration for specified array */
-        public AAEnum (Enumeration[] array) {
+        public AAEnum (Enumeration<T>[] array) {
             this.array = array;
         }
 
@@ -691,7 +690,7 @@ public class ProxyClassLoader extends ClassLoader {
         * @return     the next element of this enumeration.
         * @exception  NoSuchElementException  if no more elements exist.
         */
-        public Object nextElement() {
+        public T nextElement() {
             try {
                 return array[index].nextElement ();
             } catch (NoSuchElementException ex) {

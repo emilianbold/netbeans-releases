@@ -136,15 +136,14 @@ final class FixedModule extends Module {
                     name = locbundle.substring(0, idx);
                     ext = locbundle.substring(idx);
                 }
-                List suffixes = new ArrayList(10);
+                List<String> suffixes = new ArrayList<String>(10);
                 Iterator it = NbBundle.getLocalizingSuffixes();
                 while (it.hasNext()) {
-                    suffixes.add(it.next());
+                    suffixes.add((String)it.next());
                 }
                 Collections.reverse(suffixes);
                 it = suffixes.iterator();
-                while (it.hasNext()) {
-                    String suffix = (String)it.next();
+                for (String suffix: suffixes) {
                     String resource = name + suffix + ext;
                     InputStream is = classloader.getResourceAsStream(resource);
                     if (is != null) {

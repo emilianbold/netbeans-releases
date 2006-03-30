@@ -29,9 +29,9 @@ final class ChangeFirer {
     
     private final ModuleManager mgr;
     // Pending things to perform:
-    private final Set changes = new LinkedHashSet(100); // Set<Change>
-    private final Set modulesCreated = new HashSet(100); // Set<Module>
-    private final Set modulesDeleted = new HashSet(10); // Set<Module>
+    private final Set<Change> changes = new LinkedHashSet<Change>(100);
+    private final Set<Module> modulesCreated = new HashSet<Module>(100);
+    private final Set<Module> modulesDeleted = new HashSet<Module>(10);
     
     /** Make a new change firer.
      * @param mgr the associated module manager

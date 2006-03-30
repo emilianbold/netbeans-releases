@@ -66,30 +66,30 @@ final class StandardModule extends Module {
      * different modules try to load the same extension (which would cause them
      * to both load their own private copy, which may not be intended).
      */
-    private static final Map extensionOwners = new HashMap(); // Map<File,Set<File>>
+    private static final Map<File,Set<File>> extensionOwners = new HashMap<File,Set<File>>();
     /** Simple registry of JAR files used as modules.
      * Used only for debugging purposes, so that we can be sure
      * that no one is using Class-Path to refer to other modules.
      */
-    private static final Set moduleJARs = new HashSet(); // Set<File>
+    private static final Set<File> moduleJARs = new HashSet<File>();
 
     /** Set of locale-variants JARs for this module (or null).
      * Added explicitly to classloader, and can be used by execution engine.
      */
-    private Set localeVariants = null; // Set<File>
+    private Set<Object> localeVariants = null; // File or Object[] containing File and String suffix
     /** Set of extension JARs that this module loads via Class-Path (or null).
      * Can be used e.g. by execution engine. (#9617)
      */
-    private Set plainExtensions = null; // Set<File>
+    private Set<File> plainExtensions = null;
     /** Set of localized extension JARs derived from plainExtensions (or null).
      * Used to add these to the classloader. (#9348)
      * Can be used e.g. by execution engine.
      */
-    private Set localeExtensions = null; // Set<File>
+    private Set<Object> localeExtensions = null; // File or Object[] containing File and String suffix
     /** Patches added at the front of the classloader (or null).
      * Files are assumed to be JARs; directories are themselves.
      */
-    private Set patches = null; // Set<File>
+    private Set<File> patches = null;
     
     /** localized properties, only non-null if requested from disabled module */
     private Properties localizedProps;
@@ -275,8 +275,8 @@ final class StandardModule extends Module {
     private void findExtensionsAndVariants(Manifest m) {
         assert jar != null : "Cannot load extensions from classpath module " + getCodeNameBase();
         localeVariants = null;
-        List l = Util.findLocaleVariantsOf(jar, false);
-        if (!l.isEmpty()) localeVariants = new HashSet(l);
+        List<Object> l = Util.findLocaleVariantsOf(jar, false); // List<File|Object[]>
+        if (!l.isEmpty()) localeVariants = new HashSet<Object>(l);
         plainExtensions = null;
         localeExtensions = null;
         String classPath = m.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
@@ -301,9 +301,9 @@ final class StandardModule extends Module {
                     continue;
                 }
                 //No need to sync on extensionOwners - we are in write mutex
-                    Set owners = (Set)extensionOwners.get(extfile);
+                    Set<File> owners = extensionOwners.get(extfile);
                     if (owners == null) {
-                        owners = new HashSet(2);
+                        owners = new HashSet<File>(2);
                         owners.add(jar);
                         extensionOwners.put(extfile, owners);
                     } else if (! owners.contains(jar)) {
@@ -314,11 +314,11 @@ final class StandardModule extends Module {
                 if (moduleJARs.contains(extfile)) {
                     Util.err.log(ErrorManager.WARNING, "WARNING: Class-Path value " + ext + " from " + jar + " illegally refers to another module; use OpenIDE-Module-Module-Dependencies instead");
                 }
-                if (plainExtensions == null) plainExtensions = new HashSet();
+                if (plainExtensions == null) plainExtensions = new HashSet<File>();
                 plainExtensions.add(extfile);
                 l = Util.findLocaleVariantsOf(extfile, false);
                 if (!l.isEmpty()) {
-                    if (localeExtensions == null) localeExtensions = new HashSet();
+                    if (localeExtensions == null) localeExtensions = new HashSet<Object>();
                     localeExtensions.addAll(l);
                 }
             }
@@ -333,12 +333,12 @@ final class StandardModule extends Module {
         String patchesClassPath = System.getProperty("netbeans.patches." + getCodeNameBase()); // NOI18N
         if (patchesClassPath != null) {
             StringTokenizer tokenizer = new StringTokenizer(patchesClassPath, File.pathSeparator);
-            while (tokenizer.hasMoreElements()) {
-                String element = (String) tokenizer.nextElement();
+            while (tokenizer.hasMoreTokens()) {
+                String element = tokenizer.nextToken();
                 File fileElement = new File(element);
                 if (fileElement.exists()) {
                     if (patches == null) {
-                        patches = new HashSet(15);
+                        patches = new HashSet<File>(15);
                     }
                     patches.add(fileElement);
                 }
@@ -365,7 +365,7 @@ final class StandardModule extends Module {
         if (jars != null) {
             for (int j = 0; j < jars.length; j++) {
                 if (patches == null) {
-                    patches = new HashSet(5);
+                    patches = new HashSet<File>(5);
                 }
                 patches.add(jars[j]);
             }
@@ -466,7 +466,7 @@ final class StandardModule extends Module {
      * @return a <code>List&lt;File&gt;</code> of JARs
      */
     public List getAllJars() {
-        List l = new ArrayList (); // List<File>
+        List<Object> l = new ArrayList<Object> ();
         if (patches != null) l.addAll(patches);
         if (physicalJar != null) {
             l.add(physicalJar);
@@ -524,15 +524,14 @@ final class StandardModule extends Module {
     /** Turn on the classloader. Passed a list of parent modules to use.
      * The parents should already have had their classloaders initialized.
      */
-    protected void classLoaderUp(Set parents) throws IOException {
+    protected void classLoaderUp(Set<Module> parents) throws IOException {
         Util.err.log("classLoaderUp on " + this + " with parents " + parents);
         // Find classloaders for dependent modules and parent to them.
-        List loaders = new ArrayList(parents.size() + 1); // List<ClassLoader>
+        List<ClassLoader> loaders = new ArrayList<ClassLoader>(parents.size() + 1);
         // This should really be the base loader created by org.nb.Main for loading openide etc.:
         loaders.add(Module.class.getClassLoader());
         Iterator it = parents.iterator();
-        while (it.hasNext()) {
-            Module parent = (Module)it.next();
+        for (Module parent: parents) {
             PackageExport[] exports = parent.getPublicPackages();
             if (exports != null && exports.length == 0) {
                 // Check if there is an impl dep here.
@@ -561,7 +560,7 @@ final class StandardModule extends Module {
             }
             loaders.add(l);
         }
-        List classp = new ArrayList(3); // List<File|JarFile>
+        List<Object> classp = new ArrayList<Object>(3); // List<File|JarFile>
         if (patches != null) {
             for (it = patches.iterator(); it.hasNext(); ) {
                 File f = (File)it.next();
@@ -604,7 +603,7 @@ final class StandardModule extends Module {
         getManager().refineClassLoader(this, loaders);
         
         try {
-            classloader = new OneModuleClassLoader(classp, (ClassLoader[])loaders.toArray(new ClassLoader[loaders.size()]));
+            classloader = new OneModuleClassLoader(classp, loaders.toArray(new ClassLoader[loaders.size()]));
         } catch (IllegalArgumentException iae) {
             // Should not happen, but just in case.
             throw (IOException) new IOException(iae.toString()).initCause(iae);
@@ -670,7 +669,7 @@ final class StandardModule extends Module {
          *      The items are JarFiles for jars and Files for directories
          * @param parents a set of parent classloaders (from other modules)
          */
-        public OneModuleClassLoader(List classp, ClassLoader[] parents) throws IllegalArgumentException {
+        public OneModuleClassLoader(List<Object> classp, ClassLoader[] parents) throws IllegalArgumentException {
             super(classp, parents, false);
             rc = releaseCount++;
         }

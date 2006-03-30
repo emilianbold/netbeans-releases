@@ -58,22 +58,22 @@ public final class ModuleManager {
     static boolean PRINT_TOPOLOGICAL_EXCEPTION_STACK_TRACES = !Boolean.getBoolean ("suppress.topological.exception"); // NOI18N
     
     // the modules being managed (not all need be installed)
-    private final HashSet modules = new HashSet(100); // Set<Module>
+    private final HashSet<Module> modules = new HashSet<Module>(100);
     // the same, indexed by code name base
-    private final Map modulesByName = new HashMap(100); // Map<String,Module>
+    private final Map<String,Module> modulesByName = new HashMap<String,Module>(100);
     
     // for any module, set of known failed dependencies or problems,
     // or null if this has not been computed yet
-    private final Map moduleProblems = new HashMap(100); // Map<Module,Set<Dependency|InvalidException>>
+    private final Map<Module,Set<Object>> moduleProblems = new HashMap<Module,Set<Object>>(100); // Map<Module,Set<Dependency|InvalidException>>
     
     // modules providing a given requires token; set may never be empty
-    private final Map providersOf = new HashMap(25); // Map<String,Set<Module>>
+    private final Map<String,Set<Module>> providersOf = new HashMap<String,Set<Module>>(25);
     
     private final ModuleInstaller installer;
     private ModuleFactory moduleFactory;
     
     private SystemClassLoader classLoader;
-    private List classLoaderPatches; // List<File|JarFile>
+    private List<Object> classLoaderPatches; // List<File|JarFile>
     private final Object classLoaderLock = new String("ModuleManager.classLoaderLock"); // NOI18N
     
     private final Events ev;
@@ -91,7 +91,7 @@ public final class ModuleManager {
             // to a classpath (list of directories and JARs separated by the normal
             // path separator) you may append to the system class loader.
             System.err.println("System class loader patches: " + patches); // NOI18N
-            classLoaderPatches = new ArrayList();
+            classLoaderPatches = new ArrayList<Object>();
             StringTokenizer tok = new StringTokenizer(patches, File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 File f = new File(tok.nextToken());
@@ -108,9 +108,9 @@ public final class ModuleManager {
             }
         } else {
             // Normal case.
-            classLoaderPatches = Collections.EMPTY_LIST;
+            classLoaderPatches = Collections.emptyList();
         }
-        classLoader = new SystemClassLoader(classLoaderPatches, new ClassLoader[] {installer.getClass ().getClassLoader()}, Collections.EMPTY_SET);
+        classLoader = new SystemClassLoader(classLoaderPatches, new ClassLoader[] {installer.getClass ().getClassLoader()}, Collections.<Module>emptySet());
         updateContextClassLoaders(classLoader, true);
         
         moduleFactory = (ModuleFactory)Lookup.getDefault().lookup(ModuleFactory.class);
@@ -255,11 +255,11 @@ public final class ModuleManager {
      * Convenience method only.
      * @see #PROP_ENABLED_MODULES
      */
-    public final Set getEnabledModules() {
-        Set s = new HashSet(modules); // Set<Module>
-        Iterator it = s.iterator();
+    public final Set<Module> getEnabledModules() {
+        Set<Module> s = new HashSet<Module>(modules);
+        Iterator<Module> it = s.iterator();
         while (it.hasNext()) {
-            Module m = (Module)it.next();
+            Module m = it.next();
             if (! m.isEnabled()) {
                 it.remove();
             }
@@ -313,14 +313,12 @@ public final class ModuleManager {
         }
         // Set, not List, because if we have >1 bootstrap module (using Plain),
         // it is likely that some of these classloaders will overlap.
-        Set foundParents = new HashSet(modules.size() * 4 / 3 + 2); // Set<ClassLoader>
-        List parents = new ArrayList(modules.size() + 1); // List<ClassLoader>
+        Set<ClassLoader> foundParents = new HashSet<ClassLoader>(modules.size() * 4 / 3 + 2);
+        List<ClassLoader> parents = new ArrayList<ClassLoader>(modules.size() + 1);
         ClassLoader base = ModuleManager.class.getClassLoader();
         foundParents.add(base);
         parents.add(base);
-        Iterator it = modules.iterator();
-        while (it.hasNext()) {
-            Module m = ((Module)it.next());
+	for (Module m: modules) {
             if (! m.isEnabled()) {
                 continue;
             }
@@ -331,13 +329,13 @@ public final class ModuleManager {
         if (moduleFactory.removeBaseClassLoader()) {
             parents.remove(base);
         }
-        ClassLoader[] parentCLs = (ClassLoader[])parents.toArray(new ClassLoader[parents.size()]);
+        ClassLoader[] parentCLs = parents.toArray(new ClassLoader[parents.size()]);
         SystemClassLoader nue;
         try {
             nue = new SystemClassLoader(classLoaderPatches, parentCLs, modules);
         } catch (IllegalArgumentException iae) {
             Util.err.notify(iae);
-            nue = new SystemClassLoader(classLoaderPatches, new ClassLoader[] {ModuleManager.class.getClassLoader()}, Collections.EMPTY_SET);
+            nue = new SystemClassLoader(classLoaderPatches, new ClassLoader[] {ModuleManager.class.getClassLoader()}, Collections.<Module>emptySet());
         }
         synchronized (classLoaderLock) {
             classLoader = nue;
@@ -387,7 +385,7 @@ public final class ModuleManager {
         private final StringBuffer debugme;
         private boolean empty = true;
         
-        public SystemClassLoader(List files, ClassLoader[] parents, Set modules) throws IllegalArgumentException {
+        public SystemClassLoader(List<Object> files, ClassLoader[] parents, Set<Module> modules) throws IllegalArgumentException {
             super(files, parents, false);
             allPermissions = new Permissions();
             allPermissions.add(new AllPermission());
@@ -414,20 +412,18 @@ public final class ModuleManager {
             debugme.append(']'); // NOI18N
         }
         
-        private void record(Collection modules) {
-            Iterator it = modules.iterator();
-            while (it.hasNext()) {
+        private void record(Collection<Module> modules) {
+	    for (Module m: modules) {
                 if (empty) {
                     empty = false;
                 } else {
                     debugme.append(','); // NOI18N
                 }
-                Module m = (Module)it.next();
                 debugme.append(m.getCodeNameBase());
             }
         }
         
-        public void append(ClassLoader[] ls, List modules) throws IllegalArgumentException {
+        public void append(ClassLoader[] ls, List<Module> modules) throws IllegalArgumentException {
             super.append(ls);
             debugme.deleteCharAt(debugme.length() - 1);
             record(modules);
@@ -490,13 +486,11 @@ public final class ModuleManager {
         ev.log(Events.FINISH_CREATE_REGULAR_MODULE, jar);
         subCreate(m);
         if (m.isEager()) {
-            List immediate = simulateEnable(Collections.EMPTY_SET);
+            List<Module> immediate = simulateEnable(Collections.<Module>emptySet());
             if (!immediate.isEmpty()) {
                 if (!immediate.contains(m)) throw new IllegalStateException("Can immediately enable modules " + immediate + ", but not including " + m); // NOI18N
                 boolean ok = true;
-                Iterator it = immediate.iterator();
-                while (it.hasNext()) {
-                    Module other = (Module)it.next();
+		for (Module other: immediate) {
                     if (!other.isAutoload() && !other.isEager()) {
                         // Nope, would require a real module to be turned on first.
                         ok = false;
@@ -505,7 +499,7 @@ public final class ModuleManager {
                 }
                 if (ok) {
                     Util.err.log("Enabling " + m + " immediately");
-                    enable(Collections.EMPTY_SET);
+                    enable(Collections.<Module>emptySet());
                 }
             }
         }
@@ -624,9 +618,9 @@ public final class ModuleManager {
     private void possibleProviderAdded(Module m) {
         String[] provides = m.getProvides();
         for (int i = 0; i < provides.length; i++) {
-            Set providing = (Set)providersOf.get(provides[i]);
+            Set<Module> providing = providersOf.get(provides[i]);
             if (providing == null) {
-                providing = new HashSet(10); // Set<Module>
+                providing = new HashSet<Module>(16);
                 providersOf.put(provides[i], providing);
             }
             providing.add(m);
@@ -737,7 +731,7 @@ public final class ModuleManager {
      * will be thrown and nothing will be installed. The InvalidException in such
      * a case should contain a reference to the offending module.
      */
-    public void enable(Set modules) throws IllegalArgumentException, InvalidException {
+    public void enable(Set<Module> modules) throws IllegalArgumentException, InvalidException {
         assertWritable();
         Util.err.log("enable: " + modules);
         /* Consider eager modules:
@@ -747,15 +741,15 @@ public final class ModuleManager {
          */
         ev.log(Events.PERF_START, "ModuleManager.enable"); // NOI18N
         // Basic problems will be caught here, and we also get the autoloads:
-        List toEnable = simulateEnable(modules);
+        List<Module> toEnable = simulateEnable(modules);
 	ev.log(Events.PERF_TICK, "checked the required ordering and autoloads"); // NOI18N
 	
         Util.err.log("enable: toEnable=" + toEnable); // NOI18N
         {
             // Verify that we are cool as far as basic dependencies go.
-            Set testing = new HashSet(toEnable);
+            Set<Module> testing = new HashSet<Module>(toEnable);
             if (! testing.containsAll(modules)) {
-                Set bogus = new HashSet(modules);
+                Set<Module> bogus = new HashSet<Module>(modules);
                 bogus.removeAll(testing);
                 throw new IllegalArgumentException("Not all requested modules can be enabled: " + bogus); // NOI18N
             }
@@ -774,7 +768,7 @@ public final class ModuleManager {
         {
             // Actually turn on the listed modules.
             // List of modules that need to be "rolled back".
-            LinkedList fallback = new LinkedList();
+            LinkedList<Module> fallback = new LinkedList<Module>();
             // Whether we were attempting to bring a classloader up.
             // This affects whether we need to rollback that change on the
             // problem module or not.
@@ -782,18 +776,15 @@ public final class ModuleManager {
             // If a failure due to package dep occurs, store it here.
             Dependency failedPackageDep = null;
             try {
-                Iterator teIt = toEnable.iterator();
-		
 		ev.log(Events.PERF_START, "module preparation" ); // NOI18N
-                while (teIt.hasNext()) {
-                    Module m = (Module)teIt.next();
+                for (Module m: toEnable) {
                     fallback.addFirst(m);
                     Util.err.log("enable: bringing up: " + m);
                     ev.log(Events.PERF_START, "bringing up classloader on " + m.getCodeName() ); // NOI18N
                     try {
                         // Calculate the parents to initialize the classloader with.
                         Dependency[] dependencies = m.getDependenciesArray();
-                        Set parents = new HashSet(dependencies.length * 4 / 3 + 1);
+                        Set<Module> parents = new HashSet<Module>(dependencies.length * 4 / 3 + 1);
                         for (int i = 0; i < dependencies.length; i++) {
                             Dependency dep = dependencies[i];
                             if (dep.getType() != Dependency.TYPE_MODULE) {
@@ -844,7 +835,7 @@ public final class ModuleManager {
                 // Remember that there was a problem with this guy.
                 Module bad = ie.getModule();
                 if (bad == null) throw new IllegalStateException("Problem with no associated module: " + ie); // NOI18N
-                Set probs = (Set)moduleProblems.get(bad);
+                Set<Object> probs = moduleProblems.get(bad); // Set<Dependency|InvalidException>
                 if (probs == null) throw new IllegalStateException("Were trying to install a module that had never been checked: " + bad); // NOI18N
                 if (! probs.isEmpty()) throw new IllegalStateException("Were trying to install a module that was known to be bad: " + bad); // NOI18N
                 // Record for posterity.
@@ -888,23 +879,23 @@ public final class ModuleManager {
             // They all were OK so far; add to system classloader and install them.
             if (classLoader != null) {
                 Util.err.log("enable: adding to system classloader");
-                List nueclassloaders = new ArrayList(toEnable.size());
-                Iterator teIt = toEnable.iterator();
+                List<ClassLoader> nueclassloaders = new ArrayList<ClassLoader>(toEnable.size());
+                Iterator<Module> teIt = toEnable.iterator();
                 if (moduleFactory.removeBaseClassLoader()) {
                     ClassLoader base = ModuleManager.class.getClassLoader();
                     nueclassloaders.add(moduleFactory.getClasspathDelegateClassLoader(this, base));
                     while (teIt.hasNext()) {
-                        ClassLoader c1 = ((Module)teIt.next()).getClassLoader();
+                        ClassLoader c1 = teIt.next().getClassLoader();
                         if (c1 != base) {
                             nueclassloaders.add(c1);
                         }
                     }
                 } else {
                     while (teIt.hasNext()) {
-                        nueclassloaders.add(((Module)teIt.next()).getClassLoader());
+                        nueclassloaders.add(teIt.next().getClassLoader());
                     }
                 }
-                classLoader.append((ClassLoader[])(nueclassloaders.toArray(new ClassLoader[nueclassloaders.size()])), toEnable);
+                classLoader.append((nueclassloaders.toArray(new ClassLoader[nueclassloaders.size()])), toEnable);
             } else {
                 Util.err.log("enable: no class loader yet, not appending");
             }
@@ -935,20 +926,18 @@ public final class ModuleManager {
      * Must not contain autoload nor eager modules.
      * Must not contain fixed modules.
      */
-    public void disable(Set modules) throws IllegalArgumentException {
+    public void disable(Set<Module> modules) throws IllegalArgumentException {
         assertWritable();
         Util.err.log("disable: " + modules);
         if (modules.isEmpty()) {
             return;
         }
         // Checks for invalid items, plus includes autoloads to turn off.
-        List toDisable = simulateDisable(modules);
+        List<Module> toDisable = simulateDisable(modules);
         Util.err.log("disable: toDisable=" + toDisable);
         {
             // Verify that dependencies are OK.
-            Iterator it = toDisable.iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            for (Module m: toDisable) {
                 if (!modules.contains(m) && !m.isAutoload() && !m.isEager()) {
                     throw new IllegalArgumentException("Would also need to disable: " + m); // NOI18N
                 }
@@ -1021,17 +1010,15 @@ public final class ModuleManager {
      * indicates that the modules are not in a valid format to install; or
      * creating the module classloader fails unexpectedly.
      */
-    public List simulateEnable(Set modules) throws IllegalArgumentException {
+    public List<Module> simulateEnable(Set<Module> modules) throws IllegalArgumentException {
         /* Not quite, eager modules may change this:
         if (modules.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
          */
         // XXX also optimize for modules.size == 1
-        Set willEnable = new HashSet(modules.size() * 2 + 1); // Set<Module>
-        Iterator it = modules.iterator();
-        while (it.hasNext()) {
-            Module m = (Module)it.next();
+        Set<Module> willEnable = new HashSet<Module>(modules.size() * 2 + 1); // Set<Module>
+        for (Module m: modules) {
             if (m.isAutoload()) throw new IllegalArgumentException("Cannot simulate enabling an autoload: " + m); // NOI18N
             if (m.isEager()) throw new IllegalArgumentException("Cannot simulate enabling an eager module: " + m); // NOI18N
             if (m.isEnabled()) throw new IllegalArgumentException("Already enabled: " + m); // NOI18N
@@ -1039,18 +1026,18 @@ public final class ModuleManager {
             maybeAddToEnableList(willEnable, modules, m, true);
         }
         // XXX clumsy but should work:
-        Set stillDisabled = new HashSet(this.modules); // Set<Module>
-        it = stillDisabled.iterator();
+        Set<Module> stillDisabled = new HashSet<Module>(this.modules);
+        Iterator<Module> it = stillDisabled.iterator();
         while (it.hasNext()) {
-            Module m = (Module)it.next();
+            Module m = it.next();
             if (m.isEnabled() || willEnable.contains(m)) {
                 it.remove();
             }
         }
         while (searchForPossibleEager(willEnable, stillDisabled, modules)) {/* search again */}
-        Map deps = Util.moduleDependencies(willEnable, modulesByName, providersOf);
+        Map<Module,List<Module>> deps = Util.moduleDependencies(willEnable, modulesByName, providersOf);
         try {
-            List l = Utilities.topologicalSort(willEnable, deps);
+            List<Module> l = Utilities.topologicalSort(willEnable, deps);
             Collections.reverse(l);
             return l;
         } catch (TopologicalSortException ex) {
@@ -1060,10 +1047,10 @@ public final class ModuleManager {
                 Util.err.notify(ErrorManager.INFORMATIONAL, ex);
             }
             Util.err.log(ErrorManager.WARNING, "Cyclic module dependencies, will refuse to enable: " + deps); // NOI18N
-            return Collections.EMPTY_LIST;
+            return Collections.<Module>emptyList();
         }
     }
-    private void maybeAddToEnableList(Set willEnable, Set mightEnable, Module m, boolean okToFail) {
+    private void maybeAddToEnableList(Set<Module> willEnable, Set<Module> mightEnable, Module m, boolean okToFail) {
         if (! missingDependencies(m).isEmpty()) {
             // Should never happen:
             if (! okToFail) throw new IllegalStateException("Module was supposed to be OK: " + m); // NOI18N
@@ -1127,16 +1114,16 @@ public final class ModuleManager {
             // else some other kind of dependency that does not concern us
         }
     }
-    private boolean searchForPossibleEager(Set willEnable, Set stillDisabled, Set mightEnable) {
+    private boolean searchForPossibleEager(Set<Module> willEnable, Set<Module> stillDisabled, Set<Module> mightEnable) {
         // Check for any eagers in stillDisabled which could be enabled based
         // on currently enabled modules and willEnable. For any such, remove from
         // stillDisabled and add to willEnable (using maybeAddToEnableList, so that
         // autoloads needed by them are picked up too). If any were found, return true.
         boolean found = false;
-        Iterator it = stillDisabled.iterator();
+        Iterator<Module> it = stillDisabled.iterator();
     FIND_EAGER:
         while (it.hasNext()) {
-            Module m = (Module)it.next();
+            Module m = it.next();
             if (willEnable.contains(m)) {
                 // Presumably real module M1, eager M2 dep. on M1, eager M3 dep.
                 // on M2; already called couldBeEnabledWithEagers(M3) and it
@@ -1146,7 +1133,7 @@ public final class ModuleManager {
                 continue;
             }
             if (m.isEager()) {
-                if (couldBeEnabledWithEagers(m, willEnable, new HashSet())) {
+                if (couldBeEnabledWithEagers(m, willEnable, new HashSet<Module>())) {
                     // Go for it!
                     found = true;
                     it.remove();
@@ -1156,7 +1143,7 @@ public final class ModuleManager {
         }
         return found;
     }
-    private boolean couldBeEnabledWithEagers(Module m, Set willEnable, Set recursion) {
+    private boolean couldBeEnabledWithEagers(Module m, Set<Module> willEnable, Set<Module> recursion) {
         // True if a search of the dependencies of this module reveals
         // only modules which are currently enabled; in the willEnable
         // list; or are autoloads or eager modules for which this predicate
@@ -1210,13 +1197,13 @@ public final class ModuleManager {
      * Modules are returned in an order in which they could be disabled (where
      * dependent modules are always disabled before base modules).
      */
-    public List simulateDisable(Set modules) throws IllegalArgumentException {
+    public List<Module> simulateDisable(Set<Module> modules) throws IllegalArgumentException {
         if (modules.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            return Collections.<Module>emptyList();
         }
         // XXX also optimize for modules.size == 1
         // Probably not a very efficient algorithm. But it probably does not need to be.
-        Set willDisable = new HashSet(20); // Set<Module>
+        Set<Module> willDisable = new HashSet<Module>(20);
         Iterator it = modules.iterator();
         while (it.hasNext()) {
             Module m = (Module)it.next();
@@ -1226,10 +1213,10 @@ public final class ModuleManager {
             if (! m.isEnabled()) throw new IllegalArgumentException("Already disabled: " + m); // NOI18N
             addToDisableList(willDisable, m);
         }
-        Set stillEnabled = new HashSet(getEnabledModules()); // Set<Module>
+        Set<Module> stillEnabled = new HashSet<Module>(getEnabledModules());
         stillEnabled.removeAll(willDisable);
         while (searchForUnusedAutoloads(willDisable, stillEnabled)) {/* search again */}
-        Map deps = Util.moduleDependencies(willDisable, modulesByName, providersOf);
+        Map<Module,List<Module>> deps = Util.moduleDependencies(willDisable, modulesByName, providersOf);
         try {
             return Utilities.topologicalSort(willDisable, deps);
         } catch (TopologicalSortException ex) {
@@ -1238,10 +1225,10 @@ public final class ModuleManager {
                 Util.err.notify(ErrorManager.INFORMATIONAL, ex);
             }
             Util.err.log(ErrorManager.WARNING, "Cyclic module dependencies, will turn them off in a random order: " + deps); // NOI18N
-            return new ArrayList(willDisable);
+            return new ArrayList<Module>(willDisable);
         }
     }
-    private void addToDisableList(Set willDisable, Module m) {
+    private void addToDisableList(Set<Module> willDisable, Module m) {
         if (willDisable.contains(m)) {
             // E.g. if original set had A then B, B depends on A.
             return;
@@ -1250,9 +1237,7 @@ public final class ModuleManager {
         // Find any modules depending on this one which are currently enabled.
         // (And not already here.)
         // If there are any, add them.
-        Iterator it = modules.iterator();
-        while (it.hasNext()) {
-            Module other = (Module)it.next();
+	for (Module other: modules) {
             if (other.isFixed() || ! other.isEnabled() || willDisable.contains(other)) {
                 continue;
             }
@@ -1270,10 +1255,8 @@ public final class ModuleManager {
                     if (m.provides(dep.getName())) {
                         // Careful. There may be some third module still enabled which
                         // provides this same token too.
-                        Iterator thirdModules = getEnabledModules().iterator();
                         boolean foundOne = false;
-                        while (thirdModules.hasNext()) {
-                            Module third = (Module)thirdModules.next();
+			for (Module third: getEnabledModules()) {
                             if (third.isEnabled() &&
                                     !willDisable.contains(third) &&
                                     third.provides(dep.getName())) {
@@ -1292,19 +1275,17 @@ public final class ModuleManager {
             }
         }
     }
-    private boolean searchForUnusedAutoloads(Set willDisable, Set stillEnabled) {
+    private boolean searchForUnusedAutoloads(Set<Module> willDisable, Set<Module> stillEnabled) {
         // Check for any autoloads in stillEnabled which are not used by anything else
         // in stillEnabled. For each such, remove it from stillEnabled and add
         // to willDisable. If any were found, return true.
         boolean found = false;
-        Iterator it = stillEnabled.iterator();
+        Iterator<Module> it = stillEnabled.iterator();
     FIND_AUTOLOADS:
         while (it.hasNext()) {
-            Module m = (Module)it.next();
+            Module m = it.next();
             if (m.isAutoload()) {
-                Iterator it2 = stillEnabled.iterator();
-                while (it2.hasNext()) {
-                    Module other = (Module)it2.next();
+                for (Module other: stillEnabled) {
                     Dependency[] dependencies = other.getDependenciesArray();
                     for (int i = 0; i < dependencies.length; i++) {
                         Dependency dep = dependencies[i];
@@ -1338,7 +1319,7 @@ public final class ModuleManager {
     private static final Object PROBING_IN_PROCESS = new Object();
     // Access from Module.getProblems, q.v.
     // The probed module must not be currently enabled or fixed.
-    Set missingDependencies(Module probed) {
+    Set<Object> missingDependencies(Module probed) {
         // We need to synchronize here because though this method may be called
         // only within a read mutex, it can write to moduleProblems. Other places
         // where moduleProblems are used are write-mutex only and so do not have
@@ -1347,10 +1328,10 @@ public final class ModuleManager {
             return _missingDependencies(probed);
         }
     }
-    private Set _missingDependencies(Module probed) {
-            Set probs = (Set)moduleProblems.get(probed);
+    private Set<Object> _missingDependencies(Module probed) {
+            Set<Object> probs = moduleProblems.get(probed); // Set<Dependency|InvalidException>
             if (probs == null) {
-                probs = new HashSet(8);
+                probs = new HashSet<Object>(8);
                 probs.add(PROBING_IN_PROCESS);
                 moduleProblems.put(probed, probs);
                 Dependency[] dependencies = probed.getDependenciesArray();
@@ -1550,8 +1531,8 @@ public final class ModuleManager {
      */
     public boolean shutDown(Runnable midHook) {
         assertWritable();
-        Set unorderedModules = getEnabledModules();
-        Map deps = Util.moduleDependencies(unorderedModules, modulesByName, providersOf);
+        Set<Module> unorderedModules = getEnabledModules();
+        Map<Module,List<Module>> deps = Util.moduleDependencies(unorderedModules, modulesByName, providersOf);
         List modules;
         try {
             modules = Utilities.topologicalSort(unorderedModules, deps);

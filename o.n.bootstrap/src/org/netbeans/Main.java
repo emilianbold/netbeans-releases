@@ -97,9 +97,9 @@ public class Main extends Object {
             public void connect() throws IOException {}
         }.setDefaultUseCaches(false);
         
-        ArrayList list = new ArrayList ();
+        ArrayList<Object> list = new ArrayList<Object> (); // ? is File or JarFile
 
-        HashSet processedDirs = new HashSet ();
+        HashSet<File> processedDirs = new HashSet<File> ();
         String home = System.getProperty ("netbeans.home"); // NOI18N
         if (home != null) {
             build_cp (new File (home), list, processedDirs);
@@ -127,17 +127,17 @@ public class Main extends Object {
 
         // Compute effective dynamic classpath (mostly lib/*.jar) for TopLogging, NbInstaller:
         StringBuffer buf = new StringBuffer(1000);
-        Iterator it = list.iterator();
-        while (it.hasNext()) {
+        for (Object o: list) {
+	    File f = (File)o;
             if (buf.length() > 0) {
                 buf.append(File.pathSeparatorChar);
             }
-            buf.append(((File)it.next()).getAbsolutePath());
+            buf.append(f.getAbsolutePath());
         }
         System.setProperty("netbeans.dynamic.classpath", buf.toString());
         
         // JarClassLoader treats a File as a dir; for a ZIP/JAR, needs JarFile
-        ListIterator it2 = list.listIterator();
+        ListIterator<Object> it2 = list.listIterator();
         while (it2.hasNext()) {
             File f = (File)it2.next();
             if (f.isFile()) {
@@ -207,9 +207,9 @@ public class Main extends Object {
     implements Runnable {
         private Lookup metaInf;
 
-        private List handlers;
+        private List<CLIHandler> handlers;
         
-        public BootClassLoader(List cp, ClassLoader[] parents) {
+        public BootClassLoader(List<Object> cp, ClassLoader[] parents) {
             super(cp, parents);
             
             metaInf = Lookups.metaInfServices(this);
@@ -261,13 +261,13 @@ public class Main extends Object {
             if (onlyRunRunOnce) return;
             onlyRunRunOnce = true;
             
-            ArrayList toAdd = new ArrayList ();
+            ArrayList<Object> toAdd = new ArrayList<Object> ();
             String user = System.getProperty ("netbeans.user"); // NOI18N
             try {
                 if (user != null) {
-                    build_cp (new File (user), toAdd, new HashSet ());
+                    build_cp (new File (user), toAdd, new HashSet<File> ());
                     // JarClassLoader treats a File as a dir; for a ZIP/JAR, needs JarFile
-                    ListIterator it2 = toAdd.listIterator();
+                    ListIterator<Object> it2 = toAdd.listIterator();
                     while (it2.hasNext()) {
                         File f = (File)it2.next();
                         if (f.isFile()) {
@@ -281,7 +281,7 @@ public class Main extends Object {
                     metaInf = Lookups.metaInfServices(this);
                     if (handlers != null) {
                         handlers.clear();
-                        handlers.addAll(metaInf.lookup(new Lookup.Template(CLIHandler.class)).allInstances());
+                        handlers.addAll(metaInf.lookup(new Lookup.Template<CLIHandler>(CLIHandler.class)).allInstances());
                     }
                 }
             } catch (IOException ex) {
@@ -310,7 +310,7 @@ public class Main extends Object {
          */
         public final Collection allCLIs () {
             if (handlers == null) {
-                handlers = new ArrayList(metaInf.lookup(new Lookup.Template(CLIHandler.class)).allInstances());
+                handlers = new ArrayList<CLIHandler>(metaInf.lookup(new Lookup.Template<CLIHandler>(CLIHandler.class)).allInstances());
             }
             return handlers;
         }
@@ -323,7 +323,7 @@ public class Main extends Object {
         }
     } // end of BootClassLoader
     
-    private static void append_jars_to_cp (File dir, Collection toAdd) {
+    private static void append_jars_to_cp (File dir, Collection<Object> toAdd) {
         if (!dir.isDirectory()) return;
         
         File[] arr = dir.listFiles();
@@ -343,7 +343,7 @@ public class Main extends Object {
     }
         
     
-    private static void build_cp(File base, Collection toAdd, Set processedDirs) 
+    private static void build_cp(File base, Collection<Object> toAdd, Set<File> processedDirs)
     throws java.io.IOException {
         base = base.getCanonicalFile ();
         if (!processedDirs.add (base)) {
