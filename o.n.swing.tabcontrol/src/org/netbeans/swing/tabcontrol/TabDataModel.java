@@ -213,6 +213,4 @@ public interface TabDataModel {
      * events and optimize repaints based on the actual areas affected.
      */
     public void removeChangeListener(ChangeListener listener);
-
-    public boolean isMaximized( int tabIndex );
 }

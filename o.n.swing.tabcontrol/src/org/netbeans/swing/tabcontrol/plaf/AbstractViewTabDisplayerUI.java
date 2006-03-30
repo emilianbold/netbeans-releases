@@ -196,10 +196,6 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         return controller;
     }
 
-    protected final boolean isMaximized( int tabIndex ) {
-        return dataModel.isMaximized( tabIndex );
-    }
-
     protected final boolean isSelected(int index) {
         return selectionModel.getSelectedIndex() == index;
     }

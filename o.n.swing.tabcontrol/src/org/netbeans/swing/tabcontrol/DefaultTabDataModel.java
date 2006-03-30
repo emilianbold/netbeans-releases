@@ -17,7 +17,6 @@
 
 package org.netbeans.swing.tabcontrol;
 
-import java.awt.Component;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
 import org.netbeans.swing.tabcontrol.event.VeryComplexListDataEvent;
@@ -26,9 +25,6 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListDataEvent;
 import java.util.*;
-import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * Default implementation of TabDataModel.
@@ -552,17 +548,6 @@ public class DefaultTabDataModel implements TabDataModel {
             result[i] = o[i].intValue();
         }
         return result;
-    }
-
-    public boolean isMaximized( int index ) {
-        TabData tab = getTab( index );
-        Component c = tab.getComponent();
-        if( c instanceof TopComponent ) {
-            WindowManager wm = WindowManager.getDefault();
-            Mode mode = wm.findMode( (TopComponent)c );
-            return wm.getMaximizedMode2() == mode;
-        }
-        return false;
     }
 
 }

@@ -202,19 +202,10 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         boolean focused = selected && isActive();
         boolean attention = isAttention(index);
         if (focused && !attention) {
-            if( isMaximized( index ) ) {
-                ColorUtil.xpFillRectGradient((Graphics2D) g, x, y, width, height,
-                                             ColorUtil.adjustBy(focusFillBrightC,-50), ColorUtil.adjustBy(focusFillDarkC,-50));
-            } else {
-                ColorUtil.xpFillRectGradient((Graphics2D) g, x, y, width, height,
-                                             focusFillBrightC, focusFillDarkC);
-            }
+            ColorUtil.xpFillRectGradient((Graphics2D) g, x, y, width, height,
+                                         focusFillBrightC, focusFillDarkC);
         } else if (selected && isMoreThanOne() && !attention) {
-            if( isMaximized( index ) ) {
-                g.setColor(ColorUtil.adjustBy( selFillC, -50 ));
-            } else {
-                g.setColor(selFillC);
-            }
+            g.setColor(selFillC);
             g.fillRect(x, y, width, height);
         } else if (attention) {
             Color a = new Color (255, 255, 128);
@@ -222,20 +213,9 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             ColorUtil.xpFillRectGradient((Graphics2D) g, x, y, width, height,
                                          a, b);         
         } else {
-            if( isMaximized( index ) ) {
-                g.setColor(ColorUtil.adjustBy( selFillC, -20 ));
-                ColorUtil.xpFillRectGradient((Graphics2D) g, x, y, width, height,
-                                             ColorUtil.adjustBy(unselFillBrightC,-50), ColorUtil.adjustBy(unselFillDarkC,-50));
-            } else {
-                ColorUtil.xpFillRectGradient((Graphics2D) g, x, y, width, height,
-                                             unselFillBrightC, unselFillDarkC);
-            }
+            ColorUtil.xpFillRectGradient((Graphics2D) g, x, y, width, height,
+                                         unselFillBrightC, unselFillDarkC);
         }
-//        if( selected ) {
-//            g.setColor( Color.RED );
-//            g.drawRect( x, y, width, height );
-//            g.drawRect( x+1, y+1, width-2, height-2 );
-//        }
     }
 
     /**
