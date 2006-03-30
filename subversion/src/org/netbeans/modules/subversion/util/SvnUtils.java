@@ -341,21 +341,6 @@ public class SvnUtils {
         if (fo == null) return getProject(file.getParentFile());
         return FileOwnerQuery.getOwner(fo);
     }
-
-    /**
-     * Recursively deletes all files and directories under a given file/directory.
-     *
-     * @param file file/directory to delete
-     */
-    public static void deleteRecursively(File file) {
-        if (file.isDirectory()) {
-            File [] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                deleteRecursively(files[i]);
-            }
-        }
-        file.delete();
-    }
     
     /**
      * Searches for common filesystem parent folder for given files.
@@ -631,88 +616,7 @@ public class SvnUtils {
         } else {
             throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
         }
-    }
-
-    /**
-     * Copies the specified sourceFile to the specified targetFile.
-     */
-    public static void copyFile(File sourceFile, File targetFile) throws IOException {
-        if (sourceFile == null || targetFile == null) {
-            throw new NullPointerException("sourceFile and targetFile must not be null"); // NOI18N
-        }
-
-        // ensure existing parent directories
-        File directory = targetFile.getParentFile();
-        if (!directory.exists() && !directory.mkdirs()) {
-            throw new IOException("Could not create directory '" + directory + "'"); // NOI18N
-        }
-
-        InputStream inputStream = null;
-        OutputStream outputStream = null;
-        try {
-            inputStream = new BufferedInputStream(new FileInputStream(sourceFile));
-            outputStream = new BufferedOutputStream(new FileOutputStream(targetFile));
-
-            try {
-                byte[] buffer = new byte[32768];
-                for (int readBytes = inputStream.read(buffer);
-                     readBytes > 0;
-                     readBytes = inputStream.read(buffer)) {
-                    outputStream.write(buffer, 0, readBytes);
-                }
-            }
-            catch (IOException ex) {
-                targetFile.delete();
-                throw ex;
-            }
-        }
-        finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                }
-                catch (IOException ex) {
-                    // ignore
-                }
-            }
-            if (outputStream != null) {
-                try {
-                    outputStream.close();
-                }
-                catch (IOException ex) {
-                    // ignore
-                }
-            }
-        }
-    }    
-
-    public static void copyDirFiles(File sourceDir, File targetDir) {
-        copyDirFiles(sourceDir, targetDir, false);
-    }
-
-    public static void copyDirFiles(File sourceDir, File targetDir, boolean alsoTimestamp) {
-        File[] files = sourceDir.listFiles();
-
-        if(files==null || files.length == 0) {
-            targetDir.mkdirs();
-            if(alsoTimestamp) targetDir.setLastModified(sourceDir.lastModified());
-            return;
-        }
-        if(alsoTimestamp) targetDir.setLastModified(sourceDir.lastModified());
-        for (int i = 0; i < files.length; i++) {
-            try {
-                File target = FileUtil.normalizeFile(new File(targetDir.getAbsolutePath() + "/" + files[i].getName()));
-                if(files[i].isDirectory()) {
-                    copyDirFiles(files[i], target, alsoTimestamp);
-                } else {
-                    SvnUtils.copyFile (files[i], target);
-                    if(alsoTimestamp) target.setLastModified(files[i].lastModified());
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace(); // should not happen
-            }
-        }
-    }                 
+    }         
 
     static Pattern branchesPattern = Pattern.compile(".*/branches/(.+?)/.*");
     static Pattern tagsPattern = Pattern.compile(".*/tags/(.+?)/.*");

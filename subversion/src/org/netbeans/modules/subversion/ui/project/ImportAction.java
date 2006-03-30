@@ -15,6 +15,7 @@ package org.netbeans.modules.subversion.ui.project;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
@@ -176,7 +177,7 @@ public final class ImportAction extends NodeAction {
         CheckoutAction.checkout(repositoryUrl, repositoryFile, checkoutFile, false, true);                         
         copyMetadata(checkoutFile, file);
         refreshRecursively(file);
-        checkoutFile.delete();
+        FileUtils.deleteRecursively(checkoutFile);
     }
 
     private void refreshRecursively(File folder) {
@@ -186,7 +187,7 @@ public final class ImportAction extends NodeAction {
     }
 
     private void copyMetadata(File sourceFolder, File targetFolder) {
-        SvnUtils.copyDirFiles(new File(sourceFolder.getAbsolutePath() + "/.svn"), new File(targetFolder.getAbsolutePath() + "/.svn"), true);
+        FileUtils.copyDirFiles(new File(sourceFolder.getAbsolutePath() + "/.svn"), new File(targetFolder.getAbsolutePath() + "/.svn"), true);
         targetFolder.setLastModified(sourceFolder.lastModified());
         File[] files = sourceFolder.listFiles();
         for (int i = 0; i < files.length; i++) {

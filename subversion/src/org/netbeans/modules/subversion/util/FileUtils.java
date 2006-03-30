@@ -14,6 +14,7 @@
 package org.netbeans.modules.subversion.util;
 
 import java.io.*;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -45,6 +46,34 @@ public class FileUtils {
         }
     }
 
+    public static void copyDirFiles(File sourceDir, File targetDir) {
+        copyDirFiles(sourceDir, targetDir, false);
+    }      
+    
+    public static void copyDirFiles(File sourceDir, File targetDir, boolean preserveTimestamp) {
+        File[] files = sourceDir.listFiles();
+
+        if(files==null || files.length == 0) {
+            targetDir.mkdirs();
+            if(preserveTimestamp) targetDir.setLastModified(sourceDir.lastModified());
+            return;
+        }
+        if(preserveTimestamp) targetDir.setLastModified(sourceDir.lastModified());
+        for (int i = 0; i < files.length; i++) {
+            try {
+                File target = FileUtil.normalizeFile(new File(targetDir.getAbsolutePath() + "/" + files[i].getName()));
+                if(files[i].isDirectory()) {
+                    copyDirFiles(files[i], target, preserveTimestamp);
+                } else {
+                    FileUtils.copyFile (files[i], target);
+                    if(preserveTimestamp) target.setLastModified(files[i].lastModified());
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace(); // should not happen
+            }
+        }
+    }
+    
     /**
      * Copies the specified sourceFile to the specified targetFile.
      * It <b>closes</b> the input stream.
@@ -96,7 +125,21 @@ public class FileUtils {
         }
     }
 
-
+    /**
+     * Recursively deletes all files and directories under a given file/directory.
+     *
+     * @param file file/directory to delete
+     */
+    public static void deleteRecursively(File file) {
+        if (file.isDirectory()) {
+            File [] files = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                deleteRecursively(files[i]);
+            }
+        }
+        file.delete();
+    }
+    
     /**
      * Do the best to rename the file.
      * @param orig regular file

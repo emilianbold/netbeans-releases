@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -25,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.ini4j.Ini;
-import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
@@ -201,7 +201,7 @@ public class SvnConfigFiles {
         File targetConfigFile = new File(getNBConfigDir() + "/" + "config");
         targetConfigFile = FileUtil.normalizeFile(targetConfigFile);
         try {
-            SvnUtils.copyFile (file, targetConfigFile);
+            FileUtils.copyFile (file, targetConfigFile);
         } catch (IOException ex) {
             ex.printStackTrace(); // should not happen
         }
@@ -390,7 +390,7 @@ public class SvnConfigFiles {
         Process p = null;
         try {
             p = Runtime.getRuntime().exec(cmdLine);
-            p.waitFor(); // XXX
+            p.waitFor(); // XXX check the exit value, handle the streams
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);     
             return;
@@ -407,7 +407,7 @@ public class SvnConfigFiles {
         key = "[" + key + "\\";     // for parsing purposes
         BufferedInputStream is = null;        
         BufferedReader br = null;
-        try {            
+        try {
             is = FileUtils.createInputStream(tmpFile);                                    
             br = new BufferedReader(new InputStreamReader(is, "Unicode"));    // XXX hm, unicode...        
             String line = "";            
@@ -439,7 +439,7 @@ public class SvnConfigFiles {
             ErrorManager.getDefault().notify(e);     
         } finally {
             try {
-                if(tmpFile !=null) {
+                if(tmpFile != null) {
                     tmpFile.delete();
                 }
                 if (br != null) {        
@@ -454,5 +454,5 @@ public class SvnConfigFiles {
         }
         
     }
-    
+
 }
