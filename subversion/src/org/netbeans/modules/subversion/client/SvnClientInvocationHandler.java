@@ -194,7 +194,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             SVNUrl url = Subversion.getInstance().getUrl(client);               
             ProxyDescriptor proxyDescriptor = Subversion.getInstance().getProxyDescriptor(client); // XXX don't like the way how the descriptor is get
             Socket proxy = null;
-            if (proxyDescriptor != null && proxyDescriptor.needsProxy(url.getHost())) {
+            if (proxyDescriptor != null && proxyDescriptor.getHost() != null ) {
                 ConnectivitySettings connectivitySettings = toConnectivitySettings(proxyDescriptor);
                 proxy = new Socket(connectivitySettings.getProxyHost(), connectivitySettings.getProxyPort());
                 connectProxy(proxy, url.getHost(), url.getPort(), connectivitySettings.getProxyHost(), connectivitySettings.getProxyPort());
