@@ -67,7 +67,7 @@ public class WSAppBndDataObject extends WSMultiViewDataObject {
             
         }
         public java.awt.Image getIcon() {
-            return org.openide.util.Utilities.loadImage("org/netbeans/modules/j2ee/websphere6/dd/resources/ws3.gif"); //NOI18N
+            return org.openide.util.Utilities.loadImage("org/netbeans/modules/j2ee/websphere6/dd/resources/ws1.gif"); //NOI18N
         }
     }
     

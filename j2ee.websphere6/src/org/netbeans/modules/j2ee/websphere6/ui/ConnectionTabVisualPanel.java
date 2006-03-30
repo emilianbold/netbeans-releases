@@ -78,7 +78,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                 tabServerProperties.getServerInstances(
                 targetData.getServerRoot())));
         
-        localInstancesCombo.addActionListener(tabServerProperties.getInstanceSelectionListener());
+        //localInstancesCombo.addActionListener(tabServerProperties.getInstanceSelectionListener());
         
         
         dex=url.indexOf(":");
@@ -160,7 +160,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         types.add(NbBundle.getMessage(ConnectionTabVisualPanel.class,"TXT_serverTypeRemote"));
         serverTypeCombo.setModel(new InstancesModel(types));
         
-        serverTypeCombo.addActionListener(tabServerProperties.getServerTypeActionListener());
+        //serverTypeCombo.addActionListener(tabServerProperties.getServerTypeActionListener());
         
         /*
         serverTypeCombo.addItemListener(new java.awt.event.ItemListener() {
@@ -175,8 +175,8 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         }
         );*/
         
-        //portField.setEditable(false);
-        portField.setEnabled(false);
+        portField.setEditable(false);
+        //portField.setEnabled(false);
         hostField.setEditable(false);
         String getLocal=targetData.getIsLocal();
         if(getLocal!=null)
@@ -276,11 +276,13 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
 
         jLabel2.setText("Local/Remote:");
 
+        serverTypeCombo.setEnabled(false);
         serverTypeCombo.getAccessibleContext().setAccessibleName("Access Method");
 
         jLabel3.setText("Local Instances:");
         jLabel3.getAccessibleContext().setAccessibleName("Local Instances Label");
 
+        localInstancesCombo.setEnabled(false);
         localInstancesCombo.getAccessibleContext().setAccessibleName("Local Instances");
 
         jLabel4.setText("Host:");
@@ -289,6 +291,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         jLabel5.setText("Port:");
         jLabel5.getAccessibleContext().setAccessibleName("Port Label");
 
+        hostField.setEditable(false);
         hostField.getAccessibleContext().setAccessibleName("Host");
 
         jLabel6.setText("Username:");
@@ -455,7 +458,8 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                 //portField.setEnabled(true);
                 //portField.setEditable(false);
                 //portField.setText(instance.getPort());
-                portField.setEnabled(false);
+                portField.setEnabled(true);
+                portField.setEditable(false);
                 //portField.setValue(new Integer(instance.getPort()));
                 portField.setText(instance.getPort());
                 
@@ -469,10 +473,11 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                 
                 // enable and set as read-write the host field
                 hostField.setEnabled(true);
-                hostField.setEditable(true);
+                hostField.setEditable(false);
                 
                 // enable and set as read-write the port field
                 portField.setEnabled(true);
+                portField.setEditable(true);
                 //portField.setEditable(true);
             }
             
