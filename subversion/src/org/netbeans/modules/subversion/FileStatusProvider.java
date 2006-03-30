@@ -56,15 +56,20 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         return instance;
     }
 
-    public String annotateNameHtml(String name, Set files) {
+    public String annotateNameHtml(String name, Set files) {        
         if (isManaged(files)) {
-            return Subversion.getInstance().getAnnotator().annotateNameHtml(
-                    name,
-                    files,
-                    FileInformation.STATUS_VERSIONED_UPTODATE
-                    | FileInformation.STATUS_LOCAL_CHANGE
-                    | FileInformation.STATUS_NOTVERSIONED_EXCLUDED
-            );
+            try {
+                System.setProperty("svnClientAdapterLog.Comment", "Annotating " + name);
+                return Subversion.getInstance().getAnnotator().annotateNameHtml(
+                        name,
+                        files,
+                        FileInformation.STATUS_VERSIONED_UPTODATE
+                        | FileInformation.STATUS_LOCAL_CHANGE
+                        | FileInformation.STATUS_NOTVERSIONED_EXCLUDED
+                );
+            } finally {
+                System.setProperty("svnClientAdapterLog.Comment", "");
+            }
         } else {
             return null;
         }
@@ -72,7 +77,12 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     
     public String annotateName(String name, Set files) {
         if (isManaged(files)) {
-            return Subversion.getInstance().getAnnotator().annotateName(name, files);
+            try {
+                System.setProperty("svnClientAdapterLog.Comment", "Annotating " + name);
+                return Subversion.getInstance().getAnnotator().annotateName(name, files);
+            } finally {
+                System.setProperty("svnClientAdapterLog.Comment", "");
+            }
         } else {
             return null;
         }
@@ -113,18 +123,24 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
             return null;
         }
 
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        boolean isVersioned = false;
-        for (Iterator i = roots.iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            if ((cache.getStatus(file).getStatus() & STATUS_BADGEABLE) != 0) {  
-                isVersioned = true;
-                break;
-            }
-        }
-        if (!isVersioned) return null;
 
-        return Subversion.getInstance().getAnnotator().annotateFolderIcon(roots, icon);
+        try {
+            System.setProperty("svnClientAdapterLog.Comment", "Annotating icons " + fileNames(roots));
+            FileStatusCache cache = Subversion.getInstance().getStatusCache();
+            boolean isVersioned = false;
+            for (Iterator i = roots.iterator(); i.hasNext();) {
+                File file = (File) i.next();
+                if ((cache.getStatus(file).getStatus() & STATUS_BADGEABLE) != 0) {
+                    isVersioned = true;
+                    break;
+                }
+            }
+            if (!isVersioned) return null;
+
+            return Subversion.getInstance().getAnnotator().annotateFolderIcon(roots, icon);
+        } finally {
+            System.setProperty("svnClientAdapterLog.Comment", "");
+        }
     }
 
     public Action[] actions(Set files) {
@@ -136,6 +152,20 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         } else {
             return EMPTY_ACTIONS;
         }
+    }
+
+    public static String fileNames(Set files) {
+        StringBuffer sb = new StringBuffer();
+        Iterator it = files.iterator();
+        while (it.hasNext()) {
+            Object next = it.next();
+            if (next instanceof File) {
+                sb.append(((File)next).getAbsolutePath() + ", ");
+            } else if (next instanceof FileObject) {
+                sb.append(((FileObject)next).getPath() + ", ");
+            }
+        }
+        return sb.toString();
     }
 
     /**

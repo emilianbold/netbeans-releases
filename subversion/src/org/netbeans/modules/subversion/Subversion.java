@@ -84,18 +84,23 @@ public class Subversion {
     }
 
     private void cleanup() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
             public void run() {
-                // HACK: FileStatusProvider cannot do it itself
-                if (FileStatusProvider.getInstance() != null) {
-                    // must be called BEFORE cache is cleaned up
-                    fileStatusCache.addVersioningListener(FileStatusProvider.getInstance());
-                    FileStatusProvider.getInstance().init();
+                try {
+                    System.setProperty("svnClientAdapterLog.Comment", "Cleaning up");
+                    // HACK: FileStatusProvider cannot do it itself
+                    if (FileStatusProvider.getInstance() != null) {
+                        // must be called BEFORE cache is cleaned up
+                        fileStatusCache.addVersioningListener(FileStatusProvider.getInstance());
+                        FileStatusProvider.getInstance().init();
+                    }
+    //                MetadataAttic.cleanUp();
+                    // must be called AFTER the filestatusprovider is attached
+                    fileStatusCache.cleanUp();
+                    filesystemHandler.init();
+                } finally {
+                    System.setProperty("svnClientAdapterLog.Comment", "");
                 }
-//                MetadataAttic.cleanUp();
-                // must be called AFTER the filestatusprovider is attached
-                fileStatusCache.cleanUp();
-                filesystemHandler.init();
             }
         }, 3000);
     }
