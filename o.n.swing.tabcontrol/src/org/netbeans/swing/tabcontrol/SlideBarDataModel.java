@@ -55,6 +55,10 @@ public interface SlideBarDataModel extends TabDataModel {
         public void setOrientation(int orientation) {
             this.orientation = orientation;
         }
+
+        public boolean isMaximized() {
+            return false;
+        }
         
     } // end of Impl
     

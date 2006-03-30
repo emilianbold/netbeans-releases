@@ -125,7 +125,10 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
     }
     
     public void paintBackground (Graphics g) {
-        g.setColor (displayer.getBackground());
+        if( displayer.getModel().size() > 0 && displayer.getModel().isMaximized(0) )
+            g.setColor (ColorUtil.adjustBy( displayer.getBackground(), -50 ));
+        else
+            g.setColor (displayer.getBackground());
         g.fillRect (0, 0, displayer.getWidth(), displayer.getHeight());
     }
 
