@@ -77,7 +77,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     }
 
     private final ISVNClientAdapter adapter;
-    
+    private static final String NEWLINE = System.getProperty("line.separator");
+
     /**
      *
      */
@@ -194,7 +195,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             SVNUrl url = Subversion.getInstance().getUrl(client);               
             ProxyDescriptor proxyDescriptor = Subversion.getInstance().getProxyDescriptor(client); // XXX don't like the way how the descriptor is get
             Socket proxy = null;
-            if (proxyDescriptor != null && proxyDescriptor.getHost() != null ) {
+            if (proxyDescriptor != null && proxyDescriptor.getHost() != null ) { // XXX
                 ConnectivitySettings connectivitySettings = toConnectivitySettings(proxyDescriptor);
                 proxy = new Socket(connectivitySettings.getProxyHost(), connectivitySettings.getProxyPort());
                 connectProxy(proxy, url.getHost(), url.getPort(), connectivitySettings.getProxyHost(), connectivitySettings.getProxyPort());
@@ -242,13 +243,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             }
             
             SVNCredentialFile.CertificateFile cf = new SVNCredentialFile.CertificateFile(url.getProtocol() + "://" + url.getHost() + ":" + url.getPort());
-            String encodedCert = new sun.misc.BASE64Encoder().encode(cert.getEncoded());                
-            encodedCert = encodedCert.replaceAll("\n", ""); // XXX where does this come from ????!!!
-//            String[] str = encodedCert.split("\n"); // XXX whats wrong with replace ???
-//            encodedCert = "";
-//            for (int i = 0; i < str.length; i++) {
-//                encodedCert+=str[i];
-//            }
+            String encodedCert = new sun.misc.BASE64Encoder().encode(cert.getEncoded());
+            encodedCert = encodedCert.replace(NEWLINE, ""); // XXX where does this come from ????!!!
             cf.setCert(encodedCert.getBytes());
             cf.setFailures("10"); // XXX what is this !!??            
             if(dialogDescriptor.getValue() == temporarilyButton) {
@@ -258,7 +254,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             return true;
             
         } catch (Exception ex) {
-            throw ex;
+            throw ex; // XXX if the exception is thrown it doesn't appear in the ui
         }
     }
 
@@ -357,11 +353,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         String str;
         try {
             str = new sun.misc.BASE64Encoder().encode(cert.getEncoded());            
-            String[] strA = str.split("\n"); // XXX this againn:)!
-            str = "";
-            for (int i = 0; i < strA.length; i++) {
-                str+=strA[i];
-            }
+            str = str.replace(NEWLINE, "");
             MessageDigest md5 = MessageDigest.getInstance(alg);
             byte[] url = new sun.misc.BASE64Decoder().decodeBuffer(str);            
             md5.update(url);
