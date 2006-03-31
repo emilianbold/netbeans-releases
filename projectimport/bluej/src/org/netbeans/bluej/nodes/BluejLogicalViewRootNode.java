@@ -149,11 +149,8 @@ public class BluejLogicalViewRootNode extends AbstractNode {
     }
     
     private static class FilterChildrenImpl extends FilterNode.Children {
-        FileObject rootDir;
-        private RootFileOobjectListener listener = null;
         FilterChildrenImpl(Lookup lkp) {
             this(PackageView.createPackageView(getSourceGroup(lkp)));
-            rootDir = getProject(lkp).getProjectDirectory();
         }
         
         FilterChildrenImpl(Node original) {
@@ -171,67 +168,37 @@ public class BluejLogicalViewRootNode extends AbstractNode {
                         ("+libs".equals(fo.getName()) && fo.isFolder()) ||
                         "ctxt".equals(fo.getExt()) ||
                         "class".equals(fo.getExt()) ||
+                        ".DS_STORE".equals(fo.getNameExt()) ||
                         (fo.isFolder() && fo.getFileObject("bluej.pkg") == null)) {
                     return new Node[0];
                 }
-                if (rootDir != null && rootDir.equals(fo)) {
-                    if (listener == null) {
-                        //add just once..
-                        listener = new RootFileOobjectListener(this, orig, fo);
-                        fo.addFileChangeListener(listener);
-                    }
-                    Enumeration en = ((DataFolder)dobj).children();
-                    Collection col = new ArrayList();
-                    while (en.hasMoreElements()) {
-                        DataObject d2 = (DataObject)en.nextElement();
-                        if (d2.getPrimaryFile().isData()) {
-                            col.addAll(Arrays.asList(createNodes(d2.getNodeDelegate().cloneNode())));
-                        }
-                    }
-                    return (Node[])col.toArray(new Node[col.size()]);
-                }
-                return new Node[] {new FilterNode(orig, fo.isData() ? Children.LEAF : new FilterChildrenImpl(orig))};
+                  return new Node[] {new MyFilterWithHtml(orig, new FilterChildrenImpl(orig))};
             }
-            return new Node[0];
+            return new Node[] {new FilterNode(orig)};
         }
+        
         
         public void doRefresh(Node original) {
             refreshKey(original);
         }
     }
     
-    private static class RootFileOobjectListener implements FileChangeListener {
-
-        private FilterChildrenImpl children;
-
-        private Node node;
-
-        private FileObject fileObject;
-        
-        RootFileOobjectListener(FilterChildrenImpl childs, Node nd, FileObject fo) {
-            children = childs;
-            node = nd;
-            fileObject = fo;
+    private static class MyFilterWithHtml extends FilterNode {
+        MyFilterWithHtml(Node orig, Children children) {
+            super(orig, children);
         }
         
-        public void fileAttributeChanged(FileAttributeEvent fileAttributeEvent) {
+        MyFilterWithHtml(Node orig) {
+            super(orig);
         }
-        public void fileChanged(FileEvent fileEvent) {
-            children.doRefresh(node);
-        }
-        public void fileDataCreated(FileEvent fileEvent) {
-            children.doRefresh(node);
-        }
-        public void fileDeleted(FileEvent fileEvent) {
-            children.doRefresh(node);
-        }
-        public void fileFolderCreated(FileEvent fileEvent) {
-            children.doRefresh(node);
-        }
-        public void fileRenamed(FileRenameEvent fileRenameEvent) {
-            children.doRefresh(node);
+
+        public String getHtmlDisplayName() {
+            //for some reason the delegating to package view "<default package>" returns the
+            // value in htmdisplayname and causes an error. workarounding..
+            return null;
         }
         
     }
+    
     
 }

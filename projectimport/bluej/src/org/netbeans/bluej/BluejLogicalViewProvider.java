@@ -15,6 +15,10 @@ package org.netbeans.bluej;
 
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -29,9 +33,14 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -149,8 +158,13 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
         private FileBuiltQuery.Status status = null;
         private boolean attached = false;
         private String readmeIconPath = null;
+        
         BigIconFilterNode(Node original) {
-            super(original, new BigIconFilterChilden(original));
+            this(original, new BigIconFilterChilden(original));
+            
+        }
+        BigIconFilterNode(Node original, org.openide.nodes.Children children) {
+            super(original, children);
             DataObject dobj = (DataObject)original.getLookup().lookup(DataObject.class);
             if (dobj != null) {
                 if ("java".equalsIgnoreCase(dobj.getPrimaryFile().getExt())) {
@@ -222,22 +236,94 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
     } 
     
     private static class BigIconFilterChilden extends FilterNode.Children {
+        FileObject rootDir;
+        private RootFileOobjectListener listener = null;
         BigIconFilterChilden(Node orig) {
             super(orig);
+            DataObject dobj = (DataObject)orig.getLookup().lookup(DataObject.class);
+            if (dobj != null) {
+                Project prj = FileOwnerQuery.getOwner(dobj.getPrimaryFile());
+                if (prj != null) {
+                    rootDir = prj.getProjectDirectory();
+                }
+            }
         }
 
-        /**
-         * Allows subclasses to override
-         * creation of node representants for nodes in the mirrored children
-         * list. The default implementation simply uses {@link Node#cloneNode}.
-         * <p>Note that this method is only suitable for a 1-to-1 mirroring.
-         * 
-         * @param node node to create copy of
-         * @return copy of the original node
-         */
-        protected Node copyNode(Node node) {
-            return new BigIconFilterNode(node);
+        protected Node[] createNodes(Object object) {
+            Node orig = (Node)object;
+            DataObject dobj = (DataObject)orig.getLookup().lookup(DataObject.class);
+            if (dobj != null) {
+                // this has to be copied from the logicalviewrootnode, because
+                // we need to construct the children from the root package directly from DataObjects..
+                
+                FileObject fo = dobj.getPrimaryFile();
+                if ("bluej.pkg".equals(fo.getNameExt()) ||
+                        "build.xml".equals(fo.getNameExt()) ||
+                        "bluej.pkh".equals(fo.getNameExt()) ||
+                        ("+libs".equals(fo.getName()) && fo.isFolder()) ||
+                        "ctxt".equals(fo.getExt()) ||
+                        "class".equals(fo.getExt()) ||
+                        (fo.isFolder() && fo.getFileObject("bluej.pkg") == null)) {
+                    return new Node[0];
+                }
+                if (rootDir != null && rootDir.equals(fo)) {
+                    if (listener == null) {
+                        //add just once..
+                        listener = new RootFileOobjectListener(this, orig, fo);
+                        fo.addFileChangeListener(listener);
+                    }
+                    Enumeration en = ((DataFolder)dobj).children();
+                    Collection col = new ArrayList();
+                    while (en.hasMoreElements()) {
+                        DataObject d2 = (DataObject)en.nextElement();
+                        if (d2.getPrimaryFile().isData()) {
+                            col.addAll(Arrays.asList(createNodes(d2.getNodeDelegate().cloneNode())));
+                        }
+                    }
+                    return (Node[])col.toArray(new Node[col.size()]);
+                }
+                return new Node[] {new BigIconFilterNode(orig, fo.isData() ? Children.LEAF : new BigIconFilterChilden(orig))};
+            }
+            return new Node[0];
         }
+        
+        public void doRefresh(Node original) {
+            refreshKey(original);
+        }
+        
+    private static class RootFileOobjectListener implements FileChangeListener {
+
+        private BigIconFilterChilden children;
+
+        private Node node;
+
+        private FileObject fileObject;
+        
+        RootFileOobjectListener(BigIconFilterChilden childs, Node nd, FileObject fo) {
+            children = childs;
+            node = nd;
+            fileObject = fo;
+        }
+        
+        public void fileAttributeChanged(FileAttributeEvent fileAttributeEvent) {
+        }
+        public void fileChanged(FileEvent fileEvent) {
+            children.doRefresh(node);
+        }
+        public void fileDataCreated(FileEvent fileEvent) {
+            children.doRefresh(node);
+        }
+        public void fileDeleted(FileEvent fileEvent) {
+            children.doRefresh(node);
+        }
+        public void fileFolderCreated(FileEvent fileEvent) {
+            children.doRefresh(node);
+        }
+        public void fileRenamed(FileRenameEvent fileRenameEvent) {
+            children.doRefresh(node);
+        }
+        
+    }
         
     }
 }
