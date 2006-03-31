@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,10 @@ package org.openide.explorer.view;
 
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -23,12 +26,17 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author  Marian Petras
+ * @author  Marian Petras, Andrei Badea
  */
 public final class TreeViewTest extends NbTestCase {
     
@@ -230,6 +238,106 @@ public final class TreeViewTest extends NbTestCase {
             return explManager;
         }
         
+    }
+    
+    /**
+     * Used as the preferred actions by the nodes below
+     */
+    private static class MyAction extends NodeAction {
+
+        public boolean enable(Node[] nodes) {
+            return true;
+        }
+
+        public void performAction(Node[] nodes) {
+        }
+
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+        public String getName() {
+            return "My Action";
+        }
+
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new MyDelegateAction(actionContext);
+        }
+    }
+    
+    /**
+     * Returned by MyAction.createContextAwareInstance().
+     */
+    private static class MyDelegateAction extends AbstractAction {
+        Lookup contextLookup;
+        
+        public MyDelegateAction(Lookup contextLookup) {
+            this.contextLookup = contextLookup;
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
+
+    private static class NodeWhichHasItselfInLookup extends AbstractNode {
+        public NodeWhichHasItselfInLookup() {
+            super(Children.LEAF);
+        }
+
+        public Action getPreferredAction() {
+            return SystemAction.get(MyAction.class);
+        }
+    }
+
+    private static class NodeWhichDoesntHaveItselfInLookup extends AbstractNode {
+        public NodeWhichDoesntHaveItselfInLookup() {
+            super(Children.LEAF, Lookup.EMPTY);
+        }
+
+        public Action getPreferredAction() {
+            return SystemAction.get(MyAction.class);
+        }
+    }
+    
+    /**
+     * Tests that the context lookup created by TreeView.takeAction() only contains
+     * the node once when the node contains itself in its lookup.
+     */
+    public void testTakeActionNodeInLookup() {
+        doTestTakeAction(new NodeWhichHasItselfInLookup());        
+    }
+
+    /**
+     * Tests that the context lookup created by TreeView.takeAction() only contains
+     * the node once when the node doesn't contain itself in its lookup.
+     */
+    public void testTakeActionNodeNotInLookup() {
+        doTestTakeAction(new NodeWhichDoesntHaveItselfInLookup());
+    }
+    
+    /**
+     * Tests that the context lookup created by TreeView.takeAction() only contains
+     * the node once when the node contains itself in its lookup and is filtered by a FilterNode.
+     */
+    public void testTakeActionNodeInLookupAndFiltered() {
+        doTestTakeAction(new FilterNode(new NodeWhichHasItselfInLookup()));        
+    }
+
+    /**
+     * Tests that the context lookup created by TreeView.takeAction() only contains
+     * the node once when the node doesn't contain itself in its lookup
+     * and is filtered by a FilterNode.
+     */
+    public void testTakeActionNodeNotInLookupAndFiltered() {
+        doTestTakeAction(new FilterNode(new NodeWhichDoesntHaveItselfInLookup()));
+    }
+    
+    private void doTestTakeAction(Node node) {
+        // if the preferred action instanceof ContextAwareAction
+        // calls its createContextAwareInstance() method
+        Action a = TreeView.takeAction(node.getPreferredAction(), node);
+        int count = ((MyDelegateAction)a).contextLookup.lookup(new Lookup.Template(Node.class)).allInstances().size();
+        assertEquals("The context lookup created by TreeView.takeAction() should contain the node only once.", 1, count);
     }
     
 }
