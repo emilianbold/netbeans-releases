@@ -33,19 +33,40 @@ public class RepositoryPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         setName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/repository/Bundle").getString("BK2018"));
-        titleLabel.setText("_titleLAbel");
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_RepositoryPanel"));
+        titleLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/repository/Bundle").getString("BK0001"));
+        titleLabel.getAccessibleContext().setAccessibleDescription("Specify Subversion repository location");
+        titleLabel.getAccessibleContext().setAccessibleParent(this);
 
-        jLabel2.setText("Repository:");
+        jLabel2.setLabelFor(urlComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0002"));
+        jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "TT_RepositoryUrl"));
+        jLabel2.getAccessibleContext().setAccessibleParent(this);
 
         urlComboBox.setEditable(true);
+        urlComboBox.getAccessibleContext().setAccessibleParent(this);
 
-        userLabel.setText("User:");
+        userLabel.setLabelFor(userTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0003"));
+        userLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "TT_UserName"));
+        userLabel.getAccessibleContext().setAccessibleParent(this);
 
-        passwordLabel.setText("Password:");
+        passwordLabel.setLabelFor(userPasswordField);
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0004"));
+        passwordLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "TT_Password"));
+        passwordLabel.getAccessibleContext().setAccessibleParent(this);
 
-        proxySettingsButton.setText("Proxy Configuration...");
+        userTextField.getAccessibleContext().setAccessibleParent(this);
 
-        leaveBlankLabel.setText("(leave blank for anonymous access)");
+        org.openide.awt.Mnemonics.setLocalizedText(proxySettingsButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0006"));
+        proxySettingsButton.setToolTipText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "ACSD_ProxyDialog"));
+        proxySettingsButton.getAccessibleContext().setAccessibleParent(this);
+
+        leaveBlankLabel.setText(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0005"));
+        leaveBlankLabel.getAccessibleContext().setAccessibleDescription("information message");
+        leaveBlankLabel.getAccessibleContext().setAccessibleParent(this);
+
+        userPasswordField.getAccessibleContext().setAccessibleParent(this);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -66,12 +87,12 @@ public class RepositoryPanel extends javax.swing.JPanel {
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(layout.createSequentialGroup()
                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
-                                            .add(userPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE))
+                                            .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE)
+                                            .add(userPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE))
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(leaveBlankLabel)
                                         .add(111, 111, 111))
-                                    .add(urlComboBox, 0, 498, Short.MAX_VALUE))))
+                                    .add(urlComboBox, 0, 469, Short.MAX_VALUE))))
                         .addContainerGap())
                     .add(titleLabel)))
         );
