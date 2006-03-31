@@ -70,6 +70,7 @@ public class Subversion {
     
     private void init() {
         try {
+            Diagnostics.init();
             CmdLineClientAdapterFactory.setup();
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().annotate(ex, UnsupportedSvnClientAdapter.getMessage());
@@ -87,7 +88,7 @@ public class Subversion {
         rp.post(new Runnable() {
             public void run() {
                 try {
-                    System.setProperty("svnClientAdapterLog.Comment", "Cleaning up");
+                    Diagnostics.println("Cleaning up");
                     // HACK: FileStatusProvider cannot do it itself
                     if (FileStatusProvider.getInstance() != null) {
                         // must be called BEFORE cache is cleaned up
@@ -99,7 +100,7 @@ public class Subversion {
                     fileStatusCache.cleanUp();
                     filesystemHandler.init();
                 } finally {
-                    System.setProperty("svnClientAdapterLog.Comment", "");
+                    Diagnostics.println("END Cleaning up");
                 }
             }
         }, 3000);

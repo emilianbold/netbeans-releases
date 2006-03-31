@@ -59,7 +59,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     public String annotateNameHtml(String name, Set files) {        
         if (isManaged(files)) {
             try {
-                System.setProperty("svnClientAdapterLog.Comment", "Annotating " + name);
+                Diagnostics.println("Annotating " + name);
                 return Subversion.getInstance().getAnnotator().annotateNameHtml(
                         name,
                         files,
@@ -68,7 +68,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
                         | FileInformation.STATUS_NOTVERSIONED_EXCLUDED
                 );
             } finally {
-                System.setProperty("svnClientAdapterLog.Comment", "");
+                Diagnostics.println("END Annotating " + name);
             }
         } else {
             return null;
@@ -78,10 +78,10 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
     public String annotateName(String name, Set files) {
         if (isManaged(files)) {
             try {
-                System.setProperty("svnClientAdapterLog.Comment", "Annotating " + name);
+                Diagnostics.println("Annotating " + name);
                 return Subversion.getInstance().getAnnotator().annotateName(name, files);
             } finally {
-                System.setProperty("svnClientAdapterLog.Comment", "");
+                Diagnostics.println("END Annotating " + name);
             }
         } else {
             return null;
@@ -125,7 +125,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
 
 
         try {
-            System.setProperty("svnClientAdapterLog.Comment", "Annotating icons " + fileNames(roots));
+            Diagnostics.println("Annotating icons " + fileNames(roots));
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             boolean isVersioned = false;
             for (Iterator i = roots.iterator(); i.hasNext();) {
@@ -139,7 +139,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
 
             return Subversion.getInstance().getAnnotator().annotateFolderIcon(roots, icon);
         } finally {
-            System.setProperty("svnClientAdapterLog.Comment", "");
+            Diagnostics.println("END Annotating icons " + fileNames(roots));
         }
     }
 
