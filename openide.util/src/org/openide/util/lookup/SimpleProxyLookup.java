@@ -66,6 +66,10 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
             ArrayList<Object> evAndListeners = new ArrayList<Object>();
             for (Iterator<Reference<ProxyResult<?>>> it = toCheck; it.hasNext(); ) {
                 java.lang.ref.Reference<ProxyResult<?>> ref = it.next();
+                if (ref == null) {
+                    continue;
+                }
+
                 ProxyResult<?> p = ref.get();
 
                 if (p != null && p.updateLookup(l)) {
