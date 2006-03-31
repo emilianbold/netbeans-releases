@@ -7,14 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.explorer;
 
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
@@ -23,8 +21,8 @@ import java.util.Arrays;
 import java.awt.BorderLayout;
 import org.openide.explorer.view.BeanTreeView;
 import javax.swing.JLabel;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.ActionsInfraHid;
 
 /** Test finding help IDs on explorers.
  * @author Jesse Glick
@@ -32,18 +30,8 @@ import org.openide.util.actions.ActionsInfraHid;
  */
 public class FindHelpTest extends NbTestCase {
     
-    static {
-        // Do not want to rely on core-windows.jar at all. Use a dummy WindowManager impl.
-        System.setProperty("org.openide.util.Lookup", ActionsInfraHid.UsefulLookup.class.getName());
-    }
-    
     public FindHelpTest(String name) {
         super(name);
-    }
-    
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(FindHelpTest.class));
-        System.exit(0);
     }
     
     private static Node[] nodes;
