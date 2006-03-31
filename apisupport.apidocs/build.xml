@@ -29,6 +29,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="docs" depends="docs-check" unless="have.docs">
         <!-- Build Javadoc in the usual way: -->
         <property file="../../nbbuild/build.properties"/>
+        <mkdir dir="${docs.dir}"/>
         <ant dir="../../nbbuild" target="build-javadoc" inheritall="false">
             <!-- Stable only: -->
             <property name="config.javadoc.all" value="${config.javadoc.stable}"/>
@@ -49,13 +50,10 @@ Microsystems, Inc. All Rights Reserved.
               so skip forbidden links check
             -->
             <property name="javadoc.check.forbidden.links" value="false" />
+
+            <property name="javadoc.web.zip" value=""/>
+            <property name="javadoc.zip" value="${docs.zip}"/>
         </ant>
-        <mkdir dir="${docs.dir}"/>
-        <zip zipfile="${docs.zip}" compress="true">
-            <fileset dir="${local.javadoc.dir}">
-                <exclude name="*.zip"/>
-            </fileset>
-        </zip>
     </target>
     
     <target name="javadoc"/><!-- dummy, see above -->

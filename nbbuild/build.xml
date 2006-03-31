@@ -244,32 +244,40 @@ Microsystems, Inc. All Rights Reserved.
       <mkdir dir="${export.apichanges}" />
       
       <for-each startdir=".." target="netbeans-javadoc" locations="${modules.foreach}"/>
-      
+
       <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-xml" />
       <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-html" />
       <antcall inheritall="true" inheritrefs="true" target="javadoc-check-broken-links" />
+
+
+      <property name="javadoc.web.zip" value="NetBeans-${buildnum}-javadoc-web.zip"/>
+      <property name="javadoc.zip" value="NetBeans-${buildnum}-javadoc.zip"/>
+      <condition property="skip.javadoc.web.zip" value="true">
+          <equals arg1="${javadoc.web.zip}" arg2=""/>
+      </condition>
 
 
       <antcall inheritall="true" inheritrefs="true" target="javadoc-build-zip-web"/>
       <antcall inheritall="true" inheritrefs="true" target="javadoc-build-zip-lite"/>
   </target>
 
-  <target name="javadoc-build-zip-web" depends="init">
-    <zip destfile="NetBeans-${buildnum}-javadoc-web.zip" update="true" duplicate="preserve" compress="true">
-      <zipfileset dir="build/javadoc" filemode="644" prefix="">
+  <target name="javadoc-build-zip-web" depends="init" unless="skip.javadoc.web.zip">
+    <zip destfile="${javadoc.web.zip}" update="true" duplicate="preserve" compress="true">
+      <zipfileset dir="${netbeans.javadoc.dir}" filemode="644" prefix="">
         <include name="**/*"/>
       </zipfileset>
     </zip>
   </target>
   <target name="javadoc-build-zip-lite" depends="init">
-    <zip destfile="NetBeans-${buildnum}-javadoc.zip" update="true" duplicate="preserve" compress="true">
+    <zip destfile="${javadoc.zip}" update="true" duplicate="preserve" compress="true">
       <zipfileset dir="build/tmp" filemode="644" prefix="">
         <include name="overview-summary.html"/>
       </zipfileset>
-      <zipfileset dir="build/javadoc" filemode="644" prefix="">
+      <zipfileset dir="${netbeans.javadoc.dir}" filemode="644" prefix="">
         <include name="**/*"/>
         <exclude name="*.zip"/>
         <exclude name="overview-summary.html"/>
+        <exclude name="tmp/**"/>
       </zipfileset>
     </zip>
   </target>
