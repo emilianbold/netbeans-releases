@@ -128,7 +128,11 @@ class ShortcutsFolder {
                 String shortcuts = dataObject.getName ();
                 debug.log ("  " + shortcuts + " : " + action);
                 KeyStroke[] keyStrokes = Utilities.stringToKeys (shortcuts);
-                addShortcut (keymap, action, keyStrokes);
+                if (keyStrokes != null) {
+                    addShortcut(keymap, action, keyStrokes);
+                } else { // see e.g. secondary exception in #74169
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Unrecognized shortcut name from " + dataObject.getPrimaryFile().getPath());
+                }
             } catch (Exception ex) {
                 ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
             }
