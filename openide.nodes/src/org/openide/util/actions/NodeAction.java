@@ -20,6 +20,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
@@ -466,11 +467,14 @@ OUTER:
             Iterator it = as.iterator();
 
             while (it.hasNext()) {
-                NodeAction a = (NodeAction) it.next();
+                final NodeAction a = (NodeAction) it.next();
 
                 if (a.surviveFocusChange() == sfc) {
-                    // XXX should this be done in EQ? otherwise lookup changes can cause ISEs from here
-                    a.maybeFireEnabledChange();
+                    Mutex.EVENT.readAccess(new Runnable() {
+                        public void run() {
+                            a.maybeFireEnabledChange();
+                        }
+                    });
                 }
             }
         }

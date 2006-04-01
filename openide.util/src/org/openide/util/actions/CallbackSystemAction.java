@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,12 +23,14 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import org.openide.ErrorManager;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
@@ -44,10 +46,10 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
     private static final String PROP_ACTION_PERFORMER = "actionPerformer"; // NOI18N
 
     /** a list of all actions that has survive focus change set to false */
-    private static final WeakSet<Class<? extends SystemAction>> notSurviving = new WeakSet<Class<? extends SystemAction>>(37);
+    private static final WeakSet<Class<? extends CallbackSystemAction>> notSurviving = new WeakSet<Class<? extends CallbackSystemAction>>(37);
 
-    /** a list of CallableSystemAction actions surviving focus change */
-    private static final WeakSet<Class<? extends SystemAction>> surviving = new WeakSet<Class<? extends SystemAction>>(37);
+    /** a list of actions surviving focus change */
+    private static final WeakSet<Class<? extends CallbackSystemAction>> surviving = new WeakSet<Class<? extends CallbackSystemAction>>(37);
 
     /** key to access listener */
     private static final Object LISTENER = new Object();
@@ -254,18 +256,15 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
     /** Array of actions from a set of classes.
      */
-    private static ArrayList<SystemAction> toInstances(java.util.Set<Class<? extends SystemAction>> s) {
-        ArrayList<SystemAction> actions;
+    private static List<CallbackSystemAction> toInstances(java.util.Set<Class<? extends CallbackSystemAction>> s) {
+        List<CallbackSystemAction> actions;
 
         synchronized (notSurviving) {
-            actions = new ArrayList<SystemAction>(s.size());
+            actions = new ArrayList<CallbackSystemAction>(s.size());
 
-            Iterator<Class<? extends SystemAction>> it = s.iterator();
+            for (Class<? extends CallbackSystemAction> c : s) {
 
-            while (it.hasNext()) {
-                Class<? extends SystemAction> c = it.next();
-
-                SystemAction a = SystemAction.findObject(c, false);
+                CallbackSystemAction a = SystemAction.findObject(c, false);
 
                 if (a != null) {
                     actions.add(a);
@@ -280,23 +279,17 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
      * on true.
      */
     private static void clearActionPerformers() {
-        ArrayList actions = toInstances(notSurviving);
+        List<CallbackSystemAction> actions = toInstances(notSurviving);
 
         // clear the performers out of any loop
-        Iterator it = actions.iterator();
-
-        while (it.hasNext()) {
-            CallbackSystemAction a = (CallbackSystemAction) it.next();
+        for (CallbackSystemAction a : actions) {
             a.setActionPerformer(null);
         }
 
         actions = toInstances(surviving);
 
         // clear the performers out of any loop
-        it = actions.iterator();
-
-        while (it.hasNext()) {
-            CallbackSystemAction a = (CallbackSystemAction) it.next();
+        for (CallbackSystemAction a : actions) {
 
             if (errLog) {
                 err.log("updateEnabled: " + a); // NOI18N
@@ -380,7 +373,11 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
                 err.log("clearActionPerformers"); // NOI18N
             }
 
-            clearActionPerformers();
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    clearActionPerformers();
+                }
+            });
         }
     }
      // end of LookupListener
