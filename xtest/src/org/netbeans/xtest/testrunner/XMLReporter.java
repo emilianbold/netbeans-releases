@@ -8,25 +8,40 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.xtest.testrunner;
 
-import org.netbeans.xtest.testrunner.*;
-import org.netbeans.xtest.pe.xmlbeans.*;
-import org.netbeans.xtest.pe.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
+import org.netbeans.junit.Manager;
+import org.netbeans.junit.NbPerformanceTest;
+import org.netbeans.junit.NbTest;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.xtest.pe.xmlbeans.Data;
+import org.netbeans.xtest.pe.xmlbeans.PerformanceData;
+import org.netbeans.xtest.pe.xmlbeans.UnitTestCase;
+import org.netbeans.xtest.pe.xmlbeans.UnitTestSuite;
+import org.netbeans.xtest.pe.xmlbeans.XMLBean;
 import org.netbeans.xtest.util.SerializeDOM;
 
-import java.util.*;
-import junit.framework.*;
-import org.netbeans.junit.*;
-import java.io.*;
-
 /**
+ * Creates XML results. Listens for failures and errors and handles error
+ * messages, times and success rates.
  *
  * @author  mb115822
- * @version 
  */
 public class XMLReporter implements JUnitTestListener {
 
@@ -111,32 +126,27 @@ public class XMLReporter implements JUnitTestListener {
     }
     
     public void endTest(junit.framework.Test test) {       
-        // moved to startTest
-        //testsTotal++;        
-        
         // test didn't hangs so it isn't error.
         testsErrors--;
             
         // did the test used workdir ?
         if (test instanceof NbTestCase) {
             NbTestCase nbtest = (NbTestCase)test;
-            //try {
-                String workdir = nbtest.getWorkDirPath();
-                File workdirFile = new File(workdir);
-                if (workdirFile.exists()) {
-                    String rootWorkdir = Manager.getWorkDirPath()+File.separator;
-                    String relativePath = XMLBean.cutPrefix(workdir,rootWorkdir);
-                    currentTestCase.xmlat_workdir = relativePath;
-                }
-            //} catch (IOException ioe) {
-                // no workdir is available ... 
-            //}
+            String workdir = nbtest.getWorkDirPath();
+            File workdirFile = new File(workdir);
+            if (workdirFile.exists()) {
+                String rootWorkdir = Manager.getWorkDirPath()+File.separator;
+                String relativePath = XMLBean.cutPrefix(workdir,rootWorkdir);
+                currentTestCase.xmlat_workdir = relativePath;
+            }
         }
         
         currentTestCase.xmlat_time = System.currentTimeMillis() - caseTime;
         if (currentTestCase.xmlat_result.equals(UnitTestCase.TEST_UNKNOWN)) {
             // test didn't fail or finished with error -> it passed :-)
             currentTestCase.xmlat_result=UnitTestCase.TEST_PASS;
+            // reset message
+            currentTestCase.xmlat_message = "";
             testsPassed++;
             if (test instanceof NbTest) {
                String exp_mesg = ((NbTest)test).getExpectedFail();
@@ -161,36 +171,33 @@ public class XMLReporter implements JUnitTestListener {
             }
             currentTestSuite.xmlel_Data[0].xmlel_PerformanceData = (PerformanceData[])(performanceData.toArray(new PerformanceData[0]));
         }
-        
+
         // save the result
         saveCurrentSuite();
-        
     }
     
     public void startTest(junit.framework.Test test) {
-        testsTotal++;     
-        // if test hangs, it will be counted as error.
-        testsErrors++;
-        
         //System.out.println("reporter:startTest()");
-        currentTestCase = new UnitTestCase();
         if (test instanceof TestCase) {
             currentTestName = ((TestCase)test).getName();            
         } else {
             currentTestName = UNKNOWN_TEST;
         }
-        currentTestCase.xmlat_name = currentTestName;
-        
         currentClassName = test.getClass().getName();
-        currentTestCase.xmlat_class = currentClassName;
-        
-        currentTestCase.xmlat_result = UnitTestCase.TEST_UNKNOWN;
-        // anybody knows why we decided to use this ?
-        //currentTestCase.xmlat_test = "x";        
-        // add the testcase to the current suite
-        runTestCases.add(currentTestCase);        
-        currentTestSuite.xmlel_UnitTestCase = (UnitTestCase[])(runTestCases.toArray(new UnitTestCase[0]));
-        
+        currentTestCase = null;
+        // finds test case in list of test cases to be executed
+        for (Iterator it = runTestCases.iterator(); it.hasNext();) {
+            UnitTestCase testCaseBean = (UnitTestCase)it.next();
+            if(testCaseBean.xmlat_class.equals(currentClassName) &&
+                    testCaseBean.xmlat_name.equals(currentTestName)) {
+                currentTestCase = testCaseBean;
+                break;
+            }
+        }
+        // Change message from "Did not start" to "Did not finish". Message is
+        // then updated in endTest, addFailure or addError.
+        currentTestCase.xmlat_message = "Did not finish.";
+
         // here comes the statistics for up to date results
         currentTestSuite.xmlat_testsTotal = testsTotal;
         currentTestSuite.xmlat_testsPass = testsPassed;
@@ -205,8 +212,6 @@ public class XMLReporter implements JUnitTestListener {
         caseTime = System.currentTimeMillis();
     }
 
-    
-    
     private void recreateOutput() throws IOException {
         // cannot recreate output if outStream is not a file
         if (outFile == null) {
@@ -249,19 +254,16 @@ public class XMLReporter implements JUnitTestListener {
         // now get it out !!!
         saveCurrentSuite();
     }
-    
-    /**
-     * The whole testsuite started.
-     */
+
+    /** The whole testsuite started. */
     public void startTestSuite(TestSuite suite) {
-        //System.out.println("reporter:startTestSuite()");
+        //System.out.println("reporter:startTestSuite()-"+suite.getName());
         // reset the arrays ...
-        //testSuites = new ArrayList();
         runTestCases = new ArrayList();
         performanceData = new ArrayList();                
         // create new results file
         outFile = new File(resultsDirectory, "TEST-"+suite.getName()+".xml");
-        //
+
         currentTestSuite = new UnitTestSuite();
         suiteTime = System.currentTimeMillis();
         currentSuiteName = suite.getName();
@@ -269,15 +271,51 @@ public class XMLReporter implements JUnitTestListener {
         currentTestSuite.xmlat_timeStamp = new java.sql.Timestamp(suiteTime);
         currentTestSuite.xmlat_unexpectedFailure = "Suite is not finished";
         currentTestSuite.xmlel_Data = new Data[]{new Data()};
-        testsTotal = 0;
+
+        addTestCaseBeans(suite);
+        currentTestSuite.xmlel_UnitTestCase = (UnitTestCase[])(runTestCases.toArray(new UnitTestCase[0]));
+
+        testsTotal = runTestCases.size();
         testsPassed = 0;
         testsFailed = 0;
-        testsErrors = 0;
+        testsErrors = testsTotal;
         testsUnexpectedPassed = 0;
         testsExpectedFailed = 0;
         saveCurrentSuite();        
     }
-    
+
+    /** Recursively add test cases from suite to the list of test case beans. */
+    private void addTestCaseBeans(TestSuite suite) {
+        for (Enumeration e = suite.tests(); e.hasMoreElements(); ) {
+            Test test = (Test)e.nextElement();
+            if(test instanceof TestSuite) {
+                TestSuite subSuite = (TestSuite)test;
+                // add test cases from suite recursively
+                addTestCaseBeans(subSuite);
+                continue;
+            }
+            if(test instanceof NbTestCase) {
+                NbTestCase nbTestCase = (NbTestCase)test;
+                if(!nbTestCase.canRun()) {
+                    // test case excluded in cfg file => do not add it to suite
+                    continue;
+                }
+            }
+            // now add test case bean to the list
+            UnitTestCase testCaseBean = new UnitTestCase();
+            if (test instanceof TestCase) {
+                testCaseBean.xmlat_name = ((TestCase)test).getName();
+            } else {
+                testCaseBean.xmlat_name = UNKNOWN_TEST;
+            }
+            testCaseBean.xmlat_class = test.getClass().getName();
+            testCaseBean.xmlat_result = UnitTestCase.TEST_UNKNOWN;
+            testCaseBean.xmlat_message = "Did not start.";
+            // add the testcase to the current suite
+            runTestCases.add(testCaseBean);
+        }
+    }
+
     private boolean saveCurrentSuite() {
         try {
             //System.out.println("reporter:saveCurrentSuite()");
