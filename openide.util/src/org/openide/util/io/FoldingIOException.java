@@ -38,7 +38,7 @@ public class FoldingIOException extends IOException {
      * and is not deprecated.
      */
     FoldingIOException(Throwable t, Object nothing) {
-        super(t.getMessage());
+        this(t);
     }
 
     /** Prints stack trace of the foreign exception */
