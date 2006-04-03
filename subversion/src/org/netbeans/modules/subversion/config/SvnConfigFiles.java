@@ -71,8 +71,16 @@ public class SvnConfigFiles {
             return null;
         }
         String host = (String) group.get("http-proxy-host");
+        if(host == null || host.length() == 0) {
+            return null;
+        }
         String portString = (String) group.get("http-proxy-port");
-        int port = Integer.getInteger(portString).intValue(); // XXX what if null ?
+        int port;
+        if(portString == null || portString.length() == 0) {
+            port = 0; // XXX
+        } else {
+            port = Integer.parseInt(portString); // XXX what if null ?
+        }
         String username = (String) group.get("http-proxy-username");
         String password = (String) group.get("http-proxy-password");
         return  new ProxyDescriptor(ProxyDescriptor.TYPE_HTTP, host, port, username, password);    
@@ -126,16 +134,21 @@ public class SvnConfigFiles {
         Ini.Section groups = getGroups();
         for (Iterator it = groups.keySet().iterator(); it.hasNext();) {
             String key = (String) it.next();
-            String value = (String) groups.get(key);
+            String value = ((String) groups.get(key)).trim();
+
+            String host = url.getHost().trim();
+            if(match(value, host)) {
+                return (Ini.Section) servers.get(key);
+            }
 
             InetAddress hostAddress = null;
             try {
                 hostAddress = InetAddress.getByName(url.getHost().trim());
             } catch (UnknownHostException ex) {
-                ErrorManager.getDefault().notify(ex);
-                return null; // XXX carefull - will create a new section :(
+                // behind a proxy ?
+                return null;
             }
-            if(match(value.trim(), hostAddress)) {
+            if(match(value, hostAddress.getHostName()) || match(value, hostAddress.getHostAddress()) ) {
                 return (Ini.Section) servers.get(key);
             }            
         }
@@ -143,36 +156,18 @@ public class SvnConfigFiles {
     }
 
     // XXX test me
-    private boolean match(String value, InetAddress hostAddress) {
+    private boolean match(String value, String host) {
         String[] values = value.split(",");
         for (int i = 0; i < values.length; i++) {
             value = values[i].trim();
 
-            if(value.equals("*") ||
-               value.equals(hostAddress.getHostName()) ||
-               value.equals(hostAddress.getHostAddress()) )
-            {
+            if(value.equals("*") || value.equals(host) ) {
                 return true;
             }
 
             int idx = value.indexOf("*");
-            if(idx < 0) {
-                InetAddress valueAddress;
-                try {
-                    valueAddress = InetAddress.getByName(value);
-                } catch (UnknownHostException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    return false;
-                }
-                if(valueAddress.getHostAddress().equals(hostAddress.getHostAddress())) {
-                    return true;
-                }
-            } else {
-                if(matchSegments(value, hostAddress.getHostName()) ||
-                   matchSegments(value, hostAddress.getHostAddress()))
-                {
-                    return true;
-                }
+            if(idx > -1 && matchSegments(value, host) ) {
+                return true;
             }
         }
         return false;

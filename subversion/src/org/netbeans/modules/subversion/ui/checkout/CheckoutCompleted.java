@@ -30,6 +30,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnCancellSupport;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -64,7 +65,7 @@ public class CheckoutCompleted implements ActionListener {
         this.workingFolder = workingFolder;
     }
 
-    public void scanForProjects() {
+    public void scanForProjects(SvnCancellSupport support) {
 
         List checkedOutProjects = new LinkedList();
         File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
@@ -73,6 +74,9 @@ public class CheckoutCompleted implements ActionListener {
         FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
         if (fo != null) {            
             for (int i = 0; i < checkedOutFolders.length; i++) {
+                if(support!=null && support.isCanceled()) {
+                    return;
+                }
                 String module = checkedOutFolders[i];
                 if (".".equals(module)) {  // NOI18N
                     checkedOutProjects = ProjectUtilities.scanForProjects(fo);
@@ -138,6 +142,9 @@ public class CheckoutCompleted implements ActionListener {
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CheckoutAction.class, "ACSD_CheckoutCompleted_Dialog"));
 
+        if(support!=null && support.isCanceled()) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 dialog.setVisible(true);

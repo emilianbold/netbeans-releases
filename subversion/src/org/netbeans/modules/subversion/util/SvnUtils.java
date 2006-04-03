@@ -36,7 +36,7 @@ import java.awt.Window;
 import java.awt.KeyboardFocusManager;
 import java.awt.Dialog;
 import java.awt.Frame;
-import org.netbeans.modules.subversion.client.ExceptionInformation;
+import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -384,9 +384,8 @@ public class SvnUtils {
             ISVNInfo info = null;
             try {
                 info = client.getInfoFromWorkingCopy(file);
-            } catch (SVNClientException ex) {
-                ExceptionInformation ei = new ExceptionInformation(ex);
-                if (ei.isUnversionedResource()) {
+            } catch (SVNClientException ex) {                
+                if (ExceptionHandler.isUnversionedResource(ex)) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
@@ -403,8 +402,7 @@ public class SvnUtils {
                     try {
                         repositoryURL = client.getInfo(fileURL).getRepository();
                     } catch (SVNClientException ex) {
-                        ExceptionInformation ei = new ExceptionInformation(ex);
-                        if (ei.isUnversionedResource()) {
+                        if (ExceptionHandler.isUnversionedResource(ex)) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
                     }
@@ -453,8 +451,7 @@ public class SvnUtils {
             try {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
-                ExceptionInformation ei = new ExceptionInformation(ex);
-                if (ei.isUnversionedResource()) {
+                if (ExceptionHandler.isUnversionedResource(ex)) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
@@ -472,8 +469,7 @@ public class SvnUtils {
                     try {
                         repositoryURL = client.getInfo(fileURL).getRepository();
                     } catch (SVNClientException ex) {
-                        ExceptionInformation ei = new ExceptionInformation(ex);
-                        if (ei.isUnversionedResource()) {
+                        if (ExceptionHandler.isUnversionedResource(ex)) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
                     }
@@ -517,8 +513,7 @@ public class SvnUtils {
             try {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
-                ExceptionInformation ei = new ExceptionInformation(ex);
-                if (ei.isUnversionedResource()) {  
+                if (ExceptionHandler.isUnversionedResource(ex)) {  
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }

@@ -149,7 +149,7 @@ public class RepositoryStep
             }
         };
 
-        Thread workerThread = new Thread(worker, "SVN I/O Probe ");  // NOI18N
+        Thread workerThread = new Thread(worker, "SVN Repository Probe");  // NOI18N
         workerThread.start();
         try {
             workerThread.join();
@@ -162,7 +162,12 @@ public class RepositoryStep
         } catch (InterruptedException e) {
             //invalid(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2023"));  // NOI18N
             ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, "Passing interrupt to possibly uninterruptible nested thread: " + workerThread);  // NOI18N
+            err.annotate(e, "Passing interrupt to possibly uninterruptible nested thread: " + workerThread);
+            try {
+                client.cancelOperation();
+            } catch (SVNClientException ex) {
+                ex.printStackTrace();  // cannot happen
+            }
             workerThread.interrupt();
             valid("Action interrupted by user."); // should be a user action, so set again on valid ... 
             err.notify(ErrorManager.INFORMATIONAL, e);
@@ -175,7 +180,7 @@ public class RepositoryStep
             });
         }    
     }
-
+    
     public void prepareValidation() {
         progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryStep.class, "BK2012")); // NOI18N
         JComponent bar = ProgressHandleFactory.createProgressComponent(progress);

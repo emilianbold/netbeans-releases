@@ -14,7 +14,7 @@
 package org.netbeans.modules.subversion;
 
 import java.util.regex.*;
-import org.netbeans.modules.subversion.client.ExceptionInformation;
+import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.subversion.settings.MetadataAttic;
@@ -220,12 +220,11 @@ public class FileStatusCache implements ISVNNotifyListener {
             if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
                 status = null;
             }
-        } catch (SVNClientException e) {
-            ExceptionInformation ei = new ExceptionInformation(e);
+        } catch (SVNClientException e) {            
             // unversioned resource is expected getSingleStatus()
             // does not return SVNStatusKind.UNVERSIONED but throws exception instead
             // XXX why it does not return SVNStatusKind.UNVERSIONED
-            if (ei.isUnversionedResource() == false) {
+            if (ExceptionHandler.isUnversionedResource(e) == false) {
                 // missing or damaged entries
                 // or ignored file
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);

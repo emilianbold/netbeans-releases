@@ -51,9 +51,9 @@ public class Subversion {
     private FilesystemHandler   filesystemHandler;
     private Annotator           annotator;
     private HashMap             clientsToUrl;
+    private HashMap             processorsToUrl;
     private HashMap             clientsToProxyDescriptor;
-    private HashMap             urlToClients;
-    private RequestProcessor rp = new RequestProcessor("Subversion", 1, true); // NOI18N
+    private HashMap             urlToClients;    
 
     private OutputLogger outputLogger;
 
@@ -367,8 +367,26 @@ public class Subversion {
 
     /**
      * Serializes all SVN requests (moves them out of AWT).
+     * XXX delete me!!!
      */
+    private RequestProcessor rp = new RequestProcessor("Subversion", 1, true); // NOI18N
     public RequestProcessor.Task postRequest(Runnable run) {
         return rp.post(run);
+    }
+    
+    /**
+     * Serializes all SVN requests (moves them out of AWT).
+     */
+    public RequestProcessor getRequestProccessor(SVNUrl url) {
+        if(processorsToUrl == null) {
+            processorsToUrl = new HashMap();
+        }
+        String key = url.toString();
+        RequestProcessor rp = (RequestProcessor) processorsToUrl.get(key);
+        if(rp == null) {
+            rp = new RequestProcessor("Subversion - " + key, 1, true); // NOI18N
+            processorsToUrl.put(key, rp);
+        }
+        return rp;
     }
 }

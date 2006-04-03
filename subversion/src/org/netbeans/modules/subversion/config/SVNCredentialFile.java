@@ -64,36 +64,5 @@ public abstract class SVNCredentialFile extends KVFile {
     protected abstract void setRealmString(String realm);    
 
     // XXX serializable
-    public static class CertificateFile extends SVNCredentialFile {
-        
-        private final static Key CERT = new Key(0, "ascii_cert");
-        private final static Key FAILURES = new Key(1, "failures");        
-        private final static Key REALMSTRING = new Key(2, "svn:realmstring");
     
-        public CertificateFile(String realmString) {
-            super(new File(SvnConfigFiles.getNBConfigDir() + "auth/svn.ssl.server/" + getFileName(realmString)));            
-        }
-
-        // XXX the setters do not override the already present value 
-        protected void setRealmString(String realm) {
-            setValue(REALMSTRING, realm);
-        }
-
-        protected String getRealmString() {
-            return new String(getValue(REALMSTRING));
-        }        
-    
-        public void setCert(byte[] cert) {
-            setValue(CERT, cert);
-        }
-        
-        public void setFailures(String failures) {
-            setValue(FAILURES, failures);
-        }        
-        
-        public void deleteOnExit() {
-            getFile().deleteOnExit();
-        }
-        
-    }
 }

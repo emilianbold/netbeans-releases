@@ -17,7 +17,7 @@ import java.io.File;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.ExceptionInformation;
+import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -83,9 +83,8 @@ public class CreateCopyAction extends ContextAction {
                             ISVNInfo info = null;
                             try{
                                 info = client.getInfo(folderToCreate);                                                                
-                            } catch (SVNClientException ex) {
-                                ExceptionInformation ei = new ExceptionInformation(ex);
-                                if(!ei.isWrongUrl()) {
+                            } catch (SVNClientException ex) {                                
+                                if(!ExceptionHandler.isWrongUrl(ex)) {
                                     throw ex;
                                 }
                             }            

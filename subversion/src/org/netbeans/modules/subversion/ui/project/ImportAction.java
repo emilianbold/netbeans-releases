@@ -119,15 +119,16 @@ public final class ImportAction extends NodeAction {
                 final File file = lookupImportDirectory(nodes[0]);                 
                 
                 RequestProcessor processor = new RequestProcessor("CheckinActionRP", 1, true);
+                final SvnClient client = Subversion.getInstance().getClient(repositoryUrl);
                 importTask = processor.post(new Runnable() {
                     public void run() {                      
                         importThread = Thread.currentThread();                         
                         progressHandle = ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(ImportAction.class, "BK0001"), cancellable);       // NOI18N
                         progressHandle.start();                
                         try{                            
-                            doImport(repositoryUrl, repositoryFolderUrl, file, message);
+                            doImport(client, repositoryUrl, repositoryFolderUrl, file, message);
                             if(checkout) {
-                                doCheckout(repositoryUrl, repositoryFolderUrl, file);
+                                doCheckout(client, repositoryUrl, repositoryFolderUrl, file);
                             }                            
                         } catch (SVNClientException ex) {
                             org.openide.ErrorManager.getDefault().notify(ex);                                    
@@ -143,9 +144,8 @@ public final class ImportAction extends NodeAction {
     /**
      * Perform asynchronous checkin action with preconfigured values.
      */
-    private void doImport(SVNUrl repositoryUrl, SVNUrl folderUrl, File file, String message) throws SVNClientException {        
-        try {
-            SvnClient client = Subversion.getInstance().getClient(repositoryUrl);
+    private void doImport(SvnClient client, SVNUrl repositoryUrl, SVNUrl folderUrl, File file, String message) throws SVNClientException {        
+        try {            
             client.doImport(file, folderUrl, message, true);                                
         } catch (SVNClientException ex) {
             org.openide.ErrorManager.getDefault().notify(ex); 
@@ -171,10 +171,10 @@ public final class ImportAction extends NodeAction {
         return true;
     }
 
-    private void doCheckout(SVNUrl repositoryUrl, SVNUrl repositoryFolderUrl, File file)  throws SVNClientException {
+    private void doCheckout(SvnClient client, SVNUrl repositoryUrl, SVNUrl repositoryFolderUrl, File file)  throws SVNClientException {
         RepositoryFile[] repositoryFile = new RepositoryFile[] { new RepositoryFile(repositoryUrl, repositoryFolderUrl, SVNRevision.HEAD) };                        
-        File checkoutFile = new File(file.getAbsolutePath() + ".co");             
-        CheckoutAction.checkout(repositoryUrl, repositoryFile, checkoutFile, false, true);                         
+        File checkoutFile = new File(file.getAbsolutePath() + ".co");        
+        CheckoutAction.checkout(client, repositoryUrl, repositoryFile, checkoutFile);
         copyMetadata(checkoutFile, file);
         refreshRecursively(file);
         FileUtils.deleteRecursively(checkoutFile);

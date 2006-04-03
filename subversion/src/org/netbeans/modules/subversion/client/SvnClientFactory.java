@@ -19,6 +19,7 @@ import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.config.PasswordFile;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientAdapterFactory;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -77,7 +78,7 @@ public class SvnClientFactory {
     
     private SvnClient createSvnClient(ISVNClientAdapter adapter) {
         Class proxyClass = Proxy.getProxyClass(SvnClient.class.getClassLoader(), new Class[]{ SvnClient.class } );        
-        SvnClientInvocationHandler handler = new SvnClientInvocationHandler(adapter);         
+        SvnClientInvocationHandler handler = new SvnClientInvocationHandler(adapter);
         try {
            return (SvnClient) proxyClass.getConstructor(new Class[] { InvocationHandler.class }).newInstance(new Object[] { handler });                   
         } catch (Exception e) {
