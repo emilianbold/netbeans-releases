@@ -7,21 +7,18 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.nodes;
-
-import org.openide.nodes.*;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-
-import java.beans.PropertyChangeEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-
+import org.openide.util.Lookup.Template;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.AbstractLookup.Pair;
 
 /** A lookup that represents content of a Node.getCookie and the node itself.
  *
@@ -137,7 +134,7 @@ final class NodeLookup extends AbstractLookup {
             instances = new java.util.LinkedHashSet(queriedCookieClasses.size());
             fromPairToQueryClass = new java.util.HashMap();
 
-            java.util.Iterator it = queriedCookieClasses.iterator();
+            java.util.Iterator it = /* #74334 */new ArrayList(queriedCookieClasses).iterator();
             LookupItem nodePair = new LookupItem(node);
             instances.add(nodePair);
             fromPairToQueryClass.put(nodePair, Node.class);
