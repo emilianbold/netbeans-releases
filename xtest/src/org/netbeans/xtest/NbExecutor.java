@@ -7,26 +7,41 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.xtest;
 
-import java.text.SimpleDateFormat;
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.types.*;
-import org.apache.tools.ant.taskdefs.*;
-
-import java.util.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Ant;
+import org.apache.tools.ant.taskdefs.Java;
+import org.netbeans.xtest.pe.GetResultsDirsTask;
+import org.netbeans.xtest.pe.PEConstants;
 import org.netbeans.xtest.pe.TestRunInfoTask;
+import org.netbeans.xtest.pe.TransformXMLTask;
 import org.netbeans.xtest.pe.xmlbeans.ModuleError;
+import org.netbeans.xtest.pe.xmlbeans.TestBag;
+import org.netbeans.xtest.pe.xmlbeans.UnitTestCase;
+import org.netbeans.xtest.pe.xmlbeans.UnitTestSuite;
 
 /**
+ * NbExecutor is a task which reads config from master-config and executes
+ * all tests in a loop.
  *
  * @author  lm97939
- * @version 
  */
 public class NbExecutor extends Task {
     
@@ -240,8 +255,86 @@ public class NbExecutor extends Task {
         task.setOutFile(testrun);
         task.setModuleError(moduleError);
         task.execute();
+
+        try {
+            addErrorTestBag(module, testtype, logfile, mess);
+        } catch (Exception e) {
+            log("NbExecutor#addErrorTestBag: "+e.getMessage());
+            e.printStackTrace();
+        }
     }
-    
+
+    /** Create a new test bag results to report unexpected critical error.
+     * In most case it is a compilation error but it can be something different.
+     * This test bag contains one suite with one test case. It satisfies that
+     * critical error appears in summary results.
+     */
+    private void addErrorTestBag(String module, String testtype, File logfile, String message) throws Exception {
+        log("\n\n================== addErrorTestBag ========================", Project.MSG_VERBOSE);
+        File resultsDir = new File(getProject().getProperty("xtest.results.testrun.dir"));
+        log("xtest.results.testrun.dir="+resultsDir, Project.MSG_VERBOSE);
+        // create new testbag dir in results (e.g. testbagDir=results\testrun_060331-120201\testbag_2)
+        GetResultsDirsTask grdt = new GetResultsDirsTask();
+        grdt.setProject(getProject());
+        // property need to be unique. It is used just only inside GetResultsDirsTask.
+        grdt.setTestBagDirProperty("dummy.xtest.results.testbag.dir"+System.currentTimeMillis());
+        grdt.setTestRunDirProperty("xtest.results.testrun.dir");
+        File testbagDir = grdt.createAndSetTestBag();
+        log("testbagDir="+testbagDir, Project.MSG_VERBOSE);
+
+        String label = "Critical Error";
+
+        // create test case bean
+        UnitTestCase testCaseBean = new UnitTestCase();
+        testCaseBean.xmlat_name = label;
+        testCaseBean.xmlat_result = UnitTestCase.TEST_ERROR;
+        testCaseBean.xmlat_message = "Compilation failed or other critical error appeared. Look at build script log for details.";
+        testCaseBean.xml_cdata = message;
+
+        // create test suite bean
+        String suiteName = label;
+        UnitTestSuite testSuiteBean = new UnitTestSuite();
+        testSuiteBean.xmlat_name = suiteName;
+        testSuiteBean.xmlat_time = 0;
+        testSuiteBean.xmlat_testsTotal = 1;
+        testSuiteBean.xmlat_testsPass = 0;
+        testSuiteBean.xmlat_testsFail = 0;
+        testSuiteBean.xmlat_testsError = 1;
+        testSuiteBean.xmlat_testsUnexpectedPass = 0;
+        testSuiteBean.xmlat_testsExpectedFail = 0;
+        testSuiteBean.xmlat_timeStamp = new java.sql.Timestamp(System.currentTimeMillis());
+        testSuiteBean.xmlel_UnitTestCase = new UnitTestCase[] {testCaseBean};
+
+        // create test bag bean
+        TestBag testBagBean = new TestBag();
+        testBagBean.setModule(module);
+        testBagBean.setName(label);
+        testBagBean.setTestType(testtype);
+        testBagBean.xmlel_UnitTestSuite = new UnitTestSuite[] {testSuiteBean};
+
+
+        // create results dir for suite
+        File suiteResultsDir = new File(testbagDir, PEConstants.XMLRESULTS_DIR+File.separator+"suites");
+        if(!suiteResultsDir.mkdir()) {
+            log("NbExecutor#addErrorTestBag: Cannot create directory "+suiteResultsDir);
+            return;
+        }
+        File suiteFile = new File(suiteResultsDir, "TEST-"+suiteName+".xml");
+        // save created suite to testbag_ID/xmlresults/suites/TEST-Critical Error.xml
+        testSuiteBean.saveXMLBean(suiteFile);
+
+        File testbagFile = new File(testbagDir, PEConstants.XMLRESULTS_DIR+File.separator+PEConstants.TESTBAG_XML_FILE);
+        testBagBean.saveXMLBean(testbagFile);
+
+        // regenerated testbag to include created suite
+        // (Not needed if beans are properly created)
+        // RegenerateXMLTask.regenerateTestBag(testbagDir, true, false);
+        // transform testbag from XML to HTML
+        System.setProperty("xtest.home", getProject().getProperty("xtest.home"));
+        TransformXMLTask.transformResults(testbagDir, testbagDir);
+        log("================== addErrorTestBag ========================\n\n", Project.MSG_VERBOSE);
+    }
+
     private void executeStart(MConfig.Setup setup) throws BuildException {
         executeSetup(setup.getName()+"_start", setup.getStartDir(), setup.getStartAntfile(), setup.getStartTarget(), setup.getStartOnBackground(), setup.getStartDelay());
     }
