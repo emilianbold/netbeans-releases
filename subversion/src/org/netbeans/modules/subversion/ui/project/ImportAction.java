@@ -17,6 +17,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.ErrorManager;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
 import org.openide.nodes.Node;
@@ -119,7 +120,13 @@ public final class ImportAction extends NodeAction {
                 final File file = lookupImportDirectory(nodes[0]);                 
                 
                 RequestProcessor processor = new RequestProcessor("CheckinActionRP", 1, true);
-                final SvnClient client = Subversion.getInstance().getClient(repositoryUrl);
+                final SvnClient client;
+                try {
+                    client = Subversion.getInstance().getClient(repositoryUrl);
+                } catch (SVNClientException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                    return;
+                }
                 importTask = processor.post(new Runnable() {
                     public void run() {                      
                         importThread = Thread.currentThread();                         
@@ -144,7 +151,7 @@ public final class ImportAction extends NodeAction {
     /**
      * Perform asynchronous checkin action with preconfigured values.
      */
-    private void doImport(SvnClient client, SVNUrl repositoryUrl, SVNUrl folderUrl, File file, String message) throws SVNClientException {        
+    private void doImport(SvnClient client, SVNUrl repositoryUrl, SVNUrl folderUrl, File file, String message) throws SVNClientException {
         try {            
             client.doImport(file, folderUrl, message, true);                                
         } catch (SVNClientException ex) {
