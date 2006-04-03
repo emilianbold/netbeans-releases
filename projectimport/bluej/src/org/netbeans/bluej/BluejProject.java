@@ -185,7 +185,7 @@ public final class BluejProject implements Project, AntProjectListener {
             aux,
             helper.createCacheDirectoryProvider(),
             spp,
-            new BluejActionProvider( this ),
+            new BluejActionProvider( this, getUpdateHelper()),
             new BluejLogicalViewProvider(this, evaluator(), spp, refHelper),
 ////            // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
 ////            new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        

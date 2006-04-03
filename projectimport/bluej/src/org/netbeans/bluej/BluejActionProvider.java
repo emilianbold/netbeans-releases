@@ -14,26 +14,38 @@
 package org.netbeans.bluej;
 
 import java.awt.Dialog;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -65,13 +77,13 @@ class BluejActionProvider implements ActionProvider {
     BluejProject project;
     
 ////    // Ant project helper of the project
-////    private UpdateHelper updateHelper;
+    private UpdateHelper updateHelper;
     
     
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
     
-    public BluejActionProvider(BluejProject project) {
+    public BluejActionProvider(BluejProject project, UpdateHelper updateHelper) {
         
         commands = new HashMap();
         commands.put(COMMAND_BUILD, new String[] {"jar"}); // NOI18N
@@ -90,7 +102,7 @@ class BluejActionProvider implements ActionProvider {
         commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
         commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
         
-//        this.updateHelper = updateHelper;
+        this.updateHelper = updateHelper;
         this.project = project;
     }
     
@@ -184,40 +196,38 @@ class BluejActionProvider implements ActionProvider {
 ////            p.setProperty("fix.includes", path); // NOI18N
 ////        }
         else if (command.equals(COMMAND_RUN) || command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
-////            EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-////
-////            // check project's main class
-////            String mainClass = (String)ep.get ("main.class"); // NOI18N
-////            int result = isSetMainClass (project.getProjectDirectory(), mainClass);
-////            if (result != 0) {
-////                do {
-////                    // show warning, if cancel then return
-////                    if (showMainClassWarning (mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep,result)) {
-////                        return null;
-////                    }
-////                    mainClass = (String)ep.get ("main.class"); // NOI18N
-////                    result=isSetMainClass (project.getProjectDirectory(), mainClass);
-////                } while (result != 0);
-////                try {
-////                    if (updateHelper.requestSave()) {
-////                        updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
-////                        ProjectManager.getDefault().saveProject(project);
-////                    }
-////                    else {
-////                        return null;
-////                    }
-////                } catch (IOException ioe) {
-////                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + ioe);
-////                }
-////            }
-////            if (!command.equals(COMMAND_RUN)) {
-////                p.setProperty("debug.class", mainClass); // NOI18N
-////            }
-////
-////            targetNames = (String[])commands.get(command);
-////            if (targetNames == null) {
-////                throw new IllegalArgumentException(command);
-////            }
+            EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+
+            // check project's main class
+            String mainClass = (String)ep.get ("main.class"); // NOI18N
+            int result = -1;
+            do {
+                // show warning, if cancel then return
+                if (showMainClassWarning(mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep, result)) {
+                    return null;
+                }
+                mainClass = (String)ep.get("main.class"); // NOI18N
+                result = 0;
+//                result = isSetMainClass(project.getProjectDirectory(), mainClass);
+            } while (result != 0);
+            try {
+                if (updateHelper.requestSave()) {
+                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
+                    ProjectManager.getDefault().saveProject(project);
+                } else {
+                    return null;
+                }
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + ioe);
+            }
+            if (!command.equals(COMMAND_RUN)) {
+                p.setProperty("debug.class", mainClass); // NOI18N
+            }
+
+            targetNames = (String[])commands.get(command);
+            if (targetNames == null) {
+                throw new IllegalArgumentException(command);
+            }
         } else if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE)) {
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
@@ -485,6 +495,70 @@ class BluejActionProvider implements ActionProvider {
         dlg.setVisible(true);
     }
     
+    /**
+     * Asks user for name of main class
+     * @param mainClass current main class
+     * @param projectName the name of project
+     * @param ep EditableProperties
+     * @param messgeType type of dialog -1 when the main class is not set, -2 when the main class in not valid
+     * @return true if user selected main class
+     */
+    private boolean showMainClassWarning (String mainClass, String projectName, EditableProperties ep, int messageType) {
+        boolean canceled;
+        final JButton okButton = new JButton ("OK"); // NOI18N
+//        okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (MainClassWarning.class, "AD_MainClassWarning_ChooseMainClass_OK"));
+        
+        // main class goes wrong => warning
+        String message;
+        switch (messageType) {
+            case -1:
+                message = MessageFormat.format (NbBundle.getMessage(BluejActionProvider.class, "LBL_MainClassNotFound"), new Object[] {
+                    projectName
+                });
+                break;
+            case -2:
+                message = MessageFormat.format (NbBundle.getMessage(BluejActionProvider.class, "LBL_MainClassWrong"), new Object[] {
+                    mainClass,
+                    projectName
+                });
+                break;
+            default:
+                throw new IllegalArgumentException ();
+        }
+        final MainClassWarning panel = new MainClassWarning (message, new FileObject[] { project.getProjectDirectory() } );
+        Object[] options = new Object[] {
+            okButton,
+            DialogDescriptor.CANCEL_OPTION
+        };
+        
+        panel.addChangeListener (new ChangeListener () {
+           public void stateChanged (ChangeEvent e) {
+               if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
+                   // click button and the finish dialog with selected class
+                   okButton.doClick ();
+               } else {
+                   okButton.setEnabled (panel.getSelectedMainClass () != null);
+               }
+           }
+        });
+        
+        okButton.setEnabled (false);
+        DialogDescriptor desc = new DialogDescriptor (panel, "Run Project", // NOI18N
+            true, options, options[0], DialogDescriptor.BOTTOM_ALIGN, null, null);
+        desc.setMessageType (DialogDescriptor.INFORMATION_MESSAGE);
+        Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
+        dlg.setVisible (true);
+        if (desc.getValue() != options[0]) {
+            canceled = true;
+        } else {
+            mainClass = panel.getSelectedMainClass ();
+            canceled = false;
+            ep.put ("main.class", mainClass == null ? "" : mainClass); // NOI18N
+        }
+        dlg.dispose();            
+
+        return canceled;
+    }
     
     
     /** Check if the given file object represents a source with the main method.
