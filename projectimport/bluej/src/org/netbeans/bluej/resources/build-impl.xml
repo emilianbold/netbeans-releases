@@ -563,33 +563,6 @@ is divided into following sections:
     </target>
     <target name="debug-fix-test" if="netbeans.home" depends="init,-pre-debug-fix,-do-debug-fix-test"/>
     <!--
-    =========================
-    APPLET EXECUTION SECTION
-    =========================
-    -->
-    <target name="run-applet" depends="init,compile-single">
-        <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
-        <bluejproject:java classname="sun.applet.AppletViewer">
-            <customize>
-                <arg value="${applet.url}"/>
-            </customize>
-        </bluejproject:java>
-    </target>
-    <!--
-    =========================
-    APPLET DEBUGGING  SECTION
-    =========================
-    -->
-    <target name="-debug-start-debuggee-applet" if="netbeans.home" depends="init,compile-single">
-        <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
-        <bluejproject:debug classname="sun.applet.AppletViewer">
-            <customize>
-                <arg value="${applet.url}"/>
-            </customize>
-        </bluejproject:debug>
-    </target>
-    <target name="debug-applet" if="netbeans.home" depends="init,compile-single,-debug-start-debugger,-debug-start-debuggee-applet"/>
-    <!--
     ===============
     CLEANUP SECTION
     ===============
