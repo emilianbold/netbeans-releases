@@ -50,10 +50,11 @@ public final class CheckoutAction extends CallableSystemAction {
         }
         
         String displayName = org.openide.util.NbBundle.getMessage(CheckoutAction.class, "BK0001");
-        SvnProgressSupport support = new SvnProgressSupport(Subversion.getInstance().getRequestProccessor(repository), client) {
+        SvnProgressSupport support = new SvnProgressSupport(Subversion.getInstance().getRequestProccessor(repository)) {
             public void perform() {
                 try {
                     setDisplayName("checking out ...");
+                    setCancellableDelegate(client);
                     checkout(client, repository, repositoryFiles, file, false, this);
                 } catch (SVNClientException ex) {
                     ErrorManager.getDefault().notify(ex); 
@@ -64,6 +65,7 @@ public final class CheckoutAction extends CallableSystemAction {
                 }
 
                 setDisplayName("scaning folders ...");
+                setCancellableDelegate(null);
                 if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0) {
                     String[] folders = new String[repositoryFiles.length];
                     for (int i = 0; i < repositoryFiles.length; i++) {
@@ -106,16 +108,12 @@ public final class CheckoutAction extends CallableSystemAction {
         return false;
     }
 
-    public static void checkout(SvnClient client, SVNUrl repository, RepositoryFile[] repositoryFiles, File workingDir) throws SVNClientException {
-        checkout(client, repository, repositoryFiles, workingDir, true, null);
-    }
-
-    private  static void checkout(final SvnClient client,
-                                  final SVNUrl repository,
-                                  final RepositoryFile[] repositoryFiles,
-                                  final File workingDir,
-                                  final boolean atWorkingDirLevel,
-                                  final SvnProgressSupport support)
+    public static void checkout(final SvnClient client,
+                                final SVNUrl repository,
+                                final RepositoryFile[] repositoryFiles,
+                                final File workingDir,
+                                final boolean atWorkingDirLevel,
+                                final SvnProgressSupport support)
     throws SVNClientException
     {
         for (int i = 0; i < repositoryFiles.length; i++) {

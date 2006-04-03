@@ -33,14 +33,17 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     private ProgressHandle progressHandle = null;    
     private String displayName = "";
     
-    public SvnProgressSupport(RequestProcessor rp, Cancellable cancellable) {
-        this.rp = rp;
-        this.delegate = cancellable;
+    public SvnProgressSupport(RequestProcessor rp) {
+        this.rp = rp;        
     }
 
     public void start(String displayName) {
         this.displayName = displayName;
         rp.post(this);        
+    }
+
+    protected void setCancellableDelegate(Cancellable cancellable) {
+        this.delegate = cancellable;
     }
 
     protected void setDisplayName(String displayName) {
@@ -60,7 +63,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
             Diagnostics.println("End - " + displayName);
         } finally {
             progressHandle.finish();            
-        }        
+        }
     }
 
     public abstract void perform();
