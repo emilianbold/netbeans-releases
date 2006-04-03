@@ -15,7 +15,7 @@ package org.netbeans.modules.subversion.ui.checkout;
 import java.io.File;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnCancellSupport;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.ui.wizards.*;
@@ -50,7 +50,7 @@ public final class CheckoutAction extends CallableSystemAction {
         }
         
         String displayName = org.openide.util.NbBundle.getMessage(CheckoutAction.class, "BK0001");
-        SvnCancellSupport support = new SvnCancellSupport(Subversion.getInstance().getRequestProccessor(repository), client) {
+        SvnProgressSupport support = new SvnProgressSupport(Subversion.getInstance().getRequestProccessor(repository), client) {
             public void perform() {
                 try {
                     setDisplayName("checking out ...");
@@ -115,7 +115,7 @@ public final class CheckoutAction extends CallableSystemAction {
                                   final RepositoryFile[] repositoryFiles,
                                   final File workingDir,
                                   final boolean atWorkingDirLevel,
-                                  final SvnCancellSupport support)
+                                  final SvnProgressSupport support)
     throws SVNClientException
     {
         for (int i = 0; i < repositoryFiles.length; i++) {

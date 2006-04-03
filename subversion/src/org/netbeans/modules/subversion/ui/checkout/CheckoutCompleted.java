@@ -30,7 +30,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnCancellSupport;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -65,7 +65,7 @@ public class CheckoutCompleted implements ActionListener {
         this.workingFolder = workingFolder;
     }
 
-    public void scanForProjects(SvnCancellSupport support) {
+    public void scanForProjects(SvnProgressSupport support) {
 
         List checkedOutProjects = new LinkedList();
         File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
