@@ -146,7 +146,10 @@ public final class ModuleSystem {
                 jdk = jdk.substring(0, jdk.length() - 4);
             }
             File f = new File(jdk);
-            ignoredPrefixes.add("jar:" + f.toURI().toURL()); // NOI18N
+            if (new File(new File(f, "lib"), "tools.jar").isFile()) { // NOI18N
+                // #74287: do not ignore in case we are using an embedded JRE!
+                ignoredPrefixes.add("jar:" + f.toURI().toURL()); // NOI18N
+            }
             // skip $nbhome/lib/ext/*.jar; all fixes modules should be in
             // $nbhome/lib/ (or perhaps elsewhere, with -cp:a)
             String nbhomeS = System.getProperty("netbeans.home");
