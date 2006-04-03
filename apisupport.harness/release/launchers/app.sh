@@ -48,6 +48,11 @@ if [ -f "${userdir}/etc/$APPNAME".conf ] ; then
     . "${userdir}/etc/$APPNAME".conf
 fi
 
+if [ -n "$jdkhome" -a \! -d "$jdkhome" -a -d "$progdir/../$jdkhome" ]; then
+    # #74333: permit jdkhome to be defined as relative to app dir
+    jdkhome="$progdir/../$jdkhome"
+fi
+
 readClusters() {
   if [ -x /usr/ucb/echo ]; then
     echo=/usr/ucb/echo
