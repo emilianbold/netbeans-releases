@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,14 +56,16 @@ public class SystemInfo extends XMLBean {
     // bussiness methods
     
     public static String getCurrentHost() {
-        String host;
-        try {
-            host = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException uhe) {
-            // we cannot get the hostname
-            host = "UnknownHost";
+        // if xtest.machine set use it, otherwise try to get it. Used in test4u.
+        String host = System.getProperty("xtest.machine");
+        if(host == null) {
+            try {
+                host = InetAddress.getLocalHost().getHostName();
+            } catch (UnknownHostException uhe) {
+                // we cannot get the hostname
+                host = "UnknownHost";
+            }
         }
-        
         return host;
     }    
     

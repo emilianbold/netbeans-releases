@@ -115,6 +115,11 @@ public class RegenerateXMLTask extends Task{
                         
             Project antProject = getProject();
             String fullrun = antProject.getProperty("xtest.fullrun");
+            // set xtest.machine to be used in SystemInfo class. Test4U sets this property.
+            String xtestMachine = antProject.getProperty("xtest.machine");
+            if(xtestMachine != null) {
+                System.setProperty("xtest.machine", xtestMachine);
+            }
          
             // lets regenerate 
             int inputDirType = ResultsUtils.resolveResultsDir(inputDir);
