@@ -60,7 +60,12 @@ Microsystems, Inc. All Rights Reserved.
         <property name="nbm.release.date" value=""/>
         <property name="nbm.needs.restart" value="false"/>
         <property name="nbm.is.global" value=""/>
-        <property name="nbm.target.cluster" value="${cluster.dir}"/>
+        <!-- don't set 'extra' cluster for external modules -->
+        <condition property="nbm.target.cluster" value="${cluster.dir}">
+            <not>
+                <equals arg1="${cluster.dir}" arg2="${cluster.dir.fallback}"/>
+            </not>
+        </condition>
         <path id="cp">
             <pathelement path="${module.classpath}"/>
             <pathelement path="${cp.extra}"/>
