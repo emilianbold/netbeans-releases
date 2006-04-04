@@ -143,7 +143,7 @@ public class FileInformation implements Serializable {
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
 
     /**
-     * Modifiied, in conflict or scheduled for removal ar delete.
+     * Modified, in conflict, scheduled for removal or addition.
      */
     public static final int STATUS_REVERTIBLE_CHANGE =
             FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | 
