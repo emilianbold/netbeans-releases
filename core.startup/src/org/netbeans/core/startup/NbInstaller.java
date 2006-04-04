@@ -70,11 +70,11 @@ import org.xml.sax.SAXException;
 final class NbInstaller extends ModuleInstaller {
     
     /** set of manifest sections for each module */
-    private final Map sections = new HashMap(100); // Map<Module,Set<ManifestSection>>
+    private final Map<Module,Set<ManifestSection>> sections = new HashMap<Module,Set<ManifestSection>>(100);
     /** ModuleInstall classes for each module that declares one */
-    private final Map installs = new HashMap(100); // Map<Module,Class>
+    private final Map<Module,Class<? extends ModuleInstall>> installs = new HashMap<Module,Class<? extends ModuleInstall>>(100);
     /** layer resources for each module that declares one */
-    private final Map layers = new HashMap(100); // Map<Module,String>
+    private final Map<Module,String> layers = new HashMap<Module,String>(100);
     /** exact use of this is hard to explain */
     private boolean initializedFolderLookup = false;
     /** where to report events to */
@@ -84,7 +84,7 @@ final class NbInstaller extends ModuleInstaller {
     /** associated manager */
     private ModuleManager mgr;
     /** set of permitted core or package dependencies from a module */
-    private final Map kosherPackages = new HashMap(100); // Map<Module,Set<String>>
+    private final Map<Module,Set<String>> kosherPackages = new HashMap<Module,Set<String>>(100);
     /** Package prefixes passed as special system property. */
     private static String[] specialResourcePrefixes = null;
         
@@ -106,20 +106,21 @@ final class NbInstaller extends ModuleInstaller {
         if (mgr != null) throw new IllegalStateException();
         mgr = manager;
     }
-    
+
+    // @SuppressWarnings("unchecked")
     public void prepare(Module m) throws InvalidException {
         ev.log(Events.PREPARE, m);
-        Set mysections = null;
-        Class clazz = null;
+        Set<ManifestSection> mysections = null;
+        Class<?> clazz = null;
         {
             // Find and load manifest sections.
-            Iterator it = m.getManifest().getEntries().entrySet().iterator(); // Iterator<Map.Entry<String,Attributes>>
+            Iterator<Map.Entry<String,Attributes>> it = m.getManifest().getEntries().entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                ManifestSection section = ManifestSection.create((String)entry.getKey(), (Attributes)entry.getValue(), m);
+                Map.Entry<String,Attributes> entry = it.next();
+                ManifestSection section = ManifestSection.create(entry.getKey(), (Attributes)entry.getValue(), m);
                 if (section != null) {
                     if (mysections == null) {
-                        mysections = new HashSet(25); // Set<ManifestSection>
+                        mysections = new HashSet<ManifestSection>(25);
                     }
                     mysections.add(section);
                 }
@@ -157,7 +158,7 @@ final class NbInstaller extends ModuleInstaller {
                         c.getDeclaredMethod("validate", new Class[0]); // NOI18N
                         // It has one. We are permitted to resolve the class, create
                         // the installer instance, and validate it.
-                        ModuleInstall install = (ModuleInstall)SharedClassObject.findObject(clazz, true);
+                        ModuleInstall install = SharedClassObject.findObject(clazz.asSubclass(ModuleInstall.class), true);
                         // The following can throw IllegalStateException, which we would
                         // rethrow as InvalidException below:
                         install.validate();
@@ -194,7 +195,7 @@ final class NbInstaller extends ModuleInstaller {
             sections.put(m, mysections);
         }
         if (clazz != null) {
-            installs.put(m, clazz);
+            installs.put(m, clazz.asSubclass(ModuleInstall.class));
         }
         if (layerResource != null) {
             layers.put(m, layerResource);
@@ -217,7 +218,7 @@ final class NbInstaller extends ModuleInstaller {
         kosherPackages.remove(m);
     }
     
-    public void load(List modules) {
+    public void load(List<Module> modules) {
         ev.log(Events.START_LOAD, modules);
         
         // we need to update the classloader as otherwise we might not find
@@ -227,9 +228,7 @@ final class NbInstaller extends ModuleInstaller {
         }
         ev.log(Events.PERF_TICK, "META-INF/services/ additions registered"); // NOI18N
         
-        Iterator it = modules.iterator();
-        while (it.hasNext()) {
-            Module m = (Module)it.next();
+        for (Module m: modules) {
             checkForDeprecations(m);
             openideModuleEnabled(m);
         }
@@ -237,13 +236,11 @@ final class NbInstaller extends ModuleInstaller {
         loadLayers(modules, true);
         ev.log(Events.PERF_TICK, "layers loaded"); // NOI18N
 	
-        it = modules.iterator();
         ev.log(Events.PERF_START, "NbInstaller.load - sections"); // NOI18N
         ev.log(Events.LOAD_SECTION);
         CoreBridge.conditionallyLoaderPoolTransaction(true);
         try {
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            for (Module m: modules) {
                 try {
                     loadSections(m, true);
                 } catch (Exception t) {
@@ -268,10 +265,8 @@ final class NbInstaller extends ModuleInstaller {
         // we need to initialize UI before we let modules run ModuleInstall.restore
         Main.initUICustomizations();
 
-        it = modules.iterator();
         ev.log(Events.PERF_START, "NbInstaller.load - ModuleInstalls"); // NOI18N
-        while (it.hasNext()) {
-            Module m = (Module)it.next();
+        for (Module m: modules) {
             try {
                 loadCode(m, true);
             } catch (Exception t) {
@@ -294,11 +289,9 @@ final class NbInstaller extends ModuleInstaller {
         }
     }
     
-    public void unload(List modules) {
+    public void unload(List<Module> modules) {
         ev.log(Events.START_UNLOAD, modules);
-        Iterator it = modules.iterator();
-        while (it.hasNext()) {
-            Module m = (Module)it.next();
+        for (Module m: modules) {
             try {
                 loadCode(m, false);
             } catch (Exception t) {
@@ -307,11 +300,9 @@ final class NbInstaller extends ModuleInstaller {
                 Util.err.notify(le);
             }
         }
-        it = modules.iterator();
         CoreBridge.conditionallyLoaderPoolTransaction(true);
         try {
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            for (Module m: modules) {
                 try {
                     loadSections(m, false);
                 } catch (Exception t) {
@@ -333,9 +324,9 @@ final class NbInstaller extends ModuleInstaller {
     
     /** Load/unload installer code for a module. */
     private void loadCode(Module m, boolean load) throws Exception {
-        Class instClazz = (Class)installs.get(m);
+        Class<? extends ModuleInstall> instClazz = installs.get(m);
         if (instClazz != null) {
-            ModuleInstall inst = (ModuleInstall)SharedClassObject.findObject(instClazz, true);
+            ModuleInstall inst = SharedClassObject.findObject(instClazz, true);
             if (load) {
                 if (moduleList != null) {
                     moduleList.installPrepare(m, inst);
@@ -480,15 +471,13 @@ final class NbInstaller extends ModuleInstaller {
      * Locale/branding variants are likewise loaded or unloaded.
      * If a module has no declared layer, does nothing.
      */
-    private void loadLayers(List modules, boolean load) {
+    private void loadLayers(List<Module> modules, boolean load) {
         ev.log(load ? Events.LOAD_LAYERS : Events.UNLOAD_LAYERS, modules);
         // #23609: dependent modules should be able to override:
-        modules = new ArrayList(modules);
+        modules = new ArrayList<Module>(modules);
         Collections.reverse(modules);
-        Map urls = new HashMap(5); // Map<CoreBridge.Layer,List<URL>>
-        Iterator it = modules.iterator();
-        while (it.hasNext()) {
-            Module m = (Module)it.next();
+        Map<ModuleLayeredFileSystem,List<URL>> urls = new HashMap<ModuleLayeredFileSystem,List<URL>>(5);
+        for (Module m: modules) {
             String s = (String)layers.get(m);
             if (s != null) {
                 Util.err.log("loadLayer: " + s + " load=" + load);
@@ -514,9 +503,9 @@ final class NbInstaller extends ModuleInstaller {
                 } else {
                     host = ModuleLayeredFileSystem.getInstallationModuleLayer();
                 }
-                List theseurls = (List)urls.get(host); // List<URL>
+                List<URL> theseurls = urls.get(host);
                 if (theseurls == null) {
-                    theseurls = new ArrayList(100);
+                    theseurls = new ArrayList<URL>(100);
                     urls.put(host, theseurls);
                 }
                 boolean foundSomething = false;
@@ -537,11 +526,9 @@ final class NbInstaller extends ModuleInstaller {
             }
         }
         // Now actually do it.
-        it = urls.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
+        for (Map.Entry<ModuleLayeredFileSystem,List<URL>> entry: urls.entrySet()) {
             ModuleLayeredFileSystem host = (ModuleLayeredFileSystem)entry.getKey();
-            List theseurls = (List)entry.getValue(); // List<URL>
+            List<URL> theseurls = entry.getValue();
             Util.err.log("Adding/removing layer URLs: host=" + host + " urls=" + theseurls);
             try {
                 if (load) {
@@ -586,15 +573,13 @@ final class NbInstaller extends ModuleInstaller {
         }
     }
         
-    public boolean closing(List modules) {
+    public boolean closing(List<Module> modules) {
         Util.err.log("closing: " + modules);
-        Iterator it = modules.iterator();
-        while (it.hasNext()) {
-            Module m = (Module)it.next();
-            Class instClazz = (Class)installs.get(m);
+	for (Module m: modules) {
+            Class<? extends ModuleInstall> instClazz = installs.get(m);
             if (instClazz != null) {
                 try {
-                    ModuleInstall inst = (ModuleInstall)SharedClassObject.findObject(instClazz, true);
+                    ModuleInstall inst = SharedClassObject.findObject(instClazz, true);
                     if (! inst.closing()) {
                         Util.err.log("Module " + m + " refused to close");
                         return false;
@@ -610,20 +595,18 @@ final class NbInstaller extends ModuleInstaller {
         return true;
     }
     
-    public void close(List modules) {
+    public void close(List<Module> modules) {
         Util.err.log("close: " + modules);
         ev.log(Events.CLOSE);
         // [PENDING] this may need to write out changed ModuleInstall externalized
         // forms...is that really necessary to do here, or isn't it enough to
         // do right after loading etc.? Currently these are only written when
         // a ModuleInstall has just been restored etc. which is probably fine.
-        Iterator it = modules.iterator();
-        while (it.hasNext()) {
-            Module m = (Module)it.next();
-            Class instClazz = (Class)installs.get(m);
+	for (Module m: modules) {
+            Class<? extends ModuleInstall> instClazz = installs.get(m);
             if (instClazz != null) {
                 try {
-                    ModuleInstall inst = (ModuleInstall)SharedClassObject.findObject(instClazz, true);
+                    ModuleInstall inst = SharedClassObject.findObject(instClazz, true);
                     if (inst == null) throw new IllegalStateException("Inconsistent state: " + instClazz); // NOI18N
                     inst.close();
                 } catch (ThreadDeath td) {
@@ -646,7 +629,7 @@ final class NbInstaller extends ModuleInstaller {
      * in the system filesystem, ModuleAutoDeps/*.xml may be added
      * according to the DTD "-//NetBeans//DTD Module Automatic Dependencies 1.0//EN".
      */
-    public void refineDependencies(Module m, Set dependencies) {
+    public void refineDependencies(Module m, Set<Dependency> dependencies) {
         /* JST-PENDING just tring to comment this out
         // All modules implicitly depend on the APIs somehow.
         if (!m.getCodeNameBase().equals("org.openide") &&
@@ -662,7 +645,7 @@ final class NbInstaller extends ModuleInstaller {
             FileObject depsFolder = Repository.getDefault().getDefaultFileSystem().findResource("ModuleAutoDeps");
             if (depsFolder != null) {
                 FileObject[] kids = depsFolder.getChildren();
-                List urls = new ArrayList(Math.max(kids.length, 1)); // List<URL>
+                List<URL> urls = new ArrayList<URL>(Math.max(kids.length, 1));
                 for (int i = 0; i < kids.length; i++) {
                     if (kids[i].hasExt("xml")) { // NOI18N
                         try {
@@ -673,7 +656,7 @@ final class NbInstaller extends ModuleInstaller {
                     }
                 }
                 try {
-                    autoDepsHandler = AutomaticDependencies.parse((URL[])urls.toArray(new URL[urls.size()]));
+                    autoDepsHandler = AutomaticDependencies.parse(urls.toArray(new URL[urls.size()]));
                 } catch (IOException e) {
                     Util.err.notify(e);
                 } catch (SAXException e) {
@@ -696,7 +679,7 @@ final class NbInstaller extends ModuleInstaller {
     
     public String[] refineProvides (Module m) {
         if (m.getCodeNameBase ().equals ("org.openide.modules")) { // NOI18N
-            ArrayList arr = new ArrayList (4);
+            ArrayList<String> arr = new ArrayList<String> (4);
             
             boolean isMac = (org.openide.util.Utilities.getOperatingSystem () & org.openide.util.Utilities.OS_MAC) != 0;
             boolean isOS2 = (org.openide.util.Utilities.getOperatingSystem () & org.openide.util.Utilities.OS_OS2) != 0;
@@ -724,13 +707,13 @@ final class NbInstaller extends ModuleInstaller {
             // module format is now 1
             arr.add ("org.openide.modules.ModuleFormat1"); // NOI18N
             
-            return (String[])arr.toArray (new String[0]);
+            return arr.toArray (new String[0]);
         }
         return null;
     }
     
     
-    private void addLoadersRecursively(List parents, Dependency[] deps, Set parentModules, Module master, Set addedParentNames) {
+    private void addLoadersRecursively(List<ClassLoader> parents, Dependency[] deps, Set<Module> parentModules, Module master, Set<String> addedParentNames) {
         for (int i = 0; i < deps.length; i++) {
             if (deps[i].getType() != Dependency.TYPE_MODULE) {
                 continue;
@@ -793,10 +776,10 @@ final class NbInstaller extends ModuleInstaller {
         "org/apache/xml/utils/", // NOI18N
     };
     
-    private Set/*<String>*/ findKosher(Module m) {
-        Set s = (Set)kosherPackages.get(m);
+    private Set<String> findKosher(Module m) {
+        Set<String> s = kosherPackages.get(m);
         if (s == null) {
-            s = new HashSet(); // Set<String>
+            s = new HashSet<String>();
             Dependency[] deps = m.getDependenciesArray();
             SpecificationVersion openide = Util.getModuleDep(m.getDependencies(), "org.openide"); // NOI18N
             boolean pre27853 = (openide == null || openide.compareTo(new SpecificationVersion("1.3.12")) < 0); // NOI18N
@@ -845,7 +828,7 @@ final class NbInstaller extends ModuleInstaller {
                     }
                 }
             }
-            if (s.isEmpty()) s = Collections.EMPTY_SET;
+            if (s.isEmpty()) s = Collections.<String>emptySet();
             kosherPackages.put(m, s);
         }
         return s;
@@ -1008,12 +991,12 @@ final class NbInstaller extends ModuleInstaller {
             return ""; // NOI18N
         }
         // The classpath entries - each is a filename possibly followed by package qualifications.
-        List l = new ArrayList(100); // List<String>
+        List<String> l = new ArrayList<String>(100);
         // Start with boot classpath.
         createBootClassPath(l);
         // Move on to "startup classpath", qualified by applicable package deps etc.
         // Fixed classpath modules don't get restricted in this way.
-        Set kosher = m.isFixed() ? null : findKosher(m);
+        Set<String> kosher = m.isFixed() ? null : findKosher(m);
         StringTokenizer tok = new StringTokenizer(System.getProperty("java.class.path", ""), File.pathSeparator);
         while (tok.hasMoreTokens()) {
             addStartupClasspathEntry(new File(tok.nextToken()), l, kosher);
@@ -1025,10 +1008,10 @@ final class NbInstaller extends ModuleInstaller {
         }
         // Finally include this module and its dependencies recursively.
         // Modules whose direct classpath has already been added to the list:
-        Set modulesConsidered = new HashSet(50); // Set<Module>
+        Set<Module> modulesConsidered = new HashSet<Module>(50);
         // Code names of modules on which this module has an impl dependency
         // (so can use any package):
-        Set implDeps = new HashSet(10); // Set<String>
+        Set<String> implDeps = new HashSet<String>(10);
         Dependency[] deps = m.getDependenciesArray();
         for (int i = 0; i < deps.length; i++) {
             // Remember, provide-require deps do not affect classpath!
@@ -1043,19 +1026,18 @@ final class NbInstaller extends ModuleInstaller {
         // #27853: only make recursive for old modules.
         addModuleClasspathEntries(m, m, modulesConsidered, implDeps, l, pre27853 ? Integer.MAX_VALUE : 1);
         // Done, package it all up as a string.
-        StringBuffer buf = new StringBuffer(l.size() * 100 + 1);
-        Iterator it = l.iterator();
-        while (it.hasNext()) {
+        StringBuilder buf = new StringBuilder(l.size() * 100 + 1);
+        for (String s: l) {
             if (buf.length() > 0) {
                 buf.append(File.pathSeparatorChar);
             }
-            buf.append((String)it.next());
+            buf.append(s);
         }
         return buf.toString();
     }
     
     // Copied from NbClassPath:
-    private static void createBootClassPath(List l) {
+    private static void createBootClassPath(List<String> l) {
         // boot
         String boot = System.getProperty("sun.boot.class.path"); // NOI18N
         if (boot != null) {
@@ -1089,7 +1071,7 @@ final class NbInstaller extends ModuleInstaller {
      * @param kosher known packages which may be accessed (<code>Set&lt;String&gt;</code>), or null for no restrictions
      * @see "#22466"
      */
-    private static void addStartupClasspathEntry(File cpEntry, List cp, Set kosher) {
+    private static void addStartupClasspathEntry(File cpEntry, List<String> cp, Set<String> kosher) {
         if (cpEntry.isDirectory()) {
             cp.add(cpEntry.getAbsolutePath());
             return;
@@ -1131,13 +1113,13 @@ final class NbInstaller extends ModuleInstaller {
     /** Recursively build a classpath based on the module dependency tree.
      * @param m the current module whose JAR(s) might be added to the classpath
      * @param orig the module whose classpath we are ultimately trying to compute
-     * @param considered modules (<code>Set&lt;Module&gt;</code>) we have already handled
-     * @param implDeps module code names (<code>Set&lt;String&gt;</code>) on which the orig module has an impl dep
-     * @param cp the classpath (<code>List&lt;String&gt;</code>) to add to
+     * @param considered modules we have already handled
+     * @param implDeps module code names on which the orig module has an impl dep
+     * @param cp the classpath to add to
      * @param depth the recursion depth to go to: 0 = only m's JAR, 1 = m + its parents, ..., MAX_INT = full recursion
      * @see "#22466"
      */
-    private void addModuleClasspathEntries(Module m, Module orig, Set considered, Set implDeps, List cp, int depth) {
+    private void addModuleClasspathEntries(Module m, Module orig, Set<Module> considered, Set<String> implDeps, List<String> cp, int depth) {
         // Head recursion so that baser modules are added to the front of the classpath:
         if (!considered.add(m)) return;
         Dependency[] deps = m.getDependenciesArray();
@@ -1229,7 +1211,7 @@ final class NbInstaller extends ModuleInstaller {
      * Each JAR file is mapped to a two-element array consisting of
      * its modification date when last read; and the manifest itself.
      */
-    private Map manifestCache = null; // Map<File,[Date,Manifest]>
+    private Map<File,Object[]> manifestCache = null; // Map<File,[Date,Manifest]>
     
     /** If true, at least one manifest has had to be read explicitly.
      * This might be because the cache did not initially exist;
@@ -1326,17 +1308,17 @@ final class NbInstaller extends ModuleInstaller {
      * just create an empty cache.
      * @see #manifestCacheFile
      */
-    private Map loadManifestCache(File manifestCacheFile) {
+    private Map<File,Object[]> loadManifestCache(File manifestCacheFile) {
         if (!manifestCacheFile.canRead()) {
             Util.err.log("No manifest cache found at " + manifestCacheFile);
-            return new HashMap(200);
+            return new HashMap<File,Object[]>(200);
         }
         ev.log(Events.PERF_START, "NbInstaller - loadManifestCache"); // NOI18N
         try {
             InputStream is = new FileInputStream(manifestCacheFile);
             try {
                 BufferedInputStream bis = new BufferedInputStream(is);
-                Map m = new HashMap(200);
+                Map<File,Object[]> m = new HashMap<File,Object[]>(200);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream((int)manifestCacheFile.length());
                 FileUtil.copy(bis, baos);
                 byte[] data = baos.toByteArray();
@@ -1349,7 +1331,7 @@ final class NbInstaller extends ModuleInstaller {
         } catch (IOException ioe) {
             Util.err.annotate(ioe, ErrorManager.UNKNOWN, "While reading: " + manifestCacheFile, null, null, null); // NOI18N
             Util.err.notify(ErrorManager.WARNING, ioe);
-            return new HashMap(200);
+            return new HashMap<File,Object[]>(200);
         }
     }
     
@@ -1363,7 +1345,7 @@ final class NbInstaller extends ModuleInstaller {
         return -1;
     }
     
-    private static void readManifestCacheEntries(byte[] data, Map m) throws IOException {
+    private static void readManifestCacheEntries(byte[] data, Map<File,Object[]> m) throws IOException {
         int pos = 0;
         while (true) {
             if (pos == data.length) {

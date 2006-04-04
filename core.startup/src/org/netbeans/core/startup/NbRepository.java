@@ -87,7 +87,7 @@ public final class NbRepository extends Repository {
             }
             
             // #27151: may also be additional install dirs
-            List extradirs = new ArrayList(); // List<File>
+            List<File> extradirs = new ArrayList<File>();
             String nbdirs = System.getProperty("netbeans.dirs");
             if (nbdirs != null) {
                 StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
@@ -109,7 +109,7 @@ public final class NbRepository extends Repository {
                 try {
                     File u = new File (userDirFile, SYSTEM_FOLDER);
                     File h = new File (homeDirFile, SYSTEM_FOLDER);
-                    return SessionManager.getDefault().create(u, h, (File[])extradirs.toArray(new File[extradirs.size()]));
+                    return SessionManager.getDefault().create(u, h, extradirs.toArray(new File[extradirs.size()]));
                 } catch (IOException ex) {
                     exc = ex;
                 } catch (PropertyVetoException ex) {

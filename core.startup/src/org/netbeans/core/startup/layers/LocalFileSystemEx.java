@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,17 +32,17 @@ import org.openide.filesystems.*;
 public final class LocalFileSystemEx extends LocalFileSystem {
 
     /** name -> FileObject */
-    private static HashMap allLocks = new HashMap (7);
-    private static HashSet pLocks = new HashSet (7);
+    private static HashMap<String,FileObject> allLocks = new HashMap<String,FileObject> (7);
+    private static HashSet<String> pLocks = new HashSet<String> (7);
 //    private static HashMap allThreads = new HashMap (7);
 
     public static String [] getLocks () {
         synchronized (allLocks) {
             removeInvalid (pLocks);
-            LinkedList l = new LinkedList ();
+            LinkedList<String> l = new LinkedList<String> ();
             l.addAll (allLocks.keySet ());
             l.addAll (pLocks);
-            return (String []) l.toArray (new String [l.size ()]);
+            return l.toArray (new String [l.size ()]);
         }
     }
 
@@ -81,13 +81,6 @@ public final class LocalFileSystemEx extends LocalFileSystem {
         }
     }
 
-/*
-    public static Throwable getLockSource (String lock) {
-        synchronized (allLocks) {
-            return (Throwable) allThreads.get (lock);
-        }
-    }
-*/
     /** Creates new LocalFileSystemEx */
     public LocalFileSystemEx () {
         super ();
@@ -111,9 +104,7 @@ public final class LocalFileSystemEx extends LocalFileSystem {
             } else {
                 FileObject fo = findResource (name);
                 if (fo != null) {
-                    Iterator i = allLocks.entrySet ().iterator ();
-                    while (i.hasNext ()) {
-                        Map.Entry entry = (Map.Entry)i.next ();
+		    for (Map.Entry entry: allLocks.entrySet()) {
                         if (fo.equals (entry.getValue ())) {
                             allLocks.remove (entry.getKey ());
 //                            allThreads.remove (entry.getKey ());

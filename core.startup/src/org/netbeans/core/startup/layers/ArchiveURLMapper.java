@@ -41,7 +41,7 @@ public class ArchiveURLMapper extends URLMapper {
 
     private static final String JAR_PROTOCOL = "jar";   //NOI18N
 
-    private static Map/*<File,SoftReference<JarFileSystem>>*/ mountRoots = new HashMap();
+    private static Map<File,SoftReference<JarFileSystem>> mountRoots = new HashMap<File,SoftReference<JarFileSystem>>();
 
     public URL getURL(FileObject fo, int type) {
         assert fo != null;
@@ -160,7 +160,7 @@ public class ArchiveURLMapper extends URLMapper {
      * After deleting and recreating of jar file there must be properly
      * refreshed cached map "mountRoots". 
      */ 
-    private static class JFSReference extends SoftReference {
+    private static class JFSReference extends SoftReference<JarFileSystem> {
         private FileChangeListener fcl; 
         public JFSReference(JarFileSystem jfs) {
             super(jfs);

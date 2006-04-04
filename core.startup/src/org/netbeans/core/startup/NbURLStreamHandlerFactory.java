@@ -36,7 +36,7 @@ import org.openide.util.NbBundle;
  */
 final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, LookupListener {
     
-    private Lookup.Result r = null;
+    private Lookup.Result<URLStreamHandlerFactory> r = null;
     private URLStreamHandlerFactory[] handlers = null;
     
     public NbURLStreamHandlerFactory() {}
@@ -77,9 +77,9 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
     }
     
     public void resultChanged(LookupEvent ev) {
-        Collection c = r.allInstances();
+        Collection<? extends URLStreamHandlerFactory> c = r.allInstances();
         synchronized (this) {
-            handlers = (URLStreamHandlerFactory[])c.toArray(new URLStreamHandlerFactory[0]);
+            handlers = c.toArray(new URLStreamHandlerFactory[0]);
         }
     }
     

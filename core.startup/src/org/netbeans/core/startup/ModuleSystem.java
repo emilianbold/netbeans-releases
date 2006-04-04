@@ -116,8 +116,8 @@ public final class ModuleSystem {
         try {
             Iterator modules = mgr.getEnabledModules().iterator();
             List l = new ArrayList (); // List<File>
-            while (modules.hasNext ()) {
-                l.addAll (((Module) modules.next ()).getAllJars ());
+            for (Module m: mgr.getEnabledModules()) {
+                l.addAll (m.getAllJars ());
             }
             return l;
         } finally {
@@ -128,7 +128,7 @@ public final class ModuleSystem {
     /** We just make the modules now, restore them later
      * to optimize the layer merge.
      */
-    private Set bootModules = null; // Set<Module>
+    private Set<Module> bootModules = null;
     
     /** Load modules found in the classpath.
      * Note that they might not satisfy all their dependencies, in which
@@ -138,7 +138,7 @@ public final class ModuleSystem {
         // Keep a list of manifest URL prefixes which we know we do not need to
         // parse. Some of these manifests might be signed, and if so, we do not
         // want to touch them, as it slows down startup quite a bit.
-        Collection ignoredPrefixes = new ArrayList(3); // List<String>
+        Collection<String> ignoredPrefixes = new ArrayList<String>(3); // List<String>
         try {
             // skip the JDK/JRE libraries
             String jdk = System.getProperty("java.home");
@@ -168,24 +168,23 @@ public final class ModuleSystem {
         mgr.mutexPrivileged().enterWriteAccess();
         ev.log(Events.START_LOAD_BOOT_MODULES);
         try {
-            bootModules = new HashSet(10);
+            bootModules = new HashSet<Module>(10);
             ClassLoader loader = ModuleSystem.class.getClassLoader();
-            Enumeration e = loader.getResources("META-INF/MANIFEST.MF"); // NOI18N
+            Enumeration<URL> e = loader.getResources("META-INF/MANIFEST.MF"); // NOI18N
             ev.log(Events.PERF_TICK, "got all manifests"); // NOI18N
             
             // There will be duplicates: cf. #32576.
-            Set checkedManifests = new HashSet(); // Set<URL>
+            Set<URL> checkedManifests = new HashSet<URL>();
             MANIFESTS:
             while (e.hasMoreElements()) {
-                URL manifestUrl = (URL)e.nextElement();
+                URL manifestUrl = e.nextElement();
                 if (!checkedManifests.add(manifestUrl)) {
                     // Already seen, ignore.
                     continue;
                 }
                 String manifestUrlS = manifestUrl.toExternalForm();
-                Iterator it = ignoredPrefixes.iterator();
-                while (it.hasNext()) {
-                    if (manifestUrlS.startsWith((String)it.next())) {
+                for (String pref: ignoredPrefixes) {
+                    if (manifestUrlS.startsWith(pref)) {
                         continue MANIFESTS;
                     }
                 }
@@ -254,7 +253,7 @@ public final class ModuleSystem {
 	ev.log(Events.PERF_START, "ModuleSystem.restore"); // NOI18N
         mgr.mutexPrivileged().enterWriteAccess();
         try {
-            Set toTrigger = new HashSet(bootModules/*Collections.EMPTY_SET*/);
+            Set<Module> toTrigger = new HashSet<Module>(bootModules/*Collections.EMPTY_SET*/);
             list.trigger(toTrigger);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
@@ -294,7 +293,7 @@ public final class ModuleSystem {
             // The test module:
             Module tm = null;
             // Anything that needs to be turned back on later:
-            Set toReenable = new HashSet(); // Set<Module>
+            Set<Module> toReenable = new HashSet<Module>();
             // First see if this refers to an existing module.
             // (If so, make sure it is reloadable.)
             Iterator it = mgr.getModules().iterator();
@@ -370,14 +369,12 @@ public final class ModuleSystem {
      * If there were any other non-autoload modules enabled
      * which depended on it, make note of them.
      */
-    private void turnOffModule(Module m, Set toReenable) {
+    private void turnOffModule(Module m, Set<Module> toReenable) {
         if (! m.isEnabled()) {
             // Already done.
             return;
         }
-        Iterator it = mgr.simulateDisable(Collections.singleton(m)).iterator();
-        while (it.hasNext()) {
-            Module m2 = (Module)it.next();
+        for (Module m2: mgr.simulateDisable(Collections.<Module>singleton(m))) {
             if (!m2.isAutoload() && !m2.isEager()) {
                 toReenable.add(m2);
             }

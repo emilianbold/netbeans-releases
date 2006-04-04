@@ -32,7 +32,7 @@ import org.xml.sax.SAXNotSupportedException;
 public class SAXFactoryImpl extends SAXParserFactory {
     private static Class first;
     
-    private Map features = new HashMap();
+    private Map<String,Boolean> features = new HashMap<String,Boolean>();
     
     /** The default property name according to the JAXP spec */
     private static final String SAXParserFactory_PROP =

@@ -13,6 +13,7 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -36,10 +37,10 @@ public final class SessionManager {
     private static SessionManager sm = null;
     /** default system filesystem */
     private SystemFileSystem systemFS;
-    private HashMap layers = new HashMap(); //<layer_key, fs>
+    private HashMap<String,FileSystem> layers = new HashMap<String,FileSystem>(); //<layer_key, fs>
     
     /** Utility field holding list of PropertyChangeListeners. */
-    private transient java.util.ArrayList propertyChangeListeners;
+    private transient java.util.ArrayList<PropertyChangeListener> propertyChangeListeners;
     
     /** Creates new SessionManager */
     private SessionManager() {
@@ -178,9 +179,9 @@ public final class SessionManager {
     /** Registers PropertyChangeListener to receive events.
      * @param listener The listener to register.
      */
-    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         if (propertyChangeListeners == null ) {
-            propertyChangeListeners = new java.util.ArrayList();
+            propertyChangeListeners = new java.util.ArrayList<PropertyChangeListener>();
         }
         propertyChangeListeners.add(listener);
     }

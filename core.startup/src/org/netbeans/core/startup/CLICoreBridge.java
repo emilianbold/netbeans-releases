@@ -69,14 +69,12 @@ public class CLICoreBridge extends CLIHandler {
         moduleSystem.readList();
         
         
-        ArrayList urls = new ArrayList();
+        ArrayList<URL> urls = new ArrayList<URL>();
         {
-            Iterator it = moduleSystem.getManager().getModules().iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            for (Module m: moduleSystem.getManager().getModules()) {
                 Iterator files = m.getAllJars().iterator();
                 while (files.hasNext()) {
-                    File f = (File)files.next();
+                    File f = (File)files.next(); // XXX this is Object[2] {File,String} for localized module
                     try {
                         urls.add(f.toURI().toURL());
                     } catch (MalformedURLException ex) {

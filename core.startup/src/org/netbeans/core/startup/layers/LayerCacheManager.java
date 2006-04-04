@@ -15,6 +15,7 @@ package org.netbeans.core.startup.layers;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 // WARNING: this package should not contain any non-platform openide/core imports!
@@ -130,7 +131,7 @@ public abstract class LayerCacheManager {
      * Not called if the manager does not support loading;
      * otherwise must be overridden.
      */
-    public void store(FileSystem fs, List urls) throws IOException {
+    public void store(FileSystem fs, List<URL> urls) throws IOException {
         throw new NotImplementedException();
     }
     
@@ -141,7 +142,7 @@ public abstract class LayerCacheManager {
      * Not called if the manager supports loading;
      * otherwise must be overridden.
      */
-    public FileSystem store(List urls) throws IOException {
+    public FileSystem store(List<URL> urls) throws IOException {
         throw new NotImplementedException();
     }
     

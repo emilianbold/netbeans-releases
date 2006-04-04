@@ -56,10 +56,10 @@ import org.openide.util.NbBundle;
 public final class Splash  implements SwingConstants {
 
     /** The splash image */
-    static Reference splashRef;
+    static Reference<Image> splashRef;
 
     /** The about image */
-    static Reference aboutRef;
+    static Reference<Image> aboutRef;
     
     public static void showSplashDialog (java.awt.Frame parent, javax.swing.JComponent info) {
         createSplashDialog (parent, info).setVisible(true);
@@ -132,9 +132,9 @@ public final class Splash  implements SwingConstants {
     static Image getSplash() {
         Image ret;
         if ((splashRef == null) ||
-                ((ret = (Image) splashRef.get()) == null)) {
+                ((ret = splashRef.get()) == null)) {
             ret = loadSplash();
-            splashRef = new WeakReference(ret);
+            splashRef = new WeakReference<Image>(ret);
         }
         return ret;
     }
@@ -143,9 +143,9 @@ public final class Splash  implements SwingConstants {
     static Image getAbout() {
         Image ret;
         if ((aboutRef == null) ||
-                ((ret = (Image) aboutRef.get()) == null)) {
+                ((ret = aboutRef.get()) == null)) {
             ret = loadAbout();
-            aboutRef = new WeakReference(ret);
+            aboutRef = new WeakReference<Image>(ret);
         }
         return ret;
     }

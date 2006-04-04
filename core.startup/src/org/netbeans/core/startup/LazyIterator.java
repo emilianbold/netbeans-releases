@@ -22,14 +22,14 @@ import org.openide.util.Lookup;
  *
  * @author Petr Nejedly
  */
-class LazyIterator implements Iterator {
-    Object first;
-    Object step;
-    Class template;
+class LazyIterator implements Iterator<Class> {
+    Class first;
+    Class step;
+    Class<?> template;
     Object skip;
     Iterator delegate;
 
-    LazyIterator(Object first, Class template, Object skip) {
+    LazyIterator(Class first, Class template, Class skip) {
         assert first != null;
 
         this.first = first;
@@ -48,16 +48,16 @@ class LazyIterator implements Iterator {
 
         // prepare next step
         while (delegate.hasNext() && step == null) {
-            Object next = ((Lookup.Item)delegate.next()).getType();
+            Class next = ((Lookup.Item)delegate.next()).getType();
             if (next != skip) step = next;
         }
 
         return step != null;
     }
 
-    public java.lang.Object next() {
+    public Class next() {
         if (first != null) {
-            Object ret = first;
+            Class ret = first;
             first = null;
             return ret;
         }
@@ -66,14 +66,14 @@ class LazyIterator implements Iterator {
 
         // check next step
         if (step != null) {
-            Object ret = step;
+            Class ret = step;
             step = null;
             return ret;
         }
 
         // return directly next without storing
         while (delegate.hasNext()) {
-            Object next = ((Lookup.Item)delegate.next()).getType();
+            Class next = ((Lookup.Item)delegate.next()).getType();
             if (next != skip) return next;
         }
 

@@ -172,17 +172,16 @@ public final class AutomaticDependencies {
      * @param dependencies a mutable set of type {@link Dependency}; call-by-reference
      * @since org.netbeans.core/1 1.19
      */
-    public Report refineDependenciesAndReport(String cnb, Set dependencies) {
-        Set/*<Dependency>*/ oldDependencies = new HashSet(dependencies);
+    public Report refineDependenciesAndReport(String cnb, Set<Dependency> dependencies) {
+        Set<Dependency> oldDependencies = new HashSet<Dependency>(dependencies);
         // First, collect all deps of each type by name, for quick access.
         // Also note that transformations apply *in parallel* so we cannot
         // check triggers of a transformation based on the in-progress set.
-        Map modDeps = new HashMap(); // Map<String,Dependency>
-        Map tokDeps = new HashMap(); // Map<String,Dependency>
-        Map pkgDeps = new HashMap(); // Map<String,Dependency>
+        Map<String,Dependency> modDeps = new HashMap<String,Dependency>();
+        Map<String,Dependency> tokDeps = new HashMap<String,Dependency>();
+        Map<String,Dependency> pkgDeps = new HashMap<String,Dependency>();
         Iterator it = dependencies.iterator();
-        while (it.hasNext()) {
-            Dependency d = (Dependency)it.next();
+        for (Dependency d: dependencies) {
             switch (d.getType()) {
             case Dependency.TYPE_MODULE:
                 String dcnb = (String)Util.parseCodeName(d.getName())[0];
@@ -204,18 +203,15 @@ public final class AutomaticDependencies {
                 throw new IllegalStateException(d.toString());
             }
         }
-        Set/*<String>*/ messages = new TreeSet();
+        Set<String> messages = new TreeSet<String>();
         // Now go through transformations and see if they apply.
         it = groups.iterator();
-        while (it.hasNext()) {
-            TransformationGroup g = (TransformationGroup)it.next();
+        for (TransformationGroup g: groups) {
             if (g.isExcluded(cnb)) {
                 continue;
             }
-            Set/*<Dependency>*/ oldRunningDependencies = new HashSet(dependencies);
-            Iterator it2 = g.transformations.iterator();
-            while (it2.hasNext()) {
-                Transformation t = (Transformation)it2.next();
+            Set<Dependency> oldRunningDependencies = new HashSet<Dependency>(dependencies);
+            for (Transformation t: g.transformations) {
                 t.apply(modDeps, tokDeps, pkgDeps, dependencies);
             }
             if (!oldRunningDependencies.equals(dependencies)) {
@@ -224,7 +220,7 @@ public final class AutomaticDependencies {
         }
         if (!oldDependencies.equals(dependencies)) {
             assert !messages.isEmpty();
-            Set/*<Dependency>*/ added = new HashSet(dependencies);
+            Set<Dependency> added = new HashSet<Dependency>(dependencies);
             added.removeAll(oldDependencies);
             oldDependencies.removeAll(dependencies);
             return new Report(added, oldDependencies, messages);
@@ -242,13 +238,13 @@ public final class AutomaticDependencies {
      * @param cnb the code name base of the module being considered
      * @param dependencies a mutable set of type {@link Dependency}; call-by-reference
      */
-    public void refineDependencies(String cnb, Set dependencies) {
+    public void refineDependencies(String cnb, Set<Dependency> dependencies) {
         refineDependenciesAndReport(cnb, dependencies);
     }
     
     // ---------------- STRUCTS --------------------
     
-    private final List groups = new ArrayList(); // List<TransformationGroup>
+    private final List<TransformationGroup> groups = new ArrayList<TransformationGroup>();
     
     public String toString() {
         return "AutomaticDependencies[" + groups + "]";
@@ -275,8 +271,8 @@ public final class AutomaticDependencies {
     private static final class TransformationGroup {
         public TransformationGroup() {}
         public String description;
-        public final List exclusions = new ArrayList(); // List<Exclusion>
-        public final List transformations = new ArrayList(); // List<Transformation>
+        public final List<Exclusion> exclusions = new ArrayList<Exclusion>();
+        public final List<Transformation> transformations = new ArrayList<Transformation>();
         public String toString() {
             return "TransformationGroup[" + exclusions + "," + transformations + "]";
         }
@@ -300,7 +296,7 @@ public final class AutomaticDependencies {
         public Transformation() {}
         public Dep trigger;
         public String triggerType;
-        public final List results = new ArrayList(); // List<Dep>
+        public final List<Dep> results = new ArrayList<Dep>(); // List<Dep>
         public String toString() {
             return "Transformation[trigger=" + trigger + ",triggerType=" + triggerType + ",results=" + results + "]";
         }
@@ -308,7 +304,9 @@ public final class AutomaticDependencies {
         /**
          * Transform some dependencies.
          */
-        public void apply(Map modDeps, Map tokDeps, Map pkgDeps, Set dependencies) {
+        public void apply(Map<String, Dependency> modDeps,
+		Map<String, Dependency> tokDeps, Map<String, Dependency> pkgDeps,
+		Set<Dependency> dependencies) {
             Dependency d = trigger.applies(modDeps, tokDeps, pkgDeps, dependencies, triggerType);
             if (d != null) {
                 // It matched.
@@ -363,14 +361,18 @@ public final class AutomaticDependencies {
          * Check whether this dependency pattern applies as a trigger.
          * @return the triggered actual dependency if so, else null
          */
-        public abstract Dependency applies(Map modDeps, Map tokDeps, Map pkgDeps, Set dependencies, String type);
+        public abstract Dependency applies(Map<String, Dependency> modDeps,
+		Map<String, Dependency> tokDeps, Map<String, Dependency> pkgDeps,
+		Set<Dependency> dependencies, String type);
         
         /**
          * Update actual dependencies assuming a trigger matched.
          * This dependency pattern is to be added to the dependencies set
          * (possibly upgrading an existing dependency).
          */
-        public abstract void update(Map modDeps, Map tokDeps, Map pkgDeps, Set dependencies);
+        public abstract void update(Map<String, Dependency> modDeps,
+		Map<String, Dependency> tokDeps, Map<String, Dependency> pkgDeps,
+		Set<Dependency> dependencies);
         
     }
     
@@ -392,7 +394,9 @@ public final class AutomaticDependencies {
             return Dependency.TYPE_MODULE;
         }
         
-        public Dependency applies(Map modDeps, Map tokDeps, Map pkgDeps, Set dependencies, String type) {
+        public Dependency applies(Map<String, Dependency> modDeps,
+		Map<String, Dependency> tokDeps, Map<String, Dependency> pkgDeps,
+		Set<Dependency> dependencies, String type) {
             Dependency d = (Dependency)modDeps.get(codenamebase);
             if (d == null) return null;
             if (type.equals("cancel")) {
@@ -426,8 +430,8 @@ public final class AutomaticDependencies {
             return new SpecificationVersion(dSpec).compareTo(spec) < 0;
         }
         
-        public void update(Map modDeps, Map tokDeps, Map pkgDeps, Set dependencies) {
-            Dependency d = (Dependency)modDeps.get(codenamebase);
+        public void update(Map<String, Dependency> modDeps, Map<String, Dependency> tokDeps, Map<String, Dependency> pkgDeps, Set<Dependency> dependencies) {
+            Dependency d = modDeps.get(codenamebase);
             if (d != null && older(d)) {
                 dependencies.remove(d);
                 Dependency nue = createDependency();
@@ -492,7 +496,9 @@ public final class AutomaticDependencies {
             return new SpecificationVersion(dSpec).compareTo(spec) < 0;
         }
         
-        public Dependency applies(Map modDeps, Map tokDeps, Map pkgDeps, Set dependencies, String type) {
+        public Dependency applies(Map<String, Dependency> modDeps,
+		Map<String, Dependency> tokDeps, Map<String, Dependency> pkgDeps,
+		Set<Dependency> dependencies, String type) {
             Dependency d = (Dependency)pkgDeps.get(bname);
             if (d == null) {
                 return null;
@@ -509,7 +515,9 @@ public final class AutomaticDependencies {
             }
         }
         
-        public void update(Map modDeps, Map tokDeps, Map pkgDeps, Set dependencies) {
+        public void update(Map<String, Dependency> modDeps,
+		Map<String, Dependency> tokDeps, Map<String, Dependency> pkgDeps,
+		Set<Dependency> dependencies) {
             Dependency d = (Dependency)pkgDeps.get(bname);
             if (d != null && older(d)) {
                 dependencies.remove(d);
@@ -537,7 +545,9 @@ public final class AutomaticDependencies {
             return Dependency.TYPE_REQUIRES;
         }
         
-        public Dependency applies(Map modDeps, Map tokDeps, Map pkgDeps, Set dependencies, String type) {
+        public Dependency applies(Map<String, Dependency> modDeps,
+		Map<String, Dependency> tokDeps, Map<String, Dependency> pkgDeps,
+		Set<Dependency> dependencies, String type) {
             Dependency d = (Dependency)tokDeps.get(name);
             if (d == null) {
                 return null;
@@ -551,7 +561,9 @@ public final class AutomaticDependencies {
             }
         }
         
-        public void update(Map modDeps, Map tokDeps, Map pkgDeps, Set dependencies) {
+        public void update(Map<String, Dependency> modDeps,
+		Map<String, Dependency> tokDeps, Map<String, Dependency> pkgDeps,
+		Set<Dependency> dependencies) {
             if (tokDeps.get(name) == null) {
                 dependencies.add(createDependency());
             }
@@ -678,12 +690,12 @@ public final class AutomaticDependencies {
 
         private Handler handler;
 
-        private java.util.Stack context;
+        private java.util.Stack<Object[]> context;
 
         public Parser(final Handler handler) {
             this.handler = handler;
             buffer = new StringBuffer(111);
-            context = new java.util.Stack();
+            context = new java.util.Stack<Object[]>();
         }
 
         public final void setDocumentLocator(Locator locator) {

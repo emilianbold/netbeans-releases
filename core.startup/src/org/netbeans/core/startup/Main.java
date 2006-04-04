@@ -392,7 +392,7 @@ public final class Main extends Object {
         Iterator it = Lookup.getDefault().lookupAll(RunLevel.class).iterator();
         
         while (it.hasNext ()) {
-            org.netbeans.core.startup.RunLevel level = (org.netbeans.core.startup.RunLevel)it.next ();
+            RunLevel level = (RunLevel)it.next ();
             level.run ();
         }
     }
@@ -555,8 +555,8 @@ public final class Main extends Object {
                 // This module is included in our distro somewhere... may or may not be turned on.
                 // Whatever - try running some classes from it anyway.
                 try {
-                    Method showMethod = clazz.getMethod("showLicensePanel",null); // NOI18N
-                    showMethod.invoke (null, null);
+                    Method showMethod = clazz.getMethod("showLicensePanel", new Class[] {}); // NOI18N
+                    showMethod.invoke (null, new Object [] {});
                     executedOk = true;
                     //User accepted license => create file marker in userdir
                     File f = new File(new File(CLIOptions.getUserDir(), "var"), "license_accepted"); // NOI18N
@@ -617,70 +617,16 @@ public final class Main extends Object {
     private static void readEnvMap () throws IOException {
         java.util.Properties env = System.getProperties ();
         
-        if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.5")) >= 0) { // NOI18N
-            try {
-                java.lang.reflect.Method getenv = System.class.getMethod("getenv", null);
-                Map m = (Map)getenv.invoke(null, null);
-                for (Iterator it = m.entrySet().iterator(); it.hasNext(); ) {
-                    Map.Entry entry = (Map.Entry)it.next();
-                    String key = (String)entry.getKey();
-                    String value = (String)entry.getValue();
-                
-                    env.put("Env-".concat(key), value); // NOI18N
-                    // E.g. on Turkish Unix, want env-display not env-d\u0131splay:
-                    env.put("env-".concat(key.toLowerCase(Locale.US)), value); // NOI18N
-                }
-                return;
-            } catch (Exception e) {
-                IOException ioe = new IOException();
-                ioe.initCause(e);
-                throw ioe;
-            }
-        }
+	Map<String, String> m = System.getenv();
+	for (Iterator<Map.Entry<String,String>> it = m.entrySet().iterator(); it.hasNext(); ) {
+	    Map.Entry<String,String> entry = it.next();
+	    String key = entry.getKey();
+	    String value = entry.getValue();
 
-        String envfile = System.getProperty("netbeans.osenv"); // NOI18N
-        if (envfile != null) {
-                // XXX is any non-ASCII encoding even defined? unclear...
-                BufferedReader in = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(envfile)));
-                // #30621: use \0 when possible, \n as a fallback
-                char sep = Boolean.getBoolean("netbeans.osenv.nullsep") ? '\0' : '\n';
-                StringBuffer key = new StringBuffer(100);
-                StringBuffer value = new StringBuffer(1000);
-                boolean inkey = true;
-                while (true) {
-                    int c = in.read();
-                    if (c == -1) {
-                        break;
-                    }
-                    char cc = (char)c;
-                    if (inkey) {
-                        if (cc == sep) {
-                            throw new IOException("Environment variable name starting with '" + key + "' contained the separator (char)" + (int)sep); // NOI18N
-                        } else if (cc == '=') {
-                            inkey = false;
-                        } else {
-                            key.append(cc);
-                        }
-                    } else {
-                        if (cc == sep) {
-                            // [pnejedly] These new String() calls are intentional
-                            // because of memory consumption. Don't touch them
-                            // unless you know what you're doing
-                            inkey = true;
-                            String k = key.toString();
-                            String v = new String(value.toString());
-                            env.put(new String("Env-" + k), v); // NOI18N
-                            // E.g. on Turkish Unix, want env-display not env-d\u0131splay:
-                            env.put(new String("env-" + k.toLowerCase(Locale.US)), v); // NOI18N
-                            key.setLength(0);
-                            value.setLength(0);
-                        } else {
-                            value.append(cc);
-                        }
-                    }
-                }
-        }
+	    env.put("Env-".concat(key), value); // NOI18N
+	    // E.g. on Turkish Unix, want env-display not env-d\u0131splay:
+	    env.put("env-".concat(key.toLowerCase(Locale.US)), value); // NOI18N
+	}
     }
 
     

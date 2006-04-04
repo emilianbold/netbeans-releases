@@ -35,7 +35,7 @@ import org.openide.util.Lookup;
  *
  * @author Jaroslav Tulach, Jesse Glick
  */
-public abstract class ManifestSection {
+public abstract class ManifestSection<T> {
     /** superclass of section either Class or String name of the class*/
     private final Object superclazz;
     /** name of the class file, e.g. foo/Bar.class, or foo/bar.ser */
@@ -43,7 +43,7 @@ public abstract class ManifestSection {
     /** name of the class, e.g. foo.bar */
     private final String className;
     /** the class involved */
-    private Class clazz;
+    private Class<?> clazz;
     /** instance of the class if possible */
     private Object result;
     /** any exception associated with loading the object */
@@ -92,7 +92,7 @@ public abstract class ManifestSection {
      * @return the class
      * @throws Exception for various reasons
      */
-    public final Class getSectionClass() throws Exception {
+    public final Class<?> getSectionClass() throws Exception {
         if (clazz != null) {
             return clazz;
         }
@@ -163,7 +163,7 @@ public abstract class ManifestSection {
         } else {
             getSectionClass(); // might throw some exceptions
             if (SharedClassObject.class.isAssignableFrom(clazz)) {
-                return SharedClassObject.findObject(clazz, true);
+                return SharedClassObject.findObject(clazz.asSubclass(SharedClassObject.class), true);
             } else {
                 return clazz.newInstance();
             }
@@ -197,7 +197,7 @@ public abstract class ManifestSection {
     /** Get the superclass which all instances of this section are expected to
      * be assignable to.
      */
-    public final Class getSuperclass() {
+    public final Class<?> getSuperclass() {
         if (superclazz instanceof Class) {
             return (Class)superclazz;
         } else {
@@ -295,24 +295,24 @@ public abstract class ManifestSection {
             super (name, module, "org.openide.loaders.DataLoader"); // NOI18N
             String val = attrs.getValue("Install-After"); // NOI18N
             StringTokenizer tok;
-            List res;
+            List<String> res;
             // XXX validate classnames etc.
             if (val != null) {
                 tok = new StringTokenizer(val, ", "); // NOI18N
-                res = new LinkedList();
+                res = new LinkedList<String>();
                 while (tok.hasMoreTokens()) {
                     String clazz = tok.nextToken();
                     if (! clazz.equals("")) // NOI18N
                         res.add(clazz);
                 }
-                installAfter = (String[])res.toArray(new String[res.size()]);
+                installAfter = res.toArray(new String[res.size()]);
             } else {
                 installAfter = null;
             }
             val = attrs.getValue("Install-Before"); // NOI18N
             if (val != null) {
                 tok = new StringTokenizer(val, ", "); // NOI18N
-                res = new LinkedList();
+                res = new LinkedList<String>();
                 while (tok.hasMoreTokens()) {
                     String clazz = tok.nextToken();
                     if (! clazz.equals("")) // NOI18N
@@ -357,7 +357,7 @@ public abstract class ManifestSection {
 
     /** Loads class of given name.
      */
-    static Class getClazz(String name, Module m) throws InvalidException {
+    static Class<?> getClazz(String name, Module m) throws InvalidException {
         try {
             return ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass(name);
         } catch (ClassNotFoundException cnfe) {

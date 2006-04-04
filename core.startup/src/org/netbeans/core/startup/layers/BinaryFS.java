@@ -75,7 +75,7 @@ public class BinaryFS extends FileSystem {
     
     private FileObject root;
     /** list of urls (String) or Date of their modifications */
-    private java.util.List modifications;
+    private java.util.List<Object> modifications;
     private final Date lastModified = new Date();
     
     /** Creates a new instance of BinaryFS */
@@ -101,7 +101,7 @@ public class BinaryFS extends FileSystem {
 
         // fill the modifications array
         int stop = buff.getInt() + 8 + MAGIC.length;
-        modifications = new ArrayList ();
+        modifications = new ArrayList<Object> ();
         while (buff.position() < stop) {
             modifications.add (getString(buff));
         }
@@ -201,7 +201,7 @@ public class BinaryFS extends FileSystem {
      *   content
      * </pre>
      */
-    private abstract class BFSBase extends FileObject {
+    private abstract class BFSBase extends FileObject { // PENDING make static to save references
         // fields from the constructor
         private final FileObject parent;
         protected final String name;
@@ -209,7 +209,7 @@ public class BinaryFS extends FileSystem {
         
         // fetched fields
         private boolean initialized = false;
-        private Map attrs = Collections.EMPTY_MAP; //Map<String->Attribute>
+        private Map<String, AttrImpl> attrs = Collections.<String, AttrImpl>emptyMap(); //Map<String->Attribute>
         
         public BFSBase(String name, FileObject parent, int offset) {
             this.name = name;
@@ -322,8 +322,8 @@ public class BinaryFS extends FileSystem {
                     Field field = mfoClass.getDeclaredField("attrAskedFileObject"); //NOI18N
                     field.setAccessible(true);
     
-                    ThreadLocal attrAskedFileObject = (ThreadLocal) field.get(null);
-                    topFO = (FileObject) attrAskedFileObject.get();
+                    ThreadLocal<?> attrAskedFileObject = ThreadLocal.class.cast(field.get(null));
+                    topFO = (FileObject)attrAskedFileObject.get();
                     attrAskedFileObject.set(null);
                 } catch (Exception e) {
                     ErrorManager.getDefault().notify(e);
@@ -336,9 +336,9 @@ public class BinaryFS extends FileSystem {
         }
         
         /** Get all file attribute names for this file. */
-        public Enumeration getAttributes() {
+        public Enumeration<String> getAttributes() {
             initialize();
-            if (attrs == null) return org.openide.util.Enumerations.empty();
+            if (attrs == null) return org.openide.util.Enumerations.<String>empty();
             return Collections.enumeration(attrs.keySet());
         }
         
@@ -353,7 +353,7 @@ public class BinaryFS extends FileSystem {
             try {
                 ByteBuffer sub = (ByteBuffer)content.duplicate().order(ByteOrder.LITTLE_ENDIAN).position(offset);
                 int attrCount = sub.getInt();
-                if (attrCount > 0) attrs = new HashMap(attrCount*4/3+1);
+                if (attrCount > 0) attrs = new HashMap<String, AttrImpl>(attrCount*4/3+1);
             
                 for (int i=0; i< attrCount; i++) {  // do read attribute
                     // attribute names are highly duplicated, intern!
@@ -427,10 +427,10 @@ public class BinaryFS extends FileSystem {
                     case 10: // methodvalue
                         return methodValue (value,fo,attrName);
                     case 11: // newvalue
-                        Class cls =  findClass (value);
+                        Class<?> cls =  findClass (value);
                         // special support for singletons
                         if (SharedClassObject.class.isAssignableFrom(cls)) {
-                            return SharedClassObject.findObject(cls, true);
+                            return SharedClassObject.findObject(cls.asSubclass(SharedClassObject.class), true);
                         } else {   
                             return cls.newInstance();
                         }
@@ -460,10 +460,10 @@ public class BinaryFS extends FileSystem {
                 Object objArray[][] = {null,null,null};
                 Method methArray[] = {null,null,null};
             
-                Class fParam = fo.getClass(), sParam = attr.getClass();
+                Class<?> fParam = fo.getClass(), sParam = attr.getClass();
             
                 Method[] allMethods = cls.getDeclaredMethods();
-                Class[] paramClss;
+                Class<?>[] paramClss;
             
                 for (int j=0; j < allMethods.length; j++) {
                     if (!allMethods[j].getName().equals(methodName))  continue;
@@ -718,7 +718,7 @@ public class BinaryFS extends FileSystem {
     }
     
     private class BFSFolder extends BFSBase {
-        Map childrenMap = Collections.EMPTY_MAP;
+        Map<String,BFSBase> childrenMap = Collections.<String,BFSBase>emptyMap();
         
         public BFSFolder(String name, FileObject parent, int offset) {
             super(name, parent, offset);
@@ -769,13 +769,13 @@ public class BinaryFS extends FileSystem {
         protected void doInitialize(ByteBuffer sub) throws Exception {
             int files = sub.getInt();
             if (files > 0) {
-                childrenMap = new HashMap(files*4/3+1);
+                childrenMap = new HashMap<String,BFSBase>(files*4/3+1);
                 for (int i=0; i<files; i++) { //read file desc:
                     String name = getString(sub);   // String name
                     byte isFolder = sub.get();      // boolean isFolder
                     int off = sub.getInt();          // int contentRef
                     childrenMap.put(name, isFolder == 0 ?
-                        (Object)new BFSFile(name, this, off) :
+                        new BFSFile(name, this, off) :
                         new BFSFolder(name, this, off));
                 }
             }

@@ -95,15 +95,15 @@ final class ModuleList {
     /** to fire events with */
     private final Events ev;
     /** map from code name (base)s to statuses of modules on disk */
-    private final Map/*<String,DiskStatus>*/ statuses = new HashMap(100);
+    private final Map<String,DiskStatus> statuses = new HashMap<String,DiskStatus>(100);
     /** whether the initial round has been triggered or not */
     private boolean triggered = false;
     /** listener for changes in modules, etc.; see comment on class Listener */
     private final Listener listener = new Listener();
     /** any module install sers from externalizedModules.ser, from class name to data */
-    private final Map/*<String,byte[]>*/ compatibilitySers = new HashMap(100);
+    private final Map<String,byte[]> compatibilitySers = new HashMap<String,byte[]>(100);
     /** atomic actions I have used to change Modules/*.xml */
-    private final Set/*<FileSystem.AtomicAction>*/ myAtomicActions = Collections.synchronizedSet(new WeakSet(100));
+    private final Set<FileSystem.AtomicAction> myAtomicActions = Collections.<FileSystem.AtomicAction>synchronizedSet(new WeakSet<FileSystem.AtomicAction>(100));
     
     /** Create the list manager.
      * @param mgr the module manager which will actually control the modules at runtime
@@ -127,7 +127,7 @@ final class ModuleList {
      */
     public Set readInitial() {
         ev.log(Events.START_READ);
-        final Set/*<Module>*/ read = new HashSet();
+        final Set<Module> read = new HashSet<Module>();
         try {
             folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
@@ -155,7 +155,7 @@ final class ModuleList {
                     Dependency.create(Dependency.TYPE_MODULE, name);
 		    
                     // OK, read it from disk.
-                    Map props;
+                    Map<String,Object> props;
                     InputStream is = children[i].getInputStream();
                     try {
                         props = readStatus(new BufferedInputStream(is));
@@ -291,13 +291,11 @@ final class ModuleList {
      * Pass in a list of boot modules which you would
      * like to also try to enable now.
      */
-    public void trigger(Set boot) {
+    public void trigger(Set<Module> boot) {
         ev.log(Events.PERF_START, "ModuleList.trigger"); // NOI18N
         if (triggered) throw new IllegalStateException("Duplicate call to trigger()"); // NOI18N
-        Set/*<Module>*/ maybeEnable = new HashSet(boot);
-        Iterator it = statuses.values().iterator();
-        while (it.hasNext()) {
-            DiskStatus status = (DiskStatus)it.next();
+        Set<Module> maybeEnable = new HashSet<Module>(boot);
+        for (DiskStatus status: statuses.values()) {
             if (status.pendingInstall) {
                 // We are going to try to turn it on...
                 status.pendingInstall = false;
@@ -319,15 +317,15 @@ final class ModuleList {
         ev.log(Events.PERF_END, "ModuleList.trigger"); // NOI18N
     }
     // XXX is this method still needed? rethink...
-    private void installNew(Set/*<Module>*/ modules) {
+    private void installNew(Set<Module> modules) {
         if (modules.isEmpty()) {
             return;
         }
         ev.log(Events.PERF_START, "ModuleList.installNew"); // NOI18N
         // First suppress all autoloads.
-        Iterator it = modules.iterator();
+        Iterator<Module> it = modules.iterator();
         while (it.hasNext()) {
-            Module m = (Module)it.next();
+            Module m = it.next();
             if (m.isAutoload() || m.isEager()) {
                 it.remove();
             } else if (m.isEnabled()) {
@@ -348,10 +346,8 @@ final class ModuleList {
                 it.remove();
             }
         }
-        List/*<Module>*/ toEnable = mgr.simulateEnable(modules);
-        it = toEnable.iterator();
-        while (it.hasNext()) {
-            Module m = (Module)it.next();
+        List<Module> toEnable = mgr.simulateEnable(modules);
+	for (Module m: toEnable) {
             if (m.isAutoload() || m.isEager()) {
                 continue;
             }
@@ -360,7 +356,7 @@ final class ModuleList {
                 modules.add(m);
             }
         }
-        Set/*<Module>*/ missing = new HashSet(modules);
+        Set<Module> missing = new HashSet<Module>(modules);
         missing.removeAll(toEnable);
         if (! missing.isEmpty()) {
             // Include also problematic autoloads and so on needed by these modules.
@@ -591,13 +587,13 @@ final class ModuleList {
      * @param reader the XML reader to use to parse; may be null
      * @return a map of named properties to values of various types
      */
-    private Map readStatus(InputSource is, XMLReader reader) throws IOException, SAXException {
+    private Map<String,Object> readStatus(InputSource is, XMLReader reader) throws IOException, SAXException {
         if (reader == null) {
             reader = XMLUtil.createXMLReader(VALIDATE_XML);
             reader.setEntityResolver(listener);
             reader.setErrorHandler(listener);
         }
-        final Map/*<String,Object>*/ m = new HashMap();
+        final Map<String,Object> m = new HashMap<String,Object>();
 
         DefaultHandler handler = new DefaultHandler() {
             private String modName;
@@ -688,7 +684,7 @@ final class ModuleList {
     
     /** Just checks that all the right stuff is there.
      */
-    private void sanityCheckStatus(Map m) throws IOException {
+    private void sanityCheckStatus(Map<String,Object> m) throws IOException {
         if (m.get("jar") == null) // NOI18N
             throw new IOException("Must define jar param"); // NOI18N
         if (m.get("autoload") != null // NOI18N
@@ -733,8 +729,8 @@ final class ModuleList {
      * you have to use a real parser.
      * @see "#26786"
      */
-    private Map readStatus(InputStream is) throws IOException {
-        Map/*<String,Object>*/ m = new HashMap(15);
+    private Map<String, Object> readStatus(InputStream is) throws IOException {
+        Map<String,Object> m = new HashMap<String,Object>(15);
         if (!expect(is, MODULE_XML_INTRO)) {
             Util.err.log("Could not read intro");
             return null;
@@ -887,7 +883,7 @@ final class ModuleList {
      * The map of parameters must contain one named 'name' with the code
      * name base of the module.
      */
-    private void writeStatus(Map m, OutputStream os) throws IOException {
+    private void writeStatus(Map<String, Object> m, OutputStream os) throws IOException {
         String codeName = (String)m.get("name"); // NOI18N
         if (codeName == null)
             throw new IllegalArgumentException("no code name present"); // NOI18N
@@ -905,10 +901,8 @@ final class ModuleList {
 
         // Use TreeMap to sort the keys by name; since the module status files might
         // be version-controlled we want to avoid gratuitous format changes.
-        Iterator it = new TreeMap(m).entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            String name = (String)entry.getKey();
+        for (Map.Entry<String, Object> entry: new TreeMap<String, Object>(m).entrySet()) {
+            String name = entry.getKey();
             if (name.equals("installerState") || name.equals("name")) { // NOI18N
                 // Skip this one, it is a pseudo-param.
                 continue;
@@ -1161,10 +1155,10 @@ final class ModuleList {
             if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 Util.err.log("ModuleList: moduleChanged: " + m);
             }
-            Map newProps = computeProperties(m);
+            Map<String,Object> newProps = computeProperties(m);
             if (! Utilities.compareObjects(status.diskProps, newProps)) {
                 if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    Set changes = new HashSet(newProps.entrySet());
+                    Set<Map.Entry<String,Object>> changes = new HashSet<Map.Entry<String,Object>>(newProps.entrySet());
                     changes.removeAll(status.diskProps.entrySet());
                     Util.err.log("ModuleList: changes are " + changes);
                 }
@@ -1187,10 +1181,10 @@ final class ModuleList {
      * will be a byte[] rather than a string, which means that
      * the indicated installer state should be written out.
      */
-    private Map computeProperties(Module m) {
+    private Map<String,Object> computeProperties(Module m) {
         if (m.isFixed() || ! m.isValid()) throw new IllegalArgumentException("fixed or invalid: " + m); // NOI18N
         if (! (m.getHistory() instanceof ModuleHistory)) throw new IllegalArgumentException("weird history: " + m); // NOI18N
-        Map p = new HashMap();
+        Map<String,Object> p = new HashMap<String,Object>();
         p.put("name", m.getCodeNameBase()); // NOI18N
         int rel = m.getCodeNameRelease();
         if (rel >= 0) {
@@ -1441,9 +1435,9 @@ final class ModuleList {
                         // 8. For any dirty XML for which status now exists: replace diskProps with contents of XML.
                         // 9. Mark all statuses clean.
                         // Code name to module XMLs found on disk:
-                        Map/*<String,FileObject>*/ xmlfiles = prepareXMLFiles();
+                        Map<String,FileObject> xmlfiles = prepareXMLFiles();
                         // Code name to properties for dirty XML or XML sans status only.
-                        Map/*<String,Map<String,Object>>*/ dirtyprops = prepareDirtyProps(xmlfiles);
+                        Map<String,Map<String,Object>> dirtyprops = prepareDirtyProps(xmlfiles);
                         // #27106: do not listen to changes we ourselves produce.
                         // It only matters if statuses has not been updated before
                         // the changes are fired.
@@ -1471,9 +1465,9 @@ final class ModuleList {
             }
         }
         // All the steps called from the run() method to handle disk changes:
-        private Map/*<String,FileObject>*/ prepareXMLFiles() {
+        private Map<String,FileObject> prepareXMLFiles() {
             Util.err.log("ModuleList: prepareXMLFiles");
-            Map/*<String,FileObject>*/ xmlfiles = new HashMap(100);
+            Map<String,FileObject> xmlfiles = new HashMap<String,FileObject>(100);
             FileObject[] kids = folder.getChildren();
             for (int i = 0; i < kids.length; i++) {
                 if (kids[i].hasExt("xml")) { // NOI18N
@@ -1482,16 +1476,16 @@ final class ModuleList {
             }
             return xmlfiles;
         }
-        private Map/*<String,Map<String,Object>>*/ prepareDirtyProps(Map/*<String,FileObject>*/ xmlfiles) throws IOException {
+        private Map<String,Map<String,Object>> prepareDirtyProps(Map<String,FileObject> xmlfiles) throws IOException {
             Util.err.log("ModuleList: prepareDirtyProps");
-            Map/*<String,Map<String,Object>>*/ dirtyprops = new HashMap(100);
-            Iterator it = xmlfiles.entrySet().iterator();
+            Map<String,Map<String,Object>> dirtyprops = new HashMap<String,Map<String,Object>>(100);
+            Iterator<Map.Entry<String,FileObject>> it = xmlfiles.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                String cnb = (String)entry.getKey();
-                DiskStatus status = (DiskStatus)statuses.get(cnb);
+                Map.Entry<String,FileObject> entry = it.next();
+                String cnb = entry.getKey();
+                DiskStatus status = statuses.get(cnb);
                 if (status == null || status.dirty) {
-                    FileObject xmlfile = (FileObject)entry.getValue();
+                    FileObject xmlfile = entry.getValue();
                     if (xmlfile == null || ! xmlfile.canRead ()) {
                         continue;
                     }
@@ -1511,15 +1505,15 @@ final class ModuleList {
             }
             return dirtyprops;
         }
-        private void stepCheckReloadable(Map/*<String,Map<String,Object>>*/ dirtyprops) {
+        private void stepCheckReloadable(Map<String,Map<String,Object>> dirtyprops) {
             Util.err.log("ModuleList: stepCheckReloadable");
-            Iterator it = dirtyprops.entrySet().iterator();
+            Iterator<Map.Entry<String,Map<String,Object>>> it = dirtyprops.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                String cnb = (String)entry.getKey();
-                DiskStatus status = (DiskStatus)statuses.get(cnb);
+                Map.Entry<String,Map<String,Object>> entry = it.next();
+                String cnb = entry.getKey();
+                DiskStatus status = statuses.get(cnb);
                 if (status != null) {
-                    Map props = (Map)entry.getValue();
+                    Map<String,Object> props = entry.getValue();
                     Boolean diskReloadableB = (Boolean)props.get("reloadable"); // NOI18N
                     boolean diskReloadable = (diskReloadableB != null ? diskReloadableB.booleanValue() : false);
                     boolean memReloadable = status.module.isReloadable();
@@ -1530,15 +1524,15 @@ final class ModuleList {
                 }
             }
         }
-        private void stepCreate(Map/*<String,FileObject>*/ xmlfiles, Map/*<String,Map<String,Object>>*/ dirtyprops) throws IOException {
+        private void stepCreate(Map<String,FileObject> xmlfiles, Map<String,Map<String,Object>> dirtyprops) throws IOException {
             Util.err.log("ModuleList: stepCreate");
-            Iterator it = xmlfiles.entrySet().iterator();
+            Iterator<Map.Entry<String,FileObject>> it = xmlfiles.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                String cnb = (String)entry.getKey();
+                Map.Entry<String,FileObject> entry = it.next();
+                String cnb = entry.getKey();
                 if (! statuses.containsKey(cnb)) {
-                    FileObject xmlfile = (FileObject)entry.getValue();
-                    Map props = (Map)dirtyprops.get(cnb);
+                    FileObject xmlfile = entry.getValue();
+                    Map<String, Object> props = dirtyprops.get(cnb);
                     if (! cnb.equals(props.get("name"))) throw new IOException("Code name mismatch"); // NOI18N
                     String jar = (String)props.get("jar"); // NOI18N
                     File jarFile = findJarByName(jar, cnb);
@@ -1559,9 +1553,9 @@ final class ModuleList {
                     m.addPropertyChangeListener(this);
                     // Mark the status as disabled for the moment, so in step 3 it will be turned on
                     // if in dirtyprops it was marked enabled.
-                    Map statusProps;
+                    Map<String, Object> statusProps;
                     if (props.get("enabled") != null && ((Boolean)props.get("enabled")).booleanValue()) { // NOI18N
-                        statusProps = new HashMap(props);
+                        statusProps = new HashMap<String, Object>(props);
                         statusProps.put("enabled", Boolean.FALSE); // NOI18N
                     } else {
                         statusProps = props;
@@ -1574,16 +1568,16 @@ final class ModuleList {
                 }
             }
         }
-        private void stepEnable(Map/*<String,Map<String,Object>>*/ dirtyprops) throws IOException {
+        private void stepEnable(Map<String,Map<String,Object>> dirtyprops) throws IOException {
             Util.err.log("ModuleList: stepEnable");
-            Set/*<Module>*/ toenable = new HashSet();
-            Iterator it = dirtyprops.entrySet().iterator();
+            Set<Module> toenable = new HashSet<Module>();
+            Iterator<Map.Entry<String,Map<String,Object>>> it = dirtyprops.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                String cnb = (String)entry.getKey();
-                Map props = (Map)entry.getValue();
+                Map.Entry<String,Map<String,Object>> entry = it.next();
+                String cnb = entry.getKey();
+                Map<String, Object> props = entry.getValue();
                 if (props.get("enabled") != null && ((Boolean)props.get("enabled")).booleanValue()) { // NOI18N
-                    DiskStatus status = (DiskStatus)statuses.get(cnb);
+                    DiskStatus status = statuses.get(cnb);
                     if (status.diskProps.get("enabled") == null || ! ((Boolean)status.diskProps.get("enabled")).booleanValue()) { // NOI18N
                         if (status.module.isEnabled()) throw new IllegalStateException("Already enabled: " + status.module); // NOI18N
                         toenable.add(status.module);
@@ -1592,16 +1586,14 @@ final class ModuleList {
             }
             installNew(toenable);
         }
-        private void stepDisable(Map/*<String,Map<String,Object>>*/ dirtyprops) throws IOException {
+        private void stepDisable(Map<String,Map<String,Object>> dirtyprops) throws IOException {
             Util.err.log("ModuleList: stepDisable");
-            Set/*<Module>*/ todisable = new HashSet();
-            Iterator it = dirtyprops.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                String cnb = (String)entry.getKey();
-                Map props = (Map)entry.getValue();
+            Set<Module> todisable = new HashSet<Module>();
+            for (Map.Entry<String,Map<String,Object>> entry: dirtyprops.entrySet()) {
+                String cnb = entry.getKey();
+                Map<String, Object> props = entry.getValue();
                 if (props.get("enabled") == null || ! ((Boolean)props.get("enabled")).booleanValue()) { // NOI18N
-                    DiskStatus status = (DiskStatus)statuses.get(cnb);
+                    DiskStatus status = statuses.get(cnb);
                     if (status.diskProps.get("enabled") != null && ((Boolean)status.diskProps.get("enabled")).booleanValue()) { // NOI18N
                         if (! status.module.isEnabled()) throw new IllegalStateException("Already disabled: " + status.module); // NOI18N
                         todisable.add(status.module);
@@ -1611,24 +1603,22 @@ final class ModuleList {
             if (todisable.isEmpty()) {
                 return;
             }
-            List reallydisable = mgr.simulateDisable(todisable);
-            it = reallydisable.iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            List<Module> reallydisable = mgr.simulateDisable(todisable);
+	    for (Module m: reallydisable) {
                 if (!m.isAutoload() && !m.isEager() && !todisable.contains(m)) {
                     todisable.add(m);
                 }
             }
             mgr.disable(todisable);
         }
-        private void stepDelete(Map/*<String,FileObject>*/ xmlfiles) throws IOException {
+        private void stepDelete(Map<String,FileObject> xmlfiles) throws IOException {
             Util.err.log("ModuleList: stepDelete");
-            Set/*<Module>*/ todelete = new HashSet();
-            Iterator it = statuses.entrySet().iterator();
+            Set<Module> todelete = new HashSet<Module>();
+            Iterator<Map.Entry<String,DiskStatus>> it = statuses.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                String cnb = (String)entry.getKey();
-                DiskStatus status = (DiskStatus)entry.getValue();
+                Map.Entry<String,DiskStatus> entry = it.next();
+                String cnb = entry.getKey();
+                DiskStatus status = entry.getValue();
                 if (! xmlfiles.containsKey(cnb)) {
                     Module m = status.module;
                     todelete.add(m);
@@ -1638,32 +1628,28 @@ final class ModuleList {
             if (todelete.isEmpty()) {
                 return;
             }
-            Set/*<Module>*/ todisable = new HashSet();
-            it = todelete.iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            Set<Module> todisable = new HashSet<Module>();
+	    for (Module m: todelete) {
                 if (m.isEnabled() && !m.isAutoload() && !m.isEager()) {
                     todisable.add(m);
                 }
             }
-            List reallydisable = mgr.simulateDisable(todisable);
-            it = reallydisable.iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            List<Module> reallydisable = mgr.simulateDisable(todisable);
+	    for (Module m: reallydisable) {
                 if (!m.isAutoload() && !m.isEager() && !todisable.contains(m)) {
                     todisable.add(m);
                 }
             }
             mgr.disable(todisable);
             // In case someone tried to delete an enabled autoload/eager module:
-            it = todelete.iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            Iterator<Module> delIt = todelete.iterator();
+            while (delIt.hasNext()) {
+                Module m = delIt.next();
                 if (m.isEnabled()) {
                     if (!m.isAutoload() && !m.isEager()) throw new IllegalStateException("Module " + m + " scheduled for deletion could not be disabled yet was not an autoload nor eager"); // NOI18N
                     // XXX is it better to find all regular module using it and turn all of those off?
                     ev.log(Events.CANT_DELETE_ENABLED_AUTOLOAD, m);
-                    it.remove();
+                    delIt.remove();
                 } else {
                     mgr.delete(m);
                 }
@@ -1692,15 +1678,13 @@ final class ModuleList {
         private void stepCheckSer(Map/*<String,FileObject>*/ xmlfiles, Map/*<String,Map<String,Object>>*/ dirtyprops) {
             // There is NO step 7!
         }
-        private void stepUpdateProps(Map/*<String,Map<String,Object>>*/ dirtyprops) {
+        private void stepUpdateProps(Map<String,Map<String,Object>> dirtyprops) {
             Util.err.log("ModuleList: stepUpdateProps");
-            Iterator it = dirtyprops.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                String cnb = (String)entry.getKey();
-                DiskStatus status = (DiskStatus)statuses.get(cnb);
+	    for (Map.Entry<String,Map<String,Object>> entry: dirtyprops.entrySet()) {
+                String cnb = entry.getKey();
+                DiskStatus status = statuses.get(cnb);
                 if (status != null) {
-                    Map props = (Map)entry.getValue();
+                    Map<String,Object> props = entry.getValue();
                     status.diskProps = props;
                 }
             }
@@ -1729,7 +1713,7 @@ final class ModuleList {
         /** if true, this module was scanned and should be enabled but we are waiting for trigger */
         public boolean pendingInstall = false;
         /** properties of the module on disk */
-        public Map/*<String,String|Integer|Boolean|SpecificationVersion>*/ diskProps;
+        public Map<String,Object /*String|Integer|Boolean|SpecificationVersion*/> diskProps;
         /** if true, the XML was changed on disk by someone else */
         public boolean dirty = false;
         /** for debugging: */

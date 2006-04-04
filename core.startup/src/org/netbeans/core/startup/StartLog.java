@@ -24,8 +24,8 @@ import java.util.Arrays;
 public class StartLog {
 
     private static final StartImpl impl;
-    private static final Stack actions = new Stack(); // Stack<String>
-    private static final Stack places = new Stack(); // Stack<Throwable>
+    private static final Stack<String> actions = new Stack<String>();
+    private static final Stack<Throwable> places = new Stack<Throwable>();
     private static final boolean DEBUG_NESTING = Boolean.getBoolean("org.netbeans.log.startup.debug"); // NOI18N
     
     private static final String logProp; 
@@ -129,7 +129,7 @@ public class StartLog {
     private static class PrintImpl extends StartImpl {
         PrintImpl() {}
         long zero = System.currentTimeMillis();
-        private Stack starts = new Stack();
+        private Stack<Long> starts = new Stack<Long>();
         long prog;
         private int indent = 0;
         
@@ -176,7 +176,7 @@ public class StartLog {
     private static class PerformanceTestsImpl extends StartImpl {
         private StringBuffer logs = new StringBuffer();
         long zero = System.currentTimeMillis();
-        private Stack starts = new Stack();
+        private Stack<Long> starts = new Stack<Long>();
         long prog;
         private int indent = 0;
         

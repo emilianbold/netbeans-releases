@@ -71,13 +71,13 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
     
     private Locator locator;
     private MemFolder root;
-    private Stack curr; // Stack<MemFileOrFolder | MemAttr>
+    private Stack<Object> curr; // Stack<MemFileOrFolder | MemAttr>
     private URL base;
     private StringBuffer buf = new StringBuffer();
     private int fileCount, folderCount, attrCount;
     // Folders, files, and attrs already encountered in this layer.
     // By path; attrs as folder/file path plus "//" plus attr name.
-    private Set oneLayerFiles; // Set<String>
+    private Set<String> oneLayerFiles; // Set<String>
     // Related:
     private boolean checkingForDuplicates;
     private String currPath;
@@ -91,23 +91,23 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
     /** Implements storage by parsing the layers and calling
      * store(FileSystem,ParsingLayerCacheManager.MemFolder).
      */
-    public final void store(FileSystem fs, List urls) throws IOException {
+    public final void store(FileSystem fs, List<URL> urls) throws IOException {
         store(fs, createRoot(urls));
     }
     
     /** Implements storage by parsing the layers and calling
      * store(ParsingLayerCacheManager.MemFolder).
      */
-    public final FileSystem store(List urls) throws IOException {
+    public final FileSystem store(List<URL> urls) throws IOException {
         return store(createRoot(urls));
     }
     
     /**
      * Do the actual parsing.
      */
-    private MemFolder createRoot(List urls) throws IOException {
+    private MemFolder createRoot(List<URL> urls) throws IOException {
         root = new MemFolder(null);
-        curr = new Stack();
+        curr = new Stack<Object>();
         curr.push(root);
         try {
             // XMLReader r = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
@@ -123,14 +123,14 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
             r.setEntityResolver(this);
             Exception carrier = null;
             // #23609: reverse these...
-            urls = new ArrayList(urls);
+            urls = new ArrayList<URL>(urls);
             Collections.reverse(urls);
             checkingForDuplicates = LayerCacheManager.err.isLoggable(ErrorManager.WARNING);
             Iterator it = urls.iterator();
             while (it.hasNext()) {
-                base = (URL)it.next();
+                base = (URL)it.next(); // store base for resolving in parser
                 if (checkingForDuplicates) {
-                    oneLayerFiles = new HashSet(100);
+                    oneLayerFiles = new HashSet<String>(100);
                     currPath = null;
                 }
                 LayerCacheManager.err.log("Parsing: " + base);
@@ -238,7 +238,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
              */
             if (attr.type == null) throw new SAXParseException("unknown <attr> value type for " + attr.name, locator);
             MemFileOrFolder parent = (MemFileOrFolder)curr.peek();
-            if (parent.attrs == null) parent.attrs = new LinkedList();
+            if (parent.attrs == null) parent.attrs = new LinkedList<MemAttr>();
             Iterator it = parent.attrs.iterator();
             while (it.hasNext()) {
                 if (((MemAttr)it.next()).name.equals(attr.name)) {
@@ -262,7 +262,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
         MemFolder parent = (MemFolder)curr.peek();
         MemFileOrFolder f = null;
         if (parent.children == null) {
-            parent.children = new LinkedList();
+            parent.children = new LinkedList<MemFileOrFolder>();
         }
         else {
             Iterator it = parent.children.iterator();
@@ -408,7 +408,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
      */
     protected static abstract class MemFileOrFolder {
         public String name;
-        public List attrs = null; // {null | List<MemAttr>}
+        public List<MemAttr> attrs = null; // {null | List<MemAttr>}
         public final URL base;
         
         public MemFileOrFolder (URL base) {
@@ -419,7 +419,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
     /** Struct for <folder>.
      */
     protected static final class MemFolder extends MemFileOrFolder {
-        public List children = null; // {null | List<MemFileOrFolder>}
+        public List<MemFileOrFolder> children = null;
         
         public MemFolder (URL base) {
             super (base);

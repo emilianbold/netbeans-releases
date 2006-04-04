@@ -39,7 +39,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     
     private static final File[] dirs;
     static {
-        List/*<File>*/ _dirs = new ArrayList();
+        List<File> _dirs = new ArrayList<File>();
         addDir(_dirs, System.getProperty("netbeans.user"));
         String nbdirs = System.getProperty("netbeans.dirs"); // #27151
         if (nbdirs != null) {
@@ -49,10 +49,10 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
             }
         }
         addDir(_dirs, System.getProperty("netbeans.home"));
-        dirs = (File[])_dirs.toArray(new File[_dirs.size()]);
+        dirs = _dirs.toArray(new File[_dirs.size()]);
     }
     
-    private static void addDir(List _dirs, String d) {
+    private static void addDir(List<File> _dirs, String d) {
         if (d != null) {
             File f = new File(d).getAbsoluteFile();
             if (f.isDirectory()) {
@@ -68,7 +68,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
      * (not all entries need have keys, only those for which the dir exists),
      * and values are unqualified file names which exist in that dir.
      */
-    private static Map/*<String,Map<File,Set<String>>>*/ fileCache = null;
+    private static Map<String,Map<File,Set<String>>> fileCache = null;
     
     /**
      * Called from <code>NonGui.run</code> early in the startup sequence to indicate
@@ -78,7 +78,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
      */
     public static synchronized void prepareCache() {
         assert fileCache == null;
-        fileCache = new HashMap();
+        fileCache = new HashMap<String,Map<File,Set<String>>>();
     }
     
     /**
@@ -148,9 +148,9 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     private static File locateExactPath(String prefix, String name) {
         assert Thread.holdsLock(InstalledFileLocatorImpl.class);
         if (fileCache != null) {
-            Map fileCachePerPrefix = (Map)fileCache.get(prefix);
+            Map<File,Set<String>> fileCachePerPrefix = fileCache.get(prefix);
             if (fileCachePerPrefix == null) {
-                fileCachePerPrefix = new HashMap(dirs.length * 2);
+                fileCachePerPrefix = new HashMap<File,Set<String>>(dirs.length * 2);
                 for (int i = 0; i < dirs.length; i++) {
                     File root = dirs[i];
                     File d;
@@ -163,7 +163,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                     if (d.isDirectory()) {
                         String[] kids = d.list();
                         if (kids != null) {
-                            fileCachePerPrefix.put(root, new HashSet(Arrays.asList(kids)));
+                            fileCachePerPrefix.put(root, new HashSet<String>(Arrays.asList(kids)));
                         } else {
                             ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - could not read files in " + d);
                         }

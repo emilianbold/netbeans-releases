@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import org.openide.modules.Dependency;
 
 /** Responsible for actually installing the contents of module JARs into the IDE.
  * While the manager tracks which modules are enabled and their dependencies,
@@ -65,24 +66,24 @@ public abstract class ModuleInstaller {
      * Note that "loading" could really mean installing or restoring or upgrading,
      * depending on module history.
      */
-    public abstract void load(List modules);
+    public abstract void load(List<Module> modules);
     
     /** Unload some modules from the IDE.
      * Where unload order is significant, items should be uninstalled in the order
      * supplied: starting with dependent modules and ending with basic modules.
      * Module classloaders will still be in the system classloader.
      */
-    public abstract void unload(List modules);
+    public abstract void unload(List<Module> modules);
     
     /** Ask to shut down the IDE from a set of modules.
      * Will begin with dependent and end with basic modules.
      */
-    public abstract boolean closing(List modules);
+    public abstract boolean closing(List<Module> modules);
     
     /** Notify modules the IDE will be shut down.
      * Will begin with dependent and end with basic modules.
      */
-    public abstract void close(List modules);
+    public abstract void close(List<Module> modules);
     
     /** Optionally refine the dependencies for a module.
      * For example, an installer might decide to automatically add a dependency
@@ -95,7 +96,7 @@ public abstract class ModuleInstaller {
      *                     during the dynamic scope of this call
      * @since org.netbeans.core/1 1.2
      */
-    public void refineDependencies(Module m, Set dependencies) {}
+    public void refineDependencies(Module m, Set<Dependency> dependencies) {}
     
     /** Optionally mask package use in a module classloader.
      * For example, an installer might decide that a module may not use a

@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import org.openide.filesystems.FileSystem;
@@ -103,7 +104,7 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
         cleanupCache(); // move old file out of the way
         OutputStream os = new FileOutputStream(cacheFile);
         try {
-            sizes = new HashMap(1000);
+            sizes = new HashMap<MemFileOrFolder,Integer>(1000);
             int fsSize = computeSize(root);
             LayerCacheManager.err.log("Writing binary layer cache of length " + (fsSize + BinaryFS.MAGIC.length) + " to " + cacheFile);
             os.write(BinaryFS.MAGIC);
@@ -214,7 +215,7 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
     }
     
     // this map is actually valid only during BFS regeneration, null otherwise
-    private HashMap sizes; // map(MemFileOrFolder->Integer(size))
+    private HashMap<MemFileOrFolder,Integer> sizes;
     
     private int computeSize(MemFileOrFolder mf) {
         Integer i = (Integer)sizes.get(mf);
@@ -322,7 +323,7 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
         }
         
         private java.util.Map writeBaseUrls (MemFileOrFolder root, int fsSize) throws IOException {
-            java.util.LinkedHashMap map = new java.util.LinkedHashMap ();
+            java.util.LinkedHashMap<URL,Object> map = new java.util.LinkedHashMap<URL,Object> ();
             int[] counter = new int[1];
             
             collectBaseUrls (root, map, counter);
@@ -351,7 +352,7 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
             return map;
         }
         
-        private void collectBaseUrls (MemFileOrFolder f, java.util.Map map, int[] counter) {
+        private void collectBaseUrls (MemFileOrFolder f, java.util.Map<URL,Object/*int[]*/> map, int[] counter) {
             if (f.base != null) {
                 int[] exists = (int[])map.get (f.base);
                 if (exists == null) {

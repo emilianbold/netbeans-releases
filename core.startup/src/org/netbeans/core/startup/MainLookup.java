@@ -117,7 +117,7 @@ public final class MainLookup extends ProxyLookup {
      * @param obj source
      * @param conv convertor which postponing an instantiation
      */
-    public static void register(Object obj, InstanceContent.Convertor conv) {
+    public static <T,R> void register(T obj, InstanceContent.Convertor<T,R> conv) {
         instanceContent.add(obj, conv);
     }
     
@@ -128,7 +128,7 @@ public final class MainLookup extends ProxyLookup {
     }
     /** Unregisters the service registered with a convertor.
      */
-    public static void unregister (Object obj, InstanceContent.Convertor conv) {
+    public static <T,R> void unregister (T obj, InstanceContent.Convertor<T,R> conv) {
         instanceContent.remove (obj, conv);
     }
     

@@ -53,7 +53,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
     static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.core.projects"); // NOI18N
     
     /** current list of URLs - r/o; or null if not yet set */
-    private List urls; // List<URL>
+    private List<URL> urls;
     /** cache manager */
     private LayerCacheManager manager;
     /** writable layer */
@@ -146,11 +146,11 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
     }
     
     private static FileSystem[] appendLayers(FileSystem fs1, FileSystem[] fs2s, FileSystem fs3) {
-        List l = new ArrayList(fs2s.length + 2);
+        List<FileSystem> l = new ArrayList<FileSystem>(fs2s.length + 2);
         l.add(fs1);
         l.addAll(Arrays.asList(fs2s));
         l.add(fs3);
-        return (FileSystem[])l.toArray(new FileSystem[l.size()]);
+        return l.toArray(new FileSystem[l.size()]);
     }
 
     private static void cleanStamp(File cacheDir) throws IOException {
@@ -201,7 +201,7 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
     /** Change the list of module layers URLs.
      * @param urls the urls describing module layers to use. List<URL>
      */
-    public void setURLs (final List urls) throws Exception {
+    public void setURLs (final List<URL> urls) throws Exception {
         if (urls.contains(null)) throw new NullPointerException("urls=" + urls); // NOI18N
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
             err.log("setURLs: " + urls);
@@ -315,19 +315,19 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
     
     /** Adds few URLs.
      */
-    public void addURLs(Collection urls) throws Exception {
+    public void addURLs(Collection<URL> urls) throws Exception {
         if (urls.contains(null)) throw new NullPointerException("urls=" + urls); // NOI18N
         // Add to the front: #23609.
-        ArrayList arr = new ArrayList(urls);
+        ArrayList<URL> arr = new ArrayList<URL>(urls);
         if (this.urls != null) arr.addAll(this.urls);
         setURLs(arr);
     }
     
     /** Removes few URLs.
      */
-    public void removeURLs(Collection urls) throws Exception {
+    public void removeURLs(Collection<URL> urls) throws Exception {
         if (urls.contains(null)) throw new NullPointerException("urls=" + urls); // NOI18N
-        ArrayList arr = new ArrayList();
+        ArrayList<URL> arr = new ArrayList<URL>();
         if (this.urls != null) arr.addAll(this.urls);
         arr.removeAll(urls);
         setURLs(arr);
@@ -335,14 +335,14 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
     
     /** Represents a hash of a bunch of jar: URLs and the associated JAR timestamps.
      */
-    private static final class Stamp implements Comparator {
+    private static final class Stamp implements Comparator<URL> {
         private final String managerName;
-        private final List urls; // List<URL>
+        private final List<URL> urls;
         private final long[] times;
         private final long hash;
-        public Stamp(String name, List urls) throws IOException {
+        public Stamp(String name, List<URL> urls) throws IOException {
             managerName = name;
-            this.urls = new ArrayList(urls);
+            this.urls = new ArrayList<URL>(urls);
             Collections.sort(this.urls, this);
             times = new long[this.urls.size()];
             long x = 17L ^ managerName.hashCode();
@@ -382,10 +382,10 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
             return hash;
         }
         public String toString() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append(managerName);
             buf.append('\n');
-            Iterator it = urls.iterator();
+            Iterator<URL> it = urls.iterator();
             int i = 0;
             while (it.hasNext()) {
                 long t = times[i++];
@@ -394,14 +394,12 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
                 } else {
                     buf.append(new Date(t));
                 }
-                buf.append('\t');
-                buf.append(it.next());
-                buf.append('\n');
+                buf.append('\t').append(it.next()).append('\n');
             }
             return buf.toString();
         }
-        public int compare(Object o1, Object o2) {
-            return ((URL)o1).toString().compareTo(((URL)o2).toString());
+        public int compare(URL o1, URL o2) {
+            return o1.toString().compareTo(o2.toString());
         }
     }
     private static void setStatusText (String msg) {

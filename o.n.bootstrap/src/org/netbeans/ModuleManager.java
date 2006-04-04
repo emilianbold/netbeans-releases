@@ -247,8 +247,8 @@ public final class ModuleManager {
      * No two contained modules may at any time share the same code name base.
      * @see #PROP_MODULES
      */
-    public Set getModules() {
-        return (Set)modules.clone();
+    public Set<Module> getModules() {
+        return (Set<Module>)modules.clone();
     }
     
     /** Get a set of modules managed which are currently enabled.
@@ -520,7 +520,7 @@ public final class ModuleManager {
     }
     
     /** Used by Module to communicate with the ModuleInstaller re. dependencies. */
-    void refineDependencies(Module m, Set dependencies) {
+    void refineDependencies(Module m, Set<Dependency> dependencies) {
         installer.refineDependencies(m, dependencies);
     }
     /** Allows the installer to add provides (used to provide name of platform we run on)
@@ -1533,7 +1533,7 @@ public final class ModuleManager {
         assertWritable();
         Set<Module> unorderedModules = getEnabledModules();
         Map<Module,List<Module>> deps = Util.moduleDependencies(unorderedModules, modulesByName, providersOf);
-        List modules;
+        List<Module> modules;
         try {
             modules = Utilities.topologicalSort(unorderedModules, deps);
         } catch (TopologicalSortException ex) {

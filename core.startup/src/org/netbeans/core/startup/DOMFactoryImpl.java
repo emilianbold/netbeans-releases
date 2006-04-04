@@ -29,7 +29,7 @@ import javax.xml.parsers.ParserConfigurationException;
 public class DOMFactoryImpl extends DocumentBuilderFactory {
     private static Class first;
     
-    private Map attributes = new HashMap();
+    private Map<String, Object> attributes = new HashMap<String, Object>();
     
     /** The default property name according to the JAXP spec */
     private static final String Factory_PROP =

@@ -61,7 +61,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
          */        
         final String beanName;
         
-        Map attributes; // Map<String,Object> name -> value attributes (null OK)
+        Map<String, Object> attributes; // Map<String,Object> name -> value attributes (null OK)
         /** Make a new wrapper for file data.
          * @param folder true if should be a folder rather than a file
          * @param contentType MIME type or null
@@ -96,7 +96,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
         
         public void writeAttribute(String name, Object value) {
             if (attributes == null) {
-                attributes = new HashMap();
+                attributes = new HashMap<String, Object>();
             }
             attributes.put(name, value);
         }
@@ -115,7 +115,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
     //private static long orderDate = System.currentTimeMillis ();
     
     /** set of instances by name */
-    private final Map instances = new HashMap (); // Map<String,Instance>
+    private final Map<String, Instance> instances = new HashMap<String, Instance> ();
     
     /* order. set of (Ord) objects */
     //private final Set order = new HashSet (7); // Set<Ord>
@@ -342,7 +342,7 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
      */    
     public String[] children (String f) {
         synchronized (instances) {
-            ArrayList l = new ArrayList (10);
+            ArrayList<String> l = new ArrayList<String> (10);
             Iterator it = instances.keySet ().iterator ();
             while (it.hasNext ()) {
                 String path = (String) it.next ();
@@ -451,35 +451,14 @@ public class FixedFileSystem extends AbstractFileSystem implements /*ManifestSec
      * @param name resource path
      * @return list of attribute names (none currently)
      */    
-    public synchronized Enumeration attributes (String name) {
-        /*
-        if (! "Settings/Loaders".equals (name)) {
-            return EmptyEnumeration.EMPTY;
-        }
-        
-        if (orderAttributes == null || orderComputed < orderDate) {
-            // we should recompute them
-            orderComputed = System.currentTimeMillis();
-            orderAttributes = new TreeSet ();
-            
-            Iterator it = order.iterator ();
-            while (it.hasNext ()) {
-                Ord ord = (Ord)it.next ();
-                String attr = ord.attribute ();
-                if (attr != null) {
-                    orderAttributes.add (attr);
-                }
-            }
-        }
-        return Collections.enumeration (orderAttributes);*/
+    public synchronized Enumeration<String> attributes (String name) {
         
         Instance inst = (Instance) instances.get (name);
-        if (inst == null) return org.openide.util.Enumerations.empty();
-        Map m = inst.attributes;
-        if (m == null) return org.openide.util.Enumerations.empty();
+        if (inst == null) return org.openide.util.Enumerations.<String>empty();
+        Map<String, Object> m = inst.attributes;
+        if (m == null) return org.openide.util.Enumerations.<String>empty();
         return Collections.enumeration(m.keySet());
 
-//        return EmptyEnumeration.EMPTY;
     }
 
     /** Do nothing.

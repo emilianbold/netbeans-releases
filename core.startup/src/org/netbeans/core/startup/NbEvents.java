@@ -111,10 +111,10 @@ final class NbEvents extends Events {
             setStatusText(
                 "Finished deploying test module."); // NOI18N
         } else if (message == FAILED_INSTALL_NEW) {
-            SortedSet problemTexts = new TreeSet(Collator.getInstance()); // SortedSet<String>
-            Iterator it = ((Set)args[0]).iterator();
+            SortedSet<String> problemTexts = new TreeSet<String>(Collator.getInstance());
+            @SuppressWarnings("unchecked") Iterator<Module> it = ((Set<Module>)args[0]).iterator();
             while (it.hasNext()) {
-                Module m = (Module)it.next();
+                Module m = it.next();
                 Iterator pit = m.getProblems().iterator();
                 if (pit.hasNext()) {
                     while (pit.hasNext()) {
@@ -125,11 +125,9 @@ final class NbEvents extends Events {
                     throw new IllegalStateException("Module " + m + " could not be installed but had no problems"); // NOI18N
                 }
             }
-            StringBuffer buf = new StringBuffer(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new"));
-            it = problemTexts.iterator();
-            while (it.hasNext()) {
-                buf.append("\n\t"); // NOI18N
-                buf.append((String)it.next());
+            StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new"));
+	    for (String s: problemTexts) {
+                buf.append("\n\t").append(it.next()); // NOI18N
             }
             String msg = buf.toString();
             notify(msg, true);
@@ -141,7 +139,7 @@ final class NbEvents extends Events {
             StringBuffer buf = new StringBuffer(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new_unexpected", m.getDisplayName()));
             Iterator it = m.getProblems().iterator();
             if (it.hasNext()) {
-                SortedSet problemTexts = new TreeSet(Collator.getInstance()); // SortedSet<String>
+                SortedSet<String> problemTexts = new TreeSet<String>(Collator.getInstance());
                 while (it.hasNext()) {
                     problemTexts.add(NbProblemDisplayer.messageForProblem(m, it.next()));
                 }

@@ -101,7 +101,7 @@ public final class SystemFileSystem extends MultiFileSystem implements FileSyste
      * @throws IllegalArgumentException if there is an overlap
      */
     public final void setLayers (FileSystem[] arr) throws IllegalArgumentException {
-        Set s = new HashSet ();
+        Set<FileSystem> s = new HashSet<FileSystem> ();
         for (int i = 0; i < arr.length; i++)
             if (s.contains (arr[i]))
                 throw new IllegalArgumentException ("Overlap in filesystem layers"); // NOI18N
