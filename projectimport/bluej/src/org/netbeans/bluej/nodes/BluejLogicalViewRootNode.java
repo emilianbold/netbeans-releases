@@ -28,6 +28,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.bluej.BluejProject;
+import org.netbeans.bluej.export.ConvertToJ2SEAction;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -107,6 +108,7 @@ public class BluejLogicalViewRootNode extends AbstractNode {
 ////        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null)); // NOI18N
 ////        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
         actions.add(null);
+//TEMP         actions.add(new ConvertToJ2SEAction(getProject(getLookup())));
         actions.add(CommonProjectActions.setAsMainProjectAction());
 //        actions.add(CommonProjectActions.openSubprojectsAction());
         actions.add(CommonProjectActions.closeProjectAction());
