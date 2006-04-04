@@ -203,9 +203,7 @@ class FooModule {
 // ...
 class Something {
     public void doSomething(String arg) {
-        if (LOG.isLoggable(Level.FINER)) {
-            LOG.log(Level.FINER, "Called doSomething with arg {0}", arg);
-        }
+        FooModule.LOG.log(Level.FINER, "Called doSomething with arg {0}", arg);
     }
 }
 </pre>
