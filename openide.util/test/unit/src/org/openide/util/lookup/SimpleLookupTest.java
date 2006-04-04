@@ -193,10 +193,6 @@ public class SimpleLookupTest extends NbTestCase {
         
     }
 
-    @SuppressWarnings("unchecked") // XXX #74348
-    private static Lookup.Item<Object> lookupItem(Object o, String id) {
-        return Lookups.lookupItem(o, id);
-    }
     public void testLookupItemEarlyInitializationProblem() {
         InstanceContent ic = new InstanceContent();
         AbstractLookup al = new AbstractLookup(ic);
@@ -206,12 +202,12 @@ public class SimpleLookupTest extends NbTestCase {
         
         assertEquals("Item's instance shouldn't be requested", 0, item.cnt);
 
-        pairs1.add(new ItemPair<Object>(lookupItem(new SomeInst(), null)));
+        pairs1.add(new ItemPair<Object>(Lookups.<Object>lookupItem(new SomeInst(), null)));
         pairs1.add(new ItemPair<Object>(item));
-        pairs1.add(new ItemPair<Object>(lookupItem(new Object(), null)));
+        pairs1.add(new ItemPair<Object>(Lookups.lookupItem(new Object(), null)));
 
         pairs2.add(new ItemPair<Object>(item));
-        pairs2.add(new ItemPair<Object>(lookupItem(new Object(), null)));
+        pairs2.add(new ItemPair<Object>(Lookups.lookupItem(new Object(), null)));
 
         ic.setPairs(pairs1);
         ic.setPairs(pairs2);
@@ -286,7 +282,7 @@ public class SimpleLookupTest extends NbTestCase {
 
         @SuppressWarnings("unchecked") // XXX #74348
         protected boolean instanceOf(Class c) {
-            return c.isAssignableFrom(item.getType());
+            return c.isAssignableFrom(getType());
         }
 
         public boolean equals (Object o) {
