@@ -280,8 +280,7 @@ public class SimpleLookupTest extends NbTestCase {
             return item.getType ();
         }
 
-        @SuppressWarnings("unchecked") // XXX #74348
-        protected boolean instanceOf(Class c) {
+        protected boolean instanceOf(Class<?> c) {
             return c.isAssignableFrom(getType());
         }
 
