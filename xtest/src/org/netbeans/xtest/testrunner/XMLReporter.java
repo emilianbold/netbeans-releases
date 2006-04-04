@@ -22,6 +22,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import junit.extensions.TestDecorator;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
@@ -177,7 +178,7 @@ public class XMLReporter implements JUnitTestListener {
     }
     
     public void startTest(junit.framework.Test test) {
-        //System.out.println("reporter:startTest()");
+        //System.out.println("reporter:startTest() test="+test);
         if (test instanceof TestCase) {
             currentTestName = ((TestCase)test).getName();            
         } else {
@@ -193,6 +194,11 @@ public class XMLReporter implements JUnitTestListener {
                 currentTestCase = testCaseBean;
                 break;
             }
+        }
+        if(currentTestCase == null) {
+            // test case not found
+            System.out.println("\n\nERROR in XMLReporter#startTest: Test "+
+                    currentClassName+"#"+currentTestName+" not found in the list.\n\n");
         }
         // Change message from "Did not start" to "Did not finish". Message is
         // then updated in endTest, addFailure or addError.
@@ -281,13 +287,17 @@ public class XMLReporter implements JUnitTestListener {
         testsErrors = testsTotal;
         testsUnexpectedPassed = 0;
         testsExpectedFailed = 0;
-        saveCurrentSuite();        
+        saveCurrentSuite();
     }
 
     /** Recursively add test cases from suite to the list of test case beans. */
     private void addTestCaseBeans(TestSuite suite) {
         for (Enumeration e = suite.tests(); e.hasMoreElements(); ) {
             Test test = (Test)e.nextElement();
+            // get a real test if it is only TestDecorator
+            while(test instanceof TestDecorator) {
+                test = ((TestDecorator)test).getTest();
+            }
             if(test instanceof TestSuite) {
                 TestSuite subSuite = (TestSuite)test;
                 // add test cases from suite recursively
