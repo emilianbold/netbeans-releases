@@ -54,6 +54,7 @@ public class RevertModificationsAction extends ContextAction {
         Subversion.getInstance().postRequest(run);
     }
 
+    /** Recursive revert */
     public static void performRevert(final Context ctx) {
         SvnClient client;
         try {
@@ -67,8 +68,7 @@ public class RevertModificationsAction extends ContextAction {
         File files[] = ctx.getFiles();
         for (int i= 0; i<files.length; i++) {
             try {
-                client.revert(files[i], false);
-                cache.refresh(files[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                client.revert(files[i], true);
             } catch (SVNClientException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
