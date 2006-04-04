@@ -135,7 +135,6 @@ Microsystems, Inc. All Rights Reserved.
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="as-linux"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
-    <!--<move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-linux.jar"/>-->
   </target>
   
   <target name="build-linux-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-linux-ml">
@@ -153,7 +152,6 @@ Microsystems, Inc. All Rights Reserved.
           tofile="build/storagebuilder/preparse-files.txt"/>
     <build-installer input.ismp.project="as-solaris-sparc"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
-    <!--<move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-solsparc.jar"/>-->
   </target>
   
   <target name="build-solaris-sparc-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-solaris-sparc-ml">
@@ -195,7 +193,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
     <build-installer input.ismp.project="as-windows"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
-    <!--<move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-win.jar"/>-->
   </target>
   
   <target name="build-windows-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-windows-ml">
@@ -226,7 +223,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Ant 'unzip' task does not work from unknown reason on AS Installer exe file so we use 'exec' task. -->
     <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
     <build-installer input.ismp.project="as-macosx" input.nb.dir="${build.dir}/${app.dir}"/>
-    <!--<move file="build/disk1/setupMac.command" tofile="dist/${installer.basename}-macosx.command"/>-->
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-macosx.jar"/>
   </target>
   
@@ -243,7 +239,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
     <build-installer input.ismp.project="as-macosx-ml" input.nb.dir="${build.dir}/${app.dir}"/>
     <delete file="as-macosx-ml.uip"/>
-    <!--<move file="build/disk1/setupMac.command" tofile="dist/${installer.basename}-macosx.command"/>-->
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-macosx-ml.jar"/>
   </target>
  
