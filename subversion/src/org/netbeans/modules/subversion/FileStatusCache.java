@@ -234,7 +234,10 @@ public class FileStatusCache implements ISVNNotifyListener {
     /**
      * Refreshes the status of the file given the repository status. Repository status is filled
      * in when this method is called while processing server output. 
-     * 
+     *
+     * <p>Note: it's not necessary if you use Subversion.getClient(), it
+     * updates the cache automatically.  XXX check all usages
+     *
      * @param file
      * @param repositoryStatus
      */ 
