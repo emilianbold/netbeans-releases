@@ -25,12 +25,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import junit.framework.AssertionFailedError;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 
 public class ChildrenKeysTest extends NbTestCase {
-    private ErrorManager err;
+    private CharSequence err;
     
     public ChildrenKeysTest(java.lang.String testName) {
         super(testName);
@@ -46,23 +48,8 @@ public class ChildrenKeysTest extends NbTestCase {
     }
 
     protected void setUp () throws Exception {
-        System.setProperty("org.openide.util.Lookup", "org.openide.nodes.ChildrenKeysTest$Lkp");
-        assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
-        ErrManager.messages.delete (0, ErrManager.messages.length ());
-        ErrManager.clearBlocks();
-        
-        err = ErrorManager.getDefault().getInstance("TEST-" + getName());
+        err = Log.enable("", Level.ALL);
     }    
-
-    protected void runTest () throws Throwable {
-        try {
-            super.runTest();
-        } catch (Error err) {
-            AssertionFailedError newErr = new AssertionFailedError (err.getMessage () + "\n" + ErrManager.messages);
-            newErr.initCause (err);
-            throw newErr;
-        }
-    }
 
     public void testGetNodesFromTwoThreads57769() throws Exception {
         final Ticker t1 = new Ticker();
@@ -237,8 +224,8 @@ public class ChildrenKeysTest extends NbTestCase {
             }
         });
 
-        if (ErrManager.messages.toString ().indexOf ("readAccess") >= 0) {
-            fail ("Should not contain messages about going from read to write access: " + ErrManager.messages);
+        if (err.toString ().indexOf ("readAccess") >= 0) {
+            fail ("Should not contain messages about going from read to write access: " + err);
         }
     }
 
@@ -671,9 +658,6 @@ public class ChildrenKeysTest extends NbTestCase {
                 }
      
                 try {
-                    ErrManager.registerBlock("THREAD", "waiting for children for", TOKEN, null);
-                    ErrManager.registerBlock("THREAD", " children are here for", TOKEN, TOKEN);
-                    ErrManager.registerBlock("THREAD", "cannot initialize better", TOKEN, TOKEN);
                     keep = node.getChildren().getNodes(true);
                 } catch (Error err) {
                     this.err = err;
@@ -684,10 +668,6 @@ public class ChildrenKeysTest extends NbTestCase {
         Th t = new Th();
         ChildrenKeys children = new ChildrenKeys();
         t.node = new AbstractNode(children);
-        
-        ErrManager.registerBlock(THREAD_NAME, "Initialize org.openide.nodes", TOKEN, TOKEN);
-        ErrManager.registerBlock(THREAD_NAME, "notifyAll done", TOKEN, TOKEN);
-        ErrManager.registerBlock(THREAD_NAME, "cannot initialize better", TOKEN, TOKEN);
 
         Node[] remember;
         synchronized (TOKEN) {
@@ -697,7 +677,6 @@ public class ChildrenKeysTest extends NbTestCase {
             // main thread reaches "setEntries"
             remember = t.node.getChildren().getNodes();
             
-            ErrManager.clearBlocks();
             TOKEN.notifyAll();
         }
         
@@ -768,118 +747,6 @@ public class ChildrenKeysTest extends NbTestCase {
 
     }
 
-    
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            ic.add (new ErrManager ());
-        }
-    }
-    
-    private static final class ErrManager extends org.openide.ErrorManager {
-        public static final StringBuffer messages = new StringBuffer ();
-        /** list of messages to block on in log */
-        private static final HashMap/*<String,List<String, Object, Object>*/ map = new HashMap();
-        
-        public static void clearBlocks() {
-            map.clear();
-        }
-        
-        public static void registerBlock(String threadName, String msgPrefix, Object toNotify, Object toWait) {
-            List/*<String>*/ list = (List)map.get(threadName);
-            if (list == null) {
-                list = new ArrayList();
-                map.put(threadName, list);
-            }
-            list.add(msgPrefix);
-            list.add(toNotify);
-            list.add(toWait);
-        }
-        
-        public static void unregisterBlock(String threadName, String msgPrefix) {
-            List/*<String>*/ list = (List)map.get(threadName);
-            if (list == null) {
-                return;
-            }
-            
-            for (Iterator it = list.iterator(); it.hasNext();) {
-                Object elem = (Object) it.next();
-                if (elem.equals(msgPrefix)) {
-                    it.remove();
-                    it.next(); it.remove();
-                    it.next(); it.remove();
-                    return;
-                }
-            }
-        }
-        
-        public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, java.util.Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations (Throwable t, org.openide.ErrorManager.Annotation[] arr) {
-            return t;
-        }
-        
-        public org.openide.ErrorManager.Annotation[] findAnnotations (Throwable t) {
-            return null;
-        }
-        
-        public org.openide.ErrorManager getInstance (String name) {
-            return this;
-        }
-        
-        public void log (int severity, String s) {
-            messages.append (s);
-            messages.append ('\n');
-            
-            List prefixes = (List)map.get(Thread.currentThread().getName());
-            if (prefixes != null) {
-                for (Iterator it = prefixes.iterator(); it.hasNext();) {
-                    Object obj = it.next();
-                    if (!(obj instanceof String)) {
-                        continue;
-                    }
-                    
-                    String pref = (String) obj;
-                    if (s.startsWith(pref)) {
-                        messages.append("BLOCKING thread: " + Thread.currentThread().getName() + " on " + pref + '\n');
-                        Object toNotify = it.next();
-                        Object toWait = it.next();
-                        Object tw = toWait == null ? new Object() : toWait;
-                        
-                        synchronized (tw) {
-                            try {
-                                synchronized (toNotify) {
-                                    toNotify.notifyAll();
-                                }
-                                if (toWait != null) {
-                                    long now = System.currentTimeMillis();
-                                    toWait.wait(10000);
-                                    if (System.currentTimeMillis() - now > 9000) {
-                                        fail("Releasing blocked " + Thread.currentThread() + " after 10s: " + pref);
-                                    }
-                                }
-                            } catch (InterruptedException ex) {
-                                throw (AssertionError)new AssertionError(ex.getMessage()).initCause(ex);
-                            }
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-        
-        public void notify (int severity, Throwable t) {
-            messages.append (t.getMessage ());
-        }
-        
-    } // end of ErrorManager
-    
     static class Listener extends NodeAdapter {
         private LinkedList events = new LinkedList ();
         
