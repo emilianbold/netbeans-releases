@@ -558,6 +558,9 @@ nbm.module.author - author info for an NBM.
 nbm.needs.restart - set to "true" if NBM cannot be installed (even for the first
 time) without restarting the IDE.
 
+nbm.target.cluster [since 5.0u2] - allow to declare a target cluster where
+install if NBM install globally.
+
 nbplatform.active - optional name of a NB platform to build and run against. See
 discussion above for details of how this is used.
 

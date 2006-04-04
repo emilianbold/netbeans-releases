@@ -60,6 +60,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="nbm.release.date" value=""/>
         <property name="nbm.needs.restart" value="false"/>
         <property name="nbm.is.global" value=""/>
+        <property name="nbm.target.cluster" value="${cluster.dir}"/>
         <path id="cp">
             <pathelement path="${module.classpath}"/>
             <pathelement path="${cp.extra}"/>

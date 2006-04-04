@@ -49,9 +49,23 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="nbms" depends="build" description="Build NBMs and an Auto Update site descriptor for all modules in the suite.">
         <property name="build.updates.dir" location="build/updates"/>
+        <!-- reads from suite/project.properties first -->
+        <condition property="help.target.cluster" value="${nbm.target.cluster}" >
+            <isset property="nbm.target.cluster"/>
+        </condition>
+        <!-- reads app.name if exists -->
+        <condition property="help.target.cluster" value="${app.name}" >
+            <isset property="app.name"/>
+        </condition>
+        <!-- sets property 'nbm.target.cluster.name' to 'nbm.target.cluster' if helper property set -->
+        <condition property="nbm.target.cluster.name" value="nbm.target.cluster" >
+            <isset property="help.target.cluster"/>
+        </condition>
+        <property name="nbm.target.cluster.name" value="" />
         <mkdir dir="${build.updates.dir}"/>
         <subant target="nbm" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false">
             <property name="nbm.target.dir" location="${build.updates.dir}"/>
+            <property name="${nbm.target.cluster.name}" value="${help.target.cluster}" />
         </subant>
         <makeupdatedesc desc="${build.updates.dir}/updates.xml" distbase=".">
             <fileset dir="${build.updates.dir}">

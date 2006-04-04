@@ -468,7 +468,7 @@ public class MakeLNBM extends MatchingTask {
                     PrintWriter ps = new PrintWriter(new OutputStreamWriter(infoStream, "UTF-8"));
 		    // Begin writing XML.
                     ps.println ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); //NOI18N
-                    ps.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.3//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_3.dtd\">"); //NOI18N
+                    ps.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.4//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_4.dtd\">"); //NOI18N
 		    if( attr != null) {
 		      String codenamebase = attr.getValue ("OpenIDE-Module"); //NOI18N
 		      if (codenamebase == null)

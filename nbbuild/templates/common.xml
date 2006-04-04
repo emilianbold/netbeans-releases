@@ -263,6 +263,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     <target name="nbm" depends="init,netbeans,-nbm-prompt-for-storepass" description="Build NBM archive.">
         <mkdir dir="build"/>
+        <property name="nbm.target.cluster" value=""/>
         <makenbm file="build/${nbm}"
                  productdir="${cluster}"
                  module="${module.jar}"
@@ -270,6 +271,7 @@ Microsystems, Inc. All Rights Reserved.
                  distribution="${nbm.distribution}"
                  needsrestart="${nbm.needs.restart}"
                  global="${nbm.is.global}"
+                 targetcluster="${nbm.target.cluster}"
                  releasedate="${nbm.release.date}"
 		 moduleauthor="${nbm.module.author}">
             <license file="${license.file}"/>

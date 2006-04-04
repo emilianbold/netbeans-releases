@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -232,8 +232,9 @@ public class MakeListOfNBM extends Task {
         String nbmreleasedate = this.getProject().getProperty("nbm.release.date"); // NOI18N
 	String nbmmoduleauthor = this.getProject().getProperty("nbm.module.author"); // NOI18N
 	String nbmisglobal = this.getProject().getProperty("nbm.is.global"); // NOI18N
+	String nbmtargetcluster = this.getProject().getProperty("nbm.target.cluster"); // NOI18N
         // ...and again here.
-        moduleTracking.putModule(moduleName, codename, outputFile.getName(), nbmfilename, nbmhomepage, nbmneedsrestart, nbmreleasedate, nbmmoduleauthor, nbmisglobal, inc);
+        moduleTracking.putModule(moduleName, codename, outputFile.getName(), nbmfilename, nbmhomepage, nbmneedsrestart, nbmreleasedate, nbmmoduleauthor, nbmisglobal, nbmtargetcluster, inc);
         moduleTracking.write();
     }
 }

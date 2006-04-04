@@ -296,6 +296,7 @@ public class MakeNBM extends Task {
     private String moduleauthor = null;
     private String releasedate = null;
     private String global = null;
+    private String targetcluster = null;
     private String jarSignerMaxMemory = "96m";
     private Blurb license = null;
     private Blurb description = null;
@@ -352,12 +353,17 @@ public class MakeNBM extends Task {
     public void setNeedsrestart (String needsrestart) {
         this.needsrestart = needsrestart;
     }
-    /** Install globally? */
+    /** Sets name of module author */
     public void setModuleauthor (String author) {
         this.moduleauthor = author;
     }
+    /** Install globally? */
     public void setGlobal (String isGlobal) {
         this.global = isGlobal;
+    }
+    /** Sets pattern for target cluster */
+    public void setTargetcluster (String targetCluster) {
+        this.targetcluster = targetCluster;
     }
     /** Maximum memory allowed to be used by jarsigner task. Default is 96 MB. */
     public void setJarSignerMaxMemory (String jsmm) {
@@ -502,7 +508,7 @@ public class MakeNBM extends Task {
                 PrintWriter ps = new PrintWriter(new OutputStreamWriter(infoStream, "UTF-8")); //NOI18N
                 // Begin writing XML.
                 ps.println ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); //NOI18N
-                ps.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.3//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_3.dtd\">"); //NOI18N
+                ps.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.4//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_4.dtd\">"); //NOI18N
                 String codenamebase = attr.getValue ("OpenIDE-Module"); //NOI18N
                 if (codenamebase == null) {
                     throw new BuildException("invalid manifest, does not contain OpenIDE-Module", getLocation());
@@ -531,6 +537,8 @@ public class MakeNBM extends Task {
                     ps.println ("        needsrestart=\"" + xmlEscape(needsrestart) + "\""); //NOI18N
                 if (global != null && !("".equals (global)))
                     ps.println ("        global=\"" + xmlEscape(global) + "\""); //NOI18N
+                if (targetcluster != null && !("".equals (targetcluster)))
+                    ps.println ("        targetcluster=\"" + xmlEscape(targetcluster) + "\""); //NOI18N
                 if (moduleauthor != null)
                     ps.println ("        moduleauthor=\"" + xmlEscape(moduleauthor) + "\""); //NOI18N
                 if (releasedate == null || "".equals (releasedate)) { //NOI18N
@@ -635,6 +643,8 @@ public class MakeNBM extends Task {
             mtm.setNbmNeedsRestart(needsrestart);
 	    log("  global: \""+mtm.getNbmIsGlobal()+ "\" => \"" + global + "\"", Project.MSG_DEBUG);
             mtm.setNbmIsGlobal(global);
+	    log("  targetcluster: \""+mtm.getNbmTargetCluster ()+ "\" => \"" + targetcluster + "\"", Project.MSG_DEBUG);
+            mtm.setNbmTargetCluster (targetcluster);
 	    log("  releasedate: \""+mtm.getNbmReleaseDate() + "\" => \"" + releasedate+"\"", Project.MSG_DEBUG);
             mtm.setNbmReleaseDate(releasedate);
             mt.write();
