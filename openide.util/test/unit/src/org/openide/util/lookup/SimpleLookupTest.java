@@ -7,31 +7,28 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.util.lookup;
 
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
-
-import junit.framework.*;
-import org.netbeans.junit.*;
 
 /**
  * Tests for class SimpleLookup.
  * @author David Strupl
  */
-public class SimpleLookupTest extends org.netbeans.junit.NbTestCase {
+public class SimpleLookupTest extends NbTestCase {
     
-    public SimpleLookupTest(java.lang.String testName) {
+    public SimpleLookupTest(String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite(SimpleLookupTest.class));
     }
     
     /**
@@ -72,15 +69,12 @@ public class SimpleLookupTest extends org.netbeans.junit.NbTestCase {
         }
         assertNotNull(p2.lookup(String.class));
         assertNotNull(p2.lookup(java.io.Serializable.class));
-        Lookup.Template t = new Lookup.Template(String.class);
-        Lookup.Result r = p2.lookup(t);
-        Collection all = r.allInstances();
+        Lookup.Template<String> t = new Lookup.Template<String>(String.class);
+        Lookup.Result<String> r = p2.lookup(t);
+        Collection<? extends String> all = r.allInstances();
         assertTrue(all.size() == 2);
-        for (Iterator i = all.iterator(); i.hasNext(); ) {
-            Object o = i.next();
-            if (o != s[0] && o != s[1]) {
-                fail("allIinstances contains wrong objects");
-            }
+        for (String o : all) {
+            assertTrue("allInstances contains wrong objects", o == s[0] || o == s[1]);
         }
         
         try {
@@ -96,34 +90,31 @@ public class SimpleLookupTest extends org.netbeans.junit.NbTestCase {
      */
     public void testConverting() {
         //
-        Object[] orig = new Object[] { TestConvertor.TEST1, TestConvertor.TEST2 };
+        String[] orig = new String[] { TestConvertor.TEST1, TestConvertor.TEST2 };
         TestConvertor convertor = new TestConvertor();
         Lookup p1 = Lookups.fixed(orig, convertor);
         assertNull("Converting from String to Integer - it should not find String in result", p1.lookup(String.class));
         assertNotNull(p1.lookup(Integer.class));
         assertNotNull(p1.lookup(Integer.class));
         assertTrue("Convertor should be called only once.", convertor.getNumberOfConvertCalls() == 1); 
-        Lookup.Template t = new Lookup.Template(Integer.class);
-        Lookup.Result r = p1.lookup(t);
-        Collection all = r.allInstances();
+        Lookup.Template<Integer> t = new Lookup.Template<Integer>(Integer.class);
+        Lookup.Result<Integer> r = p1.lookup(t);
+        Collection<? extends Integer> all = r.allInstances();
         assertTrue(all.size() == 2);
-        for (Iterator i = all.iterator(); i.hasNext(); ) {
-            Object o = i.next();
-            if (o != TestConvertor.t1 && o != TestConvertor.t2) {
-                fail("allIinstances contains wrong objects");
-            }
+        for (int i : all) {
+            assertTrue("allInstances contains wrong objects", i == TestConvertor.t1 || i == TestConvertor.t2);
         }
     }
     
-    private static class TestConvertor implements InstanceContent.Convertor {
+    private static class TestConvertor implements InstanceContent.Convertor<String,Integer> {
         static final String TEST1 = "test1";
-        static final Integer t1 = new Integer(1);
+        static final int t1 = 1;
         static final String TEST2 = "test2";
-        static final Integer t2 = new Integer(2);
+        static final int t2 = 2;
         
         private int numberOfConvertCalls = 0;
         
-        public Object convert(Object obj) {
+        public Integer convert(String obj) {
             numberOfConvertCalls++;
             if (obj.equals(TEST1)) {
                 return t1;
@@ -134,11 +125,11 @@ public class SimpleLookupTest extends org.netbeans.junit.NbTestCase {
             throw new IllegalArgumentException();
         }
         
-        public String displayName(Object obj) {
-            return obj.toString();
+        public String displayName(String obj) {
+            return obj;
         }
         
-        public String id(Object obj) {
+        public String id(String obj) {
             if (obj.equals(TEST1)) {
                 return TEST1;
             }
@@ -148,7 +139,7 @@ public class SimpleLookupTest extends org.netbeans.junit.NbTestCase {
             return null;
         }
         
-        public Class type(Object obj) {
+        public Class<? extends Integer> type(String obj) {
             return Integer.class;
         }
         
@@ -194,7 +185,7 @@ public class SimpleLookupTest extends org.netbeans.junit.NbTestCase {
         
         Lookup l = Lookups.fixed (arr);
         
-        java.util.Set s = l.lookup (new Lookup.Template (Object.class)).allClasses ();
+        Set<Class<? extends Object>> s = l.lookup(new Lookup.Template<Object>(Object.class)).allClasses();
         
         assertEquals ("Two there", 2, s.size ());
         assertTrue ("Contains Object.class", s.contains (Object.class));
@@ -202,34 +193,48 @@ public class SimpleLookupTest extends org.netbeans.junit.NbTestCase {
         
     }
 
+    @SuppressWarnings("unchecked") // XXX #74348
+    private static Lookup.Item<Object> lookupItem(Object o, String id) {
+        return Lookups.lookupItem(o, id);
+    }
     public void testLookupItemEarlyInitializationProblem() {
         InstanceContent ic = new InstanceContent();
         AbstractLookup al = new AbstractLookup(ic);
         LI item = new LI();
-        ArrayList pairs1 = new ArrayList();
-        ArrayList pairs2 = new ArrayList();
+        List<AbstractLookup.Pair> pairs1 = new ArrayList<AbstractLookup.Pair>();
+        List<AbstractLookup.Pair> pairs2 = new ArrayList<AbstractLookup.Pair>();
         
         assertEquals("Item's instance shouldn't be requested", 0, item.cnt);
 
-        pairs1.add(new ItemPair(Lookups.lookupItem(new SomeInst(), null)));
-        pairs1.add(new ItemPair(item));
-        pairs1.add(new ItemPair(Lookups.lookupItem(new Object(), null)));
+        pairs1.add(new ItemPair<Object>(lookupItem(new SomeInst(), null)));
+        pairs1.add(new ItemPair<Object>(item));
+        pairs1.add(new ItemPair<Object>(lookupItem(new Object(), null)));
 
-        pairs2.add(new ItemPair(item));
-        pairs2.add(new ItemPair(Lookups.lookupItem(new Object(), null)));
+        pairs2.add(new ItemPair<Object>(item));
+        pairs2.add(new ItemPair<Object>(lookupItem(new Object(), null)));
 
         ic.setPairs(pairs1);
         ic.setPairs(pairs2);
 
         assertEquals("Item's instance shouldn't be requested when added to lookup", 0, item.cnt);
         
-        LI item2 = (LI) al.lookup(LI.class);
+        LI item2 = al.lookup(LI.class);
         assertEquals("Item's instance should be requested", 1, item.cnt);
+    }
+
+    public void testConvenienceMethods() throws Exception {
+        // Just check signatures and basic behavior of #73848.
+        Lookup l = Lookups.fixed(new Object[] {1, "hello", 2, "goodbye"});
+        Collection<? extends Integer> ints = l.lookupAll(Integer.class);
+        assertEquals(Arrays.asList(new Integer[] {1, 2}), new ArrayList<Integer>(ints));
+        Lookup.Result<Integer> r = l.lookupResult(Integer.class);
+        ints = r.allInstances();
+        assertEquals(Arrays.asList(new Integer[] {1, 2}), new ArrayList<Integer>(ints));
     }
     
     private static class SomeInst { }
     
-    private static class LI extends Lookup.Item {
+    private static class LI extends Lookup.Item<Object> {
 
         public long cnt = 0;
         
@@ -246,16 +251,16 @@ public class SimpleLookupTest extends org.netbeans.junit.NbTestCase {
             return this;
         }
 
-        public Class getType() {
+        public Class<? extends Object> getType() {
             return getClass();
         }
     } // End of LI class
 
-    private static class ItemPair extends AbstractLookup.Pair {
+    private static class ItemPair<T> extends AbstractLookup.Pair<T> {
         
-        private AbstractLookup.Item item;
+        private AbstractLookup.Item<T> item;
         
-        public ItemPair (Lookup.Item i) {
+        public ItemPair(Lookup.Item<T> i) {
             this.item = i;
         }
 
@@ -271,16 +276,17 @@ public class SimpleLookupTest extends org.netbeans.junit.NbTestCase {
             return item.getId ();
         }
 
-        public Object getInstance() {
+        public T getInstance() {
             return item.getInstance ();
         }
 
-        public Class getType() {
+        public Class<? extends T> getType() {
             return item.getType ();
         }
 
+        @SuppressWarnings("unchecked") // XXX #74348
         protected boolean instanceOf(Class c) {
-            return c.isAssignableFrom (getType ());
+            return c.isAssignableFrom(item.getType());
         }
 
         public boolean equals (Object o) {

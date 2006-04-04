@@ -209,7 +209,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     public NbClassPath getAutomaticExtraClasspath() {
         synchronized (/* #66463 */getLock()) {
         if (aecpResult == null) {
-            aecpResult = Lookup.getDefault().lookup(new Lookup.Template<AutomaticExtraClasspathProvider>(AutomaticExtraClasspathProvider.class));
+            aecpResult = Lookup.getDefault().lookupResult(AutomaticExtraClasspathProvider.class);
             aecpResult.addLookupListener(new LookupListener() {
                 public void resultChanged(LookupEvent ev) {
                     defAECP = null;

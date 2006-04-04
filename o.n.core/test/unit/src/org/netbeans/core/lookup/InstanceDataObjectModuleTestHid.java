@@ -7,31 +7,30 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.lookup;
 
-import junit.framework.AssertionFailedError;
-import org.netbeans.junit.*;
-
 import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import javax.swing.Action;
+import junit.framework.AssertionFailedError;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.ModuleHistory;
-import org.openide.util.Lookup;
-import javax.swing.Action;
-import java.util.Iterator;
-import org.openide.loaders.DataObject;
+import org.netbeans.junit.NbTestCase;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.LookupListener;
-import org.openide.util.LookupEvent;
-import java.io.IOException;
-import org.openide.ErrorManager;
 
 /** Test InstanceDataObject's behavior in conjunction with module
  * installation and uninstallation.
@@ -175,7 +174,7 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     }
     
     protected boolean existsSomeAction(Class c) {
-        return existsSomeAction(c, Lookup.getDefault().lookup(new Lookup.Template(c)));
+        return existsSomeAction(c, Lookup.getDefault().lookupResult(c));
     }
     
     protected boolean existsSomeAction(Class c, Lookup.Result r) {

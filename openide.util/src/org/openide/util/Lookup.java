@@ -13,7 +13,10 @@
 
 package org.openide.util;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -160,6 +163,30 @@ public abstract class Lookup {
         Result<T> res = lookup(template);
         Iterator<? extends Item<T>> it = res.allItems().iterator();
         return it.hasNext() ? it.next() : null;
+    }
+
+    /**
+     * Find a result corresponding to a given class.
+     * Equivalent to calling {@link lookup(Lookup.Template)} but slightly more convenient.
+     * Subclasses may override this method to produce the same semantics more efficiently.
+     * @param clazz the supertype of the result
+     * @return a live object representing instances of that type
+     * @since org.openide.util 6.10
+     */
+    public <T> Lookup.Result<T> lookupResult(Class<T> clazz) {
+        return lookup(new Lookup.Template<T>(clazz));
+    }
+
+    /**
+     * Find all instances corresponding to a given class.
+     * Equivalent to calling {@link lookupResult} and asking for {@link Lookup.Result#allInstances} but slightly more convenient.
+     * Subclasses may override this method to produce the same semantics more efficiently.
+     * @param clazz the supertype of the result
+     * @return all currently available instances of that type
+     * @since org.openide.util 6.10
+     */
+    public <T> Collection<? extends T> lookupAll(Class<T> clazz) {
+        return lookupResult(clazz).allInstances();
     }
 
     /**
@@ -338,7 +365,7 @@ public abstract class Lookup {
          * should be List instead of Collection, but it is too late to change it.
          * @return unmodifiable collection of all instances that will never change its content
          */
-        public abstract java.util.Collection<? extends T> allInstances();
+        public abstract Collection<? extends T> allInstances();
 
         /** Get all classes represented in the result.
          * That is, the set of concrete classes
@@ -348,8 +375,8 @@ public abstract class Lookup {
          *
          * @since 1.8
          */
-        public java.util.Set<Class<? extends T>> allClasses() {
-            return java.util.Collections.emptySet();
+        public Set<Class<? extends T>> allClasses() {
+            return Collections.emptySet();
         }
 
         /** Get all registered items.
@@ -360,8 +387,8 @@ public abstract class Lookup {
          *
          * @since 1.8
          */
-        public java.util.Collection<? extends Item<T>> allItems() {
-            return java.util.Collections.emptyList();
+        public Collection<? extends Item<T>> allItems() {
+            return Collections.emptyList();
         }
     }
 
@@ -421,8 +448,8 @@ public abstract class Lookup {
                 public void removeLookupListener(LookupListener l) {
                 }
 
-                public java.util.Collection allInstances() {
-                    return java.util.Collections.EMPTY_SET;
+                public Collection allInstances() {
+                    return Collections.EMPTY_SET;
                 }
             };
 

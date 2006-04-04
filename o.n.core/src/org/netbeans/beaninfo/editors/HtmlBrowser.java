@@ -7,17 +7,16 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.beaninfo.editors;
 
-import java.beans.*;
+import java.beans.PropertyEditorSupport;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -27,6 +26,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+
 /**
  * Defines editor for choosing of Web browser.
  *
@@ -72,9 +72,7 @@ public class HtmlBrowser extends Object {
                     setValue (null);
                     return;
                 }
-                Lookup.Result r = Lookup.getDefault().lookup(
-                    new Lookup.Template (org.openide.awt.HtmlBrowser.Factory.class)
-                );
+                Lookup.Result r = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
                 Iterator it = r.allItems().iterator();
                 while (it.hasNext()) {
                     Lookup.Item i = (Lookup.Item)it.next();
@@ -101,9 +99,7 @@ public class HtmlBrowser extends Object {
         
         public java.lang.String[] getTags () {
             ArrayList list = new ArrayList (4);
-            Lookup.Result r = Lookup.getDefault().lookup(
-                new Lookup.Template (org.openide.awt.HtmlBrowser.Factory.class)
-            );
+            Lookup.Result r = Lookup.getDefault().lookupResult(org.openide.awt.HtmlBrowser.Factory.class);
             Iterator it = r.allItems().iterator();
             while (it.hasNext()) {
                 Lookup.Item i = (Lookup.Item)it.next();

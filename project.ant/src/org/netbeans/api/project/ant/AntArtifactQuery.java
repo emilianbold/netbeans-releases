@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -44,8 +44,7 @@ public class AntArtifactQuery {
             throw new IllegalArgumentException("Parameter file was not "+  // NOI18N
                 "normalized. Was "+file+" instead of "+FileUtil.normalizeFile(file));  // NOI18N
         }
-        Iterator it = Lookup.getDefault().lookup(new Lookup.Template(AntArtifactQueryImplementation.class)).
-            allInstances().iterator();
+        Iterator it = Lookup.getDefault().lookupAll(AntArtifactQueryImplementation.class).iterator();
         while (it.hasNext()) {
             AntArtifactQueryImplementation aaqi = (AntArtifactQueryImplementation)it.next();
             AntArtifact artifact = aaqi.findArtifact(file);

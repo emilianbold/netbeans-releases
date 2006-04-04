@@ -333,7 +333,7 @@ public final class LoaderPoolNode extends AbstractNode {
         oos.writeObject (new HashMap()/*installAfters*/);
         
         // Note which module each loader came from.
-        Collection modules = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances(); // Collection<ModuleInfo>
+        Collection modules = Lookup.getDefault().lookupAll(ModuleInfo.class); // Collection<ModuleInfo>
 
         Iterator it = loaders.iterator ();
 
@@ -435,7 +435,7 @@ public final class LoaderPoolNode extends AbstractNode {
         
         Exception deserExc = null; // collects all exceptions thrown by loader deserialization
 
-        Iterator mit = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances().iterator(); // Iterator<ModuleInfo>
+        Iterator mit = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator(); // Iterator<ModuleInfo>
         Map modules = new HashMap(); // Map<String,ModuleInfo>
         while (mit.hasNext()) {
             ModuleInfo m = (ModuleInfo)mit.next();
@@ -839,7 +839,7 @@ public final class LoaderPoolNode extends AbstractNode {
         
         public NbLoaderPool() {
             fireTask = rp.create(this, true);
-            mimeResolvers = Lookup.getDefault().lookup(new Lookup.Template(MIMEResolver.class));
+            mimeResolvers = Lookup.getDefault().lookupResult(MIMEResolver.class);
             mimeResolvers.addLookupListener(this);            
         }
 

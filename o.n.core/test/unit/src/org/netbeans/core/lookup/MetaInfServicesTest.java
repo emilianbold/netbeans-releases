@@ -7,22 +7,27 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.lookup;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.print.PrintServiceLookup;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.ModuleHistory;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
-import org.netbeans.core.NbTopManager;
-import org.openide.util.*;
-import java.io.File;
-import java.util.*;
-import javax.print.PrintServiceLookup;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+
 /** Test whether modules can really register things in their META-INF/services/class.Name
  * files, and whether this behaves correctly when the modules are disabled/enabled.
  * Note that Plain loads its classpath modules as soon as you ask for it, so these
@@ -108,7 +113,7 @@ public class MetaInfServicesTest extends NbTestCase {
         twiddle(m1, TWIDDLE_ENABLE);
         ClassLoader systemClassLoader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
         Class xface = systemClassLoader.loadClass("org.foo.Interface");
-        Lookup.Result r = Lookup.getDefault().lookup(new Lookup.Template(xface));
+        Lookup.Result r = Lookup.getDefault().lookupResult(xface);
         List instances = new ArrayList(r.allInstances());
         // Expect to get Impl1 from first JAR.
         assertEquals(1, instances.size());
@@ -146,7 +151,7 @@ public class MetaInfServicesTest extends NbTestCase {
         systemClassLoader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
         Class xface2 = systemClassLoader.loadClass("org.foo.Interface");
         assertTrue(xface != xface2);
-        Lookup.Result r2 = Lookup.getDefault().lookup(new Lookup.Template(xface2));
+        Lookup.Result r2 = Lookup.getDefault().lookupResult(xface2);
         instances = new ArrayList(r2.allInstances());
         assertEquals(1, instances.size());
         // Let's also check up on some standard JDK services.

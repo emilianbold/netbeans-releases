@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,7 +56,7 @@ public class OpenProject extends BasicAction {
         
         // Check to see if the current selection matches a file/folder owned by a non-open project;
         // if so, use that as the starting directory, as a convenience in case that is what should be opened.
-        Iterator it = Utilities.actionsGlobalContext().lookup(new Lookup.Template(DataObject.class)).allInstances().iterator();
+        Iterator it = Utilities.actionsGlobalContext().lookupAll(DataObject.class).iterator();
         while (it.hasNext()) {
             // XXX may also want to check lookup for FileObject
             DataObject d = (DataObject) it.next();

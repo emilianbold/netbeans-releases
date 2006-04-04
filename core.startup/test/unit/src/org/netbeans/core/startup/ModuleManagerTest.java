@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -476,7 +476,7 @@ public class ModuleManagerTest extends SetupHid {
         assertTrue(random == m1 || random == m2);
         random = l.lookup(Module.class);
         assertTrue(random == m1 || random == m2);
-        Lookup.Result resultAll = l.lookup(new Lookup.Template(ModuleInfo.class));
+        Lookup.Result resultAll = l.lookupResult(ModuleInfo.class);
         assertEquals("finding all instances works", new HashSet(Arrays.asList(new Module[] {m1, m2})), new HashSet(resultAll.allInstances()));
         Lookup.Result resultInstance2 = l.lookup(new Lookup.Template(null, null, m2));
         assertEquals("finding one specific instance works", Collections.singleton(m2), new HashSet(resultInstance2.allInstances()));

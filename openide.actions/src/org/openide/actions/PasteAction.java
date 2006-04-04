@@ -7,11 +7,27 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.actions;
 
+import java.awt.MenuShortcut;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.event.EventListenerList;
 import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerManager;
@@ -26,27 +42,10 @@ import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.*;
-import org.openide.util.datatransfer.*;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.Presenter;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
-
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.event.*;
-
-import java.beans.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.event.*;
-
 
 /** Paste from clipboard. This is a callback system action,
 * with enhanced behaviour. Others can plug in by adding
@@ -352,7 +351,7 @@ public final class PasteAction extends CallbackSystemAction {
                     org.openide.util.WeakListeners.propertyChange(this, org.openide.windows.TopComponent.getRegistry())
                 );
             } else {
-                result = lookup.lookup(new Lookup.Template(ActionMap.class));
+                result = lookup.lookupResult(ActionMap.class);
                 weakLookup = (LookupListener) WeakListeners.create(LookupListener.class, this, result);
                 result.addLookupListener(weakLookup);
             }

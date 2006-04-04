@@ -34,6 +34,7 @@ import org.openide.filesystems.Repository;
 import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -388,9 +389,7 @@ public final class Main extends Object {
     StartLog.logProgress ("IDE settings loaded"); // NOI18N
     
     {
-        java.util.Iterator it = org.openide.util.Lookup.getDefault ().lookup (
-            new org.openide.util.Lookup.Template (org.netbeans.core.startup.RunLevel.class)
-        ).allInstances ().iterator ();
+        Iterator it = Lookup.getDefault().lookupAll(RunLevel.class).iterator();
         
         while (it.hasNext ()) {
             org.netbeans.core.startup.RunLevel level = (org.netbeans.core.startup.RunLevel)it.next ();

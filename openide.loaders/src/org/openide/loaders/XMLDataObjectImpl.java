@@ -106,7 +106,7 @@ class XMLDataObjectImpl extends Object {
 
     // warning back compatability code!!!    
     static synchronized void registerCatalogEntry(String publicId, String uri) {
-        Iterator it = Lookup.getDefault().lookup(new Lookup.Template(EntityCatalog.class)).allInstances().iterator();
+        Iterator it = Lookup.getDefault().lookupAll(EntityCatalog.class).iterator();
         while (it.hasNext()) {
             Object o = it.next();
             if (o instanceof RuntimeCatalog) {

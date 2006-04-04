@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,6 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-
 
 /** Action sensitive to current project
  * 
@@ -67,7 +66,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
         this.results = new Lookup.Result[watch.length];
         // Needs to listen on changes in results
         for ( int i = 0; i < watch.length; i++ ) {
-            results[i] = lookup.lookup( new Lookup.Template( watch[i] ) );
+            results[i] = lookup.lookupResult(watch[i]);
             results[i].allItems();
             LookupListener resultListener = (LookupListener)WeakListeners.create( LookupListener.class, this, results[i] );
             results[i].addLookupListener( resultListener ); 

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -181,7 +181,7 @@ public abstract class InstalledFileLocator {
             _result = result;
         }
         if (_result == null) {
-            _result = Lookup.getDefault().lookup(new Lookup.Template<InstalledFileLocator>(InstalledFileLocator.class));
+            _result = Lookup.getDefault().lookupResult(InstalledFileLocator.class);
             _result.addLookupListener(new LookupListener() {
                 public void resultChanged(LookupEvent e) {
                     synchronized (LOCK) {

@@ -7,11 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.project.uiapi;
+
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Window;
@@ -58,7 +59,6 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
-
 
 /**
  *
@@ -310,7 +310,7 @@ public final class DefaultProjectOperationsImplementation {
                         
                         FileObject projectDirectory = project.getProjectDirectory();
                         File       projectDirectoryFile = FileUtil.toFile(project.getProjectDirectory());
-                        Collection operations = project.getLookup().lookup(new Lookup.Template(MoveOperationImplementation.class)).allInstances();
+                        Collection operations = project.getLookup().lookupAll(MoveOperationImplementation.class);
                         
                         close(project);
                         
@@ -339,7 +339,7 @@ public final class DefaultProjectOperationsImplementation {
                         
                         handle.progress(++currentWorkDone);
                         
-                        Collection nueOperations = nue.getLookup().lookup(new Lookup.Template(MoveOperationImplementation.class)).allInstances();
+                        Collection nueOperations = nue.getLookup().lookupAll(MoveOperationImplementation.class);
                         
                         for (Iterator i = nueOperations.iterator(); i.hasNext(); ) {
                             ((MoveOperationImplementation) i.next()).notifyMoved(project, projectDirectoryFile, nueName);

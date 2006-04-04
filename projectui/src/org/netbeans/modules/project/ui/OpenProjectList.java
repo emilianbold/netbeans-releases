@@ -569,9 +569,7 @@ public final class OpenProjectList {
     
     
     private static void notifyOpened(Project p) {
-        Lookup.Result result = p.getLookup().lookup(new Lookup.Template(ProjectOpenedHook.class));
-        
-        for (Iterator i = result.allInstances().iterator(); i.hasNext(); ) {
+        for (Iterator i = p.getLookup().lookupAll(ProjectOpenedHook.class).iterator(); i.hasNext(); ) {
             ProjectOpenedHook hook = (ProjectOpenedHook) i.next();
             
             try {
@@ -588,9 +586,7 @@ public final class OpenProjectList {
     }
     
     private static void notifyClosed(Project p) {
-        Lookup.Result result = p.getLookup().lookup(new Lookup.Template(ProjectOpenedHook.class));
-        
-        for (Iterator i = result.allInstances().iterator(); i.hasNext(); ) {
+        for (Iterator i = p.getLookup().lookupAll(ProjectOpenedHook.class).iterator(); i.hasNext(); ) {
             ProjectOpenedHook hook = (ProjectOpenedHook) i.next();
             
             try {

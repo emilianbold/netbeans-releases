@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,7 +41,7 @@ public class ActionsInfraHid implements ContextGlobalProvider {
     private static Lookup.Result nodeResult;
     static {
         try {
-            nodeResult = Utilities.actionsGlobalContext().lookup(new Lookup.Template(Node.class));
+            nodeResult = Utilities.actionsGlobalContext().lookupResult(Node.class);
             Assert.assertEquals(Collections.emptySet(), new HashSet(nodeResult.allInstances()));
         } catch (Throwable t) {
             t.printStackTrace();

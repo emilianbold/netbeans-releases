@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -268,7 +268,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             List/*<String>*/ list = (List) e.getValue();
             if (list.size () == 1) continue;
             
-            Lookup.Result/*<ModuleInfo>*/ res = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class));
+            Lookup.Result/*<ModuleInfo>*/ res = Lookup.getDefault().lookupResult(ModuleInfo.class);
             assertFalse ("Some modules found", res.allInstances ().isEmpty ());
             
             Iterator/*<String>*/ names = new ArrayList(list).iterator();

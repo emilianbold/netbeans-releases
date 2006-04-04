@@ -7,25 +7,35 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import java.io.*;
-import java.util.*;
-
-import org.openide.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.openide.ErrorManager;
+import org.openide.ServiceType;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
-import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.io.NbMarshalledObject;
 
 /** Works with all service types.
 *
@@ -78,9 +88,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
         boolean init = false;
         synchronized (this) {
             if (allTypes == null) {
-                allTypes = Lookup.getDefault().lookup(
-                    new Lookup.Template(ServiceType.class)
-                );
+                allTypes = Lookup.getDefault().lookupResult(ServiceType.class);
                 allTypes.addLookupListener(this);
                 init = true;
             }
@@ -276,7 +284,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
     */
     public Enumeration services (Class clazz) {
         if (clazz == null) return org.openide.util.Enumerations.empty();
-        Collection res = Lookup.getDefault().lookup(new Lookup.Template(clazz)).allInstances();
+        Collection res = Lookup.getDefault().lookupAll(clazz);
         return Collections.enumeration(res);
     }
     

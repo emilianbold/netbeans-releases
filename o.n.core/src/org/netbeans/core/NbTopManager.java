@@ -446,7 +446,7 @@ public abstract class NbTopManager {
         private static Lookup.Result factoryResult;
         
         static {            
-            factoryResult = Lookup.getDefault().lookup(new Lookup.Template (HtmlBrowser.Factory.class));
+            factoryResult = Lookup.getDefault().lookupResult(HtmlBrowser.Factory.class);
             factoryResult.allItems();
             factoryResult.addLookupListener(new LookupListener() {
                 public void resultChanged(LookupEvent ev) {

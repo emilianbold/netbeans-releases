@@ -8,12 +8,10 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
-
 <apichanges>
 <apidefs>
     <apidef name="lookup">Lookup API</apidef>
@@ -22,6 +20,31 @@ Microsystems, Inc. All Rights Reserved.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+
+    <change id="lookupAll-lookupResult">
+        <api name="lookup"/>
+        <summary>Convenience methods added to <code>Lookup</code></summary>
+        <version major="6" minor="10"/>
+        <date day="3" month="4" year="2006"/>
+        <author login="jglick"/>
+        <compatibility addition="yes" binary="compatible" source="incompatible">
+            <p>
+                Could conceivably conflict with existing subclass method with same signature
+                with different semantics or return type.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Two methods, <code>lookupResult</code> and <code>lookupAll</code>, were
+                added to <code>Lookup</code> to encapsulate the most common usage patterns
+                with less typing, and more importantly avoiding the need to explicitly
+                make a <code>Lookup.Template</code> object.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Lookup"/>
+        <issue number="73848"/>
+    </change>
+
     <change id="rp-create-true" >
       <api name="util"/>
       <summary>Ability to create finished RequestProcessor task</summary>

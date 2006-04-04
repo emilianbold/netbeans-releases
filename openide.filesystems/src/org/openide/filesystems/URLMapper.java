@@ -7,25 +7,19 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.filesystems;
 
-import org.netbeans.modules.openide.filesystems.DefaultURLMapperProxy;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -34,6 +28,10 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.openide.filesystems.DefaultURLMapperProxy;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /** Mapper from FileObject -> URL.
  * Should be registered in default lookup. For details see {@link Lookup#getDefault()}.
@@ -73,7 +71,7 @@ public abstract class URLMapper {
 
     static {
         DefaultURLMapperProxy.setDefault(new DefaultURLMapper());
-        result = Lookup.getDefault().lookup(new Lookup.Template(URLMapper.class));
+        result = Lookup.getDefault().lookupResult(URLMapper.class);
         result.addLookupListener(
             new LookupListener() {
                 public void resultChanged(LookupEvent ev) {

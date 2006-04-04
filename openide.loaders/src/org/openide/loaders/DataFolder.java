@@ -1268,8 +1268,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
  */
         }
         private synchronized FolderRenameHandler getRenameHandler() {
-            Lookup.Result renameImplementations = Lookup.getDefault().lookup(new Lookup.Template(FolderRenameHandler.class));
-            Collection handlers = renameImplementations.allInstances();
+            Collection handlers = Lookup.getDefault().lookupAll(FolderRenameHandler.class);
             if (handlers.size()==0)
                 return null;
             if (handlers.size()>1)

@@ -45,7 +45,7 @@ public class ActionsInfraHid implements ContextGlobalProvider {
     private static Lookup.Result amResult;
     static {
         try {
-            amResult = Utilities.actionsGlobalContext().lookup(new Lookup.Template(ActionMap.class));
+            amResult = Utilities.actionsGlobalContext().lookupResult(ActionMap.class);
             Assert.assertEquals(Collections.singleton(EMPTY_MAP), new HashSet(amResult.allInstances()));
         } catch (Throwable t) {
             t.printStackTrace();

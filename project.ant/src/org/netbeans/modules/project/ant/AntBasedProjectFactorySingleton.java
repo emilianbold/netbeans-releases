@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -63,7 +63,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
     private static final Lookup.Result/*<AntBasedProjectType>*/ antBasedProjectTypes;
     private static Map/*<String,AntBasedProjectType>*/ antBasedProjectTypesByType = null;
     static {
-        antBasedProjectTypes = Lookup.getDefault().lookup(new Lookup.Template(AntBasedProjectType.class));
+        antBasedProjectTypes = Lookup.getDefault().lookupResult(AntBasedProjectType.class);
         antBasedProjectTypes.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent ev) {
                 synchronized (AntBasedProjectFactorySingleton.class) {

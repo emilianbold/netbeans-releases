@@ -138,7 +138,7 @@ public final class AntBridge {
         }
     }
     private static MiscListener miscListener = new MiscListener();
-    private static Lookup.Result<ModuleInfo> modulesResult = Lookup.getDefault().lookup(new Lookup.Template<ModuleInfo>(ModuleInfo.class));
+    private static Lookup.Result<ModuleInfo> modulesResult = Lookup.getDefault().lookupResult(ModuleInfo.class);
     static {
         AntSettings.getDefault().addPropertyChangeListener(miscListener);
         modulesResult.addLookupListener(miscListener);

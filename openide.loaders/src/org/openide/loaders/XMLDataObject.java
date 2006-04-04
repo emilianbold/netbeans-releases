@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -953,8 +953,6 @@ public class XMLDataObject extends MultiDataObject {
         }
     }
     
-    /** A template to ask lookup for */
-    private static final Lookup.Template TEMPLATE = new Lookup.Template (Node.Cookie.class);
     /** a string to signal null value for parsedId */
     private static final String NULL = ""; // NOI18N
    
@@ -1293,7 +1291,7 @@ public class XMLDataObject extends MultiDataObject {
 
                 lookup = newLookup;
                 if (LOG) ERR.log("Shared lookup updated: " + lookup + " for " + XMLDataObject.this); // NOI18N
-                result = lookup.lookup (TEMPLATE);
+                result = lookup.lookupResult(Node.Cookie.class);
                 result.addLookupListener (this);
 
                 if (prevRes != null) {

@@ -48,7 +48,7 @@ public final class NbClipboard extends ExClipboard
         systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         log = org.openide.ErrorManager.getDefault ().getInstance ("org.netbeans.core.NbClipboard"); // NOI18N
 
-        result = Lookup.getDefault().lookup(new Lookup.Template(ExClipboard.Convertor.class));
+        result = Lookup.getDefault().lookupResult(ExClipboard.Convertor.class);
         result.addLookupListener(this);
         resultChanged(null);
 

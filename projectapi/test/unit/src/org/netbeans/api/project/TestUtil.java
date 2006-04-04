@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -96,7 +96,7 @@ public final class TestUtil extends ProxyLookup {
                 System.err.println("No FileObject for " + root + " found.\n" +
                                     "Maybe you need ${openide/masterfs.dir}/modules/org-netbeans-modules-masterfs.jar\n" +
                                     "in test.unit.run.cp.extra, or make sure Lookups.metaInfServices is included in Lookup.default, so that\n" +
-                                    "Lookup.default<URLMapper>=" + Lookup.getDefault().lookup(new Lookup.Template(URLMapper.class)).allInstances() + " includes MasterURLMapper\n" +
+                                    "Lookup.default<URLMapper>=" + Lookup.getDefault().lookupAll(URLMapper.class) + " includes MasterURLMapper\n" +
                                     "e.g. by using TestUtil.setLookup(Object[]) rather than TestUtil.setLookup(Lookup).");
             }
             // For the benefit of those not using masterfs.

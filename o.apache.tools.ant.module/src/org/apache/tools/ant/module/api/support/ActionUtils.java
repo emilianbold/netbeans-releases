@@ -102,7 +102,7 @@ public final class ActionUtils {
         }
         Collection<FileObject> files = new LinkedHashSet<FileObject>(); // #50644: remove dupes
         // XXX this should perhaps also check for FileObject's...
-        for (DataObject d : context.lookup(new Lookup.Template<DataObject>(DataObject.class)).allInstances()) {
+        for (DataObject d : context.lookupAll(DataObject.class)) {
             FileObject f = d.getPrimaryFile();
             boolean matches = FileUtil.toFile(f) != null;
             if (dir != null) {

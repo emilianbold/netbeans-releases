@@ -171,7 +171,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         assert Thread.holdsLock(this);
         if (interestedLoggers == null) {
             interestedLoggers = new ArrayList<AntLogger>();
-            for (AntLogger l : Lookup.getDefault().lookup(new Lookup.Template<AntLogger>(AntLogger.class)).allInstances()) {
+            for (AntLogger l : Lookup.getDefault().lookupAll(AntLogger.class)) {
                 if (l.interestedInSession(thisSession)) {
                     interestedLoggers.add(l);
                 }

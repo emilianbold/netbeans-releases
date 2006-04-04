@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,7 +24,6 @@ import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DataFilesProviderImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
-import org.openide.util.Lookup;
 
 /**
  * Allows gathering information for various project operations.
@@ -202,19 +201,19 @@ public final class ProjectOperations {
     }
     
     private static Collection/*<DeleteOperationImplementation>*/ getDeleteOperationImplementation(Project prj) {
-        return prj.getLookup().lookup(new Lookup.Template(DeleteOperationImplementation.class)).allInstances();
+        return prj.getLookup().lookupAll(DeleteOperationImplementation.class);
     }
     
     private static Collection/*<DataFilesProviderImplementation>*/ getProjectsOperationsImplementation(Project prj) {
-        return prj.getLookup().lookup(new Lookup.Template(DataFilesProviderImplementation.class)).allInstances();
+        return prj.getLookup().lookupAll(DataFilesProviderImplementation.class);
     }
     
     private static Collection/*<CopyOperationImplementation>*/ getCopyOperationImplementation(Project prj) {
-        return prj.getLookup().lookup(new Lookup.Template(CopyOperationImplementation.class)).allInstances();
+        return prj.getLookup().lookupAll(CopyOperationImplementation.class);
     }
     
     private static Collection/*<MoveOperationImplementation>*/ getMoveOperationImplementation(Project prj) {
-        return prj.getLookup().lookup(new Lookup.Template(MoveOperationImplementation.class)).allInstances();
+        return prj.getLookup().lookupAll(MoveOperationImplementation.class);
     }
     
 }

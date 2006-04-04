@@ -13,13 +13,20 @@
 
 package org.netbeans.core.startup;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import org.openide.ErrorManager;
-
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import java.net.URLStreamHandlerFactory;
+import java.util.Collection;
+import java.util.Iterator;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.*;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 
 /**
  * Proxying stream handler factory. Currently searches Lookup for registered
@@ -54,7 +61,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
         URLStreamHandlerFactory[] _handlers;
         synchronized (this) {
             if (r == null) {
-                r = Lookup.getDefault().lookup(new Lookup.Template(URLStreamHandlerFactory.class));
+                r = Lookup.getDefault().lookupResult(URLStreamHandlerFactory.class);
                 r.addLookupListener(this);
                 resultChanged(null);
             }

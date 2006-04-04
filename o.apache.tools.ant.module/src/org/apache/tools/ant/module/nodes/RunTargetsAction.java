@@ -80,7 +80,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         
         public ContextAction(Lookup lkp) {
             super(SystemAction.get(RunTargetsAction.class).getName());
-            Collection<? extends AntProjectCookie> apcs = lkp.lookup(new Lookup.Template<AntProjectCookie>(AntProjectCookie.class)).allInstances();
+            Collection<? extends AntProjectCookie> apcs = lkp.lookupAll(AntProjectCookie.class);
             AntProjectCookie _project = null;
             if (apcs.size() == 1) {
                 _project = apcs.iterator().next();

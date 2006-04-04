@@ -55,7 +55,7 @@ public final class ProjectManager {
     private static final int ERR_LVL = Boolean.getBoolean(ProjectManager.class.getName() + ".LOG_WARN") ? ErrorManager.WARNING : ErrorManager.INFORMATIONAL; // NOI18N
     
     private static final Lookup.Result/*<ProjectFactory>*/ factories =
-        Lookup.getDefault().lookup(new Lookup.Template(ProjectFactory.class));
+        Lookup.getDefault().lookupResult(ProjectFactory.class);
     
     private ProjectManager() {
         factories.addLookupListener(new LookupListener() {

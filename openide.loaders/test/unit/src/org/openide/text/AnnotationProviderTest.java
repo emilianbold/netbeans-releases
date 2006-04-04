@@ -7,33 +7,30 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 
 package org.openide.text;
 
-
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
-
-import junit.textui.TestRunner;
-
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.openide.actions.*;
+import org.openide.actions.CopyAction;
+import org.openide.actions.CutAction;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.OpenAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.PropertiesAction;
+import org.openide.actions.RenameAction;
+import org.openide.actions.SaveAsTemplateAction;
+import org.openide.actions.ToolsAction;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
-
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
@@ -54,15 +51,12 @@ import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.CloneableOpenSupport;
-import org.openide.windows.WindowManager;
-
 
 public class AnnotationProviderTest extends NbTestCase {
     
@@ -174,7 +168,7 @@ public class AnnotationProviderTest extends NbTestCase {
         private static int changes;
         
         public void annotate(org.openide.text.Line.Set set, org.openide.util.Lookup context) {
-            result = context.lookup(new Lookup.Template(FileObject.class));
+            result = context.lookupResult(FileObject.class);
             result.addLookupListener(this);
             inLkp= (FileObject)result.allInstances().iterator().next();
             called++;

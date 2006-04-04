@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -119,7 +119,7 @@ public class FolderLookupTest extends NbTestCase {
         Class toFind = java.awt.Component.class;
         Class toCreate = javax.swing.JButton.class;
 
-        Lookup.Result res = lookup.lookup(new Lookup.Template(toFind));
+        Lookup.Result res = lookup.lookupResult(toFind);
         assertEquals("no Component's in " + res.allInstances(), 0, res.allInstances().size());
 
         DataObject obj = InstanceDataObject.create (folder, "Test", toCreate);

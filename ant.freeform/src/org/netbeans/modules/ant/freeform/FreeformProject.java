@@ -53,7 +53,7 @@ import org.w3c.dom.NodeList;
  */
 public final class FreeformProject implements Project {
     
-    public static final Lookup.Result/*<ProjectNature>*/ PROJECT_NATURES = Lookup.getDefault().lookup(new Lookup.Template(ProjectNature.class));
+    public static final Lookup.Result/*<ProjectNature>*/ PROJECT_NATURES = Lookup.getDefault().lookupResult(ProjectNature.class);
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
@@ -225,7 +225,7 @@ public final class FreeformProject implements Project {
             if (l != null) {
                 mergers.removeLookupListener(l);
             }
-            mergers = lkp.lookup(new Lookup.Template(LookupMerger.class));
+            mergers = lkp.lookupResult(LookupMerger.class);
             l = (LookupListener) WeakListeners.create(LookupListener.class, this, mergers);
             listenerRef = new WeakReference(l);
             mergers.addLookupListener(l);
@@ -243,7 +243,7 @@ public final class FreeformProject implements Project {
                     filtredClasses.add(classes[i]);
                     mergedInstances.add(lm.merge(lkp, classes[i]));
                     
-                    Lookup.Result result = lkp.lookup(new Lookup.Template(classes[i]));
+                    Lookup.Result result = lkp.lookupResult(classes[i]);
                     
                     result.addLookupListener(this);
                     results.add(result);

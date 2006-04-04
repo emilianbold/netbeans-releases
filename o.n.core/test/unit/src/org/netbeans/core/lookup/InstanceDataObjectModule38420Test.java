@@ -7,31 +7,15 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.lookup;
 
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
-
-import java.io.File;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
-import org.netbeans.core.NbTopManager;
-import org.netbeans.core.startup.ModuleHistory;
-import org.openide.util.Lookup;
+import java.lang.ref.WeakReference;
 import javax.swing.Action;
-import java.util.Iterator;
-import org.openide.loaders.DataObject;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.util.Mutex;
-import org.openide.cookies.InstanceCookie;
-import org.openide.util.MutexException;
-import org.openide.util.LookupListener;
-import org.openide.util.LookupEvent;
+import org.openide.util.Lookup;
 
 /** A test.
  */
@@ -41,12 +25,8 @@ public class InstanceDataObjectModule38420Test extends InstanceDataObjectModuleT
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(InstanceDataObjectModule38420Test.class));
-    }
-    
     public void testEnableDisableOfModulePreservesExistingInstances () throws Exception {
-        Lookup.Result res = Lookup.getDefault ().lookup (new Lookup.Template (Action.class));
+        Lookup.Result res = Lookup.getDefault ().lookupResult(Action.class);
         Action found = null;
         twiddle(m1, TWIDDLE_ENABLE);
         try {
@@ -73,7 +53,7 @@ public class InstanceDataObjectModule38420Test extends InstanceDataObjectModuleT
             Action again = (Action)Lookup.getDefault ().lookup (found.getClass ());
             assertSame ("The instance remains the same", found, again);
             
-            java.lang.ref.WeakReference ref = new java.lang.ref.WeakReference (found);
+            WeakReference ref = new WeakReference(found);
             found = null;
             again = null;
             res = null;

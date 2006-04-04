@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -185,7 +185,7 @@ implements RepositoryListener {
 
     private static URLMapper getMasterFsURLMapper() {
         URLMapper retVal = null;
-        Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template (URLMapper.class));
+        Lookup.Result result = Lookup.getDefault().lookupResult(URLMapper.class);
         Collection c = result.allInstances();
         for (Iterator iterator = c.iterator(); iterator.hasNext();) {
             URLMapper mapper = (URLMapper) iterator.next();

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -78,7 +78,7 @@ class ActionsUtil {
      */    
     public static FileObject[] getFilesFromLookup( Lookup lookup, Project project ) {
         HashSet result = new HashSet();
-        Collection dataObjects = lookup.lookup( new Lookup.Template( DataObject.class ) ).allInstances();
+        Collection dataObjects = lookup.lookupAll(DataObject.class);
         for( Iterator it = dataObjects.iterator(); it.hasNext(); ) {
             DataObject dObj = (DataObject)it.next();
             FileObject fObj = dObj.getPrimaryFile();
@@ -290,7 +290,7 @@ class ActionsUtil {
                 lruLookup = new CleanableWeakReference(lruLookupLocal = lookup);
                 lruResults = new ArrayList();
                 for ( int i = 0; i < watch.length; i++ ) {
-                    Lookup.Result result = lookup.lookup( new Lookup.Template( watch[i] ) );
+                    Lookup.Result result = lookup.lookupResult(watch[i]);
                     
                     result.allItems();
                     result.addLookupListener( this );
@@ -304,7 +304,7 @@ class ActionsUtil {
                 Set result = new HashSet();
 
                 // First find out whether there is a project directly in the Lookup                        
-                Collection currentProjects = lruLookupLocal.lookup( new Lookup.Template( Project.class ) ).allInstances();
+                Collection currentProjects = lruLookupLocal.lookupAll(Project.class);
                 
                 for( Iterator it = currentProjects.iterator(); it.hasNext(); ) {
                     Project p = (Project)it.next();
@@ -312,7 +312,7 @@ class ActionsUtil {
                 }
 
                 // Now try to guess the project from dataobjects
-                Collection currentDataObjects = lruLookupLocal.lookup( new Lookup.Template( DataObject.class ) ).allInstances();
+                Collection currentDataObjects = lruLookupLocal.lookupAll(DataObject.class);
                 for( Iterator it = currentDataObjects.iterator(); it.hasNext(); ) {
 
                     DataObject dObj = (DataObject)it.next();

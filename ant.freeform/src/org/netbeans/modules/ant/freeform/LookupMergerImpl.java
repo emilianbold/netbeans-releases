@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -61,7 +61,7 @@ public class LookupMergerImpl implements LookupMerger {
         
         public String[] getPrivilegedTemplates() {
             LinkedHashSet templates = new LinkedHashSet();
-            Iterator it = lkp.lookup(new Lookup.Template(PrivilegedTemplates.class)).allInstances().iterator();
+            Iterator it = lkp.lookupAll(PrivilegedTemplates.class).iterator();
             while (it.hasNext()) {
                 PrivilegedTemplates pt = (PrivilegedTemplates)it.next();
                 templates.addAll(Arrays.asList(pt.getPrivilegedTemplates()));
@@ -83,7 +83,7 @@ public class LookupMergerImpl implements LookupMerger {
         }
         
         private Iterator/*<ActionProvider>*/ delegates() {
-            Collection/*<ActionProvider>*/ all = lkp.lookup(new Lookup.Template(ActionProvider.class)).allInstances();
+            Collection/*<ActionProvider>*/ all = lkp.lookupAll(ActionProvider.class);
             assert !all.contains(this) : all;
             return all.iterator();
         }

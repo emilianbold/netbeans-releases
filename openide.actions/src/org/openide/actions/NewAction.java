@@ -7,27 +7,26 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.actions;
 
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.*;
+import java.beans.PropertyChangeListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
+import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.*;
+import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.Presenter;
 import org.openide.util.datatransfer.NewType;
 import org.openide.windows.WindowManager;
-
-import java.beans.PropertyChangeListener;
-
-import javax.swing.event.*;
-
 
 /** Creates a new child of the activated node, if appropriate.
 * @see Node#getNewTypes
@@ -160,7 +159,7 @@ public final class NewAction extends NodeAction {
 
         private NewType[] newTypes() {
             if (lookup != null) {
-                java.util.Collection c = lookup.lookup(new Lookup.Template(Node.class)).allItems();
+                java.util.Collection c = lookup.lookupResult(Node.class).allItems();
 
                 if (c.size() == 1) {
                     java.util.Iterator it = c.iterator();
@@ -219,7 +218,7 @@ public final class NewAction extends NodeAction {
             Node[] arr;
 
             if (lookup != null) {
-                arr = (Node[]) lookup.lookup(new Lookup.Template(Node.class)).allInstances().toArray(new Node[0]);
+                arr = (Node[]) lookup.lookupAll(Node.class).toArray(new Node[0]);
             } else {
                 arr = WindowManager.getDefault().getRegistry().getCurrentNodes();
             }

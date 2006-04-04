@@ -7,10 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
+
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import org.netbeans.junit.NbTestCase;
@@ -40,9 +42,6 @@ public class MIMESupportTest extends NbTestCase {
         lookup.init();
     }
 
-    protected void tearDown() throws Exception {
-    }
-
     public void testFindMIMETypeCanBeGarbageCollected() throws IOException {
         FileObject fo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), "Ahoj.bla");
         
@@ -57,22 +56,19 @@ public class MIMESupportTest extends NbTestCase {
     
     public void testBehaviourWhemLookupResultIsChanging() throws Exception {
         MIMESupportTest.TestResolver testR = new MIMESupportTest.TestResolver("a/a");
-        Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(MIMEResolver.class));
-        assertTrue(result.allInstances().isEmpty());
+        assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).isEmpty());
         
         FileObject fo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), "mysterious.lenka");
         
         assertEquals("content/unknown",fo.getMIMEType());
         
         lookup.setLookups(testR);
-        result = Lookup.getDefault().lookup(new Lookup.Template(MIMEResolver.class));
-        assertTrue(result.allInstances().contains(testR));        
+        assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).contains(testR));        
         assertEquals(testR.getMime(),fo.getMIMEType());
         
         testR = new MIMESupportTest.TestResolver("b/b");
         lookup.setLookups(testR);
-        result = Lookup.getDefault().lookup(new Lookup.Template(MIMEResolver.class));
-        assertTrue(result.allInstances().contains(testR));        
+        assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).contains(testR));        
         assertEquals(testR.getMime(),fo.getMIMEType());
     }
 

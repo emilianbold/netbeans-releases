@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -100,7 +100,7 @@ public class ProjectsRootNode extends AbstractNode {
         } else {
             List/*<Action>*/ actions = new ArrayList();
             DataFolder actionsFolder = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource(ACTIONS_FOLDER));
-            Iterator/*<Object>*/ instances = new FolderLookup(actionsFolder).getLookup().lookup(new Lookup.Template(Object.class)).allInstances().iterator();
+            Iterator/*<Object>*/ instances = new FolderLookup(actionsFolder).getLookup().lookupAll(Object.class).iterator();
             while (instances.hasNext()) {
                 Object o = instances.next();
                 if (o instanceof Action) {

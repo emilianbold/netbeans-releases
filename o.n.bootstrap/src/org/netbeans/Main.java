@@ -281,7 +281,7 @@ public class Main extends Object {
                     metaInf = Lookups.metaInfServices(this);
                     if (handlers != null) {
                         handlers.clear();
-                        handlers.addAll(metaInf.lookup(new Lookup.Template<CLIHandler>(CLIHandler.class)).allInstances());
+                        handlers.addAll(metaInf.lookupAll(CLIHandler.class));
                     }
                 }
             } catch (IOException ex) {
@@ -310,7 +310,7 @@ public class Main extends Object {
          */
         public final Collection allCLIs () {
             if (handlers == null) {
-                handlers = new ArrayList<CLIHandler>(metaInf.lookup(new Lookup.Template<CLIHandler>(CLIHandler.class)).allInstances());
+                handlers = new ArrayList<CLIHandler>(metaInf.lookupAll(CLIHandler.class));
             }
             return handlers;
         }

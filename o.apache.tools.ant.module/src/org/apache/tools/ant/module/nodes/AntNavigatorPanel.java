@@ -104,7 +104,7 @@ public final class AntNavigatorPanel implements NavigatorPanel {
     }
     
     public void panelActivated(Lookup context) {
-        selection = context.lookup(new Lookup.Template<DataObject>(DataObject.class));
+        selection = context.lookupResult(DataObject.class);
         selection.addLookupListener(selectionListener);
         selectionListener.resultChanged(null);
     }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -140,7 +140,7 @@ public class FileCommandActionTest extends NbTestCase {
         public boolean isActionEnabled( String command, Lookup context) throws IllegalArgumentException {
             
             if ( COMMAND.equals( command ) ) {
-                Collection dobjs = context.lookup( new Lookup.Template( DataObject.class ) ).allInstances();
+                Collection dobjs = context.lookupAll(DataObject.class);
                 for ( Iterator it = dobjs.iterator(); it.hasNext();  ) {
                     DataObject dobj = (DataObject)it.next();
                     if ( !dobj.getPrimaryFile().getNameExt().endsWith( ".java" ) ) {

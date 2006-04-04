@@ -645,7 +645,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         }            
         
         if (cookiesLkp != null && !cookiesLkp.equals(Lookup.EMPTY)) {
-            nodeResult = cookiesLkp.lookup(new Lookup.Template(InstanceCookie.class));
+            nodeResult = cookiesLkp.lookupResult(InstanceCookie.class);
             nodeLsnr = new LookupListener() {
                         public void resultChanged(LookupEvent lookupEvent) {
                             if (InstanceDataObject.this.un != null) {
@@ -662,7 +662,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             cookieResult.removeLookupListener(cookiesLsnr);
         }                    
         if (cookiesLkp != null && !cookiesLkp.equals(Lookup.EMPTY)) {
-            cookieResult = cookiesLkp.lookup(new Lookup.Template(Node.Cookie.class));
+            cookieResult = cookiesLkp.lookupResult(Node.Cookie.class);
             cookiesLsnr = new LookupListener() {
                 public void resultChanged(LookupEvent lookupEvent) {
                     firePropertyChange(DataObject.PROP_COOKIE, null, null);

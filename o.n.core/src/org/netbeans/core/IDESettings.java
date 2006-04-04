@@ -444,7 +444,7 @@ public class IDESettings extends SystemOption {
 
             // the browser is not set yet - find the first one
             if (obj == null || "".equals (obj)) {
-                Lookup.Result res = Lookup.getDefault ().lookup (new Lookup.Template (HtmlBrowser.Factory.class));
+                Lookup.Result res = Lookup.getDefault ().lookupResult(HtmlBrowser.Factory.class);
                 java.util.Iterator it = res.allInstances ().iterator ();
                 while (it.hasNext ()) {
                     Object brow = it.next ();

@@ -7,12 +7,27 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.util.actions;
 
+
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import javax.swing.Action;
+import javax.swing.JMenuItem;
 import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.nodes.Node;
@@ -24,25 +39,6 @@ import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
-
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.Action;
-import javax.swing.JMenuItem;
 
 /**
  * A type of action that listens on change in activated nodes selection and
@@ -384,7 +380,7 @@ OUTER:
 
             if (active) {
                 if (result == null) {
-                    result = context.lookup(new Lookup.Template(Node.class));
+                    result = context.lookupResult(Node.class);
                     result.addLookupListener(this);
                 }
             } else {
@@ -503,7 +499,7 @@ OUTER:
         public DelegateAction(NodeAction a, Lookup actionContext) {
             this.delegate = a;
 
-            this.result = actionContext.lookup(new Lookup.Template(Node.class));
+            this.result = actionContext.lookupResult(Node.class);
             this.result.addLookupListener(
                 (LookupListener) WeakListeners.create(LookupListener.class, this, this.result)
             );

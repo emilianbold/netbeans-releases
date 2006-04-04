@@ -7,33 +7,25 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.xml;
 
-import junit.framework.*;
 import java.io.IOException;
-import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
-import org.openide.filesystems.*;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.w3c.dom.DocumentType;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.*;
-import org.openide.cookies.InstanceCookie;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.*;
-import org.openide.xml.EntityCatalog;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileAttributeEvent;
 import java.net.URL;
-import org.openide.ErrorManager;
+import junit.framework.TestCase;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.Environment;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /** 
  *
@@ -77,8 +69,7 @@ public class FileEntityResolverDeadlock54971Test extends TestCase {
 
         Lkp.query = true;
         
-        Lookup.Template t = new Lookup.Template (ComplexPair.class);
-        Lookup.Result r = Lookup.getDefault ().lookup (t);
+        Lookup.Result r = Lookup.getDefault().lookupResult(ComplexPair.class);
         
         java.util.Collection c = r.allInstances();
         if (c.size () != 1 || ComplexPair.IC != c.iterator().next()) {

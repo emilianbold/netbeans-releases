@@ -826,10 +826,7 @@ public class NewTemplateAction extends NodeAction {
     
     static private final synchronized Node[] getNodesFromLookup (Lookup lookup) {
         if (lookup != null) {
-            Lookup.Result nodesResult = lookup.lookup (new Lookup.Template (Node.class));
-            if (nodesResult != null) {
-                return (Node[])nodesResult.allInstances ().toArray (EMPTY_NODE_ARRAY);
-            }
+            return (Node[]) lookup.lookupAll(Node.class).toArray(EMPTY_NODE_ARRAY);
         }
         return EMPTY_NODE_ARRAY;
     }
@@ -849,12 +846,10 @@ public class NewTemplateAction extends NodeAction {
         
         private PropertyChangeSupport support = new PropertyChangeSupport (this);
         
-        private static Lookup.Template NODES = new Lookup.Template (Node.class);
-        
         public DelegateAction (NewTemplateAction action, Lookup actionContext) {
             this.delegate = action;
             this.actionContext = actionContext;
-            this.nodesResult = actionContext.lookup (NODES);
+            this.nodesResult = actionContext.lookupResult(Node.class);
             // if a weak listener is used then NewTemplateActionTest fails
             //LookupListener l = (LookupListener)WeakListeners.create (LookupListener.class, (LookupListener)action, nodesResult);
             //nodesResult.addLookupListener (l);

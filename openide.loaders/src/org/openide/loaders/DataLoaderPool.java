@@ -430,7 +430,7 @@ implements java.io.Serializable {
         } else {
             Class c = loader.getClass();
             // [PENDING] in the future a more efficient API may be introduced
-            Iterator modules = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances().iterator();
+            Iterator modules = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator();
             String modulename = null;
             while (modules.hasNext()) {
                 ModuleInfo module = (ModuleInfo)modules.next();
@@ -462,7 +462,7 @@ implements java.io.Serializable {
                 // [PENDING] in the future a more efficient API may be introduced
                 // (actually currently you can look up with a template giving the name
                 // as part of the lookup item ID but this is not an official API)
-                Iterator modules = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances().iterator();
+                Iterator modules = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator();
                 boolean ok = false;
                 while (modules.hasNext()) {
                     ModuleInfo module = (ModuleInfo)modules.next();
@@ -557,7 +557,7 @@ implements java.io.Serializable {
         private final Lookup.Result result;
         
         public DefaultPool() {
-            result = Lookup.getDefault().lookup(new Lookup.Template(DataLoader.class));
+            result = Lookup.getDefault().lookupResult(DataLoader.class);
         }
         
         protected Enumeration loaders() {

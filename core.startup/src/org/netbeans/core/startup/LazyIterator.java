@@ -7,15 +7,15 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup;
 
-import java.util.*;
-import org.openide.util.*;
-import org.openide.util.lookup.Lookups;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import org.openide.util.Lookup;
 
 /**
  * A special filtering and lazy iterator used by our XML factories
@@ -81,7 +81,7 @@ class LazyIterator implements Iterator {
     }
 
     private Iterator prepareDelegate() {
-        return Lookup.getDefault().lookup(new Lookup.Template(template)).allItems().iterator();
+        return Lookup.getDefault().lookupResult(template).allItems().iterator();
     }
 
     public void remove() {

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -241,10 +241,10 @@ public final class Actions implements ActionProvider {
      * path to actual file object. Otherwise an empty map is returned.
      */
     private static Map/*<String,FileObject>*/ findSelection(Element contextEl, Lookup context, FreeformProject project) {
-        Collection/*<FileObject>*/ files = context.lookup(new Lookup.Template(FileObject.class)).allInstances();
+        Collection/*<FileObject>*/ files = context.lookupAll(FileObject.class);
         if (files.isEmpty()) {
             // Try again with DataObject's.
-            Collection/*<DataObject>*/ filesDO = context.lookup(new Lookup.Template(DataObject.class)).allInstances();
+            Collection/*<DataObject>*/ filesDO = context.lookupAll(DataObject.class);
             if (filesDO.isEmpty()) {
                  return Collections.EMPTY_MAP;
             }

@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -1388,9 +1388,7 @@ is desirable to obtain the list of all modules in the system. This can
 be easily accomplished as follows:
 
 <pre>
-Lookup.Template templ = new Lookup.Template(<a href="../ModuleInfo.html">ModuleInfo</a>.class);
-Lookup.Result result = Lookup.getDefault().lookup(templ);
-Collection modules = result.allInstances(); // Collection&lt;ModuleInfo&gt;
+Collection&lt;ModuleInfo&gt; modules = Lookup.getDefault().lookupAll(<a href="../ModuleInfo.html">ModuleInfo</a>.class);
 </pre>
 
 The resulting <code>ModuleInfo</code> objects give basic information

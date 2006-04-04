@@ -7,19 +7,20 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.nodes;
 
-import java.util.*;
-import junit.textui.TestRunner;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
-import org.openide.util.actions.SystemAction;
-
-import org.netbeans.junit.*;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -33,11 +34,6 @@ public class FilterNodeTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(FilterNodeTest.class));
-    }
-    
-
     /** Demonstates a bug in FilterNode.changeOriginal.
      */
     public void testChangeOriginalLeafToArray () {
@@ -665,7 +661,7 @@ public class FilterNodeTest extends NbTestCase {
         Lookup.Item item = n.getLookup().lookupItem(new Lookup.Template(NodeA.class));
         assertNull("There is no instance of NodeA in the lookup, there shall be no item:" + item, item);
         
-        Lookup.Result res = n.getLookup().lookup(new Lookup.Template(NodeA.class));
+        Lookup.Result res = n.getLookup().lookupResult(NodeA.class);
         Collection c;
         c = res.allClasses();
         assertTrue("No classes:" + c, c.isEmpty());

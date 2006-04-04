@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -113,8 +113,7 @@ public class ProjectGenerator {
                     Project p = ProjectManager.getDefault().findProject(directory);
                     if (p == null) {
                         // Something is wrong, it is not being recognized.
-                        Iterator it = Lookup.getDefault().lookup(new Lookup.Template(AntBasedProjectType.class)).
-                            allInstances().iterator();
+                        Iterator it = Lookup.getDefault().lookupAll(AntBasedProjectType.class).iterator();
                         while (it.hasNext()) {
                             AntBasedProjectType abpt = (AntBasedProjectType)it.next();
                             if (abpt.getType().equals(type)) {

@@ -7,35 +7,26 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Locale;
-import javax.swing.*;
-import javax.swing.border.*;
-
 import org.netbeans.CLIHandler;
 import org.netbeans.Module;
 import org.openide.ErrorManager;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
-
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Handler for core.jar options.
@@ -51,7 +42,7 @@ public class CLICoreBridge extends CLIHandler {
     
     protected int cli(Args arguments) {
         Lookup clis = Lookup.getDefault();
-        Collection handlers = clis.lookup(new Lookup.Template(CLIHandler.class)).allInstances();
+        Collection handlers = clis.lookupAll(CLIHandler.class);
         int h = notifyHandlers(arguments, handlers, WHEN_EXTRA, true, true);
         if (h == 0) {
             h = CoreBridge.getDefault().cli(
@@ -98,7 +89,7 @@ public class CLICoreBridge extends CLIHandler {
         URLClassLoader loader = new URLClassLoader((URL[])urls.toArray(new URL[0]), getClass().getClassLoader());
         MainLookup.systemClassLoaderChanged(loader);
         Lookup clis = Lookup.getDefault();
-        Collection handlers = clis.lookup(new Lookup.Template(CLIHandler.class)).allInstances();
+        Collection handlers = clis.lookupAll(CLIHandler.class);
         showHelp(w, handlers, WHEN_EXTRA);
         w.flush();
     }

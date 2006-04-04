@@ -7,23 +7,24 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.nodes;
 
-import junit.framework.*;
-import junit.textui.TestRunner;
-import java.util.*;
-import org.openide.nodes.*;
-
-import org.netbeans.junit.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
-
 import org.openide.util.LookupListener;
-import org.openide.util.lookup.*;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /** Tests whether notification to NodeListener is fired under Mutex.writeAccess
  *
@@ -113,7 +114,7 @@ public class NodeLookupTest extends NbTestCase {
     
     private void checkInstanceInGetLookup (Object obj, InstanceContent ic, Node node, boolean shouldBeThere) {
         Listener listener = new Listener ();
-        Lookup.Result res = node.getLookup ().lookup (new Lookup.Template (obj.getClass ()));
+        Lookup.Result res = node.getLookup().lookupResult(obj.getClass());
         Collection ignore = res.allItems ();
         res.addLookupListener(listener);
 
@@ -179,9 +180,8 @@ public class NodeLookupTest extends NbTestCase {
         }
         L l = new L ();
         
-        Lookup.Template templCookies = new Lookup.Template (Node.Cookie.class);
         fn.addNodeListener (l);
-        Lookup.Result res = fn.getLookup ().lookup (templCookies);
+        Lookup.Result res = fn.getLookup().lookupResult(Node.Cookie.class);
         assertEquals ("No event fired0", null, l.ev);
         res.addLookupListener (l);
         Collection items = res.allItems ();
@@ -249,7 +249,7 @@ public class NodeLookupTest extends NbTestCase {
         
         // == must be used instead of equals for nodes!!!
         assertTrue ("Node is there", fn == l.lookup (Node.class));
-        Collection c = l.lookup (new Lookup.Template (Node.class)).allInstances ();
+        Collection c = l.lookupAll(Node.class);
         
         if (!queryForCookie) {
             assertEquals ("Just one node", 1, c.size ());
@@ -275,7 +275,7 @@ public class NodeLookupTest extends NbTestCase {
         
         // == must be used instead of equals for nodes!!!
         assertTrue ("Node is there", fn == l.lookup (Node.class));
-        Collection c = l.lookup (new Lookup.Template (Node.class)).allInstances ();
+        Collection c = l.lookupAll(Node.class);
         assertEquals ("Just one node", 1, c.size ());
         assertTrue ("And it is the one", c.iterator ().next () == fn);
     }
@@ -359,7 +359,7 @@ public class NodeLookupTest extends NbTestCase {
     
     private void checkInstanceInLookup (Node.Cookie obj, CookieSet ic, Lookup l) {
         Listener listener = new Listener ();
-        Lookup.Result res = l.lookup (new Lookup.Template (Object.class));
+        Lookup.Result res = l.lookupResult(Object.class);
         Collection justToEnsureChangesToListenerWillBeFired = res.allItems ();
         res.addLookupListener(listener);
         
@@ -467,7 +467,7 @@ public class NodeLookupTest extends NbTestCase {
         Lookup lookup = n.getLookup ();
         Lookup.Item item;
         Listener l = new Listener ();
-        Lookup.Result res = lookup.lookup (new Lookup.Template (Node.Cookie.class));
+        Lookup.Result res = lookup.lookupResult(Node.Cookie.class);
         assertEquals ("Empty", 0, res.allItems ().size ());
         res.addLookupListener(l);
         
@@ -642,7 +642,7 @@ public class NodeLookupTest extends NbTestCase {
     private void doTestNodeLookup (Node n, Class query) {
         Object o1 = n.getLookup ().lookup (query);
         assertEquals ("Found itself in own lookup(<" + query +">).", n, o1);
-        Lookup.Result r = n.getLookup ().lookup (new Lookup.Template (query));
+        Lookup.Result r = n.getLookup().lookupResult(query);
         assertEquals ("Only one instance in result.", 1, r.allInstances ().size ());
         Object o2 = r.allInstances ().iterator ().next ();
         assertEquals ("Found itself in own lookup(<Lookup.Template(" + query +")>).", n, o1);

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -148,7 +148,7 @@ final class MIMESupport extends Object {
                 }
 
                 if (result == null) {
-                    result = Lookup.getDefault().lookup(new Lookup.Template(MIMEResolver.class));
+                    result = Lookup.getDefault().lookupResult(MIMEResolver.class);
                     result.addLookupListener(
                         new LookupListener() {
                             public void resultChanged(LookupEvent evt) {

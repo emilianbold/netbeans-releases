@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -387,8 +387,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         DataFolder folderTest = DataFolder.findFolder(lookupFO);
         
         InstanceDataObject ido = InstanceDataObject.create (folderTest, "testLookupRefresh", ser, null);
-        Lookup.Result res = l.lookup(new Lookup.Template(ser.getClass()));
-        Collection col = res.allInstances ();
+        Collection col = l.lookupAll(ser.getClass());
         InstanceCookie ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
         assertEquals("IDO did not create new InstanceCookie", ser, ic.instanceCreate());
         
@@ -427,7 +426,7 @@ public class InstanceDataObjectTest extends NbTestCase {
             }
         });
         
-        col = res.allInstances ();
+        col = l.lookupAll(ser.getClass());
         ic = (InstanceCookie) ido.getCookie(InstanceCookie.class);
         origSet = new HashSet(Arrays.asList(new Object[] {ic.instanceCreate()}));
         

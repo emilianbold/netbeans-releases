@@ -75,7 +75,7 @@ public final class View implements LogicalViewProvider {
         Node[] kids = root.getChildren().getNodes(true);
         for (int i = 0; i < kids.length; i++) {
             // First ask natures.
-            Iterator/*<ProjectNature>*/ natures = Lookup.getDefault().lookup(new Lookup.Template(ProjectNature.class)).allInstances().iterator();
+            Iterator/*<ProjectNature>*/ natures = Lookup.getDefault().lookupAll(ProjectNature.class).iterator();
             while (natures.hasNext()) {
                 ProjectNature nature = (ProjectNature) natures.next();
                 Node n = nature.findSourceFolderViewPath(project, kids[i], target);
@@ -187,7 +187,7 @@ public final class View implements LogicalViewProvider {
                     return null;
                 }
                 String style = itemEl.getAttribute("style"); // NOI18N
-                Iterator/*<ProjectNature>*/ natures = Lookup.getDefault().lookup(new Lookup.Template(ProjectNature.class)).allInstances().iterator();
+                Iterator/*<ProjectNature>*/ natures = Lookup.getDefault().lookupAll(ProjectNature.class).iterator();
                 while (natures.hasNext()) {
                     ProjectNature nature = (ProjectNature) natures.next();
                     if (nature.getSourceFolderViewStyles().contains(style)) {

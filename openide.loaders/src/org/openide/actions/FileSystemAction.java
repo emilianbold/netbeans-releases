@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -70,7 +70,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
         Collection c;
 
         if (lookup != null) {
-            c = lookup.lookup (new Lookup.Template (Node.class)).allInstances();
+            c = lookup.lookupAll(Node.class);
         } else {
             c = Collections.EMPTY_LIST;
         }

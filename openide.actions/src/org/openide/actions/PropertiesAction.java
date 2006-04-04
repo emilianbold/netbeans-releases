@@ -7,11 +7,19 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.actions;
 
+
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import javax.swing.Action;
+import javax.swing.JMenuItem;
 import org.openide.awt.Actions;
 import org.openide.awt.JInlineMenu;
 import org.openide.nodes.Node;
@@ -23,17 +31,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
-
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-
-import java.beans.PropertyChangeListener;
-
-import java.util.Collection;
-
-import javax.swing.Action;
-import javax.swing.JMenuItem;
-
 
 /** Get properties of a node.
 *
@@ -104,7 +101,7 @@ public class PropertiesAction extends NodeAction {
         }
 
         private Node[] nodes() {
-            Collection c = lookup.lookup(new Lookup.Template(Node.class)).allInstances();
+            Collection c = lookup.lookupAll(Node.class);
 
             return (Node[]) c.toArray(new Node[c.size()]);
         }
